@@ -130,9 +130,9 @@ bool Decay_Selector::Trigger(Selector_List &sl)
     for (size_t i(0);i<m_ids[j].size();++i) m_p[i]=sl[m_ids[j][i]].Momentum();
     double value(m_calc.Calculate()->Get<double>());
     msg_Debugging()<<m_ids[j]<<" -> "<<value<<"\n";
-    if (value<m_min || value>m_max) return !m_sel_log->Hit(1);
+    if (value<m_min || value>m_max) return m_sel_log->CountingIdentity(false);
   }
-  return !m_sel_log->Hit(0);
+  return m_sel_log->CountingIdentity(true);
 }
 
 std::string Decay_Selector::ReplaceTags(std::string &expr) const
@@ -227,10 +227,10 @@ bool Decay2_Selector::Trigger(Selector_List &sl)
       for (size_t k(0);k<m_ids[1][l].size();++k) m_p[1][k]=sl[m_ids[1][l][k]].Momentum();
       double value(m_calc.Calculate()->Get<double>());
       msg_Debugging()<<m_ids[0][j]<<","<<m_ids[1][l]<<" -> "<<value<<"\n";
-      if (value<m_min || value>m_max) return !m_sel_log->Hit(1);
+      if (value<m_min || value>m_max) return m_sel_log->CountingIdentity(false);
     }
   }
-  return !m_sel_log->Hit(0);
+  return m_sel_log->CountingIdentity(true);
 }
 
 std::string Decay2_Selector::ReplaceTags(std::string &expr) const
@@ -309,9 +309,9 @@ bool DecayMass_Selector::Trigger(Selector_List &sl)
     for (size_t i(0);i<m_ids[j].size();++i) sum+=sl[m_ids[j][i]].Momentum();
     double value(sum.Mass());
     msg_Debugging()<<m_ids[j]<<" -> "<<value<<"\n";
-    if (value<m_min || value>m_max) return !m_sel_log->Hit(1);
+    if (value<m_min || value>m_max) return m_sel_log->CountingIdentity(false);
   }
-  return !m_sel_log->Hit(0);
+  return m_sel_log->CountingIdentity(true);
 }
 
 void DecayMass_Selector::BuildCuts(Cut_Data *cuts)

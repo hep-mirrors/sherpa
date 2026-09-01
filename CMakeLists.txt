@@ -1,3 +1,4 @@
+
 cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 ###########################Package@#####################################
 project(SHERPA-MC LANGUAGES C  CXX)
@@ -28,6 +29,10 @@ endif(CMAKE_BUILD_TYPE)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules ${CMAKE_MODULE_PATH} )
 cmake_policy(SET CMP0069 NEW)
 
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard to use")
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR} CACHE PATH "Default prefix" FORCE)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -42,9 +47,9 @@ option(SHERPA_ENABLE_BLACKHAT                "Enables building with BlackHat." O
 option(SHERPA_ENABLE_DIHIGGS                 "Enables building of DIHIGGS." OFF)
 option(SHERPA_ENABLE_DOXYGEN                 "Enables the 'docs' target for building HTML documentation" OFF)
 option(SHERPA_ENABLE_EWSUD                   "Enables building of EWSUD." OFF)
-option(SHERPA_ENABLE_EXAMPLES                "Enables installation of EXAMPLES." ON)
 option(SHERPA_ENABLE_GOSAM                   "Enables building with GoSam." OFF)
 option(SHERPA_ENABLE_GZIP                    "Enables building with GZIP." OFF)
+option(SHERPA_ENABLE_HDF5                    "Enables building with HDF5." OFF)
 option(SHERPA_ENABLE_HEPMC3                  "Enables building of HepMC3 interface." OFF)
 option(SHERPA_ENABLE_HEPMC3_ROOT             "Enables building of HepMC3+ROOT interface ." OFF)
 option(SHERPA_ENABLE_INTERNAL_PDFS           "Enables internal PDFs." ON)
@@ -107,7 +112,7 @@ foreach (en IN LISTS alldirenables)
 endforeach()
 ###########################Options handeling############################
 set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS DOXYGEN
- EWSUD EXAMPLES GOSAM GZIP HEPMC3 HEPMC3_ROOT
+ EWSUD GOSAM GZIP HDF5 HEPMC3 HEPMC3_ROOT
  INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF
  MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
@@ -212,7 +217,7 @@ message(STATUS "SHERPA: CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
 ########################################################################
 
 set ( NEW_CMAKE_C_FLAGS " ")
-string(REPLACE " " ";" LIST_CMAKE_C_FLAGS "${C_C_FLAGS_TO_CHECK} ${CMAKE_C_FLAGS}")
+string(REPLACE " -" ";-" LIST_CMAKE_C_FLAGS "${C_C_FLAGS_TO_CHECK} ${CMAKE_C_FLAGS}")
 foreach(fx IN LISTS LIST_CMAKE_C_FLAGS)
   if (fx)
     check_c_compiler_flag(${fx} C_COMPILER_SUPPORTS_${fx})
@@ -231,7 +236,7 @@ message(STATUS "SHERPA: CMAKE_C_FLAGS=${CMAKE_C_FLAGS}")
 if (SHERPA_ENABLE_FORTRAN)
   include(CheckFortranCompilerFlag)
   set ( NEW_CMAKE_Fortran_FLAGS " ")
-  string(REPLACE " " ";" LIST_CMAKE_Fortran_FLAGS  "${F_Fortran_FLAGS_TO_CHECK} ${CMAKE_Fortran_FLAGS}")
+  string(REPLACE " -" ";-" LIST_CMAKE_Fortran_FLAGS  "${F_Fortran_FLAGS_TO_CHECK} ${CMAKE_Fortran_FLAGS}")
   foreach(fl IN LISTS LIST_CMAKE_Fortran_FLAGS)
     if (fl)
       check_Fortran_compiler_flag(${fl} Fortran_COMPILER_SUPPORTS_${fl})
@@ -249,7 +254,7 @@ if (SHERPA_ENABLE_FORTRAN)
 endif()
 ########################################################################
 if (SHERPA_ENABLE_CLANG_TIDY)
-  set(CMAKE_CXX_CLANG_TIDY "clang-tidy;--checks=*,-readability-identifier-length,-modernize-use-trailing-return-type,-cppcoreguidelines-avoid-non-const-global-variables,-llvmlibc-callee-namespace,-bugprone-easily-swappable-parameters,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-readability-implicit-bool-conversion,-hicpp-braces-around-statements,-readability-braces-around-statements,-cert-err34-c,-modernize-return-braced-init-list")
+  set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
 endif()
 ########################################################################
 
@@ -336,7 +341,6 @@ macro(sherpa_handle_shared_library  mylib mylibname)
   set_target_properties(${mylib}        PROPERTIES POSITION_INDEPENDENT_CODE ON  SOVERSION 0.0.0)
   set_target_properties(${mylib}        PROPERTIES DEFINE_SYMBOL "")
   set_target_properties(${mylib}        PROPERTIES OUTPUT_NAME ${mylibname})
-  target_compile_features(${mylib} PRIVATE cxx_std_11)
   set_target_properties(${mylib} PROPERTIES  ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
                                              LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
                                              RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
@@ -359,7 +363,6 @@ macro(sherpa_handle_executable  mylib )
    if(NOT (CMAKE_SYSTEM_NAME MATCHES Darwin))
      target_link_options(${mylib} PRIVATE "LINKER:-no-as-needed")
    endif()
-   target_compile_features(${mylib} PRIVATE cxx_std_11)
 endmacro(sherpa_handle_executable  mylib )
 
 
@@ -380,7 +383,7 @@ else()
     UPDATE_COMMAND ""
     PATCH_COMMAND ""
     PREFIX ${PROJECT_BINARY_DIR}/EXTERNALSRC
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/EXTERNALINSTALL/libzip -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} -DBUILD_DOC=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TOOLS=OFF -DBUILD_REGRESS=OFF
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/EXTERNALINSTALL/libzip -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS} -DBUILD_DOC=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TOOLS=OFF -DBUILD_REGRESS=OFF
     BUILD_BYPRODUCTS ${PROJECT_BINARY_DIR}/EXTERNALINSTALL/libzip/lib/libzip${CMAKE_SHARED_LIBRARY_SUFFIX}
   )
   unset(LibZip_ROOT)
@@ -419,7 +422,7 @@ if (SHERPA_ENABLE_LHAPDF)
     include(FetchContent)
     set(LHAPDFDESTDIR ${PROJECT_BINARY_DIR}/EXTERNALINSTALL/lhapdf)
     ExternalProject_Add(downloadedlhapdf
-      URL https://lhapdf.hepforge.org/downloads/?f=LHAPDF-6.5.3.tar.gz
+      URL https://lhapdf.hepforge.org/downloads/?f=LHAPDF-6.5.5.tar.gz
       UPDATE_COMMAND ""
       #LHAPDF is  bugged
       #One should not have doxygen in the path!
@@ -560,7 +563,7 @@ set( IDIRS  AHADIC++ AMEGIC++ AMISIC++ ATOOLS BEAM COMIX CSSHOWER++ DIM DIRE EXT
 METOOLS MCATNLO MODEL PHASIC++ PHOTONS++  PDF RECONNECTIONS REMNANTS SHRiMPS SHERPA YFS)
 
 if (SHERPA_ENABLE_MANUAL)
-  add_subdirectory(Manual)
+  add_subdirectory(doc)
 endif()
 
 if (SHERPA_ENABLE_PYTHON)
@@ -653,6 +656,12 @@ if (SHERPA_ENABLE_GZIP)
        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol/21201
        VERBATIM)
 endif()
+if (SHERPA_ENABLE_HDF5)
+  set(HDF5_PREFER_PARALLEL true)
+  find_package(HDF5 REQUIRED)
+  message(STATUS "SHERPA: HDF5_VERSION=${HDF5_VERSION} HDF5_LIBRARIES=${HDF5_LIBRARIES} HDF5_INCLUDE_DIRS=${HDF5_INCLUDE_DIRS}")
+  add_subdirectory(AddOns/HDF5)
+endif()
 if (SHERPA_ENABLE_INTERNAL_PDFS)
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CT14/CT14Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc PATTERN "*ct14ll*" EXCLUDE  )
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/SAL/SALGrid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc  )
@@ -733,6 +742,7 @@ install(TARGETS Sherpa DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT libs)
 
 add_subdirectory(AddOns/Weights)
 add_subdirectory(AddOns/NNLO)
+add_subdirectory(AddOns/Fusing)
 add_subdirectory(AddOns/Higgs)
 if (SHERPA_ENABLE_EWSUD)
   add_subdirectory(AddOns/EWSud)
@@ -825,6 +835,9 @@ if (SHERPA_ENABLE_DOXYGEN)
     ATOOLS/Math/Tensor_Build.H
     ATOOLS/Math/Tensor_Contractions.H
     ATOOLS/Math/Tensor_Contractions_Epsilon.H
+    # third-party sources
+    ATOOLS/Phys/fjcore.cc
+    ATOOLS/Phys/fjcore.hh
   )
   set(DOXYGEN_MACRO_EXPANSION YES)
   set(DOXYGEN_EXPAND_ONLY_PREDEF YES)
@@ -850,10 +863,10 @@ if (SHERPA_ENABLE_DOXYGEN)
   set(DOXYGEN_EXTRACT_PRIVATE YES)
   # NO if you want undocumented members to have empty documentation
   set(DOXYGEN_HIDE_UNDOC_MEMBERS NO)
-  set(DOXYGEN_EXAMPLE_PATH Examples)
+  set(DOXYGEN_EXAMPLE_PATH doc/examples)
   set(DOXYGEN_EXAMPLE_PATTERNS *.cpp)
   set(DOXYGEN_EXAMPLE_RECURSIVE YES)
-  set(DOXYGEN_CITE_BIB_FILES Manual/source/manual/references.bib)
+  set(DOXYGEN_CITE_BIB_FILES doc/references.bib)
   set(DOXYGEN_CLASS_GRAPH YES)
   set(DOXYGEN_HAVE_DOT NO)
   set(DOXYGEN_WARN_IF_INCOMPLETE_DOC NO)
@@ -942,7 +955,9 @@ $<IF:$<BOOL:${SHERPA_ENABLE_GOSAM}>,#define GOSAM_PREFIX \"${GOSAM_PREFIX}\",/* 
 /* MadLoop installation prefix */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_MADLOOP}>,#define MADLOOP_PREFIX \"${MADLOOP_PREFIX}\",/* #undef MADLOOP_PREFIX */>\n\n\
 /* Recola installation prefix */\n\
-$<IF:$<BOOL:${SHERPA_ENABLE_RECOLA}>,#define RECOLA_PREFIX \"${RECOL_PREFIX}\",/* #undef RECOLA_PREFIX */>\n\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_RECOLA}>,#define RECOLA_PREFIX \"${RECOLA_PREFIX}\",/* #undef RECOLA_PREFIX */>\n\n\
+/* using Recola2 */\n\
+$<IF:$<BOOL:$<VERSION_GREATER_EQUAL:${RECOLA_VERSION},2.0.0>>,#define USING__RECOLA2 \"1\",/* #undef USING__RECOLA2 */>\n\n\
 /* using MCFM */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define USING__MCFM \"1\",/* #undef USING__MCFM */>\n\n\
 /* MCFM directory */\n\
@@ -957,7 +972,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/AMEGIC++/Main/makelibs    DESTINATION 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SHERPA/Run/Sherpa-config.in ${CMAKE_CURRENT_BINARY_DIR}/SHERPA/Run/Sherpa${VERSIONING}-config @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/EXTAMP/Example/madgraph/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/EXTAMP/Example/madgraph/CMakeLists.txt @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/EXTAMP/Example/subtraction/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/EXTAMP/Example/subtraction/CMakeLists.txt @ONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Examples/V_plus_Jets/LHC_WJets/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/Examples/V_plus_Jets/LHC_WJets/CMakeLists.txt @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doc/examples/V_plus_Jets/LHC_WJets/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/doc/examples/V_plus_Jets/LHC_WJets/CMakeLists.txt @ONLY)
 
 if (SHERPA_ENABLE_UFO)
 SET(SHERPA_CMAKE_CONFIG_DIR ${CMAKE_INSTALL_PREFIX}/share/SHERPA-MC/)
@@ -1047,6 +1062,18 @@ $<IF:$<BOOL:${SHERPA_ENABLE_BINRELOC}>,#define ENABLE_BINRELOC \"1\",/* #undef E
 /* Using colour */\n\
 #define USING__COLOUR \"1\"\n\n\
 #define PYTHON_LIBS \"${SHERPA_Python_SITEARCH}\"\n\n\
+#if defined(__has_cpp_attribute)\n\
+#if __has_cpp_attribute(maybe_unused)\n\
+#define SHERPA_MAYBE_UNUSED [[maybe_unused]]\n\
+#endif\n\
+#endif\n\
+#ifndef SHERPA_MAYBE_UNUSED\n\
+#if defined(__GNUC__) || defined(__clang__)\n\
+#define SHERPA_MAYBE_UNUSED __attribute__((unused))\n\
+#else\n\
+#define SHERPA_MAYBE_UNUSED\n\
+#endif\n\
+#endif\n\
 #endif\n")
 file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS.H CONTENT "${CXXFLAGS_H_CONTENT}")
 ########################################################################
@@ -1059,15 +1086,6 @@ if (SHERPA_ENABLE_TESTING)
   message(STATUS "SHERPA: Will use the installed SHERPA for testing! Run ctest only after the installation!")
   set(STANDARDENVIRONMENT "SHERPA_CMAKE_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC;LHAPDF_DATA_PATH=${LHAPDF_DATA_PATH}:$ENV{LHAPDF_DATA_PATH};SHERPA_SHARE_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC")
   list(APPEND STANDARDENVIRONMENT "PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC/:$ENV{PATH}")
-  if (SHERPA_ENABLE_RIVET)
-    list(JOIN RIVET_CONFIG_LIB_DIRS ":" RIVET_RUNTIME_LIBS)
-    #string(REGEX_REPLACE ":$" "" RIVET_RUNTIME_LIBS  "${RIVET_RUNTIME_LIBS}")
-    list(APPEND STANDARDENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/:${LHAPDF_LIBRARY_DIR}:$ENV{LD_LIBRARY_PATH}")
-    list(APPEND STANDARDENVIRONMENT "DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/:${LHAPDF_LIBRARY_DIR}:$ENV{DYLD_LIBRARY_PATH}")
-  else()
-    list(APPEND STANDARDENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/:${LHAPDF_LIBRARY_DIR}:${RIVET_RUNTIME_LIBS}:$ENV{LD_LIBRARY_PATH}")
-    list(APPEND STANDARDENVIRONMENT "DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/:${LHAPDF_LIBRARY_DIR}:${RIVET_RUNTIME_LIBS}:$ENV{DYLD_LIBRARY_PATH}")
-  endif()
   set (makelibsscript ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC/makelibs)
   message(STATUS "SHERPA: STANDARDENVIRONMENT=${STANDARDENVIRONMENT}")
   ENABLE_TESTING()
@@ -1077,8 +1095,8 @@ if (SHERPA_ENABLE_TESTING)
   endif()
 endif()
 
-if (SHERPA_ENABLE_EXAMPLES)
-  add_subdirectory(Examples)
-endif()
-
 include(ConfigLogger)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/TuneSets/
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/SHERPA-MC/TuneSets
+  FILES_MATCHING PATTERN "*.yaml")

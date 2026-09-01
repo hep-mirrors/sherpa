@@ -31,10 +31,9 @@ namespace BEAM {
 			 const double,const double,const int,const int,const int,const int);
     ~Laser_Backscattering();
 
-    Beam_Base     * Copy();
+    Beam_Base     * Copy() override;
     void            PrintSpectra(std::string,int=0);
-    bool            CalculateWeight(double,double);
-    double          Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf_none));
+    bool            CalculateWeight(double,double) override;
     ATOOLS::Vec4D   OutMomentum(const size_t & i=0);
 
     double          Polarisation()       { return m_polar; }
@@ -42,10 +41,10 @@ namespace BEAM {
     void            SetPol(bool on)      { m_pol  = on; }
     int             Mode()               { return m_mode; }
     bool            Pol()                { return m_pol; }
-    double          Exponent()           { return 0.5; }
-    double          Xmax()               { return m_upper; }
-    double          Peak()               { return m_peak; }
-    bool            PolarisationOn() ;
+    double          Exponent() const override { return 0.5; }
+    double          Xmax() const override     { return m_upper; }
+    double          Peak() const override     { return m_peak; }
+    bool            PolarisationOn() const override;
   };
 
 
@@ -271,7 +270,7 @@ namespace BEAM {
     photon. It is given by
     \f[
     {\cal P}_C(x,z,\lambda_e,\lambda_L) = \frac{1}{\cal N}_P
-    \lambda_e \left[\frac{x}{1-x}\left(1+(1-x)\sqrt{\frac{2x}{z(1-x)}-1}\right)\right] -
+    \lambda_e \left[\frac{x}{1-x}\left(1+(1-x)\left(\frac{2x}{z(1-x)}-1\right)^2\right)\right] -
     \lambda_L \left[\left(1-x+\frac{1}{1-x}\right)\left(\frac{2x}{z(1-x)}-1\right)\right]\,,
     \f]
     where the norm is given by

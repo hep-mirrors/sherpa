@@ -6,6 +6,7 @@
 #include "AMISIC++/Tools/Interaction_Probability.H"
 #include "AMISIC++/Tools/Hadronic_XSec_Calculator.H"
 #include "AMISIC++/Tools/MI_Parameters.H"
+#include "AMISIC++/Tools/MI_Reweighting.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "YFS/Main/YFS_Handler.H"
@@ -60,12 +61,12 @@ namespace AMISIC {
     evt_type::code m_evttype;
     mitype         m_type;
     bool           m_variable_s, m_variable_b;
-    axis         * p_sbins;
-    double         m_sigmaND_norm, m_b, m_bfac, m_S, m_Y, m_pt2, m_weight;
+    axis         * p_sbins{nullptr};
+    double         m_b, m_S, m_Y, m_pt2, m_weight;
 
-    bool         m_isMinBias, m_isFirst, m_producedSoft;
+    bool         m_isMinBias, m_isFirst{true}, m_producedSoft;
     size_t       m_maxNscatters, m_Nscatters;
-    double       m_f;
+    MI_Reweighting m_reweighting;
 
     std::set<ATOOLS::Blob *> m_updated;
 
@@ -109,7 +110,6 @@ namespace AMISIC {
 
     void Reset();
     void CleanUpMinBias();
-    void Update(const PDF::ISR_Handler *isr);
     inline void SetMaxEnergies(const double & E0,const double & E1) {
       m_singlecollision.SetResidualX(E0,E1);
     }
@@ -125,11 +125,9 @@ namespace AMISIC {
     inline void SetPosition(const size_t & beam,const ATOOLS::Vec4D & pos) {
       m_singlecollision.SetPosition(beam,pos);
     }
-    inline void CalculateImpact() {
-      exit(1);
-    }
     inline ATOOLS::Vec4D SelectPositionForScatter(const double & b) const {
-      exit(1);
+      THROW(fatal_error,"SelectPositionForScatter not implemented in Amisic.");
+      return ATOOLS::Vec4D();
     }
     inline const double ScaleMin()    const { return (*mipars)("pt_min"); }
     inline const double ScaleMax()    const { return sqrt(m_pt2); }
@@ -142,6 +140,10 @@ namespace AMISIC {
     inline void CleanUp() {
       m_singlecollision.Reset();
       m_isFirst = true;
+      m_reweighting.ResetEvent();
+    }
+    inline void ApplyVariationWeights(ATOOLS::Blob * blob) {
+      m_reweighting.ApplyVariationWeights(blob);
     }
   };
 

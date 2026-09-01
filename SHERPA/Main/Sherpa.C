@@ -12,6 +12,7 @@
 #include "SHERPA/Single_Events/Jet_Evolution.H"
 #include "SHERPA/Single_Events/Signal_Process_FS_QED_Correction.H"
 #include "SHERPA/Single_Events/Beam_Remnants.H"
+#include "SHERPA/Single_Events/Colour_Reconnections.H"
 #include "SHERPA/Single_Events/Hadronization.H"
 #include "SHERPA/Single_Events/Hadron_Decays.H"
 #include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
@@ -70,6 +71,9 @@ Sherpa::~Sherpa()
     if (p_inithandler->GetVariations()) {
       p_inithandler->GetVariations()->PrintStatistics(msg->Out());
     }
+    if (p_inithandler->GetMatrixElementHandler()) {
+      p_inithandler->GetMatrixElementHandler()->PrintStatistics(msg->Out());
+    }
     Blob_List::PrintMomFailStatistics(msg->Out());
     msg->PrintRates();
     PHASIC::Decay_Channel::PrintMaxKinFailStatistics(msg->Out());
@@ -125,6 +129,7 @@ bool Sherpa::InitializeTheRun()
     m_debugstep     = s["DEBUG_STEP"].Get<long int>();
 
     m_displayinterval=s["EVENT_DISPLAY_INTERVAL"].Get<int>();
+    m_printmpixs=s["PRINT_MPI_XS"].Get<bool>();
     m_evt_output = s["EVT_OUTPUT"].Get<int>();
     m_evt_output_start = s["EVT_OUTPUT_START"].Get<int>();
 
@@ -146,6 +151,7 @@ void Sherpa::RegisterDefaults()
   s["DEBUG_INTERVAL"].SetDefault(0);
   s["DEBUG_STEP"].SetDefault(-1);
   s["EVENT_DISPLAY_INTERVAL"].SetDefault(100);
+  s["PRINT_MPI_XS"].SetDefault(true);
   s["EVT_OUTPUT"].SetDefault(msg->Level());
   s["MSG_LIMIT"].SetDefault(20);
   msg->SetLimit(s["MSG_LIMIT"].Get<int>());
@@ -185,8 +191,9 @@ bool Sherpa::InitializeTheEventHandler()
 						    p_inithandler->GetSoftPhotonHandler()));
     p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandlers()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
-    p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetColourReconnectionHandler(),
-						    p_inithandler->GetFragmentation()));
+    p_eventhandler->AddEventPhase(new Colour_Reconnections(
+						    p_inithandler->GetColourReconnectionHandler()));
+    p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetFragmentation()));
     p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHDHandler()));
   }
   p_eventhandler->AddEventPhase(new Userhook_Phase(this));
@@ -273,6 +280,8 @@ bool Sherpa::GenerateOneEvent(bool reset)
     if (((rpa->gen.BatchMode()&4 && i%m_displayinterval==0) ||
 	 (!(rpa->gen.BatchMode()&4) && i%int(pow(10,exp))==0)) &&
 	i<rpa->gen.NumberOfEvents()) {
+      if (!(rpa->gen.BatchMode()&2))
+	msg->BeginTaskProgressUpdate(2);
       double diff=rpa->gen.Timer().RealTime()-m_evt_starttime;
       msg_Info()<<"  Event "<<i;
       if (m_showtrials)
@@ -288,7 +297,10 @@ bool Sherpa::GenerateOneEvent(bool reset)
       msg_Info()<<" left ) -> ETA: "<<rpa->gen.Timer().
         StrFTime("%a %b %d %H:%M",time_t((nevt-i)/(double)i*diff))<<"  ";
       p_eventhandler->PerformMemoryMonitoring();
-      const Uncertain<double> xs = p_eventhandler->TotalNominalXSMPI();
+      Uncertain<double> xs = p_eventhandler->TotalNominalXS();
+      if (m_printmpixs) {
+	xs = p_eventhandler->TotalNominalXSMPI();
+      }
       if (!(rpa->gen.BatchMode()&2)) msg_Info()<<"\n  ";
       msg_Info() << "XS = " << xs.value << " pb +- ( " << xs.error
                  << " pb = " << xs.PercentError() << " % )  ";
@@ -298,6 +310,8 @@ bool Sherpa::GenerateOneEvent(bool reset)
 	msg_Info()<<mm(1,mm::up);
       if (rpa->gen.BatchMode()&2) { msg_Info()<<std::endl; }
       else { msg_Info()<<bm::cr<<std::flush; }
+      if (!(rpa->gen.BatchMode()&2))
+        msg->EndTaskProgressUpdate();
     }
     return 1;
   }

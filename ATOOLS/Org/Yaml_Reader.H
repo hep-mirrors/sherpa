@@ -19,6 +19,7 @@ namespace ATOOLS {
     Yaml_Reader(const std::string& name="");
     Yaml_Reader(std::istream&);
     Yaml_Reader(const std::string& path, const std::string& filename);
+    Yaml_Reader(const std::string& path, const std::string& filename, const std::string& display_name);
 
     // `Yaml_Reader` is used as a base class, hence provide a virtual dtor.
     virtual ~Yaml_Reader() {};

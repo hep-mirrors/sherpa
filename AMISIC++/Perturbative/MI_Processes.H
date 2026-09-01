@@ -24,14 +24,12 @@ namespace AMISIC {
     std::list<MI_Process *>        m_triggerprocs;
 
     scale_scheme          m_muR_scheme, m_muF_scheme;
-    std::string           m_scale_scheme, m_kfactor_scheme;
     double                m_muR_fac, m_muF_fac, m_muR2, m_muF2, m_pdfnorm;
-    double                m_pt0, m_pt02, m_ptmin, m_ptmin2, m_ptmax2, m_Emin;
+    double                m_pt02, m_ptmin, m_ptmin2, m_Emin;
     std::array<double, 2> m_xmin, m_xmax, m_Q2min, m_resx;
-    double                m_ecms, m_S, m_S_lab, m_lastxs, m_triggerxs;
+    double                m_ecms, m_S, m_lastxs, m_triggerxs;
     double                m_xshard;
-    bool                  m_printit;
-    
+
     bool         InitializeAllProcesses();
     void         FilterTriggerProcesses();
     void         SetPDFs();
@@ -39,7 +37,7 @@ namespace AMISIC {
     void         CalcPDFs(const double & x1,const double & x2);
     MI_Process * SelectProcess();
     MI_Process * SelectTrigger();
-    void         Test();
+    void         FillScatterBlob(ATOOLS::Blob * blob,MI_Process * proc);
   public:
     explicit MI_Processes();
     ~MI_Processes();
@@ -49,6 +47,7 @@ namespace AMISIC {
                       PDF::ISR_Handler *const isr,
                       YFS::YFS_Handler *const yfs);
     double TotalCrossSection(const double & s,const bool & output=false);
+    double TotalCrossSection(const double & s,const bool & output,size_t ivar);
     void   UpdateS(const double & s);
     /////////////////////////////////////////////////////////////////////////
     // The sum over the PDF-weighted matrix elements, grouped by parton
@@ -78,6 +77,7 @@ namespace AMISIC {
     inline const double  & PDFnorm()  const { return m_pdfnorm; } 
     inline const double  & MuR2()     const { return m_muR2; }
     inline const double  & MuF2()     const { return m_muF2; }
+    inline const double  & MuRFac()   const { return m_muR_fac; }
     inline const size_t    TrigSize() const { return m_triggerprocs.size(); }
     inline const size_t    Size()     const { return m_groups.size(); }
     inline MI_Integrator * GetIntegrator() { return &m_integrator; }
@@ -88,7 +88,7 @@ namespace AMISIC {
       return p_remnants[beam];
     }
     inline void SetMassMode(const int & mode) {
-      if (mode==0) abort();
+      if (mode==0) THROW(fatal_error,"MI_Processes requires mass mode != 0.");
       m_massmode = 1;
     }
     inline void SetXSecCalculator(Hadronic_XSec_Calculator *const xsecs) {
@@ -96,6 +96,10 @@ namespace AMISIC {
     }
     inline void SetResidualX(const double & r1,const double & r2) {
       m_resx[0] = r1; m_resx[1] = r2;
+    }
+    inline void SetPT02(const double & pt02) {
+      m_pt02 = pt02;
+      for (auto mig : m_groups) mig->SetPT02(pt02);
     }
     inline int  PerformTests() { return 0; }
     inline bool NewLibraries() { return false; }

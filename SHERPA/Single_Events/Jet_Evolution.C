@@ -311,7 +311,6 @@ bool Jet_Evolution::AftermathOfNoShower(Blob *blob, Blob_List *bloblist) {
     noshowerblob->AddToOutParticles(new Particle(*blob->OutParticle(i)));
     blob->OutParticle(i)->SetStatus(part_status::decayed);
   }
-  noshowerblob->SetStatus(blob_status::needs_hadronization);
   if (blob->Type() == btp::Signal_Process ||
       blob->Type() == btp::Hard_Collision ||
       blob->Type() == btp::Soft_Collision) {
@@ -367,7 +366,6 @@ ATOOLS::Blob *Jet_Evolution::CreateMockShowerBlobs(Blob *const meblob,
   for (int i = 0; i < meblob->NOutP(); i++) {
     Blob *FSRblob = new Blob();
     FSRblob->SetType(btp::Shower);
-    FSRblob->SetStatus(blob_status::needs_hadronization);
     if (meblob->Type() != btp::Hadron_Decay) {
       FSRblob->AddStatus(blob_status::needs_reconnections);
     }

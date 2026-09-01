@@ -6,13 +6,10 @@
 
 namespace BEAM {
   class Monochromatic : public Beam_Base {
-  private:
-    const ATOOLS::Flavour m_none;
   public:
     Monochromatic(const ATOOLS::Flavour,const double,const double,const int);
-    Beam_Base * Copy();
-    ATOOLS::Flavour Remnant();
-    bool        CalculateWeight(const double,const double) { return true; }
+    Beam_Base * Copy() override;
+    bool        CalculateWeight(const double,const double) override { return true; }
   };
   /*!
     \file

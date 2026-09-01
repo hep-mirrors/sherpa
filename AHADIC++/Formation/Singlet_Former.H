@@ -13,9 +13,9 @@ namespace AHADIC {
     double m_kt2max;
     
     void ExtractOutgoingCols(ATOOLS::Blob * blob);
-    Singlet          * MakeAnother();
+    bool MakeAnother();
     ATOOLS::Particle * FindStart();
-    void FormSinglets();
+    bool FormSinglets();
   public:
     Singlet_Former(std::list<Singlet *> * singlets);
     ~Singlet_Former();

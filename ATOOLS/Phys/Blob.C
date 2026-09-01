@@ -3,6 +3,7 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Message.H"
 #include <iomanip>
+#include <set>
 
 using namespace ATOOLS;
 
@@ -20,9 +21,8 @@ std::ostream& ATOOLS::operator<<(std::ostream& ostr, const btp::code btpc) {
   case btp::QED_Radiation:              return ostr<<"QED Radiation              ";
   case btp::Beam:                       return ostr<<"Beam                       ";
   case btp::Bunch:                      return ostr<<"Bunch                      ";
+  case btp::Colour_Reconnection:        return ostr<<"Colour Reconnection        ";
   case btp::Fragmentation:              return ostr<<"Fragmentation              ";
-  case btp::Cluster_Formation:          return ostr<<"Cluster Formation          ";
-  case btp::Cluster_Decay:              return ostr<<"Cluster Decay              ";
   case btp::Hadron_Decay:               return ostr<<"Hadron Decay               ";
   case btp::Hadron_Mixing:              return ostr<<"Hadron Mixing              ";
   case btp::Hadron_To_Parton:           return ostr<<"Hadron-To-Partons          ";
@@ -476,11 +476,20 @@ bool Blob::CheckColour(const bool & transient) {
   return (trips.empty() && antis.empty());
 }
 
-void Blob::Boost(const Poincare& boost) {
-  for (int i=0;i<NInP();i++)
-    InParticle(i)->SetMomentum(boost*InParticle(i)->Momentum());
-  for (int i=0;i<NOutP();i++)
-    OutParticle(i)->SetMomentum(boost*OutParticle(i)->Momentum());
+void Blob::Boost(const Poincare& boost, std::set<Particle*>* treateds) {
+  for (int i = 0; i < NInP(); i++) {
+    Particle* part = InParticle(i);
+    if (treateds && treateds->find(part) != treateds->end()) continue;
+    part->Boost(boost);
+    if (treateds) treateds->insert(part);
+  }
+  for (int i = 0; i < NOutP(); i++) {
+    Particle* part = OutParticle(i);
+    if (treateds && treateds->find(part) != treateds->end()) continue;
+    part->Boost(boost);
+    if (treateds) treateds->insert(part);
+  }
+  m_position = boost * m_position;
 }
 
 void Blob::BoostInCMS() {

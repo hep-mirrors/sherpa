@@ -28,6 +28,31 @@ namespace OpenLoops {
     Loop2 = 12
   };
 
+  enum class photon_scheme {
+    Default = 0,
+    On_shell = 1,
+    Off_shell = 2
+  };
+  inline std::ostream& operator<<(std::ostream& os, photon_scheme type)
+  {
+    switch (type) {
+      case photon_scheme::Default: return os << "Default";
+      case photon_scheme::On_shell: return os << "On_shell";
+      case photon_scheme::Off_shell: return os << "Off_shell";
+      default: return os << "Default";
+    }
+  }
+  inline std::istream& operator>>(std::istream& is, photon_scheme& type)
+  {
+    std::string token;
+    if (!(is >> token)) { return is; }
+
+    type = photon_scheme::Default;
+    if (token == "On_shell") { type = photon_scheme::On_shell; }
+    if (token == "Off_shell") { type = photon_scheme::Off_shell; }
+    return is;
+  }
+
   class OpenLoops_Interface: public PHASIC::ME_Generator_Base,
                              public ATOOLS::Terminator_Object {
 
@@ -37,6 +62,7 @@ namespace OpenLoops {
     static bool        s_ass_func;
     static int         s_ass_ew;
     static std::map<std::string, std::string> s_evgen_params;
+    static photon_scheme s_photon_scheme;
 
     void RegisterDefaults() const;
     int TranslatedEWRenormalisationScheme() const;
@@ -74,13 +100,13 @@ namespace OpenLoops {
 					 const Vec4D& p,
 					 size_t emitter, size_t spectator,
 					 AmplitudeType type);
-    
+
     /* Evaluate all color correlators. Return the one corresponding to
        <1,2,...|TiTj|...,2,1>, with i=emitter, j=spectator */
     static double EvaluateColorCorrelator(int id, const Vec4D_Vector& momenta,
 					  size_t emitter, size_t spectator,
 					  AmplitudeType type);
-    
+
     /* Evaluate all color correlators and fill matrix such that
        ccmatrix[i][j] = <1,2,...|TiTj|...,2,1> */
     static void
@@ -96,7 +122,7 @@ namespace OpenLoops {
 
     /* Propagate model parameters to OpenLoops in SM */
     void SetParametersSM(const MODEL::Model_Base* model);
-    
+
     /* Propagate model parameters to OpenLoops in UFO models */
     void SetParametersUFO(const MODEL::Model_Base* model);
 

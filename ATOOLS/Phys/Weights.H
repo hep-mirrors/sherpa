@@ -108,7 +108,7 @@ namespace ATOOLS {
 
   private:
 
-    /// Check if only a single value is present, and that no type has been set.
+    /// Check if only a single value is present, and a custom type is used.
     bool IsUnnamedScalar() const;
 
     Variations_Type type;
@@ -377,6 +377,14 @@ namespace ATOOLS {
   Weights_Map operator*(Weights_Map lhs, double rhs);
   Weights_Map operator/(Weights_Map lhs, const Weights_Map& rhs);
   Weights_Map operator/(Weights_Map lhs, double rhs);
+
+  /// Single Weights_Map key where soft-physics modules (MPI, CR, ...) store
+  /// per-variation weights as "<SoftPhysicsKey>.v1", "<SoftPhysicsKey>.v2", ...
+  /// Index 0 (nominal) ignored; 1..N multiplied into named entries.
+  /// operator[] auto-creates missing slots at 1.0 for padding.
+  constexpr const char* SoftPhysicsKey = "SoftPhysics";
+  void CombineSoftPhysicsVariations(
+      Weights_Map& wgtmap, const std::vector<double>& variation_weights);
 
 } // namespace ATOOLS
 

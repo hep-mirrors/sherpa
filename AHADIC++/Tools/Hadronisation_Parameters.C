@@ -16,7 +16,9 @@ using namespace std;
 
 Hadronisation_Parameters* AHADIC::hadpars = NULL;
 
-Hadronisation_Parameters::Hadronisation_Parameters() : m_shower(0) {}
+Hadronisation_Parameters::Hadronisation_Parameters() :
+  m_shower(0), p_constituents(nullptr), p_stransitions(nullptr),
+  p_dtransitions(nullptr) {}
 
 Hadronisation_Parameters::~Hadronisation_Parameters() {
   if (p_constituents!=NULL) {
@@ -39,32 +41,17 @@ void Hadronisation_Parameters::Init(string shower)
   else if (shower=="CSS") m_shower = 1;
   ReadParameters();
 
-  bool test      = false;
   bool diquarks  = true;
   p_constituents = new Constituents(diquarks);
   Multiplet_Constructor multipletconstructor(false);
   Wave_Functions * wavefunctions = multipletconstructor.GetWaveFunctions();
   p_stransitions = new Single_Transitions(wavefunctions);
   p_dtransitions = new Double_Transitions(p_stransitions);
-
-  if (test) {
-    msg_Out()<<"Inputs to AHADIC:\n";
-    for (map<std::string,double>::iterator pit=m_parametermap.begin();
-	 pit!=m_parametermap.end();pit++)
-      msg_Out()<<"* "<<pit->first<<" = "<<pit->second<<"\n";
-    msg_Out()<<"Resulting wave functions, multiplets, and transitions:\n";
-    p_constituents->PrintConstituents();
-    multipletconstructor.PrintMultiplets();
-    p_stransitions->Print();
-    p_dtransitions->Print(true);
-    THROW(normal_exit,"tested wavefunctions etc.");
-  }
 }
 
 
 void Hadronisation_Parameters::ReadParameters()
 {
-  ReadGeneralSwitches();
   auto s = Settings::GetMainSettings()["AHADIC"];
   m_parametermap[string("minmass2")] =
     s["MIN_MASS2"].SetDefault(0.10).Get<double>();
@@ -88,7 +75,7 @@ const int Hadronisation_Parameters::Switch(string keyword) const
 {
   map<string,int>::const_iterator siter = m_switchmap.find(keyword);
   if (siter!=m_switchmap.end()) return siter->second;
-  msg_Tracking()<<"Error in Hadronisation_Parameters::Get("<<keyword<<") "
+  msg_Tracking()<<"Error in Hadronisation_Parameters::Switch("<<keyword<<") "
 		<<"in "<<m_switchmap.size()<<".\n"
 		<<"   Keyword not found. Return 0 and hope for the best.\n";
   return 0;
@@ -155,7 +142,6 @@ void Hadronisation_Parameters::ReadSplittingParameters()
     s["DI_PION_THRESHOLD"].SetDefault(0.300).Get<double>();
   m_parametermap[string("open_threshold")] =
     s["OPEN_THRESHOLD"].SetDefault(0.100).Get<double>();
-  Settings & sets = Settings::GetMainSettings();
   m_parametermap[string("kT_max")] =
     s["PT_MAX"].SetDefault(0.68).Get<double>();
 }
@@ -245,14 +231,6 @@ void Hadronisation_Parameters::ReadPoppingParameters()
 }
 
 
-void Hadronisation_Parameters::ReadGeneralSwitches()
-{
-  // General switches for operational modes
-  //auto s = Settings::GetMainSettings()["AHADIC"];
-  //m_switchmap["Analysis"] = 0;
-}
-
-
 bool Hadronisation_Parameters::AdjustMomenta(const int n,
                                              ATOOLS::Vec4D* moms,
                                              const double* masses)
@@ -283,6 +261,9 @@ bool Hadronisation_Parameters::AdjustMomenta(const int n,
 	msg_Error()<<"   "<<i<<"th mass = "<<masses[i]<<"\n";
       }
       msg_Error()<<"   Will possibly lead to retrying the event.\n";
+      if (boost) {
+	for (int i=0;i<n;i++) rest.BoostBack(moms[i]);
+      }
       return false;
     }
     if (prepare) success = success && stretcher.ZeroThem(0,n,moms,1.e-10);

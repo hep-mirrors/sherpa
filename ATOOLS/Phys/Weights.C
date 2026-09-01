@@ -95,6 +95,8 @@ Weights ATOOLS::operator/(Weights lhs, double rhs)
 
 Weights& Weights::operator*=(const Weights& rhs)
 {
+  // Check if there is only one weight with type "custom" on either side;
+  // in this case we can simply do scalar multiplication.
   if (this->IsUnnamedScalar()) {
     const auto w = weights[0];
     *this = rhs;
@@ -105,6 +107,8 @@ Weights& Weights::operator*=(const Weights& rhs)
     *this *= rhs.weights[0];
     return *this;
   }
+  // Otherwise, both weights should better be compatible,
+  // i.e. are of same type and size.
   assert(type == rhs.type);
   const auto size = weights.size();
   for (size_t i {0}; i < size; ++i) {
@@ -679,5 +683,14 @@ namespace ATOOLS {
   template <> Blob_Data<Weights_Map>::~Blob_Data() {}
   template class Blob_Data<Weights_Map>;
   template Weights_Map& Blob_Data_Base::Get<Weights_Map>();
+
+  void CombineSoftPhysicsVariations(
+      Weights_Map& wgtmap, const std::vector<double>& variation_weights) {
+    if (variation_weights.size() <= 1) return;
+    Weights& sw = wgtmap[SoftPhysicsKey];
+    for (size_t ivar=1; ivar<variation_weights.size(); ++ivar) {
+      sw["v" + std::to_string(ivar)] *= variation_weights[ivar];
+    }
+  }
 
 }

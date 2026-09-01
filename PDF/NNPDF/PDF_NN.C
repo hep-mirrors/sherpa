@@ -133,11 +133,11 @@ PDF_NNPDF::PDF_NNPDF
   m_asinfo.m_mz2=sqr(p_pdf->GetMz());
 
   // Hopefully efficient lookup table
-  // 0 entspricht -6, also anti top
-  // 1 entspricht -5, also anti bottom
+  // 0 corresponds to -6, hence anti top
+  // 1 corresponds to -5, hence anti bottom
   // ...
-  // 12 entspricht 6, also top
-  // LHAPDF5 style: 6 entspraeche 0, also gluon, aber sherpa nimmt gluons als 21
+  // 12 corresponds to 6, hence top
+  // LHAPDF5 style: 6 corresponds to 0, hence gluon, but Sherpa has 21 for gluons
   for (int i=0;i<13;++i) {
     m_lookup[i] = i;
 

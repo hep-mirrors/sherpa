@@ -174,7 +174,7 @@ namespace PHASIC {
       msg_Debugging() << "Point passed: " << METHOD << std::endl;
     }
 
-    return (1 - m_sel_log->Hit(1 - trigger));
+    return m_sel_log->CountingIdentity(trigger);
   }
 
   fjcore::JetAlgorithm NJettiness_Selector::GetAlgorithm(const std::string& algo)

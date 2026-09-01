@@ -42,7 +42,7 @@ NonPerturbative_XSecs(REMNANTS::Remnant_Handler * remnants,
   m_Lambda2_nr = sqr((*mipars)("Lambda_nr"));
   m_delta_nr   = (*mipars)("delta_nr");
   if (p_remnants->GetRemnants()[0]->Flav()==Flavour(kf_photon) ||
-      p_remnants->GetRemnants()[0]->Flav()==Flavour(kf_photon)) {
+      p_remnants->GetRemnants()[1]->Flav()==Flavour(kf_photon)) {
     for (size_t i=0;i<1000;i++) {
       double A2test = RhoMassModifier(sqr(m_mrho_min+double(i)/100));
       if (A2test>m_A2max) m_A2max = A2test;
@@ -179,7 +179,7 @@ const event_mode::code NonPerturbative_XSecs::SelectMode() {
     m_outmasses2[2*i]  = m_masses2[i];
     m_outmasses[2*i+1] = m_outmasses2[2*i+1] = 0.;
   }
-  double xsecs[4]; for (size_t i=0;i<3;i++) xsecs[i] = 0.;
+  double xsecs[4]; for (size_t i=0;i<4;i++) xsecs[i] = 0.;
 
   if (m_evttype==evt_type::Elastic || m_evttype==evt_type::QuasiElastic)
     m_weight += xsecs[0] = p_xsecs->SigmaEl();

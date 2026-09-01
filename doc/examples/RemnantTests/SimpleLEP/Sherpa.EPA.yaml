@@ -1,0 +1,19 @@
+# collider setup
+BEAMS: [11, -11]
+BEAM_ENERGIES: 45.6
+BEAM_SPECTRA: EPA
+PDF_LIBRARY: None
+
+# model parameters
+ALPHAS(MZ): 0.1188
+ORDER_ALPHAS: 2
+SHOWER:
+  FS_PT2MIN: 1.00
+
+PROCESSES:
+- 93 93 -> 93 93:
+    Order: {QCD: 2, EW: 0}
+
+SELECTORS:
+- [Mass, 93, 93, 10.0, E_CMS]
+- [PT, 93, 5.0, E_CMS]

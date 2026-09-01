@@ -95,7 +95,7 @@ namespace ATOOLS {
 
     constexpr double Picobarn()             { return 3.89379656e8;}       // pb GeV^2
     constexpr double c()                    { return 299.792458e9;}       // mm/s
-    constexpr double hBar()                 { return 6.58211889e-25;}     // GeV s
+    constexpr double hBar()                 { return 6.582119569e-25;}    // GeV s
     constexpr double hBar_c()               { return 0.1973269804;}       // GeV fm
     constexpr double Millimeter()           { return 0.1973269804e-12; }  // GeV mm
     std::string GetPath()                   { return m_path;}

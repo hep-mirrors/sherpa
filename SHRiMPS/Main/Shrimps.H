@@ -28,7 +28,7 @@ namespace SHRIMPS {
     /*!
       Steers the testing (with SHRIMPS::m_test):
       -  m_test=-2:  Prints values of various Bessel functions from
-                     SHRIMPS::Special_Functions to file.
+                     ATOOLS::Special_Functions to file.
          Test method in SHRIMPS::Form_Factor
       -  m_test=-1:  Checks the SHRIMPS::Form_Factor, and in particular the
                      Fourier Transform, some results on screen, some on

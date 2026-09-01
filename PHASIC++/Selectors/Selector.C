@@ -24,6 +24,24 @@ void Selector_Log::Output()
 	    <<"  ("<<m_rejected<<" / "<<m_passed+m_rejected<<")"<<std::endl;
 }
 
+int Selector_Log::CountingIdentity(bool event_passed) {
+  if (event_passed) {
+    ++m_passed;
+    return 1;
+  } else {
+    ++m_rejected;
+    if (m_passed == 0 && m_rejected == 1000000) {
+      using namespace ATOOLS;
+      msg_Info() << om::bold << om::brown << "WARNING" << om::reset
+                 << ": The Trigger '" << m_name << "' of the process '"
+                 << (p_proc ? p_proc->Name() : "<none>")
+                 << "' was called 1000000 times and was never true."
+                 << " Maybe the phase space is too tight.\n";
+    }
+    return 0;
+  }
+}
+
 std::vector<ATOOLS::Scoped_Settings> Selector_Key::GetSelectors() const
 {
   Scoped_Settings addselsettings{ m_yaml };
@@ -43,9 +61,9 @@ void Selector_Key::AddSelectorYAML(const std::string& yaml)
 
 Selector_Base::Selector_Base(const std::string &name,Process_Base *const proc):
   m_name(name), m_on(false), m_isnlo(false),
-  m_sel_log(new Selector_Log(m_name)), p_proc(proc),
+  m_sel_log(new Selector_Log(m_name, proc)), p_proc(proc),
   m_nin(p_proc?p_proc->NIn():0), m_nout(p_proc?p_proc->NOut():0),
-  m_n(m_nin+m_nout), m_pass(1), p_sub(NULL),
+  m_n(m_nin+m_nout), p_sub(NULL),
   p_fl(p_proc?(Flavour*)&p_proc->Flavours().front():NULL),
   m_smin(0.), m_smax(sqr(rpa->gen.Ecms())),
   m_results{Weights_Map{1.0}}

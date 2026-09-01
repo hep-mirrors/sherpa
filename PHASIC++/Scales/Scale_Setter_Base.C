@@ -23,7 +23,7 @@ Scale_Setter_Base::Scale_Setter_Base
 (const Scale_Setter_Arguments &args):
   p_proc(args.p_proc),
   p_model(args.p_model), p_cpls(args.p_cpls), p_subs(NULL),
-  m_scale(stp::size), m_coupling(args.m_coupling),
+  m_scale(stp::size), m_coupling(args.m_coupling), m_reqkfac("None"),
   m_nin(args.m_nin), m_nout(args.m_nout),
   m_l1(0), m_l2(0)
 {

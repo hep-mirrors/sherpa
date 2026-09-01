@@ -171,17 +171,11 @@ bool Laser_Backscattering::CalculateWeight(double _x,double _scale)
       break;
     }
   }
-  m_polar  = m_polar/spec;
+  if (spec != 0.) m_polar /= spec;
+  else m_polar = 0.;
   m_weight = spec;
 
   return 1;
-}
-
-double Laser_Backscattering::Weight(Flavour flin)
-{
-  if (m_weight<=0.) return 0.;
-  //if (flin != Flavour(kf_photon)) return 0.;
-  return m_weight;
 }
 
 ATOOLS::Vec4D Laser_Backscattering::OutMomentum(const size_t & i) {
@@ -221,7 +215,7 @@ double Laser_Backscattering::TwoPhotons(double x,double pole,double poll,double 
   double g2    = 2.*m_xe/x - 2.*m_xe - 1;
   if (g2<0.) {
     if (m_pol) deg += value * m_total2 * Polarisation(x,2.*m_xe,pole,poll);
-    return value;
+    return m_total2 * value;
   }
 
   double damp   = exp(-m_rho2 * g2/8.) * pow(g2,m_delta);
@@ -300,7 +294,7 @@ double Laser_Backscattering::Polarisation(double x,double z,double pole,double p
 }
 
 
-bool Laser_Backscattering::PolarisationOn()
+bool Laser_Backscattering::PolarisationOn() const
 {
   if (m_polarisationL!=0. || m_polarisation!=0.) return 1;
   return 0;

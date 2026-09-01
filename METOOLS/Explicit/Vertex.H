@@ -52,7 +52,7 @@ namespace METOOLS {
     Vertex(const Vertex_Key &sv);
 
     // destructor
-    ~Vertex();
+    virtual ~Vertex();
 
     // member functions
     void Evaluate();

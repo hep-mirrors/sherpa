@@ -82,8 +82,6 @@ Initialization_Handler::Initialization_Handler() :
     msg_Out()<<"Sherpa will read in events as "<<m_evtform<<endl;
   }
 
-  ATOOLS::s_loader->SetCheck(s["CHECK_LIBLOCK"].Get<int>());
-
   rpa->Init();
   CheckVersion();
   LoadLibraries();
@@ -108,6 +106,7 @@ void Initialization_Handler::RegisterDefaults()
   s["MI_HANDLER"].UseNoneReplacements().SetDefault("Amisic");
   s["EVT_FILE_PATH"].SetDefault(".");
   s["ANALYSIS_OUTPUT"].SetDefault("Analysis/");
+  s["GENERATE_RESULT_DIRECTORY"].SetDefault(true);
   s["RESULT_DIRECTORY"].SetDefault("Results");
   s["CHECK_LIBLOCK"].SetDefault(0);
   s["OUTPUT_PRECISION"].SetDefault(12);
@@ -374,25 +373,45 @@ void Initialization_Handler::CheckVersion()
   if (versioninfo.empty()) return;
   std::string currentversion(ToString(SHERPA_VERSION)+"."
                                       +ToString(SHERPA_SUBVERSION));
-  if (versioninfo.size()==1 && versioninfo[0]!=currentversion) {
-    THROW(normal_exit,"Run card request Sherpa "+versioninfo[0]
-                      +". This is Sherpa "+currentversion);
+  if (versioninfo.size() == 1) {
+    if (versioninfo[0] == currentversion) return;
+    size_t req_pos = 0, cur_pos = 0;
+    while (req_pos < versioninfo[0].length()) {
+      size_t req_next = versioninfo[0].find(".", req_pos);
+      size_t cur_next = currentversion.find(".", cur_pos);
+
+      std::string req_component = (req_next == std::string::npos) ?
+                                  versioninfo[0].substr(req_pos) :
+                                  versioninfo[0].substr(req_pos, req_next - req_pos);
+      std::string cur_component = (cur_next == std::string::npos) ?
+                                  currentversion.substr(cur_pos) :
+                                  currentversion.substr(cur_pos, cur_next - cur_pos);
+      if (req_component != cur_component) {
+        THROW(normal_exit, "Run card request Sherpa " + versioninfo[0] +
+                          ". This is Sherpa " + currentversion);
+      }
+      req_pos = (req_next == std::string::npos) ? versioninfo[0].length() : req_next + 1;
+      cur_pos = (cur_next == std::string::npos) ? currentversion.length() : cur_next + 1;
+    }
+    return;
   }
   else if (versioninfo.size()==2) {
     if (versioninfo[0]==currentversion || versioninfo[1]==currentversion) return;
     size_t min1(versioninfo[0].find(".",0)),
            min2(versioninfo[0].find(".",min1+1)),
            max1(versioninfo[1].find(".",0)),
-           max2(versioninfo[1].find(".",max1+1));
+           max2(versioninfo[1].find(".",max1+1)),
+           cur1(currentversion.find(".",0)),
+           cur2(currentversion.find(".",cur1+1));
     size_t minmajvers(ToType<size_t>(versioninfo[0].substr(0,min1))),
-           minminvers(ToType<size_t>(versioninfo[0].substr(min1+1,min2))),
+           minminvers(ToType<size_t>(versioninfo[0].substr(min1+1,min2-min1-1))),
            minbugvers(ToType<size_t>(versioninfo[0].substr(min2+1))),
            maxmajvers(ToType<size_t>(versioninfo[1].substr(0,max1))),
-           maxminvers(ToType<size_t>(versioninfo[1].substr(max1+1,max2))),
+           maxminvers(ToType<size_t>(versioninfo[1].substr(max1+1,max2-max1-1))),
            maxbugvers(ToType<size_t>(versioninfo[1].substr(max2+1))),
-           curmajvers(ToType<size_t>(currentversion.substr(0,max1))),
-           curminvers(ToType<size_t>(currentversion.substr(max1+1,max2))),
-           curbugvers(ToType<size_t>(currentversion.substr(max2+1)));
+           curmajvers(ToType<size_t>(currentversion.substr(0,cur1))),
+           curminvers(ToType<size_t>(currentversion.substr(cur1+1,cur2-cur1-1))),
+           curbugvers(ToType<size_t>(currentversion.substr(cur2+1)));
     if (!(CompareVersions(minmajvers,minminvers,minbugvers,
                           curmajvers,curminvers,curbugvers)
           *CompareVersions(curmajvers,curminvers,curbugvers,
@@ -677,12 +696,12 @@ bool Initialization_Handler::InitializeTheIO()
     std::string libname(outputs[i]);
     if (libname.find('_')) libname=libname.substr(0,libname.find('_'));
     Output_Base* out=Output_Base::Getter_Function::GetObject
-      (outputs[i], Output_Arguments(outpath, outfile));
+      (outputs[i], Output_Arguments(outpath, outfile, this));
     if (out==NULL) {
       if (!s_loader->LoadLibrary("Sherpa"+libname+"Output"))
 	THROW(missing_module,"Cannot load output library Sherpa"+libname+"Output.");
       out=Output_Base::Getter_Function::GetObject
-	(outputs[i], Output_Arguments(outpath, outfile));
+	(outputs[i], Output_Arguments(outpath, outfile, this));
     }
     if (out==NULL) THROW(fatal_error,"Cannot initialize "+outputs[i]+" output");
     m_outputs.push_back(out);
@@ -757,10 +776,19 @@ bool Initialization_Handler::InitializeThePDFs()
     if (pid == 3) {
       msg_Info() << "  Beam re-scattering: ";
     }
-    msg_Info() << (it.second->PDF(0) ? it.second->PDF(0)->Set() : "None")
-               << " + "
-               << (it.second->PDF(1) ? it.second->PDF(1)->Set() : "None")
-               << "\n";
+    for (int i{0}; i < 2; ++i) {
+      if (i > 0)
+        msg_Info() << " + ";
+      if (it.second->PDF(i)) {
+        msg_Info() << it.second->PDF(i)->Set();
+        if (it.second->PDF(i)->Member() > 0)
+          msg_Info() << "/" << it.second->PDF(i)->Member();
+      }
+      else {
+        msg_Info() << "None";
+      }
+    }
+    msg_Info() << '\n';
   }
   return true;
 }
@@ -777,24 +805,10 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     // define bunch particle-dependent PDF libraries and sets here
     /////////////////////////////////////////////////////////
     std::string deflib("None"), defset;
-    if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_p_plus) {
-      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_p_plus);
-      defset = PDF::pdfdefs->DefaultPDFSet(kf_p_plus);
-    }
-    else if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_e ||
-	     p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_mu) {
-      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_e);
-      defset = PDF::pdfdefs->DefaultPDFSet(kf_e);
-    }
-    else if (p_beamspectra->GetBeam(beam)->Bunch(0).IsPhoton()) {
-      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_photon);
-      defset = PDF::pdfdefs->DefaultPDFSet(kf_photon);
-    } else if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode() == kf_pomeron) {
-      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_pomeron);
-      defset = PDF::pdfdefs->DefaultPDFSet(kf_pomeron);
-    } else if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode() == kf_reggeon) {
-      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_reggeon);
-      defset = PDF::pdfdefs->DefaultPDFSet(kf_reggeon);
+    kf_code kf = p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode(); 
+    if (PDF::pdfdefs->HasDefaultsFor(kf)) {
+      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf);
+      defset = PDF::pdfdefs->DefaultPDFSet(kf);
     }
     // fix PDFs and default sets for the hard_process here
     if (pdflibs.empty()) m_pdflibs.insert(deflib);
@@ -927,11 +941,16 @@ InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
     PDF_Arguments args = PDF_Arguments(flav,beam,set,version,order,scheme);
     if (pid != PDF::isr::bunch_rescatter) {
       PDF_Base* pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set, args);
-      if (m_bunch_particles[beam].IsHadron() && pdfbase == nullptr)
+      if (m_bunch_particles[beam].IsHadron() && pdfbase == nullptr) {
+	string pdflibnames = string("");
+	for (std::set<std::string>::iterator pdflib=m_pdflibs.begin();
+	     pdflib!=m_pdflibs.end();++pdflib) pdflibnames += (*pdflib)+" ";
         THROW(critical_error,
               "PDF '" + set + "' does not exist in any of the loaded" +
-                      " libraries for " + ToString(m_bunch_particles[beam]) +
-                      " bunch.");
+	      " libraries [" + pdflibnames + "] for " +
+	      ToString(m_bunch_particles[beam]) +
+	      " bunch.");
+      }
       if (pid == PDF::isr::hard_process) rpa->gen.SetPDF(beam, pdfbase);
       if (pdfbase == nullptr) {
         isrbases[beam] = new Intact(flav);
@@ -1276,8 +1295,6 @@ bool Initialization_Handler::InitializeTheReweighting(Variations_Mode mode)
   }
   p_variations = new Variations(mode);
   s_variations = p_variations;
-  if (mode != Variations_Mode::nominal_only && p_variations->HasVariations())
-    Variations::CheckConsistencyWithBeamSpectra(p_beamspectra);
   if (p_mehandler)
     p_mehandler->InitializeTheReweighting(mode);
   if (mode != Variations_Mode::nominal_only)

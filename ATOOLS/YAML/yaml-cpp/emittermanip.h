@@ -1,5 +1,5 @@
-#ifndef EMITTERMANIP_H_62B23520_7C8E_11DE_8A39_0800200C9A66
-#define EMITTERMANIP_H_62B23520_7C8E_11DE_8A39_0800200C9A66
+#ifndef ATOOLS_YAML_EMITTERMANIP_H_62B23520_7C8E_11DE_8A39_0800200C9A66
+#define ATOOLS_YAML_EMITTERMANIP_H_62B23520_7C8E_11DE_8A39_0800200C9A66
 
 #if defined(_MSC_VER) ||                                            \
     (defined(__GNUC__) && (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || \
@@ -141,4 +141,4 @@ inline _Precision DoublePrecision(int n) { return _Precision(-1, n); }
 inline _Precision Precision(int n) { return _Precision(n, n); }
 }
 
-#endif  // EMITTERMANIP_H_62B23520_7C8E_11DE_8A39_0800200C9A66
+#endif  // ATOOLS_YAML_EMITTERMANIP_H_62B23520_7C8E_11DE_8A39_0800200C9A66

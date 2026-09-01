@@ -558,7 +558,7 @@ bool Sudakov::DefineFIBoundaries(double Q2,double x,int beam)
 
 bool Sudakov::DefineIFBoundaries(double Q2,double x,int beam)
 {
-  if (p_pdf[beam]==NULL) return false;
+  if (p_pdf[beam]==nullptr) return false;
   double xmax = Min(0.999999,p_pdf[beam]->XMax());
   double xmin = Max(1.e-6,p_pdf[beam]->XMin());
   if (x>=xmax || x<=xmin)                                   return false;

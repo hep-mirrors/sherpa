@@ -9,10 +9,6 @@ namespace ATOOLS {
 }
 
 namespace AMISIC {
-  class axis;
-}
-
-namespace AMISIC {
   struct evt_type {
     enum code {
       Perturbative    = 0,
@@ -54,23 +50,26 @@ namespace AMISIC {
   class MI_Parameters {
   private:
     double m_pt02ref, m_pt02IR, m_ptmin2ref, m_ptmin2IR;
-    double m_Eref, m_Sref, m_Ecms, m_Scms, m_eta;
+    std::vector<double> m_pt02ref_variations, m_ptmin2ref_variations, m_eta_variations;
+    double m_Sref, m_Scms, m_eta;
     evt_type::code   m_evttype;
     scale_scheme     m_scaleRscheme, m_scaleFscheme;
     two_pions::code  m_twopions;
     std::vector<int> m_triggerflavs;
     std::map<std::string,double> m_parameters;
+    std::map<std::string,std::vector<double>> m_parameters_vector;
     std::map<std::string,int>    m_flags;
-
-    axis * p_sbins;
   public:
     MI_Parameters();
     ~MI_Parameters() = default;
 
     double operator()(const std::string& keyword) const;
     int    operator[](const std::string& keyword) const;
+    std::vector<double> GetVariationVector(const std::string& keyword) const;
     double CalculatePT02(const double & s=-1) const;
+    double CalculatePT02(const double & s, size_t ivar) const;
     double CalculatePTmin2(const double & s=-1) const;
+    double CalculatePTmin2(const double & s, size_t ivar) const;
 
     const evt_type::code   & GetEvtType()          const { return m_evttype; }
     const scale_scheme     & GetScaleRScheme()     const { return m_scaleRscheme; }

@@ -22,7 +22,6 @@
 #include "METOOLS/SpinCorrelations/Polarized_CrossSections_Handler.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
-#include "ATOOLS/Phys/Variations.H"
 #include "ATOOLS/Phys/KF_Table.H"
 #include "EXTRA_XS/One2Two/Comix1to2.H"
 #include "EXTRA_XS/One2Three/Comix1to3.H"

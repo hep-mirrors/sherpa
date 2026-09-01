@@ -60,11 +60,13 @@ set(Phys_HEADERS fjcore.hh
                  Hard_Process_Variation_Generator.H)
 
 sherpa_create_git_info(Phys ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
- 
+
 add_library(ToolsPhys SHARED ${Phys_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ToolsPhys ToolsPhys)
 add_dependencies(ToolsPhys Phys_Git_Info)
-
+# fjcore is vendored third-party code; exclude it from clang-tidy.
+set_source_files_properties(fjcore.cc PROPERTIES CXX_CLANG_TIDY "")
+set_source_files_properties(fjcore.hh PROPERTIES CXX_CLANG_TIDY "")
 
 if(SHERPA_ENABLE_LHAPDF)
     target_link_libraries(ToolsPhys PRIVATE LHAPDF::LHAPDF)

@@ -54,7 +54,7 @@ operator()(const Scale_Setter_Arguments &args) const
 void ATOOLS::Getter<Scale_Setter_Base,Scale_Setter_Arguments,
 		    Variable_Scale_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
+{
   str<<"variable scale scheme";
 }
 
@@ -68,7 +68,7 @@ Variable_Scale_Setter::Variable_Scale_Setter
   if (pos!=std::string::npos) {
     tag=tag.substr(pos+4);
     pos=tag.find(']');
-    if (pos==std::string::npos) 
+    if (pos==std::string::npos)
       THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
     core=tag.substr(0,pos);
     tag=tag.substr(pos+1);
@@ -86,7 +86,7 @@ Variable_Scale_Setter::Variable_Scale_Setter
     }
     tag=tag.substr(pos+1);
     pos=tag.find('}');
-    if (pos==std::string::npos) 
+    if (pos==std::string::npos)
       THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
     std::string ctag(tag.substr(0,pos));
     tag=tag.substr(pos+1);
@@ -107,9 +107,11 @@ Variable_Scale_Setter::~Variable_Scale_Setter()
 }
 
 double Variable_Scale_Setter::Calculate
-(const std::vector<ATOOLS::Vec4D> &momenta,const size_t &mode) 
+(const std::vector<ATOOLS::Vec4D> &momenta,const size_t &mode)
 {
-  if (p_proc->Flavours()[0].IsLepton()&&rpa->gen.Beam2().IsHadron()) {
+  if (p_proc->Flavours()[0].IsLepton()
+      &&rpa->gen.Beam1().IsLepton()
+      &&rpa->gen.Beam2().IsHadron()) {
     msg_Debugging()<<METHOD<<"(): Boost to Breit frame {\n";
     Vec4D pp(rpa->gen.PBeam(1)), qq(momenta[0]-momenta[2]);
     Poincare cms(pp+qq);
@@ -150,7 +152,7 @@ double Variable_Scale_Setter::Calculate
 
 void Variable_Scale_Setter::SetScale
 (const std::string &mu2tag,Algebra_Interpreter &mu2calc)
-{ 
+{
   if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");
   msg_Debugging()<<METHOD<<"(): scale '"<<mu2tag
 		 <<"' in '"<<(p_proc?p_proc->Name():"")<<"' {\n";

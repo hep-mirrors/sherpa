@@ -63,24 +63,6 @@ bool Variations::NeedsLHAPDF6Interface()
   return false;
 }
 
-void Variations::CheckConsistencyWithBeamSpectra(BEAM::Beam_Spectra_Handler *beamspectra)
-{
-  // make sure we deal with (anti-)protonic beam, otherwise warn
-  bool shouldwarn(false);
-  for (int beam(0); beam <= 1; ++beam) {
-    if (beamspectra->GetBeam(beam)->Bunch().Kfcode() != kf_p_plus) {
-      shouldwarn = true;
-      break;
-    }
-  }
-  if (shouldwarn) {
-    msg_Error()<<"WARNING in "<<METHOD<<": "<<std::endl
-    <<"   The internal reweighting is only tested"<<std::endl
-    <<"   for hadronic beams of (anti-)protons."<<std::endl
-    <<"   Will continue and hope for the best."<<std::endl;
-  }
-}
-
 Variations::Variations(Variations_Mode mode)
 {
   m_enabled = true;
@@ -245,9 +227,10 @@ void Variations::InitialiseParametersVector()
   for (auto single_variation_settings : s["PDF_VARIATIONS"].GetItems()) {
     PDFs_And_AlphaS_List pdfsandalphaslist =
         PDFsAndAlphaSList(single_variation_settings.Get<std::string>());
-    AddParameterExpandingScaleFactors({"1.0", "1.0", "1.0"},
-                                      ScaleFactorExpansions::None,
-                                      pdfsandalphaslist);
+    if (!pdfsandalphaslist.items.empty())
+      AddParameterExpandingScaleFactors({"1.0", "1.0", "1.0"},
+                                        ScaleFactorExpansions::None,
+                                        pdfsandalphaslist);
   }
 
   for (auto single_variation_settings : s["SCALE_VARIATIONS"].GetItems()) {
@@ -279,9 +262,11 @@ void Variations::InitialiseParametersVector()
 
   for (auto single_variation_settings : s["QCUT_VARIATIONS"].GetItems()) {
     std::vector<std::string> scalestringparams;
+    ExpandableVariation var {single_variation_settings.Get<std::string>()};
+    if (var.var == "None")
+      continue;
     ScaleFactorExpansions::code scalefactorexpansions(
         ScaleFactorExpansions::None);
-    ExpandableVariation var {single_variation_settings.Get<std::string>()};
     if (var.expand)
       scalefactorexpansions |= ScaleFactorExpansions::QCUT;
     scalestringparams = {"1.0", "1.0", var.var};
@@ -485,7 +470,7 @@ Variations::PDFsAndAlphaSList(const std::string &pdf) const
       s["PDF_VARIATION_ALPHAS_BEAM"].SetDefault(0).Get<int>() - 1};
     int beammask {0};
     for (int i : s["PDF_VARIATION_BEAMS"].SetDefault({1, 2}).GetVector<int>()) {
-      if (rpa->gen.Bunch(i - 1).IsHadron() || rpa->gen.Bunch(i - 1).IsPhoton()) {
+      if (rpa->gen.Bunch(i - 1).CanHavePDF()) {
         beammask |= 1 << (i - 1);
         if (alphasbeam < 0)
           alphasbeam = i - 1;
@@ -597,7 +582,7 @@ Variations::PDFs_And_AlphaS::PDFs_And_AlphaS(
       if (pdf == NULL) THROW(fatal_error, "PDF set " + pdfname + " not available.");
       pdf->SetBounds();
       m_pdfs.push_back(pdf);
-    } else if (rpa->gen.Bunch(i).IsHadron() || rpa->gen.Bunch(i).IsPhoton()) {
+    } else if (rpa->gen.Bunch(i).CanHavePDF()) {
       m_pdfs.push_back(rpa->gen.PDF(i));
     } else {
       m_pdfs.push_back(NULL);
@@ -847,6 +832,12 @@ namespace ATOOLS {
         return s << "Sudakov";
     }
     return s;
+  }
+
+  std::ostream &operator<<(std::ostream &s, const QCD_Variation_Params &c) {
+    return s << c.Name(Variations_Source::all,
+                       Variations_Name_Type::weight_name_convention)
+             << '\n';
   }
 
   bool IsQCDVariationTrivial(

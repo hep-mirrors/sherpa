@@ -38,6 +38,7 @@ DECLARE_TREEME2_GETTER(EXTRAXS::XS_f1f1_f1f1,"0XS_f1f1_f1f1")
 Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::Process_Info,EXTRAXS::XS_f1f1_f1f1>::
 operator()(const Process_Info &pi) const
 {
+  if (!args.m_source.empty() && args.m_source != "Internal") return NULL;
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -173,6 +174,7 @@ DECLARE_TREEME2_GETTER(EXTRAXS::XS_f1f1b_f1f1b,"0XS_f1f1b_f1f1b")
 Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::Process_Info,EXTRAXS::XS_f1f1b_f1f1b>::
 operator()(const Process_Info &pi) const
 {
+  if (!args.m_source.empty() && args.m_source != "Internal") return NULL;
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -319,6 +321,7 @@ DECLARE_TREEME2_GETTER(EXTRAXS::XS_f1f1b_f2f2b,"0XS_f1f1b_f2f2b")
 Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::Process_Info,EXTRAXS::XS_f1f1b_f2f2b>::
 operator()(const Process_Info &pi) const
 {
+  if (!args.m_source.empty() && args.m_source != "Internal") return NULL;
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -489,6 +492,7 @@ DECLARE_TREEME2_GETTER(EXTRAXS::XS_f1f2_f1f2,"0XS_f1f2_f1f2")
 Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::Process_Info,EXTRAXS::XS_f1f2_f1f2>::
 operator()(const Process_Info &pi) const
 {
+  if (!args.m_source.empty() && args.m_source != "Internal") return NULL;
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -677,6 +681,7 @@ DECLARE_TREEME2_GETTER(EXTRAXS::XS_f1f2b_f1f2b,"0XS_f1f2b_f1f2b")
 Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::Process_Info,EXTRAXS::XS_f1f2b_f1f2b>::
 operator()(const Process_Info &pi) const
 {
+  if (!args.m_source.empty() && args.m_source != "Internal") return NULL;
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -854,6 +859,7 @@ DECLARE_TREEME2_GETTER(EXTRAXS::XS_f1f2_f3f4,"0XS_f1f2_f3f4")
 Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::Process_Info,EXTRAXS::XS_f1f2_f3f4>::
 operator()(const Process_Info &pi) const
 {
+  if (!args.m_source.empty() && args.m_source != "Internal") return NULL;
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -1011,6 +1017,7 @@ DECLARE_TREEME2_GETTER(EXTRAXS::XS_f1f2b_f3f4b,"0XS_f1f2b_f3f4b")
 Tree_ME2_Base *ATOOLS::Getter<PHASIC::Tree_ME2_Base,PHASIC::Process_Info,EXTRAXS::XS_f1f2b_f3f4b>::
 operator()(const Process_Info &pi) const
 {
+  if (!args.m_source.empty() && args.m_source != "Internal") return NULL;
   if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_fi.m_nlotype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();

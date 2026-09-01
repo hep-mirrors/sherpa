@@ -76,6 +76,8 @@ namespace ATOOLS {
   public:
 
     static void InitializeMainSettings(int argc, char* argv[]);
+    /// seed the main settings from an inline YAML string (for unit tests)
+    static void InitializeMainSettings(const std::string& yaml);
     static void FinalizeMainSettings();
     static Settings& GetMainSettings();
 
@@ -133,6 +135,8 @@ namespace ATOOLS {
 
     String_Map m_tags;
     String_Map m_globaltags;
+
+    String_Vector m_tune_warnings;
 
     // all setting readers in their order of precedence (i.e. first one with a
     // match wins)

@@ -67,8 +67,11 @@ bool COMIX::Process_Group::Initialize(PHASIC::Process_Base *const proc)
   if (!cdxs->Initialize(p_pmap,p_umprocs,m_blocks,m_nproc)) return false;
   if (s_partcommit) My_In_File::CloseDB
     (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/",0);
-  if (!cdxs->MapProcess())
-    if (!msg_LevelIsTracking()) msg_Info()<<"."<<std::flush;
+  if (!cdxs->MapProcess() && !msg_LevelIsTracking()) {
+    msg->BeginTaskProgressUpdate(1);
+    msg_Out()<<'.'<<std::flush;
+    msg->EndTaskProgressUpdate();
+  }
   return true;
 }
 

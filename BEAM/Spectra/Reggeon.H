@@ -7,7 +7,7 @@ namespace BEAM {
 
   class Reggeon final : public Beam_Base {
   private:
-    double m_tMax, m_tMin, m_xMax, m_xMin, m_proton_mass;
+    double m_tMax, m_xMax, m_xMin, m_proton_mass;
     double m_A, m_B, m_alpha_intercept, m_alpha_slope, m_n;
 
   public:
@@ -17,7 +17,7 @@ namespace BEAM {
 
     Beam_Base* Copy() override;
     bool CalculateWeight(double, double) override;
-    void SetOutMomentum(const ATOOLS::Vec4D& out, const size_t& i = 0) override;
+    void SetOutMomentum(const ATOOLS::Vec4D& out) override;
     void FixPosition() override;
     void FixNormalisation();
     inline double Xmax() const override { return m_xMax; }

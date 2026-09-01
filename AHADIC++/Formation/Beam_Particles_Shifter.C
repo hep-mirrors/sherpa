@@ -31,7 +31,7 @@ bool Beam_Particles_Shifter::operator()() {
 void Beam_Particles_Shifter::ExtractBeamParticles() {
   //msg_Out()<<"      --- "<<METHOD<<" for "<<p_singlets->size()<<" singlets.\n";
   m_beamparts.clear();
-  Singlet * singlet, * bsinglet;
+  Singlet * singlet;
   Vec4D  mom(0.,0.,0.,0.);
   double mass(0.);
   for (list<Singlet *>::iterator sit=p_singlets->begin();

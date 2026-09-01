@@ -8,6 +8,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
@@ -68,7 +69,7 @@ operator()(const Scale_Setter_Arguments &args) const
 void ATOOLS::Getter<Scale_Setter_Base,Scale_Setter_Arguments,
 		    Fastjet_Scale_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
-{ 
+{
   str<<"variable scale scheme using fast jets";
 }
 
@@ -78,6 +79,8 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
   p_jdef(NULL)
 {
   rpa->gen.AddCitation(1,"FastJet is published under \\cite{Cacciari:2011ma}.");
+  fjcore::ClusterSequence::set_fastjet_banner_stream(
+      mpi->Rank() ? nullptr : &ATOOLS::msg->Out());
   std::string jtag(args.m_scale);
   size_t pos(jtag.find("FASTJET["));
   if (pos==std::string::npos)
@@ -123,7 +126,7 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
     }
     tag=tag.substr(pos+1);
     pos=tag.find('}');
-    if (pos==std::string::npos) 
+    if (pos==std::string::npos)
       THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
     std::string ctag(tag.substr(0,pos));
     tag=tag.substr(pos+1);
@@ -154,10 +157,12 @@ const Vec4D_Vector &Fastjet_Scale_Setter::Momenta() const
 }
 
 double Fastjet_Scale_Setter::Calculate
-(const std::vector<ATOOLS::Vec4D> &_momenta,const size_t &mode) 
+(const std::vector<ATOOLS::Vec4D> &_momenta,const size_t &mode)
 {
   std::vector<ATOOLS::Vec4D> momenta(_momenta);
-  if (p_proc->Flavours()[0].IsLepton()&&rpa->gen.Beam2().IsHadron()) {
+  if (p_proc->Flavours()[0].IsLepton()
+      &&rpa->gen.Beam1().IsLepton()
+      &&rpa->gen.Beam2().IsHadron()) {
     msg_Debugging()<<METHOD<<"(): Boost to Breit frame {\n";
     Vec4D pp(rpa->gen.PBeam(1)), qq(momenta[0]-momenta[2]);
     Poincare cms(pp+qq);
@@ -239,14 +244,14 @@ double Fastjet_Scale_Setter::ASMeanScale
   as=pow(as,1.0/oqcd);
   mur2=MODEL::as->WDBSolve(as,MODEL::as->CutQ2(),sqr(rpa->gen.Ecms()));
   if (!IsEqual((*MODEL::as)(mur2),as))
-    msg_Error()<<METHOD<<"(): Failed to determine \\mu."<<std::endl; 
+    msg_Error()<<METHOD<<"(): Failed to determine \\mu."<<std::endl;
   msg_Debugging()<<"} -> as = "<<as<<" -> \\mu = "<<sqrt(mur2)<<"\n";
   return mur2;
 }
 
 void Fastjet_Scale_Setter::SetScale
 (const std::string &mu2tag,Algebra_Interpreter &mu2calc)
-{ 
+{
   if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");
   msg_Debugging()<<METHOD<<"(): scale '"<<mu2tag
 		 <<"' in '"<<p_proc->Name()<<"' {\n";

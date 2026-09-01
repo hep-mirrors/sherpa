@@ -259,38 +259,55 @@ void Hadron_Init::Init() {
   AddHadron(102154,             5.91,0.8783,0.002,0,3,true,1,0,   "Lambda(b)(5910)","\\Lambda_{b}(5910)");
   AddHadron(kf_N_1710,          1.71,0.8783,0.12,0,1,true,1,0,    "N(1710)","N(1710)");
   AddHadron(kf_N_1710_plus,     1.71,0.8783,0.12,3,1,true,1,0,    "N(1710)+","N(1710)+");
+  // ##################################################################################################
+  // IONS
+  // ##################################################################################################
+  // ##################################################################################################
+  // - will assume they are all stable and have spin 0.
+  // ##################################################################################################
+  constexpr double A = 0.93149410372;
+  AddHadron(kf_deuterium,   2.014    *A,2.1   ,0.,  3,0,false,true,1,"deuterium", "H$_2$");
+  AddHadron(kf_helium4,     4.0026033*A,1.9049,0.,  6,0,false,true,1,"helium4",   "He$_4$");
+  AddHadron(kf_carbon12,   12.0000000*A,2.7473,0., 18,0,false,true,1,"carbon12",  "C$_{12}$");
+  AddHadron(kf_calcium40,  39.9625912*A,4.1039,0., 60,0,false,true,1,"calcium40", "Ca$_{40}$");
+  AddHadron(kf_silver107, 106.905097 *A,5.6970,0.,141,0,false,true,1,"silver107", "Ag$_{107}$");
+  AddHadron(kf_gold197,   196.966552 *A,6.9823,0.,237,0,false,true,1,"gold197",   "Au$_{197}$");
+  AddHadron(kf_lead206,   205.9744653*A,7.0871,0.,246,0,false,true,1,"lead206",   "Pb$_{206}$");
+  AddHadron(kf_lead207,   206.9758969*A,7.0986,0.,246,0,false,true,1,"lead207",   "Pb$_{207}$");
+  AddHadron(kf_lead208,   207.9766521*A,7.1100,0.,246,0,false,true,1,"lead208",   "Pb$_{208}$");
+  AddHadron(kf_uranium238,238.0507900*A,7.4366,0.,276,0,false,true,1,"uranium238","U$_{238}$");
   // #########################################################################
   // Obsolete multiple heavy baryons #########################################
   // they will not be produced in our code (we have no heavy di-quarks
   // that we can produce yet)
   // #########################################################################
-  AddHadron(4412,3.59798,0.8783,0.,3,1,true,1,0,"Xi(cc)+","\\Xi(cc)^{+}");
-  AddHadron(4414,3.65648,0.8783,0.,3,3,true,1,0,"Xi(cc)*+","\\Xi(cc)*^{+}");
-  AddHadron(4422,3.59798,0.8783,0.,6,1,true,1,0,"Xi(cc)++","\\Xi(cc)^{++}");
-  AddHadron(4424,3.65648,0.8783,0.,6,3,true,1,0,"Xi(cc)*++","\\Xi(cc)*^{++}");
-  AddHadron(4432,3.78663,0.8783,0.,3,1,true,1,0,"Omega(cc)+","\\Omega(cc)^{+}");
-  AddHadron(4434,3.82466,0.8783,0.,3,3,true,1,0,"Omega(cc)*+","\\Omega(cc)*^{+}");
-  AddHadron(4444,4.91594,0.8783,0.,6,3,true,1,0,"Omega(ccc)*++","\\Omega(ccc)*^{++}");
-  AddHadron(5142,7.00575,0.8783,0.,0,1,true,1,0,"Xi(bc)","\\Xi(bc)");
-  AddHadron(5242,7.00575,0.8783,0.,3,1,true,1,0,"Xi(bc)+","\\Xi(bc)^{+}");
-  AddHadron(5342,7.19099,0.8783,0.,0,1,true,1,0,"Omega(bc)","\\Omega(bc)");
-  AddHadron(5412,7.03724,0.8783,0.,0,1,true,1,0,"Xi(bc)'","\\Xi(bc)'");
-  AddHadron(5414,7.0485,0.8783,0.,0,3,true,1,0,"Xi(bc)*","\\Xi(bc)*");
-  AddHadron(5422,7.03724,0.8783,0.,3,1,true,1,0,"Xi(bc)'+","\\Xi(bc)'^{+}");
-  AddHadron(5424,7.0485,0.8783,0.,3,3,true,1,0,"Xi(bc)*+","\\Xi(bc)*^{+}");
-  AddHadron(5432,7.21101,0.8783,0.,0,1,true,1,0,"Omega(bc)'","\\Omega(bc)'");
-  AddHadron(5434,7.219,0.8783,0.,0,3,true,1,0,"Omega(bc)*","\\Omega(bc)*");
-  AddHadron(5442,8.30945,0.8783,0.,3,1,true,1,0,"Omega(bcc)+","\\Omega(bcc)^{+}");
-  AddHadron(5444,8.31325,0.8783,0.,3,3,true,1,0,"Omega(bcc)*+","\\Omega(bcc)*^{+}");
-  AddHadron(5512,10.42272,0.8783,0.,-3,1,true,1,0,"Xi(bb)-","\\Xi(bb)^{-}");
-  AddHadron(5514,10.44144,0.8783,0.,-3,3,true,1,0,"Xi(bb)*-","\\Xi(bb)*^{-}");
-  AddHadron(5522,10.42272,0.8783,0.,0,1,true,1,0,"Xi(bb)","\\Xi(bb)");
-  AddHadron(5524,10.44144,0.8783,0.,0,3,true,1,0,"Xi(bb)*","\\Xi(bb)*");
-  AddHadron(5532,10.60209,0.8783,0.,-3,1,true,1,0,"Omega(bb)-","\\Omega(bb)^{-}");
-  AddHadron(5534,10.61426,0.8783,0.,-3,3,true,1,0,"Omega(bb)*-","\\Omega(bb)*^{-}");
-  AddHadron(5542,11.70767,0.8783,0.,0,1,true,1,0,"Omega(bbc)","\\Omega(bbc)");
-  AddHadron(5544,11.71147,0.8783,0.,0,3,true,1,0,"Omega(bbc)*","\\Omega(bbc)*");
-  AddHadron(5554,15.11061,0.8783,0.,-3,3,true,1,0,"Omega(bbb)*-","\\Omega(bbb)*^{-}");
+  AddHadron(4412,3.59798,0.8783,4.0e-12,3,1,true,1,0,"Xi(cc)+","\\Xi(cc)^{+}");
+  AddHadron(4414,3.65648,0.8783,1.0e-5,3,3,true,1,0,"Xi(cc)*+","\\Xi(cc)*^{+}");
+  AddHadron(4422,3.59798,0.8783,2.6e-12,6,1,true,1,0,"Xi(cc)++","\\Xi(cc)^{++}");
+  AddHadron(4424,3.65648,0.8783,1.0e-5,6,3,true,1,0,"Xi(cc)*++","\\Xi(cc)*^{++}");
+  AddHadron(4432,3.78663,0.8783,2.4e-12,3,1,true,1,0,"Omega(cc)+","\\Omega(cc)^{+}");
+  AddHadron(4434,3.82466,0.8783,5.0e-4,3,3,true,1,0,"Omega(cc)*+","\\Omega(cc)*^{+}");
+  AddHadron(4444,4.91594,0.8783,5.0e-4,6,3,true,1,0,"Omega(ccc)*++","\\Omega(ccc)*^{++}");
+  AddHadron(5142,7.00575,0.8783,4.2e-13,0,1,true,1,0,"Xi(bc)","\\Xi(bc)");
+  AddHadron(5242,7.00575,0.8783,4.2e-13,3,1,true,1,0,"Xi(bc)+","\\Xi(bc)^{+}");
+  AddHadron(5342,7.19099,0.8783,4.0e-13,0,1,true,1,0,"Omega(bc)","\\Omega(bc)");
+  AddHadron(5412,7.03724,0.8783,2.2e-12,0,1,true,1,0,"Xi(bc)'","\\Xi(bc)'");
+  AddHadron(5414,7.0485,0.8783,5.0e-4,0,3,true,1,0,"Xi(bc)*","\\Xi(bc)*");
+  AddHadron(5422,7.03724,0.8783,2.0e-12,3,1,true,1,0,"Xi(bc)'+","\\Xi(bc)'^{+}");
+  AddHadron(5424,7.0485,0.8783,5.0e-4,3,3,true,1,0,"Xi(bc)*+","\\Xi(bc)*^{+}");
+  AddHadron(5432,7.21101,0.8783,2.0e-12,0,1,true,1,0,"Omega(bc)'","\\Omega(bc)'");
+  AddHadron(5434,7.219,0.8783,5.0e-4,0,3,true,1,0,"Omega(bc)*","\\Omega(bc)*");
+  AddHadron(5442,8.30945,0.8783,3.0e-12,3,1,true,1,0,"Omega(bcc)+","\\Omega(bcc)^{+}");
+  AddHadron(5444,8.31325,0.8783,5.0e-4,3,3,true,1,0,"Omega(bcc)*+","\\Omega(bcc)*^{+}");
+  AddHadron(5512,10.42272,0.8783,1.3e-12,-3,1,true,1,0,"Xi(bb)-","\\Xi(bb)^{-}");
+  AddHadron(5514,10.44144,0.8783,5.0e-4,-3,3,true,1,0,"Xi(bb)*-","\\Xi(bb)*^{-}");
+  AddHadron(5522,10.42272,0.8783,1.3e-12,0,1,true,1,0,"Xi(bb)","\\Xi(bb)");
+  AddHadron(5524,10.44144,0.8783,5.0e-4,0,3,true,1,0,"Xi(bb)*","\\Xi(bb)*");
+  AddHadron(5532,10.60209,0.8783,1.3e-12,-3,1,true,1,0,"Omega(bb)-","\\Omega(bb)^{-}");
+  AddHadron(5534,10.61426,0.8783,5.0e-4,-3,3,true,1,0,"Omega(bb)*-","\\Omega(bb)*^{-}");
+  AddHadron(5542,11.70767,0.8783,3.0e-12,0,1,true,1,0,"Omega(bbc)","\\Omega(bbc)");
+  AddHadron(5544,11.71147,0.8783,4.0e-7,0,3,true,1,0,"Omega(bbc)*","\\Omega(bbc)*");
+  AddHadron(5554,15.11061,0.8783,1.2e-12,-3,3,true,1,0,"Omega(bbb)*-","\\Omega(bbb)*^{-}");
 
   // ##########################################################################
   // ##########################################################################
@@ -316,7 +333,7 @@ void Hadron_Init::Init() {
   AddHadron(317,1.776,0.65,0.159,0,6,true,1,0,"K(3)*(1780)","K_{3}*(1780)");
   AddHadron(327,1.776,0.65,0.159,3,6,true,1,0,"K(3)*(1780)+","K_{3}*^{+}(1780)");
   AddHadron(kf_phi_3_1850,1.854,0.65,0.087,0,6,false,1,0,"phi(3)(1850)","phi_{3}(1850)");
-  AddHadron(557,10.1599,0.65,0.0,0,6,true,1,0,"Upsilon(3)(1D)","Upsilon_{3}(1D)");
+  AddHadron(557,10.1599,0.65,3e-5,0,6,true,1,0,"Upsilon(3)(1D)","Upsilon_{3}(1D)");
   // Tensors 4     ############################################################
   // heavy ones missing.
   AddHadron(kf_a_4_2040,2.014,0.65,0.361,0,8,false,1,0,"a(4)(2040)","a_{4}(2040)");
@@ -332,14 +349,14 @@ void Hadron_Init::Init() {
   AddHadron(10315,1.773,0.65,0.186,0,4,true,1,0,"K(2)(1770)","K_{2}(1770)");
   AddHadron(10325,1.773,0.65,0.186,3,4,true,1,0,"K(2)(1770)+","K_{2}^{+}(1770)");
   AddHadron(kf_eta_2_1870,1.842,0.65,0.225,0,4,false,1,0,"eta(2)(1870)","eta_{2}(1870)");
-  AddHadron(10555,10.157,0.65,0.0,0,4,true,1,0,"eta(b2)(1D)","eta_{b2}(1D)");
+  AddHadron(10555,10.157,0.65,2.0e-5,0,4,true,1,0,"eta(b2)(1D)","eta_{b2}(1D)");
   // Tensors 2       ##################################################################################
   // lots missing
   AddHadron(20315,1.816,0.65,0.276,0,4,true,1,0,"K(2)(1820)","K_{2}(1820)");
   AddHadron(20325,1.816,0.65,0.276,3,4,true,1,0,"K(2)(1820)+","K_{2}^{+}(1820)");
-  AddHadron(20555,10.1562,0.65,0.0,0,4,true,1,0,"Upsilon(2)(1D)","Upsilon_{2}(1D)");
-  AddHadron(30411,2.58,0.65,0.0,3,0,true,1,0,"D(2S)+","D(2S)^{+}");
-  AddHadron(30421,2.58,0.65,0.0,0,0,true,1,0,"D(2S)","D(2S)");
+  AddHadron(20555,10.1562,0.65,2.0e-5,0,4,true,1,0,"Upsilon(2)(1D)","Upsilon_{2}(1D)");
+  AddHadron(30411,2.58,0.65,0.16,3,0,true,1,0,"D(2S)+","D(2S)^{+}");
+  AddHadron(30421,2.58,0.65,0.165,0,0,true,1,0,"D(2S)","D(2S)");
   // Vectors 2       ##################################################################################
   // some heavy ones missing - we may have to include this because of the
   // psi(3770)
@@ -349,10 +366,10 @@ void Hadron_Init::Init() {
   AddHadron(30313,1.717,0.65,0.32,0,2,true,1,0,"K*(1680)","K*(1680)");
   AddHadron(30323,1.717,0.65,0.32,3,2,true,1,0,"K*(1680)+","K*^{+}(1680)");
   AddHadron(kf_f1_1900_fict,1.900,0.65,0.32,0,2,false,1,0,"f1(1900)_fict","f1(1900)_fict");
-  AddHadron(30413,2.64,0.65,0.0,3,2,true,1,0,"D*(2S)+","D*^{+}(2S)");
-  AddHadron(30423,2.64,0.65,0.0,0,2,true,1,0,"D*(2S)","D*(2S)");
+  AddHadron(30413,2.64,0.65,0.14,3,2,true,1,0,"D*(2S)+","D*^{+}(2S)");
+  AddHadron(30423,2.64,0.65,0.14,0,2,true,1,0,"D*(2S)","D*(2S)");
   AddHadron(kf_psi_3770,3.7699,0.65,0.0236,0,2,false,1,0,"psi(3770)","psi(3770)");
-  AddHadron(30553,10.161,0.65,0.0,0,2,true,1,0,"Upsilon(1)(1D)","Upsilon_{1}(1D)");
+  AddHadron(30553,10.161,0.65,3.0e-5,0,2,true,1,0,"Upsilon(1)(1D)","Upsilon_{1}(1D)");
   // Pseudoscalars   ##################################################################################
   // heavy ones missing.
   AddHadron(kf_pi_1300,1.3,0.65,0.400,0,0,false,1,0,"pi(1300)","pi(1300)");
@@ -362,7 +379,7 @@ void Hadron_Init::Init() {
   AddHadron(100321,1.46,0.65,0.26,3,0,true,1,0,"K(1460)+","K^{+}(1460)");
   AddHadron(kf_eta_1475,1.476,0.65,0.08,0,0,false,1,0,"eta(1475)","eta(1475)");
   AddHadron(100441,3.638,0.65,0.014,0,0,true,1,0,"eta(c)(2S)","eta_{c}(2S)");
-  AddHadron(100551,9.997,0.65,0.0,0,0,true,1,0,"eta(b)(2S)","eta_{b}(2S)");
+  AddHadron(100551,9.997,0.65,7.0e-3,0,0,true,1,0,"eta(b)(2S)","eta_{b}(2S)");
   // Vectors         ##################################################################################
   // heavy ones missing.
   // the rho's may be important for tau/D/B decays
@@ -381,19 +398,19 @@ void Hadron_Init::Init() {
   // More states without full multiplets ########################################################
   // light ones missing - we know A LOT about heavy-heavy states ....
   AddHadron(kf_chi_b2_2P,10.2685,0.65,0.001,0,4,false,1,0,"chi(b2)(2P)","chi_{b2}(2P)");
-  AddHadron(100557,10.4443,0.65,0.0,0,6,true,1,0,"Upsilon(3)(2D)","Upsilon_{3}(2D)");
+  AddHadron(100557,10.4443,0.65,5.0e-5,0,6,true,1,0,"Upsilon(3)(2D)","Upsilon_{3}(2D)");
   AddHadron(kf_chi_b0_2P,10.2321,0.65,0.001,0,0,false,1,0,"chi(b0)(2P)","chi_{b0}(2P)");
-  AddHadron(110553,10.255,0.65,0.0,0,2,true,1,0,"h(b)(2P)","h_{b}(2P)");
-  AddHadron(110555,10.441,0.65,0.0,0,4,true,1,0,"eta(b2)(2D)","eta_{b2}(2D)");
+  AddHadron(110553,10.255,0.65,2.0e-3,0,2,true,1,0,"h(b)(2P)","h_{b}(2P)");
+  AddHadron(110555,10.441,0.65,2.0e-5,0,4,true,1,0,"eta(b2)(2D)","eta_{b2}(2D)");
   AddHadron(kf_chi_b1_2P,10.2552,0.65,0.001,0,2,false,1,0,"chi(b1)(2P)","chi_{b1}(2P)");
-  AddHadron(120555,10.4406,0.65,0.0,0,4,true,1,0,"Upsilon(2)(2D)","Upsilon_{2}(2D)");
-  AddHadron(130553,10.4349,0.65,0.0,0,2,true,1,0,"Upsilon(1)(2D)","Upsilon_{1}(2D)");
-  AddHadron(200551,10.335,0.65,0.0,0,0,true,1,0,"eta(b)(3S)","eta_{b}(3S)");
+  AddHadron(120555,10.4406,0.65,3.0e-4,0,4,true,1,0,"Upsilon(2)(2D)","Upsilon_{2}(2D)");
+  AddHadron(130553,10.4349,0.65,3.0e-4,0,2,true,1,0,"Upsilon(1)(2D)","Upsilon_{1}(2D)");
+  AddHadron(200551,10.335,0.65,1.0e-2,0,0,true,1,0,"eta(b)(3S)","eta_{b}(3S)");
   AddHadron(kf_Upsilon_3S,10.3553,0.65,2.63e-05,0,2,false,1,0,"Upsilon(3S)","Upsilon(3S)");
-  AddHadron(200555,10.5264,0.65,0.0,0,4,true,1,0,"chi(b2)(3P)","chi_{b2}(3P)");
-  AddHadron(210551,10.5007,0.65,0.0,0,0,true,1,0,"chi(b0)(3P)","chi_{b0}(3P)");
-  AddHadron(210553,10.516,0.65,0.0,0,2,true,1,0,"h(b)(3P)","h_{b}(3P)");
-  AddHadron(220553,10.516,0.65,0.0,0,2,true,1,0,"chi(b1)(3P)","chi_{b1}(3P)");
+  AddHadron(200555,10.5264,0.65,5.0e-4,0,4,true,1,0,"chi(b2)(3P)","chi_{b2}(3P)");
+  AddHadron(210551,10.5007,0.65,2.0e-3,0,0,true,1,0,"chi(b0)(3P)","chi_{b0}(3P)");
+  AddHadron(210553,10.516,0.65,2.0e-3,0,2,true,1,0,"h(b)(3P)","h_{b}(3P)");
+  AddHadron(220553,10.516,0.65,2.0e-3,0,2,true,1,0,"chi(b1)(3P)","chi_{b1}(3P)");
   AddHadron(kf_Upsilon_4S,10.58,0.65,0.01,0,2,false,1,0,"Upsilon(4S)","Upsilon(4S)");
   // a0(980) and friends #####################################################
   // These are the "funny" state with some iso number.  We will have to
@@ -480,6 +497,9 @@ void Hadron_Init::Init() {
   AddHadron(5509,1000000.0,1.e6,1000,0,0,true,0,0,"jennifer","jennifer");
   AddHadron(6505,1000000.0,1.e6,1000,0,0,true,0,0,"hendrik","hendrik");
   AddHadron(6506,1000000.0,1.e6,1000,0,0,true,0,0,"jan","jan");
+  AddHadron(6507,1000000.0,1.e6,1000,0,0,true,0,0,"silvan","silvan");
+  AddHadron(6508,1000000.0,1.e6,1000,0,0,true,0,0,"holger","holger");
+  AddHadron(6509,1000000.0,1.e6,1000,0,0,true,0,0,"gurpreet","gurpreet");
   // ##########################################################################
   // ##########################################################################
   // ##########################################################################
