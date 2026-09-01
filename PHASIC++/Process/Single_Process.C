@@ -303,7 +303,18 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
   DEBUG_FUNC(Name());
   if(p_int->YFS()->Mode()!=YFS::yfsmode::off){
     //need to set born for YFS subtraction
-    p_int->YFS()->SetBorn(m_lastxs);
+    // In factored mode the pion form factor is applied to m_last only at the
+    // very end of Differential(), i.e. AFTER this point, while the reals go
+    // through YFSDifferential() where it is applied to m_lastxs before the
+    // YFS NLO subtraction uses them. Handing the undressed Born to YFS would
+    // subtract |F|^2*R against S~*B, so the eikonal pole would not cancel.
+    // Dress the Born here (locally - m_lastxs itself must stay undressed, it
+    // is dressed by the caller) at the same Q^2 the reals use.
+    // In vertex mode |F|^2 is already inside m_lastxs via the Comix vertex.
+    double yfsborn(m_lastxs);
+    if(p_pionformfactor->On() && p_pionformfactor->Type()==ff::factored)
+      yfsborn *= p_pionformfactor->Eval(p_scale->PionForm());
+    p_int->YFS()->SetBorn(yfsborn);
     p_int->YFS()->GenerateWeight();
     double yfsW = p_int->YFS()->GetWeight();
     if(IsBad(yfsW)){
@@ -563,7 +574,7 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   InitMEWeightInfo();
   UpdateIntegratorMomenta(p);
   CalculateFlux(p);
-  if(p_int->YFS()->Mode()!=YFS::yfsmode::off){
+  if(p_int->YFS()->Mode()!=YFS::yfsmode::off && p_int->YFS()->NLO()){
     if(p_int->YFS()->NLO()->HasReal()){
       if(this==p_int->YFS()->NLO()->p_real->p_realproc) return YFSDifferential(p,varmode);
     }

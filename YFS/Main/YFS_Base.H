@@ -148,6 +148,16 @@ public:
   int  m_rv_cancel_hist;
   int  m_check_mass_reg, m_check_poles, m_check_real, m_check_rr, m_check_rv, m_rv_hard_photon;
   int m_rmode, m_qedmode, m_kkmcAngles, m_virt_sub,m_mingammaN;
+  // m_no_born_setting is the card value (YFS: No_Born), a global override.
+  // m_no_born is the effective flag: the override OR'd with the per-process
+  // request from SetNoBorn(), since one handler is shared by all processes.
+  int m_no_born_setting;
+  // The YFS.* named weights carry a full per-order breakdown (Real, Virtual,
+  // RealReal, the *_1g/_2g multiplicity truncations, the VV band, ...), which
+  // is a lot of columns to write for every event. Off by default: only the
+  // headline YFS.LO / YFS.NLO / YFS.NNLO are emitted. Set the card option
+  // YFS: NLO_Weight_Breakdown: 1 to get the individual contributions back.
+  int m_nlo_weight_breakdown;
   int m_no_born, m_check_real_sub, m_check_rr_sub, m_no_subtraction, m_tchannel, m_check_virt_born, m_noflux, m_massless_sub;
   
   bool m_looptool, m_virtual_only, m_real_only, m_use_model_alpha,m_failcut,m_nlocuts;

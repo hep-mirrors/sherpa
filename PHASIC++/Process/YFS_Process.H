@@ -87,6 +87,13 @@ namespace PHASIC {
 
     //! Make this process the one the shared YFS handler is configured for.
     //! Call before anything reads YFS state for this process.
+    //! Set when this process was declared without 'B' in NLO_Part: the Born
+    //! process is still built (the phase space is generated from it) but its
+    //! contribution is dropped from the YFS weight, so that an extra explicit
+    //! n-photon process does not double count the real correction of the
+    //! Born-level process.
+    bool m_noborn = false;
+
     void MakeActive();
 
     Process_Base* Selected();

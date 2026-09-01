@@ -1086,7 +1086,7 @@ double NLO_Base::CalculateRealReal() {
       Vec4D kk = photons[j];
       const int isFSR_i = (i >= nISR) ? 1 : 0;
       const int isFSR_j = (j >= nISR) ? 1 : 0;
-      double contrib = CalculateRealReal(k, kk, isFSR_i, isFSR_j);
+      double contrib = CalculateRealReal(k, kk, 0, 0);
       rr += contrib;
       if (i == i0 && j == j0) m_rr_hard2 = contrib;
       if (m_check_rr_sub == 2) {

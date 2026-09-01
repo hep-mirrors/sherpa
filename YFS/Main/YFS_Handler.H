@@ -66,6 +66,13 @@ namespace YFS {
         YFS::ISR *p_isr;
         YFS::Debug *p_debug;
         ATOOLS::nlo_type::code m_nlotype;
+        // True only while m_nlo_real/m_nlo_virtual/m_nlo_rv/m_nlo_rr belong to
+        // the event currently being weighted. CalculateBeta() bails out early
+        // during integration when Integrate_NLO is off (m_rmode is set to 1
+        // only in Phase_Space_Handler::OneEvent), leaving m_real at its Reset()
+        // value of 1 and the m_nlo_* accumulators holding the PREVIOUS event's
+        // numbers. The named YFS.* weights must not be built from those.
+        bool m_nlo_current = false;
         YFS::Define_Dipoles *p_dipole;
         Vec4D m_photonSumISR, m_photonSumFSR;
         Vec4D_Vector m_fsrphotonsforME, m_isrphotonsforME;
@@ -139,7 +146,15 @@ namespace YFS {
         inline void SetInFlav(Flavour &fl) {m_inflav.push_back(fl);}
         inline Flavour GetInFlav(int i) {return m_inflav[i];}
         inline void SetNLOType(ATOOLS::nlo_type::code nlo_type) {m_nlotype = nlo_type;}
+        // Per-process request to drop the Born from the YFS weight, used when a
+        // process is declared without 'B' in NLO_Part (e.g. an extra explicit
+        // one-photon process supplying RR/RV, whose Born is already the real
+        // correction of the Born-level process). The card setting No_Born stays
+        // a global override. The handler is shared, so YFS_Process re-applies
+        // this in MakeActive().
+        inline void SetNoBorn(bool nb) {m_no_born = nb || m_no_born_setting;}
         inline NLO_Base *NLO() {return p_nlo; }
+        NLO_Base *EnsureNLO();
         inline void resetparticles() {m_setparticles=false;}
 
         void SetBeam(BEAM::Beam_Spectra_Handler *beam);

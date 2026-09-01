@@ -94,6 +94,14 @@ void YFS_Process::Init(const Process_Info &pi,
   }
   m_name = GenerateName(ypi.m_ii, ypi.m_fi);
   Process_Base::Init(ypi, beam, isr, yfs);
+  // The Born process is always constructed -- the phase space is generated
+  // from it. But when 'B' is absent from NLO_Part the Born must not enter the
+  // YFS weight: that happens when an additional process with explicit extra
+  // photons is added to supply RR/RV, where this process's Born is already
+  // counted as the real correction of the Born-level process.
+  // NB nlo_type::lo is 0, so a plain LO process (no NLO_Part given) has no
+  // 'B' bit set either -- it must not be caught here.
+  m_noborn = pi.m_fi.m_nlotype != nlo_type::lo && !pi.Has(nlo_type::born);
   p_bornproc = InitProcess(ypi, nlo_type::born, false);
   p_yfs->SetNLOType(nlo_type::born);
   if (pi.Has(nlo_type::real)) {
@@ -108,7 +116,7 @@ void YFS_Process::Init(const Process_Info &pi,
     p_realproc->SetParent(this);
     // p_realproc->FillProcessMap(p_apmap);
     // p_realproc->SetLookUp(true);
-    if (p_yfs->NLO()->NeedsRealProvider()) {
+    if (p_yfs->EnsureNLO()->NeedsRealProvider()) {
       p_yfsreal = new YFS::Real(rpi);
       p_yfsreal->SetProc(p_realproc);
     }
@@ -122,7 +130,7 @@ void YFS_Process::Init(const Process_Info &pi,
     // p_virtproc->p_mapproc=NULL
     p_virtproc->SetParent(this);
     p_virtproc->SetLookUp(false);
-    if (p_yfs->NLO()->NeedsVirtualProvider()) {
+    if (p_yfs->EnsureNLO()->NeedsVirtualProvider()) {
       p_yfsvirt = new YFS::Virtual(vpi);
       p_yfsvirt->SetProc(p_bornproc);
     }
@@ -191,8 +199,9 @@ void YFS_Process::MakeActive()
   // another's loop ME is how the multi-process breakage showed up.
   p_yfs->resetparticles();
   p_yfs->SetFlavours(Flavours());
-  p_yfs->NLO()->SetProviders(p_yfsvirt, p_yfsreal, p_yfsrealvirt,
+  p_yfs->EnsureNLO()->SetProviders(p_yfsvirt, p_yfsreal, p_yfsrealvirt,
                              p_yfsrealreal, p_yfsvv);
+  p_yfs->SetNoBorn(m_noborn);
 }
 
 

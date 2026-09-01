@@ -56,10 +56,10 @@ namespace BEAM {
     virtual bool PolarisationOn() const { return (m_polarisation != 0.); }
     double X() const { return m_x; }
     double Weight() const { return m_weight; }
-    double Exponent()      const { return 0.; }
+    virtual double Exponent()      const { return 0.; }
     virtual double Xmin()          const { return 0.; }
     virtual double Xmax()          const { return 1.; }
-    double Peak()          const { return 1.; }
+    virtual double Peak()          const { return 1.; }
     double Dev()          const { return m_dev; }
 
 

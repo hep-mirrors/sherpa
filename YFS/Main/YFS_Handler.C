@@ -20,7 +20,7 @@ YFS_Handler::YFS_Handler()
     p_yfsFormFact = new YFS::YFS_Form_Factor();
     m_setparticles = false;
     p_isr = new YFS::ISR();
-    p_nlo = new YFS::NLO_Base();
+    p_nlo = nullptr;
     p_fb  = m_fb_analysis ? new YFS::YFS_FB_Analysis({}, m_fb_kf) : nullptr;
     m_formfactor = 1;
     m_isrinital = true;
@@ -93,6 +93,12 @@ YFS_Handler::~YFS_Handler()
       }
     }
   }
+}
+
+NLO_Base *YFS_Handler::EnsureNLO()
+{
+  if (!p_nlo) p_nlo = new YFS::NLO_Base();
+  return p_nlo;
 }
 
 
@@ -528,6 +534,11 @@ void YFS_Handler::CalculateCoulomb() {
 }
 
 void YFS_Handler::CalculateBeta() {
+  // Invalidate last event's NLO pieces first, so an early return cannot leave
+  // them looking current. Zeroed as well as flagged: a stale value that is
+  // never read is still a trap for the next person to add a weight here.
+  m_nlo_current = false;
+  m_nlo_real = m_nlo_virtual = m_nlo_rv = m_nlo_rr = 0.;
   if(!m_rmode && !m_int_nlo) return;
   double realISR(0), realFSR(0);
   if (m_betaorder > 0) {
@@ -551,6 +562,7 @@ void YFS_Handler::CalculateBeta() {
   if(m_nlotype!=nlo_type::born) {
     if(m_no_born) m_real=CalculateNLO()/m_born;
     else m_real=(m_born+CalculateNLO())/m_born;
+    m_nlo_current = true;
   }
   if (m_useceex) MakeCEEX();
 }
@@ -600,52 +612,23 @@ void YFS_Handler::GenerateWeight() {
   if (m_formWW) m_yfsweight *= m_ww_formfact; //*exp(m_coulSub);
   CalculateBeta();
 
-  // Emission-side IFI (IFI_Real), applied to the beta_0 term ONLY.
-  //
-  // AddFormFactor() has already lowered the IF form factor's cutoff to
-  // IFIOmega(); this supplies the interference above it, carried by the photons
-  // that were actually generated. Both ISR and FSR photons contribute - the IF
-  // eikonal is a cross term and does not care which dipole produced the photon.
-  //
-  // Why beta_0 only. The YFS master formula for the model radiation function is
-  //
-  //   sigma = sum_n 1/n! int prod S~_mod(k_i) [ beta_0 + sum_i beta_1(k_i)/S~_mod(k_i) + ... ] e^Y
-  //
-  // Sherpa generates prod S~_crude with S~_crude = S~_II + S~_FF, so the whole
-  // bracket carries a reweight W_IF = prod S~_mod/S~_crude. On the beta_1 term
-  // that reweight cancels against the 1/S~_mod, leaving beta_1/S~_crude - and
-  // beta_1/S~_crude is exactly what NLO_Base::CalculateReal already computes,
-  // since its tot = (r*flux - subloc*Born)/subb divides by subb =
-  // CalculateRealSubEEX, the dipole-diagonal crude. So beta_1 is already right
-  // and must not be touched; only beta_0 wants the factor.
-  //
-  // m_real is 1 + sum beta_1/(S~_crude*Born) + ..., i.e. beta_0 is its leading
-  // 1, so W_IF acts on beta_0 alone as m_real + (W_IF - 1).
-  //
-  // Getting this wrong is visible and was measured. Multiplying the whole
-  // weight by W_IF put the factor on beta_1 as well: cos(theta) came into
-  // agreement with KKMC at the half-percent level, but m_pipi, p+ and E_gamma
-  // were wrecked in the hard-radiation region (mxx ratio swinging 3.4 -> 0.37
-  // at low mass, GammaE down to 0.58 at large E_gamma) - beta_1 being precisely
-  // what dominates there. Dropping the factor at NLO instead fixed m_pipi and
-  // lost the angles again, which is what says beta_1 was never carrying the
-  // interference in the first place: the coherent subtraction in subloc removes
-  // S~_IF while the crude generation never put it in, so without this term the
-  // real interference is subtracted and never restored.
-  // Only on the resummed path. With the NLO real active the restoration is done
-  // inside NLO_Base::CalculateReal, from the same subloc and subb that build
-  // tot, which is the only place the cancellation is exact - see the comment
-  // there. Rebuilding the ratio out here from p_dipoles at the lab photon is
-  // not the same quantity (subloc is p_nlodipoles at the mapped k), so it
-  // leaves a hard-photon residue that no clamp can fix.
   double wif = 1.;
-  if (m_ifireal && m_mode == yfsmode::isrfsr && m_nlotype == nlo_type::born) {
+  if (m_ifireal && m_mode == yfsmode::isrfsr && m_nlotype == nlo_type::born &&
+      p_nlo && p_nlo->HasReal()) {
     Vec4D_Vector allphotons(m_ISRPhotons);
     allphotons.insert(allphotons.end(), m_FSRPhotons.begin(), m_FSRPhotons.end());
     wif = p_dipoles->RealIFWeight(allphotons);
   }
+  // The Born-level YFS weight: ISR x FSR crude (plus Coulomb/WW if on) times
+  // the form factor, with NO NLO correction applied. This is what YFS.LO has
+  // to reproduce -- built here directly rather than recovered downstream as
+  // 1/m_real, so the LO column cannot inherit anything m_real does.
+  const double w_lo = m_yfsweight * m_formfactor * (1.-m_v);
   m_yfsweight *= m_real + (wif - 1.);
   m_yfsweight *= m_formfactor*(1.-m_v);
+  // Captured before the IsBad/negative-weight clamps below, since the named
+  // weights are ratios against the weight the event actually carries.
+  const double w_full = m_yfsweight;
   if(m_isr_debug) {
     Vec4D ele;
     for (int i = 2; i < m_flavs.size(); ++i)
@@ -682,23 +665,21 @@ void YFS_Handler::GenerateWeight() {
   // YFSNLO  — Real + Virtual only (NLO denominator).
   // YFSNNLO — Real + Virtual + RealVirtual + RealReal (full NNLO denominator).
   m_nlo_weightsmap = Weights_Map{1.0};
-  if (m_nlotype != nlo_type::born && !IsZero(m_real) &&
+  if (m_nlo_current && m_nlotype != nlo_type::born && !IsZero(m_real) &&
       (p_nlo->HasNLO() || p_nlo->HasNNLO())) {
-    auto make_ratio = [this](double term, double denom) -> double {
-      return m_no_born ? term / denom : (m_born + term) / denom;
-    };
     auto ratio = [this](double term, double denom) -> double {
       return term / denom;
     };
 
     Weights wyfsnlo{1.0};
 
-    // Ratio that swaps the nominal, resummed form factor (exp(form), the
-    // all-orders Sudakov exponentiation) for its fixed-order (1+form)
-    // truncation - i.e. "undoes" the exponentiation. Only meaningful when
-    // m_formfactor was actually built from p_dipoles->FormFactor() (the
-    // m_fullform>=1, non-t-channel branch of AddFormFactor()); otherwise
-    // there's no well-defined "form" to compare against.
+    auto emit = [this, &wyfsnlo](const std::string &name, double value) {
+      if (!m_nlo_weight_breakdown &&
+          name != "LO" && name != "NLO" && name != "NNLO")
+        return;
+      wyfsnlo[name] = value;
+    };
+
     const bool have_fixed_order_ff =
         m_fullform >= 1 && m_tchannel == 0 && !IsZero(m_formfactor);
     const double ff_fixedorder_ratio =
@@ -708,32 +689,37 @@ void YFS_Handler::GenerateWeight() {
     // NLO: Real + Virtual
     if (p_nlo->HasNLO()) {
       const double nlo_sum   = (m_born + m_nlo_real + m_nlo_virtual)/m_born;
-      const double eex_sum   = (m_born + m_eex)/m_born;
       const double real_sum  = (m_born + m_nlo_real)/m_born;
       const double virt_sum  = (m_born + m_nlo_virtual)/m_born;
       const double nlo_denom = m_no_born ? nlo_sum : (m_born + nlo_sum);
       if (!IsZero(nlo_denom)) {
-        wyfsnlo["Real"]    = ratio((m_nlo_real)/m_born, m_real);
-        wyfsnlo["Virtual"] = ratio((m_nlo_virtual)/m_born, m_real);
-        wyfsnlo["NLO"]    = ratio(nlo_sum, m_real);
-        wyfsnlo["BR"]     = ratio(real_sum, m_real);
-        wyfsnlo["BV"]     = ratio(virt_sum, m_real);
-        wyfsnlo["LO"]     = 1./m_real;
-        wyfsnlo["EEX"]    = ratio(m_eex, m_real);
+        emit("Real", ratio((m_nlo_real)/m_born, m_real));
+        emit("Virtual", ratio((m_nlo_virtual)/m_born, m_real));
+        emit("NLO", ratio(nlo_sum, m_real));
+        emit("BR", ratio(real_sum, m_real));
+        emit("BV", ratio(virt_sum, m_real));
+        // LO = (Born-level YFS weight) / (full weight), so that
+        // nominal * YFS.LO == w_lo identically. Algebraically 1/m_real, but
+        // built from the two weights themselves.
+        // if (!IsZero(w_full)) emit("LO", w_lo/w_full);
+        // m_eex is assigned only inside CalculateBeta's `if (m_betaorder >
+        // 0)` -- at BETA:0 it's an uninitialised member, so emitting it
+        // unconditionally wrote garbage into the EEX column every event.
+        if (m_betaorder > 0) emit("EEX", ratio(m_eex, m_real));
         // Matching truncated to a fixed real-photon multiplicity, to see the
         // result "as if" only the 1 or 2 hardest photons were used in the
         // matching (full "NLO" above keeps all generated photons). Real is
         // summed over the 1 / 2 hardest photons; Virtual is always full.
         const double nlo_1g = (m_born + m_nlo_real_hardest  + m_nlo_virtual)/m_born;
         const double nlo_2g = (m_born + m_nlo_real_2hardest + m_nlo_virtual)/m_born;
-        wyfsnlo["NLO_1g"] = ratio(nlo_1g, m_real);
-        wyfsnlo["NLO_2g"] = ratio(nlo_2g, m_real);
+        emit("NLO_1g", ratio(nlo_1g, m_real));
+        emit("NLO_2g", ratio(nlo_2g, m_real));
         // Fixed-order comparison point: 1-photon NLO correction with the
         // resummed exp(form) form factor undone in favour of its 1+form
         // fixed-order truncation - matches a plain (non-YFS-resummed) NLO EW
         // calculation, which only ever has at most one real photon.
         if (have_fixed_order_ff)
-          wyfsnlo["NLO_FixedOrder"] = ratio(nlo_1g, m_real) * ff_fixedorder_ratio;
+          emit("NLO_FixedOrder", ratio(nlo_1g, m_real) * ff_fixedorder_ratio);
       }
     }
 
@@ -742,13 +728,17 @@ void YFS_Handler::GenerateWeight() {
       const double nnlo_total = (m_born + m_nlo_real + m_nlo_virtual + m_nlo_rv + m_nlo_rr)/m_born;
       const double RR_total = (m_born + m_nlo_real + m_nlo_virtual + m_nlo_rr)/m_born;
       const double RV_total = (m_born + m_nlo_real + m_nlo_virtual + m_nlo_rv)/m_born;
-      const double nnlo_denom = m_no_born ? nnlo_total : (m_born + nnlo_total);
-      if (!IsZero(nnlo_denom)) {
-        wyfsnlo["RealVirtual"] = ratio((m_nlo_rv)/m_born, m_real);
-        wyfsnlo["RealReal"]    = ratio((m_nlo_rr)/m_born, m_real);
-        wyfsnlo["NLO+RR"]    = ratio(RR_total, m_real);
-        wyfsnlo["NLO+RV"]    = ratio(RV_total, m_real);
-        wyfsnlo["NNLO"]        = make_ratio(nnlo_total, nnlo_denom);
+      // No separate denominator: every column here is x/m_real. NNLO used to
+      // be make_ratio(nnlo_total, m_born + nnlo_total), which is
+      // (m_born + nnlo_total)/(m_born + nnlo_total) -- identically 1,
+      // whatever the physics did. It also added a dimensionful m_born to a
+      // ratio.
+      if (!IsZero(m_real)) {
+        emit("RealVirtual", ratio((m_nlo_rv)/m_born, m_real));
+        emit("RealReal", ratio((m_nlo_rr)/m_born, m_real));
+        emit("NLO+RR", ratio(RR_total, m_real));
+        emit("NLO+RV", ratio(RV_total, m_real));
+        emit("NNLO", ratio(nnlo_total, m_real));
         // Matching truncated to a fixed real-photon multiplicity, the NNLO
         // analogue of NLO_1g/NLO_2g. 1 photon: Real + RealVirtual on the
         // single hardest, RealReal = 0 (a pair needs two photons). 2 photons:
@@ -759,13 +749,13 @@ void YFS_Handler::GenerateWeight() {
         const double nnlo_2g =
             (m_born + m_nlo_real_2hardest + m_nlo_virtual + m_nlo_rv_2hardest +
              m_nlo_rr_2hardest)/m_born;
-        wyfsnlo["NNLO_1g"] = ratio(nnlo_1g, m_real);
-        wyfsnlo["NNLO_2g"] = ratio(nnlo_2g, m_real);
+        emit("NNLO_1g", ratio(nnlo_1g, m_real));
+        emit("NNLO_2g", ratio(nnlo_2g, m_real));
         // Fixed-order NNLO comparison: the 2-photon truncation (fixed-order
         // NNLO EW allows up to two real photons) with the resummed form factor
         // undone to its 1+form truncation.
         if (have_fixed_order_ff)
-          wyfsnlo["NNLO_FixedOrder"] = ratio(nnlo_2g, m_real) * ff_fixedorder_ratio;
+          emit("NNLO_FixedOrder", ratio(nnlo_2g, m_real) * ff_fixedorder_ratio);
 
         // ---- approximate double-virtual (VV) ----
         // The NNLO weights above are RV + RR only: there is no exact
@@ -811,10 +801,10 @@ void YFS_Handler::GenerateWeight() {
             // cross section while RR alone is ~5% and the NLO->NNLO shift ~7.8%,
             // so this is NOT the dominant NNLO uncertainty.
             const double d = m_vv_approx_unc;
-            wyfsnlo["VV_EEX"]       = ratio(vv, m_real);
-            wyfsnlo["NNLO_VV"]      = ratio(nnlo_total + vv,         m_real);
-            wyfsnlo["NNLO_VV_up"]   = ratio(nnlo_total + (1.+d)*vv,  m_real);
-            wyfsnlo["NNLO_VV_down"] = ratio(nnlo_total + (1.-d)*vv,  m_real);
+            emit("VV_EEX", ratio(vv, m_real));
+            emit("NNLO_VV", ratio(nnlo_total + vv, m_real));
+            emit("NNLO_VV_up", ratio(nnlo_total + (1.+d)*vv, m_real));
+            emit("NNLO_VV_down", ratio(nnlo_total + (1.-d)*vv, m_real));
           } else {
             msg_Error() << METHOD << ": EEX double-virtual estimate is "
                         << vv << ", skipping the VV weights\n";

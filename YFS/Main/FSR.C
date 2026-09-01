@@ -450,6 +450,22 @@ bool FSR::YFS_FORM(){
   m_r1 = p_dipole->GetGhost(0);
   m_r2 = p_dipole->GetGhost(1);
   m_sQ = m_Q*m_Q;
+
+  // Rest-frame energies of the GHOSTS, built from the ghost masses that are
+  // passed alongside them below. The symmetric Eqq=0.5*sqrt(sQ) assumes an
+  // equal-mass split; pairing it with the ghosts' own (possibly unequal)
+  // masses can put Eqq below mr2, and E^2 - m^2 going negative for a single
+  // four-vector is what BVR_cru/BVR_full's sqrt turns into a NaN.
+  //
+  // Falls back to the symmetric sqrt(sQ)/2 below threshold, where the pair
+  // rest frame does not exist. That is the pre-existing behaviour and is at
+  // least finite; a dipole with sQ < (m1+m2)^2 is a separate problem.
+  const double mr1(m_r1.Mass()), mr2(m_r2.Mass());
+  double Er1(0.5*sqrt(m_sQ)), Er2(0.5*sqrt(m_sQ));
+  if (m_sQ > sqr(mr1 + mr2)) {
+    Er1 = (m_sQ + mr1*mr1 - mr2*mr2)/(2.*sqrt(m_sQ));
+    Er2 = (m_sQ + mr2*mr2 - mr1*mr1)/(2.*sqrt(m_sQ));
+  }
   CalculateBetaBar();
   m_q1q2 = m_dipole[0]*m_dipole[1];
   double Eqq = 0.5*sqrt(m_sQ);
@@ -468,14 +484,17 @@ bool FSR::YFS_FORM(){
     } 
     else{
       m_BtiXcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin);
-      // Jadach always uses the symmetric EQQ=0.5*sqrt(svarQ) for
-      // BOTH particles' energy in the Q-scale crude evaluation, not the
-      // ghosts' own (recoil-asymmetric) energies - confirmed via
-      // YFS/Tools/FSR_KKMC_CrossCheck.C: using m_r1[0]/m_r2[0] here matched
-      // KKMC to only ~1.8e-6 at soft-photon kinematics, growing to ~6.3e-5 at
-      // harder/more asymmetric photon configurations, while Eqq,Eqq matches
-      // to 9 sig figs at both (2026-08-05).
-      m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ);
+      // Jadach always uses the pair's own rest-frame energy for the
+      // Q-scale crude evaluation, not the ghosts' own (recoil-asymmetric)
+      // energies - confirmed via YFS/Tools/FSR_KKMC_CrossCheck.C: using
+      // m_r1[0]/m_r2[0] here matched KKMC to only ~1.8e-6 at soft-photon
+      // kinematics, growing to ~6.3e-5 at harder/more asymmetric photon
+      // configurations, while Er1,Er2 matches to 9 sig figs at both
+      // (2026-08-05). Er1/Er2 reduce to the equal-mass Eqq,Eqq this was
+      // validated against whenever mr1==mr2, so that check still holds;
+      // they differ only when the ghost masses are unequal, where Eqq,Eqq
+      // could put the energy below the heavier ghost's own mass.
+      m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, Er1, Er2, mr1, mr2, m_EminQ);
     }
   }
   else {
@@ -485,8 +504,8 @@ bool FSR::YFS_FORM(){
     }
     else{
       m_BtiXcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin, m_photonMass, 0);
-      // Same EQQ,EQQ convention fix as the BVR_cru branch above - see its comment.
-      m_BtiQcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, Eqq, Eqq, m_r1.Mass(), m_r2.Mass(), m_EminQ, m_photonMass, 0);
+      // Same Er1,Er2 convention fix as the BVR_cru branch above - see its comment.
+      m_BtiQcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, Er1, Er2, mr1, mr2, m_EminQ, m_photonMass, 0);
     }
   }
   m_volmc = m_gp*log(1./m_fsrcut);
