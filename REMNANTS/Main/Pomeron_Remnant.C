@@ -48,7 +48,6 @@ void Pomeron_Remnant::Reset(const bool& resc,const bool &DIS) {
     delete part;
     m_spectators.pop_front();
   }
-  m_spectators.clear();
   p_recoiler = nullptr;
 }
 

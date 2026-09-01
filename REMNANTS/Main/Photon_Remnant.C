@@ -61,7 +61,6 @@ void Photon_Remnant::Reset(const bool & resc,const bool &DIS) {
     delete part;
     m_spectators.pop_front();
   }
-  m_spectators.clear();
   m_valence   = false;
   p_recoiler  = nullptr;
 }
@@ -198,8 +197,7 @@ void Photon_Remnant::MakeSpectator(Particle* parton, Colour_Generator* colours)
   p_spectator->SetPosition(parton->XProd());
   colours->AddColour(m_beam, i - 1, p_spectator);
   m_spectators.push_front(p_spectator);
-  if (!m_valence)
-    m_valence = true;
+  m_valence = true;
 }
 
 void Photon_Remnant::MakeRemnants(Colour_Generator* colours)

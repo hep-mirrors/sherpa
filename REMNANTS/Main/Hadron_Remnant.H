@@ -1,5 +1,5 @@
-#ifndef REMNANTS_Main_Proton_Remnant_H
-#define REMNANTS_Main_Proton_Remnant_H
+#ifndef REMNANTS_Main_Hadron_Remnant_H
+#define REMNANTS_Main_Hadron_Remnant_H
 
 #include "REMNANTS/Main/Remnant_Base.H"
 #include "REMNANTS/Tools/Form_Factor.H"

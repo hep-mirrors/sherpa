@@ -21,8 +21,7 @@ Remnant_Handler::Remnant_Handler(PDF::ISR_Handler* isr, YFS::YFS_Handler *yfs,
 				 const std::array<size_t, 2>& tags) :
   m_id(isr->Id()), m_tags(tags), p_softblob(nullptr),
   m_check(true), m_output(false), m_fails(0) {
-  rempars = new Remnants_Parameters();
-  rempars->Init();
+  if (!rempars) rempars = new Remnants_Parameters();
   p_remnants = {nullptr, nullptr};
   for (int i = 0; i < 2; ++i) {
     Flavour flav = isr->Flav(i);
@@ -63,6 +62,7 @@ Remnant_Handler(std::array<std::shared_ptr<Remnant_Base>, 2> remnants,
   m_id(isr->Id()), p_remnants(remnants), m_tags(tags), p_softblob(nullptr),
   m_check(true), m_output(false), m_fails(0)
 {
+  if (!rempars) rempars = new Remnants_Parameters();
   // this constructor is to create remnants, where one of the remnants
   // has already been created; needed for the beam rescatterings
   int beam = 0;
@@ -70,7 +70,8 @@ Remnant_Handler(std::array<std::shared_ptr<Remnant_Base>, 2> remnants,
   Flavour flav = isr->Flav(beam);
   if (isr->PDF(beam)!=nullptr &&
       Settings::GetMainSettings()["BEAM_REMNANTS"].Get<bool>()) {
-    if (flav.IsHadron() && flav.Kfcode() != kf_pomeron)
+    if (flav.IsHadron() && flav.Kfcode() != kf_pomeron &&
+        flav.Kfcode() != kf_reggeon)
       p_remnants[beam] = std::make_shared<Hadron_Remnant>(isr->PDF(beam), beam,
                                                           m_tags[beam]);
     else if (flav.IsLepton())
@@ -222,8 +223,8 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
                          m_type == strat::hh);
   // Fill in the transverse momenta through the Kinematics_Generator.
   // Check for colour connected parton-pairs including beam partons and
-  // add soft gluons in between them if their invariant mass is too large.
-  // This still needs debugging - therefore it is commented out.
+  // add soft gluons in between them if their invariant mass is too large
+  // (the Beam_Decorrelator below, only active for BEAM_DECORRELATOR: true).
   Return_Value::code rv = Return_Value::Success;
   if (!m_kinematics.FillBlobs(bloblist)) {
     msg_Debugging() << METHOD << ": Filling of beam blobs failed.\n";
@@ -302,7 +303,7 @@ int Remnant_Handler::FindInsertPositionForRescatter(Blob_List* const bloblist,
 		      return part->ProductionBlob() == nullptr; }
 		    ))
       return std::max(0, static_cast<int>(pos - bloblist->begin()) - 2);
-  return bloblist->size() - 2;
+  return std::max(0, static_cast<int>(bloblist->size()) - 2);
 }
 
 bool Remnant_Handler::CheckBeamBreakup()
@@ -345,8 +346,15 @@ void Remnant_Handler::SetImpactParameter(const double & b,const Vec4D & directio
   for (size_t i=0;i<2;i++) p_remnants[i]->SetPosition((i==0?1.:-1.) * pos);
 }
 
-bool Remnant_Handler::Extract(ATOOLS::Particle * part,const unsigned int beam)
+bool Remnant_Handler::Extract(ATOOLS::Particle * part,const int beam)
 {
+  // Only beam partons (beam index 0 or 1) can be extracted; a negative
+  // Particle::Beam() sentinel must not be silently wrapped into an out-of-range
+  // index of the two-element p_remnants array.
+  if (beam < 0 || beam > 1) {
+    msg_Error()<<METHOD<<" called with invalid beam index "<<beam<<".\n";
+    return false;
+  }
   // Extracting a particle from a remnant only works for positive energies.
   if (part->Momentum()[0] < 0.) {
     msg_Error()<<METHOD
@@ -363,4 +371,7 @@ void Remnant_Handler::Reset() {
   m_treatedshowerblobs.clear();
   m_kinematics.Reset();
   m_colours.Reset();
+  // p_softblob points into the (now cleared) blob list; drop the stale
+  // pointer so it is never dereferenced before the next MakeBeamBlobs.
+  p_softblob = nullptr;
 }

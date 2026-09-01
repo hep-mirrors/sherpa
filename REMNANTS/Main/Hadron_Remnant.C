@@ -370,8 +370,6 @@ void Hadron_Remnant::Reset(const bool & resc,const bool & DIS) {
     delete part;
     m_spectators.pop_front();
   }
-  // TODO: Have to check / fix this!!!!!
-  m_spectators.clear();
   m_valence   = false;
   p_valence   = p_remnant = p_recoiler = nullptr;
 }

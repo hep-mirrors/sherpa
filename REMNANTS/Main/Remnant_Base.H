@@ -23,9 +23,6 @@ namespace REMNANTS {
     };
   };
 
-  inline bool operator&(const rtp::code code1,const rtp::code code2) {
-    return (rtp::code)((int)code1&(int)code2);
-  }
   std::ostream &operator<<(std::ostream &ostr,rtp::code code);
 }
 
@@ -67,6 +64,12 @@ namespace REMNANTS {
     Remnant_Base(const ATOOLS::Flavour & flav,const size_t & beam,
 		 const size_t & tag=0);
     virtual ~Remnant_Base();
+
+    // Owns p_ff (deleted in the destructor) and is used polymorphically via
+    // shared_ptr, so it must not be copied: the default copy would alias p_ff
+    // and double-free it.
+    Remnant_Base(const Remnant_Base &) = delete;
+    Remnant_Base & operator=(const Remnant_Base &) = delete;
 
     virtual bool Extract(ATOOLS::Particle* parton, Colour_Generator* colours,
                          const double& spair);

@@ -8,7 +8,9 @@
 using namespace REMNANTS;
 using namespace ATOOLS;
 
-Beam_Decorrelator::Beam_Decorrelator() : m_on(false) {}
+Beam_Decorrelator::Beam_Decorrelator() :
+  m_on(false), p_rhandler(nullptr), p_kperpGenerator(nullptr),
+  p_softblob(nullptr) {}
 
 void Beam_Decorrelator::
 Initialize(Remnant_Handler * const rhandler) {
@@ -20,10 +22,17 @@ Initialize(Remnant_Handler * const rhandler) {
   s["DELTA_MASS"].SetDefault(0.1);
 
   p_rhandler = rhandler;
-  m_on   = s["BEAM_DECORRELATOR"].SetDefault(0).Get<bool>();
-  if (m_on &&
-      (p_rhandler->Type()==strat::DIS1 || p_rhandler->Type()==strat::DIS2)) {
-    // TODO: do the same for hh collisions?
+  // The decorrelator is only implemented for DIS: it needs the soft blob (which
+  // is null for the simple/ll strategies) and the kT generator / mass and eta
+  // parameters initialised below. Gate m_on on the DIS strategy so that
+  // BEAM_DECORRELATOR: true on a non-DIS run cannot leave m_on set with those
+  // members uninitialised (which previously caused a null-deref for simple/ll
+  // and use of uninitialised parameters for hh).
+  // TODO: do the same for hh collisions?
+  m_on = s["BEAM_DECORRELATOR"].SetDefault(0).Get<bool>() &&
+         (p_rhandler->Type() == strat::DIS1 ||
+          p_rhandler->Type() == strat::DIS2);
+  if (m_on) {
     p_kperpGenerator = p_rhandler->GetKPerp();
 
     m_expo   = s["SOFT_X_EXPONENT"].Get<double>();
@@ -60,7 +69,7 @@ bool Beam_Decorrelator::operator()(Blob * softblob) {
 
 bool Beam_Decorrelator::MustEmit(Particle * pi, Particle * pj) {
   // Checks if the partons must emit a soft gluon, for conditions see above.
-  if (pi->Beam() < 0 && pj->Beam() < 0 ||
+  if ((pi->Beam() < 0 && pj->Beam() < 0) ||
       pi->Info()=='I' || pj->Info()=='I')
     return false;
   // Ignore parton pairs that are not colour-correlated
@@ -105,7 +114,7 @@ void Beam_Decorrelator::InitSoftEmission() {
 }
 
 bool Beam_Decorrelator::DefineKinematics(Vec4D & pi,Vec4D & pj,Vec4D & pk) {
-  // 1000 trials to produce a kinematics that works, with x from a simple
+  // Up to 10 trials to produce a kinematics that works, with x from a simple
   // monomial x^(m_xiP-1) and the transverse momentum vector from the
   // Primordial_KPerp
   m_minMbeam    = m_mbeam+m_deltaM;

@@ -1,4 +1,5 @@
-#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "REMNANTS/Tools/Remnants_Parameters.H"
 
@@ -33,20 +34,10 @@ Remnants_Parameters::Remnants_Parameters()
 
 Remnants_Parameters::~Remnants_Parameters()
 {
-  if (!m_defaults.empty()) {
-    for (std::map<Flavour, remnant_parameters*>::iterator flit =
-                 m_defaults.begin();
-         flit != m_defaults.end(); flit++)
-      delete flit->second;
-    m_defaults.clear();
-  }
-  if (!m_actuals.empty()) {
-    for (std::map<Flavour, remnant_parameters*>::iterator flit =
-                 m_actuals.begin();
-         flit != m_actuals.end(); flit++)
-      delete flit->second;
-    m_actuals.clear();
-  }
+  for (std::map<Flavour, remnant_parameters*>::iterator flit = m_defaults.begin();
+       flit != m_defaults.end(); flit++)
+    delete flit->second;
+  m_defaults.clear();
 }
 
 void Remnants_Parameters::SetNucleonDefaults()
@@ -115,7 +106,6 @@ void Remnants_Parameters::SetMesonDefaults()
 void Remnants_Parameters::SetPhotonDefaults()
 {
   remnant_parameters* parmsP                = new remnant_parameters;
-  m_defaults[Flavour(kf_photon)]            = parmsP;
   parmsP->kT_form                           = primkT_form::gauss_limited;
   parmsP->kT_recoil                         = primkT_recoil::beam_vs_shower;
   parmsP->params["SHOWER_INITIATOR_MEAN"]   = 1.00;
@@ -145,7 +135,6 @@ void Remnants_Parameters::SetPhotonDefaults()
 void Remnants_Parameters::SetLeptonDefaults()
 {
   remnant_parameters* parmsE                = new remnant_parameters;
-  m_defaults[Flavour(kf_e)]                 = parmsE;
   parmsE->kT_form                           = primkT_form::none;
   parmsE->kT_recoil                         = primkT_recoil::beam_vs_shower;
   parmsE->params["SHOWER_INITIATOR_MEAN"]   = 0.00;
@@ -175,226 +164,80 @@ void Remnants_Parameters::SetLeptonDefaults()
   m_defaults[Flavour(kf_mu).Bar()]          = new remnant_parameters(*parmsE);
 }
 
-void Remnants_Parameters::Init()
+remnant_parameters* Remnants_Parameters::Defaults(const ATOOLS::Flavour& flav)
 {
-  Scoped_Settings data = Settings::GetMainSettings()["REMNANTS"];
-  for (const auto& pid : data.GetKeys()) {
-    kf_code             kf = ToType<kf_code>(pid);
-    Flavour             flav(kf);
-    remnant_parameters* defaults;
-    if (m_defaults.find(flav) != m_defaults.end()) defaults = m_defaults[flav];
-    else {
-      msg_Error() << "Warning in " << METHOD
-                  << ": did not find default settings for " << flav << "\n"
-                  << "   Will continue with defaults for a proton and hope for "
-                     "the best.\n";
-      defaults = m_defaults[Flavour(kf_p_plus)];
-    }
-    remnant_parameters* actuals = new remnant_parameters;
-    ////////////////////////////////////////////////////////////////////////////////////
-    // Fix the intrinsic kT parametrization: form and parameters
-    ///////////////////////////////////////////////////////////////////////////////////
-    actuals->kT_form   =
-      (data[pid]["KT_FORM"]
-       .SetDefault(defaults->kT_form)
-       .Get<primkT_form>());
-    actuals->kT_recoil =
-      (data[pid]["KT_RECOIL"]
-       .SetDefault(defaults->kT_recoil)
-       .Get<primkT_recoil>());
-    actuals->params["SHOWER_INITIATOR_MEAN"] =
-      (data[pid]["SHOWER_INITIATOR_MEAN"]
-       .SetDefault(defaults->params["SHOWER_INITIATOR_MEAN"])
-       .Get<double>());
-    actuals->params["SHOWER_INITIATOR_SIGMA"] =
-      (data[pid]["SHOWER_INITIATOR_SIGMA"]
-       .SetDefault(defaults->params["SHOWER_INITIATOR_SIGMA"])
-       .Get<double>());
-    actuals->params["SHOWER_INITIATOR_Q2"] =
-      (data[pid]["SHOWER_INITIATOR_Q2"]
-       .SetDefault(defaults->params["SHOWER_INITIATOR_Q2"])
-       .Get<double>());
-    actuals->params["SHOWER_INITIATOR_KTMAX"] =
-      (data[pid]["SHOWER_INITIATOR_KTMAX"]
-       .SetDefault(defaults->params["SHOWER_INITIATOR_KTMAX"])
-       .Get<double>());
-    actuals->params["SHOWER_INITIATOR_KTEXPO"] =
-      (data[pid]["SHOWER_INITIATOR_KTEXPO"]
-       .SetDefault(defaults->params["SHOWER_INITIATOR_KTEXPO"])
-       .Get<double>());
-    actuals->params["REFERENCE_ENERGY"] =
-      (data[pid]["REFERENCE_ENERGY"]
-       .SetDefault(defaults->params["REFERENCE_ENERGY"])
-       .Get<double>());
-    actuals->params["ENERGY_SCALING_EXPO"] =
-      (data[pid]["ENERGY_SCALING_EXPO"]
-       .SetDefault(defaults->params["ENERGY_SCALING_EXPO"])
-       .Get<double>());
-    actuals->params["BEAM_SPECTATOR_MEAN"] =
-      (data[pid]["BEAM_SPECTATOR_MEAN"]
-       .SetDefault(defaults->params["BEAM_SPECTATOR_MEAN"])
-       .Get<double>());
-    actuals->params["BEAM_SPECTATOR_SIGMA"] =
-      (data[pid]["BEAM_SPECTATOR_SIGMA"]
-       .SetDefault(defaults->params["BEAM_SPECTATOR_SIGMA"])
-       .Get<double>());
-    actuals->params["BEAM_SPECTATOR_Q2"] =
-      (data[pid]["BEAM_SPECTATOR_Q2"]
-       .SetDefault(defaults->params["BEAM_SPECTATOR_Q2"])
-       .Get<double>());
-    actuals->params["BEAM_SPECTATOR_KTMAX"] =
-      (data[pid]["BEAM_SPECTATOR_KTMAX"]
-       .SetDefault(defaults->params["BEAM_SPECTATOR_KTMAX"])
-       .Get<double>());
-    actuals->params["BEAM_SPECTATOR_KTEXPO"] =
-      (data[pid]["BEAM_SPECTATOR_KTEXPO"]
-       .SetDefault(defaults->params["BEAM_SPECTATOR_KTEXPO"])
-       .Get<double>());
-    ////////////////////////////////////////////////////////////////////////////////////
-    // Fix the matter distribution: form and parameters
-    ///////////////////////////////////////////////////////////////////////////////////
-    actuals->m_form =
-      (data[pid]["MATTER_FORM"]
-       .SetDefault(defaults->m_form)
-       .Get<matter_form>());
-
-    const std::vector<double> radius1_vec =
-      (data[pid]["MATTER_RADIUS_1"]
-       .SetDefault(defaults->param_variations["MATTER_RADIUS_1"])
-       .GetVector<double>());
-    const std::vector<double> radius2_vec =
-      (data[pid]["MATTER_RADIUS_2"]
-       .SetDefault(defaults->param_variations["MATTER_RADIUS_2"])
-       .GetVector<double>());
-    const std::vector<double> fraction_vec =
-      (data[pid]["MATTER_FRACTION_1"]
-       .SetDefault(defaults->param_variations["MATTER_FRACTION_1"])
-       .GetVector<double>());
-    const std::vector<double> softexp_vec =
-      (data[pid]["SOFT_EXPONENT"]
-       .SetDefault(defaults->param_variations["SOFT_EXPONENT"])
-       .GetVector<double>());
-
-    actuals->params["MATTER_RADIUS_1"]        = radius1_vec.front();
-    actuals->params["MATTER_RADIUS_2"]        = radius2_vec.front();
-    actuals->params["MATTER_FRACTION_1"]      = fraction_vec.front();
-    actuals->params["SOFT_EXPONENT"]          = softexp_vec.front();
-    actuals->param_variations["MATTER_RADIUS_1"]   = radius1_vec;
-    actuals->param_variations["MATTER_RADIUS_2"]   = radius2_vec;
-    actuals->param_variations["MATTER_FRACTION_1"] = fraction_vec;
-    actuals->param_variations["SOFT_EXPONENT"]     = softexp_vec;
-    m_actuals[flav] = actuals;
-    msg_Out()<<"Reading in parameters for "<<flav<<" yields:\n"
-              <<(*m_actuals[flav])<<"\n";
-  }
-  rempars->Output();
+  std::map<Flavour, remnant_parameters*>::iterator it = m_defaults.find(flav);
+  if (it != m_defaults.end()) return it->second;
+  // Fall back by hadron class. Use find() (not operator[]) so a missing
+  // fallback fails fast instead of default-inserting a null and dereferencing
+  // it in the callers (Get/KT_Form/...).
+  Flavour key = flav.IsBaryon() ? Flavour(kf_p_plus)
+              : flav.IsMeson()  ? Flavour(kf_pi_plus)
+                                : Flavour(kf_e);
+  it = m_defaults.find(key);
+  if (it == m_defaults.end())
+    THROW(fatal_error, "no remnant defaults for " + ToString(flav));
+  return it->second;
 }
 
-double Remnants_Parameters::Get(const ATOOLS::Flavour& flav,
-                                std::string            keyword)
-{
-  if (m_actuals.find(flav) != m_actuals.end() &&
-      m_actuals[flav]->params.find(keyword) != m_actuals[flav]->params.end())
-    return m_actuals[flav]->params[keyword];
-  else if (m_defaults.find(flav) != m_defaults.end() &&
-           m_defaults[flav]->params.find(keyword) != m_defaults[flav]->params.end())
-    return m_defaults[flav]->params[keyword];
-  else if (flav.IsBaryon()) return m_defaults[kf_p_plus]->params[keyword];
-  else if (flav.IsMeson())  return m_defaults[kf_pi_plus]->params[keyword];
-  return m_defaults[kf_e]->params[keyword];
-}
-
-const std::vector<double> &
+std::vector<double>
 Remnants_Parameters::GetVariationVector(const ATOOLS::Flavour& flav,
-                                   std::string            keyword) const
+                                        std::string            keyword)
 {
-  static const std::vector<double> empty_variations;
-  std::map<Flavour, remnant_parameters*>::const_iterator fit = m_actuals.find(flav);
-  if (fit!=m_actuals.end()) {
-    std::map<std::string, std::vector<double> >::const_iterator vit =
-      fit->second->param_variations.find(keyword);
-    if (vit!=fit->second->param_variations.end()) return vit->second;
+  remnant_parameters* defaults = Defaults(flav);
+  std::map<std::string, std::vector<double> >::const_iterator vit =
+    defaults->param_variations.find(keyword);
+  if (vit == defaults->param_variations.end()) return std::vector<double>();
+  Scoped_Settings data = Settings::GetMainSettings()["REMNANTS"];
+  return data[ToString(flav.Kfcode())][keyword]
+          .SetDefault(vit->second)
+          .GetVector<double>();
+}
+
+double Remnants_Parameters::Get(const ATOOLS::Flavour& flav, std::string keyword)
+{
+  remnant_parameters* defaults = Defaults(flav);
+  // Parameters that can be varied on the fly may be given as a list, with the
+  // nominal value first - read them as a vector and return the nominal value.
+  if (defaults->param_variations.find(keyword) !=
+      defaults->param_variations.end()) {
+    const std::vector<double> values = GetVariationVector(flav, keyword);
+    if (values.empty())
+      THROW(fatal_error, "Empty value list for REMNANTS:" +
+                             ToString(flav.Kfcode()) + ":" + keyword);
+    return values.front();
   }
-  std::map<Flavour, remnant_parameters*>::const_iterator dfit = m_defaults.find(flav);
-  if (dfit!=m_defaults.end()) {
-    std::map<std::string, std::vector<double> >::const_iterator vit =
-      dfit->second->param_variations.find(keyword);
-    if (vit!=dfit->second->param_variations.end()) return vit->second;
-  }
-  return empty_variations;
+  Scoped_Settings data = Settings::GetMainSettings()["REMNANTS"];
+  return data[ToString(flav.Kfcode())][keyword]
+          .SetDefault(defaults->params.at(keyword))
+          .Get<double>();
 }
 
 primkT_form Remnants_Parameters::KT_Form(const ATOOLS::Flavour& flav)
 {
-  if (m_actuals.find(flav) != m_actuals.end())
-    return m_actuals[flav]->kT_form;
-  else if (m_defaults.find(flav) != m_defaults.end())
-    return m_defaults[flav]->kT_form;
-  else if (flav==Flavour(kf_none))
-    return primkT_form::none;
-  else if (flav.IsBaryon()) return m_defaults[kf_p_plus]->kT_form;
-  else if (flav.IsMeson())  return m_defaults[kf_pi_plus]->kT_form;
-  return m_defaults[kf_e]->kT_form;
+  if (flav == Flavour(kf_none)) return primkT_form::none;
+  Scoped_Settings data = Settings::GetMainSettings()["REMNANTS"];
+  return data[ToString(flav.Kfcode())]["KT_FORM"]
+          .SetDefault(Defaults(flav)->kT_form)
+          .Get<primkT_form>();
 }
 
 primkT_recoil Remnants_Parameters::KT_Recoil(const ATOOLS::Flavour& flav)
 {
-  if (m_actuals.find(flav) != m_actuals.end())
-    return m_actuals[flav]->kT_recoil;
-  else if (m_defaults.find(flav) != m_defaults.end())
-    return m_defaults[flav]->kT_recoil;
-  else if (flav==Flavour(kf_none))
-    return primkT_recoil::none;
-  else if (flav.IsBaryon()) return m_defaults[kf_p_plus]->kT_recoil;
-  else if (flav.IsMeson())  return m_defaults[kf_pi_plus]->kT_recoil;
-  return m_defaults[kf_e]->kT_recoil;
+  if (flav == Flavour(kf_none)) return primkT_recoil::none;
+  Scoped_Settings data = Settings::GetMainSettings()["REMNANTS"];
+  return data[ToString(flav.Kfcode())]["KT_RECOIL"]
+          .SetDefault(Defaults(flav)->kT_recoil)
+          .Get<primkT_recoil>();
 }
 
 matter_form Remnants_Parameters::Matter_Form(const ATOOLS::Flavour& flav)
 {
-  if (m_actuals.find(flav) != m_actuals.end())
-    return m_actuals[flav]->m_form;
-  else if (m_defaults.find(flav) != m_defaults.end())
-    return m_defaults[flav]->m_form;
-  else if (flav==Flavour(kf_none))
-    return matter_form::none;
-  else if (flav.IsBaryon()) return m_defaults[kf_p_plus]->m_form;
-  else if (flav.IsMeson())  return m_defaults[kf_pi_plus]->m_form;
-  return m_defaults[kf_e]->m_form;
-}
-
-void Remnants_Parameters::Output()
-{
-  msg_Debugging() << "==============================================================="
-               "========\n";
-  for (std::map<Flavour, remnant_parameters*>::iterator flrpit =
-               m_defaults.begin();
-       flrpit != m_defaults.end(); flrpit++) {
-    bool act = (m_actuals.find(flrpit->first) != m_actuals.end());
-    msg_Debugging() << "-------------------------------------------------------------"
-                 "----------\n"
-              << "Remnant default (actuals) for " << flrpit->first << ":\n";
-    msg_Debugging() << "   Primordial KT Form:   " << flrpit->second->kT_form;
-    if (act) msg_Debugging() << " (" << m_actuals[flrpit->first]->kT_form << ")";
-    msg_Debugging() << "\n";
-    msg_Debugging() << "   Primordial KT Recoil: " << flrpit->second->kT_recoil;
-    if (act) msg_Debugging() << " (" << m_actuals[flrpit->first]->kT_recoil << ")";
-    msg_Debugging() << "\n";
-    msg_Debugging() << "   Matter Form:          " << flrpit->second->m_form;
-    if (act) msg_Debugging() << " (" << m_actuals[flrpit->first]->m_form << ")";
-    msg_Debugging() << "\n";
-    for (std::map<std::string, double>::iterator pit =
-                 m_defaults[flrpit->first]->params.begin();
-         pit != m_defaults[flrpit->first]->params.end(); pit++) {
-      msg_Debugging() << "   " << pit->first << ": " << pit->second;
-      if (act)
-        msg_Debugging() << " (" << m_actuals[flrpit->first]->params[pit->first]
-                  << ")";
-      msg_Debugging() << "\n";
-    }
-    msg_Debugging() << "-------------------------------------------------------------"
-                 "----------\n";
-  }
+  if (flav == Flavour(kf_none)) return matter_form::none;
+  Scoped_Settings data = Settings::GetMainSettings()["REMNANTS"];
+  return data[ToString(flav.Kfcode())]["MATTER_FORM"]
+          .SetDefault(Defaults(flav)->m_form)
+          .Get<matter_form>();
 }
 
 std::ostream& REMNANTS::operator<<(std::ostream&                os,
@@ -430,21 +273,10 @@ std::ostream& REMNANTS::operator<<(std::ostream&                os,
     case matter_form::single_gaussian:      return os << "Single_Gaussian";
     case matter_form::double_gaussian:      return os << "Double_Gaussian";
     case matter_form::x_dependent_gaussian: return os << "X-Dependent_Gaussian";
-    case matter_form::unknown:              return os << "Unknown";default: break;
+    case matter_form::unknown:              return os << "Unknown";
+    default: break;
   }
   return os << "Undefined";
-}
-
-std::ostream& REMNANTS::operator<<(std::ostream&             os,
-                                   const remnant_parameters& parms)
-{
-  os << "   Primordial k_T Form   = " << parms.kT_form << "\n"
-     << "   Primordial k_T Recoil = " << parms.kT_recoil << "\n"
-     << "   Matter Form           = " << parms.m_form << "\n";
-  for (std::map<std::string, double>::const_iterator pit = parms.params.begin();
-       pit != parms.params.end(); pit++)
-    os << "   " << pit->first << " = " << pit->second << "\n";
-  return os;
 }
 
 std::istream& REMNANTS::operator>>(std::istream&          is,
@@ -483,11 +315,13 @@ std::istream& REMNANTS::operator>>(std::istream& is, REMNANTS::matter_form& f)
 {
   std::string tag;
   is >> tag;
-  if (tag == "Single_Gaussian") f = matter_form::single_gaussian;
+  if (tag == "None") f = matter_form::none;
+  else if (tag == "Single_Gaussian") f = matter_form::single_gaussian;
   else if (tag == "Double_Gaussian")
     f = matter_form::double_gaussian;
-  else if (tag == "x_Dependent_Gaussian")
+  else if (tag == "x_Dependent_Gaussian" || tag == "X-Dependent_Gaussian")
     f = matter_form::x_dependent_gaussian;
+  else if (tag == "Unknown") f = matter_form::unknown;
   else
     THROW(fatal_error, "Unknown matter form \"" + tag + "\"");
   return is;

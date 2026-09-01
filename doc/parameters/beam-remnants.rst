@@ -93,6 +93,7 @@ REMNANTS
 .. index:: REMNANTS:MATTER_RADIUS_1
 .. index:: REMNANTS:MATTER_RADIUS_2
 .. index:: REMNANTS:MATTER_FORM
+.. index:: REMNANTS:SOFT_EXPONENT
 
 
 Sherpa organises the remnant handling by particle, with the PDG code as
@@ -102,16 +103,16 @@ tag-line.
 
    REMNANTS:
      2212:
-       KT_FORM: Gauss_limited
+       KT_FORM: Gauss_Limited
 
 The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 Longitudinal momenta for sea partons in hadrons are distributed according
 to a probability distribution in their light-cone momentum :math:`x` given by
 :math:`P(x)=x^{-1.5}`. If there are two valence partons left in the beam remnant
-after the shower initiators have been treated, the first of the two (usually the
-quark) will have a longitudinal momentum with :math:`P(x)=\exp(-1/x)`, while
-the last remaining valence parton (usually the di-quark for nucleons) carries
-the remaining longitudinal momentum.
+after the shower initiators have been treated, the valence di-quark (for
+nucleons) is assigned a longitudinal momentum fraction sampled from
+:math:`P(x)=\exp(-1/x)`, which is peaked towards large :math:`x`, while the
+last remaining valence quark carries the remaining longitudinal momentum.
 
 For the intrinsic transverse momentum, Sherpa differentiates between the
 transverse momentum for shower initiators (``SHOWER_INITIATOR_MEAN`` etc.)
@@ -125,7 +126,7 @@ two sets of partons per beam, see below (``KT_RECOIL``).
 
   * ``Gauss``: a simple Gaussian with mean and width;
   * ``Dipole``: a dipole form parameterised by :math:`Q^2`;
-  * ``Gauss_Limited``, ``dipole_Limited``: as above but further modified by a polynomial function of the form :math:`1-(k_{T}/k_{T,\rm{max}})^\eta`, where :math:`k_{T,\rm{max}}` and :math:`\eta` are given by the ``KTMAX`` and ``KTEXPO`` tags;
+  * ``Gauss_Limited``, ``Dipole_Limited``: as above but further modified by a polynomial function of the form :math:`1-(k_{T}/k_{T,\rm{max}})^\eta`, where :math:`k_{T,\rm{max}}` and :math:`\eta` are given by the ``KTMAX`` and ``KTEXPO`` tags;
   * ``None``: no intrinsic transverse momentum is assigned.
 
 :option:`KT_RECOIL (default: Beam_vs_Shower)`
@@ -156,12 +157,12 @@ two sets of partons per beam, see below (``KT_RECOIL``).
 :option:`BEAM_SPECTATOR_SIGMA   (default for nucleons: 0.25)`
   Same as for ``SHOWER_INITIATOR_SIGMA``.
 
-:option:`SHOWER_INITIATOR_Q2 (default for nucleons: 1.1)`
+:option:`SHOWER_INITIATOR_Q2 (default for nucleons: 0.77)`
   This parameter specifies the :math:`Q^2` in :math:`{\rm GeV}^2`
   of the limited or unlimited dipole distribution for the
   intrinsic transverse momentum.
 
-:option:`BEAM_SPECTATOR_Q2   (default for nucleons: 0.25)`
+:option:`BEAM_SPECTATOR_Q2   (default for nucleons: 0.77)`
   Same as for ``SHOWER_INITIATOR_Q2``.
 
 :option:`SHOWER_INITIATOR_KTMAX (default for nucleons: 2.7)`
@@ -189,11 +190,11 @@ two sets of partons per beam, see below (``KT_RECOIL``).
 :option:`ENERGY_SCALING_EXPO (default: 0.08)`
   This parameter specifies the energy extrapolation exponent.
 
-:option:`MATTER_FORM (default for nucleons: Double_Gaussian, for mesons/photons: Single_Gaussian)`
-  ``Single_Gaussian`` models the hadronic matter distribution with a single 
-  Gaussian, while ``Double_Gaussian`` uses a superposition of two Gaussians 
-  to model the overlap between the colliding particles.  ``None`` switches 
-  this off.
+:option:`MATTER_FORM (default for nucleons: Double_Gaussian, for mesons/photons: Single_Gaussian, for leptons: None)`
+  Functional form of the transverse matter distribution used to model the
+  overlap between the colliding particles.  Available options are
+  ``Single_Gaussian``, ``Double_Gaussian``, ``X-Dependent_Gaussian`` and
+  ``None`` (the latter switching the spatial distribution off).
 
 :option:`MATTER_RADIUS_1 (default for nucleons: 0.85, for mesons/photons: 0.75)`
   The radius of the (inner) Gaussian in fm. If used with the
@@ -205,11 +206,16 @@ two sets of partons per beam, see below (``KT_RECOIL``).
   :math:`f^2` is distributed by the inner Gaussian :math:`r_1`, another fraction
   :math:`(1-f)^2` is distributed by the outer Gaussian :math:`r_2`,
   and the remaining fraction :math:`2f(1-f)` is distributed by the combined radius
-  :math:`r_\text{tot} = \sqrt{\frac{r_1^2+r_2^2}{2}}`. Defaults for nucleons to ``0.65``.
+  :math:`r_\text{tot} = \sqrt{\frac{r_1^2+r_2^2}{2}}`. Defaults to ``0.65`` for nucleons.
 
 :option:`MATTER_RADIUS_2`
     Defaults to ``1.0``. It is only used for the case of a double-Gaussian
     overlap, see below.
+
+:option:`SOFT_EXPONENT (default for nucleons: 0.08, otherwise: 0.0)`
+    Exponent :math:`\alpha` of the :math:`x`-dependent matter radius
+    :math:`R(x) = R_1\,x^{-\alpha}`. Only used for the
+    ``X-Dependent_Gaussian`` matter form.
 
 
 If the option :option:`BEAM_REMNANTS: false` is specified at top level, pure

@@ -29,7 +29,7 @@ namespace REMNANTS {
     Primordial_KPerp          m_kperpGenerator;
     ATOOLS::Momenta_Stretcher m_stretcher;
 
-    ATOOLS::Poincare          m_oldcmsboost, m_newcmsboost, m_rotate;
+    ATOOLS::Poincare          m_oldcmsboost, m_newcmsboost;
     std::set<ATOOLS::Blob *>  m_boostedblobs;
 
     double                                m_mass_sum;
