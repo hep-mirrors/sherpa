@@ -62,10 +62,11 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     s_nfgsplit=Settings::GetMainSettings()["DIPOLES"]["NF_GSPLIT"].Get<int>();
     s_kfac = Settings::GetMainSettings()["SHOWER"]["KFACTOR_SCHEME"].Get<int>();
   }
-  if (s_allowuo) m_reqkfac="CCFM";
+  m_nproc=!(p_proc->Info().m_fi.NLOType()==nlo_type::lo);
+  m_allowuo=(m_nproc&&(s_cmode&4096))?0:s_allowuo;
+  if (m_allowuo) m_reqkfac="CCFM";
   m_scale.resize(2*stp::size);
   std::string tag(args.m_scale), core(s_core), uoscale(s_uoscale);
-  m_nproc=!(p_proc->Info().m_fi.NLOType()==nlo_type::lo);
   m_nmin=p_proc->Info().m_fi.NMinExternal();
   size_t pos(tag.find('['));
   if (pos==4) {
@@ -130,6 +131,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
     512 - No ordering check if first RS split
     1024 - No differential for core
     2048 - No tracking of scale sums
+    4096 - No CCFM at NLO
   */
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
@@ -373,7 +375,7 @@ double MEPS_Scale_Setter::Calculate
     ampl->Delete();
     return sqrt(-1);
   }
-  Cluster(ampl,ampls,s_allowuo?0:1);
+  Cluster(ampl,ampls,m_allowuo?0:1);
   p_proc->Caller()->Generator()->SetMassMode(mm);
   if (ampls.empty()) {
     SetCoreScale(ampl);
@@ -640,7 +642,7 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 	  }
       }
       if (skip) continue;
-      if (!s_allowuo) mup2=Max(mup2,scale[idx]);
+      if (!m_allowuo) mup2=Max(mup2,scale[idx]);
       if (m_rproc && ampl->Prev()==NULL) {
 	m_scale[stp::size+stp::res]=ampl->Next()->KT2();
 	ampl->SetNLO(1);

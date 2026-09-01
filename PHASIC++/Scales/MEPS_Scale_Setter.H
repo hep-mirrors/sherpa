@@ -27,7 +27,7 @@ namespace PHASIC {
     std::shared_ptr<Color_Integrator> p_ci;
 
     double m_rsf, m_fsf;
-    int    m_cmode, m_nmin;
+    int    m_cmode, m_nmin, m_allowuo;
     int    m_rproc, m_sproc, m_rsproc, m_vproc, m_nproc;
 
     static int s_nfgsplit, s_allowuo, s_nlocpl;
