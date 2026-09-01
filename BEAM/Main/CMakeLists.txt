@@ -25,6 +25,6 @@ set(BeamMain_HEADERS Beam_Base.H
 
 sherpa_create_git_info(BeamMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(BeamMain SHARED ${BeamMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(BeamMain ${SHERPA_SUBLIB_TYPE} ${BeamMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(BeamMain BeamMain)
 add_dependencies(BeamMain BeamMain_Git_Info)

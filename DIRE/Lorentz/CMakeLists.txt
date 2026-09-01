@@ -13,6 +13,6 @@ set(DireLorentz_SOURCES FFV_FF.C
 
 sherpa_create_git_info(DireLorentz ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(DireLorentz SHARED ${DireLorentz_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(DireLorentz ${SHERPA_SUBLIB_TYPE} ${DireLorentz_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(DireLorentz DireLorentz)
 add_dependencies(DireLorentz DireLorentz_Git_Info)

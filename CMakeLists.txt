@@ -56,6 +56,7 @@ option(SHERPA_ENABLE_INTERNAL_PDFS           "Enables internal PDFs." ON)
 option(SHERPA_ENABLE_INSTALL_LIBZIP          "Enables internal LibZip." OFF)
 option(SHERPA_ENABLE_LHAPDF                  "Enables LHAPDF." ON)
 option(SHERPA_ENABLE_INSTALL_LHAPDF          "Enables internal LHAPDF." OFF)
+option(SHERPA_ENABLE_MERGED_LIBS             "Merge each module's libraries into one shared library per module." OFF)
 option(SHERPA_ENABLE_MADLOOP                 "Enables building with MadLoop." OFF)
 option(SHERPA_ENABLE_MANUAL                  "Enables building of manual." OFF)
 option(SHERPA_ENABLE_MCFM                    "Enables building with MCFM." OFF)
@@ -113,7 +114,7 @@ endforeach()
 ###########################Options handeling############################
 set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS DOXYGEN
  EWSUD GOSAM GZIP HDF5 HEPMC3 HEPMC3_ROOT
- INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF
+ INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF MERGED_LIBS
  MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
   message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
@@ -326,6 +327,12 @@ if (SHERPA_ENABLE_THREADING)
   find_package(Threads REQUIRED)
 endif()
 
+if (SHERPA_ENABLE_MERGED_LIBS)
+  set(SHERPA_SUBLIB_TYPE OBJECT)
+else()
+  set(SHERPA_SUBLIB_TYPE SHARED)
+endif()
+
 macro(sherpa_handle_shared_library  mylib mylibname)
   if(SHERPA_ENABLE_MPI)
      target_link_libraries(${mylib} PRIVATE MPI::MPI_CXX)
@@ -337,15 +344,19 @@ macro(sherpa_handle_shared_library  mylib mylibname)
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}>)
-  install(TARGETS ${mylib} EXPORT SHERPATargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
-  set_target_properties(${mylib}        PROPERTIES POSITION_INDEPENDENT_CODE ON  SOVERSION 0.0.0)
-  set_target_properties(${mylib}        PROPERTIES DEFINE_SYMBOL "")
-  set_target_properties(${mylib}        PROPERTIES OUTPUT_NAME ${mylibname})
-  set_target_properties(${mylib} PROPERTIES  ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
-                                             LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
-                                             RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
-                                             EXPORT_NAME SHERPA::${mylib}
-                                               )
+  get_target_property(SHERPA_MYLIB_TYPE ${mylib} TYPE)
+  if (NOT SHERPA_MYLIB_TYPE STREQUAL "OBJECT_LIBRARY")
+    install(TARGETS ${mylib} EXPORT SHERPATargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
+    set_target_properties(${mylib}        PROPERTIES POSITION_INDEPENDENT_CODE ON  SOVERSION 0.0.0)
+    set_target_properties(${mylib}        PROPERTIES DEFINE_SYMBOL "")
+    set_target_properties(${mylib}        PROPERTIES OUTPUT_NAME ${mylibname})
+    set_target_properties(${mylib} PROPERTIES  ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
+                                               LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
+                                               RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
+                                               EXPORT_NAME SHERPA::${mylib}
+                                                 )
+  endif()
+  unset(SHERPA_MYLIB_TYPE)
 
 endmacro(sherpa_handle_shared_library  mylib mylibname)
 
@@ -695,30 +706,58 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/PHASIC++/Main/plot_stats.sh
 add_library(SHERPAAll INTERFACE)
 add_library(SHERPA::All ALIAS SHERPAAll)
 set_target_properties(SHERPAAll PROPERTIES EXPORT_NAME SHERPA::All)
-target_link_libraries(SHERPAAll INTERFACE
-SherpaMain SherpaInitialization SherpaSingleEvents SherpaSoftPhysics SherpaPerturbativePhysics SherpaTools
-ShrimpsMain ShrimpsEvents ShrimpsLadders ShrimpsBeamRemnants ShrimpsXsecs ShrimpsEikonals ShrimpsTools
-HadronsMain HadronsMEs HadronsCurrents HadronsPSs
-Reconnections
-AhadicMain AhadicTools AhadicFormation AhadicDecays
-Amisic AmisicTools AmisicPerturbative
-PhotonsMain PhotonsTools PhotonsPhaseSpace PhotonsMEs PhotonsPhotonSplitter
-Remnants  RemnantsTools
-MCatNLOMain MCatNLOCalculators MCatNLOShowers MCatNLOTools
-DIMTools DIMShower DIMGauge DIMLorentz DIMMain
-CSMain CSCalculators CSShowers CSTools
-DireTools DireShower DireGauge DireLorentz DireMain
-PhasicScales Comix  ComixPhasespace ComixAmplitude
-YFSCEEX  YFSMain YFSNLO  YFSTools
-PhasicMain PhasicChannels PhasicProcess PhasicSelectors PhasicEnhance PhasicDecays
-Amegic DipoleSubtraction Amplitude AmegicPSGen
-String Zfunctions
-ExtAmp ExtraXSNLO ExtraXSSpecial ExtraXS2_2 ExtraXS1_2 ExtraXS1_3 ExtraXS
-METoolsExplicit METoolsCurrents METoolsVertices METoolsColors METoolsSpinCorrelations METoolsLoops METoolsMain ModelUFO ModelMain
-PDF
-BeamMain BeamSpectra
-ToolsPhys ToolsMath ToolsYaml ToolsOrg
-)
+if (SHERPA_ENABLE_MERGED_LIBS)
+  target_link_libraries(SHERPAAll INTERFACE
+    SherpaCore
+    Shrimps
+    Hadrons
+    Reconnections
+    Ahadic
+    AmisicCore
+    Photons
+    RemnantsCore
+    MCatNLO
+    DIM
+    CSShower
+    Dire
+    Phasic
+    ComixCore
+    YFS
+    AmegicCore
+    ExtraXSCore
+    ExtAmp
+    METools
+    ModelUFO ModelMain
+    PDF
+    Beam
+    ATOOLSCore
+  )
+else()
+  target_link_libraries(SHERPAAll INTERFACE
+    SherpaMain SherpaInitialization SherpaSingleEvents SherpaSoftPhysics SherpaPerturbativePhysics SherpaTools
+    ShrimpsMain ShrimpsEvents ShrimpsLadders ShrimpsBeamRemnants ShrimpsXsecs ShrimpsEikonals ShrimpsTools
+    HadronsMain HadronsMEs HadronsCurrents HadronsPSs
+    Reconnections
+    AhadicMain AhadicTools AhadicFormation AhadicDecays
+    Amisic AmisicTools AmisicPerturbative
+    PhotonsMain PhotonsTools PhotonsPhaseSpace PhotonsMEs PhotonsPhotonSplitter
+    Remnants  RemnantsTools
+    MCatNLOMain MCatNLOCalculators MCatNLOShowers MCatNLOTools
+    DIMTools DIMShower DIMGauge DIMLorentz DIMMain
+    CSMain CSCalculators CSShowers CSTools
+    DireTools DireShower DireGauge DireLorentz DireMain
+    PhasicScales Comix  ComixPhasespace ComixAmplitude
+    YFSCEEX  YFSMain YFSNLO  YFSTools
+    PhasicMain PhasicChannels PhasicProcess PhasicSelectors PhasicEnhance PhasicDecays
+    Amegic DipoleSubtraction Amplitude AmegicPSGen
+    String Zfunctions
+    ExtAmp ExtraXSNLO ExtraXSSpecial ExtraXS2_2 ExtraXS1_2 ExtraXS1_3 ExtraXS
+    METoolsExplicit METoolsCurrents METoolsVertices METoolsColors METoolsSpinCorrelations METoolsLoops METoolsMain ModelUFO ModelMain
+    PDF
+    BeamMain BeamSpectra
+    ToolsPhys ToolsMath ToolsYaml ToolsOrg
+  )
+endif()
 install(TARGETS SHERPAAll EXPORT SHERPATargets)
 get_target_property(TEMP_SHERPALIBS SHERPAAll INTERFACE_LINK_LIBRARIES)
 set(SHERPA_LIB_FLAGS "")

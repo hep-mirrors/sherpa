@@ -20,7 +20,7 @@ set(foo_HEADERS Definitions.H Output_Base.H Event_Reader_Base.H HepMC3_Interface
 
 sherpa_create_git_info(SherpaTools ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(SherpaTools SHARED ${SherpaTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(SherpaTools ${SHERPA_SUBLIB_TYPE} ${SherpaTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(SherpaTools SherpaTools)
 add_dependencies(SherpaTools SherpaTools_Git_Info)
 

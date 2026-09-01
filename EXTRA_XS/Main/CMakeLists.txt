@@ -11,6 +11,6 @@ set(ExtraXSMain_HEADERS Single_Process.H
 
 sherpa_create_git_info(ExtraXSMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(ExtraXS SHARED ${ExtraXSMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(ExtraXS ${SHERPA_SUBLIB_TYPE} ${ExtraXSMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ExtraXS ExtraXS)
 add_dependencies(ExtraXS ExtraXSMain_Git_Info)
