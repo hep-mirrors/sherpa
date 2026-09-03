@@ -1,4 +1,5 @@
 #include "ATOOLS/Math/MathTools.H"
+#include <limits>
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Exception.H"
@@ -69,6 +70,8 @@ NLO_Base::NLO_Base() {
   m_real_hard2 = 0.;
   m_rv_hard2 = 0.;
   m_zero_real_amp = 0;
+  for (int i=0;i<rdrop_N;++i) { m_rdrop[i]=0; m_rdrop_hard[i]=0;
+                                m_rdrop_softest[i]=std::numeric_limits<double>::max(); }
   m_ceex_done = false;
   m_softRV = 0;
   m_softRR = 0;
@@ -241,6 +244,34 @@ NLO_Base::~NLO_Base() {
   }
   msg_Out()<<"Total zero real amplitudes: "<<m_zero_real_amp<<std::endl;
   msg_Out()<<"Total events : "<<m_evts<<std::endl;
+  {
+    static const char *why[] = {"FSR BoostNLO failed",
+                                "momentum conservation failed",
+                                "real ME returned zero",
+                                "real ME or flux not finite"};
+    long tot(0); for (int i=0;i<rdrop_N;++i) tot += m_rdrop[i];
+    msg_Out()<<"Real beta1 corrections dropped: "<<tot;
+    if (m_evts>0) msg_Out()<<"  ("<<(100.*tot/m_evts)<<"% of photons)";
+    msg_Out()<<std::endl;
+    for (int i=0;i<rdrop_N;++i) {
+      if (m_rdrop[i]==0) continue;
+      msg_Out()<<"  "<<why[i]<<": "<<m_rdrop[i]
+               <<", of which hard (k.E>0.1*sqrt(s)): "<<m_rdrop_hard[i]
+               <<", softest k.E = "<<m_rdrop_softest[i]<<std::endl;
+    }
+    if (tot>0)
+      msg_Out()<<"  NB each drop keeps the crude eikonal weight but loses the"
+                 " hard correction, so these suppress the radiative tail."
+               <<std::endl;
+  }
+}
+
+double NLO_Base::DropReal(int why, const Vec4D &k)
+{
+  ++m_rdrop[why];
+  if (k.E() > 0.1*sqrt(m_s)) ++m_rdrop_hard[why];
+  m_rdrop_softest[why] = Min(m_rdrop_softest[why], k.E());
+  return 0.;
 }
 
 void NLO_Base::SetProviders(YFS::Virtual *virt, YFS::Real *real,
@@ -305,7 +336,7 @@ double NLO_Base::CalculateVirtual() {
     virt = p_virt->Calc(m_plab, m_born);
   else
     virt = p_virt->Calc(m_plab, m_born);
-  if (m_check_virt_born) {
+    if (m_check_virt_born && p_virt->p_loop_me->LoopGenerator().find("Internal") == 0 ) {
     // the provider's Born is pointlike, m_born is dressed with the pion form
     // factor, so compare against the dressed provider Born
     if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born()
@@ -490,7 +521,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
       Dip->AddPhotonToDipole(k);
       if (!Dip->BoostNLO()) {
         msg_Debugging() << METHOD << " BoostNLO failed, returning 0\n";
-        return 0;
+        return DropReal(rdrop_boost, k);
       }
       int i(0);
       for (auto f : Dip->m_flavs) {
@@ -544,7 +575,7 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
       m_histograms1d["k_pt"]->Insert(k.PPerp());
       m_histograms1d["dip_mass"]->Insert((p[2] + p[3]).Mass());
     }
-    return 0;
+    return DropReal(rdrop_momcons, k);
   }
 
   if ((p[2] + p[3]).Mass() < massmin)
@@ -559,14 +590,14 @@ double NLO_Base::CalculateReal(Vec4D k, int fsrcount) {
   if (IsZero(r)) {
     msg_Debugging() << METHOD << " r=0, returning 0\n";
     m_zero_real_amp++;
-    return 0;
+    return DropReal(rdrop_zeroamp, k);
   }
   if (IsBad(r) || IsBad(flux)) {
     msg_Debugging() << METHOD << " bad point: r=" << r << " flux=" << flux << "\n";
     msg_Error() << "Bad point for YFS Real\n"
                 << "  Real ME : " << r << "\n"
                 << "  Flux    : " << flux << "\n";
-    return 0;
+    return DropReal(rdrop_bad, k);
   }
 
   double tot, rcoll;

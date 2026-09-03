@@ -78,6 +78,11 @@ namespace PHASIC {
     inline void SetPList(const std::vector<size_t> *const plist) { p_plist=plist; }
 
     inline std::string Name() { return m_name; }
+    //! The Loop_Generator this ME was selected for. Note Name() above is the
+    //! PROCESS name (GenerateName of the initial/final state), not the
+    //! generator -- comparing it against a generator string never matches.
+    //! Out of line: Process_Info is only forward-declared in this header.
+    const std::string& LoopGenerator() const;
 
     static Virtual_ME2_Base* GetME2(const PHASIC::Process_Info& pi);
     static Virtual_ME2_Base* GetME2(const std::string& tag,

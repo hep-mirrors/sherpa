@@ -1028,7 +1028,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
       Q =  D.GetBornMomenta(0)+D.GetBornMomenta(1);
       sq = (QX).Abs2(); 
       sx = (QX-k).Abs2();
-      flux = (sx/sq);
+      flux = (sx/sq)*sqrt(sx/sq);
       return flux;
     }
 
@@ -1039,9 +1039,8 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
       Q  = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
       sq = (Q).Abs2();
-      sx = (Q+k).Abs2();
-      flux += (sq/sx);
-      // flux = Propagator(sx)/Propagator(sq);
+      sx = (Q-k).Abs2();
+      flux += (sx/sq)*sqrt(sx/sq);
     }
     return flux/m_dipolesFF.size();
   }
@@ -1070,9 +1069,8 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, dipoletype::code &fluxtype)
       Q  = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
       sq = (Q).Abs2();
-      sx = (Q+k).Abs2();
-      flux += (sq/sx);
-      // flux = Propagator(sx)/Propagator(sq);
+      sx = (Q-k).Abs2();
+      flux += (sx/sq)*sqrt(sx/sq);
     }
     return flux/m_dipolesFF.size();
   }
@@ -1102,8 +1100,8 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
       Q = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetMomenta(0)+D.GetMomenta(1);
       sq = (Q).Abs2();
-      sx = (Q+k+kk).Abs2();
-      flux = sq/sx;
+      sx = (Q-k-kk).Abs2();
+      flux = (sx/sq)*sqrt(sx/sq);
     }
     return flux;
   }
@@ -1119,8 +1117,8 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
       Q = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetMomenta(0)+D.GetMomenta(1);
       sq = (Q).Abs2();
-      sx = (Q+kk).Abs2();
-      flux*= sq/sx;
+      sx = (Q-kk).Abs2();
+      flux*= (sx/sq)*sqrt(sx/sq);
    }
   }
   else if(fluxtype1==dipoletype::final && fluxtype2==dipoletype::initial){
@@ -1135,8 +1133,8 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
       Q = D.GetBornMomenta(0)+D.GetBornMomenta(1);
       QX = D.GetMomenta(0)+D.GetMomenta(1);
       sq = (Q).Abs2();
-      sx = (Q+k).Abs2();
-      flux*= sq/sx;
+      sx = (Q-k).Abs2();
+      flux*= (sx/sq)*sqrt(sx/sq);
     }
   }
   else{

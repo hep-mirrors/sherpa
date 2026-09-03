@@ -112,6 +112,18 @@ public:
   // subtraction logic runs - covers both the standalone NLO real correction
   // and the real1/real2 sub-calls embedded in CalculateRealReal.
   int m_zero_real_amp;
+  // Every early return in CalculateReal drops that photon's beta1 correction
+  // while the event KEEPS its crude eikonal weight. The result is a net
+  // suppression that grows with photon hardness, because the recoil and the
+  // mapping are exactly what get harder to satisfy as k.E() rises -- i.e. it
+  // shows up as a deficit in the radiative tail of the pair mass and vanishes
+  // in the soft limit. Counted per cause, and split at k.E() > 0.1*sqrt(s), so
+  // that tail can be attributed to a mechanism instead of guessed at.
+  enum rdrop { rdrop_boost=0, rdrop_momcons, rdrop_zeroamp, rdrop_bad, rdrop_N };
+  long m_rdrop[rdrop_N], m_rdrop_hard[rdrop_N];
+  double m_rdrop_softest[rdrop_N];   // lowest k.E() that triggered each cause
+  //! Count a dropped real correction and return 0 for the caller to propagate.
+  double DropReal(int why, const ATOOLS::Vec4D &k);
   bool m_failcut;
 
 

@@ -30,6 +30,11 @@ Virtual_ME2_Base::~Virtual_ME2_Base()
 {
 }
 
+const std::string& Virtual_ME2_Base::LoopGenerator() const
+{
+  return m_pinfo.m_loopgenerator;
+}
+
 void Virtual_ME2_Base::SwitchMode(const int mode)
 {
 }
