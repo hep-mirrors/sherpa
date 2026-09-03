@@ -37,15 +37,29 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   if (campl->Legs().size()!=ampl->Legs().size())
     msg_Debugging()<<*campl<<"\n";
   if (campl->Legs().size()!=4) {
-    msg_Debugging()<<"more than 4 legs, use HT'/2 as scale"<<std::endl;
-    double q=0.0;
-    Vec4D ewsum;
-    for (size_t i(0);i<campl->Legs().size();++i)
-      if (!campl->Leg(i)->Flav().Strong()) ewsum+=campl->Leg(i)->Mom();
-      else q+=sqrt(dabs(campl->Leg(i)->Mom().MPerp2()));
-    q+=sqrt(dabs(ewsum.MPerp2()));
-    campl->Delete();
-    return PDF::Cluster_Param(NULL,q*q/4.0,q*q/4.0,q*q/4.0,-1);
+    if (campl->Legs().size() > 3 && !campl->Leg(0)->Flav().Strong() &&
+        campl->Leg(1)->Flav().Strong() && !campl->Leg(2)->Flav().Strong()) {
+      msg_Debugging()<<"more than 4 legs, DIS like"<<std::endl;
+      double massum=0;
+      for (size_t i(0);i<campl->Legs().size();++i) {
+        if (!campl->Leg(i)->Flav().Strong()) continue;
+        massum += campl->Leg(i)->Flav().Mass();
+      }
+      muq2=muf2=mur2=dabs((campl->Leg(0)->Mom()+campl->Leg(2)->Mom()).Abs2()) + sqr(massum);
+      campl->Delete();
+      return PDF::Cluster_Param(NULL,muq2,muf2,mur2,-1);
+    }
+    else {
+      msg_Debugging()<<"more than 4 legs, use HT'/2 as scale"<<std::endl;
+      double q=0.0;
+      Vec4D ewsum;
+      for (size_t i(0);i<campl->Legs().size();++i)
+        if (!campl->Leg(i)->Flav().Strong()) ewsum+=campl->Leg(i)->Mom();
+        else q+=sqrt(dabs(campl->Leg(i)->Mom().MPerp2()));
+      q+=sqrt(dabs(ewsum.MPerp2()));
+      campl->Delete();
+      return PDF::Cluster_Param(NULL,q*q/4.0,q*q/4.0,q*q/4.0,-1);
+    }
   }
   Flavour_Vector fl; fl.resize(4);
   fl[0]=campl->Leg(0)->Flav();
