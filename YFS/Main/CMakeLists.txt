@@ -25,8 +25,5 @@ add_library(YFSMain ${SHERPA_SUBLIB_TYPE} ${YFSMain_SOURCES} ${CMAKE_CURRENT_BIN
 sherpa_handle_shared_library(YFSMain YFSMain)
 add_dependencies(YFSMain YFSMain_Git_Info)
 if (SHERPA_ENABLE_LOOPTOOLS) 
-    target_include_directories(YFSMain  PRIVATE ${LOOPTOOLS_DIRS}/include)
-    # macOS builds LoopTools as a .dylib; take whichever is present.
-    find_library(LOOPTOOLS_LIB NAMES ooptools PATHS ${LOOPTOOLS_DIRS}/lib NO_DEFAULT_PATH)
-    target_link_libraries(YFSMain  PRIVATE ${LOOPTOOLS_LIB})
+    target_link_libraries(YFSMain  PRIVATE LoopTools::LoopTools)
 endif()

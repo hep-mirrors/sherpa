@@ -24,11 +24,7 @@ add_library(ExtraXSNLO ${SHERPA_SUBLIB_TYPE} ${ExtraXSNLO_SOURCES} ${CMAKE_CURRE
 if (SHERPA_ENABLE_LOOPTOOLS)
     # emu_emu_Virtual.C is NOT added here: this block runs after add_library,
     # so appending to any source list has no effect. Left as it was.
-    target_include_directories(ExtraXSNLO  PRIVATE ${LOOPTOOLS_DIRS}/include)
-    # The macOS build of LoopTools produces a .dylib, not a .a; take whichever
-    # is present rather than hard-coding one.
-    find_library(LOOPTOOLS_LIB NAMES ooptools PATHS ${LOOPTOOLS_DIRS}/lib NO_DEFAULT_PATH)
-    target_link_libraries(ExtraXSNLO  PRIVATE ${LOOPTOOLS_LIB})
+    target_link_libraries(ExtraXSNLO  PRIVATE LoopTools::LoopTools)
 endif()
 sherpa_handle_shared_library(ExtraXSNLO ExtraXSNLO)
 add_dependencies(ExtraXSNLO ExtraXSNLO_Git_Info)
