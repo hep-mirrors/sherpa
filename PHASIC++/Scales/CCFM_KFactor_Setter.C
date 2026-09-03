@@ -176,7 +176,12 @@ double CCFM_Sudakov::Delta(const double &z,const double &q2,const double &Q2)
 {
   double as2pi((*p_as)(q2)/(2.0*M_PI));
   if (m_fl.IsGluon()) {
-    return exp(-as2pi*3.0*(2.0*log(1.0/z)*log(Q2/q2/z)));
+    // From hep-ph/0204115, Eq.(27)
+    // Their variables to ours: k_\perp^2 \to Q2, p_\perp^2 \to q2, q^2 \to q2/(1-z)^2
+    double qi2(q2/sqr(1.0-z));
+    if (Q2/qi2<=z*z) return 0.0;// case 3
+    if (Q2/qi2<=1) return exp(-as2pi*3.0*(2.0*log(sqrt(Q2/q2)/z)*log(sqrt(Q2/q2)/(z*(1.0-z)))));// case 2
+    return exp(-as2pi*3.0*(2.0*log(1.0/z)*log(Q2/q2/z)));// case 1
   }
   return 1;
 }
