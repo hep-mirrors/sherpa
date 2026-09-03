@@ -66,8 +66,8 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
   if (p_singlet->size()==2) {
     bool flag = Trivial(p_singlet->front(),p_singlet->back(),false);
     if (!flag) {
-      msg_Error()<<(*singlet)<<"\n";
-      THROW(fatal_error,"Couldn't deal with 2-parton singlet.");
+      msg_Error()<<"Couldn't deal with 2-parton singlet.\n"<<(*singlet)<<"\n";
+      return false;
     }
     delete p_singlet;
     return flag;
