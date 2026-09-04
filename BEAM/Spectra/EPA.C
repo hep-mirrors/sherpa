@@ -87,47 +87,50 @@ void EPA::Initialise()
                  ? sqr(m_energy * s["ThetaMax"].GetTwoVector<double>()[b])
                  : sqr(rpa->hBar_c() / m_beam.Radius());
   if (m_outputAll) {
-    Tests();
+    Tests(m_energy);
     THROW(normal_exit, "Tests done.");
   }
 
   m_fftype = s["Form_Factor"].GetTwoVector<EPA_ff_type>()[b];
   switch (m_fftype) {
   case EPA_ff_type::point:
-    p_ff = std::make_unique<EPA_Point>(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_Point>(m_beam, m_dir, m_energy);
     break;
   case EPA_ff_type::pointApprox:
-    p_ff = std::make_unique<EPA_PointApprox>(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_PointApprox>(m_beam, m_dir, m_energy);
     break;
   case EPA_ff_type::proton:
-    p_ff = std::make_unique<EPA_Proton>(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_Proton>(m_beam, m_dir, m_energy);
     break;
   case EPA_ff_type::protonApprox:
-    p_ff = std::make_unique<EPA_ProtonApprox>(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_ProtonApprox>(m_beam, m_dir, m_energy);
     break;
   case EPA_ff_type::Gauss:
-    p_ff = std::make_unique<EPA_Gauss>(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_Gauss>(m_beam, m_dir, m_energy);
     break;
   case EPA_ff_type::hcs:
-    p_ff = std::make_unique<EPA_HCS>(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_HCS>(m_beam, m_dir, m_energy);
     break;
   case EPA_ff_type::dipole:
-    p_ff = std::make_unique<EPA_Dipole>(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_Dipole>(m_beam, m_dir, m_energy);
     break;
   case EPA_ff_type::dipoleApprox:
-    p_ff = std::make_unique<EPA_DipoleApprox>(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_DipoleApprox>(m_beam, m_dir, m_energy);
+    break;
+  case EPA_ff_type::protonSachs:
+    p_ff = std::make_unique<EPA_ProtonSachs>(m_beam, m_dir, m_energy);
     break;
   case EPA_ff_type::ionApprox:
-    p_ff = std::make_unique<EPA_IonApprox>(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_IonApprox>(m_beam, m_dir, m_energy);
     break;
   case EPA_ff_type::ionApproxInt:
-    p_ff = std::make_unique<EPA_IonApproxIntegrated>(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_IonApproxIntegrated>(m_beam, m_dir, m_energy);
     break;
   case EPA_ff_type::WoodSaxon:
-    p_ff = std::make_unique<EPA_WoodSaxon>(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_WoodSaxon>(m_beam, m_dir, m_energy);
     break;
   case EPA_ff_type::WoodSaxonApprox:
-    p_ff = std::make_unique<EPA_WoodSaxonApprox>(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_WoodSaxonApprox>(m_beam, m_dir, m_energy);
     break;
   default:
     THROW(not_implemented, "unknown EPA form factor. ");
@@ -169,7 +172,13 @@ void EPA::RegisterDefaults() const
   s["Q2Min"].SetDefault(-1.);
   s["xMax"].SetDefault(1.);
   s["xMin"].SetDefault(1.e-5);
-  s["xBins"].SetDefault(100);
+  // 200 x-bins, i.e. 40 per decade over the default x range. The N(x,b) table
+  // is interpolated linearly, so the residual bias is O(h^2) in the node
+  // spacing h = dlog(x); 100 bins left a ~0.4% bias on the b-integrated flux at
+  // the upper end of the UPC x range (measured by the closure test in
+  // Tests/Unit/test_BEAM_EPA_FF.C), 200 bins quarter it. The extra cost is one
+  // table fill, which is cached inside <RESULT_DIRECTORY>.zip.
+  s["xBins"].SetDefault(200);
   s["bMin"].SetDefault(0.3);
   s["bThreshold"].SetDefault(10.);
   s["bMax"].SetDefault(1.e3);
@@ -199,74 +208,80 @@ void EPA::RegisterDefaults() const
   s["OutputAllSpectra"].SetDefault(false);
 }
 
-void EPA::Tests()
+void EPA::Tests(const double energy)
 {
   msg_Out() << METHOD << ": Beginning writing the output files\n";
 
   // Test
-  // auto* ff_test = new EPA_Test(Flavour(kf_photon), 0);
+  // auto* ff_test = new EPA_Test(Flavour(kf_photon), 0, energy);
   // ff_test->OutputToCSV("test");
   // delete ff_test;
 
   // Lepton
-  auto* ff_e = new EPA_Point(Flavour(kf_e), 0);
+  auto* ff_e = new EPA_Point(Flavour(kf_e), 0, energy);
   ff_e->OutputToCSV("point");
   delete ff_e;
-  auto* ff_eApprox = new EPA_PointApprox(Flavour(kf_e), 0);
+  auto* ff_eApprox = new EPA_PointApprox(Flavour(kf_e), 0, energy);
   ff_eApprox->OutputToCSV("pointApprox");
   delete ff_eApprox;
 
   // Proton
   // ======
   // Proton Sachs
-  auto* ff_p_proton = new EPA_Proton(Flavour(kf_p_plus), 0);
+  auto* ff_p_proton = new EPA_Proton(Flavour(kf_p_plus), 0, energy);
   ff_p_proton->OutputToCSV("proton");
   delete ff_p_proton;
   // Proton Sachs Approx
-  auto* ff_p_protonApprox = new EPA_ProtonApprox(Flavour(kf_p_plus), 0);
+  auto* ff_p_protonApprox =
+      new EPA_ProtonApprox(Flavour(kf_p_plus), 0, energy);
   ff_p_protonApprox->OutputToCSV("protonApprox");
   delete ff_p_protonApprox;
   // Gauss
-  auto* ff_p_gauss = new EPA_Gauss(Flavour(kf_p_plus), 0);
+  auto* ff_p_gauss = new EPA_Gauss(Flavour(kf_p_plus), 0, energy);
   ff_p_gauss->OutputToCSV("gauss");
   delete ff_p_gauss;
   // HCS
-  auto* ff_p_hcs = new EPA_HCS(Flavour(kf_p_plus), 0);
+  auto* ff_p_hcs = new EPA_HCS(Flavour(kf_p_plus), 0, energy);
   ff_p_hcs->OutputToCSV("hcs");
   delete ff_p_hcs;
   // Dipole
-  auto* ff_p_dip = new EPA_Dipole(Flavour(kf_p_plus), 0);
+  auto* ff_p_dip = new EPA_Dipole(Flavour(kf_p_plus), 0, energy);
   ff_p_dip->OutputToCSV("dipole");
   delete ff_p_dip;
   // DipoleApprox
-  auto* ff_p_dipApprox = new EPA_DipoleApprox(Flavour(kf_p_plus), 0);
+  auto* ff_p_dipApprox = new EPA_DipoleApprox(Flavour(kf_p_plus), 0, energy);
   ff_p_dipApprox->OutputToCSV("dipoleApprox");
   delete ff_p_dipApprox;
+  // Proton Sachs, F = sqrt(D)
+  auto* ff_p_sachs = new EPA_ProtonSachs(Flavour(kf_p_plus), 0, energy);
+  ff_p_sachs->OutputToCSV("protonSachs");
+  delete ff_p_sachs;
   // Ion Approx
-  auto* ff_p_ionApprox = new EPA_IonApprox(Flavour(kf_p_plus), 0);
+  auto* ff_p_ionApprox = new EPA_IonApprox(Flavour(kf_p_plus), 0, energy);
   ff_p_ionApprox->OutputToCSV("ionApprox");
   delete ff_p_ionApprox;
   // Ion Approx Integrated
-  auto* ff_p_ionApproxInt = new EPA_IonApproxIntegrated(Flavour(kf_p_plus), 0);
+  auto* ff_p_ionApproxInt =
+      new EPA_IonApproxIntegrated(Flavour(kf_p_plus), 0, energy);
   ff_p_ionApproxInt->OutputToCSV("ionApproxInt");
   delete ff_p_ionApproxInt;
 
   std::vector<kf_code> ions({kf_lead208});
   for (kf_code ion : ions) {
     // Woods-Saxon
-    auto* ff_ion_ws = new EPA_WoodSaxon(Flavour(ion), 0);
+    auto* ff_ion_ws = new EPA_WoodSaxon(Flavour(ion), 0, energy);
     ff_ion_ws->OutputToCSV("ws");
     delete ff_ion_ws;
     // Woods-Saxon approximation
-    auto* ff_ion_wsApprox = new EPA_WoodSaxonApprox(Flavour(ion), 0);
+    auto* ff_ion_wsApprox = new EPA_WoodSaxonApprox(Flavour(ion), 0, energy);
     ff_ion_wsApprox->OutputToCSV("wsApprox");
     delete ff_ion_wsApprox;
     // Ion Approx
-    auto* ff_ionApprox = new EPA_IonApprox(Flavour(ion), 0);
+    auto* ff_ionApprox = new EPA_IonApprox(Flavour(ion), 0, energy);
     ff_ionApprox->OutputToCSV("ionApprox");
     delete ff_ionApprox;
     // Ion Approx Integrated
-    auto* ff_ionApproxInt = new EPA_IonApproxIntegrated(Flavour(ion), 0);
+    auto* ff_ionApproxInt = new EPA_IonApproxIntegrated(Flavour(ion), 0, energy);
     ff_ionApproxInt->OutputToCSV("ionApproxInt");
     delete ff_ionApproxInt;
   }
