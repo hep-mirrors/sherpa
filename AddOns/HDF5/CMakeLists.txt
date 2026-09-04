@@ -42,6 +42,16 @@ if(NOT HighFive_FOUND)
 
 endif()
 
+if(NOT TARGET HighFive::HighFive)
+  if(TARGET HighFive)
+    add_library(HighFive::HighFive ALIAS HighFive)
+  elseif(TARGET highfive)
+    add_library(HighFive::HighFive ALIAS highfive)
+  else()
+    message(FATAL_ERROR "HighFive was found but does not provide a usable CMake target")
+  endif()
+endif()
+
 get_target_property(HIGHFIVE_INCLUDE_DIR HighFive::HighFive INTERFACE_INCLUDE_DIRECTORIES)
 get_filename_component(HIGHFIVE_PREFIX ${HIGHFIVE_INCLUDE_DIR} DIRECTORY)
 message(STATUS "SHERPA: HIGHFIVE_VERSION=${HighFive_VERSION} HIGHFIVE_PREFIX=${HIGHFIVE_PREFIX} HIGHFIVE_INCLUDE_DIR=${HIGHFIVE_INCLUDE_DIR}")
