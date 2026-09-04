@@ -61,6 +61,15 @@ TEST_CASE("OneDim_Table interpolates and inverts a cumulative",
     CHECK(cum->Inverse(3.5) == Catch::Approx(3.5));
   }
 
+  SECTION("Inverse follows the metric of a logarithmic axis") {
+    axis a(4, 1., 100., axis_mode::log);
+    OneDim_Table t(a);
+    for (size_t i = 0; i <= a.m_nbins; ++i)
+      t.Fill(i, std::log(a.x(i)));
+    for (double x : {1.7, 4.2, 13., 57.})
+      CHECK(t.Inverse(t(x)) == Catch::Approx(x).epsilon(1.e-12));
+  }
+
   SECTION("Rescale scales every entry") {
     axis a(2, 0., 2., axis_mode::linear);
     OneDim_Table t(a);
@@ -115,6 +124,22 @@ TEST_CASE("TwoDim_Table interpolates and inverts in its 2nd axis",
     auto inv = cdf.Invert(1, 20);
     CHECK((*inv)(0.5, 0.3) == Catch::Approx(0.7));
     CHECK((*inv)(0.5, 0.8) == Catch::Approx(0.2));
+  }
+
+  SECTION("Invert follows the metric of a logarithmic y-axis") {
+    axis ax(2, 0., 1., axis_mode::linear), ay(4, 1., 100., axis_mode::log);
+    TwoDim_Table cdf(ax, ay);
+    // T(x,y) = log(y)/log(100), so its inverse is y = 100^v. Use eight
+    // inverse-table intervals to probe both nodes and midpoints of the input
+    // y-axis while staying on output-table nodes.
+    for (size_t i = 0; i <= ax.m_nbins; ++i)
+      for (size_t j = 0; j <= ay.m_nbins; ++j)
+        cdf.Fill(i, j, std::log(ay.x(j)) / std::log(100.));
+    auto inv = cdf.Invert(1, 8);
+    for (size_t j = 0; j <= 8; ++j) {
+      const double v = double(j) / 8.;
+      CHECK((*inv)(0.5, v) == Catch::Approx(std::pow(100., v)).epsilon(1.e-12));
+    }
   }
 
   SECTION("Invert rejects inversion of the 1st axis") {
@@ -206,5 +231,102 @@ TEST_CASE("TwoDim_Table survives a binary round-trip",
     for (double x : {1.e-2, 0.1, 0.5})
       for (double y : {0.5, 2.0, 4.0})
         CHECK((*t2)(x, y) == Catch::Approx(t(x, y)));
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Interpolation on a log axis happens in log(x).
+//
+// The nodes of a log axis are spaced geometrically, x_i = x_min exp(i*step), so
+// the interpolation fraction has to be taken in log(x). Weighting linearly in x
+// between geometrically spaced nodes systematically over-weights the upper node
+// -- an O(step^2) bias on every off-node lookup, a few per mille at the ~20
+// nodes per decade the EPA flux tables use.
+//
+// The sharp characterisation used below: with the log metric, a function that
+// is *linear in log(x)* is reproduced exactly at arbitrary off-node points.
+// Nothing above catches this -- the round-trip tests compare a table against
+// itself, so a shared systematic bias cancels.
+////////////////////////////////////////////////////////////////////////////////
+
+TEST_CASE("log axes interpolate in log(x)", "[ATOOLS::axis][ATOOLS::OneDim_Table]")
+{
+  EnsureMsg();
+
+  SECTION("axis::weight is the fraction in log(x), 1/2 at the geometric mean")
+  {
+    axis a(2, 1., 100., axis_mode::log); // nodes 1, 10, 100
+    CHECK(a.weight(0, 1.0) == Catch::Approx(0.0));
+    CHECK(a.weight(0, 10.0) == Catch::Approx(1.0));
+    // sqrt(1*10) is the *geometric* midpoint of the first bin
+    CHECK(a.weight(0, std::sqrt(10.0)) == Catch::Approx(0.5));
+    CHECK(a.weight(1, std::sqrt(1000.0)) == Catch::Approx(0.5));
+    CHECK(a.coordinate(0, 0.5) == Catch::Approx(std::sqrt(10.0)));
+    CHECK(a.coordinate(1, 0.5) == Catch::Approx(std::sqrt(1000.0)));
+  }
+
+  SECTION("linear axes are unaffected: fraction is still the fraction in x")
+  {
+    axis a(4, 0., 4., axis_mode::linear);
+    CHECK(a.weight(0, 0.0) == Catch::Approx(0.0));
+    CHECK(a.weight(2, 2.5) == Catch::Approx(0.5));
+    CHECK(a.weight(3, 4.0) == Catch::Approx(1.0));
+    CHECK(a.coordinate(2, 0.5) == Catch::Approx(2.5));
+  }
+
+  SECTION("OneDim_Table: a function linear in log(x) is exact off-node")
+  {
+    axis a(20, 1.e-3, 1., axis_mode::log);
+    OneDim_Table t(a);
+    const auto f = [](double x) { return 2.5 + 0.75 * std::log(x); };
+    for (size_t i = 0; i <= a.m_nbins; ++i) t.Fill(i, f(a.x(i)));
+    for (double x : {1.3e-3, 7.7e-3, 4.2e-2, 0.31, 0.94})
+      CHECK(t(x) == Catch::Approx(f(x)).epsilon(1.e-12));
+  }
+
+  SECTION("TwoDim_Table: bilinear in (log x, log y) is exact off-node")
+  {
+    axis ax(12, 1.e-2, 1.e2, axis_mode::log);
+    axis ay(8, 1.e-1, 1.e1, axis_mode::log);
+    TwoDim_Table t(ax, ay);
+    const auto f = [](double x, double y) {
+      return 1.5 + 0.5 * std::log(x) - 0.25 * std::log(y);
+    };
+    for (size_t i = 0; i <= ax.m_nbins; ++i)
+      for (size_t j = 0; j <= ay.m_nbins; ++j)
+        t.Fill(i, j, f(ax.x(i), ay.x(j)));
+    for (double x : {3.3e-2, 1.7, 47.})
+      for (double y : {0.17, 1.9, 7.3})
+        CHECK(t(x, y) == Catch::Approx(f(x, y)).epsilon(1.e-12));
+  }
+
+  SECTION("ThreeDim_Table: trilinear in (log x, log y, log z) is exact off-node")
+  {
+    axis ax(6, 1.e-2, 1.e2, axis_mode::log);
+    axis ay(6, 1.e-1, 1.e1, axis_mode::log);
+    axis az(6, 1., 1.e3, axis_mode::log);
+    ThreeDim_Table t(ax, ay, az);
+    const auto f = [](double x, double y, double z) {
+      return 0.5 * std::log(x) - 0.25 * std::log(y) + 0.125 * std::log(z);
+    };
+    for (size_t i = 0; i <= ax.m_nbins; ++i)
+      for (size_t j = 0; j <= ay.m_nbins; ++j)
+        for (size_t k = 0; k <= az.m_nbins; ++k)
+          t.Fill(i, j, k, f(ax.x(i), ay.x(j), az.x(k)));
+    for (double x : {3.3e-2, 47.})
+      for (double y : {0.17, 7.3})
+        for (double z : {6.1, 410.})
+          CHECK(t(x, y, z) == Catch::Approx(f(x, y, z)).epsilon(1.e-12));
+  }
+
+  SECTION("upper edge of a log axis returns the last node, not past it")
+  {
+    // bin() returns m_nbins at x_max, where values[bin+1] would be one past
+    // the end; the lookups clamp the bin index and the weight becomes 1.
+    axis a(5, 1.e-2, 1., axis_mode::log);
+    OneDim_Table t(a);
+    for (size_t i = 0; i <= a.m_nbins; ++i) t.Fill(i, double(i));
+    CHECK(t(1.0) == Catch::Approx(5.0));
+    CHECK(a.weight(a.m_nbins - 1, 1.0) == Catch::Approx(1.0));
   }
 }
