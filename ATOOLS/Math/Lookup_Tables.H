@@ -24,6 +24,16 @@ namespace ATOOLS {
     ~axis() = default;
     double x(size_t bin) const;
     size_t bin(double x) const;
+    // Fractional position of x inside the given bin: 0 at the bin's lower
+    // node, 1 at its upper one. Measured in the axis' own metric, i.e. in
+    // log(x) for a log axis, so that interpolation matches the node spacing.
+    // Returns 0 for any x on a single-bin or zero-width axis, which is flat:
+    // only node 0 is ever filled, so the caller must not scale it.
+    double weight(size_t bin, double x) const;
+    // Coordinate at a fractional position inside a bin, measured in the axis'
+    // own metric. This is the inverse of weight() for non-flat axes. A bin at
+    // or beyond the upper edge snaps to x_max, matching x(size_t).
+    double coordinate(size_t bin, double weight) const;
   };
 
   class OneDim_Table {
