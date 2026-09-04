@@ -132,13 +132,14 @@ double CCFM_KFactor_Setter::KFactor
       int is((l->Id()&3)?1:0);
       if (l->K()==0) continue;
       Cluster_Leg *lj(ampl->IdLeg(ampl->IdNew()));
-      Vec4D qcur(lj->Mom()), Qold(p[ID(l->Id()).front()]), Qnew(Qold+qcur);
+      Vec4D qcur, Qold(p[ID(l->Id()).front()]), Qnew;
       for (size_t j(0), k(0);k<p.size();++j) {
 	if (ampl->Leg(j)==lj) {
-	  msg_Debugging()<<"<- p_"<<i<<" = "<<p[i]<<"\n";
-	  msg_Debugging()<<"<- p_"<<k<<" = "<<p[k]<<"\n";
+	  Qnew=Qold+(qcur=p[k]);
+	  msg_Debugging()<<"<- p_"<<i<<" = "<<p[i]<<", Qold "<<Qold<<"\n";
+	  msg_Debugging()<<"<- p_"<<k<<" = "<<p[k]<<", qcur "<<qcur<<"\n";
 	  p[i]+=p[k];
-	  msg_Debugging()<<"-> p_"<<i<<" = "<<p[i]<<"\n";
+	  msg_Debugging()<<"-> p_"<<i<<" = "<<p[i]<<", Qnew "<<Qnew<<"\n";
 	  p.erase(p.begin()+k);
 	  continue;
 	}
@@ -148,7 +149,9 @@ double CCFM_KFactor_Setter::KFactor
 	       Qnew.PPlus()/Qold.PPlus():
 	       Qnew.PMinus()/Qold.PMinus());
       std::map<ATOOLS::Flavour,CCFM_Sudakov*>::iterator sit(m_suds.find(l->Flav()));
-      if (!is || sit==m_suds.end()) continue;
+      int vproc(p_proc->Info().Has(nlo_type::vsub));
+      if (!is || sit==m_suds.end() ||
+	  (next->OrderQCD()-(vproc?1:0))<1) continue;
       double gamma[2]={0.0,0.0};
       if ((mode&1) && p_proc->Info().m_fi.m_nlotype!=nlo_type::lo) {
        	gamma[0]=sit->second->Delta1(z,qcur.PPerp2(),Qnew.PPerp2(),muR2);

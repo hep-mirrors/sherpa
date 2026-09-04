@@ -604,6 +604,8 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 {
   double muf2(ampl->Last()->KT2()), mur2(m_rsf*ampl->Last()->Mu2());
   m_scale[stp::size+stp::res]=m_scale[stp::res]=ampl->MuQ2();
+  Vec4D_Vector q(ampl->Legs().size());
+  for (size_t i(0);i<q.size();++i) q[i]=ampl->Leg(i)->Mom();
   if (ampl) {
     m_scale[stp::size+stp::res]=ampl->KT2();
     double muuo2(UnorderedScale(ampl));
@@ -616,13 +618,33 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
       scale[idx]=Min(scale[idx],sqr(rpa->gen.Ecms()));
       bool skip(false);
       Cluster_Amplitude *next(ampl->Next());
-      if (!skip && next->Decays().size()) {
-	size_t cid(0);
-	for (size_t i(0);i<next->Legs().size();++i)
-	  if (next->Leg(i)->K()) {
-	    cid=next->Leg(i)->Id();
-	    break;
+      for (size_t i(0);i<next->Legs().size();++i) {
+	msg_Indent();
+	Cluster_Leg *l(next->Leg(i));
+	if (l->K()==0) continue;
+	Cluster_Leg *lj(ampl->IdLeg(ampl->IdNew()));
+	msg_Debugging()<<"Updating propagators {\n";
+	for (size_t j(0), k(0);k<q.size();++j) {
+	  if (ampl->Leg(j)==lj) {
+	    msg_Debugging()<<"  <- q_"<<ID(l->Id()&~lj->Id())<<" = "<<q[i]<<"\n";
+	    msg_Debugging()<<"  <- q_"<<ID(lj->Id())<<" = "<<q[k]<<"\n";
+	    q[i]+=q[k];
+	    msg_Debugging()<<"  -> q_"<<ID(l->Id())<<" = "<<q[i]<<"\n";
+	    q.erase(q.begin()+k);
+	    continue;
 	  }
+	  ++k;
+	}
+	msg_Debugging()<<"}\n";
+      }
+      Cluster_Leg *cur(NULL);
+      for (size_t i(0);i<next->Legs().size();++i)
+	if (next->Leg(i)->K()) {
+	  cur=next->Leg(i);
+	  break;
+	}
+      if (!skip && next->Decays().size()) {
+	size_t cid(cur->Id());
 	for (size_t i(0);i<next->Decays().size();++i)
 	  if ((next->Decays()[i]->m_id&cid)==cid) {
 	    skip=true;
@@ -647,6 +669,18 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 	  else scale[idx]=mup2;
 	}
 	double cas(MODEL::as->BoundedAlphaS(m_rsf*scale[idx]));
+	if (s_allowuo && (cur->Id()&3) &&
+	    (ampl->Next()->OrderQCD()-(m_vproc?1:0))>0) {
+	  int cid((cur->Id()&1)?0:1);
+	  double ccfmas(MODEL::as->BoundedAlphaS(m_rsf*q[cid].PPerp2()));
+	  double avgas(cas*ampl->Next()->AsR()+ccfmas*(1.0-ampl->Next()->AsR()));
+	  msg_Debugging()<<"  IS splitting: \\mu_{"<<idx<<"}(k_{T,"<<cid<<"}) = "
+			 <<sqrt(m_rsf)<<" * "<<sqrt(scale[idx])
+			 <<", as = "<<cas<<" * "<<ampl->Next()->AsR()<<"\n";
+	  msg_Debugging()<<"                \\mu_{"<<idx<<"}(q_{T,"<<cid<<"}) = "
+			 <<sqrt(m_rsf)<<" * "<<sqrt(q[cid].PPerp2())
+			 <<", as = "<<ccfmas<<" * "<<1.-ampl->Next()->AsR()<<"\n";
+	}
 	msg_Debugging()<<"  \\mu_{"<<idx<<"} = "
 		       <<sqrt(m_rsf)<<" * "<<sqrt(scale[idx])
 		       <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";
