@@ -91,6 +91,7 @@ Scoped_Settings& Scoped_Settings::UseNoneReplacements()
 {
   static std::map<std::string, std::string> nonelist{
     {"Off", "None"},
+    {"off", "None"},
     {"0", "None"},
     {"false", "None"},
     {"no", "None"}
