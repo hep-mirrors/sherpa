@@ -94,6 +94,35 @@ size_t axis::bin(double x) const
   return static_cast<size_t>(log(x / m_xmin) / m_xstep);
 }
 
+double axis::weight(size_t bin, double x) const
+{
+  // A single-bin axis is flat (only index 0 is ever filled) and a degenerate
+  // one has no width; in both cases the caller must fall back on the stored
+  // value, i.e. weight zero, rather than scale it by a spurious factor.
+  if (m_nbins == 1 || m_xstep <= 0.) return 0.;
+  if (bin >= m_nbins) bin = m_nbins - 1;
+  if (m_mode == axis_mode::linear) return (x - m_xmin) / m_xstep - double(bin);
+  // Log axis: the nodes are spaced geometrically, x_i = x_min exp(i * step),
+  // so the interpolation fraction has to be taken in log(x). Weighting
+  // linearly in x between geometrically spaced nodes systematically
+  // over-weights the upper node -- an O(step^2) bias on a smooth function,
+  // which is at the few-per-mille level for the ~20 nodes per decade the EPA
+  // flux tables use. This mirrors bin() above, so the returned weight is in
+  // [0, 1] whenever bin == this->bin(x) (and exactly 1 at x = x_max, where
+  // the callers clamp the bin index down by one).
+  return std::log(x / m_xmin) / m_xstep - double(bin);
+}
+
+double axis::coordinate(size_t bin, double weight) const
+{
+  // Keep the same flat-axis convention as weight(). Also preserve x()'s
+  // upper-edge behaviour for inverse tables whose requested value lies beyond
+  // a particular row's range.
+  if (m_nbins == 1 || m_xstep <= 0. || bin >= m_nbins) return x(bin);
+  if (m_mode == axis_mode::linear) return x(bin) + weight * m_xstep;
+  return x(bin) * std::exp(weight * m_xstep);
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // One-dimensional look-up table
 //////////////////////////////////////////////////////////////////////////////
@@ -122,14 +151,11 @@ double OneDim_Table::operator()(double x) const
   if (m_x.m_nbins == 1) return m_values[0];
 
   size_t bin = m_x.bin(x);
+  // bin() returns m_nbins at the upper edge, where m_values[bin + 1] would be
+  // one past the end; clamp as the 2D/3D lookups already do.
+  if (bin >= m_x.m_nbins) bin = m_x.m_nbins - 1;
 
-  double x1 = m_x.x(bin);
-  double dx =
-      (m_x.m_mode == axis_mode::linear) ? m_x.m_xstep : m_x.x(bin + 1) - x1;
-
-  if (dx < 1.e-12 * std::fabs(x1)) return m_values[bin];
-
-  double w = (x - x1) / dx; // Normalized weight
+  const double w = m_x.weight(bin, x);
   return m_values[bin] * (1.0 - w) + m_values[bin + 1] * w;
 }
 
@@ -152,8 +178,8 @@ double OneDim_Table::Inverse(double value) const
 
   if (std::fabs(val2 - val1) < 1.e-12 * std::fabs(val1)) return m_x.x(bin);
 
-  return (m_x.x(bin) * (val2 - value) + m_x.x(bin + 1) * (value - val1)) /
-         (val2 - val1);
+  const double weight = (value - val1) / (val2 - val1);
+  return m_x.coordinate(bin, weight);
 }
 
 double OneDim_Table::Integral() const
@@ -239,17 +265,10 @@ double TwoDim_Table::operator()(double x, double y) const
   if (xbin >= m_x.m_nbins) xbin = m_x.m_nbins - 1;
   if (ybin >= m_y.m_nbins) ybin = m_y.m_nbins - 1;
 
-  // Get weights for interpolation. A single-bin axis is flat (only index 0 is
-  // filled), so force its weight to zero rather than interpolate.
-  double x1 = m_x.x(xbin);
-  double dx =
-      (m_x.m_mode == axis_mode::linear) ? m_x.m_xstep : m_x.x(xbin + 1) - x1;
-  double wx = (m_x.m_nbins != 1 && std::fabs(dx) > 0) ? (x - x1) / dx : 0.0;
-
-  double y1 = m_y.x(ybin);
-  double dy =
-      (m_y.m_mode == axis_mode::linear) ? m_y.m_xstep : m_y.x(ybin + 1) - y1;
-  double wy = (m_y.m_nbins != 1 && std::fabs(dy) > 0) ? (y - y1) / dy : 0.0;
+  // Interpolation weights in each axis' own metric (see axis::weight), which
+  // also handles the flat single-bin and degenerate cases.
+  const double wx = m_x.weight(xbin, x);
+  const double wy = m_y.weight(ybin, y);
 
   // Bilinear interpolation
   const double v00 = Value(xbin, ybin);
@@ -348,12 +367,11 @@ std::unique_ptr<TwoDim_Table> TwoDim_Table::Invert(size_t axislabel,
           if (val1 <= value && val2 >= value) break;
         }
       }
-      double y1 = m_y.x(ybin), y2 = m_y.x(ybin + 1), y = 0.;
-      if (dir)
-        y = (y1 * (value - val2) + y2 * (val1 - value)) / (val1 - val2);
-      else
-        y = (y1 * (val2 - value) + y2 * (value - val1)) / (val2 - val1);
-      table->Fill(i, j, y);
+      // The same expression gives a weight in [0,1] for increasing and
+      // decreasing rows. Convert it back through the axis metric so this is the
+      // actual inverse of operator() on both linear and logarithmic axes.
+      const double weight = val1 != val2 ? (value - val1) / (val2 - val1) : 0.;
+      table->Fill(i, j, m_y.coordinate(ybin, weight));
     }
   }
   return table;
@@ -427,22 +445,11 @@ double ThreeDim_Table::operator()(double x, double y, double z) const
   if (ybin >= m_y.m_nbins) ybin = m_y.m_nbins - 1;
   if (zbin >= m_z.m_nbins) zbin = m_z.m_nbins - 1;
 
-  // Get weights for interpolation. A single-bin axis is flat (only index 0 is
-  // filled), so force its weight to zero rather than interpolate.
-  double x1 = m_x.x(xbin);
-  double dx =
-      (m_x.m_mode == axis_mode::linear) ? m_x.m_xstep : m_x.x(xbin + 1) - x1;
-  double wx = (m_x.m_nbins != 1 && std::fabs(dx) > 0) ? (x - x1) / dx : 0.0;
-
-  double y1 = m_y.x(ybin);
-  double dy =
-      (m_y.m_mode == axis_mode::linear) ? m_y.m_xstep : m_y.x(ybin + 1) - y1;
-  double wy = (m_y.m_nbins != 1 && std::fabs(dy) > 0) ? (y - y1) / dy : 0.0;
-
-  double z1 = m_z.x(zbin);
-  double dz =
-      (m_z.m_mode == axis_mode::linear) ? m_z.m_xstep : m_z.x(zbin + 1) - z1;
-  double wz = (m_z.m_nbins != 1 && std::fabs(dz) > 0) ? (z - z1) / dz : 0.0;
+  // Interpolation weights in each axis' own metric (see axis::weight), which
+  // also handles the flat single-bin and degenerate cases.
+  const double wx = m_x.weight(xbin, x);
+  const double wy = m_y.weight(ybin, y);
+  const double wz = m_z.weight(zbin, z);
 
   // Get 8 corner values
   const double v000 = Value(xbin, ybin, zbin);
