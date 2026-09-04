@@ -64,7 +64,8 @@ namespace {
 //   units of 1/GeV.
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
+EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir,
+                         const double energy)
     : //////////////////////////////////////////////////////////////////////////////
       //
       // Initialisation of relevant beam parameters:
@@ -76,7 +77,7 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir)
       m_R(beam.Radius() / rpa->hBar_c()), m_q2min(-1.), m_q2max(1.),
       m_pt2max(-1.),
       m_Zsquared(beam.IsIon() ? sqr(m_beam.GetAtomicNumber()) : 1.), m_b(0.),
-      p_N_xb(nullptr)
+      m_gamma(energy > m_mass ? energy / m_mass : 1.), p_N_xb(nullptr)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t b = dir > 0 ? 0 : 1;
@@ -223,13 +224,18 @@ void EPA_FF_Base::FillTables()
   // is allocated and interpolated accordingly, so the upper-boundary nodes must
   // be filled too (otherwise the last x/b interval interpolates towards zero).
   for (size_t i = 0; i <= xaxis.m_nbins; i++) {
+    const double x = xaxis.x(i), omx = 1. - x;
+    // Flux prefactor 1/(x(1-x)). The top node of a log axis can overshoot
+    // xMax = 1; the kernel vanishes there, so set the prefactor to zero rather
+    // than evaluate 0 * inf.
+    const double fac = omx > 0. ? 2 * m_Zsquared / (x * omx) : 0.;
     for (size_t j = 0; j <= baxis.m_nbins; j++) {
-      msg_Debugging() << METHOD << ": Filling table for x = " << xaxis.x(i)
-                      << ", and b = " << baxis.x(j) << "\n";
-      kernel.SetXB(xaxis.x(i), baxis.x(j));
+      const double b = baxis.x(j);
+      msg_Debugging() << METHOD << ": Filling table for x = " << x
+                      << ", and b = " << b << "\n";
+      kernel.SetXB(x, b);
       // Jacobian is d^2b = b db dphi and phi can be integrated out immediately
-      double value = 2 * m_Zsquared * sqr(bessel()) / xaxis.x(i) * baxis.x(j);
-      p_N_xb->Fill(i, j, value);
+      p_N_xb->Fill(i, j, fac * sqr(bessel()) * b);
     }
   }
 }
@@ -293,8 +299,9 @@ void EPA_FF_Base::OutputToCSV(const std::string& type)
 // all based on Budnev et al., Phys. Rep. C15 (1974) 181.
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_Point::EPA_Point(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir)
+EPA_Point::EPA_Point(const ATOOLS::Flavour& beam, const int dir,
+                     const double energy)
+    : EPA_FF_Base(beam, dir, energy)
 {
   // for point-like particles (i.e. leptons) we use the "classical"
   // lepton radius given by 1/alpha lambda_l/(2 pi)
@@ -320,8 +327,9 @@ double EPA_Point::N(const double& x, const double& ran)
 // all based on Budnev et al., Phys. Rep. C15 (1974) 181.
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_PointApprox::EPA_PointApprox(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir)
+EPA_PointApprox::EPA_PointApprox(const ATOOLS::Flavour& beam, const int dir,
+                                 const double energy)
+    : EPA_FF_Base(beam, dir, energy)
 {
   // for point-like particles (i.e. leptons) we use the "classical"
   // lepton radius given by 1/alpha lambda_l/(2 pi)
@@ -346,8 +354,9 @@ double EPA_PointApprox::N(const double& x, const double& ran)
 // c.f. eq. D.7 and Table 8
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_Proton::EPA_Proton(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir)
+EPA_Proton::EPA_Proton(const ATOOLS::Flavour& beam, const int dir,
+                       const double energy)
+    : EPA_FF_Base(beam, dir, energy)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t b = dir > 0 ? 0 : 1;
@@ -389,8 +398,9 @@ double EPA_Proton::N(const double& x, const double& ran)
 // approximation Q2 -> 0 in the form factor
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_ProtonApprox::EPA_ProtonApprox(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir)
+EPA_ProtonApprox::EPA_ProtonApprox(const ATOOLS::Flavour& beam, const int dir,
+                                   const double energy)
+    : EPA_FF_Base(beam, dir, energy)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t b = dir > 0 ? 0 : 1;
@@ -412,8 +422,9 @@ double EPA_ProtonApprox::N(const double& x, const double& ran)
 // Phys. Rep. C15 (1974) 181.
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir), m_Q02(1.)
+EPA_Gauss::EPA_Gauss(const ATOOLS::Flavour& beam, const int dir,
+                     const double energy)
+    : EPA_FF_Base(beam, dir, energy), m_Q02(1.)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t b = dir > 0 ? 0 : 1;
@@ -437,8 +448,9 @@ std::string EPA_Gauss::CacheId() const
 // qR is dimensionless and F(0) = 1.
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_HCS::EPA_HCS(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir)
+EPA_HCS::EPA_HCS(const ATOOLS::Flavour& beam, const int dir,
+                 const double energy)
+    : EPA_FF_Base(beam, dir, energy)
 {
   BuildNxbTable();
 }
@@ -450,8 +462,9 @@ std::string EPA_HCS::CacheId() const { return BaseCacheId("HCS"); }
 // based on Budnev et al., Phys. Rep. C15 (1974) 181.
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir)
+EPA_Dipole::EPA_Dipole(const ATOOLS::Flavour& beam, const int dir,
+                       const double energy)
+    : EPA_FF_Base(beam, dir, energy)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t b = dir > 0 ? 0 : 1;
@@ -473,8 +486,9 @@ std::string EPA_Dipole::CacheId() const
 // based on Budnev et al., Phys. Rep. C15 (1974) 181.
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_DipoleApprox::EPA_DipoleApprox(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir)
+EPA_DipoleApprox::EPA_DipoleApprox(const ATOOLS::Flavour& beam, const int dir,
+                                   const double energy)
+    : EPA_FF_Base(beam, dir, energy)
 {
   BuildNxbTable();
 }
@@ -482,6 +496,33 @@ EPA_DipoleApprox::EPA_DipoleApprox(const ATOOLS::Flavour& beam, const int dir)
 std::string EPA_DipoleApprox::CacheId() const
 {
   return BaseCacheId("DipoleApprox");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Proton form factor F = sqrt(D), i.e. the full electric term of the general
+// flux rather than G_E alone; see the class comment in EPA_FF.H.
+////////////////////////////////////////////////////////////////////////////////
+
+EPA_ProtonSachs::EPA_ProtonSachs(const ATOOLS::Flavour& beam, const int dir,
+                                 const double energy)
+    : EPA_FF_Base(beam, dir, energy)
+{
+  const auto& s = Settings::GetMainSettings()["EPA"];
+  size_t b = dir > 0 ? 0 : 1;
+  m_Q02 = s["Q02"].GetTwoVector<double>()[b];
+  m_mu2 = sqr(s["MagneticMu"].GetTwoVector<double>()[b]);
+  if (m_beam.Kfcode() != kf_p_plus)
+    THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
+
+  BuildNxbTable();
+}
+
+std::string EPA_ProtonSachs::CacheId() const
+{
+  std::ostringstream s;
+  s.precision(17);
+  s << "|Q02" << m_Q02 << "|mu2" << m_mu2;
+  return BaseCacheId("ProtonSachs") + s.str();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -494,8 +535,9 @@ std::string EPA_DipoleApprox::CacheId() const
 // - Radius in 1/GeV, therefore "nucelar skin" m_d also in 1/GeV
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir), m_d(0.55 / rpa->hBar_c()),
+EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir,
+                             const double energy)
+    : EPA_FF_Base(beam, dir, energy), m_d(0.55 / rpa->hBar_c()),
       m_R_WS(6.49 / rpa->hBar_c()), m_rnodes(1024), m_rmaxfactor(16.)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
@@ -592,8 +634,8 @@ void EPA_WoodSaxon::InitFFTable()
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_WoodSaxonApprox::EPA_WoodSaxonApprox(const ATOOLS::Flavour& beam,
-                                         const int dir)
-    : EPA_FF_Base(beam, dir)
+                                         const int dir, const double energy)
+    : EPA_FF_Base(beam, dir, energy)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t b = dir > 0 ? 0 : 1;
@@ -616,8 +658,9 @@ std::string EPA_WoodSaxonApprox::CacheId() const
 // the analytical expression from 2207.03012, eq. 3.3
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_IonApprox::EPA_IonApprox(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir)
+EPA_IonApprox::EPA_IonApprox(const ATOOLS::Flavour& beam, const int dir,
+                             const double energy)
+    : EPA_FF_Base(beam, dir, energy)
 {
   m_b_pl_threshold = m_R;
   EPA_IonApprox::FillTables();
@@ -625,9 +668,10 @@ EPA_IonApprox::EPA_IonApprox(const ATOOLS::Flavour& beam, const int dir)
 
 void EPA_IonApprox::FillTables()
 {
-  // This is NOT used for the calculation of the flux in the integration,
-  // instead only filled for debugging purposes using the "OutputAllSpectra"
-  // setting
+  // Unlike the other form factors, this table spans the full b range rather
+  // than stopping at m_b_pl_threshold, so that "OutputAllSpectra" can dump the
+  // whole N(x,b) surface. It is not only a debug table, though: N() reads it
+  // for b below the threshold, which this class sets to m_R.
   axis xaxis(m_nxbins, m_xmin, m_xmax, axis_mode::log);
   axis baxis(m_nbbins, m_bmin * m_R, m_bmax * m_R, axis_mode::log);
 
@@ -639,22 +683,33 @@ void EPA_IonApprox::FillTables()
             << " fm.\n";
   p_N_xb = std::make_unique<TwoDim_Table>(xaxis, baxis);
   for (size_t i = 0; i <= xaxis.m_nbins; i++) {
+    // The (1-x) multiplies here, taking Max to prevent infinities when xMax>1
+    const double fac =
+        2 * m_Zsquared * Max(0., 1. - xaxis.x(i)) * xaxis.x(i) * m_mass2;
     for (size_t j = 0; j <= baxis.m_nbins; j++) {
       double chi = xaxis.x(i) * m_mass * baxis.x(j);
-      double val = 2 * m_Zsquared * baxis.x(j) * xaxis.x(i) * m_mass2 *
-                   ATOOLS::sqr(ATOOLS::SF.Kn(1, chi));
+      // Same expression as the large-b point-like branch of EPA_FF_Base::N(),
+      // duplicated so that the CSV and the flux used in the integration
+      // cannot drift apart.
+      double val = baxis.x(j) * fac *
+                   (ATOOLS::sqr(ATOOLS::SF.Kn(1, chi)) +
+                    ATOOLS::sqr(ATOOLS::SF.Kn(0, chi)) / ATOOLS::sqr(m_gamma));
       p_N_xb->Fill(i, j, val);
     }
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Class for the Ion FF in the Electric Dipole approximation integrated in b
+// Class for the ion FF in the electric-dipole approximation integrated in b.
+// This implements the conventional ultrarelativistic, transverse-only result;
+// unlike EPA_IonApprox, it intentionally omits the finite-gamma K0^2/gamma^2
+// correction.
 ////////////////////////////////////////////////////////////////////////////////
 
 EPA_IonApproxIntegrated::EPA_IonApproxIntegrated(const ATOOLS::Flavour& beam,
-                                                 const int dir)
-    : EPA_FF_Base(beam, dir)
+                                                 const int dir,
+                                                 const double energy)
+    : EPA_FF_Base(beam, dir, energy)
 {
   m_b_pl_threshold = m_R;
   p_N_xb.reset();
@@ -664,7 +719,8 @@ EPA_IonApproxIntegrated::EPA_IonApproxIntegrated(const ATOOLS::Flavour& beam,
 double EPA_IonApproxIntegrated::N(const double& x, const double& ran)
 {
   double chi = x * m_mass * m_R * Max(1., m_bmin);
-  return 2 * m_Zsquared / x *
+  // (1-x) as in the b-dependent flux that this integrates over
+  return 2 * m_Zsquared * (1. - x) / x *
          (chi * SF.Kn(0, chi) * SF.Kn(1, chi) -
           chi * chi / 2. * (sqr(SF.Kn(1, chi)) - sqr(SF.Kn(0, chi))));
 }
@@ -673,8 +729,9 @@ double EPA_IonApproxIntegrated::N(const double& x, const double& ran)
 // Dummy test class for checking the Bessel_Integrator
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_Test::EPA_Test(const ATOOLS::Flavour& beam, const int dir)
-    : EPA_FF_Base(beam, dir)
+EPA_Test::EPA_Test(const ATOOLS::Flavour& beam, const int dir,
+                   const double energy)
+    : EPA_FF_Base(beam, dir, energy)
 {
   FillTables();
 }

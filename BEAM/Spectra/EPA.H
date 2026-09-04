@@ -26,7 +26,9 @@ namespace BEAM {
     void SetXRange();
     void RegisterDefaults() const;
 
-    static void Tests();
+    // Dumps every form factor to CSV (EPA:OutputAllSpectra). The beam energy
+    // is passed in because the form factors need it for their Lorentz factor.
+    static void Tests(double energy);
 
   public:
 
