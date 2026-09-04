@@ -28,6 +28,7 @@ namespace BEAM {
     WoodSaxon = 14,
     WoodSaxonApprox = 15,
     ionApprox = 16,
+    protonSachs = 17,
     Test = 99,
     Undefined = -1
   };
@@ -58,6 +59,8 @@ namespace BEAM {
       return os << "Approx_Woods-Saxon";
     case EPA_ff_type::ionApprox:
       return os << "Point-like";
+    case EPA_ff_type::protonSachs:
+      return os << "Proton_Sachs";
     case EPA_ff_type::Test:
       return os << "Test";
     case EPA_ff_type::Undefined:
@@ -98,6 +101,8 @@ namespace BEAM {
       type = EPA_ff_type::WoodSaxonApprox;
     else if (token == "Point-like" || token == "16")
       type = EPA_ff_type::ionApprox;
+    else if (token == "Proton_Sachs" || token == "17")
+      type = EPA_ff_type::protonSachs;
     else if (token == "Test" || token == "99")
       type = EPA_ff_type::Test;
     else {
@@ -120,6 +125,13 @@ namespace BEAM {
     double m_chi_cut; //< upper cut on chi = x*m*b
     double m_Zsquared, m_b,
         m_b_pl_threshold; //< b, b_pl_threshold are absolute distances
+    // Lorentz factor of the emitting particle, gamma = E_N/m_N (per nucleon for
+    // ions, which is the same as E_A/m_A). The longitudinal term of the
+    // point-like flux depends on it, both in N() below and in the table
+    // EPA_IonApprox fills. The latter is why the beam energy is a constructor
+    // argument rather than a setter: EPA_IonApprox fills that table from its own
+    // constructor, so anything installed afterwards would arrive too late.
+    double m_gamma;
     std::unique_ptr<ATOOLS::TwoDim_Table> p_N_xb;
 
     size_t m_nxbins, m_nbbins;
@@ -152,7 +164,11 @@ namespace BEAM {
     // v4: guarded the N(x,b) kernel against x -> 1, where Q^2 diverged and the
     //     x = xMax boundary node (filled since v3) became NaN for sqrt-based
     //     form factors; invalidates v3 caches that stored that NaN node.
-    static constexpr int s_cache_version = 4;
+    // v5: N(x,b) kernel switched to the small-x virtuality Q^2 = qT^2 + x^2 m^2
+    //     (was (qT^2 + x^2 m^2)/(1-x)), making the form-factor argument
+    //     consistent with the prefactor in FillTables(), which carries no
+    //     1/(1-x) Jacobian. Changes every cached N(x,b) table.
+    static constexpr int s_cache_version = 5;
     bool m_cache{true};    //< caching enabled (EPA:CacheTables) for this beam
     std::string m_respath; //< resolved RESULT_DIRECTORY root; cache lives inside
                            //< <m_respath>.zip; empty => caching disabled
@@ -189,7 +205,7 @@ namespace BEAM {
 
   public:
 
-    EPA_FF_Base(const ATOOLS::Flavour& beam, int dir);
+    EPA_FF_Base(const ATOOLS::Flavour& beam, int dir, double energy);
     virtual ~EPA_FF_Base() = default;
 
     // Pure importance-sampling of the (dimensionless) impact parameter for a
@@ -216,12 +232,18 @@ namespace BEAM {
       double wt = SampleImpactParameter(x, ran);
       DEBUG_FUNC("x = " << x << ", ran = " << ran << ", b = " << m_b);
       if (m_b < m_b_pl_threshold) return (*p_N_xb)(x, m_b) * wt;
-      // use point-like approximation for large impact parameters
+      // Use the point-like approximation for large impact parameters:
+      //   n_PL(x,b) ~ x m^2 [ K_1^2(chi) + gamma^-2 K_0^2(chi) ],
+      // the second, longitudinal term being suppressed by gamma^-2. Note that
+      // the small-b branch above descends from the C(Q^2) = 0 approximation and
+      // so carries no longitudinal term -- except for EPA_IonApprox, which
+      // tabulates this very expression and therefore matches across the
+      // threshold. Either way the mismatch at m_b_pl_threshold is O(gamma^-2)
+      // ~ 1e-7 for Pb at the LHC, far below the table's interpolation error.
       double chi = x * m_mass * m_b;
       return 2 * m_Zsquared * m_b * x * m_mass2 *
              (ATOOLS::sqr(ATOOLS::SF.Kn(1, chi)) +
-              2. * m_mass / ATOOLS::rpa->gen.Ecms() *
-                  ATOOLS::sqr(ATOOLS::SF.Kn(0, chi))) *
+              ATOOLS::sqr(ATOOLS::SF.Kn(0, chi)) / ATOOLS::sqr(m_gamma)) *
              wt;
     }
     virtual double FF(const double& Q2) = 0;
@@ -231,6 +253,7 @@ namespace BEAM {
     void SetQ2Max(const double q2max) { m_q2max = q2max; }
 
     double Mass2() const { return m_mass2; }
+    double Gamma() const { return m_gamma; }
     double Radius() const { return m_R; }
     double ImpactParameter() const { return m_b; }
     double Xmin() const { return m_xmin; }
@@ -278,10 +301,20 @@ namespace BEAM {
       // results are in GeV.
       //////////////////////////////////////////////////////////////////////////
       // At x -> 1 the photon carries the full beam energy and the flux
-      // vanishes; also avoids divergence of Q2
+      // vanishes.
       if (m_x >= 1.) return 0.;
       double qT = y / m_b, qT2 = ATOOLS::sqr(qT);
-      double Q2 = (qT2 + m_x * m_x * p_ff->Mass2()) / (1. - m_x);
+      // Small-x form of the virtuality, Q^2 = qT^2 + x^2 m^2, i.e. the exact
+      // Q^2 = (qT^2 + x^2 m^2)/(1-x) with the 1/(1-x) dropped. This is the
+      // convention the b-space flux is derived in: going from the general
+      // flux differential in dQ^2 to one differential in dqT introduces a
+      // Jacobian 1/(1-x), which is absent from the prefactor in FillTables().
+      // Keeping the exact Q^2 here while omitting that Jacobian mixes the two
+      // schemes; the small-x form is the self-consistent choice and is what
+      // Shao/d'Enterria (arXiv:2207.03012, Eq. 13) and the standard point-like
+      // results, Kn-based, are built on. Numerically irrelevant for UPC phase
+      // space (x <~ 1e-2), but the two must match.
+      double Q2 = qT2 + m_x * m_x * p_ff->Mass2();
       // integration variable is qT, so dy/dqT = b, hence Jacobian 1/b needed
       double res = qT2 / Q2 * p_ff->FF(Q2) / m_b;
       return res;
@@ -291,7 +324,7 @@ namespace BEAM {
   class EPA_Point final: public EPA_FF_Base {
   public:
 
-    EPA_Point(const ATOOLS::Flavour& beam, int dir);
+    EPA_Point(const ATOOLS::Flavour& beam, int dir, double energy);
     void FillTables() override {};
     double N(const double& x, const double& ran) override;
     double FF(const double& Q2) override { return 1.; }
@@ -300,7 +333,7 @@ namespace BEAM {
   class EPA_PointApprox final: public EPA_FF_Base {
   public:
 
-    EPA_PointApprox(const ATOOLS::Flavour& beam, int dir);
+    EPA_PointApprox(const ATOOLS::Flavour& beam, int dir, double energy);
     void FillTables() override {};
     double N(const double& x, const double& ran) override;
     double FF(const double& Q2) override { return 1.; }
@@ -313,7 +346,7 @@ namespace BEAM {
 
   public:
 
-    EPA_Proton(const ATOOLS::Flavour& beam, int dir);
+    EPA_Proton(const ATOOLS::Flavour& beam, int dir, double energy);
     void FillTables() override {};
     double FF(const double& Q2) override
     {
@@ -329,7 +362,7 @@ namespace BEAM {
 
   public:
 
-    EPA_ProtonApprox(const ATOOLS::Flavour& beam, int dir);
+    EPA_ProtonApprox(const ATOOLS::Flavour& beam, int dir, double energy);
     void FillTables() override {};
     double FF(const double& Q2) override { return 1.; }
     double N(const double& x, const double& ran) override;
@@ -343,7 +376,7 @@ namespace BEAM {
 
   public:
 
-    EPA_Gauss(const ATOOLS::Flavour& beam, int dir);
+    EPA_Gauss(const ATOOLS::Flavour& beam, int dir, double energy);
     double FF(const double& Q2) override { return exp(-Q2 / m_Q02 / 2.); }
   };
 
@@ -354,7 +387,7 @@ namespace BEAM {
 
   public:
 
-    EPA_HCS(const ATOOLS::Flavour& beam, int dir);
+    EPA_HCS(const ATOOLS::Flavour& beam, int dir, double energy);
     double FF(const double& Q2) override
     {
       // Homogeneously-charged-sphere form factor, a function of the
@@ -381,7 +414,7 @@ namespace BEAM {
 
   public:
 
-    explicit EPA_Dipole(const ATOOLS::Flavour& beam, int dir);
+    explicit EPA_Dipole(const ATOOLS::Flavour& beam, int dir, double energy);
     double FF(const double& Q2) override
     {
       return std::pow(1. + Q2 / m_Q02, -2);
@@ -395,8 +428,45 @@ namespace BEAM {
 
   public:
 
-    explicit EPA_DipoleApprox(const ATOOLS::Flavour& beam, int dir);
+    explicit EPA_DipoleApprox(const ATOOLS::Flavour& beam, int dir, double energy);
     double FF(const double& Q2) override { return 1.; }
+  };
+
+  // b-dependent proton flux carrying the *complete* electric term of the
+  // general flux, rather than G_E alone as EPA_Dipole does.
+  //
+  // The kernel of the Fourier transform, N_xb_int, squares F, and Parseval for
+  // the order-1 Hankel transform maps that square onto the D(Q^2) of the
+  // general flux:
+  //   int d^2b n(x,b) = alpha/(pi x) int dQ^2 qT^2 Z^2 |F|^2 / Q^4 .
+  // So the b-dependent flux reproduces the Q^2-integrated electric term if and
+  // only if |F|^2 = D, i.e. F = sqrt(D). With the dipole G_E and G_M = mu_p G_E
+  //   D = (4m^2 G_E^2 + Q^2 G_M^2)/(4m^2 + Q^2)
+  //     = G_E^2 (4m^2 + mu_p^2 Q^2)/(4m^2 + Q^2),
+  // which is what FF() below returns the root of. Taking F = G_E instead drops
+  // the Q^2 G_M^2/(4m^2+Q^2) half of D -- a few per cent on the flux, not the
+  // per-mille of the genuinely neglected magnetic term C(Q^2).
+  //
+  // What this does *not* reproduce is how the electric and magnetic helicity
+  // amplitudes distribute in b individually: they are separate incoherent
+  // amplitudes and transform with different Bessel orders. That is a smaller
+  // error than dropping the piece altogether, but it is the reason this is a
+  // separate form factor rather than a fix to EPA_Dipole.
+  class EPA_ProtonSachs final: public EPA_FF_Base {
+  private:
+
+    double m_Q02, m_mu2;
+    std::string CacheId() const override;
+
+  public:
+
+    explicit EPA_ProtonSachs(const ATOOLS::Flavour& beam, int dir,
+                             double energy);
+    double FF(const double& Q2) override
+    {
+      const double GE = std::pow(1. + Q2 / m_Q02, -2);
+      return GE * std::sqrt((4. * m_mass2 + m_mu2 * Q2) / (4. * m_mass2 + Q2));
+    }
   };
 
   class EPA_WoodSaxon final: public EPA_FF_Base {
@@ -419,7 +489,7 @@ namespace BEAM {
 
   public:
 
-    EPA_WoodSaxon(const ATOOLS::Flavour& beam, int dir);
+    EPA_WoodSaxon(const ATOOLS::Flavour& beam, int dir, double energy);
     double FF(const double& Q2) override
     {
       const double Q = sqrt(Q2);
@@ -443,7 +513,7 @@ namespace BEAM {
 
   public:
 
-    explicit EPA_WoodSaxonApprox(const ATOOLS::Flavour& beam, int dir);
+    explicit EPA_WoodSaxonApprox(const ATOOLS::Flavour& beam, int dir, double energy);
     double FF(const double& Q2) override
     {
       // from eq. 14 in hep-ph/9902259
@@ -469,15 +539,18 @@ namespace BEAM {
   class EPA_IonApprox final: public EPA_FF_Base {
   public:
 
-    EPA_IonApprox(const ATOOLS::Flavour& beam, int dir);
+    EPA_IonApprox(const ATOOLS::Flavour& beam, int dir, double energy);
     void FillTables() override;
     double FF(const double& Q2) override { return 0.; }
   };
 
+  // Analytic b-integrated point-like ion flux in the conventional
+  // ultrarelativistic limit. This intentionally contains only the transverse
+  // K1 term and omits the finite-gamma K0^2/gamma^2 correction.
   class EPA_IonApproxIntegrated final: public EPA_FF_Base {
   public:
 
-    EPA_IonApproxIntegrated(const ATOOLS::Flavour& beam, int dir);
+    EPA_IonApproxIntegrated(const ATOOLS::Flavour& beam, int dir, double energy);
     void FillTables() override {};
     double N(const double& x, const double& ran) override;
     double FF(const double& Q2) override { return 1.; }
@@ -486,7 +559,7 @@ namespace BEAM {
   class EPA_Test final: public EPA_FF_Base {
   public:
 
-    explicit EPA_Test(const ATOOLS::Flavour& beam, int dir);
+    explicit EPA_Test(const ATOOLS::Flavour& beam, int dir, double energy);
     void FillTables() override {};
     double FF(const double& Q2) override { return 0.; }
   };

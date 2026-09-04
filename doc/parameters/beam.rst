@@ -350,13 +350,18 @@ EPA Parameters
 
 
   ``Point-like_Integrated``
-    Point-like nucleus approximation, with impact-parameter dependence integrated out :cite:`Bertulani:1987tz`:
+    Point-like nucleus approximation with the impact-parameter dependence
+    integrated out in the ultrarelativistic limit :cite:`Bertulani:1987tz`:
 
     .. math::
 
-        N(x) = \frac{2}{x} \left[ \chi K_0(\chi) K_1(\chi) - \frac{\chi^2}{2}
+        N(x) = \frac{2Z^2}{x} \left[ \chi K_0(\chi) K_1(\chi) - \frac{\chi^2}{2}
         \left( K_1^2(\chi) - K_0^2(\chi) \right) \right] \
-        \mbox{ with }\ \chi = x m_N R \mathrm{max}(1, b_{min})
+        \mbox{ with }\ \chi = x m_N R \mathrm{max}(1, b_{min}) .
+
+    This is the conventional transverse-only result: the finite-energy
+    longitudinal correction proportional to :math:`K_0^2/\gamma^2` in
+    ``Point-like`` is intentionally omitted.
 
   The above form factors do **not** depend on the impact parameter.
   Following the formulae above in :ref:`EPAPhysics-details`, we implement form factors :math:`F(Q^2)`
@@ -369,6 +374,22 @@ EPA Parameters
 
   ``Approx_Dipole``
     Approximation :math:`Q^2 \to 0` and hence :math:`F(Q^2) = 1` :cite:`Budnev1974de`.
+
+  ``Proton_Sachs``
+    Dipole electric and magnetic Sachs form factors combined into the full electric term
+    :math:`D(Q^2)` of the general flux,
+
+    .. math::
+
+       F(Q^2) = \sqrt{D(Q^2)}, \qquad
+       D(Q^2) = \frac{4m_p^2 G_E^2 + Q^2 G_M^2}{4m_p^2 + Q^2}, \qquad
+       G_E = \left(1+\frac{Q^2}{Q_0^2}\right)^{-2}, \quad G_M = \mu G_E .
+
+    Since the Fourier kernel squares :math:`F`, this is the choice for which the
+    impact-parameter-dependent flux integrates to the :math:`Q^2`-integrated electric term;
+    ``Dipole`` uses :math:`G_E` alone and thereby drops the :math:`Q^2 G_M^2/(4m_p^2+Q^2)` part of
+    :math:`D`. :math:`Q_0^2` is set by :option:`Q02` and :math:`\mu` by :option:`MagneticMu`.
+    Protons only.
 
   ``Gaussian``
     Gaussian form factor :cite:`Budnev1974de` :math:`F(Q^2) = \exp(-\frac{Q^2}{2Q_0^2})`, with :math:`Q_0^2` the dipole scale, set by :option:`Q02`.
@@ -414,14 +435,13 @@ EPA Parameters
 
     .. math::
 
-        N(x, b) = 2 b x m_N^2 \left( K_1^2(\chi) + \frac{2 m_N}{E_N} K_0^2(\chi) \right)\
-        \mbox{ with }\ \chi = x m_N R \mathrm{max}(1, b_{min})
+        N(x, b) = 2 Z^2 b x m_N^2
+        \left( K_1^2(\chi) + \frac{1}{\gamma^2} K_0^2(\chi) \right),
+        \qquad \chi = x m_N b, \qquad \gamma = \frac{E_N}{m_N} .
 
-    Please note that with this form factor, there is no need to numerically
-    Fourier-transform, as it has been computed analytically.
-    However, because it diverges for :math:`b \to 0`, the minimal impact parameter
-    is automatically set equal to the radius (or larger,
-    depending on user-input for :math:`b_\mathrm{min}`).
+    There is no need to numerically Fourier-transform this form factor because
+    the result is analytic. It diverges for :math:`b \to 0`; use :option:`bMin`
+    to impose the required lower impact-parameter cutoff.
 
   Defaults are ``Lepton`` for leptons, ``Dipole`` for protons and ``Woods-Saxon`` for nuclei.
 
@@ -450,7 +470,7 @@ EPA Parameters
   ``100.0``.
 
 :option:`xBins`
-  Number of :math:`x`-bins for :math:`N(x,b)` grids (logarithmic scaling). Defaults to ``100``.
+  Number of :math:`x`-bins for :math:`N(x,b)` grids (logarithmic scaling). Defaults to ``200``.
 
 :option:`bBins`
   Number of :math:`b`-bins for :math:`N(x,b)` grids (logarithmic scaling). Defaults to ``100``.
@@ -459,10 +479,12 @@ EPA Parameters
   QED fine-structure constant :math:`\alpha_\text{em}` used for the EPA calculation. Defaults to ``1/137.036``.
 
 :option:`Q02`
-  Dipole scale :math:`\Lambda^2` in GeV^2 for ``Dipole`` and ``Gaussian``. Defaults to ``0.71``.
+  Dipole scale :math:`\Lambda^2` in GeV^2 for ``Dipole``, ``Proton_Sachs`` and
+  ``Gaussian``. Defaults to ``0.71``.
 
 :option:`MagneticMu`
-  Proton magnetic moment for the ``Proton`` form factor. Defaults to ``2.79``.
+  Proton magnetic moment for the ``Proton``, ``Approx_Proton`` and
+  ``Proton_Sachs`` form factors. Defaults to ``2.79``.
 
 :option:`WoodsSaxon_R`
   Woods-Saxon nuclear radius :math:`R` in fm. Defaults to
