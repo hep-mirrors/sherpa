@@ -740,9 +740,10 @@ namespace LHEH5 {
         token = "ee";
       } else if (rest == std::vector<long int>{-12, 12}) {
         token = "vv";
-      } else if (rest == std::vector<long int>{-12, 11}
-                 || rest == std::vector<long int>{-11, 12}) {
-        token = "ev";
+      } else if (rest == std::vector<long int>{-12, 11}) {
+        token = "wm";
+      } else if (rest == std::vector<long int>{-11, 12}) {
+        token = "wp";
       } else if (rest == std::vector<long int>{-6, 6}) {
         token = "tt";
       } else {
