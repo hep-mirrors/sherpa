@@ -919,6 +919,61 @@ mismatches do not change physics
 (Sherpa reweights every event to its own scale),
 but reduce the overall unweighting efficiency.
 
+The cuts that regularise the QCD final state
+are forwarded as well, so that Pepper generates
+the same jet phase space that Sherpa asks for.
+Two sources are taken into account:
+
+- the CKKW merging scale of a multi-jet merged setup,
+  together with the jet criterion that defines
+  when an emission counts as a jet.
+  Pepper only implements :math:`k_T` clustering in :math:`(y,\phi)`,
+  so a merged run has to set
+  ``JET_CRITERION: FASTJET[A:kt,R:<R>,y:<y>]``;
+  Sherpa aborts otherwise
+  rather than let the two jet definitions disagree silently.
+
+- the jet-finder selectors :option:`FastjetFinder`,
+  :option:`NJetFinder` and :option:`FastjetSelector`,
+  i.e. what regularises jets
+  that are part of the core process already,
+  as for :math:`jj`\ +jets, where the merging criterion
+  does not act on the core process.
+  Their ``PTMin``/``ETMin``, ``DR``/``R``
+  and ``YMax``/``EtaMax`` settings translate into
+  Pepper's per-parton :math:`p_T`, :math:`\Delta R`
+  and rapidity cuts.
+
+A sample can be regularised by either or both of them,
+in which case the loosest of the implied cuts is passed on:
+Sherpa applies its own selectors to every event Pepper hands over,
+so cutting harder than Sherpa on the Pepper side
+would silently remove phase space,
+while cutting softer only costs unweighting efficiency.
+For the same reason, a run card that does not restrict
+the jet rapidity at all is translated into the kinematic limit
+rather than into Pepper's much tighter default.
+If neither source is present (e.g. a jetless Drell-Yan run),
+Pepper's own cut settings are left untouched.
+
+.. note::
+
+   The loosest-wins rule can cost unweighting efficiency
+   when asymmetric jet cuts are used,
+   as is common in dijet setups to increase efficiency
+   (e.g. one :option:`FastjetFinder` asking for one jet above 20 GeV
+   and a second one asking for two jets above 10 GeV).
+   Pepper applies a single :math:`p_T` threshold to every parton,
+   so it receives the softer of the two (10 GeV here)
+   and generates configurations that Sherpa's selectors
+   subsequently reject.
+   The physics is unaffected -- it is the tighter,
+   phase-space-cutting choice that would be wrong --
+   but a noticeable fraction of the generated events can be lost.
+   If this matters for your setup,
+   please contact the Pepper authors
+   with a feature request for asymmetric jet cuts.
+
 The following additional top-level settings tune the Pepper backend
 shared by all processes that use `Event_Source: Pepper`:
 
