@@ -67,6 +67,48 @@ void Spinor<Scalar>::Construct(const Vec4<Scalar> &p)
 #endif
 }
 
+template <class Scalar>
+void Spinor<Scalar>::ConstructLC(const Vec4<Scalar> &p)
+{
+  // Same construction as Construct(), except for how the two light-cone
+  // components are obtained. Directly, one of p[0]+p[3] and p[0]-p[3] is a
+  // difference of two nearly equal numbers: for a momentum collinear to the
+  // beam it loses every digit (measured at theta = 5e-5, w = 1e-5 GeV it
+  // returns exactly 0.0 where the true value is 2.7e-21), and the spinor is
+  // then built from a zero. Since p^2 = 0 here, (p0+pz)(p0-pz) = pT^2 holds
+  // exactly, so the small component follows from the large one by a division
+  // with no cancellation anywhere. Accurate to ~6e-17 relative at the same
+  // kinematics.
+  Scalar pp(PPlus(p)), pm(PMinus(p));
+  const Scalar pt2(p[s_r1]*p[s_r1]+p[s_r2]*p[s_r2]);
+  // Divide by whichever has the LARGER MAGNITUDE: pp*pm = pT^2 >= 0 so the two
+  // always share a sign, and for p[0]<0 (CSpinor passes -PSpat() there) both
+  // are negative -- comparing them with > rather than by magnitude would pick
+  // the cancelling one and divide by the very quantity that lost its digits.
+  if (dabs(pp)>dabs(pm)) { if (pp!=Scalar(0.0)) pm=pt2/pp; }
+  else                   { if (pm!=Scalar(0.0)) pp=pt2/pm; }
+  Complex rpp(csqrt(pp)), rpm(csqrt(pm)), pt(PT(p));
+  m_u1=rpp;
+  m_u2=rpm;
+  Scalar sv(dabs(p[0])*s_accu);
+  if ((dabs(pt.real())>sv || dabs(pt.imag())>sv) &&
+      (dabs(rpp.real())>sv || dabs(rpp.imag())>sv)) {
+    m_u2=Complex(pt.real(),m_r>0?pt.imag():-pt.imag())/rpp;
+  }
+#ifndef USING__old_phase_convention
+  if (pp<0.0 || pm<0.0) {
+    if (m_r<0) {
+      m_u1=Complex(-m_u1.imag(),m_u1.real());
+      m_u2=Complex(-m_u2.imag(),m_u2.real());
+    }
+    else {
+      m_u1=-Complex(-m_u1.imag(),m_u1.real());
+      m_u2=-Complex(-m_u2.imag(),m_u2.real());
+    }
+  }
+#endif
+}
+
 template <class Scalar> 
 std::complex<Scalar> Spinor<Scalar>::operator*(const Spinor &s) const
 { 

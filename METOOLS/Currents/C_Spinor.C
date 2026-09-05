@@ -47,13 +47,13 @@ Construct(const int h,const Vec4<Scalar> &p,Scalar m2,const int ms)
   else {
   Vec4<Scalar> ph(p[0]<0.0?-p.PSpat():p.PSpat(),p[1],p[2],p[3]);
   if ((m_r>0)^(h<0)) {// u+(p,m) / v-(p,m) 
-    Spinor<Scalar> sh(1,ph); 
+    Spinor<Scalar> sh(1,ph,true); 
     m_u[2]=sh[0]; 
     m_u[3]=sh[1]; 
     m_on=2;
   } 
   else {// u-(p,m) / v+(p,m) 
-    Spinor<Scalar> sh(-1,ph); 
+    Spinor<Scalar> sh(-1,ph,true); 
     if (p[0]<0.0) sh=-sh;
     m_u[0]=sh[1]; 
     m_u[1]=-sh[0]; 
