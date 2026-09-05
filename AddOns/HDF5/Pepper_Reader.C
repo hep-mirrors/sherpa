@@ -9,6 +9,7 @@
 #include <functional>
 #include <future>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -453,33 +454,203 @@ namespace LHEH5 {
     return FastjetKtParams{*R, *y};
   }
 
-  // When multi-jet merging is on (any PROCESSES entry has CKKW set),
-  // align Pepper's jet cut with Sherpa's so both sides use the same
-  // jet definition. Pepper only implements kt clustering in (η,φ), so
-  // we require JET_CRITERION: FASTJET[A:kt,R:<R>,y:<y>] and refuse to
-  // proceed otherwise — the default JET_CRITERION (the shower
-  // generator) has no Pepper-side counterpart and would silently
-  // disagree.
+  // A set of jet cuts in the form Pepper can apply them: a minimum
+  // transverse momentum and a maximum rapidity for every QCD parton,
+  // plus a minimum distance in (y, phi) between any two of them.
+  // `y_max` is unset when the Sherpa side does not restrict the jet
+  // rapidity at all.
+  struct Jet_Cut_Params {
+    double pt_min;
+    double dr_min;
+    std::optional<double> y_max;
+  };
+
+  // Fold `params` into the loosest set of cuts encountered so far.
+  // Pepper's cuts must be a superset of Sherpa's: Sherpa re-applies its
+  // own selectors to every event Pepper hands over (see
+  // Phase_Space_Handler::Differential), so cutting harder than Sherpa
+  // does silently removes phase space, while cutting softer only costs
+  // unweighting efficiency. Hence the smallest pT and dR and the
+  // largest rapidity reach over all sources win.
+  void LoosenJetCuts(std::optional<Jet_Cut_Params>& cuts,
+                     const Jet_Cut_Params& params)
+  {
+    if (!cuts) {
+      cuts = params;
+      return;
+    }
+    cuts->pt_min = std::min(cuts->pt_min, params.pt_min);
+    cuts->dr_min = std::min(cuts->dr_min, params.dr_min);
+    if (!cuts->y_max || !params.y_max)
+      cuts->y_max = std::nullopt;
+    else
+      cuts->y_max = std::max(*cuts->y_max, *params.y_max);
+  }
+
+  // Every selector entry the run card can carry: the global SELECTORS
+  // list, plus the process-local `Selectors` lists that Sherpa uses in
+  // place of the global ones for the processes defining them (see
+  // Matrix_Element_Handler::ReadProcessSettings). Pepper's cuts are
+  // global, so we have to consider all of them.
+  std::vector<Scoped_Settings> CollectSelectorSettings()
+  {
+    Settings& s {Settings::GetMainSettings()};
+    std::vector<Scoped_Settings> items {s["SELECTORS"].GetItems()};
+    for (auto& proc : s["PROCESSES"].GetItems()) {
+      if (!proc.IsMap()) continue;
+      const auto keys = proc.GetKeys();
+      if (keys.size() != 1) continue;
+      for (auto& item : proc[keys[0]]["Selectors"].GetItems())
+        items.push_back(item);
+    }
+    return items;
+  }
+
+  // Translate one selector entry into the Pepper jet cuts it implies,
+  // or nullopt when the entry is not a jet finder that regularises the
+  // QCD final state.
+  //
+  // Sherpa's jet finders ask for at least N jets above a pT (and/or ET)
+  // threshold within a (pseudo-)rapidity range, clustered with radius
+  // R. At the parton level -- the only level Pepper sees -- that is the
+  // familiar approximation of N well-separated partons: each above the
+  // threshold, inside the rapidity range, and pairwise farther apart
+  // than R, which is exactly the set of cuts Pepper knows. This is what
+  // regularises jets that are part of the core process already, e.g.
+  // for jj+jets, where the merging criterion is switched off for the
+  // core process (`LO: true` in Matrix_Element_Handler).
+  //
+  // Entries with `N: 0` are switched off, and entries without a pT/ET
+  // threshold do not regularise anything; neither constrains Pepper.
+  // Selectors that only ever remove phase space on top of a jet finder
+  // (e.g. FastjetVeto) are ignored: leaving them out keeps Pepper on
+  // the safe, looser side. Anything else that regularises the QCD
+  // final state in a way we do not recognise here (e.g. Jet_Selector)
+  // leaves Pepper on its own cut defaults.
+  std::optional<Jet_Cut_Params> ReadJetFinderParams(Scoped_Settings item)
+  {
+    if (!item.IsMap()) return std::nullopt;
+    const auto keys = item.GetKeys();
+    if (keys.size() != 1) return std::nullopt;
+    const std::string& name {keys.front()};
+    // FastjetSelector shares its jet definition and thresholds with
+    // FastjetFinder (both derive from Fastjet_Selector_Base) and adds
+    // an expression on top, so it demands at least the same N jets.
+    const bool is_fastjet {name == "FastjetFinder"
+                           || name == "FastjetSelector"};
+    if (!is_fastjet && name != "NJetFinder") return std::nullopt;
+    auto s = item[name];
+    // The defaults below mirror those of the selectors themselves (see
+    // Fastjet_Selector_Base and the NJetFinder getter); Sherpa refuses
+    // to have one setting declared with two different defaults.
+    const int n {
+        s["N"].SetDefault("None").UseZeroReplacements().Get<int>()};
+    if (n < 1) return std::nullopt;
+    const double ptmin {
+        s["PTMin"].SetDefault("None").UseZeroReplacements().Get<double>()};
+    const double etmin {
+        s["ETMin"].SetDefault("None").UseZeroReplacements().Get<double>()};
+    // A jet has to clear both thresholds, and for the massless partons
+    // Pepper generates ET and pT coincide, so the harder one wins.
+    const double pt_min {std::max(ptmin, etmin)};
+    if (pt_min <= 0.0) return std::nullopt;
+    const double dr_min {is_fastjet ? s["DR"].SetDefault(0.4).Get<double>()
+                                    : s["R"].SetDefault(0.4).Get<double>()};
+    const double etamax {s["EtaMax"].SetDefault("None")
+                             .UseMaxDoubleReplacements()
+                             .Get<double>()};
+    const double ymax {s["YMax"].SetDefault("None")
+                           .UseMaxDoubleReplacements()
+                           .Get<double>()};
+    // Massless partons again: eta and y agree, so the tighter of the
+    // two limits is what the selector effectively imposes. Both default
+    // to the largest representable double, i.e. "no limit".
+    const double y_max {std::min(etamax, ymax)};
+    Jet_Cut_Params params {pt_min, dr_min, std::nullopt};
+    if (y_max < 0.5 * std::numeric_limits<double>::max())
+      params.y_max = y_max;
+    return params;
+  }
+
+  // The rapidity of a massless parton with pT >= pt_min is bounded by
+  // cosh(y) <= sqrt(s) / (2 pt_min), so this value cuts nothing at all.
+  // We use it whenever Sherpa leaves the jet rapidity unrestricted,
+  // because Pepper always applies a finite y_max (6 by default), which
+  // would otherwise cut into phase space that Sherpa keeps.
+  double KinematicYMax(double pt_min)
+  {
+    if (pt_min <= 0.0) return 0.0;
+    const double ratio {rpa->gen.Ecms() / (2.0 * pt_min)};
+    return ratio > 1.0 ? std::acosh(ratio) : 0.0;
+  }
+
+  // Align Pepper's jet cuts with whatever regularises the QCD final
+  // state on the Sherpa side. Two sources can contribute:
+  //
+  //  - the CKKW merging scale, together with the FastJet kt criterion
+  //    defining when an emission counts as a jet. Pepper only
+  //    implements kt clustering in (y, phi), so we require
+  //    JET_CRITERION: FASTJET[A:kt,R:<R>,y:<y>] and refuse to proceed
+  //    otherwise -- the default JET_CRITERION (the shower generator)
+  //    has no Pepper-side counterpart and would silently disagree.
+  //
+  //  - jet-finder selectors (FastjetFinder / NJetFinder), which are
+  //    what regularises jets that the core process contains already,
+  //    e.g. for jj+jets.
+  //
+  // A sample can use either or both -- jj+jets needs both, V+jets only
+  // the merging scale -- so we take the loosest cuts implied by all of
+  // them (see LoosenJetCuts). With none of them present (e.g. a plain
+  // Drell-Yan run without jets), Pepper keeps its own defaults.
   void SyncJetCuts(Pepper::Initialization_settings& settings)
   {
+    std::optional<Jet_Cut_Params> cuts;
+    std::vector<std::string> sources;
+
     const auto ckkw = ReadCkkwMergingScale();
-    if (!ckkw) return;
-    Settings& sherpa_settings {Settings::GetMainSettings()};
-    const std::string crit {
-        sherpa_settings["JET_CRITERION"].Get<std::string>()};
-    const auto kt = ParseFastjetKtJetCriterion(crit);
-    if (!kt)
-      THROW(not_implemented,
-            "Pepper_Reader: multi-jet merging is on (CKKW=" + ToString(*ckkw)
-            + "), but JET_CRITERION=\"" + crit + "\" cannot be propagated "
-            "to Pepper. Set JET_CRITERION: FASTJET[A:kt,R:<R>,y:<y>] in "
-            "the run card so the Sherpa and Pepper jet definitions agree.");
-    settings.set_pt_min(*ckkw);
-    settings.set_dR_min(kt->R);
-    settings.set_y_max(kt->y);
-    msg_Info() << "Pepper_Interface: jet cuts synced for CKKW merging "
-               << "(pT_min=" << *ckkw << ", dR_min=" << kt->R
-               << ", y_max=" << kt->y << ").\n";
+    if (ckkw) {
+      Settings& sherpa_settings {Settings::GetMainSettings()};
+      const std::string crit {
+          sherpa_settings["JET_CRITERION"].Get<std::string>()};
+      const auto kt = ParseFastjetKtJetCriterion(crit);
+      if (!kt)
+        THROW(not_implemented,
+              "Pepper_Reader: multi-jet merging is on (CKKW="
+              + ToString(*ckkw) + "), but JET_CRITERION=\"" + crit
+              + "\" cannot be propagated to Pepper. Set JET_CRITERION: "
+              "FASTJET[A:kt,R:<R>,y:<y>] in the run card so the Sherpa "
+              "and Pepper jet definitions agree.");
+      LoosenJetCuts(cuts, Jet_Cut_Params{*ckkw, kt->R, kt->y});
+      sources.push_back("CKKW=" + ToString(*ckkw));
+    }
+
+    for (auto& item : CollectSelectorSettings()) {
+      const auto params = ReadJetFinderParams(item);
+      if (!params) continue;
+      LoosenJetCuts(cuts, *params);
+      sources.push_back(item.GetKeys().front() + "(pT_min="
+                        + ToString(params->pt_min) + ")");
+    }
+
+    if (!cuts) return;
+
+    // Pepper cuts on the rapidity of every parton, so an unrestricted
+    // Sherpa side has to be translated into the kinematic limit rather
+    // than into Pepper's much tighter default.
+    const double y_max {cuts->y_max ? *cuts->y_max
+                                    : KinematicYMax(cuts->pt_min)};
+    settings.set_pt_min(cuts->pt_min);
+    settings.set_dR_min(cuts->dr_min);
+    settings.set_y_max(y_max);
+    msg_Info() << "Pepper_Interface: jet cuts synced from ";
+    for (size_t i {0}; i < sources.size(); ++i)
+      msg_Info() << (i ? ", " : "") << sources[i];
+    msg_Info() << " (pT_min=" << cuts->pt_min
+               << ", dR_min=" << cuts->dr_min
+               << ", y_max=" << y_max
+               << (cuts->y_max ? "" : " [kinematic limit, no rapidity cut "
+                                      "on the Sherpa side]")
+               << ").\n";
   }
 
   // Map a signed Sherpa/PDG KF code onto the particle-name string that
@@ -640,9 +811,10 @@ namespace LHEH5 {
       // fatal, because they only affect Pepper unweighting efficiency.
       SyncScaleSetter(settings);
 
-      // When CKKW multi-jet merging is active, the merging scale and
-      // the FastJet kt criterion define the Sherpa jet definition;
-      // forward them so Pepper's jet cuts agree.
+      // Forward the cuts that regularise the QCD final state on the
+      // Sherpa side: the CKKW merging scale together with the FastJet
+      // kt criterion, and any jet-finder selector (which is what
+      // regularises jets contained in the core process already).
       SyncJetCuts(settings);
 
       // Translate Sherpa "Mass" selectors into Pepper's lepton-pair
