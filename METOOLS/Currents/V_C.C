@@ -177,6 +177,7 @@ void CV<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			   const int cr,const int ca,const int mode)
 {
   this->m_p=p;
+  this->m_p2=sqr(this->m_mass);
   if (this->m_fl.Mass()==0.0 && p[1]==0.0 && p[2]==0.0)
     this->m_p[0]=this->m_p[0]<0.0?
       -std::abs(this->m_p[3]):std::abs(this->m_p[3]);
@@ -240,7 +241,10 @@ template <typename SType>
 void CV<SType>::AddPropagator()
 {
   // add propagator for off-shell leg
-  SComplex p2(SType(this->m_p.Abs2())), prop(-M_I/(p2-m_cmass2));
+  // m_p2, not m_p.Abs2(): see Current::Evaluate(). p2 is used twice below --
+  // once as the propagator denominator and once in the longitudinal
+  // projector -- so a cancelled value would enter the current twice over.
+  SComplex p2(SType(this->m_p2)), prop(-M_I/(p2-m_cmass2));
   if (this->m_osd) prop=SComplex(M_I);
 #ifdef DEBUG__BG
   msg_Debugging()<<"propagator: "<<prop<<"\n";

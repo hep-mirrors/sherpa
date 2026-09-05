@@ -28,8 +28,9 @@ char METOOLS::ParticleType(const Flavour &fl)
 }
 
 Current::Current(const Current_Key &key):
-  m_fl(key.m_fl), m_key(0), m_order(2,0), m_cid(0), m_ntc(0),
-  m_mass(m_fl.Mass()), m_width(m_fl.Width()), 
+  m_fl(key.m_fl), m_p2(sqr(key.m_fl.Mass())),
+  m_key(0), m_order(2,0), m_cid(0), m_ntc(0),
+  m_mass(m_fl.Mass()), m_width(m_fl.Width()),
   m_msv(!IsZero(m_mass)), m_zero(true),
   m_dir(0), m_cut(0), m_osd(0), p_sub(NULL) {}
 
@@ -173,10 +174,32 @@ void Current::Evaluate()
   Vertex_Vector::const_iterator vit(m_in.begin());
   if (p_sub==NULL || m_id.size()>
       (p_sub->Sub()->In().front()->Info()->Mode()==1?2:1)) {
-    // calculate outgoing momentum
+    // calculate outgoing momentum and its virtuality
+    //
+    // p^2 is accumulated as sum_i p_i^2 + 2 sum_{i<j} p_i.p_j rather than
+    // taken as m_p.Abs2() afterwards. Both are equal in exact arithmetic, but
+    // the sub-current virtualities p_i^2 are already free of cancellation
+    // (exactly m^2 at the leaves, recursively stable above), so this form
+    // confines the loss to a single LCDot per pair instead of subtracting two
+    // O(E^2) numbers. The vertices here are 2- or 3-valent, so the double loop
+    // costs at most three extra dot products per current.
     m_p=Vec4D();
-    for (Current_Vector::const_iterator jit((*vit)->J().begin());
-	 jit!=(*vit)->J().end();++jit) m_p+=(*jit)->P();
+    m_p2=0.0;
+    const Current_Vector &js((*vit)->J());
+    for (size_t i(0);i<js.size();++i) {
+      m_p2+=js[i]->P2();
+      for (size_t j(i+1);j<js.size();++j)
+	m_p2+=2.0*js[i]->P().LCDot(js[j]->P());
+      m_p+=js[i]->P();
+    }
+#ifdef DEBUG__BG
+    // m_p2 must track m_p.Abs2() to within the latter's own accuracy; a
+    // mismatch beyond that means a P()/P2() pair went out of sync somewhere.
+    if (!IsEqual(m_p2,m_p.Abs2(),1.0e-6) &&
+	dabs(m_p2-m_p.Abs2())>1.0e-6*sqr(m_p[0]))
+      msg_Error()<<METHOD<<"(): p^2 bookkeeping mismatch: recursive "
+		 <<m_p2<<" vs. Abs2() "<<m_p.Abs2()<<" for "<<m_id<<"\n";
+#endif
   }
   // calculate subcurrents
   for (;vit!=m_in.end();++vit) (*vit)->Evaluate();

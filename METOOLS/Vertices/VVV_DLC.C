@@ -241,8 +241,9 @@ template <typename SType>
 void VVV_SCalculator<SType>::ConstructIDipole()
 {
   Current *cj(p_v->J(0));
-  p_v->Kin()->JIJT()->SetP(cj->P());
-  p_v->Kin()->JKT()->SetP(p_v->Kin()->JK()->P());
+  p_v->Kin()->JIJT()->SetP(cj->P(),cj->P2());
+  p_v->Kin()->JKT()->SetP(p_v->Kin()->JK()->P(),
+			  p_v->Kin()->JK()->P2());
   const CVec4Type_Matrix *c(cj->J().Get<CVec4Type>());
   CObject_Vector cc(2);
   cc[0]=c->front().front();

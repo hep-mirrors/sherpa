@@ -126,6 +126,7 @@ void CF<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			   const int cr,const int ca,const int mode)
 {
   this->m_p=p;
+  this->m_p2=sqr(this->m_mass);
   this->ResetJ();
   bool anti(this->m_fl.IsAnti());
   if (this->m_fl.Majorana()) anti=(mode&1)?this->m_dir<0:this->m_dir>0;
@@ -186,7 +187,9 @@ void CF<SType>::AddPropagator()
 {
   const CSpinorType hs;
   // add propagator for off-shell leg
-  SComplex prop(M_I/(SType(this->m_p.Abs2())-m_cmass2));
+  // m_p2, not m_p.Abs2(): see Current::Evaluate(). For a collinear ISR
+  // emission the denominator is 2 p.k, which Abs2() cannot resolve.
+  SComplex prop(M_I/(SType(this->m_p2)-m_cmass2));
   if (this->m_osd) prop=SComplex(M_I);
   SComplex pp(Spinor<SType>::PPlus(this->m_p));
   SComplex pm(Spinor<SType>::PMinus(this->m_p));
@@ -194,7 +197,8 @@ void CF<SType>::AddPropagator()
   SComplex ptc(Spinor<SType>::PTC(this->m_p));
 #ifdef DEBUG__BG
   msg_Debugging()<<"propagator: "<<prop
-		 <<" <- p^2 = "<<this->m_p.Abs2()<<", m = "<<m_cmass<<"\n";
+		 <<" <- p^2 = "<<this->m_p2<<" (Abs2 "<<this->m_p.Abs2()
+		 <<"), m = "<<m_cmass<<"\n";
   msg_Debugging()<<"pp = "<<pp<<", pm = "<<pm<<", pt = "<<pt<<"\n";
 #endif
   for (size_t i(0);i<m_j.size();++i) {
