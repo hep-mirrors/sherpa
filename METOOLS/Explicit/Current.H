@@ -49,6 +49,17 @@ namespace METOOLS {
     Int_Vector    m_id, m_fid;
 
     ATOOLS::Vec4D  m_p;
+    // Virtuality of m_p, accumulated recursively rather than recomputed as
+    // m_p.Abs2(). For an internal line built from nearly-collinear externals
+    // the two differ enormously: m_p.Abs2() forms an O(E^2) difference to
+    // reach an O(E^2 theta^2) answer, so for the ISR photons of a lepton
+    // collider (theta ~ m_e/E_beam) every significant digit of the propagator
+    // denominator is lost. Evaluate() instead builds
+    //   p^2 = sum_i p_i^2 + 2 sum_{i<j} p_i.p_j
+    // from the sub-current virtualities, which are exact on-shell masses at
+    // the leaves, so the only cancellation left sits inside a single
+    // Vec4D::LCDot. See AddPropagator() in Currents/{F,V,S}_C.C.
+    double         m_p2;
     CObject_Matrix m_j;
 
     Polarization_Index m_h;
@@ -116,7 +127,18 @@ namespace METOOLS {
     // inline functions
     inline const CObject_Matrix &J() const { return m_j; }
 
-    inline void SetP(const ATOOLS::Vec4D &p) { m_p=p; }
+    // External / dipole-mapped legs are on their mass shell by construction,
+    // so seed the virtuality with the exact m^2 rather than with p.Abs2():
+    // the latter carries an O(E^2 eps) error that would swamp the small
+    // denominators this bookkeeping exists to protect.
+    inline void SetP(const ATOOLS::Vec4D &p)
+    { m_p=p; m_p2=ATOOLS::sqr(m_mass); }
+
+    // For the few call sites that copy a momentum off another current, where
+    // the on-shell assumption above need not hold: carry that current's
+    // virtuality across explicitly instead of re-deriving it.
+    inline void SetP(const ATOOLS::Vec4D &p,const double &p2)
+    { m_p=p; m_p2=p2; }
 
     inline void SetFId(const Int_Vector &fid) { m_fid=fid; }
     inline void SetKey(const size_t &key)     { m_key=key; }
@@ -138,6 +160,8 @@ namespace METOOLS {
     { return m_fl.IsAnti()?m_fl:m_fl.Bar(); }
 
     inline ATOOLS::Vec4D P() const { return m_p; }
+
+    inline double P2() const { return m_p2; }
 
     inline const Int_Vector &Id() const   { return m_id;   }
     inline const Int_Vector &FId() const  { return m_fid;  }

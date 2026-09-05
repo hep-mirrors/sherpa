@@ -86,6 +86,7 @@ void CS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			   const int cr,const int ca,const int mode)
 {
   this->m_p=p;
+  this->m_p2=sqr(this->m_mass);
   this->ResetJ();
   if (ch==0) {
     CScalarType *j(CScalarType::New(CScalarType(1.0,cr,ca,0,0)));
@@ -106,11 +107,13 @@ template <typename SType>
 void CS<SType>::AddPropagator()
 {
   // add propagator for off-shell leg
-  SComplex prop(M_I/(SType(this->m_p.Abs2())-m_cmass2));
+  // m_p2, not m_p.Abs2(): see Current::Evaluate().
+  SComplex prop(M_I/(SType(this->m_p2)-m_cmass2));
   if (this->m_osd) prop=SComplex(M_I);
 #ifdef DEBUG__BG
   msg_Debugging()<<"propagator: "<<prop<<" <- p^2 = "
-		 <<this->m_p.Abs2()<<", m = "<<sqrt(m_cmass2)<<"\n";
+		 <<this->m_p2<<" (Abs2 "<<this->m_p.Abs2()
+		 <<"), m = "<<sqrt(m_cmass2)<<"\n";
 #endif
   for (size_t i(0);i<m_j.size();++i) {
   CScalarType_Vector *j(m_j[i].template Get<CScalarType>());

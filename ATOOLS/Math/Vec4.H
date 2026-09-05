@@ -114,7 +114,24 @@ namespace ATOOLS {
     }
 
 
-    Scalar Abs2() const { return (m_x[0]+m_x[3])*(m_x[0]-m_x[3])-m_x[1]*m_x[1]-m_x[2]*m_x[2]; }      
+    Scalar Abs2() const { return (m_x[0]+m_x[3])*(m_x[0]-m_x[3])-m_x[1]*m_x[1]-m_x[2]*m_x[2]; }
+    /*!
+      \brief Minkowski product in light-cone form, for beam-collinear momenta.
+
+      The naive E*E'-pz*pz' cancels catastrophically when both vectors are
+      close to the beam axis: each term is O(E E') while the result is
+      O(E E' theta^2). Pairing the light-cone components instead,
+        p.q = ((p^+ q^-) + (p^- q^+))/2 - pT.qT,   p^\pm = E \pm pz,
+      keeps the cancellation inside the (E \pm pz) differences, exactly the
+      trick Abs2() above uses for a single vector. Identical to
+      operator*(Vec4,Vec4) in exact arithmetic, but retains full relative
+      precision for the small-angle emissions that dominate QED ISR.
+    */
+    template<typename Scal2> PROMOTE(Scalar,Scal2)
+    LCDot(const Vec4<Scal2> &q) const {
+      return 0.5*((m_x[0]+m_x[3])*(q[0]-q[3])+(m_x[0]-m_x[3])*(q[0]+q[3]))
+             -m_x[1]*q[1]-m_x[2]*q[2];
+    }
     Scalar RelAbs2() const {
       const auto abs2 = Abs2();
       return (abs2 == 0) ? 0 : abs2/(m_x[0]*m_x[0]);
