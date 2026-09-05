@@ -65,6 +65,15 @@ void ISR::NPhotons() {
     sum += log(ran->Get());
     if (sum <= -m_nbar) break;
   }
+  // NB the ISR/FSR split at fixed order is decided here only in the sense that
+  // ISR always wins: CalculateFSR returns early on any event with a stored ISR
+  // photon, so FSR emits only when ISR produced nothing. Selecting the emitter
+  // in proportion to the two crude rates instead was tried and reverted -- it
+  // needs a compensating weight, because nbar never appears explicitly in the
+  // event weight here (it cancels against exp(2*alpha*Btilde) in the form
+  // factor), so rescaling the selection probability rescales the contribution
+  // with nothing to balance it. Measured: it moved Fixed_Order: NLO by +49% and
+  // took the two routes to fixed order from 8% apart to 43% apart.
   if(FixedOrder()==fixed_order::nlo)  m_n = min(N,1);
   else m_n = N;
   if (m_n < 0) msg_Error() << METHOD << std::endl << "Nphotons < 0!!" << std::endl;

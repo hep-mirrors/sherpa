@@ -59,6 +59,11 @@ namespace YFS {
     // Move the survivors, so every kept Dipole keeps its address.
     std::vector<std::unique_ptr<Dipole> > keep;
     std::vector<dipoletype::code> kind;
+    // Upper bound: at most every current dipole survives. Called 2-3x/event
+    // (BuildFinal, BuildIF, and BuildPole when it runs), so worth avoiding
+    // the reallocation-as-you-grow churn even though it's a cheap guess.
+    keep.reserve(m_dipoles.size());
+    kind.reserve(m_dipoles.size());
     auto take=[&](const std::vector<std::size_t> &idx, bool drop, dipoletype::code t){
       if (drop) return;
       for (std::size_t i : idx) { keep.push_back(std::move(m_dipoles[i])); kind.push_back(t); }
@@ -71,6 +76,7 @@ namespace YFS {
     // the previous event's momenta to an event that fell back to the flat
     // scheme.
     std::vector<std::unique_ptr<Dipole> > keepdec;
+    keepdec.reserve(m_idxDec.size());
     if (!dropFF)
       for (std::size_t i : m_idxDec) keepdec.push_back(std::move(m_dipoles[i]));
     take(m_idxII, dropII, dipoletype::initial);

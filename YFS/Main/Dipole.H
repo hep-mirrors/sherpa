@@ -52,7 +52,11 @@ namespace YFS{
         std::vector<std::string> m_names;
         double m_QiQj, m_Qi, m_Qj, m_thetai, m_thetaj, m_thetaij, m_sp, m_b1, m_b2, m_gamma, m_gammap, m_alp, m_alpi,m_rescale_alpha;
         bool m_setBorn, m_sameflav, m_irfinite, m_isduplicate;
-        int m_Nphotons, m_resonance, m_betaorder, m_leftfl, m_rightfl, m_real_only;
+        // m_real_only and m_resonance are read by CalculateGamma() and
+        // IsResonance(), both reachable before any setter runs - the
+        // constructor itself calls CalculateGamma(). Initialised here because
+        // an uninitialised read is undefined, not merely arbitrary.
+        int m_Nphotons = 0, m_resonance = 0, m_leftfl, m_rightfl, m_real_only = 0;
         double m_ranPhi, m_ranTheta, m_born, m_photonscale, m_u,m_irscale;
         dipoletype::code m_type;
         // m_oldmomenta is the momenta as constructed, never written again.
@@ -89,14 +93,22 @@ namespace YFS{
         double EikonalMassless(const Vec4D &k,const Vec4D &p1,const Vec4D &p2);
         double Eikonal(const Vec4D &k);
         double EikonalInterferance(const Vec4D &k);
+        // The EEX beta expansion. `order` is the truncation order, passed
+        // explicitly rather than read from a member: the recursion evaluates
+        // its subtractions at LOWER orders than the term it is building, and
+        // the member it used to borrow for that (m_betaorder) was written,
+        // decremented and only sometimes restored by the callees. EEX() had to
+        // reassign it after every pair and triple to undo the damage, and a
+        // caller reaching Beta1() without going through EEX() first read
+        // whatever the last call had left.
         double EEX(const int betaorder);
         double VirtualEEX(const int betaorder);
-        double Hard(const Vec4D & k, int i=0);
+        double Hard(const Vec4D & k, int order);
         double Hard(const Vec4D & k1, const Vec4D & k2);
         double Hard(const Vec4D & k1, const Vec4D & k2, const Vec4D & k3);
-        double Beta1(const Vec4D & k1);
-        double Beta2(const Vec4D & k1, const Vec4D & k2);
-        double Beta3(const Vec4D & k1, const Vec4D & k2,const Vec4D & k3);
+        double Beta1(const Vec4D & k1, int order);
+        double Beta2(const Vec4D & k1, const Vec4D & k2, int order);
+        double Beta3(const Vec4D & k1, const Vec4D & k2,const Vec4D & k3, int order);
         double xi(const double &alp, const double &beta, const double &gamma);
         double xi(const double &alp, const double &a1, const double &b1, const double &a2, const double &b2);
         void Boost();

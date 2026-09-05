@@ -79,6 +79,11 @@ namespace YFS {
       int m_N;
       std::map<ATOOLS::Flavour, ATOOLS::Vec4D> m_test_dip, m_born_dip;
       std::map<ATOOLS::Flavour, int> m_flav_label;
+      //! Flavours m_flav_label was last built from. m_flav_label is invariant
+      //! per process, so MakeDipolesII/MakeDipoles skip rebuilding it (a
+      //! std::map, so tree-node allocations) when the flavours have not
+      //! changed since last event -- same guard YFS_Handler::SetFlavours uses.
+      ATOOLS::Flavour_Vector m_flav_label_fl;
       // std::map<ATOOLS::Vec4D, int> m_mom_label;
       ATOOLS::Vec4D_Vector m_chargedinparticles;
       ATOOLS::Vec4D_Vector m_neutralinparticles;
@@ -146,6 +151,9 @@ namespace YFS {
       double CalculateVirtualSubTchannel();
       double CalculateVirtualSubTchannelEps();
       double FormFactor();
+      //! FormFactor built from an already-computed FormFactorSum(), so a caller
+      //! that needs both gets them from one evaluation instead of two.
+      double FormFactor(double form);
       double FormFactorSum();
       //! Just the initial-final term of FormFactorSum(), i.e. the piece
       //! IFI_Sub=1 adds and IFI_Sub=0 leaves out. Zero when IFI_Sub is off.

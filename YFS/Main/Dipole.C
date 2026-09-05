@@ -20,11 +20,22 @@ using namespace MODEL;
 using namespace YFS;
 
 
-// for IFI corrections
+// The EEX virtual dressing, one value per RADIATION SOURCE rather than per
+// dipole: deli is the initial-state 0.5*gamma, delf the final-state one.
+// CalculateGamma() below writes whichever of the two matches its own type, and
+// Dipole_EEX.C's Beta1/Beta2 read BOTH regardless of type - an ISR dipole's
+// beta_1 carries the FSR dressing and vice versa, which is the ISR (x) FSR
+// factorisation (see the comment in VirtualEEX). They are shared globals for
+// exactly that reason, so do NOT "fix" them into Dipole members: an initial
+// dipole would then see delf = 0 permanently and the cross term would vanish.
+//
+// The sharing does mean the values belong to the last dipole of each type to
+// run CalculateGamma(). Event-level state on Define_Dipoles/DipoleSet would
+// say that properly; these globals only work because every event rebuilds the
+// final-state dipoles and EEX() re-runs CalculateGamma() before using them.
 double delf = 0;
 double deli = 0;
-int order = 0;
- 
+
 // Lambda (Kaellen function) now lives once in YFS/Tools/Dipole.H.
 
 
@@ -51,20 +62,22 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   m_QiQj = m_Qi*m_Qj;
   if(IsEqual(fl[0],fl[1])) m_sameflav = 1;
   else m_sameflav = 0;
-  for (auto &v : fl)
-  {
-    m_masses.push_back(v.Mass());
-    m_charges.push_back(v.Charge());
-    m_names.push_back(v.IDName());
-    m_flavs.push_back(v);
-  }
-  for (auto &v : mom) {
-    m_momenta.push_back(v);
-    m_oldmomenta.push_back(v);
-    m_newmomenta.push_back(v);
-    m_ghost.push_back(v);
-  }
-  for (auto &v : born) m_bornmomenta.push_back(v);
+  // Direct 2-element init, not push_back in a loop: fl/mom/born are already
+  // validated to size()==2 above, so the loop form only bought empty->push->
+  // push reallocations on every one of these vectors, for every dipole built
+  // every event.
+  m_flavs = {fl[0], fl[1]};
+  m_masses = {fl[0].Mass(), fl[1].Mass()};
+  m_charges = {fl[0].Charge(), fl[1].Charge()};
+  m_names = {fl[0].IDName(), fl[1].IDName()};
+  m_momenta = {mom[0], mom[1]};
+  m_oldmomenta = m_momenta;
+  m_newmomenta = m_momenta;
+  // Final-type dipoles (the common case from BuildFinal) never read m_ghost,
+  // which used to be filled here and cleared again a few lines down -- skip
+  // the fill instead of filling then discarding it.
+  if (ty != dipoletype::code::final) m_ghost = m_momenta;
+  m_bornmomenta = {born[0], born[1]};
   m_eikmomentum = m_bornmomenta;
   if (ty == dipoletype::code::initial) {
     m_thetai = m_thetaj = 1;
@@ -78,9 +91,6 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   }
   if ((m_momenta.size() != m_oldmomenta.size()) || m_newmomenta.size() != 2 || m_bornmomenta.size() != 2) {
     THROW(fatal_error, "Incorrect dipole size in YFS");
-  }
-  if (ty == dipoletype::code::final) {
-    m_ghost.clear();
   }
   m_thetaij = m_thetai*m_thetaj;
   m_theta.push_back(m_thetai);
@@ -181,11 +191,6 @@ void Dipole::Boost() {
         msg_Error()<<"Dipole ghost is in the wrong frame";
       }
     }
-    // sqr(1.+2.*t/s)
-    // m_eikmomentum = m_momenta;
-    double s = (m_bornmomenta[2]+m_bornmomenta[3]).Abs2();
-    double t = (m_bornmomenta[0]-m_bornmomenta[2]).Abs2();
-    // m_ranTheta = acos(1.+2.*t/s);
     m_ranTheta = acos(1.-2.*ran->Get());
     m_ranPhi = ran->Get()*2.*M_PI;
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
@@ -470,297 +475,7 @@ void Dipole::AddToGhosts(ATOOLS::Vec4D &p) {
   m_ghost.push_back(p);
 }
 
-double Dipole::EEX(const int betaorder){
-  double real=0;
-  // msg_Out()<<"================================="<<std::endl;
-  if(m_dipolePhotonsEEX.size()==0) return real;
-  CalculateGamma();
-  // Poincare boost(m_eikmomentum[0]+m_eikmomentum[1]);
-  // boost.Boost(m_eikmomentum[0]);
-  // boost.Boost(m_eikmomentum[1]);
-  m_betaorder = betaorder;
-  if(betaorder >= 1) {
-    for(auto k: m_dipolePhotons){
-     real += Beta1(k)/Eikonal(k);
-    }
-  }
-  if(betaorder >= 2 ) {
-    for (int j = 1; j < m_dipolePhotonsEEX.size(); j++) {
-      for (int i = 0; i < j; i++) {
-        // m_betaorder-=1;
-        Vec4D k1 = m_dipolePhotonsEEX[j];
-        Vec4D k2 = m_dipolePhotonsEEX[i];
-        real += Beta2(k1,k2)/Eikonal(k1)/Eikonal(k2);
-        m_betaorder = betaorder;
-      }
-    }
-  }
-  if(betaorder >= 3){
-    for (int j = 1; j < m_dipolePhotonsEEX.size(); j++) {
-      for (int i = 0; i < j; i++) {
-        for (int k = 0; k < i; k++) {
-          Vec4D k1 = m_dipolePhotonsEEX[j];
-          Vec4D k2 = m_dipolePhotonsEEX[i];
-          Vec4D k3 = m_dipolePhotonsEEX[k];
-          double eik1 = Eikonal(k1);
-          double eik2 = Eikonal(k2);
-          double eik3 = Eikonal(k3);
-          real += Beta3(k1,k2,k3)/eik1/eik2/eik3;
-          m_betaorder = betaorder;
-        }
-      }
-    }
-  }
-  if(IsNan(real)){
-    msg_Error()<<"YFS EEX is NaN at order "<<betaorder<<std::endl;
-  }
-  // msg_Out()<<"================================="<<xstd::endl;;
-  return real;//+virt;
-}
-
-double Dipole::Beta1(const Vec4D &k){
-  double b1=0;
-  b1 = Hard(k);
-  // msg_Out()<<"EEXReal for k is = "<<b1<<std::endl;
-  if(Type()==dipoletype::initial) {
-  //   // beta11
-    if(m_betaorder==2) b1 = Hard(k)*(1+delf)-Eikonal(k)*(1+deli)*(1+delf);
-    // beta12
-    else if(m_betaorder==3) b1 = Hard(k)-Eikonal(k)*(1+delf+0.5*delf*delf)*(1+deli+0.5*deli*deli);
-    else b1 = (Hard(k)-Eikonal(k))*(1+delf);
-  }
-  else if(Type()==dipoletype::final) {
-    // if(m_betaorder==2) b1 = Hard(k)*(1+0.5*deli-0.25*deli)*(1+delf)-Eikonal(k);
-    if(m_betaorder==2) b1 = Hard(k)*(1+deli)-Eikonal(k)*(1.+deli)*(1+delf);
-    else if(m_betaorder==3) b1 = Hard(k)*(1+deli+0.5*deli*deli)-Eikonal(k)*(1+delf+0.5*delf*delf)*(1+deli+0.5*deli*deli);
-    else b1 = Hard(k)-Eikonal(k);
-  }
-  else{
-    b1 = Hard(k)-Eikonal(k);
-  }
-  return b1;
-}
-
-double Dipole::Beta2(const Vec4D &k1, const Vec4D &k2){
-  double eik1 = Eikonal(k1);
-  double eik2 = Eikonal(k2);
-  double delta=1, hard;
-  if(m_betaorder==3) delta = (1+delf)*(1+deli);
-  hard = Hard(k1,k2);
-  m_betaorder-=1;// Reduce order to calculate beta1(n-1)
-  hard+= -eik1*(Beta1(k2))
-         -eik2*(Beta1(k1))
-         -eik1*eik2;
-  m_betaorder+=1;
-  return hard*delta;
-}
-
-double Dipole::Beta3(const Vec4D &k1, const Vec4D &k2, const Vec4D &k3){
-  double eik1 = Eikonal(k1);
-  double eik2 = Eikonal(k2);
-  double eik3 = Eikonal(k3);
-  double del = 0;
-  double b3 = 0;
-  if(Type()!=dipoletype::initial) return 0;
-  if(Type()==dipoletype::initial) del = deli;
-  else del = delf;
-  double hard = Hard(k1,k2,k3);
-  m_betaorder=-1;// Reduce order to calculate beta1(n-1)
-  hard += -eik1*Beta2(k3,k2)
-          -eik2*Beta2(k3,k1)
-          -eik3*Beta2(k1,k2)
-          -eik1*eik2*eik3;
-  m_betaorder=-2;
-  hard += -eik2*eik3*Beta1(k1)
-          -eik1*eik3*Beta1(k2)
-          -eik1*eik2*Beta1(k3);
-  return hard;
-}
-
-double Dipole::VirtualEEX(const int betaorder){
-  double virt{0};
-  // For ISR+FSR virtuals are taken in for ISRxFSR not ISR+FSR
-  if(betaorder==1)  virt =  0.5*m_gamma;
-  else if(betaorder==2) virt = 0.5*m_gamma + 0.125*m_gamma*m_gamma;
-  else if(betaorder==3) virt = 0.5*m_gamma + 0.125*m_gamma*m_gamma + pow(m_gamma,3)/48;
-  return virt;
-}
-
-double Dipole::Hard(const Vec4D &k, int i){
-  // msg_Out()<<"Dipole momentum is "<<m_eikmomentum<<std::endl;
-  double p1p2 = m_eikmomentum[0]*m_eikmomentum[1];
-  double a = k*m_eikmomentum[0]/p1p2;
-  double b = k*m_eikmomentum[1]/p1p2;
-  double ap = a/(1.+a+b);
-  double bp = b/(1.+a+b);
-  double delta = 0;
-  if (Type() == dipoletype::initial) {
-    double z = (1-a)*(1-b);
-    if(m_betaorder>=2 && !RealOnly()){
-      delta += 0.5*m_gamma
-              +m_alpi*(log(a)*log(1-b)+log(b)*log(1-a)
-                      +DiLog(a) + DiLog(b)
-                      -0.5*sqr(log(1-a))-0.5*sqr(log(1-b))
-                      +1.5*log(1-a)+1.5*log(1-b)
-                      +0.5*a*(1-a)/(1+sqr(1-a))
-                      +0.5*b*(1-b)/(1+sqr(1-b)));
-    }
-    if(m_betaorder>=3){
-      delta += 0.125*sqr(m_gamma)*(1-log(z))
-             +sqr(m_gamma)/24 *sqr(log(z));
-    } 
-    return 0.5*Eikonal(k)*(sqr(1-a)+sqr(1-b))*(1+delta);
-  }
-  else if (Type() == dipoletype::final) {
-    double z = (1-ap)*(1-bp);
-    if(m_betaorder>=2){
-      delta += 0.5*m_gamma+0.25*m_gamma*log(z);
-    }
-    return 0.5*Eikonal(k)*(sqr(1-ap)+sqr(1-bp))*(1+delta);
-  }
-  else if (Type() == dipoletype::ifi) {
-    return 0.5*Eikonal(k)*(sqr(1-a)+sqr(1-bp));
-  }
-  return 0;
-}
-
-double Dipole::Hard(const Vec4D &k1, const Vec4D &k2){
-  double p1p2 = m_eikmomentum[0]*m_eikmomentum[1];
-  
-  double a1 = k1*m_eikmomentum[0]/p1p2;
-  double a2 = k2*m_eikmomentum[0]/p1p2;
-  
-  double b1 = k1*m_eikmomentum[1]/p1p2;
-  double b2 = k2*m_eikmomentum[1]/p1p2;
-  
-  double eta1 = a1/(1+a1+b1);
-  double eta2 = a2/(1+a2+b2);
-
-  double zeta1 = b1/(1+a1+b1);
-  double zeta2 = b2/(1+a2+b2);
-
-  double etap1 = eta1/(1+eta2);
-  double etap2 = eta2/(1+eta1);;
-
-  double zetap1 = zeta1/(1+zeta2);
-  double zetap2 = zeta2/(1+zeta1);
-
-  double ap1 = a1/(1.-a2);
-  double bp1 = b1/(1.-b2);
-
-  double ap2 = a2/(1.-a1);
-  double bp2 = b2/(1.-b1);
-  
-  double v1 = a1+b1;
-  double v2 = a2+b2;
-  double hard,delta{1};
-  if (Type() == dipoletype::initial) {
-    if(v1 > v2){
-      hard = xi(a1,ap2,bp2) + xi(b1,ap2,bp2);
-    } 
-    else{
-      hard = xi(a2,ap1,bp1) + xi(b2,ap1,bp1);
-    }
-    // if(m_betaorder==3){
-    //   delta = 1+delf;
-    // }
-    return Eikonal(k1)*Eikonal(k2)*hard*delta;
-  }
-  else if (Type() == dipoletype::final) {
-    if(v1 > v2){
-      hard = xi(eta1,etap2,zetap2) + xi(zeta1,etap2,zetap2);
-    }
-    else {
-      hard = xi(eta2,etap1,zetap1) + xi(zeta2,etap1,zetap1);
-    }
-    // if(m_betaorder==3){
-    //   delta = 1+deli;
-    // }
-    return Eikonal(k1)*Eikonal(k2)*hard*delta;
-  }
-  else if(Type()== dipoletype::initial){
-    if(v1 > v2){
-      hard = xi(a1,ap2,bp2) + xi(zeta1,etap2,zetap2);
-    } 
-    else{
-      hard = xi(a2,ap1,bp1) + xi(zeta2,etap1,zetap1);
-    }
-  }
-  return 0;
-}
-
-double Dipole::Hard(const Vec4D &k1, const Vec4D &k2, const Vec4D &k3){
-  double p1p2 = m_eikmomentum[0]*m_eikmomentum[1];
-  
-  double a1 = k1*m_eikmomentum[0]/p1p2;
-  double a2 = k2*m_eikmomentum[0]/p1p2;
-  double a3 = k3*m_eikmomentum[0]/p1p2;
-  
-  double b1 = k1*m_eikmomentum[1]/p1p2;
-  double b2 = k2*m_eikmomentum[1]/p1p2;
-  double b3 = k3*m_eikmomentum[1]/p1p2;
-  
-  double eta1 = a1/(1+a1+b1);
-  double eta2 = a2/(1+a2+b2);
-  double eta3 = a3/(1+a3+b3);
-
-  double zeta1 = b1/(1+a1+b1);
-  double zeta2 = b2/(1+a2+b2);
-  double zeta3 = b3/(1+a3+b3);
-
-  double etap1 = eta1/(1+eta2);
-  double zetap1 = zeta1/(1+zeta2);
-
-  double etap2 = eta2/(1+eta1);;
-  double zetap2 = zeta2/(1+zeta1);
-
-  double etap3  = eta3/(1+eta1+eta3);
-  double zetap3 = zeta3/(1+zeta1+zeta2);
-
-  double ap1 = a1/(1.-a2);
-  double bp1 = b1/(1.-b2);
-
-  double ap2 = a2/(1.-a1);
-  double bp2 = b2/(1.-b1);
-
-  double ap3 = a3/(1-a1-a2);
-  double bp3 = b3/(1-b1-b2);
-  
-  double v1 = a1+b1;
-  double v2 = a2+b2;
-  double hard;
-  if (Type() == dipoletype::initial) {
-    if(v1 > v2){
-      hard = xi(a1,ap2,bp2,ap3,bp3) + xi(b1,ap2,bp2,ap3,bp3);
-    } 
-    else{
-      hard = xi(a2,ap1,bp1,ap3,bp3) + xi(b2,ap1,bp1,ap3,bp3);
-    }
-    return Eikonal(k1)*Eikonal(k2)*Eikonal(k3)*hard;
-  }
-  else if (Type() == dipoletype::final) {
-    // return 0; // not implemented as << 0
-    if(v1 > v2){
-      hard = xi(eta1,etap2,zetap2,etap3,zetap3) + xi(zeta1,etap2,zetap2,etap3,zetap3);
-    }
-    else{
-      hard = xi(eta2,etap1,zetap1,etap3,zetap3) + xi(zeta2,etap1,zetap1,etap3,zetap3);
-    }
-    return Eikonal(k1)*Eikonal(k2)*Eikonal(k3)*hard;
-  }
-  return 0;
-}
-
-
-double Dipole::xi(const double &alp, const double &beta, const double &gamma){
-  return 0.25*sqr(1.-alp)*(sqr(1.-beta)+sqr(1.-gamma));
-}
-
-double Dipole::xi(const double &alp, const double &a1, const double &b1, const double &a2, const double &b2){
-  return 0.125*sqr(1.-alp)*(sqr(1.-a1)+sqr(1.-b1))*(sqr(1.-a2)+sqr(1.-b2));
-}
-
-
+// EEX, Beta1/2/3, VirtualEEX, Hard and xi live in Dipole_EEX.C.
 
 void Dipole::Clean(){
   m_masses.clear();

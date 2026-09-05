@@ -333,10 +333,12 @@ bool YFS_Handler::CalculateISR() {
 
 void YFS_Handler::AddFormFactor() {
   if (m_CalForm) return;
+  m_formfactor_sum = 0.;
   if (m_fullform >= 1) {
     if(m_tchannel!=0) m_formfactor = p_dipoles->TFormFactor();
     else {
-      m_formfactor = p_dipoles->FormFactor();
+      m_formfactor_sum = p_dipoles->FormFactorSum();
+      m_formfactor = p_dipoles->FormFactor(m_formfactor_sum);
     }
   }
   else if (m_fullform == 2) {
@@ -724,9 +726,14 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
       if (hasnnlo) names.push_back("NNLO");
       if (m_nlo_weight_breakdown) {
         if (hasnlo)
-          for (const char *n : {"Real","Virtual","BR","BV","EEX","NLO_1g",
+          for (const char *n : {"Real","Virtual","BR","BV","NLO_1g",
                                 "NLO_2g","NLO_FixedOrder"})
             names.push_back(n);
+        // EEX only when the beta expansion ran: m_eex is assigned solely inside
+        // CalculateBeta's `if (m_betaorder > 0)`, so at BETA:0 the column would
+        // be a no-op 1.0 masquerading as a measurement. m_betaorder is
+        // configuration, so gating the name on it keeps the set constant.
+        if (hasnlo && m_betaorder > 0) names.push_back("EEX");
         if (hasnnlo)
           for (const char *n : {"RealVirtual","RealReal","NLO+RR","NLO+RV",
                                 "NNLO_1g","NNLO_2g","NNLO_FixedOrder",
@@ -742,37 +749,39 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
     }
     for (const std::string &n : names) wyfs[n] = 1.;
     if (!names.empty()) any = true;
+    m_wnames.clear();
+    m_wnames.insert(names.begin(), names.end());
   }
   if (m_nlo_current && m_nlotype != nlo_type::born && !IsZero(m_real) &&
       (p_nlo->HasNLO() || p_nlo->HasNNLO())) {
-    auto make_ratio = [this](double term, double denom) -> double {
-      return m_no_born ? term / denom : (m_born + term) / denom;
-    };
     auto ratio = [this](double term, double denom) -> double {
       return term / denom;
     };
 
+    // Values only. Writing through operator[] CREATES a column, which is how
+    // YFS.EEX kept appearing at BETA:0 after it was dropped from the
+    // registration list -- and a column that is zero on every event comes back
+    // as NaN once Rivet divides by its own sumOfWeights. So refuse any name the
+    // configuration did not register, and leave a non-finite value at the
+    // registered 1.0 rather than poisoning the column.
     auto emit = [this, &wyfs](const std::string &name, double value) {
-      if (!m_nlo_weight_breakdown &&
-          name != "LO" && name != "NLO" && name != "NNLO")
-        return;
+      if (!m_wnames.count(name)) return;
       if (!IsBad(value)) wyfs[name] = value;
     };
 
     const bool have_fixed_order_ff =
         m_fullform >= 1 && m_tchannel == 0 && !IsZero(m_formfactor);
+    // The cached exponent, not a fresh FormFactorSum(): the two must be the
+    // same Y or this is not a truncation of anything.
     const double ff_fixedorder_ratio =
-        have_fixed_order_ff ? (1. + p_dipoles->FormFactorSum()) / m_formfactor
-                             : 1.;
+        have_fixed_order_ff ? (1. + m_formfactor_sum) / m_formfactor : 1.;
 
     // NLO: Real + Virtual
     if (p_nlo->HasNLO()) {
       const double nlo_sum   = (m_born + m_nlo_real + m_nlo_virtual)/m_born;
-      const double eex_sum   = (m_born + m_eex)/m_born;
       const double real_sum  = (m_born + m_nlo_real)/m_born;
       const double virt_sum  = (m_born + m_nlo_virtual)/m_born;
-      const double nlo_denom = m_no_born ? nlo_sum : (m_born + nlo_sum);
-      if (!IsZero(nlo_denom)) {
+      if (!IsZero(m_real)) {
         emit("Real", ratio((m_nlo_real)/m_born, m_real));
         emit("Virtual", ratio((m_nlo_virtual)/m_born, m_real));
         emit("NLO", ratio(nlo_sum, m_real));
@@ -805,13 +814,16 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
       const double nnlo_total = (m_born + m_nlo_real + m_nlo_virtual + m_nlo_rv + m_nlo_rr)/m_born;
       const double RR_total = (m_born + m_nlo_real + m_nlo_virtual + m_nlo_rr)/m_born;
       const double RV_total = (m_born + m_nlo_real + m_nlo_virtual + m_nlo_rv)/m_born;
-      const double nnlo_denom = m_no_born ? nnlo_total : (m_born + nnlo_total);
-      if (!IsZero(nnlo_denom)) {
+      // No separate denominator: every column here is x/m_real. NNLO used to be
+      // make_ratio(nnlo_total, m_born + nnlo_total), which is
+      // (m_born + nnlo_total)/(m_born + nnlo_total) -- identically 1, whatever
+      // the physics did. It also added a dimensionful m_born to a ratio.
+      if (!IsZero(m_real)) {
         emit("RealVirtual", ratio((m_nlo_rv)/m_born, m_real));
         emit("RealReal", ratio((m_nlo_rr)/m_born, m_real));
         emit("NLO+RR", ratio(RR_total, m_real));
         emit("NLO+RV", ratio(RV_total, m_real));
-        emit("NNLO", make_ratio(nnlo_total, nnlo_denom));
+        emit("NNLO", ratio(nnlo_total, m_real));
         // Matching truncated to a fixed real-photon multiplicity, the NNLO
         // analogue of NLO_1g/NLO_2g. 1 photon: Real + RealVirtual on the
         // single hardest, RealReal = 0 (a pair needs two photons). 2 photons:
@@ -930,6 +942,7 @@ void YFS_Handler::Reset() {
   m_photonSumISR *= 0;
   m_photonSumFSR *= 0;
   m_real = 1;
+  m_eex = 0.;
 }
 
 bool YFS_Handler::CheckMomentumConservation(){

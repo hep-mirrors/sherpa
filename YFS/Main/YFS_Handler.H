@@ -18,6 +18,7 @@
 #include "YFS/NLO/NLO_Base.H"
 #include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include "ATOOLS/Phys/Weights.H"
+#include <set>
 #include "PHOTONS++/PhotonSplitter/Photon_Splitter.H"
 
 
@@ -49,7 +50,18 @@ namespace YFS {
         // m_nbar and m_betatWW removed: both shadowed YFS_Base's. m_betatWW
         // is set from the card (WW_BETAT) on the base, but the test in
         // CalculateBeta resolved to this copy, which nothing ever wrote.
-        double m_formfactor, m_coulSub, m_ww_formfact,m_eex;
+        double m_formfactor, m_coulSub, m_ww_formfact;
+        //! The EEX beta-expansion estimate of the correction, assigned in
+        //! CalculateBeta only when BETA > 0. Initialised and reset per event
+        //! because it is read by the YFS.EEX named weight, and an unassigned
+        //! read there produced a NaN column rather than a missing one.
+        double m_eex = 0.;
+        //! FormFactorSum() as evaluated by AddFormFactor, i.e. the exponent
+        //! that m_formfactor was actually built from. Cached rather than
+        //! recomputed so YFS.NLO_FixedOrder's (1+Y)/exp(Y) is provably the same
+        //! Y in numerator and denominator, whatever happens to the dipoles in
+        //! between.
+        double m_formfactor_sum = 0.;
         int m_negskip;
         YFS::Coulomb *p_coulomb;
         PHASIC::Process_Base *proc;
@@ -114,6 +126,11 @@ namespace YFS {
         //! GenerateWeight, which supplies the two weights it compares.
         void BuildNamedWeights(double w_lo, double w_full);
         bool BuildLadderWeights(ATOOLS::Weights &w);
+        //! The YFS.* column names this configuration emits. Fixed once per
+        //! event from configuration alone, and the only names emit() will
+        //! write -- a per-event code path must not be able to conjure a column
+        //! that other events lack, since HepMC binds the set from event one.
+        std::set<std::string> m_wnames;
 
         //! Per-event assertions for the invariants that could not be made
         //! structural. Each one corresponds to a bug that reached a physics

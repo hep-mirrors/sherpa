@@ -44,9 +44,11 @@ void Define_Dipoles::MakeDipolesII(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec
   m_N_born_Gamma=1;
   for(auto f: fl) if(f.IsPhoton()) m_N_born_Gamma+=1;
   if(!HasISR()) return;
-  m_test_dip.clear();
-  m_flav_label.clear();
-  for(size_t i(0); i<fl.size(); ++i) m_flav_label[fl[i]] = i;
+  if (m_flav_label_fl != fl) {
+    m_flav_label.clear();
+    for(size_t i(0); i<fl.size(); ++i) m_flav_label[fl[i]] = i;
+    m_flav_label_fl = fl;
+  }
   m_softphotonSum *= 0;
   m_out = fl.size() - m_in;
   m_bornmomenta = born;
@@ -73,9 +75,11 @@ void Define_Dipoles::MakeDipolesFF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec
 void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born ) {
   if ((mom.size() != fl.size()) || (born.size() != fl.size()))
     THROW(fatal_error, "Incorrect dipole size in YFS for final-state dipoles");
-  m_test_dip.clear();
-  m_flav_label.clear();
-  for(size_t i(0); i<fl.size(); ++i) m_flav_label[fl[i]] = i;
+  if (m_flav_label_fl != fl) {
+    m_flav_label.clear();
+    for(size_t i(0); i<fl.size(); ++i) m_flav_label[fl[i]] = i;
+    m_flav_label_fl = fl;
+  }
   m_bornmomenta = born;
   m_out = fl.size() - m_in;
   if (!HasFSR()) return;
@@ -195,8 +199,12 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   double sub(0);
   // if(FixedOrder()!=fixed_order::full) return sub;
   Vec4D eik{0.,0.,0.,0.};
+  // A dipole always has exactly 2 legs (enforced in Dipole's constructor).
+  // D.GetBornMomenta().size() as the loop bound calls the by-value overload,
+  // heap-copying a fresh Vec4D_Vector on every iteration of what is a
+  // per-candidate-photon loop -- pure waste for a bound that is always 2.
   for (auto &D : m_set.ByType(dipoletype::initial)) {
-    for(size_t i = 0; i < D.GetBornMomenta().size(); ++i)
+    for(size_t i = 0; i < 2; ++i)
     {
        Vec4D p = D.GetMomenta(i);
       eik += D.m_Q[i]*p/(p*k);
@@ -204,7 +212,7 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   }
   for (auto &D : m_set.FF()) {
      if(!D.IsResonance()) continue;
-    for(size_t i = 0; i < D.GetBornMomenta().size(); ++i)
+    for(size_t i = 0; i < 2; ++i)
     {
       Vec4D p = D.GetMomenta(i);
       eik += -D.m_Q[i]*p/(p*k);
@@ -603,7 +611,10 @@ double Define_Dipoles::RealIFWeight(const ATOOLS::Vec4D_Vector &photons) {
 }
 
 double Define_Dipoles::FormFactor(){
-  double form = FormFactorSum();
+  return FormFactor(FormFactorSum());
+}
+
+double Define_Dipoles::FormFactor(double form){
   if(FixedOrder()==fixed_order::nlo){
     return 1.+form;
   }
@@ -809,17 +820,16 @@ double Define_Dipoles::CalculateEEXVirtual(int betaorder){
 
 double Define_Dipoles::EEXRealVirtual(const Vec4D &k){
   double eex = 0;
+  // Order 2 is beta1^(1): the real-virtual term. It used to be written into
+  // the dipole as D.m_betaorder before the call; it is an argument now.
   for(auto &D: m_set.ByType(dipoletype::initial)){
-    D.m_betaorder = 2;
-    eex += D.Beta1(k)/D.Eikonal(k);
+    eex += D.Beta1(k, 2)/D.Eikonal(k);
   }
   for(auto &D: m_set.FF()){
-    D.m_betaorder = 2;
-    eex += D.Beta1(k)/D.Eikonal(k);
+    eex += D.Beta1(k, 2)/D.Eikonal(k);
   }
   // for(auto &D: m_set.IF()){
-  //   D.m_betaorder = 2;
-  //   eex += D.Beta1(k)/D.Eikonal(k);
+  //   eex += D.Beta1(k, 2)/D.Eikonal(k);
   // }
   if(IsNan(eex)) return 0;
   return eex;
