@@ -44,6 +44,20 @@ Amplitude::Amplitude():
   m_murcoeffvirt = s["NLO_MUR_COEFFICIENT_FROM_VIRTUAL"].Get<bool>();
   p_dinfo->SetMassive(0);
   m_pmode = comixsettings["PMODE"].Get<std::string>()[0];
+  // DIAGNOSTIC (Phase 0, localisation): choose the axis the spinor light-cone
+  // decomposition is taken along. Spinor::PMinus() forms p[0]-p[s_r3], which
+  // for a momentum collinear to the BEAM (s_r3 = z, gauge 0) is a catastrophic
+  // cancellation - measured to return exactly 0.0 at theta = 5e-5. Gauge 1/2
+  // put s_r3 on x/y, where the same quantity is ~E and cancels nothing. The
+  // amplitude is independent of this choice analytically, so any change in
+  // agreement with an external generator is pure numerics and localises the
+  // loss to the axis-aligned decomposition. Remove once Phase 0 concludes.
+  if (const char *g=getenv("COMIX_SPINOR_GAUGE")) {
+    const int gauge(ToType<int>(std::string(g)));
+    msg_Info()<<"Comix: spinor light-cone axis set to gauge "<<gauge
+              <<" (0=z/beam, 1=x, 2=y) via COMIX_SPINOR_GAUGE\n";
+    ATOOLS::Spinor<double>::SetDefaultGauge(gauge);
+  }
   m_wfmode = comixsettings["WF_MODE"].Get<int>();
   m_pgmode = comixsettings["PG_MODE"].Get<int>();
   m_ngpl = Min(1, Max(5, comixsettings["N_GPL"].Get<int>()));
