@@ -50,6 +50,7 @@ namespace BEAM {
 
     void RegisterDefaults();
     void RegisterDefaultBeams();
+    void RegisterGaussianDefaults();
     void RegisterLaserDefaults();
     void RegisterEPADefaults();
     void RegisterPomeronDefaults();
@@ -72,6 +73,7 @@ namespace BEAM {
       Monochromatic::Monochromatic(const ATOOLS::Flavour,const double,const double,bool &)
     */
     Beam_Base * InitializeMonochromatic(int);
+    Beam_Base * InitializeGaussian(int);
     Beam_Base * InitializeEPA(int);
     Beam_Base * InitializePomeron(int);
     Beam_Base*  InitializeReggeon(int);

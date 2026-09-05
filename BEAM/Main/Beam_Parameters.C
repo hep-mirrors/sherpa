@@ -7,6 +7,7 @@
 #include "BEAM/Spectra/EPA.H"
 #include "BEAM/Spectra/Laser_Backscattering.H"
 #include "BEAM/Spectra/Monochromatic.H"
+#include "BEAM/Spectra/Gaussian.H"
 #include "BEAM/Spectra/Pomeron.H"
 #include "BEAM/Spectra/Reggeon.H"
 
@@ -53,6 +54,8 @@ std::ostream& BEAM::operator<<(std::ostream& ostr, const beamspectrum spect)
   switch (spect) {
   case beamspectrum::monochromatic:
     return ostr << "Monochromatic";
+  case beamspectrum::Gaussian:
+    return ostr << "Gaussian energy spread";
   case beamspectrum::EPA:
     return ostr << "Equivalent Photons";
   case beamspectrum::Pomeron:
@@ -81,6 +84,7 @@ void Beam_Parameters::RegisterDefaults()
 {
   RegisterDefaultBeams();
   RegisterDarkMatterDefaults();
+  RegisterGaussianDefaults();
   RegisterLaserDefaults();
   RegisterEPADefaults();
   RegisterPomeronDefaults();
@@ -93,7 +97,7 @@ Beam_Base* Beam_Parameters::InitSpectrum(const size_t& num)
   case beamspectrum::monochromatic:
     return InitializeMonochromatic(num);
   case beamspectrum::Gaussian:
-    THROW(fatal_error, "Gaussian beam spectrum not yet implemented");
+    return InitializeGaussian(num);
   case beamspectrum::laser_backscattering:
     return InitializeLaserBackscattering(num);
   case beamspectrum::simple_Compton:
@@ -126,6 +130,25 @@ Beam_Base* Beam_Parameters::InitializeMonochromatic(int num)
       m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
   return new Monochromatic(beam_particle, beam_energy, beam_polarization,
                            1 - 2 * num);
+}
+
+Beam_Base* Beam_Parameters::InitializeGaussian(int num)
+{
+  Flavour beam_particle = GetFlavour("BEAMS", num);
+  double  beam_energy =
+      Max(m_settings["BEAM_ENERGIES"].GetTwoVector<double>()[num],
+          beam_particle.Mass());
+  double beam_polarization =
+      m_settings["BEAM_POLARIZATIONS"].GetTwoVector<double>()[num];
+  double spread = m_settings["BEAM_SPREAD"].GetTwoVector<double>()[num];
+  double nsigma = m_settings["BEAM_SPREAD_NSIGMA"].Get<double>();
+  if (spread <= 0.) {
+    THROW(fatal_error,
+          "BEAM_SPECTRA Gaussian requires a positive BEAM_SPREAD for this beam "
+          "(relative, sigma_E/E, one entry per beam).");
+  }
+  return new Gaussian(beam_particle, beam_energy, spread, nsigma,
+                      beam_polarization, 1 - 2 * num);
 }
 
 Beam_Base* Beam_Parameters::InitializeLaserBackscattering(int num)
@@ -301,6 +324,12 @@ void Beam_Parameters::RegisterReggeonDefaults()
   m_settings["Reggeon"]["Alpha_intercept"].SetDefault(0.5);
   m_settings["Reggeon"]["Alpha_slope"].SetDefault(0.3);
   m_settings["Reggeon"]["n"].SetDefault(1.4e-3);
+}
+
+void Beam_Parameters::RegisterGaussianDefaults()
+{
+  m_settings["BEAM_SPREAD"].SetDefault(std::vector<double>{0.0, 0.0});
+  m_settings["BEAM_SPREAD_NSIGMA"].SetDefault(4.0);
 }
 
 void Beam_Parameters::RegisterLaserDefaults()
