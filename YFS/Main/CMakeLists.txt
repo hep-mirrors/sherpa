@@ -1,5 +1,6 @@
 set(YFSMain_SOURCES Coulomb.C
                  Dipole.C
+                 Dipole_EEX.C
                  DipoleSet.C
                  Debug.C
                  Define_Dipoles.C

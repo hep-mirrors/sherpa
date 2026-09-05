@@ -348,7 +348,9 @@ double NLO_Base::CalculateReal() {
     double contrib;
     if (g.IsISR() && (m_isr_debug || m_fsr_debug)) {
       contrib = CalculateReal(k);
-      double coll = p_dipoles->GetDipoleII().Beta1(k);
+      // m_betaorder (the runcard's BETA) explicitly: Beta1 used to read the
+      // order off the dipole, which nothing had set on this path.
+      double coll = p_dipoles->GetDipoleII().Beta1(k, m_betaorder);
       coll /= p_dipoles->GetDipoleII().Eikonal(k);
       if (contrib != 0)
         m_histograms2d["REAL_COLL_RATIO"]->Insert(k.E(),
