@@ -2353,6 +2353,23 @@ bool T_Selector::Trigger(Selector_List &sl)
 
 void T_Selector::BuildCuts(Cut_Data * cuts)
 {
+  // Hand the t bound to the phase space instead of only vetoing on it after
+  // the point has been generated.
+  //
+  // Indices are 0 and 2 to match Trigger(), which measures
+  // t = (sl[0] - sl[2])^2. The two must agree: a bound applied to a different
+  // pair than the one being tested would shape the phase space around a cut
+  // that is not the one enforced.
+  if (!m_on) return;
+  // Only an upper bound on t constrains anything -- t is negative, so a
+  // non-negative m_tmax excludes nothing and is exactly the "unconstrained"
+  // value the slot already holds.
+  if (m_tmax >= 0.0) return;
+  if (m_nin < 1 || m_n < 3) return;
+  // Min, not Max: t is negative and more negative is the tighter bound, and the
+  // slot starts at 0.0.
+  cuts->scut[0][2] = cuts->scut[2][0] =
+    ATOOLS::Min(cuts->scut[0][2], m_tmax);
 }
 
 void T_Selector::SetRange(Flavour f1, Flavour f2, double min,double max)
