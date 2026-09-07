@@ -1,0 +1,163 @@
+# NNLO photonic pieces (RR + RV) for leptonic WW at 161 GeV, mue channel.
+# HAND-WRITTEN: deliberately not produced by cards/make-cards.py and not part
+# of the L-rung grid. Derived from the generated L6_nlo_161p0_mue card, so the
+# cuts, ME_QED, masses and stable tau are identical and this is directly
+# comparable to the production L6 rung; only the NLO part and the providers
+# differ. Conventions follow Sherpa.Mu.NNLO.OL.yaml from the pion-pion repo,
+# the working NNLO QED setup for e+e- -> mu+mu-.
+BEAMS: [11, -11]
+BEAM_ENERGIES: 80.5
+
+ALPHAS(MZ): 0.1188
+ORDER_ALPHAS: 1
+BEAM_REMNANTS: None
+FRAGMENTATION: None
+SHOWER_GENERATOR: None
+SCALES: VAR{E_CMS*E_CMS}
+PDF_LIBRARY: None
+
+# PHOTONS++ off, explicitly, on every rung. Sherpa only disables it by itself
+# when YFS is active (Signal_Process_FS_QED_Correction.C: "Force Photons++ to
+# be off if YFS ISR is switched on"), so the one card with no YFS: block --
+# L0_born, the Born reference the whole ladder is divided by -- otherwise picks
+# up the default ME_QED handler and is silently NOT bare Born: it carries
+# PHOTONS++ final-state radiation, its photon spectrum is not empty, and photon
+# splitting there makes extra charged leptons that the Rivet analysis then
+# vetoes (measured: acceptance 0.9958 instead of 1). Set here rather than in the
+# L0 block alone so a future rung without a YFS: block cannot reintroduce it.
+ME_QED:
+    ENABLED: false
+
+# Nothing in this study needs unweighted events, and the unweighting efficiency
+# on this process is 0.07-0.7% -- measured, L6 goes from 456 to 413000
+# events/day and from 57.7% to 12.2% error on sigma in a fifth of the wall time.
+EVENT_GENERATION_MODE: Weighted
+
+PARTICLE_DATA:
+    11:
+        Massive: true
+    13:
+        Massive: true
+    15:
+        Massive: true
+        # Stable so the tau channels measure WW radiation and not tau decay:
+        # the study is about the photon field around the W pair, and a decaying
+        # tau would bury it under decay products.
+        Stable: 1
+
+YFS:
+    MODE: ISRFSR
+    FULL_FORM: 1
+    IFI_Sub: 1
+    COULOMB: true
+    Ladder_Weights: 1
+    NLO_Weight_Breakdown: 1
+    # BETA left at its default 2 deliberately. In an NLO run it cannot reach the
+    # nominal -- CalculateBeta sets m_real from the EEX series and the NLO block
+    # then overwrites it -- and YFS.LO is built from w_lo, which is formed before
+    # m_real is applied. Measured: every column is bit-identical between BETA 0
+    # and 2 here except YFS.EEX, which is NaN at BETA:0 because m_eex is only
+    # ever assigned inside `if (m_betaorder > 0)` and has no initialiser.
+    Real_Generator: OpenLoops
+    # Double-real: a TREE amplitude with two extra photons. Comix is the
+    # default (YFS/NLO/RealReal.C:24) and can generate it, but it is NOT stable
+    # enough for RR in practice -- keep OpenLoops here. NOTE: no 4f+2gamma
+    # OpenLoops library exists in the install either (zero '...maa' entries), so
+    # RR currently has no usable provider for this process and needs one
+    # generated before NNLO can run.
+    RR_Generator: OpenLoops
+    # RR_Generator2: Comix   # second provider, to cross-check RR when available
+    Integrate_NLO: 0
+
+PROCESSES:
+- 11 -11 -> 13 -14 -11 12:
+    Order: {QCD: 0, EW: 4}
+    NLO_Mode: YFS
+    # B + V + R + W(double-real) + E(real-virtual). No M: that is the two-loop
+    # double-virtual, which OpenLoops does not provide. Each YFS beta-bar
+    # remainder is separately IR-finite after subtraction, so this is well
+    # defined -- but it is an INCOMPLETE NNLO and any number from it must say so.
+    NLO_Part: BVRWE
+    NLO_Order: {EW: 1, QCD: 0}
+    Loop_Generator: OpenLoops
+    # Real-virtual: a ONE-LOOP amplitude with one extra photon, i.e. 2 -> 5 at
+    # one loop. This is what makes the card expensive.
+    RV_Generator: OpenLoops
+
+# Generator-level cuts, IDENTICAL on every rung and every channel, so the cross
+# sections stay comparable -- that requirement is what "no SELECTORS" used to
+# protect, and a common cut protects it equally.
+#
+# These are a REGULATOR, not the acceptance. The acceptance still lives in
+# Rivet (LEPCOS 0.95 = 18.2 deg, LEPE 10 GeV), and these cuts are deliberately
+# looser than it, so the fiducial results are not biased by their own boundary.
+#
+# Why they are needed. Run cut-free, the four channels with an electron in the
+# final state carry non-resonant single-W / t-channel-photon diagrams in which
+# the final-state e+- goes collinear to the beam. That region is integrably
+# singular, and measured on 2M-event samples it does two things:
+#
+#   * sigma(e-channel) came out ~40% ABOVE the electron-free channels
+#     (mue 0.0735 pb vs mutau 0.0517 pb at 161 GeV) -- i.e. the "WW" cross
+#     section was not mostly WW.
+#   * rare enormous weights: one seed in four read 1.2-2.5% error where its
+#     siblings read 0.07-0.15%, and its central value sat up to 2.4% high.
+#     rivet-merge combines seeds by sumW, not by inverse variance, so that seed
+#     dragged the merged number with it -- ~16 MeV in m_W at 162.5 GeV.
+#
+# The electron-free channels (mutau, taumu) need none of this: four seeds there
+# agreed to four decimals at 0.07%. The cut is applied to all charged leptons
+# anyway so that all six channels share one phase-space definition; on the
+# muon and tau channels it removes almost nothing.
+#
+# 10 deg / 5 GeV rather than something tighter: it has to sit well inside the
+# Rivet acceptance, or the generator cut and not the physics would be setting
+# the fiducial cross section.
+SELECTORS:
+- [Polar_Angle, 11, 10.0, 170.0, 0]
+- [Polar_Angle, -11, 10.0, 170.0, 0]
+- [Polar_Angle, 13, 10.0, 170.0, 0]
+- [Polar_Angle, -13, 10.0, 170.0, 0]
+- [Polar_Angle, 15, 10.0, 170.0, 0]
+- [Polar_Angle, -15, 10.0, 170.0, 0]
+- [E, 11, 5.0, E_CMS]
+- [E, -11, 5.0, E_CMS]
+- [E, 13, 5.0, E_CMS]
+- [E, -13, 5.0, E_CMS]
+- [E, 15, 5.0, E_CMS]
+- [E, -15, 5.0, E_CMS]
+
+# QED-only amplitudes. The installed libraries carry each subprocess twice --
+# once with QED=1 and once without (libopenloops_eelllla_ew_lt.info) -- so this
+# picks the photonic variant without generating new libraries.
+# photon_selfenergy: 0 keeps the photon self-energy out of the loop so it does
+# not double-count the vacuum polarisation handled elsewhere.
+# OL_PARAMETERS passes straight through to OpenLoops SetParameter
+# (AddOns/OpenLoops/OpenLoops_Interface.C:173).
+OL_PARAMETERS:
+    check_collection: 0
+    # qed: 1   <-- DO NOT SET for this process. Measured: with qed:1 the tree
+    # real ME (nenmxeexexma) is rejected and the run dies with 'Couldn't find
+    # real ME'; without it the real registers and only the RealVirtual is
+    # missing. The 4f entries in eellll_ew carry no QED= field -- they exist
+    # only as full EW -- so there is no QED-only variant to select here. The
+    # pion 2->2 setup can use qed:1 because ITS libraries were generated with
+    # QED-only amplitudes; these were not.
+    photon_selfenergy: 0
+
+ANALYSIS: Rivet
+
+RIVET:
+    IGNORE_BEAMS: 1
+    ANALYSES:
+        # Bare name, no `yfs-ww:OPT=value`. Rivet accepts that syntax but
+        # folds the option string into the analysis NAME, so every histogram
+        # path becomes /yfs-ww:OPT=value/... and scripts/check-yoda.py, which
+        # reads /yfs-ww/xs and treats its absence as "the analysis did not
+        # run", fails every card. The selection values therefore live as
+        # defaults in yfs-ww.cc -- PTMISS_EBEAM (p_T^miss/E_beam, OPAL's
+        # acoplanar-dilepton selection hep-ex/9909052, a ratio so one number
+        # covers all three scan energies) and ACOL_MAX (off: LEP experiments
+        # used anything from 20 to 165 degrees, so any default here would be
+        # an arbitrary choice dressed up as a convention).
+        - yfs-ww
