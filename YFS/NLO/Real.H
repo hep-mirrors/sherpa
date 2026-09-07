@@ -53,6 +53,18 @@ public:
   inline void SetProc(PHASIC::Process_Base *realproc) {p_realproc=realproc;}
    ATOOLS::Cluster_Amplitude *CreateAmplitude
     (const ATOOLS::Vec4D_Vector &p) const;
+
+  /*!
+    Analytic arbiter for the quasi-collinear disagreement between the internal
+    and the external real ME. Takes one phase-space point, keeps the hard
+    system and the photon energy fixed, and sweeps the photon polar angle
+    across the mass angle m/E. In the soft limit the real ME must approach
+    S(k) x |M_Born|^2 with the Born independent of the photon direction, so
+    ME(theta)/S(theta) must be FLAT - and S is known in closed form,
+    mass terms included. Whichever generator's ratio is flat is the correct
+    one; no Born, no coupling normalisation and no third generator needed.
+  */
+  void SoftScan(const ATOOLS::Vec4D_Vector &p);
 };
 }
 
