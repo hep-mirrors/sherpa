@@ -160,3 +160,30 @@ void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
 		    Box_Calculator<double> >::
 PrintInfo(std::ostream &str,const size_t width) const
 { str<<"Box vertex"; }
+
+// ---- QPREC_BEGIN: long-double instantiation ----
+DECLARE_GETTER(Box_Calculator<long double>,"QBox",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,Box_Calculator<long double> >::
+operator()(const Vertex_Key &key) const
+{ return new Box_Calculator<long double>(key); }
+
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    Box_Calculator<long double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"Box vertex"; }
+// ---- QPREC_END ----
+// ---- XPREC_BEGIN: double-double instantiation ----
+DECLARE_GETTER(Box_Calculator<ATOOLS::DDouble>,"XBox",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,Box_Calculator<ATOOLS::DDouble> >::
+operator()(const Vertex_Key &key) const
+{ return new Box_Calculator<ATOOLS::DDouble>(key); }
+
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    Box_Calculator<ATOOLS::DDouble> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"Box vertex"; }
+// ---- XPREC_END ----

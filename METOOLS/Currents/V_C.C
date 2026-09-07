@@ -10,7 +10,8 @@ namespace METOOLS {
 
   template <typename SType>
   class CV: public Current,
-	    public Current_Contractor<SType> {
+	    public Current_Contractor<SType>,
+	    public Downcast_Contractor<CV<SType>,SType> {
   public:
 
     typedef std::complex<SType>   SComplex;
@@ -181,6 +182,8 @@ void CV<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
   if (this->m_fl.Mass()==0.0 && p[1]==0.0 && p[2]==0.0)
     this->m_p[0]=this->m_p[0]<0.0?
       -std::abs(this->m_p[3]):std::abs(this->m_p[3]);
+  // after the on-axis energy fix-up, not before
+  this->m_ph=this->m_p;
   this->ResetJ();
   if (ch>=0) {
     if (this->m_msv && (ch==0 || ch==3)) {
@@ -364,3 +367,36 @@ PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"vector current (double)";
 }
+
+// ---- QPREC_BEGIN: long-double instantiation of the same tower ----
+DECLARE_GETTER(CV<long double>,"QV",Current,Current_Key);
+
+Current *ATOOLS::Getter<Current,Current_Key,CV<long double> >::
+operator()(const Current_Key &key) const
+{
+  if (key.m_fl.IsVector()) return new CV<long double>(key);
+  return NULL;
+}
+
+void ATOOLS::Getter<Current,Current_Key,CV<long double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"vector current (long double)";
+}
+// ---- QPREC_END ----
+// ---- XPREC_BEGIN: double-double instantiation ----
+DECLARE_GETTER(CV<ATOOLS::DDouble>,"XV",Current,Current_Key);
+
+Current *ATOOLS::Getter<Current,Current_Key,CV<ATOOLS::DDouble> >::
+operator()(const Current_Key &key) const
+{
+  if (key.m_fl.IsVector()) return new CV<ATOOLS::DDouble>(key);
+  return NULL;
+}
+
+void ATOOLS::Getter<Current,Current_Key,CV<ATOOLS::DDouble> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"vector current (double-double)";
+}
+// ---- XPREC_END ----

@@ -2,6 +2,7 @@
 #define ATOOLS_Phys_Spinor_H
 
 #include "ATOOLS/Math/Vec4.H"
+#include "ATOOLS/Math/MathTools.H"
 
 #include <complex>
 #include <vector>
@@ -138,5 +139,6 @@ namespace ATOOLS {
 
 #define DWSpinor ATOOLS::Spinor<double>
 #define QWSpinor ATOOLS::Spinor<long double>
+#define XWSpinor ATOOLS::Spinor<ATOOLS::DDouble>
 
 #endif

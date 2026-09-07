@@ -9,7 +9,8 @@ namespace METOOLS {
 
   template <typename SType>
   class CF: public Current,
-	    public Current_Contractor<SType> {
+	    public Current_Contractor<SType>,
+	    public Downcast_Contractor<CF<SType>,SType> {
   public:
 
     typedef std::complex<SType>   SComplex;
@@ -126,6 +127,7 @@ void CF<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			   const int cr,const int ca,const int mode)
 {
   this->m_p=p;
+  this->m_ph=p;
   this->m_p2=sqr(this->m_mass);
   this->ResetJ();
   bool anti(this->m_fl.IsAnti());
@@ -191,10 +193,20 @@ void CF<SType>::AddPropagator()
   // emission the denominator is 2 p.k, which Abs2() cannot resolve.
   SComplex prop(M_I/(SType(this->m_p2)-m_cmass2));
   if (this->m_osd) prop=SComplex(M_I);
-  SComplex pp(Spinor<SType>::PPlus(this->m_p));
-  SComplex pm(Spinor<SType>::PMinus(this->m_p));
-  SComplex pt(Spinor<SType>::PT(this->m_p));
-  SComplex ptc(Spinor<SType>::PTC(this->m_p));
+  // Light-cone components of the propagator numerator, taken from the WIDE
+  // momentum. p[0]-p[r3] is a cancellation for a leg near the light-cone
+  // axis, and m_p is m_ph already narrowed to double: forming the difference
+  // there throws away exactly the digits Current::Evaluate() accumulated at
+  // ~106 bits to preserve. Same index convention as Spinor<SType>, arithmetic
+  // one step wider, narrowed only once the subtraction is done.
+  const size_t r1(Spinor<SType>::R1()),r2(Spinor<SType>::R2()),
+               r3(Spinor<SType>::R3());
+  const ATOOLS::DDouble hpp(this->m_ph[0]+this->m_ph[r3]);
+  const ATOOLS::DDouble hpm(this->m_ph[0]-this->m_ph[r3]);
+  // braces, not parens: SComplex pp(SType(x)) parses as a function declaration
+  const SType tr1(this->m_ph[r1]), tr2(this->m_ph[r2]);
+  SComplex pp{SType(hpp)}, pm{SType(hpm)};
+  SComplex pt{tr1,tr2}, ptc{tr1,-tr2};
 #ifdef DEBUG__BG
   msg_Debugging()<<"propagator: "<<prop
 		 <<" <- p^2 = "<<this->m_p2<<" (Abs2 "<<this->m_p.Abs2()
@@ -313,3 +325,36 @@ PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"fermion current (double)";
 }
+
+// ---- QPREC_BEGIN: long-double instantiation of the same tower ----
+DECLARE_GETTER(CF<long double>,"QF",Current,Current_Key);
+
+Current *ATOOLS::Getter<Current,Current_Key,CF<long double> >::
+operator()(const Current_Key &key) const
+{
+  if (key.m_fl.IsFermion()) return new CF<long double>(key);
+  return NULL;
+}
+
+void ATOOLS::Getter<Current,Current_Key,CF<long double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"fermion current (long double)";
+}
+// ---- QPREC_END ----
+// ---- XPREC_BEGIN: double-double instantiation ----
+DECLARE_GETTER(CF<ATOOLS::DDouble>,"XF",Current,Current_Key);
+
+Current *ATOOLS::Getter<Current,Current_Key,CF<ATOOLS::DDouble> >::
+operator()(const Current_Key &key) const
+{
+  if (key.m_fl.IsFermion()) return new CF<ATOOLS::DDouble>(key);
+  return NULL;
+}
+
+void ATOOLS::Getter<Current,Current_Key,CF<ATOOLS::DDouble> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"fermion current (double-double)";
+}
+// ---- XPREC_END ----

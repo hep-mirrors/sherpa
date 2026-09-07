@@ -2,12 +2,27 @@
 
 #include "ATOOLS/Org/Exception.H"
 
+#include <cstdlib>
+
 using namespace ATOOLS;
 
 // #define TEST_Representation
 
+namespace {
+  // The threshold below which Spinor::Construct() abandons the accurate
+  // m_u2 = pT/sqrt(p+) form and falls back to sqrt(p-). That fallback is a
+  // hard branch, not a rounding effect, so it survives any increase in
+  // precision - which makes it the first thing to scan when higher precision
+  // does not move the answer. SHERPA_SPINOR_ACCU overrides it for that scan.
+  double SpinorAccuDefault()
+  {
+    const char *e(getenv("SHERPA_SPINOR_ACCU"));
+    return e?atof(e):1.0e-12;
+  }
+}
+
 template <class Scalar>
-double Spinor<Scalar>::s_accu(1.0e-12);
+double Spinor<Scalar>::s_accu(SpinorAccuDefault());
 
 template <class Scalar> std::ostream &
 ATOOLS::operator<<(std::ostream &ostr,const Spinor<Scalar> &s)
@@ -44,24 +59,28 @@ template <class Scalar> Vec4<Scalar> Spinor<Scalar>::GetK1()
 template <class Scalar>
 void Spinor<Scalar>::Construct(const Vec4<Scalar> &p)
 {
-  double pp(PPlus(p)), pm(PMinus(p));
-  Complex rpp(csqrt(pp)), rpm(csqrt(pm)), pt(PT(p));
+  // Scalar/SComplex throughout, not double/Complex: the light-cone
+  // components and their square roots are the whole content of the spinor,
+  // and rounding them to double here would discard every extra digit a wider
+  // Scalar was instantiated to provide.
+  Scalar pp(PPlus(p)), pm(PMinus(p));
+  SComplex rpp(csqrt(pp)), rpm(csqrt(pm)), pt(PT(p));
   m_u1=rpp;
   m_u2=rpm;
-  Scalar sv(dabs(p[0])*s_accu);
-  if ((dabs(pt.real())>sv || dabs(pt.imag())>sv) &&
-      (dabs(rpp.real())>sv || dabs(rpp.imag())>sv)) {
-    m_u2=Complex(pt.real(),m_r>0?pt.imag():-pt.imag())/rpp;
+  Scalar sv(Abs(p[0])*Scalar(s_accu));
+  if ((Abs(pt.real())>sv || Abs(pt.imag())>sv) &&
+      (Abs(rpp.real())>sv || Abs(rpp.imag())>sv)) {
+    m_u2=SComplex(pt.real(),m_r>0?pt.imag():-pt.imag())/rpp;
   }
 #ifndef USING__old_phase_convention
-  if (pp<0.0 || pm<0.0) {
+  if (pp<Scalar(0.0) || pm<Scalar(0.0)) {
     if (m_r<0) {
-      m_u1=Complex(-m_u1.imag(),m_u1.real());
-      m_u2=Complex(-m_u2.imag(),m_u2.real());
+      m_u1=SComplex(-m_u1.imag(),m_u1.real());
+      m_u2=SComplex(-m_u2.imag(),m_u2.real());
     }
     else {
-      m_u1=-Complex(-m_u1.imag(),m_u1.real());
-      m_u2=-Complex(-m_u2.imag(),m_u2.real());
+      m_u1=-SComplex(-m_u1.imag(),m_u1.real());
+      m_u2=-SComplex(-m_u2.imag(),m_u2.real());
     }
   }
 #endif
@@ -87,23 +106,23 @@ void Spinor<Scalar>::ConstructLC(const Vec4<Scalar> &p)
   // the cancelling one and divide by the very quantity that lost its digits.
   if (dabs(pp)>dabs(pm)) { if (pp!=Scalar(0.0)) pm=pt2/pp; }
   else                   { if (pm!=Scalar(0.0)) pp=pt2/pm; }
-  Complex rpp(csqrt(pp)), rpm(csqrt(pm)), pt(PT(p));
+  SComplex rpp(csqrt(pp)), rpm(csqrt(pm)), pt(PT(p));
   m_u1=rpp;
   m_u2=rpm;
-  Scalar sv(dabs(p[0])*s_accu);
-  if ((dabs(pt.real())>sv || dabs(pt.imag())>sv) &&
-      (dabs(rpp.real())>sv || dabs(rpp.imag())>sv)) {
-    m_u2=Complex(pt.real(),m_r>0?pt.imag():-pt.imag())/rpp;
+  Scalar sv(Abs(p[0])*Scalar(s_accu));
+  if ((Abs(pt.real())>sv || Abs(pt.imag())>sv) &&
+      (Abs(rpp.real())>sv || Abs(rpp.imag())>sv)) {
+    m_u2=SComplex(pt.real(),m_r>0?pt.imag():-pt.imag())/rpp;
   }
 #ifndef USING__old_phase_convention
-  if (pp<0.0 || pm<0.0) {
+  if (pp<Scalar(0.0) || pm<Scalar(0.0)) {
     if (m_r<0) {
-      m_u1=Complex(-m_u1.imag(),m_u1.real());
-      m_u2=Complex(-m_u2.imag(),m_u2.real());
+      m_u1=SComplex(-m_u1.imag(),m_u1.real());
+      m_u2=SComplex(-m_u2.imag(),m_u2.real());
     }
     else {
-      m_u1=-Complex(-m_u1.imag(),m_u1.real());
-      m_u2=-Complex(-m_u2.imag(),m_u2.real());
+      m_u1=-SComplex(-m_u1.imag(),m_u1.real());
+      m_u2=-SComplex(-m_u2.imag(),m_u2.real());
     }
   }
 #endif
@@ -124,10 +143,10 @@ std::complex<Scalar> Spinor<Scalar>::operator*(const Spinor &s) const
 template <class Scalar>
 bool Spinor<Scalar>::operator==(const Spinor &s) const
 {
-  Scalar max(Max(std::abs(m_u1),std::abs(m_u2))); 
-  Scalar q(IsZero(max)?1.0:1.0/max);
-  if (std::abs(q*(m_u1-s.m_u1))>Accuracy()) return false;
-  if (std::abs(q*(m_u2-s.m_u2))>Accuracy()) return false;
+  Scalar max(Max(Abs(m_u1),Abs(m_u2)));
+  Scalar q(IsZero(max)?Scalar(1.0):Scalar(1.0)/max);
+  if (Abs(q*(m_u1-s.m_u1))>Scalar(Accuracy())) return false;
+  if (Abs(q*(m_u2-s.m_u2))>Scalar(Accuracy())) return false;
   return true;
 }
 
@@ -222,5 +241,8 @@ namespace ATOOLS {
 
   template class QWSpinor;
   template std::ostream &operator<<(std::ostream &ostr,const QWSpinor &s);
+
+  template class XWSpinor;
+  template std::ostream &operator<<(std::ostream &ostr,const XWSpinor &s);
 
 }

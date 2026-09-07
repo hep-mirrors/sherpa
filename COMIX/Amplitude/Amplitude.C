@@ -1226,6 +1226,13 @@ void Amplitude::ResetZero()
 
 bool Amplitude::SetMomenta(const Vec4D_Vector &moms)
 {
+  // Amplitude::SetGauge() is called ONLY from GaugeTest(), so in production the
+  // photon polarisation reference vector is whatever the currents were built
+  // with and has never been varied. COMIX_AMPL_GAUGE forces one of the four
+  // choices on every evaluation so the physical result can be checked for
+  // dependence on it - a gauge-dependent answer is a broken polarisation sum.
+  static const char *ag(getenv("COMIX_AMPL_GAUGE"));
+  if (ag) SetGauge(atoi(ag));
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"():\n";
   Vec4D sum;
@@ -1376,7 +1383,7 @@ bool Amplitude::EvaluateAll(const bool& mode)
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"(): "<<m_ress.size()<<" amplitudes {\n";
 #endif
-  if (m_pmode=='D') {
+  if (m_pmode=='D' || m_pmode=='Q' || m_pmode=='X') {
     for (size_t i(0);i<m_ress.size();++i) {
       if (m_cur.back()[i]->Sub()) continue;
       for (size_t j(0);j<m_ress[i].size();++j) m_ress[i][j]=0.0;
@@ -1900,6 +1907,14 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
     int sd(Spinor<double>::DefaultGauge());
     Spinor<double>::SetGauge(sd>0?sd-1:sd+1);
   }
+  else if (m_pmode=='Q') {
+    int sd(Spinor<long double>::DefaultGauge());
+    Spinor<long double>::SetGauge(sd>0?sd-1:sd+1);
+  }
+  else if (m_pmode=='X') {
+    int sd(Spinor<DDouble>::DefaultGauge());
+    Spinor<DDouble>::SetGauge(sd>0?sd-1:sd+1);
+  }
   PHASIC::Virtual_ME2_Base *loop(p_loop);
   p_loop=NULL;
   SetGauge(1);
@@ -1910,6 +1925,8 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
   }
   double res(m_born?m_born:m_res);
   if (m_pmode=='D') Spinor<double>::ResetGauge();
+  else if (m_pmode=='Q') Spinor<long double>::ResetGauge();
+  else if (m_pmode=='X') Spinor<DDouble>::ResetGauge();
   SetGauge(0);
   SetMomenta(moms);
   if (!EvaluateAll(true)) {
