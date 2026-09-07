@@ -146,7 +146,12 @@ double RealReal::Calc_External(const ATOOLS::Vec4D_Vector& p)
 Cluster_Amplitude *RealReal::CreateAmplitude(const ATOOLS::Vec4D_Vector &p) const
 {
   Cluster_Amplitude *ampl = Cluster_Amplitude::New();
-  ampl->SetNIn(p.size());
+  // NIn is the number of INCOMING legs, not the leg count. Comix crosses
+  // in exactly the first NIn momenta (Single_Process.C: p[i] = i<NIn ?
+  // -Leg(i)->Mom() : Leg(i)->Mom()), so passing p.size() here negates the
+  // final state as well - which is equivalent to flipping the sign of every
+  // mass relative to the momenta, and shows up wherever a mass term matters.
+  ampl->SetNIn(p_rrproc->NIn());
   ampl->SetMS(p_rrproc->Generator());
   ampl->SetOrderQCD(p_rrproc->MaxOrder(0));
   ampl->SetMuF2(100);
@@ -156,8 +161,16 @@ Cluster_Amplitude *RealReal::CreateAmplitude(const ATOOLS::Vec4D_Vector &p) cons
   for (size_t i(1);i<p_rrproc->MaxOrders().size();++i)
     ampl->SetOrderEW(ampl->OrderEW()+p_rrproc->MaxOrder(i));
   Int_Vector ci(p.size(), 0), cj(p.size(), 0);
+  // Incoming legs are STORED negated - Comix undoes that when it crosses them
+  // in. Storing them positive and setting NIn to the leg count (as this did)
+  // flips every momentum instead: momentum is still conserved, so the result
+  // stays finite and looks right away from any singularity, but p -> -p at
+  // fixed m reverses each momentum relative to its mass. The error is then
+  // invisible except where a mass term matters - i.e. inside the dead cone
+  // theta <~ m/E, which is exactly where the real ME disagreed with OpenLoops.
+  const size_t nin(p_rrproc->NIn());
   for (size_t i = 0; i < p.size(); ++i) {
-    ampl->CreateLeg(p[i], p_rrproc->Flavours()[i]);
+    ampl->CreateLeg(i<nin?-p[i]:p[i], p_rrproc->Flavours()[i]);
   }
   ampl->SetProc(p_rrproc);
   return ampl;
