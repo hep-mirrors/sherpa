@@ -321,7 +321,7 @@ bool Rivet_Interface::Init()
       THROW(fatal_error, "Internal error.");
     }
 
-    m_loglevel = s["-l"].SetDefault(1000000).Get<int>();
+    m_loglevel = s["-l"].SetSynonyms({ "--log-level"}).SetDefault(20).Get<int>();
     m_histointerval = s["HISTO_INTERVAL"].SetSynonyms({"--histo-interval"}).SetDefault(0).Get<size_t>();
     m_ignorebeams = s["IGNORE_BEAMS"].SetSynonyms({"IGNOREBEAMS", "--ignore-beams"}).SetDefault(0).Get<int>();
     m_skipmerge = s["SKIP_MERGE"].SetSynonyms({"SKIPMERGE", "--skip-merge"}).SetDefault(0).Get<int>();
