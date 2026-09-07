@@ -108,6 +108,7 @@ namespace SHERPA {
 
     bool SetSumSqrColors(Cluster_Amplitude *const ampl)
     {
+      return true;
       Process_Base *proc(ampl->Proc<Process_Base>());
       std::shared_ptr<Color_Integrator> colint{
           proc->Integrator()->ColorIntegrator()};

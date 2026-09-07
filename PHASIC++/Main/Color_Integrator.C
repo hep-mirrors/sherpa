@@ -565,6 +565,7 @@ bool Color_Integrator::TrivialCheck()
 {
   int sumr(0), sumg(0), sumb(0);
   for (size_t i(0);i<m_ids.size();++i) {
+  
     sumr+=(m_ids[i]->I()==1)-(m_ids[i]->J()==1);
     sumg+=(m_ids[i]->I()==2)-(m_ids[i]->J()==2);
     sumb+=(m_ids[i]->I()==3)-(m_ids[i]->J()==3);
