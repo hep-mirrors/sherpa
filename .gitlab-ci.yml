@@ -343,7 +343,6 @@ LCG_106_ATLAS_7_x86_64-el9-gcc13-opt:
 .any-cmake-ccache:
   extends: .any
   before_script:
-    - if [ "${OS}" == "Fedora" ]; then dnf -y install hdf5-devel highfive-devel openmpi openmpi-devel libfabric libfabric-devel hwloc-libs; fi
     - *ex
     # Cache cleanup logic
     - if [ "$CI_COMMIT_MESSAGE" = "cleancache" ]; then rm -rf cmake-$TOOLSET-cache-$FREL; fi
