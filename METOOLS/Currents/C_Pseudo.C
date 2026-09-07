@@ -6,7 +6,7 @@ using namespace METOOLS;
 using namespace ATOOLS;
 
 template<class Scalar>
-double CAsT4<Scalar>::s_accu(1.0e-12);
+Scalar CAsT4<Scalar>::s_accu(1.0e-12);
 
 template<class Scalar> std::ostream &
 METOOLS::operator<<(std::ostream &s,const CAsT4<Scalar> &ten)
@@ -190,5 +190,8 @@ namespace METOOLS {
   template CVec4<long double> operator*
   (const CVec4<long double> &v,const CAsT4<long double> &t);
   template std::ostream &operator<<(std::ostream &ostr,const QCAsT4D &s);
+
+  template class XCAsT4D;
+  template std::ostream &operator<<(std::ostream &ostr,const XCAsT4D &s);
 
 }

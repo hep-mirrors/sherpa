@@ -1,4 +1,5 @@
-set(Currents_SOURCES C_Scalar.C
+set(Currents_SOURCES Cancel_Probe.C
+                     C_Scalar.C
                      C_Spinor.C
                      C_Vector.C
                      C_Pseudo.C

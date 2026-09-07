@@ -9,7 +9,8 @@ namespace METOOLS {
 
   template <typename SType>
   class CS: public Current,
-	    public Current_Contractor<SType> {
+	    public Current_Contractor<SType>,
+	    public Downcast_Contractor<CS<SType>,SType> {
   public:
 
     typedef std::complex<SType>   SComplex;
@@ -86,6 +87,7 @@ void CS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			   const int cr,const int ca,const int mode)
 {
   this->m_p=p;
+  this->m_ph=p;
   this->m_p2=sqr(this->m_mass);
   this->ResetJ();
   if (ch==0) {
@@ -208,3 +210,36 @@ PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"scalar current (double)";
 }
+
+// ---- QPREC_BEGIN: long-double instantiation of the same tower ----
+DECLARE_GETTER(CS<long double>,"QS",Current,Current_Key);
+
+Current *ATOOLS::Getter<Current,Current_Key,CS<long double> >::
+operator()(const Current_Key &key) const
+{
+  if (key.m_fl.IsScalar()) return new CS<long double>(key);
+  return NULL;
+}
+
+void ATOOLS::Getter<Current,Current_Key,CS<long double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"scalar current (long double)";
+}
+// ---- QPREC_END ----
+// ---- XPREC_BEGIN: double-double instantiation ----
+DECLARE_GETTER(CS<ATOOLS::DDouble>,"XS",Current,Current_Key);
+
+Current *ATOOLS::Getter<Current,Current_Key,CS<ATOOLS::DDouble> >::
+operator()(const Current_Key &key) const
+{
+  if (key.m_fl.IsScalar()) return new CS<ATOOLS::DDouble>(key);
+  return NULL;
+}
+
+void ATOOLS::Getter<Current,Current_Key,CS<ATOOLS::DDouble> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"scalar current (double-double)";
+}
+// ---- XPREC_END ----

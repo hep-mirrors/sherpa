@@ -19,7 +19,9 @@ namespace METOOLS {
 
     SComplex m_x[4];
 
-    static double s_accu;
+    // Scalar, not double: SetAccu()/Accu() are typed on Scalar, and a
+    // double member cannot hold a value of a wider scalar type.
+    static Scalar s_accu;
 
     static ATOOLS::AutoDelete_Vector<CVec4> s_objects;
 
@@ -129,6 +131,12 @@ namespace METOOLS {
       m_x[0]-=v[0]; m_x[1]-=v[1]; m_x[2]-=v[2]; m_x[3]-=v[3];
       return *this;
     }
+    // A bare double factor converts to Scalar in one step; going
+    // straight to SComplex would need two user-defined conversions and
+    // is not viable for a Scalar that is itself a class type.
+    inline CVec4& operator*=(const Scalar &d)
+    { return *this*=SComplex(d,Scalar(0.0)); }
+
     inline CVec4& operator*=(const SComplex &c) 
     {
       m_x[0]*=c; m_x[1]*=c; m_x[2]*=c; m_x[3]*=c;
@@ -154,8 +162,8 @@ namespace METOOLS {
 
     static void ResetAccu();
 
-    inline static void   SetAccu(const double &accu) { s_accu=accu;   }
-    inline static double Accu()                      { return s_accu; }
+    inline static void   SetAccu(const Scalar &accu) { s_accu=accu;   }
+    inline static Scalar Accu()                      { return s_accu; }
 
   };// end of class CVec4
 
@@ -192,5 +200,6 @@ namespace METOOLS {
 
 #define DCVec4D METOOLS::CVec4<double>
 #define QCVec4D METOOLS::CVec4<long double>
+#define XCVec4D METOOLS::CVec4<ATOOLS::DDouble>
 
 #endif

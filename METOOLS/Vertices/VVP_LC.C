@@ -64,3 +64,30 @@ void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
 		    VVP_Calculator<double> >::
 PrintInfo(std::ostream &str,const size_t width) const
 { str<<"VVP vertex"; }
+
+// ---- QPREC_BEGIN: long-double instantiation ----
+DECLARE_GETTER(VVP_Calculator<long double>,"QVVP",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,VVP_Calculator<long double> >::
+operator()(const Vertex_Key &key) const
+{ return new VVP_Calculator<long double>(key); }
+
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    VVP_Calculator<long double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"VVP vertex"; }
+// ---- QPREC_END ----
+// ---- XPREC_BEGIN: double-double instantiation ----
+DECLARE_GETTER(VVP_Calculator<ATOOLS::DDouble>,"XVVP",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,VVP_Calculator<ATOOLS::DDouble> >::
+operator()(const Vertex_Key &key) const
+{ return new VVP_Calculator<ATOOLS::DDouble>(key); }
+
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    VVP_Calculator<ATOOLS::DDouble> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"VVP vertex"; }
+// ---- XPREC_END ----

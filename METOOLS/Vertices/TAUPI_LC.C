@@ -229,3 +229,30 @@ void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
 		    TAUPI_Calculator<double> >::
 PrintInfo(std::ostream &str,const size_t width) const
 { str<<"TAUPI vertex"; }
+
+// ---- QPREC_BEGIN: long-double instantiation ----
+DECLARE_GETTER(TAUPI_Calculator<long double>,"QTAUPI",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,TAUPI_Calculator<long double> >::
+operator()(const Vertex_Key &key) const
+{ return new TAUPI_Calculator<long double>(key); }
+
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    TAUPI_Calculator<long double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"TAUPI vertex"; }
+// ---- QPREC_END ----
+// ---- XPREC_BEGIN: double-double instantiation ----
+DECLARE_GETTER(TAUPI_Calculator<ATOOLS::DDouble>,"XTAUPI",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,TAUPI_Calculator<ATOOLS::DDouble> >::
+operator()(const Vertex_Key &key) const
+{ return new TAUPI_Calculator<ATOOLS::DDouble>(key); }
+
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    TAUPI_Calculator<ATOOLS::DDouble> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"TAUPI vertex"; }
+// ---- XPREC_END ----

@@ -9,7 +9,8 @@ namespace METOOLS {
 
   template <typename SType>
   class CP: public Current,
-	    public Current_Contractor<SType> {
+	    public Current_Contractor<SType>,
+	    public Downcast_Contractor<CP<SType>,SType> {
   public:
 
     typedef std::complex<SType>   SComplex;
@@ -141,3 +142,38 @@ PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"tensor current (double)";
 }
+
+// ---- QPREC_BEGIN: long-double instantiation of the same tower ----
+DECLARE_GETTER(CP<long double>,"QP",Current,Current_Key);
+
+Current *ATOOLS::Getter<Current,Current_Key,CP<long double> >::
+operator()(const Current_Key &key) const
+{
+  if (key.m_fl.IsTensor() && key.m_fl.IsDummy()) 
+    return new CP<long double>(key);
+  return NULL;
+}
+
+void ATOOLS::Getter<Current,Current_Key,CP<long double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"tensor current (long double)";
+}
+// ---- QPREC_END ----
+// ---- XPREC_BEGIN: double-double instantiation ----
+DECLARE_GETTER(CP<ATOOLS::DDouble>,"XP",Current,Current_Key);
+
+Current *ATOOLS::Getter<Current,Current_Key,CP<ATOOLS::DDouble> >::
+operator()(const Current_Key &key) const
+{
+  if (key.m_fl.IsTensor() && key.m_fl.IsDummy()) 
+    return new CP<ATOOLS::DDouble>(key);
+  return NULL;
+}
+
+void ATOOLS::Getter<Current,Current_Key,CP<ATOOLS::DDouble> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"tensor current (double-double)";
+}
+// ---- XPREC_END ----

@@ -239,3 +239,78 @@ void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
 		    FFSR_Calculator<double> >::
 PrintInfo(std::ostream &str,const size_t width) const
 { str<<"FFSR vertex"; }
+
+// ---- QPREC_BEGIN: long-double instantiation ----
+DECLARE_GETTER(FFS_Calculator<long double>,"QFFS",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,FFS_Calculator<long double> >::
+operator()(const Vertex_Key &key) const
+{ return new FFS_Calculator<long double>(key); }
+
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    FFS_Calculator<long double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"FFS vertex"; }
+
+DECLARE_GETTER(FFSL_Calculator<long double>,"QFFSL",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,FFSL_Calculator<long double> >::
+operator()(const Vertex_Key &key) const
+{ return new FFSL_Calculator<long double>(key); }
+
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    FFSL_Calculator<long double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"FFSL vertex"; }
+
+DECLARE_GETTER(FFSR_Calculator<long double>,"QFFSR",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,FFSR_Calculator<long double> >::
+operator()(const Vertex_Key &key) const
+{ return new FFSR_Calculator<long double>(key); }
+
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    FFSR_Calculator<long double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"FFSR vertex"; }
+// ---- QPREC_END ----
+// ---- XPREC_BEGIN: double-double instantiation ----
+DECLARE_GETTER(FFS_Calculator<ATOOLS::DDouble>,"XFFS",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,FFS_Calculator<ATOOLS::DDouble> >::
+operator()(const Vertex_Key &key) const
+{ return new FFS_Calculator<ATOOLS::DDouble>(key); }
+
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    FFS_Calculator<ATOOLS::DDouble> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"FFS vertex"; }
+
+DECLARE_GETTER(FFSL_Calculator<ATOOLS::DDouble>,"XFFSL",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,FFSL_Calculator<ATOOLS::DDouble> >::
+operator()(const Vertex_Key &key) const
+{ return new FFSL_Calculator<ATOOLS::DDouble>(key); }
+
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    FFSL_Calculator<ATOOLS::DDouble> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"FFSL vertex"; }
+
+DECLARE_GETTER(FFSR_Calculator<ATOOLS::DDouble>,"XFFSR",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,FFSR_Calculator<ATOOLS::DDouble> >::
+operator()(const Vertex_Key &key) const
+{ return new FFSR_Calculator<ATOOLS::DDouble>(key); }
+
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    FFSR_Calculator<ATOOLS::DDouble> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"FFSR vertex"; }
+// ---- XPREC_END ----

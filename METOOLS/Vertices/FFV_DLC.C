@@ -459,3 +459,30 @@ void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
 		    FFV_DCalculator<double> >::
 PrintInfo(std::ostream &str,const size_t width) const
 { str<<"FFV dipole vertex"; }
+
+// ---- QPREC_BEGIN: long-double instantiation ----
+DECLARE_GETTER(FFV_DCalculator<long double>,"QXFFV",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,FFV_DCalculator<long double> >::
+operator()(const Vertex_Key &key) const
+{ return new FFV_DCalculator<long double>(key); }
+
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    FFV_DCalculator<long double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"FFV dipole vertex"; }
+// ---- QPREC_END ----
+// ---- XPREC_BEGIN: double-double instantiation ----
+DECLARE_GETTER(FFV_DCalculator<ATOOLS::DDouble>,"XXFFV",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,FFV_DCalculator<ATOOLS::DDouble> >::
+operator()(const Vertex_Key &key) const
+{ return new FFV_DCalculator<ATOOLS::DDouble>(key); }
+
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    FFV_DCalculator<ATOOLS::DDouble> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"FFV dipole vertex"; }
+// ---- XPREC_END ----

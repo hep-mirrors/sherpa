@@ -164,6 +164,40 @@ void Current::ResetJ()
   m_zero=true;
 }
 
+
+namespace {
+
+  /*!
+    Dot product of two momenta whose virtualities are known exactly.
+
+    Vec4::LCDot still forms p- = p[0]-p[3] by subtraction. For a leg along the
+    light-cone axis that is the one cancelling component: a 45.6 GeV electron
+    has p- = m^2/(2E) = 2.9e-9 against p[0] = 45.6, so the difference of the
+    stored doubles pins m^2 to about 2 p[0] ulp(p[0]) / m^2 ~ 2.5e-6 - and no
+    amount of arithmetic precision recovers it, because the momentum's own
+    representation is what lost it.
+
+    But p+ p- = p^2 + pT^2 identically, and the exact p^2 is already carried in
+    P2H(). So divide the small component out of the large one instead of
+    subtracting: no cancellation, and the mass that enters is the nominal one
+    rather than the one the rounded components happen to imply.
+  */
+  inline DDouble ExactLCDot(const Vec4<DDouble> &p,const DDouble &p2,
+			    const Vec4<DDouble> &q,const DDouble &q2)
+  {
+    const DDouble ptt(p[1]*p[1]+p[2]*p[2]), qtt(q[1]*q[1]+q[2]*q[2]);
+    DDouble pp(p[0]+p[3]), pm(p[0]-p[3]);
+    DDouble qp(q[0]+q[3]), qm(q[0]-q[3]);
+    // recover whichever component cancelled, from the one that did not
+    if (abs(pp)>abs(pm)) { if (pp!=DDouble(0.0)) pm=(p2+ptt)/pp; }
+    else                 { if (pm!=DDouble(0.0)) pp=(p2+ptt)/pm; }
+    if (abs(qp)>abs(qm)) { if (qp!=DDouble(0.0)) qm=(q2+qtt)/qp; }
+    else                 { if (qm!=DDouble(0.0)) qp=(q2+qtt)/qm; }
+    return DDouble(0.5)*(pp*qm+pm*qp)-p[1]*q[1]-p[2]*q[2];
+  }
+
+}
+
 void Current::Evaluate()
 {
 #ifdef DEBUG__BG
@@ -183,22 +217,27 @@ void Current::Evaluate()
     // confines the loss to a single LCDot per pair instead of subtracting two
     // O(E^2) numbers. The vertices here are 2- or 3-valent, so the double loop
     // costs at most three extra dot products per current.
-    m_p=Vec4D();
-    m_p2=0.0;
+    m_ph=Vec4<DDouble>();
+    m_p2=DDouble(0.0);
     const Current_Vector &js((*vit)->J());
     for (size_t i(0);i<js.size();++i) {
-      m_p2+=js[i]->P2();
+      m_p2+=js[i]->P2H();
       for (size_t j(i+1);j<js.size();++j)
-	m_p2+=2.0*js[i]->P().LCDot(js[j]->P());
-      m_p+=js[i]->P();
+	m_p2+=DDouble(2.0)*ExactLCDot(js[i]->PH(),js[i]->P2H(),
+				      js[j]->PH(),js[j]->P2H());
+      m_ph+=js[i]->PH();
     }
+    // narrow once, at the end: everything downstream of a current reads the
+    // momentum as a double, but nothing downstream re-derives p^2 from it.
+    m_p=Vec4D((double)m_ph[0],(double)m_ph[1],
+	      (double)m_ph[2],(double)m_ph[3]);
 #ifdef DEBUG__BG
     // m_p2 must track m_p.Abs2() to within the latter's own accuracy; a
     // mismatch beyond that means a P()/P2() pair went out of sync somewhere.
-    if (!IsEqual(m_p2,m_p.Abs2(),1.0e-6) &&
-	dabs(m_p2-m_p.Abs2())>1.0e-6*sqr(m_p[0]))
+    if (!IsEqual((double)m_p2,m_p.Abs2(),1.0e-6) &&
+	dabs((double)m_p2-m_p.Abs2())>1.0e-6*sqr(m_p[0]))
       msg_Error()<<METHOD<<"(): p^2 bookkeeping mismatch: recursive "
-		 <<m_p2<<" vs. Abs2() "<<m_p.Abs2()<<" for "<<m_id<<"\n";
+		 <<(double)m_p2<<" vs. Abs2() "<<m_p.Abs2()<<" for "<<m_id<<"\n";
 #endif
   }
   // calculate subcurrents

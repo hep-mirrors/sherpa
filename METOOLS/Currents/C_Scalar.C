@@ -5,7 +5,7 @@
 using namespace METOOLS;
 
 template <class Scalar>
-double CScalar<Scalar>::s_accu(1.0e-12);
+Scalar CScalar<Scalar>::s_accu(1.0e-12);
 
 template <class Scalar> std::ostream &
 METOOLS::operator<<(std::ostream &str,const CScalar<Scalar> &s)
@@ -102,5 +102,8 @@ namespace METOOLS {
 
   template class QCScalar;
   template std::ostream &operator<<(std::ostream &ostr,const QCScalar &s);
+
+  template class XCScalar;
+  template std::ostream &operator<<(std::ostream &ostr,const XCScalar &s);
 
 }
