@@ -177,7 +177,7 @@ CCFM_Sudakov::CCFM_Sudakov(const ATOOLS::Flavour &fl):
 
 double CCFM_Sudakov::Delta(const double &z,const double &q2,const double &Q2)
 {
-  double as2pi((*p_as)(q2)/(2.0*M_PI));
+  double as2pi((*p_as)(Q2)/(2.0*M_PI));
   if (m_fl.IsGluon()) {
     // From hep-ph/0204115, Eq.(27) (corrected for 2nd case, see hep-ph/9503266, Eq.(12))
     // Their variables to ours: k_\perp^2 \to Q2, p_\perp^2 \to q2, q^2 \to q2/(1-z)^2
