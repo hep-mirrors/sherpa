@@ -14,6 +14,7 @@
 #include "METOOLS/SpinCorrelations/Spin_Density.H"
 #include <algorithm>
 #include <functional>
+#include <chrono>
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -240,20 +241,14 @@ double Decay_Channel::SymmetryFactor()
 void Decay_Channel::CalculateWidth(double acc, double ref, int iter)
 {
   switch (NOut()) {
-    case 2:
-      //Debugging
+    case 2: {
       CalculateWidth2Body();
-      PRINT_VAR(m_iwidth);
-      CalculateWidthMC(acc, ref, iter);
-      PRINT_VAR(m_iwidth);
       break;
-    case 3:
-      //Debugging
+    }
+    case 3: {
       CalculateWidth3Body(acc);
-      PRINT_VAR(m_iwidth);
-      CalculateWidthMC(acc, ref, iter);
-      PRINT_VAR(m_iwidth);
       break;
+    }
     default:
       CalculateWidthMC(acc, ref, iter);
   }
@@ -287,7 +282,6 @@ void Decay_Channel::Get3BodyDecayMomenta(ATOOLS::Vec4D_Vector& momenta,
   double p1 = sqrt(sqr(E1) - b);
   double p2 = sqrt(sqr(E2) - c);
 
-  // TODO: catch p1*p2=0
   double cos12 = (b + c + 2*E1*E2 - s12) / (2*p1*p2);
   cos12 = std::clamp(cos12, -1.0, 1.0);
   double sin12 = sqrt(std::max(0.0,1-sqr(cos12)));
@@ -301,7 +295,7 @@ void Decay_Channel::Get3BodyDecayMomenta(ATOOLS::Vec4D_Vector& momenta,
 
 void Decay_Channel::CalculateWidth3Body(double acc)
 {
-  // C.f. PDG Review "Kinematics"
+  // Cf. PDG Review "Kinematics"
   int nInner = 8, nOuter = 8;
   
   double M = p_ms->Mass(GetDecaying());
@@ -331,12 +325,12 @@ void Decay_Channel::CalculateWidth3Body(double acc)
 
   for (int i=0; i<5; i++) {
     temp = m_iwidth;
-    nOuter *= 2;
-    nInner *= 2;
 
     std::function<double(double)> inner_func;
   
+    // Outer lambda (outer integral)
     std::function<double(double)> outer_func = [&](double s12) {
+    // Inner lambda (inner integral)
     inner_func = [&](double s23) {
       Get3BodyDecayMomenta(momenta, M, m1, m2, m3, s12, s23);
       double value = ME2(momenta, false, NULL);
@@ -347,12 +341,13 @@ void Decay_Channel::CalculateWidth3Body(double acc)
     Gauss_Integrator innerInt(&inner);
 
     auto [y0, y1] = innerBounds(s12);
+    // To avoid singularities
     double eps = 1e-10;
     y0 *= (1+eps);
     y1 *= (1-eps);
 
     return innerInt.Legendre(y0, y1, nInner);
-     };
+    };
 
     Lambda_Functor outer(&outer_func);
     Gauss_Integrator outerInt(&outer);
@@ -363,6 +358,9 @@ void Decay_Channel::CalculateWidth3Body(double acc)
     if (dabs(1 - m_iwidth/temp) < acc && i>0) {
       break;
     }
+
+    nOuter *= 2;
+    nInner *= 2;
   }
 
   m_ideltawidth = dabs(m_iwidth - temp);
