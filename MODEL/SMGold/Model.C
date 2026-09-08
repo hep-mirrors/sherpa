@@ -72,6 +72,8 @@ namespace MODEL{
       AddParticle(kf_h0,125.09,.0,0.0041,0,0,0,-1,1,0,1,"h0","h0","h_{0}","h_{0}");
       AddParticle(kf_gluon_qgc,0.0,0.0,0.0,0,8,4,-1,1,1,0,"G4","G4","G_{4}","G_{4}",1);
       AddParticle(kf_instanton,0.0,0.0,0.0,0,8,0,-1,1,0,0,"Instanton","Instanton","Instanton","Instanton");
+      AddParticle(kf_pomeron, 0.0, 0.0, 0.0, 0, 0, 1, 0, "Pomeron", "{I\\!\\!P}");
+      AddParticle(kf_reggeon, 0.0, 0.0, 0.0, 0, 0, 1, 0, "Reggeon", "{I\\!\\!R}");
       AddParticle(kf_phiplus,80.385,0.0,2.085,3,0,0,0,1,0,1,"phi+","phi-","\\phi^{+}","\\phi^{-}");
       AddParticle(kf_chi,91.1876,0.0,2.4952,0,0,0,-1,1,0,1,"chi","chi","\\chi","\\chi");
     }
