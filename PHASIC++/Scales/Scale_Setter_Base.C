@@ -146,6 +146,15 @@ double Scale_Setter_Base::HTMprime() const
   return htmp;
 }
 
+double Scale_Setter_Base::HTMPrime() const
+{
+  if (m_l1==0 || m_l2==0) THROW(fatal_error,"Lepton indices not set.");
+  double htmp(2.0*(m_p[m_l1]+m_p[m_l2]).Abs2());
+  for (size_t i(m_nin);i<m_p.size();++i)
+    if (i!=m_l1 && i!=m_l2) htmp+=m_p[i].MPerp2();
+  return sqrt(htmp/2.0);
+}
+
 double Scale_Setter_Base::HTprime() const
 {
   if (m_l1==0 || m_l2==0) THROW(fatal_error,"Lepton indices not set.");
@@ -153,6 +162,15 @@ double Scale_Setter_Base::HTprime() const
   for (size_t i(m_nin);i<m_p.size();++i)
     if (i!=m_l1 && i!=m_l2) htp+=m_p[i].PPerp();
   return htp;
+}
+
+double Scale_Setter_Base::HTPrime() const
+{
+  if (m_l1==0 || m_l2==0) THROW(fatal_error,"Lepton indices not set.");
+  double htp(2.0*(m_p[m_l1]+m_p[m_l2]).Abs2());
+  for (size_t i(m_nin);i<m_p.size();++i)
+    if (i!=m_l1 && i!=m_l2) htp+=m_p[i].PPerp2();
+  return sqrt(htp/2.0);
 }
 
 Vec4D Scale_Setter_Base::PSum() const
