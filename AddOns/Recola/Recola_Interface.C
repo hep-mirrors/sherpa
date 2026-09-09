@@ -69,6 +69,12 @@ namespace Recola {
   {
     ::get_squared_amplitude_r1_rcl(npr, pow, order, &A2);
   }
+  inline void get_polarized_squared_amplitude_rcl(int npr, int pow,
+                                                  const char* order,
+                                                  const int hel[], double& A2h)
+  {
+    ::get_polarized_squared_amplitude_r1_rcl(npr, pow, order, hel, &A2h);
+  }
 }
 #endif
 
@@ -78,6 +84,105 @@ void Recola::Recola_Interface::SetAlphas(double alphas, double scale, int nflavo
 }
 
 std::string    Recola::Recola_Interface::s_recolaprefix = std::string("");
+bool           Recola::Recola_Interface::s_polarised     = false;
+double         Recola::Recola_Interface::s_pol1          = 0.0;
+double         Recola::Recola_Interface::s_pol2          = 0.0;
+double         Recola::Recola_Interface::s_pvasym_lo     = 0.0;
+double         Recola::Recola_Interface::s_pvasym_nlo    = 0.0;
+bool           Recola::Recola_Interface::s_pvasym_valid  = false;
+double         Recola::Recola_Interface::s_polwgt_lo     = 1.0;
+double         Recola::Recola_Interface::s_polwgt_nlo    = 1.0;
+size_t         Recola::Recola_Interface::s_pol_maxcfg    = 4096;
+
+void Recola::Recola_Interface::EvaluatePolarised(int id, int boqcd, int voqcd,
+                                                 const ATOOLS::Flavour_Vector &flavs,
+                                                 bool with_nlo)
+{
+  s_pvasym_valid = false;
+  s_pvasym_lo = s_pvasym_nlo = 0.0;
+  s_polwgt_lo = s_polwgt_nlo = 1.0;
+  if (!s_polarised) return;
+
+  const size_t n(flavs.size());
+  if (n < 3) return;
+
+  /*
+    Allowed helicities per leg, in Recola's convention
+    (process_computation_rcl.f90):
+      left-handed fermions/antifermions -> -1
+      right-handed fermions/antifermions -> +1
+      transverse vector bosons          -> -1, +1
+      longitudinal vector bosons        ->  0
+      scalar particles                  ->  0
+    A plain +-1 scan is only correct when every leg is a fermion. For a general
+    2->N a massive vector also has a longitudinal state and a scalar has only
+    one, so the per-leg lists must come from the flavours or the helicity sum
+    silently omits configurations and the denominator comes out wrong.
+  */
+  std::vector<std::vector<int> > hels(n);
+  for (size_t l(0); l < n; ++l) {
+    const ATOOLS::Flavour &fl(flavs[l]);
+    if (fl.IsFermion())                      hels[l] = {-1, +1};
+    else if (fl.IsVector() && fl.Mass()==0.) hels[l] = {-1, +1};
+    else if (fl.IsVector())                  hels[l] = {-1, 0, +1};
+    else if (fl.IsScalar())                  hels[l] = {0};
+    else {
+      msg_Error()<<METHOD<<"(): no helicity list for "<<fl
+                 <<", refusing to build a polarised sum.\n";
+      return;
+    }
+  }
+
+  size_t ncfg(1);
+  for (size_t l(0); l < n; ++l) ncfg *= hels[l].size();
+  const size_t maxcfg(s_pol_maxcfg);
+  if (ncfg > maxcfg) {
+    msg_Error()<<METHOD<<"(): "<<ncfg<<" helicity configurations exceeds "
+               <<"RECOLA_POL_MAX_CONFIGS="<<maxcfg<<"; no polarised sum. "
+               <<"Raise the setting if this is really wanted.\n";
+    return;
+  }
+
+  // Beam-2 helicity is defined about its own momentum, so the physical
+  // longitudinal weight is (1+l1*P1)(1+l2*P2). Note this is NOT the form in
+  // AMEGIC Helicity.C:85, which uses s[0] for both factors and a minus sign --
+  // correct only when beam 2 is unpolarised, as it is for MOLLER.
+  double den_lo(0.), num_lo(0.), den_nlo(0.), num_nlo(0.);
+  double pol_lo(0.), pol_nlo(0.);
+  std::vector<int> hel(n, 0), idx(n, 0);
+  for (size_t c(0); c < ncfg; ++c) {
+    size_t r(c);
+    for (size_t l(0); l < n; ++l) { idx[l] = r % hels[l].size(); r /= hels[l].size(); }
+    for (size_t l(0); l < n; ++l) hel[l] = hels[l][idx[l]];
+
+    double a2lo(0.), a2nlo(0.);
+    get_polarized_squared_amplitude_rcl(id, boqcd, "LO",  &hel[0], a2lo);
+    if (with_nlo)
+      get_polarized_squared_amplitude_rcl(id, voqcd, "NLO", &hel[0], a2nlo);
+
+    const double l1(static_cast<double>(hel[0]));
+    const double l2(static_cast<double>(hel[1]));
+    const double w((1.+l1*s_pol1)*(1.+l2*s_pol2));
+    den_lo  += a2lo;   num_lo  += l1*a2lo;   pol_lo  += w*a2lo;
+    den_nlo += a2nlo;  num_nlo += l1*a2nlo;  pol_nlo += w*a2nlo;
+  }
+
+  if (den_lo != 0.) {
+    s_pvasym_lo = num_lo/den_lo;
+    s_polwgt_lo = pol_lo/den_lo;
+    s_pvasym_valid = true;
+  }
+  // NLO asymmetry is the corrected numerator over the corrected denominator,
+  // i.e. B+V in both -- not the virtual alone.
+  if (den_lo+den_nlo != 0.) {
+    s_pvasym_nlo = (num_lo+num_nlo)/(den_lo+den_nlo);
+    s_polwgt_nlo = (pol_lo+pol_nlo)/(den_lo+den_nlo);
+  }
+  msg_Debugging()<<METHOD<<"(): "<<ncfg<<" configs, A_PV(LO)="<<s_pvasym_lo
+                 <<" A_PV(NLO)="<<s_pvasym_nlo<<" polwgt(LO)="<<s_polwgt_lo
+                 <<std::endl;
+}
+
 bool           Recola::Recola_Interface::s_ignore_model = false;
 bool           Recola::Recola_Interface::s_exit_on_error= true;
 double         Recola::Recola_Interface::s_light_fermion_threshold=0.1;
@@ -267,6 +372,23 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
 
   string recolaOutput = s["RECOLA_OUTPUT"].Get<std::string>();
   s_amptype           = s["RECOLA_AMPTYPE"].Get<int>();
+
+  // Beam polarisation. Deliberately the SAME settings block AMEGIC reads
+  // (AMEGIC++/Main/Pol_Info.C), so one card drives both and the two cannot
+  // silently disagree about whether the beam is polarised.
+  {
+    Scoped_Settings pol{ s["POLARIZATIONS"] };
+    s_pol1      = pol["BEAM_1"].SetDefault(0.).Get<double>();
+    s_pol2      = pol["BEAM_2"].SetDefault(0.).Get<double>();
+    if (std::abs(s_pol1) > 1 && std::abs(s_pol1) <= 100) s_pol1 /= 100;
+    if (std::abs(s_pol2) > 1 && std::abs(s_pol2) <= 100) s_pol2 /= 100;
+    s_polarised = pol["PV_ASYMMETRY"].SetDefault(false).Get<bool>();
+    s_pol_maxcfg = s["RECOLA_POL_MAX_CONFIGS"].SetDefault(4096).Get<size_t>();
+    if (s_polarised)
+      msg_Info()<<"Recola: PV_ASYMMETRY on -- helicity-resolved squared "
+                <<"amplitudes will be evaluated (beam pol "<<s_pol1<<", "
+                <<s_pol2<<").\n";
+  }
   set_output_file_rcl(recolaOutput.c_str());
   s_vmode = s["RECOLA_VMODE"].Get<int>();
   msg_Tracking()<<METHOD<<"(): Set V-mode to "<<s_vmode<<endl;
@@ -274,7 +396,7 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
   s_use_decay   = s["RECOLA_USE_DECAY"].Get<bool>();
   s_mass_reg = s["RECOLA_MASS_REG"].Get<bool>();
   if(!s_mass_reg && yfs->Mode()!=YFS::yfsmode::off
-    && yfs->NLO()->p_virt!=NULL){ 
+    && yfs->EnsureNLO()->p_virt!=NULL){ 
     THROW(fatal_error, "Dimensional regularization is not supported for YFS. Use RECOLA_MASS_REG: 1");
   }
   if(s_mass_reg){
@@ -483,7 +605,7 @@ size_t Recola::Recola_Interface::RegisterProcess(const Process_Info& pi,
     int quarkcount(0), gluoncount(0);
     int tempQCD(pi.m_maxcpl[0]), tempEW(pi.m_maxcpl[1]);
     
-    if(pi.m_fi.m_nlotype==nlo_type::loop){
+    if(pi.m_fi.m_nlotype==nlo_type::loop || pi.m_fi.m_nlotype==nlo_type::rvirt){
       
       // Check whether for this process any interference 
       // diagram is present
@@ -690,6 +812,11 @@ void Recola::Recola_Interface::EvaluateLoop(int id, const Vec4D_Vector& momenta,
   bornres = fA2[0];
   virt.Finite()=fA2[1];
 
+  // Helicity-resolved asymmetry from the same computed process. Costs 2^nlegs
+  // extra getter calls and no extra amplitude evaluation, since
+  // compute_process_rcl above has already done the work.
+  if (s_polarised) EvaluatePolarised(id, boqcd, voqcd, pi.ExtractFlavours());
+
 
   if (s_asscontribs[id]) {
     if (s_asscontribs[id]&asscontrib::EW) {
@@ -754,15 +881,20 @@ void Recola::Recola_Interface::EvaluateBorn(int id, const Vec4D_Vector& momenta,
   /*if (s_interference[procIndex]){
     get_squared_amplitude_rcl(id,pi.m_maxcpl[0],"LO",fA2[0]);
     }*/
+  const int boqcd(pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0]);
+  const int voqcd(pi.m_maxcpl[0]);
   if(amptype==12)
   {
     compute_process_rcl(id,fpp,"NLO",fA2,momcheck);
     bornres = fA2[1];
+    if (s_polarised) EvaluatePolarised(id,boqcd,voqcd,pi.ExtractFlavours(),true);
   }
   else if (amptype==1)
   {
     compute_process_rcl(id,fpp,"LO",fA2,momcheck);
     bornres = fA2[0];
+    // Only 'LO' has been computed, so no NLO polarised amplitudes exist.
+    if (s_polarised) EvaluatePolarised(id,boqcd,voqcd,pi.ExtractFlavours(),false);
   } 
 }
 

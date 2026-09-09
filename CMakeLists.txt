@@ -722,7 +722,7 @@ if (SHERPA_ENABLE_MERGED_LIBS)
     Dire
     Phasic
     ComixCore
-    YFSCEEX YFSMain YFSNLO
+    YFSCore
     AmegicCore
     ExtraXSCore
     ExtAmp

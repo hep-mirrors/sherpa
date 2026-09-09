@@ -180,12 +180,32 @@ namespace YFS {
     m_idxRad.clear();
     for (std::size_t i : m_idxFF) m_dipoles[i]->SetResonance(false);
 
+    // Passes 0 and 1 take opposite-charge pairs (same flavour first), pass 2
+    // falls back to same-charge pairs.
+    //
+    // Pass 2 exists because a final state that is not overall neutral cannot be
+    // partitioned into opposite-charge dipoles at all. Moller scattering,
+    // e-e- -> e-e-, is the case in point: its only FF pair has QiQj = +1, so
+    // with an opposite-charge VETO no dipole radiated, both legs fell through to
+    // the "unpaired" branch below, and the run produced a charge-non-conserving
+    // final-state eikonal current plus four-momentum violations.
+    //
+    // Letting a same-charge pair radiate is safe because the crude photon
+    // multiplicity is built from |ChargeNorm()| (Dipole::CalculateGamma uses
+    // std::abs on both m_gamma and m_gammap), so nbar stays positive; the true
+    // sign of QiQj re-enters through the signed ChargeNorm() in the form factor
+    // and eikonal weights. That is the ordinary YFS crude/weight split.
+    //
+    // Neutral final states are unaffected: passes 0 and 1 already consume every
+    // leg, so pass 2 finds nothing and the selection is bit-identical.
     std::set<int> used;
-    for (int pass(0); pass < 2; ++pass) {
+    for (int pass(0); pass < 3; ++pass) {
       std::vector<std::pair<double, std::size_t> > cand;
       for (std::size_t i : m_idxFF) {
         Dipole &D(*m_dipoles[i]);
-        if (D.m_QiQj >= 0) continue;                    // opposite charges only
+        const bool opposite(D.m_QiQj < 0);
+        if (pass <  2 && !opposite) continue;            // prefer opposite charges
+        if (pass == 2 &&  opposite) continue;            // fallback: same charge
         if (pass == 0 && !D.IsDecayAllowed()) continue;  // same flavour first
         if (used.count(D.Left()) || used.count(D.Right())) continue;
         const double s(score ? score(D) : std::numeric_limits<double>::max());

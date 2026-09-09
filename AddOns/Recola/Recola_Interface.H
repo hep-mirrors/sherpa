@@ -35,6 +35,24 @@ namespace Recola {
     static std::vector<double> s_pdfmass;
     
     
+    /*!
+      Beam polarisation / parity-violating asymmetry, read from the same
+      POLARIZATIONS block AMEGIC uses (Pol_Info.C). When PV_ASYMMETRY is on,
+      EvaluatePolarised() sums Recola's helicity-resolved squared amplitudes
+      into  sum_hel lambda_1 |M|^2 / sum_hel |M|^2  at LO and at NLO. The NLO
+      one is the point: it is the genuine O(alpha) corrected asymmetry, which
+      the Born-only AMEGIC column cannot produce.
+    */
+    static bool         s_polarised;
+    static double       s_pol1, s_pol2;
+    static double       s_pvasym_lo, s_pvasym_nlo;
+    static bool         s_pvasym_valid;
+    //! Polarised/unpolarised cross-section ratio for the declared beam
+    //! polarisations, sum_hel (1+l1 P1)(1+l2 P2)|M|^2 / sum_hel |M|^2.
+    static double       s_polwgt_lo, s_polwgt_nlo;
+    //! Refuse to enumerate more helicity configurations than this.
+    static size_t       s_pol_maxcfg;
+
     static std::map<size_t, bool> s_interference;
     static std::map<size_t,ATOOLS::asscontrib::type> s_asscontribs;
     static size_t       s_doint;
@@ -52,6 +70,27 @@ namespace Recola {
             BEAM::Beam_Spectra_Handler *const beam,
             PDF::ISR_Handler *const isr,
             YFS::YFS_Handler *const yfs);
+
+    //! Is POLARIZATIONS: PV_ASYMMETRY switched on?
+    static bool   PolarisedOn()   { return s_polarised; }
+    //! Born and one-loop-corrected PV asymmetry ratios from the last evaluation.
+    static bool   PVAsymValid()   { return s_pvasym_valid; }
+    static double PVAsymLO()      { return s_pvasym_lo; }
+    static double PVAsymNLO()     { return s_pvasym_nlo; }
+    /*!
+      Loop over all +-1 helicity assignments of the external legs, pull the
+      polarised squared amplitudes out of Recola and build the asymmetry.
+      Must be called after compute_process_rcl for process id.
+    */
+    static double PolWeightLO()   { return s_polwgt_lo; }
+    static double PolWeightNLO()  { return s_polwgt_nlo; }
+    /*!
+      with_nlo=false when the process was computed at 'LO' only: asking Recola
+      for an 'NLO' polarised amplitude it has not computed is invalid.
+    */
+    static void   EvaluatePolarised(int id, int boqcd, int voqcd,
+                                    const ATOOLS::Flavour_Vector &flavs,
+                                    bool with_nlo = true);
 
     static std::string process2Recola(const ATOOLS::Flavour_Vector& fl);
     static std::string process2Recola(const PHASIC::Process_Info &pi)
