@@ -230,6 +230,7 @@ Two_Particle_PT::Two_Particle_PT(const Flavour & flav1,const Flavour & flav2,
 #endif
     m_files.push_back(new std::ofstream((m_filename+"pT_weight"+suffix).c_str()));
     m_files.push_back(new std::ofstream((m_filename+"pT_values"+suffix).c_str()));
+    m_files.push_back(new std::ofstream((m_filename+"pT_trials"+suffix).c_str()));
   }
 }
 
@@ -248,6 +249,7 @@ void Two_Particle_PT::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weig
   if (m_files.size()) {
     *m_files[0]<<weight<<"\n";
     *m_files[1]<<pt<<"\n";
+    *m_files[2]<<ncount<<"\n";
   }
 } 
 
