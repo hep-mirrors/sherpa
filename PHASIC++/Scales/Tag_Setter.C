@@ -56,6 +56,12 @@ Term *Tag_Setter::ReplaceTags(Term *term) const
   case 10:
     term->Set(sqr(p_setter->PTM()));
     return term;
+  case 11:
+    term->Set(sqr(p_setter->HTMPrime()));
+    return term;
+  case 12:
+    term->Set(sqr(p_setter->HTPrime()));
+    return term;
   case 0:
     term->Set(sqr(p_setter->hHT()));
     return term;
@@ -75,6 +81,8 @@ void Tag_Setter::AssignId(Term *term)
   else if (term->Tag()=="P_SUM") term->SetId(8);
   else if (term->Tag()=="TAUB") term->SetId(9);
   else if (term->Tag()=="P_TM2") term->SetId(10);
+  else if (term->Tag()=="H_TMP2") term->SetId(11);
+  else if (term->Tag()=="H_TP2") term->SetId(12);
   else if (term->Tag()=="hH_T2") term->SetId(0);
   else if (term->Tag().find("MU_")==0) {
     term->SetId(10+ToType<int>
@@ -533,6 +541,8 @@ void Tag_Setter::SetTags(Algebra_Interpreter *const calc)
   calc->AddTag("H_TM2","1.0");
   calc->AddTag("H_Tp2","1.0");
   calc->AddTag("H_TMp2","1.0");
+  calc->AddTag("H_TP2","1.0");
+  calc->AddTag("H_TMP2","1.0");
   calc->AddTag("P_TM2","1.0");
   calc->AddTag("P_SUM","(1.0,0.0,0.0,0.0)");
   calc->AddTag("TAUB","1.0");
