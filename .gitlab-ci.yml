@@ -331,6 +331,7 @@ LCG_106_ATLAS_7_x86_64-el9-gcc13-opt:
 .ex:  &ex
     - if [ "${TOOLSET}" == "LLVM" ]; then export CXX=clang++; export CC=clang; export FC=gfortran; fi
     - if [ "${TOOLSET}" == "GNU" ]; then export CXX=g++; export CC=gcc; export FC=gfortran; fi
+  - if [ "${TOOLSET}" == "GNUMPI" ]; then source /etc/profile.d/modules.sh || true; module load openmpi || module load mpi/openmpi-x86_64 || true; export CXX=mpic++; export CC=mpicc; export FC=mpif90; fi
 
 .any-cmake:
   extends: .any
@@ -610,4 +611,16 @@ Archlinux0-make-ccache-GNU-feature:
     - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
   needs:
     - job: build_image_Archlinux0
+
+Fedora44-make-ccache-GNU-mpi-hdf5:
+  variables:
+    OS: Fedora
+    FREL: 44
+    TOOLSET: GNUMPI
+    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS -DSHERPA_ENABLE_MPI:BOOL=ON -DSHERPA_ENABLE_HDF5:BOOL=ON
+  extends: .any-cmake-ccache
+  rules:
+    - if: $CI_COMMIT_BRANCH
+  needs:
+    - job: build_image_Fedora44
 
