@@ -331,7 +331,7 @@ LCG_106_ATLAS_7_x86_64-el9-gcc13-opt:
 .ex:  &ex
     - if [ "${TOOLSET}" == "LLVM" ]; then export CXX=clang++; export CC=clang; export FC=gfortran; fi
     - if [ "${TOOLSET}" == "GNU" ]; then export CXX=g++; export CC=gcc; export FC=gfortran; fi
-  - if [ "${TOOLSET}" == "GNUMPI" ]; then source /etc/profile.d/modules.sh || true; module load openmpi || module load mpi/openmpi-x86_64 || true; export CXX=mpic++; export CC=mpicc; export FC=mpif90; fi
+    - if [ "${TOOLSET}" == "GNUMPI" ]; then source /etc/profile.d/modules.sh || true; module load openmpi || module load mpi/openmpi-x86_64 || true; export CXX=mpic++; export CC=mpicc; export FC=mpif90; fi
 
 .any-cmake:
   extends: .any
