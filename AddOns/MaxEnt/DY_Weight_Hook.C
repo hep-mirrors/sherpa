@@ -21,7 +21,7 @@ private:
   Sherpa* p_sherpa;
   int m_jetmode;
   double m_rt, m_lnrt, m_dphi, m_lndphi, m_gating[2], m_wmax;
-  std::vector<double> m_lss;
+  std::vector<double> m_lss, m_kfs;
   std::vector<ATOOLS::Algebra_Interpreter*> m_calcs;
   std::vector<std::string> m_names, m_vtags;
 
@@ -41,6 +41,9 @@ public:
 		   <<fname<<"'."<<std::endl;
     std::ifstream f(fname);
     json data=json::parse(f);
+    auto rates=data["rate"];
+    msg_Debugging()<<"rates = "<<rates<<"\n";
+    double refrate=rates["prior_mean_stored_weight"];
     auto tags=data["moments"];
     msg_Debugging()<<"tags = "<<tags<<"\n";
     auto gating=data["gating"]["window_GeV"];
@@ -50,6 +53,10 @@ public:
     m_names=data["scheme_names"];
     for (size_t i(0);i<m_names.size();++i) {
       std::string var(m_names[i]);
+      double kfs = rates["per_scheme"][var]["sigma_calc_pb"];
+      msg_Debugging()<<"K[\""<<var<<"\"] = "<<kfs<<" / "
+		     <<refrate<<" = "<<kfs/refrate<<"\n";
+      m_kfs.push_back(kfs/refrate);
       auto vals = data["schemes"][var]["lambda_physical"];
       m_lss.push_back(data["schemes"][var]["log_norm_shift"]);
       msg_Debugging()<<"vals[\""<<var<<"\"] = "<<vals<<"\n";
@@ -172,7 +179,7 @@ public:
 	  }
       }
       double beta(Beta((l1+l2).PPerp()));
-      w=beta*exp(w-m_lss[i])+(1.-beta)*svweight;
+      w=m_kfs[i]*beta*exp(w-m_lss[i])+(1.-beta)*svweight;
       if (m_jetmode&2) {
 	msg_Debugging()<<m_names[i]<<": w = "<<w<<" (\\beta = "<<beta
 		       <<") <-> "<<svweight<<" ("<<svname<<")\n";
