@@ -681,6 +681,9 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 			 <<sqrt(m_rsf)<<" * "<<sqrt(q[cid].PPerp2())
 			 <<", as = "<<ccfmas<<" * "<<1.-ampl->Next()->AsR()<<"\n";
 	  cas=avgas;
+	  scale[idx]=MODEL::as->WDBSolve
+	    (cas,m_rsf*MODEL::as->CutQ2(),
+	     m_rsf*1.01*sqr(rpa->gen.Ecms()))/m_rsf;
 	}
 	msg_Debugging()<<"  \\mu_{"<<idx<<"} = "
 		       <<sqrt(m_rsf)<<" * "<<sqrt(scale[idx])
