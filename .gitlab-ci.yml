@@ -365,6 +365,7 @@ LCG_106_ATLAS_7_x86_64-el9-gcc13-opt:
     - export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_Fortran_COMPILER_LAUNCHER=f90cache"
     - 'if [ "${FREL}" == "7" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi'
     - 'if [ "${FREL}" == "0" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi'
+    - 'if [ "${TOOLSET}" == "GNUMPI" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi'
     # Display cache stats
     - ccache -s || true
   script:
