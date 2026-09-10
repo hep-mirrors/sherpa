@@ -47,28 +47,28 @@ Calculator::Calculator(Process_Base* proc):
   m_checklogfile =
       s["CHECK_LOG_FILE"].SetDefault("").Get<std::string>();
   if(Settings::GetMainSettings()["CHECK_EWSUDAKOV_LOG_FILE"].IsSetExplicitly()){
-    THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: CHECK_EWSUDAKOV_LOG_FILE");
+    THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: CHECK_LOG_FILE");
   }
 
   m_threshold = s["THRESHOLD"].SetDefault(1.0).Get<double>();
   if(Settings::GetMainSettings()["EWSUDAKOV_THRESHOLD"].IsSetExplicitly()){
-    THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD:EWSUDAKOV_THRESHOLD");
+    THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: THRESHOLD");
   }
 
   m_checkinvariantratios = s["CHECKINVARIANTRATIOS"].SetDefault(false).Get<bool>();
   if(Settings::GetMainSettings()["EWSUDAKOV_CHECKINVARIANTRATIOS"].IsSetExplicitly()){
-    THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: EWSUDAKOV_CHECKINVARIANTRATIOS");
+    THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: CHECKINVARIANTRATIOS");
   }
 
   s.DeclareVectorSettingsWithEmptyDefault({"COEFF_REMOVED_LIST"});
   if(Settings::GetMainSettings()["EWSUDAKOV_COEFF_REMOVED_LIST"].IsSetExplicitly()){
-    THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: EWSUDAKOV_COEFF_REMOVED_LIST");
+    THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: COEFF_REMOVED_LIST");
   }
 
   const auto disabled_log_list =
       s["COEFF_REMOVED_LIST"].GetVector<std::string>();
   if(Settings::GetMainSettings()["EWSUDAKOV_COEFF_REMOVED_LIST"].IsSetExplicitly()){
-    THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD:EWSUDAKOV_COEFF_REMOVED_LIST");
+    THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: COEFF_REMOVED_LIST");
   }
 
   for (const auto& l : disabled_log_list) {
