@@ -18,13 +18,14 @@ using namespace EWSud;
 
 Sudakov_KFactor::Sudakov_KFactor(const KFactor_Setter_Arguments &args):
   KFactor_Setter_Base(args),
-  m_calc{ p_proc }
+  m_calc{ p_proc }, m_maxweight(10.), m_expweight(1.), m_write_contribs(false)
 {
   auto& s = Settings::GetMainSettings();
   m_maxweight = s["EWSUD"]["MAX_KFACTOR"].SetDefault(10.0).Get<double>();
   if(Settings::GetMainSettings()["EWSUDAKOV_MAX_KFACTOR"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD:MAX_KFACTOR");
   }
+  m_write_contribs = s["EWSUD"]["WRITE_CONTRIBS"].SetDefault(false).Get<bool>();
 }
 
 double Sudakov_KFactor::KFactor(const int mode)
@@ -45,8 +46,10 @@ void Sudakov_KFactor::CalculateAndFillWeightsMap(Weights_Map& w)
   Validate();
   w["EWSud"]["KFactor"] = m_weight;
   w["EWSud"]["KFactorExp"] = m_expweight;
-  for (const auto t : ActiveLogTypes()) {
-    w["EWSud"][ToString<EWSudakov_Log_Type>(t)] = 1.0 + m_corrections_map[t];
+  if (m_write_contribs) {
+    for (const auto t : ActiveLogTypes()) {
+      w["EWSud"][ToString<EWSudakov_Log_Type>(t)] = 1.0 + m_corrections_map[t];
+    }
   }
 }
 

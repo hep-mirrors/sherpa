@@ -21,6 +21,7 @@ namespace EWSud {
     EWSudakov_Log_Corrections_Map m_corrections_map;
     double m_maxweight;
     double m_expweight;
+    bool   m_write_contribs;
   };
 }
 
