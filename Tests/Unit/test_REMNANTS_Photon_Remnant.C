@@ -36,10 +36,7 @@ namespace {
     Register(kf_pi_plus, 0.1396, 3, 0, "pi+");
     Register(kf_n, 0.9396, 0, 1, "n");
     Register(kf_p_plus, 0.938, 3, 1, "P+");
-    if (!rempars) {
-      rempars = new Remnants_Parameters();
-      rempars->Init();
-    }
+    if (!rempars) rempars = new Remnants_Parameters();
     booted = true;
   }
 

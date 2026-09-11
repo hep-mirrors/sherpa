@@ -9,7 +9,7 @@ using namespace ATOOLS;
 
 Form_Factor::Form_Factor(const Flavour & flav) :
   m_flav(flav), m_form(matter_form::single_gaussian),
-  m_radius1(1.), m_radius2(0.), m_fraction1(1.), m_softexp(0.),
+  m_fraction1(1.), m_radius1(1.), m_radius2(0.), m_softexp(0.),
   m_n_matter_form_variations(1)
 {
   Initialise();
@@ -18,11 +18,10 @@ Form_Factor::Form_Factor(const Flavour & flav) :
 void Form_Factor::Initialise()
 {
   /////////////////////////////////////////////////////////////////////////////
-  // Radii given in fm - must be translated into mm
+  // Radii are read and stored in fm; the conversion to mm happens in B().
   /////////////////////////////////////////////////////////////////////////////
   m_form        = rempars->Matter_Form(m_flav);
   m_radius1     = rempars->Get(m_flav,"MATTER_RADIUS_1");
-  m_fraction1   = 1.;
   if (m_form==matter_form::double_gaussian) {
     m_radius2   = rempars->Get(m_flav,"MATTER_RADIUS_2");
     m_fraction1 = rempars->Get(m_flav,"MATTER_FRACTION_1");
@@ -53,8 +52,8 @@ void Form_Factor::Initialise()
     m_softexp_variations.resize(m_n_matter_form_variations, softexp_nom);
   }
 
-  msg_Out()<<METHOD<<"("<<m_flav<<"): "
-	   <<"R = "<<m_radius1<<" mm, "
+  msg_Debugging()<<METHOD<<"("<<m_flav<<"): "
+	   <<"R = "<<m_radius1<<" fm, "
 	   <<"expo = "<<m_softexp<<".\n";
 }
 
@@ -88,7 +87,9 @@ double Form_Factor::B(const double & x, const double & Q2) {
   // Inverse transform sampling gives: b = R sqrt(-ln(u)) where u ~ Uniform(0,1)
   // Returns impact parameter b in units of millimeter.
   /////////////////////////////////////////////////////////////////////////////
-  return Radius(x, Q2) * sqrt(-log(ran->Get())) * 1.e-12;
+  // Clamp the uniform deviate away from 0: ran->Get() returns [0,1), and
+  // -log(0) is +inf, which would place the parton at an infinite radius.
+  return Radius(x, Q2) * sqrt(-log(std::max(ran->Get(), 1.e-12))) * 1.e-12;
 }
 
 Vec4D Form_Factor::operator()(const double & x, const double & Q2) {

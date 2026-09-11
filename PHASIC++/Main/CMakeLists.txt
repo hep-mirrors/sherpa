@@ -21,6 +21,6 @@ set(PhasicMain_HEADERS Color_Integrator.H
 
 sherpa_create_git_info(PhasicMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(PhasicMain SHARED ${PhasicMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(PhasicMain ${SHERPA_SUBLIB_TYPE} ${PhasicMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhasicMain PhasicMain)
 add_dependencies(PhasicMain PhasicMain_Git_Info)

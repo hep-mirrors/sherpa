@@ -18,7 +18,6 @@ namespace REMNANTS {
     std::vector<double> m_radius2_variations;
     std::vector<double> m_softexp_variations;
 
-    void SetDefaults(const ATOOLS::Flavour & flav);
     void Initialise();
   public:
     explicit Form_Factor(const ATOOLS::Flavour & flav);

@@ -10,19 +10,6 @@ namespace REMNANTS {
   class Remnant_Base;
 
   class Colour_Generator {
-    class MassCrit {
-    public:
-      inline bool operator()(const std::pair<ATOOLS::Particle *, ATOOLS::Particle *> & s1,
-              const std::pair<ATOOLS::Particle*, ATOOLS::Particle*>& s2) const
-      {
-        return ((s1.first->Momentum() + s1.second->Momentum()).Y() <
-                (s2.first->Momentum() + s2.second->Momentum()).Y());
-      }
-    };
-
-    typedef std::set<std::pair<ATOOLS::Particle*, ATOOLS::Particle*>, MassCrit>
-            Singlets;
-
   private:
     std::list<int>     m_cols[2][2];
     std::set<int>      m_vetoed[2][2];

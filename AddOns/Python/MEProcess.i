@@ -82,7 +82,7 @@ public:
           Py_DECREF(m2);
           Py_DECREF(m3);
 	}
-      return PyInt_FromLong(1);
+      return PyLong_FromLong(1);
     };
   }
 

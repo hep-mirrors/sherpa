@@ -10,6 +10,6 @@ set(ShrimpsMain_HEADERS Shrimps.H
 
 sherpa_create_git_info(ShrimpsMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(ShrimpsMain SHARED ${ShrimpsMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(ShrimpsMain ${SHERPA_SUBLIB_TYPE} ${ShrimpsMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ShrimpsMain ShrimpsMain)
 add_dependencies(ShrimpsMain ShrimpsMain_Git_Info)

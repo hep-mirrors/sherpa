@@ -10,6 +10,6 @@ set(Beam_Remnants_HEADERS Continued_PDF.H
 
 sherpa_create_git_info(Beam_Remnants ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(ShrimpsBeamRemnants SHARED ${Beam_Remnants_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(ShrimpsBeamRemnants ${SHERPA_SUBLIB_TYPE} ${Beam_Remnants_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ShrimpsBeamRemnants ShrimpsBeamRemnants)
 add_dependencies(ShrimpsBeamRemnants Beam_Remnants_Git_Info)

@@ -17,6 +17,6 @@ set(CSSShowers_HEADERS Splitting_Function_Base.H
 
 sherpa_create_git_info(CSSShowers ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(CSShowers SHARED ${CSSShowers_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(CSShowers ${SHERPA_SUBLIB_TYPE} ${CSSShowers_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(CSShowers CSShowers)
 add_dependencies(CSShowers CSSShowers_Git_Info)

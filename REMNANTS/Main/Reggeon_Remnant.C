@@ -60,7 +60,6 @@ void Reggeon_Remnant::Reset(const bool& resc, const bool& DIS)
     delete part;
     m_spectators.pop_front();
   }
-  m_spectators.clear();
   m_valence   = false;
   p_recoiler  = nullptr;
 }

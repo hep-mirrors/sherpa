@@ -39,6 +39,6 @@ set(Scales_HEADERS Cluster_Definitions.H
 
 sherpa_create_git_info(Scales ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(PhasicScales SHARED ${Scales_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(PhasicScales ${SHERPA_SUBLIB_TYPE} ${Scales_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhasicScales PhasicScales)
 add_dependencies(PhasicScales Scales_Git_Info)

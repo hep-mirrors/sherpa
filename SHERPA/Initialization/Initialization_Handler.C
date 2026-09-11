@@ -1003,7 +1003,6 @@ bool Initialization_Handler::InitializeTheRemnants() {
   // I have the feeling we will have to communicate the mode to the
   // Remnant_Handler in question
   ///////////////////////////////////////////////////////////
-  REMNANTS::Remnants_Parameters();
   m_remnanthandlers[isr::hard_process] =
     new Remnant_Handler(m_isrhandlers[isr::hard_process],p_yfshandler,p_beamspectra,
 			m_bunchtags[isr::hard_process]);

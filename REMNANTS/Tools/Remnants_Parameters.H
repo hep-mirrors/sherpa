@@ -51,26 +51,23 @@ namespace REMNANTS {
     remnant_parameters(const remnant_parameters & parms);
   };
 
-  std::ostream& operator<<(std::ostream& os, const remnant_parameters & parms);
-
   class Remnants_Parameters {
-    std::map<ATOOLS::Flavour, remnant_parameters *> m_defaults, m_actuals;
+    std::map<ATOOLS::Flavour, remnant_parameters *> m_defaults;
 
     void SetNucleonDefaults();
     void SetMesonDefaults();
     void SetPhotonDefaults();
     void SetLeptonDefaults();
+    remnant_parameters * Defaults(const ATOOLS::Flavour & flav);
   public:
     Remnants_Parameters();
     ~Remnants_Parameters();
-    void Init();
     double Get(const ATOOLS::Flavour & flav, std::string keyword);
-    const std::vector<double> &
-    GetVariationVector(const ATOOLS::Flavour & flav, std::string keyword) const;
+    std::vector<double>
+    GetVariationVector(const ATOOLS::Flavour & flav, std::string keyword);
     primkT_form   KT_Form(const ATOOLS::Flavour & flav);
     primkT_recoil KT_Recoil(const ATOOLS::Flavour & flav);
     matter_form   Matter_Form(const ATOOLS::Flavour & flav);
-    void Output();
   };
 
   extern Remnants_Parameters * rempars;

@@ -5,6 +5,7 @@
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
+#include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Color_Integrator.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
@@ -197,6 +198,13 @@ namespace SHERPA {
       Process_Base *proc((*sp)["Process"]->Get<Process_Base*>());
       std::shared_ptr<Color_Integrator> ci{
           proc->Integrator()->ColorIntegrator()};
+      if (ci == nullptr) {
+        THROW(not_implemented,
+              "The matrix-element generator \"" + proc->Generator()->Name() +
+                  "\" has no color integrator, which is required to select a "
+                  "color for the HDF5 output. Please use e.g. \"Comix\" "
+                  "instead.");
+      }
       Cluster_Amplitude *ampl(Cluster_Amplitude::New());
       ampl->SetNIn(sp->NInP());
       ampl->SetProc(proc);

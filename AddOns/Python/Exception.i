@@ -16,7 +16,7 @@ namespace ATOOLS {
       PyObject* __str__() {
 	MyStrStream conv;
 	conv<<*self;
-	return PyString_FromString(conv.str().c_str());
+	return PyUnicode_FromString(conv.str().c_str());
       };
     };
 

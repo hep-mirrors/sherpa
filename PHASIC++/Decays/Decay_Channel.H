@@ -54,6 +54,13 @@ namespace PHASIC {
                const std::vector<ATOOLS::Particle*>& p=
                std::vector<ATOOLS::Particle*>());
 
+    void CalculateWidthMC(double acc, double ref, int iter);
+    void CalculateWidth2Body();
+    void CalculateWidth3Body(double acc);
+    void Get3BodyDecayMomenta(ATOOLS::Vec4D_Vector& momenta, 
+                              double M, double m1, double m2,
+                              double m3, double s12, double s23);
+
   protected :
     double      m_width, m_deltawidth, m_minmass, m_max, m_symfac;
 

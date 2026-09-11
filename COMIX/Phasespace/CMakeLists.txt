@@ -12,7 +12,7 @@ set(ComixPhasespace_HEADERS PS_Info.H
 
 sherpa_create_git_info(ComixPhasespace ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(ComixPhasespace SHARED ${ComixPhasespace_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(ComixPhasespace ${SHERPA_SUBLIB_TYPE} ${ComixPhasespace_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ComixPhasespace ComixPhasespace)
 add_dependencies(ComixPhasespace ComixPhasespace_Git_Info)
 if (SHERPA_ENABLE_THREADING)

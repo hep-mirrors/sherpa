@@ -65,7 +65,7 @@ namespace REMNANTS {
     ~Remnant_Handler();
 
     bool ExtractShowerInitiators(ATOOLS::Blob *const showerblob);
-    bool Extract(ATOOLS::Particle * part,const unsigned int beam);
+    bool Extract(ATOOLS::Particle * part,const int beam);
     bool ConnectColours(ATOOLS::Blob *const showerblob);
     void Reset();
 

@@ -31,6 +31,6 @@ set(AhadicTools_HEADERS Proto_Particle.H
 
 sherpa_create_git_info(AhadicTools ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(AhadicTools SHARED ${AhadicTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(AhadicTools ${SHERPA_SUBLIB_TYPE} ${AhadicTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(AhadicTools AhadicTools)
 add_dependencies(AhadicTools AhadicTools_Git_Info)
