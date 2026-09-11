@@ -27,3 +27,4 @@ RUN  dnf -y copr enable averbyts/HEPrpms && yum -y  install  gosam  fastjet fast
 #RUN  yum -y  install  'tex(refcount.sty)' 'tex(rerunfilecheck.sty)' 'tex(tabulary.sty)' 'tex(tgheros.sty)' 'tex(tgtermes.sty)' 'tex(titlesec.sty)' 'tex(array.sty)'
 #RUN  yum -y  install  'tex(longtable.sty)' 'tex(multicol.sty)' 'tex(upquote.sty)' 'tex(url.sty)' 'tex(varwidth.sty)' 'tex(wrapfig.sty)' 'tex(xcolor.sty)'
 RUN lhapdf update && lhapdf install PDF4LHC21_40_pdfas
+RUN  dnf -y  install hdf5 hdf5-devel  &&  yum -y  clean all
