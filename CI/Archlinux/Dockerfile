@@ -6,7 +6,7 @@ RUN  pacman -Syu --noconfirm \
                       gcc gcc-fortran \
                       libzip \
                       catch2 lcov \
-                      doxygen hdf5
+                      doxygen  hdf5
 
 # disable system installation of LHAPDF as it was removed from extra repository
 #RUN lhapdf update && lhapdf install PDF4LHC21_40_pdfas
