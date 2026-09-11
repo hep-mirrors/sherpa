@@ -43,7 +43,7 @@ public:
     json data=json::parse(f);
     auto rates=data["rate"];
     msg_Debugging()<<"rates = "<<rates<<"\n";
-    double refrate=rates["prior_mean_stored_weight"];
+    double refrate=rates["sigma_prior_pb"];
     auto tags=data["moments"];
     msg_Debugging()<<"tags = "<<tags<<"\n";
     auto gating=data["gating"]["window_GeV"];
@@ -179,7 +179,7 @@ public:
 	  }
       }
       double beta(Beta((l1+l2).PPerp()));
-      w=m_kfs[i]*beta*exp(w-m_lss[i])+(1.-beta)*svweight;
+      w=m_kfs[i]*(beta*exp(w-m_lss[i])+(1.-beta)*svweight);
       if (m_jetmode&2) {
 	msg_Debugging()<<m_names[i]<<": w = "<<w<<" (\\beta = "<<beta
 		       <<") <-> "<<svweight<<" ("<<svname<<")\n";
