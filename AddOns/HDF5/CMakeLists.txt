@@ -42,6 +42,24 @@ if(NOT HighFive_FOUND)
 
 endif()
 
+if(NOT TARGET HighFive::HighFive)
+  if(TARGET HighFive)
+    add_library(HighFive::HighFive ALIAS HighFive)
+  elseif(TARGET highfive)
+    add_library(HighFive::HighFive ALIAS highfive)
+  else()
+    message(FATAL_ERROR "HighFive was found but does not provide a usable CMake target")
+  endif()
+endif()
+
+get_target_property(HIGHFIVE_INCLUDE_DIR HighFive::HighFive INTERFACE_INCLUDE_DIRECTORIES)
+if(HighFive_DIR)
+  get_filename_component(HIGHFIVE_PREFIX "${HighFive_DIR}/../../.." ABSOLUTE)
+else()
+  set(HIGHFIVE_PREFIX "${highfive_SOURCE_DIR}")
+endif()
+message(STATUS "SHERPA: HIGHFIVE_VERSION=${HighFive_VERSION} HIGHFIVE_PREFIX=${HIGHFIVE_PREFIX} HIGHFIVE_INCLUDE_DIR=${HIGHFIVE_INCLUDE_DIR}")
+
 sherpa_create_git_info(HDF5 ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 # Reader
