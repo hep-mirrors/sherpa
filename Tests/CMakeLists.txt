@@ -59,7 +59,7 @@ if (SHERPA_ENABLE_INTEGRATION_TESTS)
   SET_TESTS_PROPERTIES( Main${test}part1 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
 
   if (SHERPA_ENABLE_HDF5)
-    set(test test-HDF5-LO_ee)
+    set(test test-HDF5-LO_mumu)
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
     add_test(
       NAME Main${test}part1
