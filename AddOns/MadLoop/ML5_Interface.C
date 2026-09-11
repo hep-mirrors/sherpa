@@ -94,7 +94,7 @@ namespace ML5 {
       s_init=!FileExists(s_path+".zip");
       My_In_File::OpenDB(s_path+"/");
 #ifdef USING__MPI
-      if (MPI::COMM_WORLD.Get_rank()==0) {
+      if (mpi->Rank()==0) {
 #endif
       if (ML5_Interface::Init()) {
 	Remove(s_path+".mg5");
@@ -155,7 +155,7 @@ namespace ML5 {
 #ifdef USING__MPI
       }
       int dummy;
-      MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
+      mpi->Bcast(&dummy,1,MPI_INT);
 #endif  
       s_loader->AddPath(rpa->gen.Variable("SHERPA_RUN_PATH")+"/"+s_path+"/lib");
       s_loader->AddPath(rpa->gen.Variable("SHERPA_RUN_PATH")+"/"+s_path+"/lib/collier_lib");
@@ -213,7 +213,7 @@ namespace ML5 {
       std::string pn(Process_Base::GenerateName(pi.m_ii,pi.m_fi));
       if (ML5_Interface::Init()) {
 #ifdef USING__MPI
-	if (MPI::COMM_WORLD.Get_rank())
+	if (mpi->Rank())
 	  THROW(fatal_error,"Initialization not possible in MPI mode");
 #endif
 	size_t nin(pi.m_ii.m_ps.size());
@@ -356,7 +356,7 @@ namespace ML5 {
 	pn+="__"+ToString((long int)args.m_outflavs[i]);
       if (ML5_Interface::Init()) {
 #ifdef USING__MPI
-	if (MPI::COMM_WORLD.Get_rank())
+	if (mpi->Rank())
 	  THROW(fatal_error,"Initialization not possible in MPI mode");
 #endif
 	std::ofstream card((cn+".mg5").c_str(),std::ios::app);
