@@ -613,7 +613,7 @@ Archlinux0-make-ccache-GNU-feature:
   needs:
     - job: build_image_Archlinux0
 
-Fedora44-make-ccache-GNU-mpi-hdf5:
+Fedora44-make-ccache-GNU-mpi:
   variables:
     OS: Fedora
     FREL: 44
