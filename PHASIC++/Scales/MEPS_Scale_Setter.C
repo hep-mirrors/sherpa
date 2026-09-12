@@ -253,8 +253,7 @@ void MEPS_Scale_Setter::Combine
   li->SetMom(ci.second.m_pijt);
   li->SetStat(ci.second.m_stat);
   if (!(m_cmode&2048)) {
-    li->SetKT2(0,sqr(sqrt(ci.second.m_kt2)+
-		     sqrt(li->KT2(0))+sqrt(lj->KT2(0))));
+    li->SetKT2(0,Max(ci.second.m_kt2,Max(li->KT2(0),lj->KT2(0))));
     li->SetKT2(1,ci.second.m_kt2+li->KT2(1)+lj->KT2(1));
   }
   lk->SetMom(ci.second.m_pkt);
