@@ -1,6 +1,8 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Random.H"
 #include "YFS/NLO/RealReal.H"
+#include <iostream>
+#include <cmath>
 
 #include "PHASIC++/Process/External_ME_Args.H"
 #include "PHASIC++/Process/Process_Base.H"
@@ -113,6 +115,9 @@ double RealReal::Calc_R(const ATOOLS::Vec4D_Vector& p){
   const int rmode = 128 + 2 + 1;
   Weights_Map iR = p_rrproc->Differential(*p_ampl, Variations_Mode::nominal_only,rmode);
   if(p_ampl) p_ampl->Delete();
+  if (m_check && external_real!=0.0)
+    std::cerr<<"@@@ RRC ratio="<<iR.Nominal()/external_real
+             <<" dev="<<std::abs(iR.Nominal()/external_real-1.0)<<std::endl;
   if(m_check) p_cmp->CheckAgreement(p, iR.Nominal(), external_real,
                                      m_flavs, p_rrproc->NIn());
   return iR.Nominal();
