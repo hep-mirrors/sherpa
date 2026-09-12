@@ -302,6 +302,14 @@ bool FSR::MakeFSR() {
       return false;
     }
     RescalePhotons();
+    if (!(m_photonSum.E() < sqrt(m_dip_sp))) {
+      msg_Debugging()<<METHOD<<"(): photon sum "<<m_photonSum.E()
+                     <<" GeV exceeds the dipole mass "<<sqrt(m_dip_sp)
+                     <<" GeV; rescale factor was "<<m_xfact<<"\n";
+      RejectEvent();
+      m_cut = 4;
+      return false;
+    }
     m_sQ = m_dip_sp * m_yy;
     m_sX = m_sQ*(1.+m_photonSum[0]+0.25*m_photonSum*m_photonSum);
     if ( (m_sQ) < smin || m_sX < smin ) {
