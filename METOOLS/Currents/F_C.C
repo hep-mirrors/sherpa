@@ -1,5 +1,7 @@
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Currents/C_Spinor.H"
+#include <cstdlib>
+#include <iostream>
 /*!
   @file F_C.C
   @brief Implements the class CF.
@@ -127,20 +129,22 @@ void CF<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			   const int cr,const int ca,const int mode)
 {
   this->m_p=p;
-  this->m_ph=p;
   this->m_p2=sqr(this->m_mass);
+  this->SetPWide();
   this->ResetJ();
+  // on-shell wide momentum, not the raw double argument: see Current::PW()
+  const ATOOLS::Vec4<SType> pw(this->template PW<SType>());
   bool anti(this->m_fl.IsAnti());
   if (this->m_fl.Majorana()) anti=(mode&1)?this->m_dir<0:this->m_dir>0;
   if (ch>=0) {
     CSpinorType j(anti^(this->m_dir>0)?
 		  CSpinorType(this->m_fl.Majorana()?-2:-1,-this->m_dir,
 			      this->m_fl.Majorana()?(mode?1:-1):1,
-			      p,cr,ca,0,0,sqr(this->m_mass),
+			      pw,cr,ca,0,0,sqr(this->m_mass),
 			      this->m_fl.MassSign()):
 		  CSpinorType(this->m_fl.Majorana()?2:1,this->m_dir,
 			      this->m_fl.Majorana()?(mode?-1:1):1,
-			      p,cr,ca,0,0,sqr(this->m_mass),
+			      pw,cr,ca,0,0,sqr(this->m_mass),
 			      this->m_fl.MassSign()));
     j.SetH(anti^(this->m_dir>0)?1:0);
 #ifdef DEBUG__BG
@@ -157,11 +161,11 @@ void CF<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
     CSpinorType j(anti^(this->m_dir>0)?
 		  CSpinorType(this->m_fl.Majorana()?-2:-1,-this->m_dir,
 			      this->m_fl.Majorana()?(mode?-1:1):-1,
-			      p,cr,ca,0,0,sqr(this->m_mass),
+			      pw,cr,ca,0,0,sqr(this->m_mass),
 			      this->m_fl.MassSign()):
 		  CSpinorType(this->m_fl.Majorana()?2:1,this->m_dir,
 			      this->m_fl.Majorana()?(mode?1:-1):-1,
-			      p,cr,ca,0,0,sqr(this->m_mass),
+			      pw,cr,ca,0,0,sqr(this->m_mass),
 		              this->m_fl.MassSign()));
     j.SetH(anti^(this->m_dir>0)?0:1);
 #ifdef DEBUG__BG
