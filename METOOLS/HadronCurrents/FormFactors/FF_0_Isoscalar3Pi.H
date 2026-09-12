@@ -87,6 +87,15 @@ namespace METOOLS {
     double m_c[6];                        // A .. F
     int    m_i_plus, m_i_minus, m_i_zero; // which index is which pion
 
+    // Eq. (10) assembled from Sum_Term/Product_Term rather than written out as
+    // algebra below.  Each entry names the invariant it is evaluated at, which
+    // is what lets one product mix a function of q^2 with a function of a
+    // two-pion sub-mass, and one sum hold the same rho at all three pairings.
+    // Owns the terms; the propagators above stay owned by this class, since
+    // the charged rho appears at two pairings and must not be deleted twice.
+    Sum_Term * p_amp;
+    void BuildAmplitude();
+
     void FixParameters(const FF_Parameters & params);
     void Construct();
   public:

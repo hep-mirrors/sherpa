@@ -12,13 +12,14 @@ FF_0_Isoscalar3Pi::FF_0_Isoscalar3Pi(const FF_Parameters & params) :
   p_r770_0(NULL),  p_r770_c(NULL),
   p_r1450_0(NULL), p_r1450_c(NULL),
   p_r1700_0(NULL), p_r1700_c(NULL),
-  m_i_plus(-1), m_i_minus(-1), m_i_zero(-1)
+  m_i_plus(-1), m_i_minus(-1), m_i_zero(-1), p_amp(NULL)
 {
   FixParameters(params);
   Construct();
 }
 
 FF_0_Isoscalar3Pi::~FF_0_Isoscalar3Pi() {
+  if (p_amp) { delete p_amp; p_amp = NULL; }
   while (!m_iso.empty()) { delete m_iso.back(); m_iso.pop_back(); }
   if (p_r770_0)  { delete p_r770_0;  p_r770_0  = NULL; }
   if (p_r770_c)  { delete p_r770_c;  p_r770_c  = NULL; }
@@ -100,29 +101,48 @@ void FF_0_Isoscalar3Pi::Construct() {
   p_r1700_0 = new BreitWigner(LineShapes->Get(Flavour(kf_rho_1700)));
   p_r1700_c = new BreitWigner(LineShapes->Get(Flavour(kf_rho_1700_plus)));
 
+  BuildAmplitude();
+
   msg_Out()<<"FF_0_Isoscalar3Pi: hep-ph/0512180 Eq.(10) over registry rho "
 	   <<"line shapes; A-F = ";
   for (size_t i(0);i<6;++i) msg_Out()<<m_c[i]<<(i<5?", ":"\n");
 }
 
+void FF_0_Isoscalar3Pi::BuildAmplitude() {
+  // sub_0 = the pi+ pi- pairing, sub_1 = pi+ pi0, sub_2 = pi- pi0.  The
+  // neutral rho takes the first, the charged one the other two -- which is
+  // exactly the assignment a single-invariant sum could not express.
+  using ia = invariant_arg;
+  Sum_Term * h770  = new Sum_Term();
+  h770 ->Add(p_r770_0, ia::sub_0); h770 ->Add(p_r770_c, ia::sub_1);
+  h770 ->Add(p_r770_c, ia::sub_2);
+  Sum_Term * h1450 = new Sum_Term();
+  h1450->Add(p_r1450_0,ia::sub_0); h1450->Add(p_r1450_c,ia::sub_1);
+  h1450->Add(p_r1450_c,ia::sub_2);
+  Sum_Term * h1700 = new Sum_Term();
+  h1700->Add(p_r1700_0,ia::sub_0); h1700->Add(p_r1700_c,ia::sub_1);
+  h1700->Add(p_r1700_c,ia::sub_2);
+
+  // A..D share rho(770); E takes rho(1450) with the phi alone and F takes
+  // rho(1700) with the omega'' alone.  That selectivity is the whole point.
+  Sum_Term * iso = new Sum_Term();
+  for (size_t i(0);i<4;++i) iso->Add(m_iso[i],ia::total,m_c[i]);
+
+  Product_Term * t1 = new Product_Term(); t1->Add(iso);   t1->Add(h770);
+  Product_Term * t2 = new Product_Term();
+  t2->Add(m_iso[1],ia::total,m_c[4]); t2->Add(h1450);
+  Product_Term * t3 = new Product_Term();
+  t3->Add(m_iso[3],ia::total,m_c[5]); t3->Add(h1700);
+
+  p_amp = new Sum_Term();
+  p_amp->Add(t1); p_amp->Add(t2); p_amp->Add(t3);
+}
+
 Complex FF_0_Isoscalar3Pi::operator()(const Vec4D_Vector & moms) {
   const Vec4D & pp=moms[m_i_plus], & pm=moms[m_i_minus], & p0=moms[m_i_zero];
-  const double q2 =(pp+pm+p0).Abs2();
-  const double spm=(pp+pm).Abs2(), sp0=(pp+p0).Abs2(), sm0=(pm+p0).Abs2();
-
-  // All-plus over the three pairings; see the header on why that is forced.
-  const Complex h770  = (*p_r770_0 )(spm)+(*p_r770_c )(sp0)+(*p_r770_c )(sm0);
-  const Complex h1450 = (*p_r1450_0)(spm)+(*p_r1450_c)(sp0)+(*p_r1450_c)(sm0);
-  const Complex h1700 = (*p_r1700_0)(spm)+(*p_r1700_c)(sp0)+(*p_r1700_c)(sm0);
-
-  const Complex w782 =(*m_iso[0])(q2), wphi =(*m_iso[1])(q2);
-  const Complex w1420=(*m_iso[2])(q2), w1650=(*m_iso[3])(q2);
-
-  // Eq. (10): a sum of products.  E pairs rho(1450) with the phi alone and F
-  // pairs rho(1700) with the omega'' alone -- that selectivity is the point.
-  return ( m_c[0]*w782 + m_c[1]*wphi + m_c[2]*w1420 + m_c[3]*w1650 ) * h770
-       +   m_c[4]*wphi  * h1450
-       +   m_c[5]*w1650 * h1700;
+  const Invariants k((pp+pm+p0).Abs2(),
+                     { (pp+pm).Abs2(), (pp+p0).Abs2(), (pm+p0).Abs2() });
+  return (*p_amp)(k);
 }
 
 Vec4C FF_0_Isoscalar3Pi::Current(const Vec4D_Vector & moms) {

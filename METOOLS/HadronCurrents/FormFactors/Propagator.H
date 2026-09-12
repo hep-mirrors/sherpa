@@ -5,6 +5,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/MyComplex.H"
 #include <map>
+#include <vector>
 #include <string>
 
 namespace METOOLS {
@@ -174,6 +175,96 @@ namespace METOOLS {
     const Complex Normalised(const double & s);
     const double  Normalised2(const double & s);
   };
+  ///////////////////////////////////////////////////////////////////////////
+  //
+  // COMPOSING AMPLITUDES ACROSS SEVERAL INVARIANTS
+  //
+  // Summed_Propagator and Multiplied_Propagator combine propagators that are
+  // all functions of the SAME s, because Propagator_Base::operator() takes one
+  // argument.  Some amplitudes are not of that shape.  hep-ph/0512180 Eq. (10)
+  // for gamma* -> 3 pi is
+  //
+  //   F = [A BW_om + B BW_phi + C BW_om' + D BW_om''](q^2) x H_rho770(s_ij)
+  //     +  E BW_phi(q^2)                                   x H_rho1450(s_ij)
+  //     +  F BW_om''(q^2)                                  x H_rho1700(s_ij)
+  //
+  // i.e. products of a function of q^2 with a function of a two-body
+  // sub-invariant, summed.  Two things there are out of reach of the classes
+  // above: a product whose factors take DIFFERENT invariants, and a sum of the
+  // SAME propagator at several sub-invariants (each H is one line shape summed
+  // over the three pion pairings).
+  //
+  // The classes below fix that by having every entry carry a tag naming which
+  // invariant it is evaluated at.  A leaf cannot decide that for itself -- a
+  // rho(1450) object has no idea whether it is playing the pi+ pi- pairing or
+  // the pi+ pi0 one -- so the tag lives with the parent that assembled it.
+  //
+  // They deliberately do NOT derive from Propagator_Base: they cannot honour
+  // its single-argument operator(), and pretending otherwise would let them be
+  // passed where a line shape is expected and silently evaluated wrongly.
+  //
+  // Entries are BORROWED, not owned.  The same propagator commonly appears at
+  // more than one invariant -- the charged rho serves two of the three pairings
+  // -- so the caller keeps ownership and deletes once.
+  //
+  ///////////////////////////////////////////////////////////////////////////
+
+  //! Which invariant an entry is evaluated at.  The sub-invariants are indices
+  //! into the caller's own ordering; the amplitude decides what they mean.
+  enum class invariant_arg { total = -1, sub_0 = 0, sub_1 = 1, sub_2 = 2 };
+
+  struct Invariants {
+    double              m_q2;
+    std::vector<double> m_sub;
+    Invariants(const double & q2,const std::vector<double> & sub) :
+      m_q2(q2), m_sub(sub) {}
+    double At(const invariant_arg & a) const;
+  };
+
+  class Invariant_Term {
+  public:
+    virtual ~Invariant_Term() {}
+    virtual Complex operator()(const Invariants & k) const = 0;
+  };
+
+  //! One line shape at one named invariant, times a weight.
+  class Line_Shape_Term : public Invariant_Term {
+  private:
+    Propagator_Base * p_prop;
+    invariant_arg     m_arg;
+    Complex           m_weight;
+  public:
+    Line_Shape_Term(Propagator_Base * prop,const invariant_arg & arg,
+                    const Complex & weight=Complex(1.,0.));
+    Complex operator()(const Invariants & k) const;
+  };
+
+  //! Sum of terms.  Children are borrowed; see the note above.
+  class Sum_Term : public Invariant_Term {
+  private:
+    std::vector<Invariant_Term *> m_terms;
+  public:
+    ~Sum_Term();
+    //! Takes ownership of the term itself (not of any propagator inside it).
+    void Add(Invariant_Term * term);
+    //! Convenience: wrap a borrowed line shape at one invariant.
+    void Add(Propagator_Base * prop,const invariant_arg & arg,
+             const Complex & weight=Complex(1.,0.));
+    Complex operator()(const Invariants & k) const;
+  };
+
+  //! Product of terms, each free to take a different invariant.
+  class Product_Term : public Invariant_Term {
+  private:
+    std::vector<Invariant_Term *> m_terms;
+  public:
+    ~Product_Term();
+    void Add(Invariant_Term * term);
+    void Add(Propagator_Base * prop,const invariant_arg & arg,
+             const Complex & weight=Complex(1.,0.));
+    Complex operator()(const Invariants & k) const;
+  };
+
   class RChL_BW : public Propagator_Base {
   public:
     RChL_BW(Total_Width_Base * width) :

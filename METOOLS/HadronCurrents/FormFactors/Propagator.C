@@ -5,6 +5,8 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include <cmath>
 
 using namespace METOOLS;
@@ -220,6 +222,65 @@ const double GounarisSakuraiM::Normalised2(const double & s) {
   return norm((*this)(s));
 }
 
+
+double Invariants::At(const invariant_arg & a) const {
+  if (a==invariant_arg::total) return m_q2;
+  // Braces, not parentheses: 'size_t i(size_t(a))' parses as a function
+  // declaration, not a variable.
+  const size_t i{static_cast<size_t>(a)};
+  if (i>=m_sub.size())
+    THROW(fatal_error,"Invariants::At: sub-invariant "+ATOOLS::ToString(i)+
+          " requested but only "+ATOOLS::ToString(m_sub.size())+" supplied.");
+  return m_sub[i];
+}
+
+Line_Shape_Term::Line_Shape_Term(Propagator_Base * prop,
+                                 const invariant_arg & arg,
+                                 const Complex & weight) :
+  p_prop(prop), m_arg(arg), m_weight(weight)
+{
+  if (p_prop==NULL) THROW(fatal_error,"Line_Shape_Term: null propagator.");
+}
+
+Complex Line_Shape_Term::operator()(const Invariants & k) const {
+  return m_weight*(*p_prop)(k.At(m_arg));
+}
+
+Sum_Term::~Sum_Term() {
+  // The terms are ours; the propagators inside them are not.
+  while (!m_terms.empty()) { delete m_terms.back(); m_terms.pop_back(); }
+}
+
+void Sum_Term::Add(Invariant_Term * term) { m_terms.push_back(term); }
+
+void Sum_Term::Add(Propagator_Base * prop,const invariant_arg & arg,
+                   const Complex & weight) {
+  m_terms.push_back(new Line_Shape_Term(prop,arg,weight));
+}
+
+Complex Sum_Term::operator()(const Invariants & k) const {
+  Complex result(0.,0.);
+  for (size_t i(0);i<m_terms.size();++i) result += (*m_terms[i])(k);
+  return result;
+}
+
+Product_Term::~Product_Term() {
+  while (!m_terms.empty()) { delete m_terms.back(); m_terms.pop_back(); }
+}
+
+void Product_Term::Add(Invariant_Term * term) { m_terms.push_back(term); }
+
+void Product_Term::Add(Propagator_Base * prop,const invariant_arg & arg,
+                       const Complex & weight) {
+  m_terms.push_back(new Line_Shape_Term(prop,arg,weight));
+}
+
+Complex Product_Term::operator()(const Invariants & k) const {
+  // Empty product is 1, so that a term built up conditionally still behaves.
+  Complex result(1.,0.);
+  for (size_t i(0);i<m_terms.size();++i) result *= (*m_terms[i])(k);
+  return result;
+}
 
 const Complex RChL_BW::operator()(const double & s) {
   return 1./Complex(s-m_M2,-m_M*(*p_width)(s));
