@@ -13,6 +13,7 @@ set(FormFactors_SOURCES Line_Shapes.C
                         K_0_800_Decays.C
                         FormFactor_Base.C
 			FF_0_PP.C
+			FF_0_Isoscalar3Pi.C
 			FF_0_PPP.C
 			FF_0_DD.C
 			RChL_Functions.C
@@ -33,6 +34,7 @@ set(FormFactors_HEADERS Line_Shapes.H
                         K_0_800_Decays.H
                         FormFactor_Base.H
 			FF_0_PP.H
+			FF_0_Isoscalar3Pi.H
 			FF_0_PPP.H
 			FF_0_DD.H
 			RChL_Functions.H

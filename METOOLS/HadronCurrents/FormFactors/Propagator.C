@@ -138,6 +138,89 @@ const double FM95_Fixed_BW::Normalised2(const double & s) {
   return norm((*this)(s));
 }
 
+FixedBreitWigner::FixedBreitWigner(const double & M,const double & Gamma) :
+  Propagator_Base(NULL,resonance_type::fixed), m_Gamma(Gamma) {
+  m_M  = M;
+  m_M2 = M*M;
+}
+
+const Complex FixedBreitWigner::operator()(const double & s) {
+  return m_M2/Complex(m_M2-s,-m_M*m_Gamma);
+}
+
+const Complex FixedBreitWigner::Normalised(const double & s) {
+  return (*this)(s);
+}
+
+const double FixedBreitWigner::Normalised2(const double & s) {
+  return norm((*this)(s));
+}
+
+GounarisSakuraiM::GounarisSakuraiM(const Flavour & flav,const double & mpi) :
+  Propagator_Base(NULL,resonance_type::GS),
+  m_G0(flav.Width()), m_mpi(mpi), m_mpi2(sqr(mpi))
+{
+  m_M  = flav.HadMass();
+  m_M2 = sqr(m_M);
+
+  m_k0  = K(m_M2);
+  m_h0  = H(m_M2);
+  // dh/ds evaluated at the pole.
+  m_dh0 = m_h0*(1./(8.*sqr(m_k0))-1./(2.*m_M2))+1./(2.*M_PI*m_M2);
+  // Published closed form for d.  Do NOT try to recover this as f(0)/(G0*m0)
+  // using a real-valued f: below threshold k^2 is negative and the
+  // k^2*(h(s)-h(m0^2)) term stays finite, so the naive continuation is wrong
+  // by a constant factor of about 1.137.
+  m_d = (3./M_PI)*(m_mpi2/sqr(m_k0))*log((m_M+2.*m_k0)/(2.*m_mpi))
+      + m_M/(2.*M_PI*m_k0)
+      - (m_mpi2*m_M)/(M_PI*pow(m_k0,3.));
+  // The published GS normalisation, which makes the amplitude 1 at s=0 given
+  // the exact f(s), matching BreitWigner and Two_Channel_Flatte here so the
+  // mixing coefficients of a coherent sum keep their meaning.  F() below is
+  // the above-threshold form, so evaluating this literally at s=0 comes out
+  // about 1% high; that region is never probed, since every call site passes a
+  // physical two-pion invariant mass.
+  m_num = m_M2*(1.+m_d*m_G0/m_M);
+}
+
+double GounarisSakuraiM::K(const double & s) const {
+  if (s<=4.*m_mpi2) return 0.;
+  return 0.5*sqrt(s-4.*m_mpi2);
+}
+
+double GounarisSakuraiM::H(const double & s) const {
+  const double k = K(s);
+  if (k<=0. || s<=0.) return 0.;
+  const double rs = sqrt(s);
+  return (2./M_PI)*(k/rs)*log((rs+2.*k)/(2.*m_mpi));
+}
+
+double GounarisSakuraiM::F(const double & s) const {
+  // f(m0^2) = 0 by construction, so the pole sits where it should.
+  const double k = K(s);
+  return m_G0*m_M2/pow(m_k0,3.) *
+         (sqr(k)*(H(s)-m_h0) + (m_M2-s)*sqr(m_k0)*m_dh0);
+}
+
+double GounarisSakuraiM::Width(const double & s) const {
+  const double k = K(s);
+  if (k<=0. || s<=0.) return 0.;
+  return m_G0*(m_M/sqrt(s))*pow(k/m_k0,3.);
+}
+
+const Complex GounarisSakuraiM::operator()(const double & s) {
+  return m_num/Complex(m_M2-s+F(s),-m_M*Width(s));
+}
+
+const Complex GounarisSakuraiM::Normalised(const double & s) {
+  return (*this)(s);
+}
+
+const double GounarisSakuraiM::Normalised2(const double & s) {
+  return norm((*this)(s));
+}
+
+
 const Complex RChL_BW::operator()(const double & s) {
   return 1./Complex(s-m_M2,-m_M*(*p_width)(s));
 }

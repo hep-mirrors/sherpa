@@ -8,6 +8,7 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
+#include "PHASIC++/Channels/Rambo.H"
 #include "PHASIC++/Channels/FSR_Channel.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PDF/Main/ISR_Handler.H"
@@ -153,6 +154,19 @@ bool EXTRAXS::Single_Process::FillIntegrator(PHASIC::Phase_Space_Handler *const 
   }
   size_t sintt(7);
   if (GetME()) sintt=GetME()->SIntType();
+  // S1/T1/U1 are 2 -> 2 channels; S1Channel throws outright for nout > 2.  A
+  // hand-written ME with more than two outgoing legs therefore has to say
+  // SIntType() == 0, and then needs a channel of its own -- without one the
+  // multi-channel is left empty and the integration HANGS rather than fails.
+  // Rambo is flat, so it is correct but not necessarily efficient; a process
+  // with sharp structure in the final state wants a tailored channel instead.
+  if (m_nout>2 && sintt==0) {
+    // No Mass_Selector: PHASIC::Process_Base is not one, so passing 'this'
+    // would be a reinterpret_cast to an unrelated type.  With NULL, Rambo
+    // takes the masses straight from the flavours, which is what is wanted.
+    mc->Add(new PHASIC::Rambo(m_nin,m_nout,(Flavour*)&Flavours().front()));
+    return false;
+  }
   if (sintt&1)
     mc->Add(new PHASIC::S1Channel(m_nin,m_nout,(Flavour*)&Flavours().front()));
   if (sintt&2)

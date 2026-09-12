@@ -104,6 +104,76 @@ namespace METOOLS {
     const double  Normalised2(const double & s);
   };
 
+  ///////////////////////////////////////////////////////////////////////////
+  //
+  // Constant-width Breit-Wigner:  M^2 / (M^2 - s - i M Gamma).
+  //
+  // Deliberately NOT BreitWigner with resonance_type::fixed -- that class
+  // always evaluates (*p_width)(s), so "fixed" never reaches the denominator.
+  // Here M and Gamma are given explicitly and no Total_Width_Base is involved.
+  //
+  // The imaginary part is M*Gamma, NOT sqrt(s)*Gamma.  That is the convention
+  // of hep-ph/0512180 Eq. (5), 1/(s/m^2 - 1 + i Gamma/m), and it is a genuine
+  // constant: sqrt(s)*Gamma still grows with s, which is precisely the defect
+  // this class exists to avoid.
+  //
+  // WHY IT EXISTS.  A running width built from a decay phase-space integral is
+  // the right description of a resonance near its own pole, and the wrong one
+  // when the propagator is evaluated far above it inside a larger amplitude,
+  // because Gamma(s) keeps growing.  Measured for omega(782): by 1.6 GeV the
+  // running-width propagator is a factor 3 smaller than this one and rotated
+  // in phase by 72 degrees, which is enough to wreck an amplitude in which the
+  // omega term dominates.  Use this whenever a narrow resonance is evaluated
+  // well off its pole.
+  //
+  ///////////////////////////////////////////////////////////////////////////
+
+  class FixedBreitWigner : public Propagator_Base {
+  private:
+    double m_Gamma;
+  public:
+    FixedBreitWigner(const double & M,const double & Gamma);
+    const Complex operator()(const double & s);
+    const Complex Normalised(const double & s);
+    const double  Normalised2(const double & s);
+  };
+
+  ///////////////////////////////////////////////////////////////////////////
+  //
+  // Gounaris-Sakurai with the imaginary part M*Gamma(s).
+  //
+  // DELIBERATELY SEPARATE from BreitWigner's resonance_type::GS, which builds
+  // the denominator as  M^2 - s + f(s) - i sqrt(s) Gamma(s)  where this uses
+  //                     M^2 - s + F(s) - i M       Gamma(s).
+  // Those are different functions, and resonance_type::GS is used by FF_0_PP,
+  // FF_0_PPP and VA_0_PiPiPi -- the tau currents -- so it must not be changed
+  // to suit this one.
+  //
+  // This form is the one FF_0_Isoscalar3Pi's couplings were FITTED against.
+  // A line shape and the couplings multiplying it are a matched pair; swap one
+  // and the other stops meaning what it did.
+  //
+  // Self-contained: it takes the flavour and the pion mass and derives its own
+  // pole quantities, so it needs no Total_Width_Base and does not care whether
+  // the registry hands out widths or propagators.
+  //
+  ///////////////////////////////////////////////////////////////////////////
+
+  class GounarisSakuraiM : public Propagator_Base {
+  private:
+    double m_G0, m_mpi, m_mpi2;
+    double m_k0, m_h0, m_dh0, m_d, m_num;
+
+    double K(const double & s) const;
+    double H(const double & s) const;
+    double F(const double & s) const;
+    double Width(const double & s) const;
+  public:
+    GounarisSakuraiM(const ATOOLS::Flavour & flav,const double & mpi);
+    const Complex operator()(const double & s);
+    const Complex Normalised(const double & s);
+    const double  Normalised2(const double & s);
+  };
   class RChL_BW : public Propagator_Base {
   public:
     RChL_BW(Total_Width_Base * width) :
