@@ -87,8 +87,8 @@ void CS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			   const int cr,const int ca,const int mode)
 {
   this->m_p=p;
-  this->m_ph=p;
   this->m_p2=sqr(this->m_mass);
+  this->SetPWide();
   this->ResetJ();
   if (ch==0) {
     CScalarType *j(CScalarType::New(CScalarType(1.0,cr,ca,0,0)));

@@ -1,4 +1,8 @@
 #include "METOOLS/Explicit/Current.H"
+namespace METOOLS { long g_pwext_miss=0; }
+
+#include <cstdlib>
+#include <iostream>
 
 #include "METOOLS/Explicit/Vertex.H"
 #include "ATOOLS/Org/Message.H"
@@ -31,6 +35,7 @@ Current::Current(const Current_Key &key):
   m_fl(key.m_fl), m_p2(sqr(key.m_fl.Mass())),
   m_key(0), m_order(2,0), m_cid(0), m_ntc(0),
   m_mass(m_fl.Mass()), m_width(m_fl.Width()),
+  m_hasphx(false),
   m_msv(!IsZero(m_mass)), m_zero(true),
   m_dir(0), m_cut(0), m_osd(0), p_sub(NULL) {}
 

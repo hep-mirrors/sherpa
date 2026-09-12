@@ -59,16 +59,13 @@ namespace METOOLS {
     // O(E^2) partial sums. Carrying that sum at ~106 bits costs two doubles
     // per current on a layer that is a negligible share of the flops.
     ATOOLS::Vec4<ATOOLS::DDouble> m_ph;
-    // Virtuality of m_p, accumulated recursively rather than recomputed as
-    // m_p.Abs2(). For an internal line built from nearly-collinear externals
-    // the two differ enormously: m_p.Abs2() forms an O(E^2) difference to
-    // reach an O(E^2 theta^2) answer, so for the ISR photons of a lepton
-    // collider (theta ~ m_e/E_beam) every significant digit of the propagator
-    // denominator is lost. Evaluate() instead builds
-    //   p^2 = sum_i p_i^2 + 2 sum_{i<j} p_i.p_j
-    // from the sub-current virtualities, which are exact on-shell masses at
-    // the leaves, so the only cancellation left sits inside a single
-    // Vec4D::LCDot. See AddPropagator() in Currents/{F,V,S}_C.C.
+    // Externally supplied wide momentum (Amplitude's joint on-shell /
+    // conserving projection). When set it WINS over the per-leg
+    // reconstruction in SetPWide(), because only a joint projection can
+    // satisfy sum(p)=0 and p^2=m^2 at the same time.
+    ATOOLS::Vec4<ATOOLS::DDouble> m_phx;
+    bool m_hasphx;
+
     ATOOLS::DDouble m_p2;
     CObject_Matrix m_j;
 
@@ -141,8 +138,46 @@ namespace METOOLS {
     // so seed the virtuality with the exact m^2 rather than with p.Abs2():
     // the latter carries an O(E^2 eps) error that would swamp the small
     // denominators this bookkeeping exists to protect.
+    /*!
+      Rebuild the WIDE momentum m_ph exactly on the mass shell given by m_p2.
+
+      The stored double components satisfy p^2 = m^2 only to about
+      2 E ulp(E) ~ 6e-13 GeV^2. That floor is ABSOLUTE: it comes from the
+      representation of an O(E) component, so it does not shrink with the mass
+      and no amount of arithmetic precision recovers it.
+
+      Everything downstream takes the VIRTUALITY from m_p2 (the exact nominal
+      m^2; ExactLCDot reconstructs the cancelling light-cone component from it)
+      but the KINEMATICS from m_ph. Leaving m_ph a widened copy of the raw
+      double makes those two mutually inconsistent at 6e-13, and that
+      inconsistency is inherited by every current built from this leg. It stays
+      invisible until a propagator denominator falls below it -- the collinear
+      ISR region, 2 p.k <~ 1e-12 -- which is exactly where the real ME departed
+      from the eikonal theorem.
+
+      Keep the large light-cone component and pT exactly as given and solve the
+      small one from p+ p- = p^2 + pT^2, the identity ExactLCDot already uses.
+      The momentum moves by ~3e-15 in one component; the shell becomes exact.
+    */
+    inline void SetPWideExt(const ATOOLS::Vec4<ATOOLS::DDouble> &ph)
+    { m_phx=ph; m_hasphx=true; }
+
+    inline void SetPWide()
+    {
+      if (m_hasphx) { m_ph=m_phx; return; }
+      { extern long g_pwext_miss; if (++g_pwext_miss==1)
+          std::cerr<<"@@@ PWMISS first hit, flav="<<m_fl<<" cid="<<m_cid<<std::endl; }
+      typedef ATOOLS::DDouble DD;
+      DD pp(DD(m_p[0])+DD(m_p[3])), pm(DD(m_p[0])-DD(m_p[3]));
+      const DD pt2(DD(m_p[1])*DD(m_p[1])+DD(m_p[2])*DD(m_p[2]));
+      if (abs(pp)>abs(pm)) { if (pp!=DD(0.0)) pm=(m_p2+pt2)/pp; }
+      else                 { if (pm!=DD(0.0)) pp=(m_p2+pt2)/pm; }
+      m_ph=ATOOLS::Vec4<DD>(DD(0.5)*(pp+pm),DD(m_p[1]),DD(m_p[2]),
+                            DD(0.5)*(pp-pm));
+    }
+
     inline void SetP(const ATOOLS::Vec4D &p)
-    { m_p=p; m_ph=p; m_p2=ATOOLS::sqr(m_mass); }
+    { m_p=p; m_p2=ATOOLS::sqr(m_mass); SetPWide(); }
 
     // For the few call sites that copy a momentum off another current, where
     // the on-shell assumption above need not hold: carry that current's
@@ -176,6 +211,22 @@ namespace METOOLS {
     inline double P2() const { return (double)m_p2; }
 
     inline const ATOOLS::Vec4<ATOOLS::DDouble> &PH() const { return m_ph; }
+
+    /*!
+      The on-shell wide momentum, narrowed to the scalar type a current tower
+      is instantiated at. Leaf currents must build their spinors and
+      polarisations from THIS, not from the raw Vec4D they were handed: the
+      raw one is off its nominal mass shell by ~6e-13 GeV^2 (see SetPWide),
+      and a spinor built from it is inconsistent with the m^2 passed alongside
+      it. At SType=double this is the raw momentum back again to within an
+      ulp, so it costs nothing there; at the wider PMODEs it is what lets the
+      extra mantissa actually carry mass information instead of re-rounding a
+      momentum that was never on shell.
+    */
+    template <typename SType>
+    inline ATOOLS::Vec4<SType> PW() const
+    { return ATOOLS::Vec4<SType>((SType)m_ph[0],(SType)m_ph[1],
+                                 (SType)m_ph[2],(SType)m_ph[3]); }
     inline const ATOOLS::DDouble &P2H() const { return m_p2; }
 
     inline const Int_Vector &Id() const   { return m_id;   }

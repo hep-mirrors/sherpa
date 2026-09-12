@@ -183,7 +183,7 @@ void CV<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
     this->m_p[0]=this->m_p[0]<0.0?
       -std::abs(this->m_p[3]):std::abs(this->m_p[3]);
   // after the on-axis energy fix-up, not before
-  this->m_ph=this->m_p;
+  this->SetPWide();
   this->ResetJ();
   if (ch>=0) {
     if (this->m_msv && (ch==0 || ch==3)) {
