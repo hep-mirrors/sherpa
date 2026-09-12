@@ -115,7 +115,7 @@ namespace YFS {
         // bool On();
         bool MakeYFS(ATOOLS::Vec4D_Vector &p);
         bool MakeYFS();
-        void SetLimits(const double &smin);
+        void SetLimits(const double &smin, const double &s);
         void SetFlavours(const Flavour_Vector &fl);
         void SetMomenta(const ATOOLS::Vec4D_Vector &plab);
         void SetBornMomenta(const ATOOLS::Vec4D_Vector &plab);

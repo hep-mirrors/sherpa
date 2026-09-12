@@ -204,8 +204,27 @@ bool Phase_Space_Point::DefineISRKinematics(Process_Integrator *const process) {
     }
   }
   if(p_yfshandler->HasISR()){
+    // p_isrchannels reads its s'-bound keys (smin/smax/pole) from the shared
+    // "ISR::s'" Info_Key, which ISR_Handler::SetLimits() populates from
+    // m_splimits[] -- normally done by the p_isrhandler->On() block above,
+    // which is skipped here whenever there is no generic PDF-based ISR
+    // handler active (e.g. PDF_LIBRARY: None), the usual YFS-only setup.
+    // Without this, GeneratePoint() reads an uninitialised key and returns
+    // nan from the very first event -- harmless with a monochromatic beam
+    // (m_sprime is constant, so whatever the key defaults to happens not to
+    // matter), but fatal once BEAM_SPECTRA makes m_sprime vary event by
+    // event. m_sprime here is already the correct per-event value from
+    // DefineBeamKinematics(), so this mirrors the On() block using it rather
+    // than a fixed nominal energy.
+    if (!(m_mode & psmode::no_lim_isr)) {
+      p_isrhandler->SetSprimeMax(m_sprime * p_isrhandler->Upper1() *
+                                 p_isrhandler->Upper2());
+      p_isrhandler->SetSprimeMin(m_smin);
+    }
+    p_isrhandler->SetPole(m_sprime);
+    p_isrhandler->SetLimits(m_beamykey[2]);
     p_isrchannels->GeneratePoint();
-    p_yfshandler->SetLimits(m_smin);
+    p_yfshandler->SetLimits(m_smin, m_sprime);
     DefineFSRKinematics();
     p_yfshandler->SetBornMomenta(p_moms);
     p_yfshandler->SetFlavours(p_pshandler->Active()->Process()->Flavours());

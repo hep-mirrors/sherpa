@@ -206,7 +206,9 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
                             <<"YFS Out size = "<< yfsout.size()<<std::endl;
       }
       for(int i=0; i<out.size(); i++){
-        blob->OutParticle(i)->SetMomentum(yfsoutMap[yfsout[i+2]]); // remove born momenta
+        Vec4D preFSR = blob->OutParticle(i)->Momentum();
+        Vec4D postFSR = yfsoutMap[yfsout[i+2]];
+        blob->OutParticle(i)->SetMomentum(postFSR); // remove born momenta
       }
     }
   if (p_yfshandler->Mode()!=YFS::yfsmode::off) {

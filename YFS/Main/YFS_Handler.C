@@ -119,8 +119,12 @@ void YFS_Handler::SetBeam(BEAM::Beam_Spectra_Handler *beam)
   else m_asymbeams = false;
 }
 
-void YFS_Handler::SetLimits(const double &smin) {
-  double s = sqr(rpa->gen.Ecms());
+void YFS_Handler::SetLimits(const double &smin, const double &s) {
+  // s must be this event's actual s' (from the real, possibly beam-spread-
+  // sampled, incoming momenta), not sqr(rpa->gen.Ecms()) -- that singleton is
+  // the fixed nominal collider energy and does not track BEAM_SPECTRA
+  // (Gaussian) event-by-event variation, which understated/overstated maxV
+  // here let m_v exceed what the actual event could physically radiate.
   p_yfsFormFact->SetCharge(1);
   p_coulomb->SetAlphaQED(m_alpha);
   double maxV = 1. - smin / s;
@@ -234,6 +238,7 @@ bool YFS_Handler::MakeYFS(){
 bool YFS_Handler::MakeYFS(ATOOLS::Vec4D_Vector &p)
 {
   Reset();
+   m_s = (p[0] + p[1]).Abs2();
   // p_dipoles->CreateAllDipoles(m_flavs, m_plab, m_bornMomenta);
   if (m_isrinital) {
     p_dipoles->MakeDipolesII(m_flavs, m_plab, m_bornMomenta);
@@ -943,6 +948,8 @@ void YFS_Handler::Reset() {
   m_photonSumFSR *= 0;
   m_real = 1;
   m_eex = 0.;
+  // m_s = sqr(rpa->gen.Ecms());
+  // PRINT_VAR(m_s);
 }
 
 bool YFS_Handler::CheckMomentumConservation(){
