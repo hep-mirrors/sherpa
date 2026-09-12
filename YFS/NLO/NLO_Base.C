@@ -7,6 +7,8 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "YFS/NLO/NLO_Base.H"
+#include <cstdlib>
+#include <iostream>
 #include "YFS/NLO/Virtual.H"
 #include "YFS/NLO/VirtualVirtual.H"
 #include <cmath>
@@ -329,6 +331,31 @@ double NLO_Base::CalculateVirtual() {
   return m_oneloop;
 }
 
+/*!
+  Threshold below which a photon gets NO fixed-order real correction.
+
+  Returned in GeV. The YFS infrared cutoff energy is IR_CUTOFF/2 for BOTH
+  generators: ISR builds m_Kmin = sqrt(s)*m_isrcut/2 and FSR builds
+  m_Emin = 0.5*sqrt(s)*m_isrcut, and m_isrcut is IR_CUTOFF/sqrt(s). The setting
+  NLO_PHOTON_EMIN is a multiple of that energy, so 1 means exactly the infrared
+  cutoff and 0 (the default) disables the guard.
+
+  A photon below the cutoff is unresolved by construction: it belongs to the
+  resummed form factor, not to a hard correction. Computing beta_n for it is a
+  cancellation with no physical content, evaluated where the numerics are at
+  their worst, and in practice it is where the real ME disagreed with an
+  external generator. Left OFF by default because switching it on changes which
+  photons receive a correction, which is a scheme choice, not a bug fix.
+*/
+double NLO_Base::PhotonEminNLO() const
+{
+  static const double fac
+    (ATOOLS::Settings::GetMainSettings()["YFS"]["NLO_PHOTON_EMIN"]
+     .SetDefault(0.0).Get<double>());
+  if (fac<=0.0) return -1.0;
+  return fac*0.5*sqrt(m_s)*m_isrcut;
+}
+
 double NLO_Base::CalculateReal() {
   if (m_coll_real)
     return p_dipoles->CalculateEEX() * m_born;
@@ -340,6 +367,21 @@ double NLO_Base::CalculateReal() {
   m_ifi_prod = 1.;
   for (YFS::Photon &g : m_photons) {
     const Vec4D k(g.K());
+    // DIAG (env-gated, SHERPA_PHOTON_DUMP): which photons actually reach the
+    // NLO real correction, and where they sit relative to the IR cutoff.
+    { static const bool dg(getenv("SHERPA_PHOTON_DUMP")!=NULL);
+      if (dg) {
+        ATOOLS::Vec4D tot; double eph(0.0);
+        for (const YFS::Photon &h : m_photons) { tot+=h.K(); eph+=h.K().E(); }
+        double elab(0.0);
+        for (size_t j(2);j<m_plab.size();++j) elab+=m_plab[j].E();
+        std::cerr<<"@@@ PHOT E="<<k.E()<<" isr="<<(g.IsISR()?1:0)
+                 <<" sqrts="<<sqrt(m_s)<<" nph="<<m_photons.size()
+                 <<" Ephtot="<<eph<<" Eout="<<elab
+                 <<" Etot="<<(eph+elab)<<std::endl;
+      } }
+    const double phemin(PhotonEminNLO());
+    if (phemin>0.0 && k.E()<phemin) { g.m_beta10 = 0.; continue; }
     if (m_check_real_sub == 1 && (g.IsFSR() || !HasFSR())) {
       if (k.E() < 0.2 * sqrt(m_s))
         continue;
@@ -361,6 +403,11 @@ double NLO_Base::CalculateReal() {
     real += contrib;
     if (m_check_real_sub == 2)
       RecordSubScatter(k, contrib, g.IsISR() ? "realISR" : "realFSR", m_eikeex);
+    { static const bool dg2(getenv("SHERPA_PHOTON_DUMP")!=NULL);
+      if (dg2) std::cerr<<"@@@ PHC E="<<k.E()<<" isr="<<(g.IsISR()?1:0)
+                        <<" contrib="<<contrib
+                        <<" failcut="<<(p_real?(p_real->FailCut()?1:0):-1)
+                        <<std::endl; }
     g.m_beta10 = contrib;
   }
   HardestBetas(m_photons, [](const YFS::Photon &g) { return g.beta10(); },
@@ -826,6 +873,8 @@ double NLO_Base::CalculateRealReal() {
     for (int j = i + 1; j < photons.size(); ++j) {
       Vec4D k = photons[i].K();
       Vec4D kk = photons[j].K();
+      const double phemin(PhotonEminNLO());
+      if (phemin>0.0 && (k.E()<phemin || kk.E()<phemin)) continue;
       // Origin no longer selects a recoil here: both photons come off the
       // beams regardless. YFS::Photon still carries it, for the callers that
       // do care.
