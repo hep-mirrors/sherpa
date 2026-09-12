@@ -1,4 +1,5 @@
 #include "YFS/Main/Dipole.H"
+#include <cstdlib>
 #include "YFS/Main/FSR.H"
 #include "YFS/Main/ISR.H"
 #include "YFS/Main/Emission.H"
@@ -670,6 +671,10 @@ EmissionResult Dipole::GenerateEmissions(ISR *isr, FSR *fsr,
   // rejecting, which is why it is separated from the two exits above.
   if (!fsr->F()) { res.fail = EmissionResult::Failure::masswgt; res.weight = 0.; return res; }
 
+  // NOTE: this list is built BEFORE fsr->HidePhotons() below, so it carries
+  // photons the event record discards as unresolved. Whether those should
+  // receive a fixed-order real correction is decided in NLO_Base, by the
+  // YFS setting NLO_PHOTON_EMIN, so that ISR and FSR are treated alike.
   for (const Vec4D &g : k) {
     me_acc.push_back(g);
     res.me_photons.push_back(Photon(g, this));

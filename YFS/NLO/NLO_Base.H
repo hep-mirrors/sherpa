@@ -61,6 +61,10 @@ public:
   Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta, m_eikmom, m_borngamma;
   // m_ISRPhotons ++ m_FSRPhotons, each carrying the dipole it came from.
   YFS::Photon_Vector m_photons;
+
+  //! GeV threshold below which a photon gets no fixed-order real correction,
+  //! or -1 when the guard is disabled. See NLO_PHOTON_EMIN.
+  double PhotonEminNLO() const;
   // One entry per photon pair, carrying that pair's beta20. Holds references
   // into m_photons, which must not be rebuilt while these are alive.
   std::vector<YFS::PhotonPair> m_photon_pairs;
