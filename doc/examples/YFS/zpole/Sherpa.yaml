@@ -1,0 +1,30 @@
+BEAMS: [11, -11]
+BEAM_ENERGIES: 45.6
+
+ALPHAS(MZ): 0.1188
+ORDER_ALPHAS: 1
+BEAM_REMNANTS: None
+FRAGMENTATION: None
+SHOWER_GENERATOR: None
+SCALES: VAR{E_CMS*E_CMS}
+
+PARTICLE_DATA:
+    11:
+        Massive: true
+    13:
+        Massive: true
+
+PDF_LIBRARY: None
+YFS:
+    MODE: ISRFSR
+
+PROCESSES:
+- 11 -11 -> 13 -13:
+    Order: {QCD: 0, EW: 2}
+
+ANALYSIS: Rivet
+
+RIVET:
+    IGNORE_BEAMS: 1
+    ANALYSES:
+        - MC_ZINC:LMODE=MU
