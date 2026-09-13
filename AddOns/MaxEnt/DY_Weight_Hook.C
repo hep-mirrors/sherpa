@@ -33,7 +33,7 @@ public:
   {
     DEBUG_FUNC("");
     Settings& s = Settings::GetMainSettings();
-    m_jetmode=s["DY_JET_MODE"].SetDefault(3).Get<int>();
+    m_jetmode=s["DY_JET_MODE"].SetDefault(7).Get<int>();
     m_wmax=s["DY_MAX_WEIGHT"].SetDefault(1.e3).Get<double>();
     std::string fname=s["DY_WEIGHT_FILE"].
       SetDefault("lambda_export_variations.json").Get<std::string>();
@@ -230,6 +230,35 @@ public:
 		       <<", Variation '"<<m_names[i]<<"' w = "<<w
 		       <<" * "<<wew<<" > "<<m_wmax<<". Skip."<<std::endl;
 	  wmap["MaxEnt_EW"][m_names[i]]=1.;
+	  firsterr=false;
+	}
+      }
+      if (m_jetmode&4) {
+	Process_Base *proc=p_sherpa->GetInitHandler()->
+	  GetMatrixElementHandler()->Process()->Parent();
+	size_t nout=proc->NOut();
+	if (proc->Get<MCatNLO_Process>()!=nullptr) --nout;
+	if (nout>3) w=m_kfs[i]*svweight;
+	msg_Debugging()<<m_names[i]<<": w = "<<w<<" (n_{jet} = "<<nout-2
+		       <<") <-> "<<svweight<<" ("<<svname<<")\n";
+	if (dabs(w)<m_wmax) wmap["MaxEnt3_QCD"][m_names[i]]=w;
+	else {
+	  if (firsterr)
+	    msg_Error()<<METHOD<<"(): Event "
+		       <<rpa->gen.NumberOfGeneratedEvents()
+		       <<", Variation '"<<m_names[i]<<"' w = "
+		       <<w<<" > "<<m_wmax<<". Skip."<<std::endl;
+	  wmap["MaxEnt3_QCD"][m_names[i]]=1.;
+	  firsterr=false;
+	}
+	if (dabs(w*wew)<m_wmax) wmap["MaxEnt3_EW"][m_names[i]]=w*wew;
+	else {
+	  if (firsterr)
+	    msg_Error()<<METHOD<<"(): Event "
+		       <<rpa->gen.NumberOfGeneratedEvents()
+		       <<", Variation '"<<m_names[i]<<"' w = "<<w
+		       <<" * "<<wew<<" > "<<m_wmax<<". Skip."<<std::endl;
+	  wmap["MaxEnt3_EW"][m_names[i]]=1.;
 	  firsterr=false;
 	}
       }
