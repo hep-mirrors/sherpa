@@ -1,6 +1,4 @@
 set(AmisicTools_SOURCES MI_Parameters.C
-                  MPI_Scale_Setter.C
-                  MPI_KFactor_Setter.C
                   Hadronic_XSec_Calculator.C
                   NonPerturbative_XSecs.C
                   Beam_Integrator.C
@@ -11,8 +9,6 @@ set(AmisicTools_SOURCES MI_Parameters.C
                   MI_Reweighting.C)
 
 set(AmisicTools_HEADERS MI_Parameters.H
-                  MPI_Scale_Setter.H
-                  MPI_KFactor_Setter.H
                   Hadronic_XSec_Calculator.H
                   NonPerturbative_XSecs.H
                   Beam_Integrator.H
