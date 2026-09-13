@@ -30,3 +30,4 @@ sherpa_create_git_info(Zfunctions ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BI
  
 add_library(Zfunctions SHARED ${Zfunctions_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(Zfunctions Zfunctions)
+add_dependencies(Zfunctions Zfunctions_Git_Info)

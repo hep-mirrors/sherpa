@@ -8,3 +8,4 @@ sherpa_create_git_info(MCatNLOTools ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_
  
 add_library(MCatNLOTools SHARED ${MCatNLOTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(MCatNLOTools MCatNLOTools)
+add_dependencies(MCatNLOTools MCatNLOTools_Git_Info)
