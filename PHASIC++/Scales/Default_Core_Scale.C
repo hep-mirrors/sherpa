@@ -42,10 +42,10 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     Vec4D ewsum;
     for (size_t i(0);i<campl->Legs().size();++i)
       if (!campl->Leg(i)->Flav().Strong()) ewsum+=campl->Leg(i)->Mom();
-      else q+=campl->Leg(i)->Mom().MPerp2();
-    q=ewsum.Abs2()+(ewsum.PPerp2()+q)/2.0;
+      else q+=sqrt(dabs(campl->Leg(i)->Mom().MPerp2()));
+    q+=sqrt(dabs(ewsum.MPerp2()));
     campl->Delete();
-    return PDF::Cluster_Param(NULL,q,q,q,-1);
+    return PDF::Cluster_Param(NULL,q*q/4.0,q*q/4.0,q*q/4.0,-1);
   }
   Flavour_Vector fl; fl.resize(4);
   fl[0]=campl->Leg(0)->Flav();
@@ -103,14 +103,6 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
       muq2=muf2=mur2=dabs(sqrt(campl->Leg(2)->Mom().MPerp2()*
 			       campl->Leg(3)->Mom().MPerp2()));
     }
-  }
-  msg_Debugging()<<"\\mu_f = "<<sqrt(muf2)<<"\n"
-		 <<"\\mu_r = "<<sqrt(mur2)<<"\n"
-		 <<"\\mu_q = "<<sqrt(muq2)<<"\n";
-  for (size_t i(0);i<campl->Legs().size();++i) {
-    double ct(campl->Leg(i)->KT2(0));
-    if (ct>muf2) { muf2=ct; msg_Debugging()<<"Reset \\mu_f -> "<<sqrt(muf2)<<"\n"; }
-    if (ct>mur2) { mur2=ct; msg_Debugging()<<"Reset \\mu_r -> "<<sqrt(mur2)<<"\n"; }
   }
   campl->Delete();
   msg_Debugging()<<"\\mu_f = "<<sqrt(muf2)<<"\n"
