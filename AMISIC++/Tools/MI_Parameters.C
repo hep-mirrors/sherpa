@@ -221,6 +221,7 @@ std::ostream& AMISIC::operator<<(std::ostream& os, const scale_scheme& sc)
 {
   switch (sc) {
     case scale_scheme::PT: return os << "PT";
+    case scale_scheme::STU: return os << "STU";
     case scale_scheme::PT_with_Raps: return os << "PT modified with rapidities";
   }
   return os;
@@ -231,6 +232,7 @@ std::istream& AMISIC::operator>>(std::istream& is, scale_scheme& sc)
   std::string tag;
   is >> tag;
   if (tag == "PT") sc = scale_scheme::PT;
+  else if (tag == "STU") sc = scale_scheme::STU;
   else if (tag == "PT_with_Raps")
     sc = scale_scheme::PT_with_Raps;
   else

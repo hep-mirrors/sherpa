@@ -300,6 +300,9 @@ CalcScales(const double & shat,const double & that,const double & uhat) {
   switch (m_muR_scheme) {
   case scale_scheme::PT_with_Raps:
     THROW(fatal_error,"Scale scheme PT_with_Raps not implemented yet!")
+  case scale_scheme::STU:
+    m_muR2 = m_muR_fac*(-1.0/(1.0/shat+1.0/that+1.0/uhat) + m_pt02);
+    break;
   case scale_scheme::PT:
   default:
     m_muR2 = m_muR_fac*(pt2 + m_pt02);
@@ -308,6 +311,9 @@ CalcScales(const double & shat,const double & that,const double & uhat) {
   switch (m_muF_scheme) {
   case scale_scheme::PT_with_Raps:
     THROW(fatal_error,"Scale scheme PT_with_Raps not implemented yet!")
+  case scale_scheme::STU:
+    m_muF2 = m_muF_fac*(-1.0/(1.0/shat+1.0/that+1.0/uhat));
+    break;
   case scale_scheme::PT:
   default:
     m_muF2 = m_muF_fac*pt2;

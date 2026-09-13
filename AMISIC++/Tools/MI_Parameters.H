@@ -37,7 +37,8 @@ namespace AMISIC {
 
   enum class scale_scheme {
     PT           = 1,
-    PT_with_Raps = 2
+    PT_with_Raps = 2,
+    STU          = 3
   };
   std::ostream &operator<<(std::ostream&, const scale_scheme&);
   std::istream &operator>>(std::istream&, scale_scheme&);
