@@ -209,7 +209,7 @@ public:
 	  GetMatrixElementHandler()->Process()->Parent();
 	size_t nout=proc->NOut();
 	if (proc->Get<MCatNLO_Process>()!=nullptr) --nout;
-	if (nout>3) w=svweight;
+	if (nout>3) w=m_kfs[i]*svweight;
 	msg_Debugging()<<m_names[i]<<": w = "<<w<<" (n_{jet} = "<<nout-2
 		       <<") <-> "<<svweight<<" ("<<svname<<")\n";
 	if (dabs(w)<m_wmax) wmap["MaxEnt_QCD"][m_names[i]]=w;
@@ -238,7 +238,7 @@ public:
 	  GetMatrixElementHandler()->Process()->Parent();
 	size_t nout=proc->NOut();
 	if (proc->Get<MCatNLO_Process>()!=nullptr) --nout;
-	if (nout>3) w=m_kfs[i]*svweight;
+	if (nout>3) w=svweight;
 	msg_Debugging()<<m_names[i]<<": w = "<<w<<" (n_{jet} = "<<nout-2
 		       <<") <-> "<<svweight<<" ("<<svname<<")\n";
 	if (dabs(w)<m_wmax) wmap["MaxEnt3_QCD"][m_names[i]]=w;
