@@ -133,6 +133,17 @@ public:
     DEBUG_FUNC(p_sherpa->GetInitHandler()->
 	       GetMatrixElementHandler()->
 	       Process()->Parent()->Name());
+    if (msg->LevelIsDebugging()) {
+      Process_Base *proc=p_sherpa->GetInitHandler()->
+	GetMatrixElementHandler()->Process();
+      int nout=proc->Parent()->NOut();
+      if (proc->Parent()->Get<MCatNLO_Process>()!=nullptr) --nout;
+      msg_Debugging()<<"Process '"<<proc->Parent()->Name()
+		     <<"' -> n_{out} = "<<nout
+		     <<" ("<<proc->Parent()->NOut()<<")\n";
+      msg_Debugging()<<"        '"<<proc->Name()
+		     <<"' -> '"<<proc->NOut()<<"'\n";
+    }
     Vec4D l1, l2;
     Blob *psb(blobs->FindFirst(btp::Shower));
     for (size_t i(0);i<psb->NOutP();++i)
@@ -209,7 +220,7 @@ public:
 	  GetMatrixElementHandler()->Process()->Parent();
 	size_t nout=proc->NOut();
 	if (proc->Get<MCatNLO_Process>()!=nullptr) --nout;
-	if (nout>3) w=m_kfs[i]*svweight;
+	if (nout>3) w=svweight;
 	msg_Debugging()<<m_names[i]<<": w = "<<w<<" (n_{jet} = "<<nout-2
 		       <<") <-> "<<svweight<<" ("<<svname<<")\n";
 	if (dabs(w)<m_wmax) wmap["MaxEnt_QCD"][m_names[i]]=w;
@@ -238,7 +249,7 @@ public:
 	  GetMatrixElementHandler()->Process()->Parent();
 	size_t nout=proc->NOut();
 	if (proc->Get<MCatNLO_Process>()!=nullptr) --nout;
-	if (nout>3) w=svweight;
+	if (nout>3) w=m_kfs[i]*svweight;
 	msg_Debugging()<<m_names[i]<<": w = "<<w<<" (n_{jet} = "<<nout-2
 		       <<") <-> "<<svweight<<" ("<<svname<<")\n";
 	if (dabs(w)<m_wmax) wmap["MaxEnt3_QCD"][m_names[i]]=w;
