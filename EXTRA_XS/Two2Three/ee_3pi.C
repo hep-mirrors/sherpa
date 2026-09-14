@@ -77,10 +77,12 @@ void ee_3pi::ReadParameters() {
   // this one supersedes them (chi2/ndf 1.80 against their best of 2.56).
   m_norm = s["Norm"].SetDefault(1.).Get<double>();
 
-  // A--F, refitted against Belle 2024 with these line shapes.  NOT the paper's
-  // published values, which assume its own inline propagators.
+  // A--F, refitted against Belle 2024 with these line shapes, BELOW 2.5 GeV
+  // only.  NOT the paper's published values, which assume its own inline
+  // propagators.  See FF_0_Isoscalar3Pi.C for why the tail is excluded and
+  // why the model is knowingly a factor ~2.6 high above 2.5 GeV.
   const string tags[6] = { "A", "B", "C", "D", "E", "F" };
-  const double def[6]  = { 18.20, -0.87, -0.5785, -1.2062, -0.72, -0.3947 };
+  const double def[6]  = { 18.20, -0.87, -0.5068, -1.1262, -0.1954, -0.6368 };
   for (size_t i(0);i<6;++i)
     m_model["EE3Pi_"+tags[i]] = s[tags[i]].SetDefault(def[i]).Get<double>();
 

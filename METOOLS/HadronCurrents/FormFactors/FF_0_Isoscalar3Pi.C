@@ -45,7 +45,25 @@ void FF_0_Isoscalar3Pi::FixParameters(const FF_Parameters & params) {
   // A--F refitted against Belle 2024 with the line shapes below.  The
   // published values are -0.77, -1.12, -0.59 for C, D, F; they were fitted
   // against that paper's own inline propagators and do not transfer.
-  const double c[6] = { 18.20, -0.87, -0.5785, -1.2062, -0.72, -0.3947 };
+  //
+  // FITTED BELOW 2.5 GeV ONLY, and that restriction is deliberate.  Eq. (10)
+  // cannot describe 1.6-2.5 GeV and the 2.5-3.5 GeV tail at the same time: its
+  // cross section falls by a factor 2.7 between 2.5 and 3.5 GeV where the data
+  // falls by 5.5, so one F has to serve both and no value does.  F carries
+  // 50-80% of the cross section above 1.6 GeV, so a fit that includes the tail
+  // lowers F to rescue it and drags 1.6-2.5 down to 0.64-0.80 of the data.
+  // Fitting below 2.5 GeV instead gives 0.98 there (chi2/N = 0.77 over
+  // 1.05-2.5) and leaves the tail a factor ~2.6 high.  That is the right trade
+  // for a generator: the region below 2.5 GeV carries ~20x the cross section,
+  // and Belle's tail errors are 50-100% per point.  ABOVE 2.5 GeV THIS MODEL
+  // IS AN EXTRAPOLATION AND KNOWN TO BE HIGH.
+  //
+  // E is poorly constrained -- it contributes 0.1-0.5% of the cross section
+  // anywhere and fits to -0.20 +- 0.20.  Holding it at the paper's -0.72
+  // instead costs almost nothing (chi2/N 0.92 against 0.83) and returns D and
+  // F to within 1% of published, which is a useful consistency check but not a
+  // reason to freeze a parameter the data does not support.
+  const double c[6] = { 18.20, -0.87, -0.5068, -1.1262, -0.1954, -0.6368 };
   const string tags[6] = { "A", "B", "C", "D", "E", "F" };
   for (size_t i(0);i<6;++i) {
     m_c[i] = c[i];
