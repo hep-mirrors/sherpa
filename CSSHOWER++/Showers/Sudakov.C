@@ -400,6 +400,7 @@ int Sudakov::Generate(Parton *split,Parton *spect,
       if (FixOne(Flavour(kf_gluon),p_split->GetFlavour(),
 		 p_spect->GetType()==pst::IS ? cstp::II : cstp::IF)) {
 	t     = sqr(p_split->GetFlavour().HadMass());
+	p_selected->Lorentz()->SetZRange(m_zmin,m_zmax);
 	do {
 	  z   = Z();
 	} while (pow(z/m_zmax,m_gluon_xscaling_in_forced_splittings)<ran->Get());

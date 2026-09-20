@@ -83,6 +83,9 @@ namespace CSSHOWER {
     inline int Comp() const { return m_comp; }
     inline void SetComp(const int comp) { m_comp=comp; }
 
+    inline void SetZRange(const double &zm,const double &zp)
+    { m_zmin=zm; m_zmax=zp; }
+
     inline void SetSF(Splitting_Function_Base *const sf) { p_sf=sf; }
 
     inline void SetMS(const ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
