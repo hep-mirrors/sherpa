@@ -17,7 +17,7 @@ using namespace EWSud;
 Histogram Calculator::m_kfachisto(0, -5.0, 5.0, 50);
 size_t Calculator::m_numonshellwarning {0};
 
-Calculator::Calculator(Process_Base* proc):
+Calculator::Calculator(Process_Base* proc, double thr):
   p_proc{ proc },
   m_activelogtypes{
     EWSudakov_Log_Type::Ls,
@@ -30,8 +30,10 @@ Calculator::Calculator(Process_Base* proc):
   },
   m_ampls{ p_proc, m_activelogtypes },
   m_comixinterface{ p_proc, m_ampls },
-  m_comixinterface_he{ p_proc, m_ampls }
+  m_comixinterface_he{ p_proc, m_ampls },
+  m_threshold(thr)
 {
+  DEBUG_FUNC("proc: "<<p_proc->Name()<<", thr = "<<m_threshold);
 
   Scoped_Settings s = Settings::GetMainSettings()["EWSUD"];
   m_checkcoeff = s["CHECK"].SetDefault(false).Get<bool>();
@@ -48,11 +50,6 @@ Calculator::Calculator(Process_Base* proc):
       s["CHECK_LOG_FILE"].SetDefault("").Get<std::string>();
   if(Settings::GetMainSettings()["CHECK_EWSUDAKOV_LOG_FILE"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: CHECK_EWSUDAKOV_LOG_FILE");
-  }
-
-  m_threshold = s["THRESHOLD"].SetDefault(1.0).Get<double>();
-  if(Settings::GetMainSettings()["EWSUDAKOV_THRESHOLD"].IsSetExplicitly()){
-    THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD:EWSUDAKOV_THRESHOLD");
   }
 
   m_checkinvariantratios = s["CHECKINVARIANTRATIOS"].SetDefault(false).Get<bool>();
@@ -144,7 +141,7 @@ Calculator::CorrectionsMap(const ATOOLS::Vec4D_Vector& mom)
     return subcalculator->CorrectionsMap(cmom);
   } else {
 #endif
-    if (!IsInHighEnergyLimit())
+    if (!IsInHighEnergyLimit(m_threshold))
       return {};
 #if false
   }
@@ -163,13 +160,13 @@ Calculator::CorrectionsMap(const ATOOLS::Vec4D_Vector& mom)
   return CorrectionsMap();
 }
 
-bool Calculator::IsInHighEnergyLimit()
+bool Calculator::IsInHighEnergyLimit(const double& thr)
 {
-  DEBUG_FUNC("");
+  DEBUG_FUNC("thr = "<<thr);
   /// In all schemes but the default one, do the checks when actually
   /// calculating the logarithms
   if(m_helimitscheme != HighEnergySchemes::_default) return true;
-  static const auto threshold = sqr(m_threshold) * m_ewgroupconsts.m_mw2;
+  double threshold = sqr(thr) * m_ewgroupconsts.m_mw2;
 
   const auto s = std::abs(m_ampls.MandelstamS());
 
@@ -178,6 +175,7 @@ bool Calculator::IsInHighEnergyLimit()
     for (size_t j {i + 1}; j <  base_ampl.Legs().size(); ++j) {
       const auto sij
         = std::abs((base_ampl.Mom(i) + base_ampl.Mom(j)).Abs2());
+      msg_Debugging()<<"sij = "<<sij<<" <-> "<<threshold<<std::endl;
       if(sij < threshold) {
         return false;
       }

@@ -44,8 +44,20 @@ void Sudakov_KFactor::CalculateAndFillWeightsMap(Weights_Map& w)
 {
   Calculate();
   Validate();
-  w["EWSud"]["KFactor"] = m_weight;
-  w["EWSud"]["KFactorExp"] = m_expweight;
+  WriteNominal(w);
+  WriteContribs(w);
+  WriteThresholdVariations(w);
+}
+
+void Sudakov_KFactor::WriteNominal(Weights_Map& w)
+{
+  if (m_calc.NThresholds()>1) return;
+  w["EWSud"]["EWNLL"] = m_weight;
+  w["EWSud"]["ExpEWNLL"] = m_expweight;
+}
+
+void Sudakov_KFactor::WriteContribs(Weights_Map& w)
+{
   if (m_write_contribs) {
     for (const auto t : ActiveLogTypes()) {
       w["EWSud"][ToString<EWSudakov_Log_Type>(t)] = 1.0 + m_corrections_map[t];
@@ -53,10 +65,37 @@ void Sudakov_KFactor::CalculateAndFillWeightsMap(Weights_Map& w)
   }
 }
 
+void Sudakov_KFactor::WriteThresholdVariations(Weights_Map& w)
+{
+  if (m_calc.NThresholds()==1) return;
+  DEBUG_FUNC("n_thr = "<<m_calc.NThresholds());
+  // fill weights, we know thresholds are ordered ascending
+  // still always fill all weight
+  double wgt(m_weight), expwgt(m_expweight);
+  bool ishel(true);
+  for (double thr : m_calc.Thresholds()) {
+    if (ishel && !m_calc.IsInHighEnergyLimit(thr)) {
+      ishel = false; wgt = 1.; expwgt = 1.;
+    }
+    msg_Debugging()<<"thr = "<<thr
+                   <<", wgt = "<<wgt<<", exp(wgt) = "<<expwgt<<std::endl;
+    w["EWSud"]["EWNLL_Thr"+ToString(thr)] = wgt;
+    w["EWSud"]["ExpEWNLL_Thr"+ToString(thr)] = expwgt;
+  }
+}
+
 void Sudakov_KFactor::ResetWeightsMap(Weights_Map& w)
 {
-  w["EWSud"]["KFactor"] = 1.0;
-  w["EWSud"]["KFactorExp"] = 1.0;
+  if (m_calc.NThresholds()==1) {
+    w["EWSud"]["EWNLL"] = 1.0;
+    w["EWSud"]["ExpEWNLL"] = 1.0;
+  }
+  else {
+    for (double thr : m_calc.Thresholds()) {
+      w["EWSud"]["EWNLL_Thr"+ToString(thr)] = 1.0;
+      w["EWSud"]["ExpEWNLL_Thr"+ToString(thr)] = 1.0;
+    }
+  }
   for (const auto t : ActiveLogTypes()) {
     w["EWSud"][ToString<EWSudakov_Log_Type>(t)] = 1.0;
   }
