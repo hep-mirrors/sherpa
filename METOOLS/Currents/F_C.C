@@ -1,7 +1,5 @@
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Currents/C_Spinor.H"
-#include <cstdlib>
-#include <iostream>
 /*!
   @file F_C.C
   @brief Implements the class CF.
@@ -11,8 +9,7 @@ namespace METOOLS {
 
   template <typename SType>
   class CF: public Current,
-	    public Current_Contractor<SType>,
-	    public Downcast_Contractor<CF<SType>,SType> {
+	    public Current_Contractor<SType> {
   public:
 
     typedef std::complex<SType>   SComplex;
@@ -132,7 +129,6 @@ void CF<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
   this->m_p2=sqr(this->m_mass);
   this->SetPWide();
   this->ResetJ();
-  // on-shell wide momentum, not the raw double argument: see Current::PW()
   const ATOOLS::Vec4<SType> pw(this->template PW<SType>());
   bool anti(this->m_fl.IsAnti());
   if (this->m_fl.Majorana()) anti=(mode&1)?this->m_dir<0:this->m_dir>0;
@@ -193,16 +189,21 @@ void CF<SType>::AddPropagator()
 {
   const CSpinorType hs;
   // add propagator for off-shell leg
-  // m_p2, not m_p.Abs2(): see Current::Evaluate(). For a collinear ISR
-  // emission the denominator is 2 p.k, which Abs2() cannot resolve.
   SComplex prop(M_I/(SType(this->m_p2)-m_cmass2));
+  // DIAG (env-gated, SHERPA_PROP_DUMP): true denominator vs. the residual
+  // momentum-conservation floor left by Amplitude::ProjectWideMomenta -- only
+  // printed when the denominator is small enough to be near that floor, so
+  // this stays quiet outside the region under investigation.
+  { static const bool dg(getenv("SHERPA_PROP_DUMP")!=NULL);
+    static constexpr double PROP_DUMP_THRESHOLD_GEV2 = 1e-6;
+    const double denom((double)this->m_p2-m_cmass2.real());
+    if (dg && std::abs(denom)<PROP_DUMP_THRESHOLD_GEV2 && !this->m_osd) {
+      std::cerr<<"@@@ PROP id="<<this->Id()<<" fl="<<this->Flav()
+               <<" p2="<<std::setprecision(17)<<(double)this->m_p2
+               <<" m2="<<m_cmass2.real()
+               <<" denom="<<denom<<std::endl;
+    } }
   if (this->m_osd) prop=SComplex(M_I);
-  // Light-cone components of the propagator numerator, taken from the WIDE
-  // momentum. p[0]-p[r3] is a cancellation for a leg near the light-cone
-  // axis, and m_p is m_ph already narrowed to double: forming the difference
-  // there throws away exactly the digits Current::Evaluate() accumulated at
-  // ~106 bits to preserve. Same index convention as Spinor<SType>, arithmetic
-  // one step wider, narrowed only once the subtraction is done.
   const size_t r1(Spinor<SType>::R1()),r2(Spinor<SType>::R2()),
                r3(Spinor<SType>::R3());
   const ATOOLS::DDouble hpp(this->m_ph[0]+this->m_ph[r3]);
@@ -329,36 +330,3 @@ PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"fermion current (double)";
 }
-
-// ---- QPREC_BEGIN: long-double instantiation of the same tower ----
-DECLARE_GETTER(CF<long double>,"QF",Current,Current_Key);
-
-Current *ATOOLS::Getter<Current,Current_Key,CF<long double> >::
-operator()(const Current_Key &key) const
-{
-  if (key.m_fl.IsFermion()) return new CF<long double>(key);
-  return NULL;
-}
-
-void ATOOLS::Getter<Current,Current_Key,CF<long double> >::
-PrintInfo(std::ostream &str,const size_t width) const
-{
-  str<<"fermion current (long double)";
-}
-// ---- QPREC_END ----
-// ---- XPREC_BEGIN: double-double instantiation ----
-DECLARE_GETTER(CF<ATOOLS::DDouble>,"XF",Current,Current_Key);
-
-Current *ATOOLS::Getter<Current,Current_Key,CF<ATOOLS::DDouble> >::
-operator()(const Current_Key &key) const
-{
-  if (key.m_fl.IsFermion()) return new CF<ATOOLS::DDouble>(key);
-  return NULL;
-}
-
-void ATOOLS::Getter<Current,Current_Key,CF<ATOOLS::DDouble> >::
-PrintInfo(std::ostream &str,const size_t width) const
-{
-  str<<"fermion current (double-double)";
-}
-// ---- XPREC_END ----
