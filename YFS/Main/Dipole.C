@@ -195,7 +195,7 @@ void Dipole::Boost() {
     m_ranTheta = acos(1.-2.*ran->Get());
     m_ranPhi = ran->Get()*2.*M_PI;
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
-    p_Pboost = new Poincare(qqk);
+    p_Pboost.emplace(qqk);
     m_eikmomentum = m_bornmomenta;
     for (size_t i = 0; i < 2; ++i)
     {
@@ -212,7 +212,7 @@ void Dipole::Boost() {
       Boost(k);
       m_photonSum+=k;
     }
-    if (p_Pboost) delete p_Pboost;
+    p_Pboost.reset();
   }
 }
 
@@ -221,14 +221,12 @@ void Dipole::BoostNLO(ATOOLS::Vec4D &p) {
   p_rotate.RotateBack(p);
   // RandomRotate(p);
   p_boost.BoostBack(p);
-  // PRINT_VAR(p_boost.PL());
 }
 
 void Dipole::Boost(ATOOLS::Vec4D &p) {
   p_Pboost->Boost(p);
   p_rotate.RotateBack(p);
   p_boost.BoostBack(p);
-  // PRINT_VAR(p_boost.PL());
 }
 
 bool Dipole::BoostNLO() {
@@ -304,7 +302,7 @@ bool Dipole::BoostNLO() {
     MakePair(sqrt(sprim), m_momenta[0], m_momenta[1]);
     // PHASIC::CE.Isotropic2Momenta(rref, m1*m1, m2*m2,m_momenta[0], m_momenta[1],ran->Get(), ran->Get());
     Vec4D qqk = m_momenta[0] + m_momenta[1] + m_photonSum;
-    p_Pboost = new Poincare(qqk);
+    p_Pboost.emplace(qqk);
     Vec4D ref = m_bornmomenta[0];
     boost.Boost(ref);
     Poincare rot(ref, Vec4D(0,0,0,1));
@@ -326,7 +324,7 @@ bool Dipole::BoostNLO() {
       // p_boost.BoostBack(k);
       m_photonSum+=k;
     }
-    if (p_Pboost) delete p_Pboost;
+    p_Pboost.reset();
     for (int i = 0; i < 2; ++i)
     {
       for(int j = 0; j < 4; ++j){

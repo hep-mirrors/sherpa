@@ -24,112 +24,112 @@ void Debug::InitializeHist() {
 		if (!ATOOLS::DirectoryExists(m_debugDIR_ISR)) {
 			ATOOLS::MakeDir(m_debugDIR_ISR);
 		}
-		m_histograms_ISR["lep-mass"]  = new Histogram(0, 0., sqrt(m_s), 50);
-		m_histograms_ISR["v"]  = new Histogram(0, -0.9, 1.1, 20);
-		m_histograms_ISR["K0"]  = new Histogram(0, -10., sqrt(m_s) + 10, 50);
-		m_histograms_ISR["jacobian"]  = new Histogram(0, -1., 1, 50);
-		m_histograms_ISR["A"]  = new Histogram(0, -1., 3, 50);
-		m_histograms_ISR["K2"]  = new Histogram(0, -1., 20., 50);
-		m_histograms_ISR["ptk"]  = new Histogram(0, -1., 5., 50);
-		m_histograms_ISR["cos(theta)"]  = new Histogram(0, -1., 1., 20);
-		m_histograms_ISR["lam"]  = new Histogram(0, 0, 2, 40);
-		m_histograms_ISR["NGamma"]  = new Histogram(0, -1, 20, 21);
-		m_histograms_ISR["Cutflow"]  = new Histogram(0, -1, 4, 5);
-		m_histograms_ISR["nbar"]  = new Histogram(0, -2, 2, 40);
-		m_histograms_ISR["weight"]  = new Histogram(0, -50, 50, 200);
-		m_histograms_ISR["massweight"]  = new Histogram(0, 0, 2, 100);
-		m_histograms_ISR["jacweight"]  = new Histogram(0, 0, 2, 100);
-  		m_histograms2d["Form_Factor_FS_Angle"] = new Histogram_2D(0, 0, 30., 60 , 0.99, 1.01, 60 );
+		m_histograms_ISR["lep-mass"]  = std::make_unique<Histogram>(0, 0., sqrt(m_s), 50);
+		m_histograms_ISR["v"]  = std::make_unique<Histogram>(0, -0.9, 1.1, 20);
+		m_histograms_ISR["K0"]  = std::make_unique<Histogram>(0, -10., sqrt(m_s) + 10, 50);
+		m_histograms_ISR["jacobian"]  = std::make_unique<Histogram>(0, -1., 1, 50);
+		m_histograms_ISR["A"]  = std::make_unique<Histogram>(0, -1., 3, 50);
+		m_histograms_ISR["K2"]  = std::make_unique<Histogram>(0, -1., 20., 50);
+		m_histograms_ISR["ptk"]  = std::make_unique<Histogram>(0, -1., 5., 50);
+		m_histograms_ISR["cos(theta)"]  = std::make_unique<Histogram>(0, -1., 1., 20);
+		m_histograms_ISR["lam"]  = std::make_unique<Histogram>(0, 0, 2, 40);
+		m_histograms_ISR["NGamma"]  = std::make_unique<Histogram>(0, -1, 20, 21);
+		m_histograms_ISR["Cutflow"]  = std::make_unique<Histogram>(0, -1, 4, 5);
+		m_histograms_ISR["nbar"]  = std::make_unique<Histogram>(0, -2, 2, 40);
+		m_histograms_ISR["weight"]  = std::make_unique<Histogram>(0, -50, 50, 200);
+		m_histograms_ISR["massweight"]  = std::make_unique<Histogram>(0, 0, 2, 100);
+		m_histograms_ISR["jacweight"]  = std::make_unique<Histogram>(0, 0, 2, 100);
+  		m_histograms2d["Form_Factor_FS_Angle"] = std::make_unique<Histogram_2D>(0, 0, 30., 60 , 0.99, 1.01, 60 );
 	}
 	if (m_fsr_debug && HasFSR()) {
 
 		if (!ATOOLS::DirectoryExists(m_debugDIR_FSR)) {
 			ATOOLS::MakeDir(m_debugDIR_FSR);
 		}
-		m_histograms_FSR["hiddenWeight"] = new Histogram(0, -1, 5, 20);
+		m_histograms_FSR["hiddenWeight"] = std::make_unique<Histogram>(0, -1, 5, 20);
 		if (m_betaorder != 0) {
-			m_histograms_FSR["yBet10"] = new Histogram(0, -5, 2, 80);
-			m_histograms_FSR["sudY"] = new Histogram(0, -40, 20, 30);
-			m_histograms_FSR["sudZ"] = new Histogram(0, -40, 20, 30);
-			m_histograms_FSR["sudYFSR"] = new Histogram(0, -40, 20, 30);
-			m_histograms_FSR["sudZFSR"] = new Histogram(0, -40, 20, 30);
-			m_histograms_FSR["sfac"] = new Histogram(0, -2, 100, 20);
-			m_histograms_FSR["hfac"] = new Histogram(0, -2, 100, 20);
-			m_histograms_FSR["d10"] = new Histogram(0, -60, 60, 20);
-			m_histograms_FSR["cth11"] = new Histogram(0, -1.2, 1.2, 20);
-			m_histograms_FSR["cth12"] = new Histogram(0, -1.2, 1.2, 20);
-			m_histograms_FSR["cth21"] = new Histogram(0, -1.2, 1.2, 20);
-			m_histograms_FSR["cth22"] = new Histogram(0, -1.2, 1.2, 20);
+			m_histograms_FSR["yBet10"] = std::make_unique<Histogram>(0, -5, 2, 80);
+			m_histograms_FSR["sudY"] = std::make_unique<Histogram>(0, -40, 20, 30);
+			m_histograms_FSR["sudZ"] = std::make_unique<Histogram>(0, -40, 20, 30);
+			m_histograms_FSR["sudYFSR"] = std::make_unique<Histogram>(0, -40, 20, 30);
+			m_histograms_FSR["sudZFSR"] = std::make_unique<Histogram>(0, -40, 20, 30);
+			m_histograms_FSR["sfac"] = std::make_unique<Histogram>(0, -2, 100, 20);
+			m_histograms_FSR["hfac"] = std::make_unique<Histogram>(0, -2, 100, 20);
+			m_histograms_FSR["d10"] = std::make_unique<Histogram>(0, -60, 60, 20);
+			m_histograms_FSR["cth11"] = std::make_unique<Histogram>(0, -1.2, 1.2, 20);
+			m_histograms_FSR["cth12"] = std::make_unique<Histogram>(0, -1.2, 1.2, 20);
+			m_histograms_FSR["cth21"] = std::make_unique<Histogram>(0, -1.2, 1.2, 20);
+			m_histograms_FSR["cth22"] = std::make_unique<Histogram>(0, -1.2, 1.2, 20);
 		}
-		m_histograms_FSR["beta00"] = new Histogram(0, -2, 6, 20);
-		m_histograms_FSR["massWeight"] = new Histogram(0, -1, 5, 20);
-		m_histograms_FSR["jacobian"]    = new Histogram(0, 0, 1.2, 20);
-		m_histograms_FSR["YFS_IR"]  = new Histogram(0, 0, 5, 20);
-		m_histograms_FSR["VolMc"]  = new Histogram(0, 2, 4, 10);
-		m_histograms_FSR["wtmass"]  = new Histogram(0, -4, 4, 20);
-		m_histograms_FSR["g"]  = new Histogram(0, 5e-2, 7e-2, 20);
-		m_histograms_FSR["gp"]  = new Histogram(0, 5e-2, 7e-2, 20);
-		m_histograms_FSR["beta"]  = new Histogram(0, 0, 10, 20);
-		m_histograms_FSR["massSQ"]  = new Histogram(0, -10, sqrt(m_s) + 10, 50);
-		m_histograms_FSR["E1"]  = new Histogram(0, 0.01, sqrt(m_s) / 2. + 10, 20);
-		m_histograms_FSR["E2"]  = new Histogram(0, 0.01, sqrt(m_s) / 2. + 10, 20);
-		m_histograms_FSR["R_E1"]  = new Histogram(0, -10, sqrt(m_s) / 2. + 10, 20);
-		m_histograms_FSR["R_E2"]  = new Histogram(0, -10, sqrt(m_s) / 2. + 10, 20);
-		m_histograms_FSR["r1r2"]  = new Histogram(0, 0, sqrt(m_s) + 10, 40);
-		m_histograms_FSR["K0"]  = new Histogram(0, 0, sqrt(m_s) + 10, 20);
-		m_histograms_FSR["kvec0"]  = new Histogram(0, 0, 15, 20);
-		m_histograms_FSR["Eprime"]  = new Histogram(0, 0, sqrt(m_s) + 10, 20);
-		m_histograms_FSR["NPhotons"]  = new Histogram(0, -1, 20, 21);
-		m_histograms_FSR["NRemoved"]  = new Histogram(0, -1, 20, 21);
-		m_histograms_FSR["NPhotons_before_Removal"]  = new Histogram(0, -1, 20, 21);
-		m_histograms_FSR["FSRWeight"]  = new Histogram(0, -1, 4, 20);
-		m_histograms_FSR["Btil"]  = new Histogram(0, -10, 10, 20);
-		m_histograms_FSR["BtilStar"]  = new Histogram(0, -2., 10, 20);
-		m_histograms_FSR["BtilQCrude"]  = new Histogram(0, 7, 8, 20);
-		m_histograms_FSR["A4"]  = new Histogram(0, -10, 0, 40);
-		m_histograms_FSR["A"]  = new Histogram(0, 0, 1, 40);
-		m_histograms_FSR["BtilXCrude"]  = new Histogram(0, 7, 8, 20);
-		// m_histograms_FSR["Hide-W"] = new Histogram(0,0,2,10);
-		m_histograms_FSR["TotalW"]    = new Histogram(0, 0, 2, 10);
-		m_histograms_FSR["cos(theta)"]    = new Histogram(0, -1.1, 1.1, 22);
-		m_histograms_FSR["sin(theta)"]    = new Histogram(0, -1.1, 1.1, 22);
-		m_histograms_FSR["f"]    = new Histogram(0, -10, 10, 20);
-		m_histograms_FSR["fbar"]    = new Histogram(0, -10, 50, 20);
-		m_histograms_FSR["del1"]    = new Histogram(0, -1, 3, 20);
-		m_histograms_FSR["del2"]    = new Histogram(0, -1, 3, 20);
-		m_histograms_FSR["DelVol"]    = new Histogram(0, -0.5, 0.5, 20);
-		m_histograms_FSR["DelYFS"]    = new Histogram(0, -0.5, 0.5, 20);
-		m_histograms_FSR["VoluMC"]    = new Histogram(0, 1, 2, 20);
-		m_histograms_FSR["EminQ"]    = new Histogram(0, -10, 10, 40);
-		m_histograms_FSR["m_r1"]    = new Histogram(0, 0, 2, 20);
-		m_histograms_FSR["m_r2"]    = new Histogram(0, 0, 2, 20);
-		m_histograms_FSR["x_r1"]    = new Histogram(0, -80, 80, 20);
-		m_histograms_FSR["x_r2"]    = new Histogram(0, -80, 80, 20);
-		m_histograms_FSR["x_q1"]    = new Histogram(0, -80, 80, 20);
-		m_histograms_FSR["x_q2"]    = new Histogram(0, -80, 80, 20);
-		m_histograms_FSR["y_q1"]    = new Histogram(0, -80, 80, 20);
-		m_histograms_FSR["y_q2"]    = new Histogram(0, -80, 80, 20);
-		m_histograms_FSR["z_q1"]    = new Histogram(0, -80, 80, 20);
-		m_histograms_FSR["z_q2"]    = new Histogram(0, -80, 80, 20);
-		m_histograms_FSR["x_k"]    = new Histogram(0, -80, 80, 20);
-		m_histograms_FSR["y_k"]    = new Histogram(0, -80, 80, 20);
-		m_histograms_FSR["delta1"]    = new Histogram(0, 0, 5, 20);
-		m_histograms_FSR["BVR_A"]    = new Histogram(0, -10, sqrt(m_s) / 2., 20);
-		m_histograms_FSR["pT"]    = new Histogram(0, -10, sqrt(m_s) / 2. + 10, 20);
-		m_histograms_FSR["Photon_pT"]    = new Histogram(0, -10, sqrt(m_s) + 10, 20);
-		m_histograms_FSR["q1q2"]    = new Histogram(0, -10, sqrt(m_s) + 10, 20);
-		m_histograms_FSR["svar"]    = new Histogram(0, -10, sqrt(m_s) + 10, 20);
-		m_histograms_FSR["q1_E"]    = new Histogram(0, 0.1, sqrt(m_s) / 2. + 10, 20);
-		m_histograms_FSR["q2_E"]    = new Histogram(0, 0.1, sqrt(m_s) / 2. + 10, 20);
-		m_histograms_FSR["Q0"]    = new Histogram(0, -10, sqrt(m_s) + 10, 20);
-		m_histograms_FSR["phi"]    = new Histogram(0, 0, 2 * 3.14, 10);
-		m_histograms_FSR["yy"]  = new Histogram(0, -0.1, 1.1, 20);
-		m_histograms_FSR["xfact"]  = new Histogram(0, -0.9, 1.1, 20);
-		m_histograms_FSR["Cutflow"]  = new Histogram(0, 0, 5, 5);
-		m_histograms_FSR["QQk"]  = new Histogram(0, 0, sqrt(m_s), 20);
-		m_histograms_FSR["qboost"]    = new Histogram(0, -10, sqrt(m_s) + 10, 20);
-		m_histograms_FSR["pxboost"]    = new Histogram(0, -10, sqrt(m_s) + 10, 20);
-		m_histograms_FSR["FSRForm"]    = new Histogram(0, 1., 1.1, 10);
+		m_histograms_FSR["beta00"] = std::make_unique<Histogram>(0, -2, 6, 20);
+		m_histograms_FSR["massWeight"] = std::make_unique<Histogram>(0, -1, 5, 20);
+		m_histograms_FSR["jacobian"]    = std::make_unique<Histogram>(0, 0, 1.2, 20);
+		m_histograms_FSR["YFS_IR"]  = std::make_unique<Histogram>(0, 0, 5, 20);
+		m_histograms_FSR["VolMc"]  = std::make_unique<Histogram>(0, 2, 4, 10);
+		m_histograms_FSR["wtmass"]  = std::make_unique<Histogram>(0, -4, 4, 20);
+		m_histograms_FSR["g"]  = std::make_unique<Histogram>(0, 5e-2, 7e-2, 20);
+		m_histograms_FSR["gp"]  = std::make_unique<Histogram>(0, 5e-2, 7e-2, 20);
+		m_histograms_FSR["beta"]  = std::make_unique<Histogram>(0, 0, 10, 20);
+		m_histograms_FSR["massSQ"]  = std::make_unique<Histogram>(0, -10, sqrt(m_s) + 10, 50);
+		m_histograms_FSR["E1"]  = std::make_unique<Histogram>(0, 0.01, sqrt(m_s) / 2. + 10, 20);
+		m_histograms_FSR["E2"]  = std::make_unique<Histogram>(0, 0.01, sqrt(m_s) / 2. + 10, 20);
+		m_histograms_FSR["R_E1"]  = std::make_unique<Histogram>(0, -10, sqrt(m_s) / 2. + 10, 20);
+		m_histograms_FSR["R_E2"]  = std::make_unique<Histogram>(0, -10, sqrt(m_s) / 2. + 10, 20);
+		m_histograms_FSR["r1r2"]  = std::make_unique<Histogram>(0, 0, sqrt(m_s) + 10, 40);
+		m_histograms_FSR["K0"]  = std::make_unique<Histogram>(0, 0, sqrt(m_s) + 10, 20);
+		m_histograms_FSR["kvec0"]  = std::make_unique<Histogram>(0, 0, 15, 20);
+		m_histograms_FSR["Eprime"]  = std::make_unique<Histogram>(0, 0, sqrt(m_s) + 10, 20);
+		m_histograms_FSR["NPhotons"]  = std::make_unique<Histogram>(0, -1, 20, 21);
+		m_histograms_FSR["NRemoved"]  = std::make_unique<Histogram>(0, -1, 20, 21);
+		m_histograms_FSR["NPhotons_before_Removal"]  = std::make_unique<Histogram>(0, -1, 20, 21);
+		m_histograms_FSR["FSRWeight"]  = std::make_unique<Histogram>(0, -1, 4, 20);
+		m_histograms_FSR["Btil"]  = std::make_unique<Histogram>(0, -10, 10, 20);
+		m_histograms_FSR["BtilStar"]  = std::make_unique<Histogram>(0, -2., 10, 20);
+		m_histograms_FSR["BtilQCrude"]  = std::make_unique<Histogram>(0, 7, 8, 20);
+		m_histograms_FSR["A4"]  = std::make_unique<Histogram>(0, -10, 0, 40);
+		m_histograms_FSR["A"]  = std::make_unique<Histogram>(0, 0, 1, 40);
+		m_histograms_FSR["BtilXCrude"]  = std::make_unique<Histogram>(0, 7, 8, 20);
+		// m_histograms_FSR["Hide-W"] = std::make_unique<Histogram>(0,0,2,10);
+		m_histograms_FSR["TotalW"]    = std::make_unique<Histogram>(0, 0, 2, 10);
+		m_histograms_FSR["cos(theta)"]    = std::make_unique<Histogram>(0, -1.1, 1.1, 22);
+		m_histograms_FSR["sin(theta)"]    = std::make_unique<Histogram>(0, -1.1, 1.1, 22);
+		m_histograms_FSR["f"]    = std::make_unique<Histogram>(0, -10, 10, 20);
+		m_histograms_FSR["fbar"]    = std::make_unique<Histogram>(0, -10, 50, 20);
+		m_histograms_FSR["del1"]    = std::make_unique<Histogram>(0, -1, 3, 20);
+		m_histograms_FSR["del2"]    = std::make_unique<Histogram>(0, -1, 3, 20);
+		m_histograms_FSR["DelVol"]    = std::make_unique<Histogram>(0, -0.5, 0.5, 20);
+		m_histograms_FSR["DelYFS"]    = std::make_unique<Histogram>(0, -0.5, 0.5, 20);
+		m_histograms_FSR["VoluMC"]    = std::make_unique<Histogram>(0, 1, 2, 20);
+		m_histograms_FSR["EminQ"]    = std::make_unique<Histogram>(0, -10, 10, 40);
+		m_histograms_FSR["m_r1"]    = std::make_unique<Histogram>(0, 0, 2, 20);
+		m_histograms_FSR["m_r2"]    = std::make_unique<Histogram>(0, 0, 2, 20);
+		m_histograms_FSR["x_r1"]    = std::make_unique<Histogram>(0, -80, 80, 20);
+		m_histograms_FSR["x_r2"]    = std::make_unique<Histogram>(0, -80, 80, 20);
+		m_histograms_FSR["x_q1"]    = std::make_unique<Histogram>(0, -80, 80, 20);
+		m_histograms_FSR["x_q2"]    = std::make_unique<Histogram>(0, -80, 80, 20);
+		m_histograms_FSR["y_q1"]    = std::make_unique<Histogram>(0, -80, 80, 20);
+		m_histograms_FSR["y_q2"]    = std::make_unique<Histogram>(0, -80, 80, 20);
+		m_histograms_FSR["z_q1"]    = std::make_unique<Histogram>(0, -80, 80, 20);
+		m_histograms_FSR["z_q2"]    = std::make_unique<Histogram>(0, -80, 80, 20);
+		m_histograms_FSR["x_k"]    = std::make_unique<Histogram>(0, -80, 80, 20);
+		m_histograms_FSR["y_k"]    = std::make_unique<Histogram>(0, -80, 80, 20);
+		m_histograms_FSR["delta1"]    = std::make_unique<Histogram>(0, 0, 5, 20);
+		m_histograms_FSR["BVR_A"]    = std::make_unique<Histogram>(0, -10, sqrt(m_s) / 2., 20);
+		m_histograms_FSR["pT"]    = std::make_unique<Histogram>(0, -10, sqrt(m_s) / 2. + 10, 20);
+		m_histograms_FSR["Photon_pT"]    = std::make_unique<Histogram>(0, -10, sqrt(m_s) + 10, 20);
+		m_histograms_FSR["q1q2"]    = std::make_unique<Histogram>(0, -10, sqrt(m_s) + 10, 20);
+		m_histograms_FSR["svar"]    = std::make_unique<Histogram>(0, -10, sqrt(m_s) + 10, 20);
+		m_histograms_FSR["q1_E"]    = std::make_unique<Histogram>(0, 0.1, sqrt(m_s) / 2. + 10, 20);
+		m_histograms_FSR["q2_E"]    = std::make_unique<Histogram>(0, 0.1, sqrt(m_s) / 2. + 10, 20);
+		m_histograms_FSR["Q0"]    = std::make_unique<Histogram>(0, -10, sqrt(m_s) + 10, 20);
+		m_histograms_FSR["phi"]    = std::make_unique<Histogram>(0, 0, 2 * 3.14, 10);
+		m_histograms_FSR["yy"]  = std::make_unique<Histogram>(0, -0.1, 1.1, 20);
+		m_histograms_FSR["xfact"]  = std::make_unique<Histogram>(0, -0.9, 1.1, 20);
+		m_histograms_FSR["Cutflow"]  = std::make_unique<Histogram>(0, 0, 5, 5);
+		m_histograms_FSR["QQk"]  = std::make_unique<Histogram>(0, 0, sqrt(m_s), 20);
+		m_histograms_FSR["qboost"]    = std::make_unique<Histogram>(0, -10, sqrt(m_s) + 10, 20);
+		m_histograms_FSR["pxboost"]    = std::make_unique<Histogram>(0, -10, sqrt(m_s) + 10, 20);
+		m_histograms_FSR["FSRForm"]    = std::make_unique<Histogram>(0, 1., 1.1, 10);
 
 	}
 }
@@ -165,8 +165,6 @@ void Debug::FillHist(const Vec4D_Vector &plab, YFS::ISR *p_isr, YFS::FSR *p_fsr,
 			m_histograms_FSR["NPhotons_before_Removal"]->Insert(p_fsr->m_n,W);
 			m_histograms_FSR["FSRWeight"]->Insert(p_fsr->m_fsrWeight / p_fsr->m_fsrform,W);
 			// m_histograms_FSR["E1"]->Insert(p_fsr->m_dipole[0].E(),W);
-			// PRINT_VAR(p_dipoles->Old()[0].m_newmomenta[0].E(),W);
-			// PRINT_VAR(p_dipoles->Old()[0].m_newmomenta[1].E(),W);
 			m_histograms_FSR["E1"]->Insert(p_fsr->m_dipole[0].E(),W);
 			m_histograms_FSR["E1"]->Insert(p_fsr->m_dipole[0].E(),W);
 			m_histograms_FSR["E2"]->Insert(p_fsr->m_dipole[1].E(),W);
@@ -246,7 +244,6 @@ void Debug::FillHist(const Vec4D_Vector &plab, YFS::ISR *p_isr, YFS::FSR *p_fsr,
 		m_histograms_ISR["massweight"]->Insert(p_isr->m_massW,W);
 		m_histograms_ISR["jacweight"]->Insert(p_isr->m_jacW,W);
 		// m_histograms_ISR["Cutflow"]->Insert(p_isr->m_cut,W);
-		// PRINT_VAR(p_isr->m_cut);
 		if (p_isr->m_cut == 0) m_histograms_ISR["Cutflow"]->Insert(0.1,W);
 		else m_histograms_ISR["Cutflow"]->Insert(1.1,W);
 		std::vector<double> cos   = p_isr->m_cos;
@@ -266,8 +263,8 @@ void Debug::FillHist(const Vec4D_Vector &plab, YFS::ISR *p_isr, YFS::FSR *p_fsr,
 }
 
 void Debug::FillHist(const std::string &name, const double &x, double weight){
-	std::map<string, Histogram *>::iterator itisr  = m_histograms_ISR.find(name);
-	if(m_fsr_debug) std::map<string, Histogram *>::iterator itfsr  = m_histograms_FSR.find(name);
+	auto itisr = m_histograms_ISR.find(name);
+	if(m_fsr_debug) auto itfsr = m_histograms_FSR.find(name);
 	if(m_isr_debug){
 		if(itisr != m_histograms_ISR.end()) {
 			m_histograms_ISR[name]->Insert(x,weight);
@@ -285,7 +282,7 @@ void Debug::FillHist(const std::string &name, const double &x, double weight){
 
 
 void Debug::FillHist(const std::string &name, const double &x, const double &y, double weight){
-	std::map<string, Histogram_2D *>::iterator it  = m_histograms2d.find(name);
+	auto it = m_histograms2d.find(name);
 	if(it != m_histograms2d.end()) m_histograms2d[name]->Insert(x,y,weight);
 	else THROW(fatal_error, "Histogram2D with key: "+name+" not found in YFS Debug");
 
@@ -293,40 +290,31 @@ void Debug::FillHist(const std::string &name, const double &x, const double &y, 
 
 
 void Debug::WriteHistograms() {
-	Histogram * histo;
 	string name;
 	if (m_fsr_debug && HasFSR()) {
-		for (map<string, Histogram *>::iterator hit = m_histograms_FSR.begin();
-		        hit != m_histograms_FSR.end(); hit++) {
-			histo = hit->second;
-			name  = string("./" + m_debugDIR_FSR + "/") + hit->first + string(".dat");
-			histo->MPISync();
-			histo->Finalize();
-			histo->Output(name);
-			delete histo;
+		for (auto &hit : m_histograms_FSR) {
+			name  = string("./" + m_debugDIR_FSR + "/") + hit.first + string(".dat");
+			hit.second->MPISync();
+			hit.second->Finalize();
+			hit.second->Output(name);
 		}
 	}
 	if (m_isr_debug && HasISR()) {
-		for (map<string, Histogram *>::iterator hit = m_histograms_ISR.begin();
-		        hit != m_histograms_ISR.end(); hit++) {
-			histo = hit->second;
-			PRINT_VAR(hit->first);
-			name  = string("./" + m_debugDIR_ISR + "/") + hit->first + string(".dat");
-			histo->MPISync();
-			histo->Finalize();
-			histo->Output(name);
-			delete histo;
+		for (auto &hit : m_histograms_ISR) {
+			PRINT_VAR(hit.first);
+			name  = string("./" + m_debugDIR_ISR + "/") + hit.first + string(".dat");
+			hit.second->MPISync();
+			hit.second->Finalize();
+			hit.second->Output(name);
 		}
-		Histogram_2D * histo2d;
-		string name;
-		for (map<string, Histogram_2D *>::iterator hit = m_histograms2d.begin();
-		        hit != m_histograms2d.end(); hit++) {
-			histo2d = hit->second;
-			name  = string(m_debugDIR_ISR) + "/" + hit->first + string(".dat");
-			// histo2d->MPISync();
-			histo2d->Finalize();
-			histo2d->Output(name);
-			delete histo2d;
+		for (auto &hit : m_histograms2d) {
+			name  = string(m_debugDIR_ISR) + "/" + hit.first + string(".dat");
+			// hit.second->MPISync();
+			hit.second->Finalize();
+			hit.second->Output(name);
 		}
 	}
+	// The maps own their histograms, so nothing is deleted here. The old loops
+	// deleted only under the same flags that guard the writing, which leaked
+	// every histogram whenever HasISR()/HasFSR() changed after booking.
 }

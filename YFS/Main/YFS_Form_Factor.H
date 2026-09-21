@@ -61,10 +61,16 @@ public:
     DivArrD BVirtMaster(YFS::Dipole &d, double kmax=0);
     void WW_u();
     double  m_ww_s, m_ww_u, m_ww_t;
-    double m_kmax, m_t1, m_t2, m_u1, m_u2;
+    double m_t1, m_t2, m_u1, m_u2;
     int m_useCoulomb;
     ATOOLS::Vec4D m_wp, m_wm, m_p1, m_p2;
-    PHASIC::Virtual_ME2_Base *p_virt;
+    /*!
+      Not owned: the loop provider, wired up by NLO_Base and read only for its
+      IR scale and epsilon scheme. Default-null because several callers guard
+      on it -- left uninitialised it held garbage, the (p_virt?...) guards
+      passed and IRscale() segfaulted.
+    */
+    PHASIC::Virtual_ME2_Base *p_virt = nullptr;
     double m_xx1, m_xx2, m_m1, m_m2;
     // m_use_model_alpha removed: shadowed YFS_Base's and was never read here.
     inline void SetCharge(double ch) {

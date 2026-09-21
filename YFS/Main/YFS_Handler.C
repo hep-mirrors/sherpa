@@ -13,30 +13,22 @@ using namespace METOOLS;
 YFS_Handler::YFS_Handler()
 {
   if(Mode()!=YFS::yfsmode::off){
-    p_dipoles = new Define_Dipoles();
-    p_coulomb = new Coulomb(m_coulomb);
-    p_fsr = new FSR();
-    p_debug = new Debug();
-    p_yfsFormFact = new YFS::YFS_Form_Factor();
+    p_dipoles = std::make_unique<Define_Dipoles>();
+    p_coulomb = std::make_unique<Coulomb>(m_coulomb);
+    p_fsr = std::make_unique<FSR>();
+    p_debug = std::make_unique<Debug>();
+    p_yfsFormFact = std::make_unique<YFS::YFS_Form_Factor>();
     m_setparticles = false;
-    p_isr = new YFS::ISR();
-    p_nlo = nullptr;
-    p_fb  = m_fb_analysis ? new YFS::YFS_FB_Analysis({}, m_fb_kf) : nullptr;
-    m_formfactor = 1;
+    p_isr = std::make_unique<YFS::ISR>();
+    if (m_fb_analysis)
+      p_fb = std::make_unique<YFS::YFS_FB_Analysis>(std::vector<YFS::fbdef::code>{}, m_fb_kf);
     m_isrinital = true;
-    p_splitter = new PHOTONS::Photon_Splitter(m_photon_split);
+    p_splitter = std::make_unique<PHOTONS::Photon_Splitter>(m_photon_split);
     m_rmode = 0;
-    m_real = 1;
     m_negskip = 0;
-    m_nlo_real = 0.0;
-    m_nlo_virtual = 0.0;
-    m_nlo_rv = 0.0;
-    m_nlo_rr = 0.0;
-    m_nlo_real_hardest = 0.0;
-    m_nlo_rv_hardest = 0.0;
-    m_nlo_rr_2hardest = 0.0;
-    m_nlo_real_2hardest = 0.0;
-    m_nlo_rv_2hardest = 0.0;
+    // m_ev needs nothing here: YFS_Event's default member initialisers are
+    // the single definition of the per-event starting values, and every
+    // event re-establishes them through StartEvent().
     rpa->gen.AddCitation(1,"The automation of YFS ISR is published in  \\cite{Krauss:2022ajk}.Which is based on \\cite{Jadach:1988gb}");
   }
 }
@@ -44,18 +36,26 @@ YFS_Handler::YFS_Handler()
 YFS_Handler::~YFS_Handler()
 {
   if(Mode()!=YFS::yfsmode::off){
-    if (p_isr) delete p_isr;
-    if (p_fsr) delete p_fsr;
-    if (p_coulomb) delete p_coulomb;
-    if (p_debug)   delete p_debug;
-    if (p_yfsFormFact) delete p_yfsFormFact;
-    if (p_dipoles) delete p_dipoles;
-    if (p_nlo) delete p_nlo;
-    if (p_fb) delete p_fb;
-    if (p_splitter) delete p_splitter;
-    for (auto &p: m_particles){
-      if(p) delete p;
-    }
+    const Ceex_Stats &cs(m_ceexstats);
+    if (cs.m_cmp_n > 0)
+      msg_Out()<<"YFS CEEX_Compare over "<<cs.m_cmp_n<<" points, CEEX vs the "
+               <<"external providers (relative difference, mean / worst):\n"
+               <<"    virtual  "<<cs.m_vsum/cs.m_cmp_n<<" / "<<cs.m_vworst<<"\n"
+               <<"    real     "<<cs.m_rsum/cs.m_cmp_n<<" / "<<cs.m_rworst<<"\n"
+               <<"    total    "<<cs.m_tsum/cs.m_cmp_n<<" / "<<cs.m_tworst<<std::endl;
+    if (cs.m_oen > 0)
+      msg_Out()<<"YFS: CEEX supplied the O(alpha) weight on "
+               <<cs.m_oen<<" events; mean (CEEX factor)/(EEX factor) = "
+               <<cs.m_oesum/cs.m_oen
+               <<(cs.m_bad ? " ("+ATOOLS::ToString(cs.m_bad)
+                             +" events fell back to EEX)" : "")
+               <<std::endl;
+    // Everything this class owns is held by unique_ptr and released with it,
+    // which also covers the two cases the hand written destructor got wrong:
+    // p_ceex, new'd in InitializeCEEX, was never released (so Ceex_Base's
+    // end of run reporting never ran), and every member was deleted
+    // unconditionally although the constructor only fills them when the mode
+    // is not "off", so an "off" handler deleted uninitialised pointers.
     if(m_negskip!=0){
       msg_Out()<<"Total Events Skipped: "<<m_negskip<<std::endl;
     }
@@ -97,8 +97,10 @@ YFS_Handler::~YFS_Handler()
 
 NLO_Base *YFS_Handler::EnsureNLO()
 {
-  if (!p_nlo) p_nlo = new YFS::NLO_Base();
-  return p_nlo;
+  if (!p_nlo) p_nlo = std::make_unique<YFS::NLO_Base>();
+  // A raw observer on purpose: callers (YFS_Process) only use the NLO layer,
+  // they never take it over.
+  return p_nlo.get();
 }
 
 
@@ -144,11 +146,11 @@ void YFS_Handler::SetFlavours(const ATOOLS::Flavour_Vector &flavs) {
   // whenever the flavours actually change; the early return keeps the
   // per-event calls cheap when they do not.
   if(m_setparticles && m_flavs == flavs) return;
-  // delete before clearing: the old code cleared first, so the loop below ran
-  // over an empty vector and leaked every Particle it was meant to free.
-  for(auto particle : m_particles) {
-    delete particle;
-  }
+  // Clearing the store frees the Particles; m_particles only observes them, so
+  // it has to be emptied in step or it is left holding dangling pointers.
+  // (The hand written version deleted through m_particles, which had to happen
+  // before the clear -- an ordering the code had wrong once already.)
+  m_particle_store.clear();
   m_particles.clear();
   m_flavs.clear();
   m_mass.clear();
@@ -161,8 +163,9 @@ void YFS_Handler::SetFlavours(const ATOOLS::Flavour_Vector &flavs) {
       }
     }
     m_mass.push_back(m_flavs[i].Mass());
-      if (i < 2) m_particles.push_back(new ATOOLS::Particle(i, m_flavs[i], {0, 0, 0, 0}, 'i'));
-      else    m_particles.push_back(new ATOOLS::Particle(i, m_flavs[i], {0, 0, 0, 0}, 'f'));
+      m_particle_store.push_back(std::make_unique<ATOOLS::Particle>(
+          i, m_flavs[i], ATOOLS::Vec4D{0, 0, 0, 0}, i < 2 ? 'i' : 'f'));
+      m_particles.push_back(m_particle_store.back().get());
       m_particles[i]->ResetCounter();
     if (i >= 2) {
       if (flavs[i].IsQED()) qed = true;
@@ -173,12 +176,16 @@ void YFS_Handler::SetFlavours(const ATOOLS::Flavour_Vector &flavs) {
 }
 
 void YFS_Handler::SetBornMomenta(const ATOOLS::Vec4D_Vector &p) {
-  m_bornMomenta.clear();
+  // The per-event boundary. Both the ISR/ISRFSR and the pure-FSR paths call
+  // this first (Phase_Space_Point.C:229 and :241), so it is the one place
+  // that sees every event; pure-FSR never reached MakeYFS()'s Reset().
+  StartEvent();
+  m_ev.m_bornMomenta.clear();
   for(size_t i = 0; i < p.size(); ++i) {
-    m_bornMomenta.push_back(p[i]);
+    m_ev.m_bornMomenta.push_back(p[i]);
   }
   // detect asymmetric beams from the original lab momenta, before any boost
-  if(m_bornMomenta[0] != -m_bornMomenta[1]) m_asymbeams = true;
+  if(m_ev.m_bornMomenta[0] != -m_ev.m_bornMomenta[1]) m_asymbeams = true;
   else m_asymbeams = false;
   // NLO_Base::MapMomenta (and the ISR/FSR kinematics) assume the incoming pair
   // is at rest. For non-standard setups (fixed target, e.g. MUonE muon-e-;
@@ -186,70 +193,79 @@ void YFS_Handler::SetBornMomenta(const ATOOLS::Vec4D_Vector &p) {
   // rest frame here; the blob-facing getters (ToLab) undo it when handing the
   // event back. Pure-FSR mode feeds lab momenta straight into CalculateFSR(p)
   // and is left untouched.
-  Vec4D Q(m_bornMomenta[0] + m_bornMomenta[1]);
+  Vec4D Q(m_ev.m_bornMomenta[0] + m_ev.m_bornMomenta[1]);
   if (m_mode != yfsmode::fsr && !IsZero(Q.PSpat() / Q[0], 1e-10)) {
-    m_cmsboost = Poincare(Q);
-    for (size_t i = 0; i < m_bornMomenta.size(); ++i)
-      m_cmsboost.Boost(m_bornMomenta[i]);
+    m_ev.m_cmsboost = Poincare(Q);
+    for (size_t i = 0; i < m_ev.m_bornMomenta.size(); ++i)
+      m_ev.m_cmsboost.Boost(m_ev.m_bornMomenta[i]);
   } else {
-    m_cmsboost = Poincare();
+    m_ev.m_cmsboost = Poincare();
   }
-  if (m_formWW) MakeWWVecs(m_bornMomenta);
+  if (m_formWW) MakeWWVecs(m_ev.m_bornMomenta);
   // AddFormFactor();
 }
 
 void YFS_Handler::SetMomenta(const ATOOLS::Vec4D_Vector &p) {
-  m_plab.clear();
+  m_ev.m_plab.clear();
   for(size_t i = 0; i < p.size(); ++i) {
     Vec4D pi(p[i]);
-    m_cmsboost.Boost(pi);
-    m_plab.push_back(pi);
+    m_ev.m_cmsboost.Boost(pi);
+    m_ev.m_plab.push_back(pi);
   }
 }
 
 void YFS_Handler::CreatMomentumMap() {
-  m_inparticles.clear();
-  m_outparticles.clear();
+  m_ev.m_inparticles.clear();
+  m_ev.m_outparticles.clear();
   for(size_t i = 0; i < 2; ++i)
   {
-    m_inparticles[m_particles[i]] = m_bornMomenta[i];
-    m_particles[i]->SetMomentum(m_bornMomenta[i]);
+    m_ev.m_inparticles[m_particles[i]] = m_ev.m_bornMomenta[i];
+    m_particles[i]->SetMomentum(m_ev.m_bornMomenta[i]);
   }
   if(m_mode!=yfsmode::isr){
     for(size_t i = 2; i < m_flavs.size(); ++i)
     {
-      m_outparticles[m_particles[i]] = m_bornMomenta[i];
-      m_particles[i]->SetMomentum(m_bornMomenta[i]);
+      m_ev.m_outparticles[m_particles[i]] = m_ev.m_bornMomenta[i];
+      m_particles[i]->SetMomentum(m_ev.m_bornMomenta[i]);
     }
   }
 }
 
 void YFS_Handler::InitializeCEEX(const ATOOLS::Flavour_Vector &fl) {
   if (p_ceex) return;
-  p_ceex = new Ceex_Base(fl);
-  p_ceex->SetBornMomenta(m_bornMomenta);
+  p_ceex = std::make_unique<Ceex_Base>(fl);
+  p_ceex->SetBornMomenta(m_ev.m_bornMomenta);
+  p_ceex->SetBornProc(m_ceexborn);
+  p_ceex->SetRealProc(m_ceexreal);
 }
 
 
+void YFS_Handler::SetCeexProcs(PHASIC::Process_Base *born,
+                               PHASIC::Process_Base *real) {
+  m_ceexborn = born;
+  m_ceexreal = real;
+  if (p_ceex) { p_ceex->SetBornProc(born); p_ceex->SetRealProc(real); }
+}
+
 bool YFS_Handler::MakeYFS(){
-  return MakeYFS(m_bornMomenta);
+  return MakeYFS(m_ev.m_bornMomenta);
 }
 
 bool YFS_Handler::MakeYFS(ATOOLS::Vec4D_Vector &p)
 {
   Reset();
    m_s = (p[0] + p[1]).Abs2();
-  // p_dipoles->CreateAllDipoles(m_flavs, m_plab, m_bornMomenta);
+  // p_dipoles->CreateAllDipoles(m_flavs, m_ev.m_plab, m_ev.m_bornMomenta);
   if (m_isrinital) {
-    p_dipoles->MakeDipolesII(m_flavs, m_plab, m_bornMomenta);
+    p_dipoles->MakeDipolesII(m_flavs, m_ev.m_plab, m_ev.m_bornMomenta);
   }
-  m_ww_formfact = 1;
+  m_ev.m_ww_formfact = 1;
   m_fsrWeight = m_isrWeight = 1.0;
   CreatMomentumMap();
   if (m_mode == yfsmode::fsr) m_sp = m_s;
   m_v = 1. - m_sp / m_s;
   if ( m_v > m_vmax ) {
-    m_yfsweight = 0.0;
+    m_ev.m_yfsweight = 0.0;
     return false;
   }
   p_isr->SetV(m_v);
@@ -258,10 +274,10 @@ bool YFS_Handler::MakeYFS(ATOOLS::Vec4D_Vector &p)
     return false;
   }
   if (!CalculateISR()) return 0;
-  m_FSRPhotons.clear();
+  m_ev.m_FSRPhotons.clear();
   CalculateWWForm();
   CalculateCoulomb();
-  p = m_plab;
+  p = m_ev.m_plab;
   return true;
 }
 
@@ -271,12 +287,13 @@ void YFS_Handler::MakeCEEX() {
   if (m_useceex) {
     Vec4D_Vector vv;
     p_ceex->SetBorn(m_born);
-    for(size_t i = 0; i < m_plab.size(); ++i) vv.push_back(m_bornMomenta[i]);
-    for(size_t i = 2; i < 4; ++i) vv.push_back(m_plab[i]);
+    for(size_t i = 0; i < m_ev.m_plab.size(); ++i) vv.push_back(m_ev.m_bornMomenta[i]);
+    for(size_t i = 2; i < 4; ++i) vv.push_back(m_ev.m_plab[i]);
     p_ceex->Init(vv);
-    p_ceex->SetISRPhotons(m_ISRPhotons);
-    p_ceex->SetBornMomenta(m_bornMomenta);
-    p_ceex->SetISRFormFactor(m_formfactor);
+    p_ceex->SetISRPhotons(m_ev.m_ISRPhotons);
+    if (HasFSR()) p_ceex->SetFSRPhotons(m_ev.m_FSRPhotons);
+    p_ceex->SetBornMomenta(m_ev.m_bornMomenta);
+    p_ceex->SetISRFormFactor(m_ev.m_formfactor);
     p_ceex->Calculate();
   }
 
@@ -284,13 +301,13 @@ void YFS_Handler::MakeCEEX() {
 
 void YFS_Handler::CalculateWWForm() {
   if (m_formWW) {
-    MakeWWVecs(m_bornMomenta);
-    m_ww_formfact = p_yfsFormFact->BVV_WW(m_plab, m_ISRPhotons, m_Wp, m_Wm,
+    MakeWWVecs(m_ev.m_bornMomenta);
+    m_ev.m_ww_formfact = p_yfsFormFact->BVV_WW(m_ev.m_plab, m_ev.m_ISRPhotons, m_ev.m_Wp, m_ev.m_Wm,
                                           m_photonMass, sqrt(m_sp) / 2.);
-    if (IsBad(m_ww_formfact) || m_ww_formfact < 0) {
-      msg_Error() << METHOD << ": BVV_WW returned " << m_ww_formfact
+    if (IsBad(m_ev.m_ww_formfact) || m_ev.m_ww_formfact < 0) {
+      msg_Error() << METHOD << ": BVV_WW returned " << m_ev.m_ww_formfact
                   << "; setting it to 1. Use WW_Scheme: pole instead.\n";
-      m_ww_formfact = 1.;
+      m_ev.m_ww_formfact = 1.;
     }
   }
 }
@@ -309,18 +326,18 @@ bool YFS_Handler::CalculateISR() {
   m_gp=p_dipoles->GetDipoleII().m_gammap;
   Vec4D_Vector me_acc;   // ISR photons are not hidden, so nothing accumulates here
   const YFS::EmissionResult res(
-      p_dipoles->GetDipoleII().GenerateEmissions(p_isr, p_fsr, m_born, m_v, me_acc));
-  m_photonSumISR = res.photon_sum;
-  m_ISRPhotons.clear();
-  for (const YFS::Photon &k : res.photons) m_ISRPhotons.push_back(k.K());
-  m_isrphotonsforME = m_ISRPhotons;
+      p_dipoles->GetDipoleII().GenerateEmissions(p_isr.get(), p_fsr.get(), m_born, m_v, me_acc));
+  m_ev.m_photonSumISR = res.photon_sum;
+  m_ev.m_ISRPhotons.clear();
+  for (const YFS::Photon &k : res.photons) m_ev.m_ISRPhotons.push_back(k.K());
+  m_ev.m_isrphotonsforME = m_ev.m_ISRPhotons;
   m_isrWeight = res.weight;
-  m_photons = res.photons;
+  m_ev.m_photons = res.photons;
   for(size_t i = 0; i < 2; ++i) {
-    m_plab[i] = p_dipoles->GetDipoleII().GetNewMomenta(i); 
-    ToLab(m_plab[i]);
+    m_ev.m_plab[i] = p_dipoles->GetDipoleII().GetNewMomenta(i); 
+    ToLab(m_ev.m_plab[i]);
   }
-  double sp = (m_plab[0] + m_plab[1]).Abs2();
+  double sp = (m_ev.m_plab[0] + m_ev.m_plab[1]).Abs2();
   if (!IsEqual(sp, m_sp, 1e-4) && !m_asymbeams) {
     msg_Error() << "Boost failed, sprime"
                 << " is " << sp << " and should be "
@@ -329,7 +346,7 @@ bool YFS_Handler::CalculateISR() {
                 << " N=" << p_dipoles->GetDipoleII().GetPhotons().size() << " photons" << std::endl
                 << " V = " << m_v << std::endl
                 << " Vmin = " << m_isrcut << std::endl
-                << "ISR NPHotons = " << m_ISRPhotons.size() << std::endl;
+                << "ISR NPHotons = " << m_ev.m_ISRPhotons.size() << std::endl;
   }
   return true;
 }
@@ -338,90 +355,90 @@ bool YFS_Handler::CalculateISR() {
 
 void YFS_Handler::AddFormFactor() {
   if (m_CalForm) return;
-  m_formfactor_sum = 0.;
+  m_ev.m_formfactor_sum = 0.;
   if (m_fullform >= 1) {
-    if(m_tchannel!=0) m_formfactor = p_dipoles->TFormFactor();
+    if(m_tchannel!=0) m_ev.m_formfactor = p_dipoles->TFormFactor();
     else {
-      m_formfactor_sum = p_dipoles->FormFactorSum();
-      m_formfactor = p_dipoles->FormFactor(m_formfactor_sum);
+      m_ev.m_formfactor_sum = p_dipoles->FormFactorSum();
+      m_ev.m_formfactor = p_dipoles->FormFactor(m_ev.m_formfactor_sum);
     }
   }
   else if (m_fullform == 2) {
-    m_formfactor = exp(m_g / 4.);//-m_alpha*M_PI);
+    m_ev.m_formfactor = exp(m_g / 4.);//-m_alpha*M_PI);
   }
   else if (m_fullform == -1) {
-    m_formfactor = 1;
+    m_ev.m_formfactor = 1;
   }
   else {
     if(FixedOrder()==fixed_order::nlo){
-      m_formfactor = 1 + m_g / 4. + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5);
+      m_ev.m_formfactor = 1 + m_g / 4. + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5);
     }
-    else m_formfactor = exp(m_g / 4. + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
+    else m_ev.m_formfactor = exp(m_g / 4. + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
   }
 }
 
 bool YFS_Handler::CalculateFSR(){
-  return CalculateFSR(m_plab);
+  return CalculateFSR(m_ev.m_plab);
 }
 
 bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   // update NLO momenta from PHASIC
-  // m_reallab should be used for 
+  // m_ev.m_reallab should be used for 
   // fixed order corrections.
   // Final state eikonals should be constructed
   // for the final state momenta before emissions
   // of photons. 
-  m_FSRPhotons.clear();
-  m_fsrphotonsforME.clear();
-  m_reallab = p;
-  m_plab=p;
+  m_ev.m_FSRPhotons.clear();
+  m_ev.m_fsrphotonsforME.clear();
+  m_ev.m_reallab = p;
+  m_ev.m_plab=p;
   // Pure-FSR mode never goes through MakeYFS, so CreatMomentumMap() (the only
-  // place m_inparticles/m_outparticles get cleared) would otherwise never run
+  // place m_ev.m_inparticles/m_ev.m_outparticles get cleared) would otherwise never run
   // for this path, letting stale entries from earlier trials survive under
   // reused Particle* keys and leak into Signal_Processes::FillBlob via
   // GetOutParticles(). Reset it here on every call so it always starts from
   // the current born momenta.
   CreatMomentumMap();
-  if(FixedOrder()==fixed_order::nlo && m_ISRPhotons.size()!=0) {
-    for(size_t i = 2; i < m_plab.size(); ++i) m_outparticles[m_particles[i]] = m_plab[i];
+  if(FixedOrder()==fixed_order::nlo && m_ev.m_ISRPhotons.size()!=0) {
+    for(size_t i = 2; i < m_ev.m_plab.size(); ++i) m_ev.m_outparticles[m_particles[i]] = m_ev.m_plab[i];
     return true;
   }
   if(m_mode==yfsmode::isr) {
-    // if(m_ISRPhotons.size() < m_mingammaN){
+    // if(m_ev.m_ISRPhotons.size() < m_mingammaN){
     //   m_isrWeight=0;
     //   return false;
     // }
     return true;
   }
   m_fsrWeight=1;
-  p_dipoles->MakeDipoles(m_flavs, m_plab, m_plab);
-  // p_dipoles->CreateAllDipoles(m_flavs, m_plab, m_plab);
+  p_dipoles->MakeDipoles(m_flavs, m_ev.m_plab, m_ev.m_plab);
+  // p_dipoles->CreateAllDipoles(m_flavs, m_ev.m_plab, m_ev.m_plab);
   CheckResonance();
-  // p_dipoles->CreateAllDipoles(m_flavs, m_plab, m_plab);
+  // p_dipoles->CreateAllDipoles(m_flavs, m_ev.m_plab, m_ev.m_plab);
   if(m_mode==yfsmode::isrfsr) {
     // Initial legs are the BORN beams, not the ISR-reduced ones. The
     // interference is between radiation off the incoming particles and off the
     // outgoing ones, so the initial leg of an initial-final pair is the
     // physical beam - which is also what KKMC's Yint uses (m_p1, m_p2 in
     // KKceex.cxx:315, the same momenta its Yisr = SForFac(alfpini, m_p1, m_p2)
-    // uses). Final legs stay at m_plab, i.e. after the ISR recoil and before
+    // uses). Final legs stay at m_ev.m_plab, i.e. after the ISR recoil and before
     // FSR emission, matching KKMC's m_p3, m_p4.
     //
-    // Passing m_plab for both also mixed frames once the beams were asymmetric:
-    // CalculateISR() writes m_plab[0..1] back through ToLab() while
-    // m_plab[2..] stay in the incoming-pair rest frame. m_bornMomenta is in
+    // Passing m_ev.m_plab for both also mixed frames once the beams were asymmetric:
+    // CalculateISR() writes m_ev.m_plab[0..1] back through ToLab() while
+    // m_ev.m_plab[2..] stay in the incoming-pair rest frame. m_ev.m_bornMomenta is in
     // that rest frame throughout, so the pair is now built in one frame - which
     // matters because Btilda depends on the leg energies, not just invariants.
-    Vec4D_Vector ifmom(m_plab);
-    ifmom[0] = m_bornMomenta[0];
-    ifmom[1] = m_bornMomenta[1];
+    Vec4D_Vector ifmom(m_ev.m_plab);
+    ifmom[0] = m_ev.m_bornMomenta[0];
+    ifmom[1] = m_ev.m_bornMomenta[1];
     p_dipoles->MakeDipolesIF(m_flavs, ifmom, ifmom);
   }
   {
-    Vec4D_Vector polemom(m_plab);
+    Vec4D_Vector polemom(m_ev.m_plab);
     if (polemom.size() > 1) {
-      polemom[0] = m_bornMomenta[0];
-      polemom[1] = m_bornMomenta[1];
+      polemom[0] = m_ev.m_bornMomenta[0];
+      polemom[1] = m_ev.m_bornMomenta[1];
     }
     p_dipoles->MakeDipolesPole(m_flavs, polemom, polemom);
   }
@@ -429,27 +446,27 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   for (auto Dip = ffdip.begin(); Dip != ffdip.end(); ++Dip) {
     if(!Dip->IsResonance()) continue;
     const YFS::EmissionResult res(
-        Dip->GenerateEmissions(p_isr, p_fsr, m_born, m_v, m_fsrphotonsforME));
+        Dip->GenerateEmissions(p_isr.get(), p_fsr.get(), m_born, m_v, m_ev.m_fsrphotonsforME));
     switch (res.fail) {
     case YFS::EmissionResult::Failure::initialize:
       Reset();
       return false;
     case YFS::EmissionResult::Failure::makefsr:
       Reset();
-      if (m_fsr_debug) p_debug->FillHist(m_plab, p_isr, p_fsr);
+      if (m_fsr_debug) p_debug->FillHist(m_ev.m_plab, p_isr.get(), p_fsr.get());
       return false;
     case YFS::EmissionResult::Failure::masswgt:
       m_fsrWeight = 0;
-      if (m_fsr_debug) p_debug->FillHist(m_plab, p_isr, p_fsr);
+      if (m_fsr_debug) p_debug->FillHist(m_ev.m_plab, p_isr.get(), p_fsr.get());
       return false;
     case YFS::EmissionResult::Failure::formfactor:
       return false;
     case YFS::EmissionResult::Failure::none:
       break;
     }
-    m_photonSumFSR = res.photon_sum;
-    m_FSRPhotons.clear();
-    for (const YFS::Photon &k : res.photons) m_FSRPhotons.push_back(k.K());
+    m_ev.m_photonSumFSR = res.photon_sum;
+    m_ev.m_FSRPhotons.clear();
+    for (const YFS::Photon &k : res.photons) m_ev.m_FSRPhotons.push_back(k.K());
     m_fsrWeight *= res.weight;
     if (p_dipoles->PoleActive()) {
       // The radiating dipole is the W pair, and the W's are not entries in the
@@ -457,64 +474,64 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
       // decayed to. Writing the new W momenta there would put an 80 GeV
       // momentum in the muon's slot. Carry the recoil down to the four
       // fermions instead.
-      if (!p_dipoles->ApplyPoleRecoil(m_plab)) {
+      if (!p_dipoles->ApplyPoleRecoil(m_ev.m_plab)) {
         Reset();
         return false;
       }
       continue;
     }
-    m_plab[Dip->Left()]  =  Dip->GetNewMomenta(0);
-    m_plab[Dip->Right()] =  Dip->GetNewMomenta(1);
-    if(!IsEqual(m_flavs[Dip->Left()].Mass(), m_plab[Dip->Left()].Mass(),1e-5)){
+    m_ev.m_plab[Dip->Left()]  =  Dip->GetNewMomenta(0);
+    m_ev.m_plab[Dip->Right()] =  Dip->GetNewMomenta(1);
+    if(!IsEqual(m_flavs[Dip->Left()].Mass(), m_ev.m_plab[Dip->Left()].Mass(),1e-5)){
       msg_Debugging()<<"Missmatch in Final state mass"<<std::endl
                  <<"Flavour = "<<m_flavs[Dip->Left()]<<std::endl
                  <<"Mass =   "<<m_flavs[Dip->Left()].Mass()<<std::endl
-                 <<"Momentum =   "<<m_plab[Dip->Left()]<<std::endl
-                 <<"Mass =   "<<m_plab[Dip->Left()].Mass()<<std::endl;
+                 <<"Momentum =   "<<m_ev.m_plab[Dip->Left()]<<std::endl
+                 <<"Mass =   "<<m_ev.m_plab[Dip->Left()].Mass()<<std::endl;
     }
-    if(!IsEqual(m_flavs[Dip->Right()].Mass(), m_plab[Dip->Right()].Mass(),1e-5)){
+    if(!IsEqual(m_flavs[Dip->Right()].Mass(), m_ev.m_plab[Dip->Right()].Mass(),1e-5)){
       msg_Debugging()<<"Missmatch in Final state mass"<<std::endl
                  <<"Flavour = "<<m_flavs[Dip->Right()]<<std::endl
                  <<"Mass =   "<<m_flavs[Dip->Right()].Mass()<<std::endl
-                 <<"Momentum =   "<<m_plab[Dip->Right()]<<std::endl
-                 <<"Mass =   "<<m_plab[Dip->Right()].Mass()<<std::endl;
+                 <<"Momentum =   "<<m_ev.m_plab[Dip->Right()]<<std::endl
+                 <<"Mass =   "<<m_ev.m_plab[Dip->Right()].Mass()<<std::endl;
     }
   }
-  for(size_t i = 2; i < m_plab.size(); ++i) {
-    m_outparticles[m_particles[i]] = m_plab[i];
+  for(size_t i = 2; i < m_ev.m_plab.size(); ++i) {
+    m_ev.m_outparticles[m_particles[i]] = m_ev.m_plab[i];
   }
   // get all photons
-  m_FSRPhotons.clear();
-  m_fsrphotonsforME.clear();
+  m_ev.m_FSRPhotons.clear();
+  m_ev.m_fsrphotonsforME.clear();
   // Rebuilt in full here rather than appended to, so a re-entered
   // CalculateFSR cannot leave last trial's photons behind.
-  m_photons.clear();
-  m_me_photons.clear();
+  m_ev.m_photons.clear();
+  m_ev.m_me_photons.clear();
   if (p_dipoles->HasDipoleII())
-    for (const Vec4D &k : m_ISRPhotons)
-      m_photons.push_back(YFS::Photon(k, &p_dipoles->GetDipoleII()));
+    for (const Vec4D &k : m_ev.m_ISRPhotons)
+      m_ev.m_photons.push_back(YFS::Photon(k, &p_dipoles->GetDipoleII()));
   YFS::DipoleView ffcollect(p_dipoles->GetDipoleFF());
   for (auto Dip = ffcollect.begin(); Dip != ffcollect.end(); ++Dip) {
     for(auto &k: Dip->GetPhotons()) {
-      m_FSRPhotons.push_back(k);
-      m_photons.push_back(YFS::Photon(k, &*Dip));
+      m_ev.m_FSRPhotons.push_back(k);
+      m_ev.m_photons.push_back(YFS::Photon(k, &*Dip));
     }
     for(auto &k: Dip->GetMEPhotons()) {
-      m_fsrphotonsforME.push_back(k);
-      m_me_photons.push_back(YFS::Photon(k, &*Dip));
+      m_ev.m_fsrphotonsforME.push_back(k);
+      m_ev.m_me_photons.push_back(YFS::Photon(k, &*Dip));
     }
   }
   // if(!CheckMomentumConservation()) return false;
   if(FixedOrder()==fixed_order::nlo){
-    int totk = m_ISRPhotons.size();
-    if(m_nlo_fsr_photons) totk += m_FSRPhotons.size();
+    int totk = m_ev.m_ISRPhotons.size();
+    if(m_nlo_fsr_photons) totk += m_ev.m_FSRPhotons.size();
     if(totk != 1) {
       if(totk > 1)
         msg_Error()<<"Wrong photon multiplicity at Fixed Order: "<<totk<<std::endl;
       return false;
     }
   }
-  // if((m_ISRPhotons.size() +  m_FSRPhotons.size()) < m_mingammaN) {
+  // if((m_ev.m_ISRPhotons.size() +  m_ev.m_FSRPhotons.size()) < m_mingammaN) {
   //   m_fsrWeight=0;
   //   return false;
   // }
@@ -524,26 +541,26 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
 
 
 void YFS_Handler::MakeWWVecs(ATOOLS::Vec4D_Vector p) {
-  m_Wm *= 0;
-  m_Wp *= 0;
+  m_ev.m_Wm *= 0;
+  m_ev.m_Wp *= 0;
   Flavour_Vector wp, wm;
   for(size_t i = 2; i < p.size(); ++i)
   {
     if (m_flavs[i].IsAnti() && m_flavs[i].IntCharge()) {
-      m_Wp += m_plab[i];
+      m_ev.m_Wp += m_ev.m_plab[i];
       wp.push_back(m_flavs[i]);
     }
     if (!m_flavs[i].IsAnti() && m_flavs[i].IntCharge()) {
-      m_Wm += m_plab[i];
+      m_ev.m_Wm += m_ev.m_plab[i];
       wm.push_back(m_flavs[i]);
     }
     if (!m_flavs[i].IntCharge()) {
       if (m_flavs[i].IsAnti()) {
-        m_Wm += m_plab[i];
+        m_ev.m_Wm += m_ev.m_plab[i];
         wm.push_back(m_flavs[i]);
       }
       else {
-        m_Wp += m_plab[i];
+        m_ev.m_Wp += m_ev.m_plab[i];
         wp.push_back(m_flavs[i]);
       }
     }
@@ -553,18 +570,18 @@ void YFS_Handler::MakeWWVecs(ATOOLS::Vec4D_Vector p) {
 
 void YFS_Handler::CalculateCoulomb() {
   if (!m_coulomb) return;
-  MakeWWVecs(m_bornMomenta);
-  p_coulomb->Calculate(m_Wp, m_Wm);
+  MakeWWVecs(m_ev.m_bornMomenta);
+  p_coulomb->Calculate(m_ev.m_Wp, m_ev.m_Wm);
   if (m_formWW) {
     // need to Subtract the Coulomb loop from virtual form factor
-    // double s  = (m_Wp + m_Wm).Abs2();
-    double am1 = m_Wp.Abs2();
-    double am2 = m_Wm.Abs2();
+    // double s  = (m_ev.m_Wp + m_ev.m_Wm).Abs2();
+    double am1 = m_ev.m_Wp.Abs2();
+    double am2 = m_ev.m_Wm.Abs2();
     double beta = sqrt(1. - 2.*(am1 + am2) / m_s + sqr((am1 - am2) / m_s));
     if (m_betatWW >= beta) {
       p_coulomb->Subtract();
     }
-    else m_coulSub = 0;
+    else m_ev.m_coulSub = 0;
   }
 }
 
@@ -572,52 +589,245 @@ void YFS_Handler::CalculateBeta() {
   // Invalidate last event's NLO pieces first, so an early return cannot leave
   // them looking current. Zeroed as well as flagged: a stale value that is
   // never read is still a trap for the next person to add a weight here.
-  m_nlo_current = false;
-  m_nlo_real = m_nlo_virtual = m_nlo_rv = m_nlo_rr = 0.;
+  m_ev.m_nlo_current = false;
+  m_ev.m_nlo_real = m_ev.m_nlo_virtual = m_ev.m_nlo_rv = m_ev.m_nlo_rr = 0.;
   if(!m_rmode && !m_int_nlo) return;
   double realISR(0), realFSR(0);
   if (m_betaorder > 0) {
     if(m_real_only) {
-      if(!m_no_born) m_real = p_dipoles->CalculateEEX()+1;
-      else m_real = p_dipoles->CalculateEEX();
+      if(!m_no_born) m_ev.m_real = p_dipoles->CalculateEEX()+1;
+      else m_ev.m_real = p_dipoles->CalculateEEX();
     }
     else if(m_virtual_only) {
-      if(!m_no_born) m_real = p_dipoles->CalculateEEXVirtual();
-      else m_real = p_dipoles->CalculateEEXVirtual()-1;
+      if(!m_no_born) m_ev.m_real = p_dipoles->CalculateEEXVirtual();
+      else m_ev.m_real = p_dipoles->CalculateEEXVirtual()-1;
     }
     else {
-      if(!m_no_born) m_real = p_dipoles->CalculateEEX()+p_dipoles->CalculateEEXVirtual();
-      else m_real = p_dipoles->CalculateEEX()/m_born+p_dipoles->CalculateEEXVirtual()/m_born;
+      if(!m_no_born) m_ev.m_real = p_dipoles->CalculateEEX()+p_dipoles->CalculateEEXVirtual();
+      else m_ev.m_real = p_dipoles->CalculateEEX()/m_born+p_dipoles->CalculateEEXVirtual()/m_born;
     }
-    m_eex = m_real;
-    if(IsNan(m_eex)) m_eex=0;
-    // if(m_real < 0) m_real = 0;
-    // m_real /= m_born;
+    m_ev.m_eex = m_ev.m_real;
+    if(IsNan(m_ev.m_eex)) m_ev.m_eex=0;
+    // if(m_ev.m_real < 0) m_ev.m_real = 0;
+    // m_ev.m_real /= m_born;
   }
+  /*
+    CEEX FIRST. Two things downstream need its result:
+      - CalculateNLO() asks NLO_Base for the virtual, and when no
+        Loop_Generator was named CEEX is what supplies it,
+      - the nominal weight itself, if CEEX_WEIGHT is on.
+    Both read a number CEEX has to have produced already.
+  */
+  double ceexfac(1.);
+  bool   haveceex(false);
+  if (m_useceex) {
+    MakeCEEX();
+    if (p_ceex) {
+      /*
+        Denominator = the INCOHERENT partition sum (KKMC's RhoCrud), not rho0.
+
+        rho0 is the coherent sum, so the partitions can cancel and it can come
+        arbitrarily close to zero, while the crude weight this factor
+        multiplies is a factorised eikonal times Born and does not. Measured at
+        250 GeV with rho0 as the denominator: one event produced 1107 pb on a
+        4.86 pb cross section, unweighting efficiency 2e-06. The incoherent sum
+        is a sum of positive terms and cannot vanish.
+
+        With a single partition - no FSR, so nothing to interfere - the two
+        denominators are identical, which is why the Z-peak ISR results and the
+        KKMC cross-check are unaffected.
+      */
+      const double r0(p_ceex->GetRhoCrude()), r1(p_ceex->GetResult());
+      if (r0 > 0. && !IsBad(r1/r0)) { ceexfac = r1/r0; haveceex = true; }
+      else ++m_ceexstats.m_bad;
+      // Published immediately: CeexCompare() below reads it, and so does
+      // GenerateWeight(). Assigning it only at the end of this function left
+      // the comparison reading the PREVIOUS event's value.
+      m_ev.m_ceexfactor = haveceex ? ceexfac : 0.;
+      if (p_nlo) p_nlo->SetCeexVirtual(p_ceex->VirtualFactor());
+    }
+  }
+
   if(m_nlotype!=nlo_type::born) {
-    if(m_no_born) m_real=CalculateNLO()/m_born;
-    else m_real=(m_born+CalculateNLO())/m_born;
-    m_nlo_current = true;
+    if(m_no_born) m_ev.m_real=CalculateNLO()/m_born;
+    else m_ev.m_real=(m_born+CalculateNLO())/m_born;
+    m_ev.m_nlo_current = true;
+    if (m_ceex_compare && haveceex) CeexCompare();
   }
-  if (m_useceex) MakeCEEX();
+
+  /*
+    The CEEX O(alpha) factor, kept whether or not it drives the nominal.
+
+    m_ev.m_real is the same object from the EEX/fixed-order side - 1 + sum(beta)/Born
+    there, rho1/rho0 here - so m_ev.m_ceexfactor/m_ev.m_real is the ratio that turns the
+    nominal weight into the CEEX one, which is exactly what a named weight is.
+    With CEEX_WEIGHT on, CEEX becomes the nominal and the column is 1.
+  */
+  if (haveceex) {
+    m_ceexstats.AddOverEex(m_ev.m_real != 0. ? ceexfac/m_ev.m_real : 0.);
+    // m_ev.m_real is NOT overwritten here. Which correction drives the weight is
+    // decided in GenerateWeight(), because only there is the IFI_Real term
+    // known - and that term belongs to the EEX correction alone.
+  }
+}
+
+/*!
+  CEEX against the EXTERNAL providers, event by event.
+
+  Both sides are O(alpha) corrections relative to the SAME Born, so they are
+  directly comparable without any normalisation being matched by hand:
+
+      external virtual / Born   <->   rho(Born+virtual)/rho(Born) - 1
+      external real    / Born   <->   rho(Born+real)   /rho(Born) - 1
+
+  The TOTAL row is the meaningful one: both sides are the O(alpha) correction
+  factor to the same resummed Born, and it is what drives the weight.
+
+  The split rows are INDICATIVE ONLY, and the real row (marked real*) is not a
+  like-for-like comparison at all. CEEX decomposes at AMPLITUDE level -
+  rho(B+R)/rho(B) - 1 is 2Re(B*R)/|B|^2 + |R|^2/|B|^2 - whereas NLO_Base's
+  CalculateReal() returns the YFS-subtracted real ME, a squared object. They
+  coincide only in the soft limit. Read the real row as "are these even the
+  same size", not as a discrepancy.
+
+  The CEEX side excludes IFI_Real by construction - its partition sum already
+  contains the real initial-final interference - so the external side is taken
+  without it too, or the comparison is against a different quantity.
+*/
+void YFS_Handler::CeexCompare() {
+  if (!p_ceex || !p_nlo || m_born == 0.) return;
+  const double rc(p_ceex->RealFactor() - 1.);
+  const double tc(m_ev.m_ceexfactor - 1.);
+  /*
+    The virtual BY DIFFERENCE, total minus real - KKMC's convention
+    (Rho1(full) - Rho1(Born+real))/Rho0 - and the only one that is comparable
+    with the external provider's additive decomposition.
+
+    rho(B+V)/rho(B) - 1 is NOT the same object once the real emission is hard:
+    it drops the V-R cross term. Measured on a dumped point with real/Born =
+    -0.40, that definition gave 0.0920 where KKMC gave 0.0629; total - real
+    gives 0.06287084 against KKMC's 0.0628708363144.
+  */
+  const double vc(tc - rc);
+  const double ve(m_ev.m_nlo_virtual/m_born);
+  const double re(m_ev.m_nlo_real   /m_born);
+  const double te(ve + re);
+  auto rel = [](double a, double b) {
+    const double s(std::abs(a)+std::abs(b));
+    return s > 0. ? std::abs(a-b)/s : 0.;
+  };
+  const double dv(rel(vc,ve)), dr(rel(rc,re)), dt(rel(tc,te));
+  m_ceexstats.AddCompare(dv, dr, dt);
+  const bool dumped(p_ceex->JustDumped());
+  if (m_ceexstats.m_cmp_n <= (long)m_ceex_compare || dumped) {
+    size_t ng(m_ev.m_ISRPhotons.size() + m_ev.m_FSRPhotons.size());
+    msg_Out()<<std::setprecision(8)
+             <<"@@@ CEEXCMP"<<(dumped?"-DUMPED":"")<<" n="<<m_ceexstats.m_cmp_n<<" ngam="<<ng
+             <<" born="<<m_born<<"\n"
+             <<"    virtual  ceex="<<vc<<"  ext="<<ve<<"  reldiff="<<dv<<"\n"
+             <<"    real*    ceex="<<rc<<"  ext="<<re<<"  reldiff="<<dr<<"\n"
+             <<"    total    ceex="<<tc<<"  ext="<<te<<"  reldiff="<<dt<<"\n"
+             <<"      virt pieces: raw/born="<<(m_born!=0.?p_nlo->m_virt_raw/m_born:0.)
+             <<"  sub/born="<<(m_born!=0.?p_nlo->m_virt_subval/m_born:0.)
+             <<"  raw-sub="<<(m_born!=0.?(p_nlo->m_virt_raw-p_nlo->m_virt_subval)/m_born:0.)
+             <<"\n      formfactor="<<m_ev.m_formfactor<<"  log(FF)="<<(m_ev.m_formfactor>0.?log(m_ev.m_formfactor):0.)
+             <<"\n";
+    /*
+      Photon by photon. The external stores its own per-photon real in
+      YFS::Photon::m_beta10 (NLO_Base::CalculateReal), CEEX in m_realphot;
+      matched by MOMENTUM rather than by index, because the two lists are
+      built independently and an ordering assumption would silently pair the
+      wrong emissions.
+
+      Neither column sums to the total: rho is |B + sum_j R_j|^2, so the cross
+      terms between photons belong to no single photon.
+    */
+    const Vec4D_Vector &cph(p_ceex->AllPhotonsLab());
+    const std::vector<std::pair<Vec4D,double> > &eph(m_ev.m_extrealphot);
+    /*
+      The two sides are NOT handed the same photons. CEEX gets m_ev.m_ISRPhotons +
+      m_ev.m_FSRPhotons; p_nlo->m_photons is m_ev.m_ISRPhotons + m_ev.m_me_photons, and the
+      final-state halves come from different places - Dipole::GetPhotons() for
+      one, GetMEPhotons() for the other. Report both counts, because if they
+      differ there is no per-photon comparison to be made and the real
+      correction is not even over the same emissions.
+    */
+    msg_Out()<<"      photons: ceex="<<cph.size()<<"  ext="<<eph.size()
+             <<(cph.size()!=eph.size() ? "   <-- DIFFERENT LISTS" : "")<<"\n";
+    // Both lists in full, so a photon present on one side and absent on the
+    // other is visible directly rather than inferred from a failed match.
+    msg_Out()<<"        ceex list:";
+    for (size_t a(0); a < cph.size(); ++a) msg_Out()<<" "<<cph[a].E();
+    msg_Out()<<"\n        ext  list:";
+    for (size_t b(0); b < eph.size(); ++b) msg_Out()<<" "<<eph[b].first.E();
+    msg_Out()<<"\n        nISR="<<m_ev.m_ISRPhotons.size()
+             <<" nFSR="<<m_ev.m_FSRPhotons.size()
+             <<" nFSRforME="<<m_ev.m_fsrphotonsforME.size()<<"\n";
+    /*
+      Which list belongs to THIS event? Momentum conservation decides it with
+      no reference to either matrix element:  p_a + p_b - q_c - q_d - sum k
+      must vanish. A list captured in the wrong frame, or at the wrong stage
+      of the dipole's boost, cannot balance.
+    */
+    {
+      auto bal = [&](const Vec4D &sum) {
+        Vec4D b(m_ev.m_plab[0] + m_ev.m_plab[1] - sum);
+        for (size_t i(2); i < m_ev.m_plab.size(); ++i) b -= m_ev.m_plab[i];
+        return Max(Max(dabs(b[0]),dabs(b[1])),Max(dabs(b[2]),dabs(b[3])));
+      };
+      Vec4D sc, se;
+      for (size_t a(0); a < cph.size(); ++a) sc += cph[a];
+      for (size_t b(0); b < eph.size(); ++b) se += eph[b].first;
+      msg_Out()<<"        momentum balance:  ceex list "<<bal(sc)
+               <<"   ext list "<<bal(se)<<"\n";
+    }
+    for (size_t a(0); a < cph.size(); ++a) {
+      long match(-1); double best(1e30);
+      for (size_t b(0); b < eph.size(); ++b) {
+        const Vec4D d(cph[a]-eph[b].first);
+        const double m(Max(Max(dabs(d[0]),dabs(d[1])),Max(dabs(d[2]),dabs(d[3]))));
+        if (m < best) { best = m; match = (long)b; }
+      }
+      const bool ok(match >= 0 && best < 1e-6*Max(cph[a].E(),1e-30));
+      const double rce(p_ceex->RealFactorPhoton(a));
+      const double rex(ok && m_born != 0. ? eph[match].second/m_born : 0.);
+      msg_Out()<<"      gam["<<a<<"] E="<<cph[a].E()
+               <<(a < m_ev.m_ISRPhotons.size() ? " ISR" : " FSR")
+               <<"  ceex="<<rce
+               <<(ok ? "  ext=" : "  ext=(no match) ")<<rex
+               <<"  reldiff="<<(ok && std::abs(rce)+std::abs(rex) > 0. ?
+                                std::abs(rce-rex)/(std::abs(rce)+std::abs(rex)) : -1.)
+               <<"\n";
+    }
+  }
 }
 
 void YFS_Handler::InitNLO(){
-  p_nlo->Init(m_flavs,m_reallab,m_bornMomenta);
-  p_nlo->p_dipoles = p_dipoles;
-  p_nlo->m_eikmom = m_plab;
+  p_nlo->Init(m_flavs,m_ev.m_reallab,m_ev.m_bornMomenta);
+  p_nlo->p_dipoles = p_dipoles.get();
   p_nlo->SetBorn(m_born);
-  p_nlo->SetFSR(p_fsr);
-  p_nlo->m_ISRPhotons = m_ISRPhotons;
-  if (m_nlo_fsr_photons) p_nlo->m_FSRPhotons = m_fsrphotonsforME;
-  else                   p_nlo->m_FSRPhotons.clear();
+  p_nlo->SetFSR(p_fsr.get());
+  p_nlo->m_ISRPhotons = m_ev.m_ISRPhotons;
+  if (m_nlo_fsr_photons)
+    p_nlo->m_FSRPhotons = m_nlo_fsr_from_event ? m_ev.m_FSRPhotons : m_ev.m_fsrphotonsforME;
+  else
+    p_nlo->m_FSRPhotons.clear();
   // Mirror the two lines above: same photons, now carrying their dipole.
   p_nlo->m_photons.clear();
   if (p_dipoles->HasDipoleII())
-    for (const Vec4D &k : m_ISRPhotons)
+    for (const Vec4D &k : m_ev.m_ISRPhotons)
       p_nlo->m_photons.push_back(YFS::Photon(k, &p_dipoles->GetDipoleII()));
-  if (m_nlo_fsr_photons)
-    for (const YFS::Photon &k : m_me_photons) p_nlo->m_photons.push_back(k);
+  if (m_nlo_fsr_photons) {
+    // m_ev.m_photons holds the event-record photons WITH their dipoles: ISR first,
+    // then the FF ones, so skip the ISR head to take only the final-state tail.
+    if (m_nlo_fsr_from_event) {
+      const size_t skip(p_dipoles->HasDipoleII() ? m_ev.m_ISRPhotons.size() : 0);
+      for (size_t i(skip); i < m_ev.m_photons.size(); ++i)
+        p_nlo->m_photons.push_back(m_ev.m_photons[i]);
+    } else {
+      for (const YFS::Photon &k : m_ev.m_me_photons) p_nlo->m_photons.push_back(k);
+    }
+  }
 }
 
 double YFS_Handler::CalculateNLO(){
@@ -626,82 +836,115 @@ double YFS_Handler::CalculateNLO(){
   // one-shot fixed-point dump for the KKMC CEEX comparison (YFS: CEEX_Compare)
   p_nlo->CEEXComparePoint();
   InitNLO();
-  m_nlo_real = p_nlo->CalculateReal();
+  m_ev.m_nlo_real = p_nlo->CalculateReal();
+  if (m_ceex_compare) {
+    m_ev.m_extrealphot.clear();
+    for (const YFS::Photon &g : p_nlo->m_photons)
+      m_ev.m_extrealphot.push_back(std::make_pair(g.K(), g.beta10()));
+  }
   // Hardest-photon-only contributions are captured as a side effect of the
   // nominal sums above (see NLO_Base::CalculateReal/CalculateRealVirtual/
   // CalculateRealReal) - no extra ME evaluation needed here.
-  m_nlo_real_hardest = p_nlo->m_real_hard1;
-  m_nlo_real_2hardest = p_nlo->m_real_hard2;
+  m_ev.m_nlo_real_hardest = p_nlo->m_real_hard1;
+  m_ev.m_nlo_real_2hardest = p_nlo->m_real_hard2;
   InitNLO();
-  m_nlo_virtual = p_nlo->CalculateVirtual();
+  m_ev.m_nlo_virtual = p_nlo->CalculateVirtual();
   InitNLO();
-  m_nlo_rv = p_nlo->CalculateRealVirtual();
-  m_nlo_rv_hardest = p_nlo->m_rv_hard1;
-  m_nlo_rv_2hardest = p_nlo->m_rv_hard2;
+  m_ev.m_nlo_rv = p_nlo->CalculateRealVirtual();
+  m_ev.m_nlo_rv_hardest = p_nlo->m_rv_hard1;
+  m_ev.m_nlo_rv_2hardest = p_nlo->m_rv_hard2;
   InitNLO();
-  m_nlo_rr = p_nlo->CalculateRealReal();
-  m_nlo_rr_2hardest = p_nlo->m_rr_hard2;
-  return m_nlo_real + m_nlo_virtual + m_nlo_rv + m_nlo_rr;
+  m_ev.m_nlo_rr = p_nlo->CalculateRealReal();
+  m_ev.m_nlo_rr_2hardest = p_nlo->m_rr_hard2;
+  // Everything above the double real. This has to live HERE, not in
+  // NLO_Base::CalculateNLO(): that function is never called - this is the
+  // driver - so anything added to it silently does nothing.
+  // CalculateRealMultiplicity returns 0 for any n without a provider, so a run
+  // that leaves YFS: NLO_MAX_PHOTONS at its default of 2 pays nothing.
+  m_ev.m_nlo_rn = 0.;
+  for (size_t n(3); n <= p_nlo->MaxRealPhotons(); ++n) {
+    InitNLO();
+    m_ev.m_nlo_rn += p_nlo->CalculateRealMultiplicity(n);
+  }
+  return m_ev.m_nlo_real + m_ev.m_nlo_virtual + m_ev.m_nlo_rv + m_ev.m_nlo_rr + m_ev.m_nlo_rn;
 }
 
 
 void YFS_Handler::GenerateWeight() {
   if (m_dump_dipoles) p_dipoles->DumpDipoles();
   AddFormFactor();
-  if (m_mode == yfsmode::isrfsr) m_yfsweight = m_isrWeight * m_fsrWeight;
-  else if (m_mode == yfsmode::fsr) m_yfsweight = m_fsrWeight;
-  else m_yfsweight = m_isrWeight;
-  if (m_coulomb) m_yfsweight *= p_coulomb->GetWeight();
-  if (m_formWW) m_yfsweight *= m_ww_formfact; //*exp(m_coulSub);
+  if (m_mode == yfsmode::isrfsr) m_ev.m_yfsweight = m_isrWeight * m_fsrWeight;
+  else if (m_mode == yfsmode::fsr) m_ev.m_yfsweight = m_fsrWeight;
+  else m_ev.m_yfsweight = m_isrWeight;
+  if (m_coulomb) m_ev.m_yfsweight *= p_coulomb->GetWeight();
+  if (m_formWW) m_ev.m_yfsweight *= m_ev.m_ww_formfact; //*exp(m_ev.m_coulSub);
   CalculateBeta();
 
   double wif = 1.;
   if (m_ifireal && m_mode == yfsmode::isrfsr && m_nlotype == nlo_type::born &&
       p_nlo && p_nlo->HasReal()) {
-    Vec4D_Vector allphotons(m_ISRPhotons);
-    allphotons.insert(allphotons.end(), m_FSRPhotons.begin(), m_FSRPhotons.end());
+    Vec4D_Vector allphotons(m_ev.m_ISRPhotons);
+    allphotons.insert(allphotons.end(), m_ev.m_FSRPhotons.begin(), m_ev.m_FSRPhotons.end());
     wif = p_dipoles->RealIFWeight(allphotons);
   }
   // The Born-level YFS weight: ISR x FSR crude (plus Coulomb/WW if on) times
   // the form factor, with NO NLO correction applied. This is what YFS.LO has
   // to reproduce -- built here directly rather than recovered downstream as
-  // 1/m_real, so the LO column cannot inherit anything m_real does.
-  const double w_lo = m_yfsweight * m_formfactor * (1.-m_v);
-  m_yfsweight *= m_real + (wif - 1.);
-  m_yfsweight *= m_formfactor*(1.-m_v);
+  // 1/m_ev.m_real, so the LO column cannot inherit anything m_ev.m_real does.
+  const double w_lo = m_ev.m_yfsweight * m_ev.m_formfactor * (1.-m_v);
+  /*
+    IFI_Real is an EEX-only correction and must NOT reach the CEEX weight.
+
+    RealIFWeight() supplies the real initial-final interference that the EEX
+    beta expansion does not have. CEEX's partition sum IS that interference:
+    the 2^n assignments of each photon to the initial or the final line are
+    summed COHERENTLY, and the cross terms between them are real IFI by
+    construction. Adding wif on top counts it twice.
+
+    So the two corrections are built separately - the nominal one with wif, the
+    CEEX one without - and whichever drives the weight is chosen after.
+  */
+  const double corr_eex (m_ev.m_real + (wif - 1.));
+  const double corr_ceex(m_ev.m_ceexfactor);      // 0 if CEEX produced nothing
+  const bool   ceex_nom (m_ceex_weight && corr_ceex != 0.);
+  m_ev.m_yfsweight *= ceex_nom ? corr_ceex : corr_eex;
+  m_ev.m_yfsweight *= m_ev.m_formfactor*(1.-m_v);
+  // What the named CEEX column has to divide by to become a ratio.
+  m_ev.m_corr_nominal = ceex_nom ? corr_ceex : corr_eex;
+  m_ev.m_corr_ceex    = corr_ceex;
   CheckInvariants();
   // Captured before the IsBad/negative-weight clamps below, since the named
   // weights are ratios against the weight the event actually carries.
-  const double w_full = m_yfsweight;
+  const double w_full = m_ev.m_yfsweight;
   if(m_isr_debug) {
     Vec4D ele;
     for (int i = 2; i < m_flavs.size(); ++i)
     {
       if(IsEqual(m_flavs[i],kf_e)) {
-        ele = m_plab[p_dipoles->m_flav_label[m_flavs[i]]];
+        ele = m_ev.m_plab[p_dipoles->m_flav_label[m_flavs[i]]];
         p_beams->BoostBackLab(ele);
-        p_debug->FillHist("Form_Factor_FS_Angle", ele.Theta()*1000,m_formfactor,1);
+        p_debug->FillHist("Form_Factor_FS_Angle", ele.Theta()*1000,m_ev.m_formfactor,1);
       }
     }
   }
   DEBUG_FUNC("\nISR Weight = " << m_isrWeight << "\n" <<
              "  FSR Weight = " << m_fsrWeight << "\n" <<
-             "  WW form Weight = " << m_ww_formfact << "\n" <<
-             "  Total form Weight = " << m_formfactor << "\n" <<
+             "  WW form Weight = " << m_ev.m_ww_formfact << "\n" <<
+             "  Total form Weight = " << m_ev.m_formfactor << "\n" <<
              "  Coulomb Weight = " << p_coulomb->GetWeight() << "\n" <<
-             " Coulomb Subtraction Weight = " << exp(m_coulSub) << "\n" <<
-             "Total Weight = " << m_yfsweight << "\n");
-  if(IsBad(m_yfsweight)){
+             " Coulomb Subtraction Weight = " << exp(m_ev.m_coulSub) << "\n" <<
+             "Total Weight = " << m_ev.m_yfsweight << "\n");
+  if(IsBad(m_ev.m_yfsweight)){
     msg_Error()<<"\nISR Weight = " << m_isrWeight << "\n" <<
              "  FSR Weight = " << m_fsrWeight << "\n" <<
-             "  Form Factor = " << m_formfactor << "\n" <<
-             "  NLO  Correction = " << m_real << "\n" <<
-             "Total Weight = " << m_yfsweight << "\n";
-    m_yfsweight = 0;
+             "  Form Factor = " << m_ev.m_formfactor << "\n" <<
+             "  NLO  Correction = " << m_ev.m_real << "\n" <<
+             "Total Weight = " << m_ev.m_yfsweight << "\n";
+    m_ev.m_yfsweight = 0;
   }
-  if(m_yfsweight < 0 && m_skipNegWeights){
+  if(m_ev.m_yfsweight < 0 && m_skipNegWeights){
     msg_Debugging()<<"Skipping negative Weight in YFS"<<std::endl;
-    m_yfsweight=0;
+    m_ev.m_yfsweight=0;
     m_negskip++;
   }
 
@@ -718,7 +961,7 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
   // Build named NLO sub-weights. base_weight=1 so the nominal is unchanged.
   // YFSNLO  — Real + Virtual only (NLO denominator).
   // YFSNNLO — Real + Virtual + RealVirtual + RealReal (full NNLO denominator).
-  m_nlo_weightsmap = Weights_Map{1.0};
+  m_ev.m_nlo_weightsmap = Weights_Map{1.0};
   Weights wyfs{1.0};
   bool any(false);
 
@@ -734,7 +977,7 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
           for (const char *n : {"Real","Virtual","BR","BV","NLO_1g",
                                 "NLO_2g","NLO_FixedOrder"})
             names.push_back(n);
-        // EEX only when the beta expansion ran: m_eex is assigned solely inside
+        // EEX only when the beta expansion ran: m_ev.m_eex is assigned solely inside
         // CalculateBeta's `if (m_betaorder > 0)`, so at BETA:0 the column would
         // be a no-op 1.0 masquerading as a measurement. m_betaorder is
         // configuration, so gating the name on it keeps the set constant.
@@ -746,6 +989,11 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
             names.push_back(n);
       }
     }
+    /*
+      CEEX gets its own column whenever CEEX is on, independently of the NLO
+      names above: it is defined at Born level too, where none of those exist.
+    */
+    if (m_useceex) names.push_back("CEEX");
     if (m_ladder_weights) {
       if (m_coulomb && p_coulomb) names.push_back("NoCoulomb");
       if (m_ifisub == 1 && m_fullform >= 1 && m_tchannel == 0 &&
@@ -757,7 +1005,16 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
     m_wnames.clear();
     m_wnames.insert(names.begin(), names.end());
   }
-  if (m_nlo_current && m_nlotype != nlo_type::born && !IsZero(m_real) &&
+  if (m_useceex && m_wnames.count("CEEX") && m_ev.m_corr_ceex != 0. &&
+      !IsZero(m_ev.m_corr_nominal)) {
+    // The ratio that turns the nominal weight into the CEEX one. Both are
+    // O(alpha) correction FACTORS against the same crude, so everything else
+    // in the weight cancels - including IFI_Real, which is in the denominator
+    // and deliberately not in the numerator.
+    const double r(m_ev.m_corr_ceex/m_ev.m_corr_nominal);
+    if (!IsBad(r)) wyfs["CEEX"] = r;
+  }
+  if (m_ev.m_nlo_current && m_nlotype != nlo_type::born && !IsZero(m_ev.m_real) &&
       (p_nlo->HasNLO() || p_nlo->HasNNLO())) {
     auto ratio = [this](double term, double denom) -> double {
       return term / denom;
@@ -775,77 +1032,77 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
     };
 
     const bool have_fixed_order_ff =
-        m_fullform >= 1 && m_tchannel == 0 && !IsZero(m_formfactor);
+        m_fullform >= 1 && m_tchannel == 0 && !IsZero(m_ev.m_formfactor);
     // The cached exponent, not a fresh FormFactorSum(): the two must be the
     // same Y or this is not a truncation of anything.
     const double ff_fixedorder_ratio =
-        have_fixed_order_ff ? (1. + m_formfactor_sum) / m_formfactor : 1.;
+        have_fixed_order_ff ? (1. + m_ev.m_formfactor_sum) / m_ev.m_formfactor : 1.;
 
     // NLO: Real + Virtual
     if (p_nlo->HasNLO()) {
-      const double nlo_sum   = (m_born + m_nlo_real + m_nlo_virtual)/m_born;
-      const double real_sum  = (m_born + m_nlo_real)/m_born;
-      const double virt_sum  = (m_born + m_nlo_virtual)/m_born;
-      if (!IsZero(m_real)) {
-        emit("Real", ratio((m_nlo_real)/m_born, m_real));
-        emit("Virtual", ratio((m_nlo_virtual)/m_born, m_real));
-        emit("NLO", ratio(nlo_sum, m_real));
-        emit("BR", ratio(real_sum, m_real));
-        emit("BV", ratio(virt_sum, m_real));
+      const double nlo_sum   = (m_born + m_ev.m_nlo_real + m_ev.m_nlo_virtual)/m_born;
+      const double real_sum  = (m_born + m_ev.m_nlo_real)/m_born;
+      const double virt_sum  = (m_born + m_ev.m_nlo_virtual)/m_born;
+      if (!IsZero(m_ev.m_real)) {
+        emit("Real", ratio((m_ev.m_nlo_real)/m_born, m_ev.m_real));
+        emit("Virtual", ratio((m_ev.m_nlo_virtual)/m_born, m_ev.m_real));
+        emit("NLO", ratio(nlo_sum, m_ev.m_real));
+        emit("BR", ratio(real_sum, m_ev.m_real));
+        emit("BV", ratio(virt_sum, m_ev.m_real));
         // LO = (Born-level YFS weight) / (full weight), so that
-        // nominal * YFS.LO == w_lo identically. Algebraically 1/m_real, but
+        // nominal * YFS.LO == w_lo identically. Algebraically 1/m_ev.m_real, but
         // built from the two weights themselves.
         if (!IsZero(w_full)) emit("LO", w_lo/w_full);
-        emit("EEX", ratio(m_eex, m_real));
+        emit("EEX", ratio(m_ev.m_eex, m_ev.m_real));
         // Matching truncated to a fixed real-photon multiplicity, to see the
         // result "as if" only the 1 or 2 hardest photons were used in the
         // matching (full "NLO" above keeps all generated photons). Real is
         // summed over the 1 / 2 hardest photons; Virtual is always full.
-        const double nlo_1g = (m_born + m_nlo_real_hardest  + m_nlo_virtual)/m_born;
-        const double nlo_2g = (m_born + m_nlo_real_2hardest + m_nlo_virtual)/m_born;
-        emit("NLO_1g", ratio(nlo_1g, m_real));
-        emit("NLO_2g", ratio(nlo_2g, m_real));
+        const double nlo_1g = (m_born + m_ev.m_nlo_real_hardest  + m_ev.m_nlo_virtual)/m_born;
+        const double nlo_2g = (m_born + m_ev.m_nlo_real_2hardest + m_ev.m_nlo_virtual)/m_born;
+        emit("NLO_1g", ratio(nlo_1g, m_ev.m_real));
+        emit("NLO_2g", ratio(nlo_2g, m_ev.m_real));
         // Fixed-order comparison point: 1-photon NLO correction with the
         // resummed exp(form) form factor undone in favour of its 1+form
         // fixed-order truncation - matches a plain (non-YFS-resummed) NLO EW
         // calculation, which only ever has at most one real photon.
         if (have_fixed_order_ff)
-          emit("NLO_FixedOrder", ratio(nlo_1g, m_real) * ff_fixedorder_ratio);
+          emit("NLO_FixedOrder", ratio(nlo_1g, m_ev.m_real) * ff_fixedorder_ratio);
       }
     }
 
     // NNLO: RealVirtual + RealReal
     if (p_nlo->HasNNLO()) {
-      const double nnlo_total = (m_born + m_nlo_real + m_nlo_virtual + m_nlo_rv + m_nlo_rr)/m_born;
-      const double RR_total = (m_born + m_nlo_real + m_nlo_virtual + m_nlo_rr)/m_born;
-      const double RV_total = (m_born + m_nlo_real + m_nlo_virtual + m_nlo_rv)/m_born;
-      // No separate denominator: every column here is x/m_real. NNLO used to be
+      const double nnlo_total = (m_born + m_ev.m_nlo_real + m_ev.m_nlo_virtual + m_ev.m_nlo_rv + m_ev.m_nlo_rr)/m_born;
+      const double RR_total = (m_born + m_ev.m_nlo_real + m_ev.m_nlo_virtual + m_ev.m_nlo_rr)/m_born;
+      const double RV_total = (m_born + m_ev.m_nlo_real + m_ev.m_nlo_virtual + m_ev.m_nlo_rv)/m_born;
+      // No separate denominator: every column here is x/m_ev.m_real. NNLO used to be
       // make_ratio(nnlo_total, m_born + nnlo_total), which is
       // (m_born + nnlo_total)/(m_born + nnlo_total) -- identically 1, whatever
       // the physics did. It also added a dimensionful m_born to a ratio.
-      if (!IsZero(m_real)) {
-        emit("RealVirtual", ratio((m_nlo_rv)/m_born, m_real));
-        emit("RealReal", ratio((m_nlo_rr)/m_born, m_real));
-        emit("NLO+RR", ratio(RR_total, m_real));
-        emit("NLO+RV", ratio(RV_total, m_real));
-        emit("NNLO", ratio(nnlo_total, m_real));
+      if (!IsZero(m_ev.m_real)) {
+        emit("RealVirtual", ratio((m_ev.m_nlo_rv)/m_born, m_ev.m_real));
+        emit("RealReal", ratio((m_ev.m_nlo_rr)/m_born, m_ev.m_real));
+        emit("NLO+RR", ratio(RR_total, m_ev.m_real));
+        emit("NLO+RV", ratio(RV_total, m_ev.m_real));
+        emit("NNLO", ratio(nnlo_total, m_ev.m_real));
         // Matching truncated to a fixed real-photon multiplicity, the NNLO
         // analogue of NLO_1g/NLO_2g. 1 photon: Real + RealVirtual on the
         // single hardest, RealReal = 0 (a pair needs two photons). 2 photons:
         // Real + RealVirtual summed over the two hardest, plus the RealReal
         // pair formed by them. Virtual is always full.
         const double nnlo_1g =
-            (m_born + m_nlo_real_hardest  + m_nlo_virtual + m_nlo_rv_hardest)/m_born;
+            (m_born + m_ev.m_nlo_real_hardest  + m_ev.m_nlo_virtual + m_ev.m_nlo_rv_hardest)/m_born;
         const double nnlo_2g =
-            (m_born + m_nlo_real_2hardest + m_nlo_virtual + m_nlo_rv_2hardest +
-             m_nlo_rr_2hardest)/m_born;
-        emit("NNLO_1g", ratio(nnlo_1g, m_real));
-        emit("NNLO_2g", ratio(nnlo_2g, m_real));
+            (m_born + m_ev.m_nlo_real_2hardest + m_ev.m_nlo_virtual + m_ev.m_nlo_rv_2hardest +
+             m_ev.m_nlo_rr_2hardest)/m_born;
+        emit("NNLO_1g", ratio(nnlo_1g, m_ev.m_real));
+        emit("NNLO_2g", ratio(nnlo_2g, m_ev.m_real));
         // Fixed-order NNLO comparison: the 2-photon truncation (fixed-order
         // NNLO EW allows up to two real photons) with the resummed form factor
         // undone to its 1+form truncation.
         if (have_fixed_order_ff)
-          emit("NNLO_FixedOrder", ratio(nnlo_2g, m_real) * ff_fixedorder_ratio);
+          emit("NNLO_FixedOrder", ratio(nnlo_2g, m_ev.m_real) * ff_fixedorder_ratio);
 
         // ---- approximate double-virtual (VV) ----
         // The NNLO weights above are RV + RR only: there is no exact
@@ -891,10 +1148,10 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
             // cross section while RR alone is ~5% and the NLO->NNLO shift ~7.8%,
             // so this is NOT the dominant NNLO uncertainty.
             const double d = m_vv_approx_unc;
-            emit("VV_EEX", ratio(vv, m_real));
-            emit("NNLO_VV", ratio(nnlo_total + vv, m_real));
-            emit("NNLO_VV_up", ratio(nnlo_total + (1.+d)*vv, m_real));
-            emit("NNLO_VV_down", ratio(nnlo_total + (1.-d)*vv, m_real));
+            emit("VV_EEX", ratio(vv, m_ev.m_real));
+            emit("NNLO_VV", ratio(nnlo_total + vv, m_ev.m_real));
+            emit("NNLO_VV_up", ratio(nnlo_total + (1.+d)*vv, m_ev.m_real));
+            emit("NNLO_VV_down", ratio(nnlo_total + (1.-d)*vv, m_ev.m_real));
           } else {
             msg_Error() << METHOD << ": EEX double-virtual estimate is "
                         << vv << ", skipping the VV weights\n";
@@ -903,13 +1160,13 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
       }
     }
 
-    if (p_fb) p_fb->SplitWeights(wyfs, m_plab, m_flavs);
+    if (p_fb) p_fb->SplitWeights(wyfs, m_ev.m_plab, m_flavs);
     any = true;
   }
 
   if (BuildLadderWeights(wyfs)) any = true;
 
-  if (any) m_nlo_weightsmap["YFS"] = wyfs;
+  if (any) m_ev.m_nlo_weightsmap["YFS"] = wyfs;
 }
 
 
@@ -935,31 +1192,34 @@ bool YFS_Handler::BuildLadderWeights(ATOOLS::Weights &w) {
 
 
 void YFS_Handler::YFSDebug(double W){
-  p_debug->FillHist(m_plab, p_isr, p_fsr, W);
+  p_debug->FillHist(m_ev.m_plab, p_isr.get(), p_fsr.get(), W);
 }
 
 
 void YFS_Handler::Reset() {
+  // NOT the event boundary - that is StartEvent(), called from
+  // SetBornMomenta. This is the failure path: MakeYFS and CalculateFSR call
+  // it when an event is abandoned part-way, to drop the photons and zero the
+  // weight while leaving the kinematics that were already handed in.
   m_fsrWeight = 0;
-  m_yfsweight = 0;
-  m_ISRPhotons.clear();
-  m_FSRPhotons.clear();
-  m_photonSumISR *= 0;
-  m_photonSumFSR *= 0;
-  m_real = 1;
-  m_eex = 0.;
+  m_ev.m_yfsweight = 0;
+  m_ev.m_ISRPhotons.clear();
+  m_ev.m_FSRPhotons.clear();
+  m_ev.m_photonSumISR *= 0;
+  m_ev.m_photonSumFSR *= 0;
+  m_ev.m_real = 1;
+  m_ev.m_eex = 0.;
   // m_s = sqr(rpa->gen.Ecms());
-  // PRINT_VAR(m_s);
 }
 
 bool YFS_Handler::CheckMomentumConservation(){
-  Vec4D incoming = m_bornMomenta[0]+m_bornMomenta[1];
+  Vec4D incoming = m_ev.m_bornMomenta[0]+m_ev.m_bornMomenta[1];
   Vec4D outgoing;
-  for(auto k: m_ISRPhotons)  outgoing+=k;
-  for(auto kk: m_FSRPhotons) outgoing+=kk;
-  for(size_t i = 2; i < m_plab.size(); ++i)
+  for(auto k: m_ev.m_ISRPhotons)  outgoing+=k;
+  for(auto kk: m_ev.m_FSRPhotons) outgoing+=kk;
+  for(size_t i = 2; i < m_ev.m_plab.size(); ++i)
   {
-    outgoing+=m_plab[i];
+    outgoing+=m_ev.m_plab[i];
   }
   Vec4D diff = incoming - outgoing;
   if(!IsEqual(incoming,outgoing, 1e-5)){
@@ -967,8 +1227,8 @@ bool YFS_Handler::CheckMomentumConservation(){
                <<"Incoming momentum = "<<incoming<<std::endl
                <<"Outgoing momentum = "<<outgoing<<std::endl
                <<"Difference = "<<diff<<std::endl
-               <<"ISR Photons = "<<m_ISRPhotons<<std::endl
-               <<"FSR Photons = "<<m_FSRPhotons<<std::endl;
+               <<"ISR Photons = "<<m_ev.m_ISRPhotons<<std::endl
+               <<"FSR Photons = "<<m_ev.m_FSRPhotons<<std::endl;
   return false;
   }
   return true;
@@ -978,13 +1238,13 @@ bool YFS_Handler::CheckMomentumConservation(){
 void YFS_Handler::CheckMasses(){
   bool allonshell=true;
   std::vector<double> mass;
-  Vec4D_Vector p = m_plab;
-  for(auto k: m_ISRPhotons) p.push_back(k);
-  for(auto kk: m_FSRPhotons) p.push_back(kk);
+  Vec4D_Vector p = m_ev.m_plab;
+  for(auto k: m_ev.m_ISRPhotons) p.push_back(k);
+  for(auto kk: m_ev.m_FSRPhotons) p.push_back(kk);
 
   for(size_t i = 0; i < p.size(); ++i)
   {
-    if(i<m_plab.size()){
+    if(i<m_ev.m_plab.size()){
       mass.push_back(m_flavs[i].Mass());
       if(!IsEqual(p[i].Mass(),m_flavs[i].Mass(),1e-5)){
         msg_Debugging()<<"Wrong particle masses in YFS Mapping"<<std::endl
@@ -1006,10 +1266,10 @@ void YFS_Handler::CheckMasses(){
   }
   if(!allonshell) {
     m_stretcher.StretchMomenta(p, mass);
-    for(size_t i = 0; i < m_plab.size(); ++i)
+    for(size_t i = 0; i < m_ev.m_plab.size(); ++i)
     {
       msg_Debugging()<<"Mass after Mometum strechting"<<std::endl;
-      if(i<m_plab.size()){
+      if(i<m_ev.m_plab.size()){
          msg_Debugging()<<"Flavour = "<<m_flavs[i]<<", with mass = "<<m_flavs[i].Mass()<<std::endl
                        <<"Four momentum = "<<p[i]<<", with mass = "<<p[i].Mass()<<std::endl;
       }
@@ -1017,7 +1277,7 @@ void YFS_Handler::CheckMasses(){
          msg_Debugging()<<"Flavour = "<<Flavour(22)<<", with mass = "<<Flavour(22).Mass()<<std::endl
                         <<"Four momentum = "<<p[i]<<", with mass = "<<p[i].Mass()<<std::endl;
       }
-      m_plab[i] = p[i];
+      m_ev.m_plab[i] = p[i];
     }
   }
 }
@@ -1029,8 +1289,8 @@ void YFS_Handler::SplitPhotons(ATOOLS::Blob * blob){
 
 Vec4D_Vector YFS_Handler::GetPhotons(){
   Vec4D_Vector k;
-  for(auto p: m_ISRPhotons) k.push_back(p);
-  for(auto p: m_FSRPhotons) k.push_back(p);
+  for(auto p: m_ev.m_ISRPhotons) k.push_back(p);
+  for(auto p: m_ev.m_FSRPhotons) k.push_back(p);
   return k;
 }
 
@@ -1054,7 +1314,7 @@ void YFS_Handler::CheckInvariants() const {
 
   // Every photon knows the dipole it came from. A null one means a Photon was
   // built without it, and IsISR()/IsFSR() would dereference null.
-  for (const YFS::Photon &k : m_photons)
+  for (const YFS::Photon &k : m_ev.m_photons)
     if (!k.Dip())
       msg_Error() << METHOD << ": photon with no dipole; its origin cannot be "
                   << "determined." << std::endl;
@@ -1073,11 +1333,11 @@ void YFS_Handler::CheckInvariants() const {
 
   // The weight the event carries must be a number. Catching it here names the
   // event; downstream it only shows up as a NaN cross section.
-  if (ATOOLS::IsBad(m_yfsweight))
-    msg_Error() << METHOD << ": YFS weight is " << m_yfsweight
+  if (ATOOLS::IsBad(m_ev.m_yfsweight))
+    msg_Error() << METHOD << ": YFS weight is " << m_ev.m_yfsweight
                 << " (isr=" << m_isrWeight << " fsr=" << m_fsrWeight
-                << " form=" << m_formfactor << " real=" << m_real << ")"
+                << " form=" << m_ev.m_formfactor << " real=" << m_ev.m_real << ")"
                 << std::endl;
-  if (ATOOLS::IsBad(m_formfactor))
-    msg_Error() << METHOD << ": form factor is " << m_formfactor << std::endl;
+  if (ATOOLS::IsBad(m_ev.m_formfactor))
+    msg_Error() << METHOD << ": form factor is " << m_ev.m_formfactor << std::endl;
 }

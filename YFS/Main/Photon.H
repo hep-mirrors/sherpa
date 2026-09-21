@@ -34,7 +34,6 @@ namespace YFS {
 
     double m_beta10    = 0.;
     double m_beta11    = 0.;
-    double m_ifi_ratio = 1.;
 
     double beta10() const { return m_beta10; }
     double beta11() const { return m_beta11; }
@@ -49,21 +48,6 @@ namespace YFS {
   };
 
   typedef std::vector<Photon> Photon_Vector;
-
-  class PhotonPair {
-  public:
-    PhotonPair(const Photon &k1, const Photon &k2) : p_k1(&k1), p_k2(&k2) {}
-
-    const Photon &First()  const { return *p_k1; }
-    const Photon &Second() const { return *p_k2; }
-
-    double m_beta20 = 0.;    //!< this pair's real-real contribution
-    double beta20() const { return m_beta20; }
-
-  private:
-    const Photon *p_k1 = nullptr;
-    const Photon *p_k2 = nullptr;
-  };
 
 }// end of namespace YFS
 

@@ -27,9 +27,6 @@ using namespace METOOLS;
 
 
 YFS_Form_Factor::YFS_Form_Factor() {
-  // p_virt is only assigned in NLO_Base; left uninitialised it holds garbage, so the
-  // (p_virt?...) guard in BVirtGeneralEps passed and IRscale() segfaulted.
-  p_virt = nullptr;
     rpa->gen.AddCitation(1,"YFS Form Factor as implemented in \\cite{Jadach:1999vf}");
 }
 
@@ -542,7 +539,6 @@ double YFS_Form_Factor::WW_s(Vec4D p1, Vec4D p2) {
   else {
     t2 = t2 + M_PI * M_PI * beta / 2.;
   }
-  // PRINT_VAR(ReB2pi);
   // if(exp(m_alpi*(t1+t2+t3)) > 50) return 1;
   return exp(m_alpi * (t1 + t2 + t3));
 }
@@ -622,7 +618,6 @@ double YFS_Form_Factor::BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Ve
       // - p2q1/(p2k*q1k) +p2q2/(p2k*q2k));
       // eikff = 2*q1q2/(q1k*q2k) -sqr(m_wm.Mass()/q1k) -sqr(m_wp.Mass()/q2k);
       // eikii = 2*p1p2/(p1k*p2k) -sqr(m_beam1.Mass()/p1k) -sqr(m_beam2.Mass()/p2k);
-      // PRINT_VAR(eikii/(m_beam1/p1k-m_beam2/p2k).Abs2());
       eikii = -(m_beam1 / p1k - m_beam2 / p2k).Abs2();
       eikff = -(m_wm / q1k - m_wp / q2k).Abs2();
       eikif = 2 * (m_beam1 / p1k - m_beam2 / p2k) * (m_wm / q1k - m_wp / q2k);
@@ -706,19 +701,16 @@ double YFS_Form_Factor::BVirtT(YFS::Dipole &d, double kmax){
     Complex form;
     Flavour fl1 = d.GetFlav(0);
     Flavour fl2 = d.GetFlav(1);
-    // PRINT_VAR(d.m_thetai*p1+d.m_thetaj*p2);
     double s = (p1+p2).Abs2();
     double crossterm = ((d.m_thetai*p1+d.m_thetaj*p2).Abs2());
     if(fl1==fl2){
       form = 1./8.*B0(s, m1*m1, m2*m2);
       // form += -8.*(m1*m1)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
-      // PRINT_VAR(B0(s, m1*m1, m2*m2));
     //   // PRINT_VAR(C0(m1*m1, 0, m1*m1,0, m1*m1, m1*m1));
     }
     else{
       form = 2*(p1*p2)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
       form += 0.25*B0(s, m1*m1, m2*m2);
-      // PRINT_VAR(B0(crossterm, m1*m1, m2*m2));
     }
     form*=m_alpi;
     // // PRINT_VAR(fl1);
@@ -760,19 +752,16 @@ DivArrD YFS_Form_Factor::BVirtTEps(YFS::Dipole &d, double kmax){
     Complex form;
     Flavour fl1 = d.GetFlav(0);
     Flavour fl2 = d.GetFlav(1);
-    // PRINT_VAR(d.m_thetai*p1+d.m_thetaj*p2);
     double s = (p1+p2).Abs2();
     double crossterm = ((d.m_thetai*p1+d.m_thetaj*p2).Abs2());
     if(fl1==fl2){
       form = 1./8.*B0(s, m1*m1, m2*m2);
       // form += -8.*(m1*m1)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
-      // PRINT_VAR(B0(s, m1*m1, m2*m2));
     //   // PRINT_VAR(C0(m1*m1, 0, m1*m1,0, m1*m1, m1*m1));
     }
     else{
       form = 2*(p1*p2)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
       form += 0.25*B0(s, m1*m1, m2*m2);
-      // PRINT_VAR(B0(crossterm, m1*m1, m2*m2));
     }
     form*=m_alpi;
     // // PRINT_VAR(fl1);
@@ -895,14 +884,6 @@ double YFS_Form_Factor::BVirtGeneral(YFS::Dipole &d, double Kmax){
   form += A1(p1, p2);
   form += -p1*p2*a2;
   // if(fabs(form)> 1e4 ){
-  //   msg_Out()<<"Form = "<<form<<std::endl
-  //            <<"p1 = "<<p1<<std::endl
-  //            <<"p2 = "<<p2<<std::endl
-  //            <<"p1.Theta() = "<<p1.Theta()<<std::endl
-  //            <<"p2.Theta() = "<<p2.Theta()<<std::endl
-  //            <<"a0 = "<<a0<<std::endl
-  //            <<"a1 = "<<A1(p1,p2)<<std::endl
-  //            <<"a2 = "<<a2<<std::endl;
   // }
   if(IsBad(form)){
     msg_Error()<<"YFS Btilde is NaN"<<std::endl

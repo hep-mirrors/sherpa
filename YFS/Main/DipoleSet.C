@@ -104,7 +104,7 @@ namespace YFS {
     Flavour_Vector fl{a.flav, b.flav};
     Vec4D_Vector   mo{a.mom,  b.mom};
     Vec4D_Vector   bo{a.born, b.born};
-    std::unique_ptr<Dipole> D(new Dipole(fl, mo, bo, t, alpha));
+    auto D(std::make_unique<Dipole>(fl, mo, bo, t, alpha));
     D->SetFlavLab((int)a.idx, (int)b.idx);
     m_dipoles.push_back(std::move(D));
     const std::size_t i(m_dipoles.size() - 1);

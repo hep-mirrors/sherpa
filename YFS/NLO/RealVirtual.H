@@ -5,6 +5,7 @@
 #include "PHASIC++/Process/Color_Correlated_ME2.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "YFS/Main/YFS_Base.H"
+#include <memory>
 
 
 // namespace PHASIC{
@@ -19,14 +20,13 @@ namespace YFS{
         RealVirtual(const PHASIC::Process_Info& pi);
         ~RealVirtual();
         double Calc(const ATOOLS::Vec4D_Vector &momenta, double b);    
-        PHASIC::Virtual_ME2_Base     *p_loop_me;
+        std::unique_ptr<PHASIC::Virtual_ME2_Base> p_loop_me;
         double Calc_V(const ATOOLS::Vec4D_Vector& p,
                     const double B,
                     const double mur);
         MODEL::Coupling_Map m_cpls;
-        PHASIC::Scale_Setter_Base *p_scale;
-        PHASIC::Tree_ME2_Base* p_born_me;
-        PHASIC::Process_Base *p_rvproc;
+        //! Not owned; set by SetProc, may be null.
+        PHASIC::Process_Base *p_rvproc = nullptr;
         ATOOLS::Flavour_Vector m_flavs;
         double m_sym, m_factor;
         inline void SetProc(PHASIC::Process_Base *realproc) {p_rvproc=realproc;}

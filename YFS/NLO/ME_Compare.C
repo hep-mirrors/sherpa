@@ -34,19 +34,19 @@ ME_Compare::ME_Compare(bool check, const std::string &histdir,
     // nearest charged leg, and of the angle [rad] to the nearest beam
     // direction, filled separately for points that agreed vs. disagreed
     // with the reference ME.
-    m_histograms1d["photon_logE_ok"]       = new Histogram(0,-10.,3.,130);
-    m_histograms1d["photon_logE_bad"]      = new Histogram(0,-10.,3.,130);
-    m_histograms1d["photon_logPT_ok"]      = new Histogram(0,-10.,3.,130);
-    m_histograms1d["photon_logPT_bad"]     = new Histogram(0,-10.,3.,130);
-    m_histograms1d["photon_logTheta_ok"]   = new Histogram(0,-14.,1.,150);
-    m_histograms1d["photon_logTheta_bad"]  = new Histogram(0,-14.,1.,150);
-    m_histograms1d["photon_logThetaZ_ok"]  = new Histogram(0,-14.,1.,150);
-    m_histograms1d["photon_logThetaZ_bad"] = new Histogram(0,-14.,1.,150);
+    m_histograms1d["photon_logE_ok"]       = std::make_unique<Histogram>(0,-10.,3.,130);
+    m_histograms1d["photon_logE_bad"]      = std::make_unique<Histogram>(0,-10.,3.,130);
+    m_histograms1d["photon_logPT_ok"]      = std::make_unique<Histogram>(0,-10.,3.,130);
+    m_histograms1d["photon_logPT_bad"]     = std::make_unique<Histogram>(0,-10.,3.,130);
+    m_histograms1d["photon_logTheta_ok"]   = std::make_unique<Histogram>(0,-14.,1.,150);
+    m_histograms1d["photon_logTheta_bad"]  = std::make_unique<Histogram>(0,-14.,1.,150);
+    m_histograms1d["photon_logThetaZ_ok"]  = std::make_unique<Histogram>(0,-14.,1.,150);
+    m_histograms1d["photon_logThetaZ_bad"] = std::make_unique<Histogram>(0,-14.,1.,150);
     // log10 of the minimum photon-photon opening angle [rad], when there
     // are 2+ photons (e.g. RealReal) - the photon-photon collinear/soft
     // region has no analogue in a single-photon (Real) process.
-    m_histograms1d["photon_logThetaGG_ok"]  = new Histogram(0,-14.,1.,150);
-    m_histograms1d["photon_logThetaGG_bad"] = new Histogram(0,-14.,1.,150);
+    m_histograms1d["photon_logThetaGG_ok"]  = std::make_unique<Histogram>(0,-14.,1.,150);
+    m_histograms1d["photon_logThetaGG_bad"] = std::make_unique<Histogram>(0,-14.,1.,150);
   }
 }
 
@@ -73,11 +73,10 @@ ME_Compare::~ME_Compare()
     msg_Out()<<ATOOLS::om::bold<<ATOOLS::om::blue
              <<"###############################################"
              <<ATOOLS::om::reset<<std::endl;
-    for(auto hit: m_histograms1d){
+    for(auto &hit: m_histograms1d){
       hit.second->MPISync();
       hit.second->Finalize();
       hit.second->Output(std::string("./")+m_histdir+"/"+hit.first+".dat");
-      delete hit.second;
     }
   }
   if(m_scatter.is_open()) m_scatter.close();

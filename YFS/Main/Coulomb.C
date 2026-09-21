@@ -27,7 +27,6 @@ Coulomb::~Coulomb(){
 void Coulomb::Calculate(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2){
   m_s1 = p1.Abs2();
   m_s2 = p2.Abs2();
-  // PRINT_VAR(m_s);
   //Eq 9 in https://arxiv.org/pdf/hep-ph/9507422.pdf
   double E = (m_s-4*sqr(m_MW))/(4*m_MW);
   double sarg = sqrt(sqr(E)+sqr(m_GW));

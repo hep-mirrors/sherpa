@@ -22,7 +22,7 @@ Virtual::Virtual(const PHASIC::Process_Info& pi)
     loop_pi.m_maxcpl[0] = pi.m_maxcpl[0];
     loop_pi.m_mincpl[1] = pi.m_mincpl[1];
     loop_pi.m_maxcpl[1] = pi.m_maxcpl[1]+1;
-    p_loop_me = PHASIC::Virtual_ME2_Base::GetME2(loop_pi);
+    p_loop_me.reset(PHASIC::Virtual_ME2_Base::GetME2(loop_pi));
     if (!p_loop_me)  {
       msg_Error()<<loop_pi<<std::endl;
       THROW(not_implemented, "Couldn't find virtual ME for this process.");
@@ -35,7 +35,6 @@ Virtual::Virtual(const PHASIC::Process_Info& pi)
 
 Virtual::~Virtual()
 {
- if(p_loop_me) delete p_loop_me;
 }
 
 

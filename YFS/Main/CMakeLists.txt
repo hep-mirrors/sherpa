@@ -6,7 +6,6 @@ set(YFSMain_SOURCES Coulomb.C
                  Define_Dipoles.C
                  FSR.C
                  ISR.C
-                 Semi.C
                  YFS_Base.C
                  YFS_FB_Analysis.C
                  YFS_Form_Factor.C
@@ -21,7 +20,6 @@ set(YFSMain_HEADERS Coulomb.H
                  Define_Dipoles.H
                  FSR.H
                  ISR.H
-                 Semi.H
                  YFS_Base.H
                  YFS_FB_Analysis.H
                  YFS_Form_Factor.H

@@ -52,12 +52,10 @@ FSR::FSR()
   m_use_crude = s["FSR_CRU"].Get<int>();
   m_eikonal_mode = s["FSR_EIK"].Get<int>();
   m_fixed_ngamma = s["FSR_NGAMMA"].Get<int>();
-  p_fsrFormFact = new YFS::YFS_Form_Factor();
+  p_fsrFormFact = std::make_unique<YFS::YFS_Form_Factor>();
 }
 
-FSR::~FSR() {
-  if(p_fsrFormFact) delete p_fsrFormFact;
-}
+FSR::~FSR() = default;
 
 bool FSR::Initialize(YFS::Dipole &dipole) {
   p_dipole = &dipole;

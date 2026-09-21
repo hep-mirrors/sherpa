@@ -11,10 +11,12 @@
 
 
 #include <map>
+#include <memory>
 
 namespace YFS {
-typedef std::map<std::string, ATOOLS::Histogram *> histograms;
-typedef std::map<std::string, ATOOLS::Histogram_2D *> histograms2d;
+
+typedef std::map<std::string, std::unique_ptr<ATOOLS::Histogram> > histograms;
+typedef std::map<std::string, std::unique_ptr<ATOOLS::Histogram_2D> > histograms2d;
 
 
   class Debug : public YFS_Base

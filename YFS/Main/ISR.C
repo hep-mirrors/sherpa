@@ -40,7 +40,6 @@ void ISR::SetIncoming(YFS::Dipole *dipole) {
   m_b1 = CalculateBeta(m_beam1);
   m_b2 = CalculateBeta(m_beam2);
   m_mass = p_dipole->Mass();
-  m_mass2 = m_mass * m_mass;
   m_am2 = sqr(m_beam1.Mass()+m_beam2.Mass()) / m_s;
   m_g  = p_dipole->m_gamma;
   m_gp = p_dipole->m_gammap;

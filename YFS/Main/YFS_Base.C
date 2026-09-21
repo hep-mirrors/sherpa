@@ -103,6 +103,7 @@ void YFS_Base::RegisterDefaults(){
   s["HARD_MIN"].SetDefault(0.);
   s["PHOTON_MASS"].SetDefault(0.1);
   s["CEEX"].SetDefault(0);
+  s["CEEX_WEIGHT"].SetDefault(0);
   s["Collinear_Real"].SetDefault(0);
   s["CLUSTERING_THRESHOLD"].SetDefault(10);
   s["TChannel"].SetDefault(0);
@@ -152,6 +153,7 @@ void YFS_Base::RegisterDefaults(){
   s["Fixed_Order"].SetDefault(fixed_order::full);
   s["SKIP_NEG_WEIGHTS"].SetDefault(false);
   s["NLO_FSR_PHOTONS"].SetDefault(true);
+  s["NLO_FSR_FROM_EVENT"].SetDefault(0);
   s["MIN_PHOTON"].SetDefault<int>(-1);
   s["FB_Analysis"].SetDefault(false);
   s["FB_Analysis_KF"].SetDefault<int>(0);
@@ -213,6 +215,7 @@ void YFS_Base::RegisterSettings(){
   m_hardmin = s["HARD_MIN"].Get<double>();
   m_photonMass = s["PHOTON_MASS"].Get<double>();
   m_useceex = s["CEEX"].Get<int>();
+  m_ceex_weight = s["CEEX_WEIGHT"].Get<int>();
   m_coll_real = s["Collinear_Real"].Get<bool>();
   m_resonace_max = s["CLUSTERING_THRESHOLD"].Get<double>();
   m_nlo_weight_breakdown = s["NLO_Weight_Breakdown"].Get<int>();
@@ -252,6 +255,7 @@ void YFS_Base::RegisterSettings(){
   m_fixedOrder = s["Fixed_Order"].Get<fixed_order::code>();
   m_skipNegWeights = s["SKIP_NEG_WEIGHTS"].Get<bool>();
   m_nlo_fsr_photons = s["NLO_FSR_PHOTONS"].Get<bool>();
+  m_nlo_fsr_from_event = s["NLO_FSR_FROM_EVENT"].Get<int>();
   m_mingammaN = s["MIN_PHOTON"].Get<int>();
   m_fb_analysis = s["FB_Analysis"].Get<bool>();
   m_fb_kf = s["FB_Analysis_KF"].Get<int>();

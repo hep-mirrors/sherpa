@@ -94,13 +94,18 @@ public:
                             const ATOOLS::Flavour_Vector &fl,
                             const size_t &nin=2);
 
-  double m_mass2[2];
   double m_s,m_irscale;
-  double m_v, m_vmin, m_vmax, m_isrcut, m_sp;
+  double m_v, m_vmax, m_isrcut, m_sp;
   double m_alpha, m_alpi, m_hardmin, m_gp, m_g;
-  bool m_CalForm, m_fillblob, m_isr_debug, m_fsr_debug, m_coulomb, m_setparticles;
+  bool m_CalForm, m_fillblob, m_isr_debug, m_fsr_debug, m_coulomb;
   double m_photonMass, m_oneloop, m_born, m_isrWeight, m_fsrWeight, m_rescale_alpha;
-  double m_nbar, m_deltacut, m_betatWW, m_eps, m_fixed_weight, m_resonace_max;
+  // m_nbar is deliberately NOT here. ISR and FSR each have their own photon
+  // multiplicity and each declares it; a shared base copy meant ISR silently
+  // used the base member while FSR shadowed it, which is the arrangement that
+  // produced the m_betatWW/m_nbar class of bug. Likewise m_setparticles, which
+  // is YFS_Handler's flavour latch and was never touched here, and m_mass2[2],
+  // which nothing ever read or wrote.
+  double m_deltacut, m_betatWW, m_eps, m_fixed_weight, m_resonace_max;
   double m_rv_test_x, m_rv_test_theta, m_rv_test_phi;
   double m_rv_soft_cut; // soft-photon energy fraction below which RV is skipped
   // Same coarse soft-photon gate for the double-real beta_2^2, applied to each
@@ -176,6 +181,30 @@ public:
   int m_no_born, m_check_real_sub, m_check_rr_sub, m_no_subtraction, m_tchannel, m_check_virt_born, m_noflux, m_massless_sub;
   
   bool m_looptool, m_virtual_only, m_real_only, m_use_model_alpha,m_failcut,m_nlocuts;
+  /*!
+    CEEX_WEIGHT: take the O(alpha) correction factor from CEEX rather than
+    from the EEX beta expansion. Default 0 - CEEX runs as a validation
+    object either way, and this is the switch that lets it into the
+    physics.
+  */
+  int  m_ceex_weight = 0;
+  /*!
+    NLO_FSR_FROM_EVENT: take the final-state photons for the fixed-order real
+    correction from the EVENT RECORD (Dipole::GetPhotons(), what CEEX is
+    given) rather than from Dipole::GetMEPhotons().
+
+    The two are not the same photons. GetMEPhotons() is captured in
+    Dipole::MakeFSR before Dipole::Boost(), GetPhotons() after it, so they sit
+    in different frames - measured on one event, the same three FSR photons
+    came out as 0.0313/0.00255/11.48 GeV against 0.0151/0.00029/1.166.
+    GetMEPhotons() additionally keeps the photons HidePhotons() drops, which
+    is its stated purpose (see the note in Dipole.C), so switching source also
+    changes which photons are corrected at all - the two effects are not
+    separable from here.
+
+    Default 0 = unchanged.
+  */
+  int  m_nlo_fsr_from_event = 0;
   bool m_isrinital, m_realtool, m_realvirt, m_useceex, m_coll_real, m_rrtool, m_vvtool, m_dim_reg;
   bool m_skipNegWeights;
   bool m_nlo_fsr_photons;

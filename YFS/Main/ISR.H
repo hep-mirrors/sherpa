@@ -9,13 +9,15 @@
 #include "YFS/Main/Dipole.H"
 
 using namespace ATOOLS;
+#include <memory>
+
 namespace BEAM   { class Beam_Base;      }
 // #define YFS_DEBUG
 
 namespace YFS {
 
 #ifdef YFS_DEBUG
-typedef std::map<std::string, ATOOLS::Histogram *> histograms;
+typedef std::map<std::string, std::unique_ptr<ATOOLS::Histogram> > histograms;
 static histograms m_histograms;
 #endif
 class ISR : public YFS_Base {
@@ -27,11 +29,13 @@ public:
   double  m_c, m_F, m_sin;
   double  m_w, m_f, m_fbar;
   double  m_delta, m_betaf;
-  double  m_jacW, m_Jac, m_Jac0, m_lam, m_lam0, m_diljac, m_diljac0;
+  double  m_jacW, m_lam, m_lam0, m_diljac, m_diljac0;
   double  A;
   int m_n, m_cut;
-  double m_beta, m_betap, m_form, m_formF, m_weight, m_Kmax, m_Kmin, m_betak;
-  double  m_L, m_am2, m_mass, m_mass2, m_x;
+  double m_beta, m_form, m_weight, m_Kmax, m_Kmin;
+  double  m_am2, m_mass, m_x;
+  //! Mean ISR photon multiplicity. Own member, not shared with FSR's.
+  double  m_nbar;
   double m_massW;
   double m_W, m_W0; // for beta1
   bool m_setmass;
@@ -45,11 +49,11 @@ public:
   // and m_scale are set only on the m_n != 1 branch of MapPhotonMomentun;
   // m_jacvec is always set.
   double m_AA = 0., m_K2 = 0., m_PTK = 0., m_jacvec = 0., m_scale = 0.;
-  Vec4D m_pvec1, m_pvec2, m_qvec1, m_qvec2, m_photon, m_photonSum;
+  Vec4D m_photon, m_photonSum;
   Vec4D_Vector m_photons;
   void GeneratePhotonAngleMassless();
-  BEAM::Beam_Base **p_beam;
-  YFS::Dipole *p_dipole;
+  //! Not owned: the dipole handed in by Initialize/SetIncoming.
+  YFS::Dipole *p_dipole = nullptr;
 
 
 public:

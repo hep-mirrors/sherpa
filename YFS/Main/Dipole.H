@@ -4,6 +4,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Math/Poincare.H"
+#include <optional>
 #include "METOOLS/Loops/Divergence_Array.H"
 #include "YFS/NLO/Virtual.H"
 #include <vector>
@@ -51,7 +52,7 @@ namespace YFS{
         Vec4D_Vector m_dipolePhotons, m_dipolePhotonsEEX;
         std::vector<std::string> m_names;
         double m_QiQj, m_Qi, m_Qj, m_thetai, m_thetaj, m_thetaij, m_sp, m_b1, m_b2, m_gamma, m_gammap, m_alp, m_alpi,m_rescale_alpha;
-        bool m_setBorn, m_sameflav, m_irfinite, m_isduplicate;
+        bool m_sameflav, m_irfinite, m_isduplicate;
         // m_real_only and m_resonance are read by CalculateGamma() and
         // IsResonance(), both reachable before any setter runs - the
         // constructor itself calls CalculateGamma(). Initialised here because
@@ -64,10 +65,18 @@ namespace YFS{
         Vec4D_Vector m_momenta, m_bornmomenta, m_oldmomenta, m_newmomenta, m_ghost, m_eikmomentum,m_mephotons;
         Flavour_Vector m_flavs;
         Flavour m_ResFlav;
-        Vec4D m_photonSum, m_QFrame, m_kcorr;
-        Poincare *p_Pboost, *p_Qboost;
+        Vec4D m_photonSum, m_QFrame;
+        /*!
+          The boost into the dipole rest frame, rebuilt per emission and
+          cleared again at the end of the same function. Optional rather than a
+          bare Poincare because Boost()/BoostNLO() read it from the member and
+          the clear is what marks the frame as gone: a stale call then trips an
+          empty optional instead of reading a freed object. Not a unique_ptr --
+          Dipole is returned by value from Define_Dipoles::CreateDipole and has
+          to stay copyable.
+        */
+        std::optional<Poincare> p_Pboost;
         Poincare p_rotate, p_boost;
-        PHASIC::Virtual_ME2_Base *p_virt;
         // Radiate. Dispatches on m_type: the initial-initial dipole samples ISR,
         // final-final dipoles sample FSR, and initial-final dipoles carry the
         // interference but do not radiate. The samplers stay in ISR/FSR; this

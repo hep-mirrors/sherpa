@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Phys/Particle.H"
 #include "YFS/Main/Dipole.H"
+#include <memory>
 #include "YFS/Main/DipoleSet.H"
 #include "YFS/Main/YFS_Base.H"
 #include "YFS/Main/YFS_Form_Factor.H"
@@ -77,7 +78,7 @@ namespace YFS {
       bool                    m_success;
       bool                    m_photonsadded;
       int m_N;
-      std::map<ATOOLS::Flavour, ATOOLS::Vec4D> m_test_dip, m_born_dip;
+      std::map<ATOOLS::Flavour, ATOOLS::Vec4D> m_test_dip;
       std::map<ATOOLS::Flavour, int> m_flav_label;
       //! Flavours m_flav_label was last built from. m_flav_label is invariant
       //! per process, so MakeDipolesII/MakeDipoles skip rebuilding it (a
@@ -92,9 +93,8 @@ namespace YFS {
       ATOOLS::Vec4D_Vector m_softphotons, m_bornmomenta;
       ATOOLS::Vec4D m_softphotonSum;
       YFS::DipoleSet m_set;
-      std::vector<std::vector<int>> m_dip;
       std::map<std::string,MODEL::Vertex_List> m_proc_restab_map;
-      YFS::YFS_Form_Factor *p_yfsFormFact;
+      std::unique_ptr<YFS::YFS_Form_Factor> p_yfsFormFact;
       DivArrD m_virtSub, m_vvSub;
 
       // m_type removed: shadowed YFS_Base's std::string m_type with a
@@ -107,8 +107,6 @@ namespace YFS {
       std::vector<double> m_massInC, m_massInN;
       std::vector<double> m_massOutC, m_massOutN;
 
-      ATOOLS::Flavour_Vector m_dipoleFlav;
-      ATOOLS::Vec4D_Vector m_dipoleMom;
     
       void AddRadiation();
       void MakeDipolesII(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born);

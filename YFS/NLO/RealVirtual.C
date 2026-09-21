@@ -20,7 +20,7 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info &pi) {
   rv_pi.m_maxcpl[0] = pi.m_maxcpl[0];
   rv_pi.m_mincpl[1] = pi.m_mincpl[1] + 1;
   rv_pi.m_maxcpl[1] = pi.m_maxcpl[1] + 1;
-  p_loop_me = PHASIC::Virtual_ME2_Base::GetME2(rv_pi);
+  p_loop_me.reset(PHASIC::Virtual_ME2_Base::GetME2(rv_pi));
   if (!p_loop_me)
     THROW(not_implemented, "Couldn't find RealVirtual ME for this process.");
   MODEL::s_model->GetCouplings(m_cpls);
@@ -42,8 +42,6 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info &pi) {
 }
 
 RealVirtual::~RealVirtual() {
-  if (p_loop_me)
-    delete p_loop_me;
 }
 
 double RealVirtual::Calc(const ATOOLS::Vec4D_Vector &momenta, double born) {\

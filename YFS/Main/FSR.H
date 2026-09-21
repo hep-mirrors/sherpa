@@ -8,6 +8,7 @@
 #include "YFS/Main/YFS_Form_Factor.H"
 #include "YFS/Main/YFS_Base.H"
 #include "YFS/Main/Dipole.H"
+#include <memory>
 #include "YFS/Main/Define_Dipoles.H"
 // #define FSR_DEBUG
 
@@ -18,17 +19,18 @@ namespace YFS {
     public:
       FSR();
       ~FSR();
-      ATOOLS::Poincare *p_rot;
-      double m_u, m_fsrcut, m_Kmin, m_Kmax, m_sQ,m_sprim, m_dip_sp, m_sqtest, m_sX, m_Emin, m_QF2, m_Q1, m_Q2;
-      // m_mass2 removed: shadowed YFS_Base's double[2] with a scalar, unused.
-      double m_phi, m_theta, m_c, m_eta1, m_eta2, m_EminQ, m_mass1, m_q1q2, m_st, m_p1p2;
+      double m_u, m_fsrcut, m_Kmin, m_Kmax, m_sQ, m_sprim, m_dip_sp, m_sX, m_Emin, m_QF2, m_Q1, m_Q2;
+      // m_mass2 removed: shadowed YFS_Base's double[2] with a scalar, unused;
+      // that base member has since gone too. m_nbar below is FSR's own mean
+      // photon multiplicity and no longer shadows anything.
+      double m_phi, m_theta, m_c, m_eta1, m_eta2, m_EminQ, m_q1q2, m_st, m_p1p2;
       // m_gammaFF / m_gammapFF are THIS dipole's gamma and gamma-prime, taken
       // from the final-state dipole in Initialize(). They used to be called
       // m_g / m_gp, shadowing YFS_Base's members of the same name, which hold
       // the INITIAL-initial dipole's values. Three gammas existed under two
       // names; the names now say which is which.
-      double m_beta, m_beta1, m_beta2, m_mu1, m_mu2, m_gammaFF, m_gammapFF, m_EQ, m_betaf, m_omegaF, m_volmc, m_gpBar, m_gBar;
-      double m_massW, m_hideW, m_expf, m_wt2, m_amc2, m_amfin, m_EminPP, m_f, m_fbar,m_bvrA,m_pT,m_yy,m_xfact;
+      double m_beta, m_beta1, m_beta2, m_mu1, m_mu2, m_gammaFF, m_gammapFF, m_EQ, m_betaf, m_volmc, m_gpBar, m_gBar;
+      double m_massW, m_hideW, m_expf, m_wt2, m_amc2, m_f, m_fbar, m_bvrA, m_yy, m_xfact;
       double  m_fsrform, m_nbar, m_betaBar,m_YFS_IR, m_btil, m_btilStar, m_volumc, m_delvol, m_DelYFS,m_delta1,m_cut;
       double m_BtiXcru, m_BtiQcru, m_fsrcutF, m_omegaMax, m_omegaMin, m_A4, m_A, m_betaBar1, m_betaBar2;
       double m_scalek;
@@ -42,7 +44,8 @@ namespace YFS {
     Vec4D_Vector m_photons, m_dipole, m_photonspreboost;
       Flavour_Vector m_dipoleFl;
       Vec4D m_photonSum, m_photonSumPreBoost, m_r1, m_r2, m_QFrame, m_Q, m_px;
-      YFS::Dipole *p_dipole;
+      //! Not owned: the dipole handed in by Initialize.
+      YFS::Dipole *p_dipole = nullptr;
       void GeneratePhotonMomentum();
       void GenerateAngles();
       void DefineGammas();
@@ -68,7 +71,7 @@ namespace YFS {
       inline void SetDipole(Vec4D_Vector dip) {m_dipole = dip;}
       inline void SetV(double v) {m_v = v;}
       inline Vec4D_Vector GetDipole() {return m_dipole;}
-    YFS::YFS_Form_Factor *p_isrFormFact, *p_fsrFormFact;
+    std::unique_ptr<YFS::YFS_Form_Factor> p_fsrFormFact;
       void HidePhotons();
       void HidePhotons(Vec4D_Vector &k);
       // void MakePair(double cms, Vec4D &p1, Vec4D &p2, double mass1, double mass2);

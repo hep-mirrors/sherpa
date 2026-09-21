@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 #include <fstream>
+#include <memory>
 
 namespace ATOOLS {
 class Histogram;
@@ -14,7 +15,7 @@ class Histogram;
 
 namespace YFS {
 
-typedef std::map<std::string, ATOOLS::Histogram *> histograms1d;
+typedef std::map<std::string, std::unique_ptr<ATOOLS::Histogram> > histograms1d;
 
 // Point-by-point comparison of two matrix-element evaluations (either
 // internal-vs-external or external-vs-external) for a real-emission process.

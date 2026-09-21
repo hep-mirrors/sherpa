@@ -24,7 +24,7 @@ using namespace std;
 Define_Dipoles::Define_Dipoles() {
   m_in = 2; // This is fine in YFS. It will not work for any other inital state multiplicity
   m_softphotonSum = {0., 0., 0., 0.};
-  p_yfsFormFact = new YFS::YFS_Form_Factor();
+  p_yfsFormFact = std::make_unique<YFS::YFS_Form_Factor>();
 }
 
 Define_Dipoles::~Define_Dipoles() {
@@ -36,7 +36,6 @@ Define_Dipoles::~Define_Dipoles() {
   if (m_recoil_tried > 0)
     msg_Info() << "YFS WW production recoil: " << m_recoil_massfail << " / "
                << m_recoil_tried << " rejected on the W-mass check.\n";
-  if(p_yfsFormFact) delete p_yfsFormFact;
 }
 
 
@@ -706,7 +705,6 @@ double Define_Dipoles::CalculateVirtualSubTchannel(){
   // //     // PRINT_VAR(etaij*YFSij);
   //   }
   // }
-  // PRINT_VAR(count);
   for (auto &D : m_set.ByType(dipoletype::initial)){
     sub += D.ChargeNorm()*p_yfsFormFact->BVirtT(D,sqrt(m_s) / 2.);
   }
