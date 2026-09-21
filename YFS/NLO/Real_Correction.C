@@ -101,6 +101,7 @@ Real_Correction::Real_Correction(const PHASIC::Process_Info &pi, size_t nphotons
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   const std::string gen
     (s[p_cfg->m_generator].SetDefault("Comix").Get<std::string>());
+  m_gen = gen;
   // optional second EXTERNAL generator - if set, the comparison checks this
   // against the first directly (bypassing p_proc/Comix entirely) instead of
   // comparing the first against the internal ME.
@@ -173,6 +174,12 @@ Real_Correction::Real_Correction(const PHASIC::Process_Info &pi, size_t nphotons
 }
 
 Real_Correction::~Real_Correction() = default;
+
+std::string Real_Correction::ActiveGenName() const {
+  if (p_real_me) return m_gen;
+  if (p_proc && p_proc->Generator()) return p_proc->Generator()->Name();
+  return "none";
+}
 
 double Real_Correction::Calc_R(const ATOOLS::Vec4D_Vector& p)
   {

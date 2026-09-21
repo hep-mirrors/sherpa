@@ -100,6 +100,14 @@ public:
   inline void SetProc(PHASIC::Process_Base *proc) { p_proc = proc; }
   inline size_t NPhotons() const { return m_nphotons; }
 
+  //! Name of whichever generator actually supplies Calc_R's value: the
+  //! external one (p_real_me, e.g. "OpenLoops") when set, otherwise the
+  //! internal ME_Generator that built p_proc (Comix/Amegic). Use this for
+  //! diagnostic labels -- p_proc->Generator()->Name() alone is wrong whenever
+  //! an external <n>_Generator is configured, which is the common case with
+  //! Compare_Real/Compare_RR/... off.
+  std::string ActiveGenName() const;
+
   //! Owned: Tree_ME2_Base::GetME2 builds a fresh object for the caller.
   std::unique_ptr<PHASIC::Tree_ME2_Base> p_real_me;   //!< external generator
   std::unique_ptr<PHASIC::Tree_ME2_Base> p_real_me2;  //!< optional second external generator
@@ -114,6 +122,11 @@ public:
     standard smart pointer owns it correctly.
   */
   ATOOLS::Cluster_Amplitude *p_ampl;
+
+  //! <n>_Generator as configured (may be "Comix"/"Amegic", meaning "no
+  //! external reference, use whatever internal ME_Generator built p_proc").
+  //! Stored so ActiveGenName() can tell the two apart.
+  std::string m_gen;
 
   double m_sym, m_factor;
   bool m_check, m_writemom;
