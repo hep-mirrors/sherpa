@@ -11,6 +11,9 @@ namespace EWSud {
     double KFactor(const int mode=0) override;
     double KFactor(const ATOOLS::NLO_subevt &evt) override;
     void CalculateAndFillWeightsMap(ATOOLS::Weights_Map&);
+    void WriteNominal(ATOOLS::Weights_Map&);
+    void WriteContribs(ATOOLS::Weights_Map&);
+    void WriteThresholdVariations(ATOOLS::Weights_Map&);
     void ResetWeightsMap(ATOOLS::Weights_Map&);
   private:
     void Calculate();
