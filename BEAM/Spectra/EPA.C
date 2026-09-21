@@ -15,8 +15,8 @@ using string = std::string;
 EPA::EPA(const Flavour& beam, const double energy, const double pol,
          const int dir)
     : Beam_Base(beamspectrum::EPA, beam, energy, pol, dir),
-      m_fftype(EPA_ff_type::point), p_ff(nullptr), m_pref(0.), m_pt2max(-1.),
-      m_xmin(0.), m_xmax(1.), m_output(false), m_outputAll(false)
+      m_fftype(EPA_ff_type::point), p_ff(nullptr), m_pref(0.), m_xmin(0.),
+      m_xmax(1.), m_output(false), m_outputAll(false)
 {
   if (m_beam.Charge() == 0.)
     THROW(fatal_error,
@@ -83,9 +83,6 @@ void EPA::Initialise()
   m_pref = s["AlphaQED"].Get<double>() / M_PI;
   m_output = s["OutputSpectra"].Get<bool>();
   m_outputAll = s["OutputAllSpectra"].Get<bool>();
-  m_pt2max = !m_beam.IsIon()
-                 ? sqr(m_energy * s["ThetaMax"].GetTwoVector<double>()[b])
-                 : sqr(rpa->hBar_c() / m_beam.Radius());
   if (m_outputAll) {
     Tests(m_energy);
     THROW(normal_exit, "Tests done.");
@@ -135,7 +132,6 @@ void EPA::Initialise()
   default:
     THROW(not_implemented, "unknown EPA form factor. ");
   }
-  p_ff->SetPT2Max(m_pt2max);
   SetXRange();
 
   if (m_output) p_ff->OutputToCSV("beam" + ToString(b));

@@ -17,7 +17,6 @@ namespace BEAM {
     EPA_ff_type m_fftype;
     std::unique_ptr<EPA_FF_Base> p_ff;
     double m_pref;
-    double m_pt2max;
     double m_xmin, m_xmax;
 
     bool m_output, m_outputAll;
