@@ -289,6 +289,10 @@ public:
   void CheckMasses(Vec4D_Vector &p, int realmode=0);
   bool CheckMomentumConservation(Vec4D_Vector p);
   void CheckRealSub(Vec4D k, int mode);
+  //! Collinear-limit counterpart of CheckRealSub: fixed photon energy, swept
+  //! angle, checked against the closed-form eikonal rather than a soft-limit
+  //! zero. Triggered by Check_Real_Sub: 3. See NLO_Checks.C for why.
+  void CheckRealCollinearSub(Vec4D k, int mode);
   void CheckRealVirtualSub(Vec4D k);
   void CheckRealRealSub(Vec4D k1, Vec4D k2);
   // Accumulating (non-exiting) sub-check scatter: for each real photon record

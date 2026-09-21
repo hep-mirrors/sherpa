@@ -179,6 +179,14 @@ public:
   //! YFS: CHECK_INVARIANTS - run YFS_Handler::CheckInvariants each event.
   bool m_check_invariants;
   int m_no_born, m_check_real_sub, m_check_rr_sub, m_no_subtraction, m_tchannel, m_check_virt_born, m_noflux, m_massless_sub;
+  //! Meaning of the YFS: Check_Real_Sub runcard integer (m_check_real_sub).
+  //! See NLO_Checks.C for what each check actually does.
+  enum CheckRealSubMode {
+    CHECK_REAL_SUB_OFF       = 0,
+    CHECK_REAL_SUB_SOFT      = 1, //!< CheckRealSub:          E_gamma -> 0 at fixed angle
+    CHECK_REAL_SUB_SCATTER   = 2, //!< RecordSubScatter:      accumulating (angle, energy, residual) scatter
+    CHECK_REAL_SUB_COLLINEAR = 3  //!< CheckRealCollinearSub: theta -> 0 at fixed energy
+  };
   
   bool m_looptool, m_virtual_only, m_real_only, m_use_model_alpha,m_failcut,m_nlocuts;
   /*!

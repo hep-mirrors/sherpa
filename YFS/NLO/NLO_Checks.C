@@ -13,6 +13,7 @@
 
 #include "YFS/NLO/NLO_Base.H"
 #include "MODEL/Main/Model_Base.H"
+#include "PHASIC++/Process/ME_Generator_Base.H"
 
 #include "ATOOLS/Math/Histogram_2D.H"
 #include "ATOOLS/Math/Histogram.H"
@@ -154,20 +155,12 @@ void NLO_Base::CheckRealSub(Vec4D k, int mode) {
   // if(k.E() < 20) return;
   // k*=100;
   double real;
-  std::string filename = "Real_subtracted_";
-  std::string filename1 = "Sub_term_";
-  std::string filename2 = "Real_ME_";
-  for (auto f : m_flavs) {
-    filename += f.IDName();
-    filename += "_";
-    filename1 += f.IDName();
-    filename1 += "_";
-    filename2 += f.IDName();
-    filename2 += "_";
-  }
-  filename += ".txt";
-  filename1 += ".txt";
-  filename2 += ".txt";
+  const std::string gen(p_real?p_real->ActiveGenName():"none");
+  std::string tag(gen);
+  for (auto f : m_flavs) { tag += "_"; tag += f.IDName(); }
+  std::string filename  = "Real_subtracted_" + tag + ".txt";
+  std::string filename1 = "Sub_term_"        + tag + ".txt";
+  std::string filename2 = "Real_ME_"         + tag + ".txt";
   if (ATOOLS::FileExists(filename))
     ATOOLS::Remove(filename);
   if (ATOOLS::FileExists(filename1))
@@ -181,7 +174,7 @@ void NLO_Base::CheckRealSub(Vec4D k, int mode) {
   for (double i = 1; i < 20; i += 0.1) {
     k = k / i;
     real = CalculateReal(k, /*raw*/mode >= 3);
-    if (k.E() <= 1e-16)
+    if (k.E() <= m_isrcut*sqrt(m_s))
       break;
     out_finite << k.E() << "," << fabs(real) / m_born << std::endl;
     out_real << k.E() << "," << (m_real)*p_nlodipoles->CalculateFlux(k)
@@ -196,13 +189,91 @@ void NLO_Base::CheckRealSub(Vec4D k, int mode) {
   exit(0);
 }
 
+/*!
+  The soft-limit expectation (SubCheckAccumulator's "residual -> 0") does not
+  apply here: the electron mass regulates the collinear region rather than
+  removing it, so the subtracted residual approaches a FINITE value, not
+  zero, as theta -> 0. The meaningful test is the one used throughout the
+  Comix collinear-precision work this session: the eikonal theorem forces
+  the raw real ME, divided by the closed-form massive eikonal S, to be FLAT
+  in theta. That ratio is column 2 of the primary output file; a numerically
+  unstable generator shows up as a departure from flat, not as a blow-up.
+*/
+void NLO_Base::CheckRealCollinearSub(Vec4D k, int mode) {
+  double real;
+  const std::string gen(p_real?p_real->ActiveGenName():"none");
+  std::string tag(gen);
+  for (auto f : m_flavs) { tag += "_"; tag += f.IDName(); }
+  std::string filename  = "RealCollinear_subtracted_" + tag + ".txt";
+  std::string filename1 = "SubCollinear_term_"        + tag + ".txt";
+  std::string filename2 = "RealCollinear_ME_"         + tag + ".txt";
+  if (ATOOLS::FileExists(filename))  ATOOLS::Remove(filename);
+  if (ATOOLS::FileExists(filename1)) ATOOLS::Remove(filename1);
+  if (ATOOLS::FileExists(filename2)) ATOOLS::Remove(filename2);
+  out_finite.open(filename,  std::ios_base::app);
+  out_sub.open(filename1,    std::ios_base::app);
+  out_real.open(filename2,   std::ios_base::app);
+
+  // p1, p2: the two incoming beams, m_plab[0]/[1] -- same convention as
+  // Real::SoftScan's p1=p[0], p2=p[1]. The eikonal S needs the electron
+  // mass and beam energy; both come from the SAME leg.
+  const Vec4D p1(m_plab[0]), p2(m_plab[1]);
+  const double me(m_flavs[0].Mass()), Eb(p1[0]), Eg(k.E());
+  const double mth(me>0.0 && Eb>0.0 ? me/Eb : 1e-5);
+  if (Eg<=0.0 || me<=0.0) {
+    msg_Error()<<METHOD<<"(): bad trigger point (Eg="<<Eg<<" me="<<me<<").\n";
+    out_finite.close(); out_sub.close(); out_real.close();
+    exit(0);
+  }
+
+  // Scan window: 7 decades of theta centred on the mass angle m_e/E, from
+  // 0.1x to 1e6x it -- same range Real::SoftScan uses, so the two checks
+  // agree wherever they overlap.
+  static constexpr int SCAN_POINTS = 25;
+  static constexpr double SCAN_DECADES = 7.0;
+  static constexpr double SCAN_MIN_DECADE_OFFSET = -1.0;  // starts at 10^-1 x mth
+
+  SubCheckAccumulator acc;
+  double firstratio(0.0);
+  for (int it(0); it<SCAN_POINTS; ++it) {
+    const double th(mth*pow(10.0, SCAN_MIN_DECADE_OFFSET
+                                   + SCAN_DECADES*it/(SCAN_POINTS-1)));
+    if (th<=0.0 || th>=M_PI) continue;
+    const Vec4D kk(Eg, Eg*sin(th), 0.0, Eg*cos(th));
+    real = CalculateReal(kk, /*raw*/mode >= 3);
+    // eikonal of the two charged initial-state legs, mass terms included --
+    // identical formula to Real::SoftScan's S, so the two checks agree in
+    // the region they both cover.
+    const double pk1(p1*kk), pk2(p2*kk), p12(p1*p2);
+    const double S(2.0*p12/(pk1*pk2)-me*me/(pk1*pk1)-me*me/(pk2*pk2));
+    const double ratio(S!=0.0 ? m_real/S : 0.0);
+    if (it==0) firstratio = ratio;
+    out_finite << th << "," << ratio << std::endl;
+    out_real   << th << "," << (m_real)*p_nlodipoles->CalculateFlux(kk) << std::endl;
+    out_sub    << th << "," << fabs(real)/m_born << std::endl;
+    acc.Add(th, ratio);
+  }
+  // Not SubCheckAccumulator's soft-limit "converges to zero" verdict -- flat
+  // is the correct answer here. Report the spread of the ratio directly.
+  if (firstratio!=0.0)
+    msg_Info()<<om::bold<<"=== Real collinear-limit check ("<<filename<<") ===\n"
+              <<om::reset<<"  eikonal ratio range over the scan : ["
+              <<acc.r_min<<", "<<acc.r_max<<"]  (flat = numerically stable)\n"
+              <<"  first/last                        : "<<acc.r_first<<" / "<<acc.r_last<<"\n";
+  out_finite.close();
+  out_real.close();
+  out_sub.close();
+  exit(0);
+}
+
 void NLO_Base::CheckRealVirtualSub(Vec4D k) {
   // if(k.E() < 20) return;
   // k*=100;
   double real;
-  std::string filename = "RealVirtual_subtracted";
-  std::string filename1 = "SubRV_term";
-  std::string filename2 = "RV_ME";
+  const std::string gen(p_realvirt?p_realvirt->ActiveGenName():"none");
+  std::string filename = "RealVirtual_subtracted_" + gen;
+  std::string filename1 = "SubRV_term_" + gen;
+  std::string filename2 = "RV_ME_" + gen;
   for (auto f : m_flavs) {
     filename += "_";
     filename += f.IDName();
@@ -256,9 +327,10 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2) {
   double real;
   Vec4D _k1 = k1;
   Vec4D _k2 = k2;
-  std::string filename1 = "RealReal_k1_subtracted_";
-  std::string filename2 = "RealReal_k2_subtracted_";
-  std::string filename3 = "RealReal_k1_k2_subtracted_";
+  const std::string gen(p_realreal?p_realreal->ActiveGenName():"none");
+  std::string filename1 = "RealReal_k1_subtracted_" + gen + "_";
+  std::string filename2 = "RealReal_k2_subtracted_" + gen + "_";
+  std::string filename3 = "RealReal_k1_k2_subtracted_" + gen + "_";
   for (auto f : m_flavs) {
     filename1 += f.IDName();
     filename2 += f.IDName();
@@ -365,7 +437,12 @@ void NLO_Base::RecordSubScatter(const Vec4D &k, double residual,
 #ifdef USING__MPI
     if (mpi->Size() > 1) rank = mpi->Rank();
 #endif
-    std::string fn = "sub_angle_energy";
+    // tag == "rr" for a double-real record, otherwise a single-real one; use
+    // whichever generator actually produced the residual being logged.
+    const std::string gen(tag=="rr"
+      ? (p_realreal?p_realreal->ActiveGenName():"none")
+      : (p_real?p_real->ActiveGenName():"none"));
+    std::string fn = "sub_angle_energy_" + gen;
     for (auto f : m_flavs) { fn += "_"; fn += f.IDName(); }
     fn += "_rank" + std::to_string(rank) + ".txt";
     if (ATOOLS::FileExists(fn)) ATOOLS::Remove(fn);

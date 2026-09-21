@@ -379,10 +379,25 @@ double NLO_Base::CalculateReal() {
       } }
     const double phemin(PhotonEminNLO());
     if (phemin>0.0 && k.E()<phemin) { g.m_beta10 = 0.; continue; }
-    if (m_check_real_sub == 1 && (g.IsFSR() || !HasFSR())) {
-      if (k.E() < 0.2 * sqrt(m_s))
+    // CheckRealSub shrinks its trigger photon down toward the soft limit, so
+    // it needs a HARD starting point for the shrink to have room to run.
+    static constexpr double SOFT_LIMIT_CHECK_TRIGGER_FRAC = 0.2;
+    if (m_check_real_sub == CHECK_REAL_SUB_SOFT && (g.IsFSR() || !HasFSR())) {
+      if (k.E() < SOFT_LIMIT_CHECK_TRIGGER_FRAC * sqrt(m_s))
         continue;
       CheckRealSub(k, 0);
+    }
+    // CheckRealCollinearSub holds the trigger photon's energy FIXED and
+    // sweeps only its angle, comparing against the closed-form eikonal S.
+    // That comparison is only meaningful for a photon soft enough that the
+    // leading eikonal approximation is trustworthy across the whole sweep --
+    // the opposite requirement from the soft-limit check above, so it needs
+    // its own (upper, not lower) bound rather than reusing that trigger.
+    static constexpr double COLLINEAR_CHECK_TRIGGER_FRAC = 0.01;
+    if (m_check_real_sub == CHECK_REAL_SUB_COLLINEAR && (g.IsFSR() || !HasFSR())) {
+      if (k.E() > COLLINEAR_CHECK_TRIGGER_FRAC * sqrt(m_s))
+        continue;
+      CheckRealCollinearSub(k, 0);
     }
     double contrib;
     if (g.IsISR() && (m_isr_debug || m_fsr_debug)) {
@@ -398,7 +413,7 @@ double NLO_Base::CalculateReal() {
       contrib = CalculateReal(k);
     }
     real += contrib;
-    if (m_check_real_sub == 2)
+    if (m_check_real_sub == CHECK_REAL_SUB_SCATTER)
       RecordSubScatter(k, contrib, g.IsISR() ? "realISR" : "realFSR", m_eikeex);
     { static const bool dg2(getenv("SHERPA_PHOTON_DUMP")!=NULL);
       if (dg2) std::cerr<<"@@@ PHC E="<<k.E()<<" isr="<<(g.IsISR()?1:0)
