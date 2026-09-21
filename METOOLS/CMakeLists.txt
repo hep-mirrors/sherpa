@@ -12,7 +12,6 @@ if (SHERPA_ENABLE_MERGED_LIBS)
     $<TARGET_OBJECTS:METoolsExplicit> $<TARGET_OBJECTS:METoolsLoops>
     $<TARGET_OBJECTS:METoolsMain> $<TARGET_OBJECTS:METoolsSpinCorrelations>
     $<TARGET_OBJECTS:METoolsVertices>)
-  target_link_libraries(METools PRIVATE METoolsColors METoolsCurrents METoolsExplicit METoolsLoops METoolsMain METoolsSpinCorrelations METoolsVertices)
   sherpa_handle_shared_library(METools METools)
   add_dependencies(METools Colors_Git_Info Currents_Git_Info Explicit_Git_Info Loops_Git_Info METoolsMain_Git_Info SpinCorrelations_Git_Info Vertices_Git_Info)
 endif()
