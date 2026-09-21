@@ -1,16 +1,3 @@
-// Self-checks, counters and debug histograms for NLO_Base.
-//
-// Split out of NLO_Base.C, which was 1935 lines with a quarter of them given
-// to machinery that never runs in production: the *Sub cross-checks, the
-// blow-up counters and the debug histograms. Same class, second translation
-// unit, so nothing about the physics path changed - only where it is written
-// down.
-//
-// Note this is NOT everything named Check*: CheckMasses,
-// CheckMomentumConservation and CheckPhotonForReal are on the live path and
-// stay in NLO_Base.C, as does m_ifi_prod, which is a physics reweight rather
-// than the m_ifi_* profile counters kept here.
-
 #include "YFS/NLO/NLO_Base.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
