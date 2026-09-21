@@ -25,9 +25,7 @@ namespace METOOLS {
 
     /// @brief The accuracy for all scalars.
     /// @note Not used anywhere
-    // Scalar, not double: SetAccu()/Accu() are typed on Scalar, and a
-    // double member cannot hold a value of a wider scalar type.
-    static Scalar s_accu;
+    static double s_accu;
 
     /// @brief A vector of CAsT4 objects that cleans its memory upon destruction.
     ///
@@ -178,12 +176,6 @@ namespace METOOLS {
     }
 
     /// @brief Multiply this pseudoscalar with pseudoscalar @a v
-    // A bare double factor converts to Scalar in one step; going
-    // straight to SComplex would need two user-defined conversions and
-    // is not viable for a Scalar that is itself a class type.
-    inline CAsT4& operator*=(const Scalar &d)
-    { return *this*=SComplex(d,Scalar(0.0)); }
-
     CAsT4& operator*=(const SComplex &c);
 
     /// @brief Return complex conjugate of this pseudoscalar
@@ -202,8 +194,8 @@ namespace METOOLS {
     /// @{
 
     static void ResetAccu();
-    inline static void   SetAccu(const Scalar &accu) { s_accu=accu;   }
-    inline static Scalar Accu()                      { return s_accu; }
+    inline static void   SetAccu(const double &accu) { s_accu=accu;   }
+    inline static double Accu()                      { return s_accu; }
 
     /// @}
 
@@ -242,6 +234,5 @@ namespace METOOLS {
 
 #define DCAsT4D METOOLS::CAsT4<double>
 #define QCAsT4D METOOLS::CAsT4<long double>
-#define XCAsT4D METOOLS::CAsT4<ATOOLS::DDouble>
 
 #endif

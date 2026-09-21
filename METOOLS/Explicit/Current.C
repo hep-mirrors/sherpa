@@ -1,8 +1,4 @@
 #include "METOOLS/Explicit/Current.H"
-namespace METOOLS { long g_pwext_miss=0; }
-
-#include <cstdlib>
-#include <iostream>
 
 #include "METOOLS/Explicit/Vertex.H"
 #include "ATOOLS/Org/Message.H"
@@ -175,14 +171,8 @@ namespace {
   /*!
     Dot product of two momenta whose virtualities are known exactly.
 
-    Vec4::LCDot still forms p- = p[0]-p[3] by subtraction. For a leg along the
-    light-cone axis that is the one cancelling component: a 45.6 GeV electron
-    has p- = m^2/(2E) = 2.9e-9 against p[0] = 45.6, so the difference of the
-    stored doubles pins m^2 to about 2 p[0] ulp(p[0]) / m^2 ~ 2.5e-6 - and no
-    amount of arithmetic precision recovers it, because the momentum's own
-    representation is what lost it.
-
-    But p+ p- = p^2 + pT^2 identically, and the exact p^2 is already carried in
+    Vec4::LCDot still forms p- = p[0]-p[3] by subtraction. 
+    and p+ p- = p^2 + pT^2 identically, and the exact p^2 is already carried in
     P2H(). So divide the small component out of the large one instead of
     subtracting: no cancellation, and the mass that enters is the nominal one
     rather than the one the rounded components happen to imply.
@@ -217,11 +207,7 @@ void Current::Evaluate()
     //
     // p^2 is accumulated as sum_i p_i^2 + 2 sum_{i<j} p_i.p_j rather than
     // taken as m_p.Abs2() afterwards. Both are equal in exact arithmetic, but
-    // the sub-current virtualities p_i^2 are already free of cancellation
-    // (exactly m^2 at the leaves, recursively stable above), so this form
-    // confines the loss to a single LCDot per pair instead of subtracting two
-    // O(E^2) numbers. The vertices here are 2- or 3-valent, so the double loop
-    // costs at most three extra dot products per current.
+    // the sub-current virtualities p_i^2 are already free of cancellation.
     m_ph=Vec4<DDouble>();
     m_p2=DDouble(0.0);
     const Current_Vector &js((*vit)->J());

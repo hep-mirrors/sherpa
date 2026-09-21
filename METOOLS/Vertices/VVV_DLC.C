@@ -241,9 +241,8 @@ template <typename SType>
 void VVV_SCalculator<SType>::ConstructIDipole()
 {
   Current *cj(p_v->J(0));
-  p_v->Kin()->JIJT()->SetP(cj->P(),cj->P2());
-  p_v->Kin()->JKT()->SetP(p_v->Kin()->JK()->P(),
-			  p_v->Kin()->JK()->P2());
+  p_v->Kin()->JIJT()->SetP(cj->P());
+  p_v->Kin()->JKT()->SetP(p_v->Kin()->JK()->P());
   const CVec4Type_Matrix *c(cj->J().Get<CVec4Type>());
   CObject_Vector cc(2);
   cc[0]=c->front().front();
@@ -326,30 +325,3 @@ void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
 		    VVV_SCalculator<double> >::
 PrintInfo(std::ostream &str,const size_t width) const
 { str<<"VVV subtraction vertex"; }
-
-// ---- QPREC_BEGIN: long-double instantiation ----
-DECLARE_GETTER(VVV_SCalculator<long double>,"QXVVV",
-	       Lorentz_Calculator,Vertex_Key);
-Lorentz_Calculator *ATOOLS::Getter
-<Lorentz_Calculator,Vertex_Key,VVV_SCalculator<long double> >::
-operator()(const Vertex_Key &key) const
-{ return new VVV_SCalculator<long double>(key); }
-
-void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
-		    VVV_SCalculator<long double> >::
-PrintInfo(std::ostream &str,const size_t width) const
-{ str<<"VVV subtraction vertex"; }
-// ---- QPREC_END ----
-// ---- XPREC_BEGIN: double-double instantiation ----
-DECLARE_GETTER(VVV_SCalculator<ATOOLS::DDouble>,"XXVVV",
-	       Lorentz_Calculator,Vertex_Key);
-Lorentz_Calculator *ATOOLS::Getter
-<Lorentz_Calculator,Vertex_Key,VVV_SCalculator<ATOOLS::DDouble> >::
-operator()(const Vertex_Key &key) const
-{ return new VVV_SCalculator<ATOOLS::DDouble>(key); }
-
-void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
-		    VVV_SCalculator<ATOOLS::DDouble> >::
-PrintInfo(std::ostream &str,const size_t width) const
-{ str<<"VVV subtraction vertex"; }
-// ---- XPREC_END ----

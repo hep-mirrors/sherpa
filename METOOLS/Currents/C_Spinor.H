@@ -17,9 +17,7 @@ namespace METOOLS {
 
   protected:
     
-    // Scalar, not double: SetAccu()/Accu() are typed on Scalar, and a
-    // double member cannot hold a value of a wider scalar type.
-    static Scalar s_accu;
+    static double s_accu;
 
     int m_r, m_b, m_on;
 
@@ -126,7 +124,7 @@ namespace METOOLS {
     inline static void ResetAccuracy() 
     { s_accu=1.0e-12; }
 
-    inline static Scalar Accuracy() { return s_accu; }
+    inline static double Accuracy() { return s_accu; }
 
   };// end of class CSpinor
   /*!
@@ -251,6 +249,5 @@ namespace METOOLS {
 
 #define DDSpinor METOOLS::CSpinor<double>
 #define QDSpinor METOOLS::CSpinor<long double>
-#define XDSpinor METOOLS::CSpinor<ATOOLS::DDouble>
 
 #endif

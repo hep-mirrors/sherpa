@@ -23,9 +23,7 @@ namespace METOOLS {
 
     /// @brief The accuracy for all scalars.
     /// @note Not used anywhere
-    // Scalar, not double: SetAccu()/Accu() are typed on Scalar, and a
-    // double member cannot hold a value of a wider scalar type.
-    static Scalar s_accu;
+    static double s_accu;
 
     /// @brief A vector of CScalars that cleans its memory upon destruction.
     ///
@@ -155,12 +153,6 @@ namespace METOOLS {
       m_x-=s.m_x;
       return *this;
     }
-    // A bare double factor converts to Scalar in one step; going
-    // straight to SComplex would need two user-defined conversions and
-    // is not viable for a Scalar that is itself a class type.
-    inline CScalar& operator*=(const Scalar &d)
-    { return *this*=SComplex(d,Scalar(0.0)); }
-
     inline CScalar& operator*=(const SComplex &c) 
     {
       m_x*=c;
@@ -226,6 +218,5 @@ namespace METOOLS {
 
 #define DCScalar METOOLS::CScalar<double>
 #define QCScalar METOOLS::CScalar<long double>
-#define XCScalar METOOLS::CScalar<ATOOLS::DDouble>
 
 #endif

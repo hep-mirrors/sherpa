@@ -62,7 +62,8 @@ set(Math_HEADERS MathTools.H
         Tensor_Build.H
         Tensor_Contractions.H
         Tensor_Contractions_Epsilon.H
-        Uncertain.H)
+        Uncertain.H
+        DDouble.H)
 
 sherpa_create_git_info(Math ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
