@@ -64,6 +64,10 @@ YFS_Process::~YFS_Process() {
   if (p_yfsreal) delete p_yfsreal;
   if (p_yfsrealvirt) delete p_yfsrealvirt;
   if (p_yfsrealreal) delete p_yfsrealreal;
+  for (size_t n(0); n < m_yfsrealn.size(); ++n)
+    if (m_yfsrealn[n]) delete m_yfsrealn[n];
+  for (size_t n(0); n < m_realnprocs.size(); ++n)
+    if (m_realnprocs[n]) delete m_realnprocs[n];
   if (p_yfsvv) delete p_yfsvv;
   // p_yfs is NOT deleted: every process is handed the one handler owned by
   // Initialization_Handler, so deleting it here was a double free as soon as
@@ -130,7 +134,11 @@ void YFS_Process::Init(const Process_Info &pi,
     // p_virtproc->p_mapproc=NULL
     p_virtproc->SetParent(this);
     p_virtproc->SetLookUp(false);
-    if (p_yfs->EnsureNLO()->NeedsVirtualProvider()) {
+    // "Internal" is the Process_Info default, i.e. no Loop_Generator in the
+    // card; anything else is a real external provider the user asked for.
+    const bool extloop(vpi.m_loopgenerator != "" &&
+                       vpi.m_loopgenerator != "Internal");
+    if (p_yfs->EnsureNLO()->NeedsVirtualProvider(extloop)) {
       p_yfsvirt = new YFS::Virtual(vpi);
       p_yfsvirt->SetProc(p_bornproc);
     }
@@ -171,6 +179,42 @@ void YFS_Process::Init(const Process_Info &pi,
     p_realrealproc->SetParent(this);
     p_yfsrealreal->SetProc(p_realrealproc);
     p_yfs->SetNLOType(nlo_type::realreal);
+
+    /*
+      Everything above the double real, built by the SAME recipe with a
+      different number of photon legs. There is deliberately no new nlo_type
+      bit: nlo_type::realreal already means "fixed-order real corrections
+      beyond one photon", and how far beyond is a YFS question, answered by
+      YFS: NLO_MAX_PHOTONS (default 2, i.e. nothing new is built unless asked).
+
+      Comix supplies these matrix elements - measured, e+e- -> mu-mu+ 3gamma
+      builds and integrates - so the ceiling here is cost and numerical
+      conditioning, not availability.
+    */
+    const size_t nmax(YFS::NLO_Base::RequestedMaxRealPhotons());
+    m_yfsrealn.resize(nmax+1, NULL);
+    m_realnprocs.resize(nmax+1, NULL);
+    for (size_t n(3); n <= nmax; ++n) {
+      Process_Info npi(pi);
+      for (size_t i(0); i < pi.m_fi.m_nlocpl.size(); ++i) {
+        npi.m_maxcpl[i] += n * npi.m_fi.m_nlocpl[i];
+        npi.m_mincpl[i] += n * npi.m_fi.m_nlocpl[i];
+      }
+      for (size_t j(0); j < n; ++j)
+        npi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
+      Process_Base *proc(InitProcess(npi, nlo_type::real, false));
+      if (proc == NULL) {
+        msg_Error()<<METHOD<<"(): could not build the "<<n
+                   <<"-photon real process; stopping at "<<(n-1)<<".\n";
+        break;
+      }
+      proc->SetParent(this);
+      YFS::Real_Correction *rc(new YFS::Real_Correction(npi, n));
+      rc->SetProc(proc);
+      m_realnprocs[n] = proc;
+      m_yfsrealn[n]   = rc;
+      msg_Info()<<METHOD<<"(): built the "<<n<<"-photon real correction.\n";
+    }
   }
   if(pi.Has(nlo_type::vv)) {
     Process_Info vvpi(pi);
@@ -201,6 +245,11 @@ void YFS_Process::MakeActive()
   p_yfs->SetFlavours(Flavours());
   p_yfs->EnsureNLO()->SetProviders(p_yfsvirt, p_yfsreal, p_yfsrealvirt,
                              p_yfsrealreal, p_yfsvv);
+  // Processes whose Comix amplitudes CEEX can use instead of hand-coding the
+  // spin structure (see Ceex_Base::ComixBornAmplitude).
+  p_yfs->SetCeexProcs(p_bornproc, p_realproc);
+  for (size_t n(3); n < m_yfsrealn.size(); ++n)
+    p_yfs->EnsureNLO()->SetRealProvider(n, m_yfsrealn[n]);
   p_yfs->SetNoBorn(m_noborn);
 }
 
@@ -321,7 +370,7 @@ void YFS_Process::FindResonances() {
             << vlist.size() << " non-QCD resonances.\n";
   for (size_t k = 0; k < vlist.size(); ++k) msg_Out() << vlist[k] << endl;
   restab_map[this->Name()] = vlist;
-  p_yfs->p_dipoles->SetProcResMap(restab_map);
+  p_yfs->Dipoles()->SetProcResMap(restab_map);
   if(p_yfs->NLO()) p_yfs->NLO()->p_nlodipoles->SetProcResMap(restab_map);
 }
 
@@ -378,6 +427,8 @@ void YFS_Process::SetScale(const Scale_Setter_Arguments &scale) {
   if (p_bornproc) p_bornproc->SetScale(scale);
   if (p_realproc) p_realproc->SetScale(scale);
   if (p_realrealproc) p_realrealproc->SetScale(scale);
+  for (size_t n(0); n < m_realnprocs.size(); ++n)
+    if (m_realnprocs[n]) m_realnprocs[n]->SetScale(scale);
 }
 
 
@@ -419,6 +470,8 @@ void YFS_Process::SetSelector(const Selector_Key &key)
   if (p_bornproc) p_bornproc->SetSelector(key);
   if (p_realproc) p_realproc->SetSelector(key);
   if (p_realrealproc) p_realrealproc->SetSelector(key);
+  for (size_t n(0); n < m_realnprocs.size(); ++n)
+    if (m_realnprocs[n]) m_realnprocs[n]->SetSelector(key);
   if (p_realvirtproc) p_realvirtproc->SetSelector(key);
 }
 
@@ -436,6 +489,8 @@ void YFS_Process::SetShower(PDF::Shower_Base *const ps)
   if (p_bornproc) p_bornproc->SetShower(ps);
   if (p_realproc) p_realproc->SetShower(ps);
   if (p_realrealproc) p_realrealproc->SetShower(ps);
+  for (size_t n(0); n < m_realnprocs.size(); ++n)
+    if (m_realnprocs[n]) m_realnprocs[n]->SetShower(ps);
 }
 
 void YFS_Process::SetNLOMC(PDF::NLOMC_Base *const mc)
@@ -444,6 +499,8 @@ void YFS_Process::SetNLOMC(PDF::NLOMC_Base *const mc)
   if (p_bornproc) p_bornproc->SetNLOMC(mc);
   if (p_realproc) p_realproc->SetNLOMC(mc);
   if (p_realrealproc) p_realrealproc->SetNLOMC(mc);
+  for (size_t n(0); n < m_realnprocs.size(); ++n)
+    if (m_realnprocs[n]) m_realnprocs[n]->SetNLOMC(mc);
 }
 
 void YFS_Process::InitializeTheReweighting(ATOOLS::Variations_Mode mode)

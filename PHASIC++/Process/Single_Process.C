@@ -564,11 +564,14 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
   UpdateIntegratorMomenta(p);
   CalculateFlux(p);
   if(p_int->YFS()->Mode()!=YFS::yfsmode::off && p_int->YFS()->NLO()){
-    if(p_int->YFS()->NLO()->HasReal()){
-      if(this==p_int->YFS()->NLO()->p_real->p_realproc) return YFSDifferential(p,varmode);
-    }
-    if(p_int->YFS()->NLO()->HasRR()){
-      if(this==p_int->YFS()->NLO()->p_realreal->p_rrproc) return YFSDifferential(p,varmode);
+    // Any fixed-order real correction, at any photon multiplicity, takes the
+    // YFS route. This used to name p_real and p_realreal explicitly, so a
+    // three-photon real process matched neither and fell through to the
+    // generic path - which the YFS setup has not prepared, and which segfaults.
+    YFS::NLO_Base *ynlo(p_int->YFS()->NLO());
+    for (size_t n(1); n <= ynlo->MaxRealPhotons(); ++n) {
+      YFS::Real_Correction *prov(ynlo->RealProvider(n));
+      if (prov && this == prov->p_proc) return YFSDifferential(p,varmode);
     }
   }
   if (m_zero) {

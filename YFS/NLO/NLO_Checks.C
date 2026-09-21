@@ -12,6 +12,7 @@
 // than the m_ifi_* profile counters kept here.
 
 #include "YFS/NLO/NLO_Base.H"
+#include "MODEL/Main/Model_Base.H"
 
 #include "ATOOLS/Math/Histogram_2D.H"
 #include "ATOOLS/Math/Histogram.H"
@@ -105,25 +106,24 @@ struct SubCheckAccumulator {
 
 void NLO_Base::BookHistograms() {
   if (m_isr_debug || m_fsr_debug) {
-    m_histograms2d["IFI_EIKONAL"] = new Histogram_2D(0, -1., 1., 20, 0, 5., 20);
+    m_histograms2d["IFI_EIKONAL"] = std::make_unique<Histogram_2D>(0, -1., 1., 20, 0, 5., 20);
     m_histograms2d["REAL_SUB"] =
-        new Histogram_2D(0, 0, sqrt(m_s), 200, 0, sqrt(m_s) / 2., 20);
+        std::make_unique<Histogram_2D>(0, 0, sqrt(m_s), 200, 0, sqrt(m_s) / 2., 20);
     m_histograms2d["REAL_COLL_RATIO"] =
-        new Histogram_2D(0, 0, 2. * M_PI, 20, 0, sqrt(m_s) / 2., 125);
+        std::make_unique<Histogram_2D>(0, 0, 2. * M_PI, 20, 0, sqrt(m_s) / 2., 125);
     m_histograms2d["REAL_COLL_RATIO"] =
-        new Histogram_2D(0, 0, sqrt(m_s) / 2., 125, 0, 10, 20);
+        std::make_unique<Histogram_2D>(0, 0, sqrt(m_s) / 2., 125, 0, 10, 20);
     m_histograms2d["REAL_RATIO"] =
-        new Histogram_2D(0, 0, 15, 16, 0, sqrt(m_s) / 2., 200);
-    m_histograms1d["Real_diff"] = new Histogram(0, -1, 1, 100);
-    m_histograms2d["Real_Flux"] = new Histogram_2D(0, 0, 1.1, 50, 80, 100, 100);
-    m_histograms1d["k_E"] = new Histogram(0, 0, sqrt(m_s) / 2, sqrt(m_s) / 2);
-    m_histograms1d["k_pt"] = new Histogram(0, 0, sqrt(m_s) / 2, sqrt(m_s) / 2);
-    m_histograms1d["dip_mass"] = new Histogram(0, 0, sqrt(m_s), sqrt(m_s));
+        std::make_unique<Histogram_2D>(0, 0, 15, 16, 0, sqrt(m_s) / 2., 200);
+    m_histograms2d["Real_Flux"] = std::make_unique<Histogram_2D>(0, 0, 1.1, 50, 80, 100, 100);
+    m_histograms1d["k_E"] = std::make_unique<Histogram>(0, 0, sqrt(m_s) / 2, sqrt(m_s) / 2);
+    m_histograms1d["k_pt"] = std::make_unique<Histogram>(0, 0, sqrt(m_s) / 2, sqrt(m_s) / 2);
+    m_histograms1d["dip_mass"] = std::make_unique<Histogram>(0, 0, sqrt(m_s), sqrt(m_s));
     m_histograms1d["k_E_pass"] =
-        new Histogram(0, 0, sqrt(m_s) / 2, sqrt(m_s) / 2);
+        std::make_unique<Histogram>(0, 0, sqrt(m_s) / 2, sqrt(m_s) / 2);
     m_histograms1d["k_pt_pass"] =
-        new Histogram(0, 0, sqrt(m_s) / 2, sqrt(m_s) / 2);
-    m_histograms1d["dip_mass_pass"] = new Histogram(0, 0, sqrt(m_s), sqrt(m_s));
+        std::make_unique<Histogram>(0, 0, sqrt(m_s) / 2, sqrt(m_s) / 2);
+    m_histograms1d["dip_mass_pass"] = std::make_unique<Histogram>(0, 0, sqrt(m_s), sqrt(m_s));
     if (!ATOOLS::DirectoryExists(m_debugDIR_NLO))
       ATOOLS::MakeDir(m_debugDIR_NLO);
   }
@@ -133,27 +133,20 @@ void NLO_Base::WriteHistograms() {
   if (!(m_isr_debug || m_fsr_debug || m_check_real_sub || m_check_poles ||
         m_rv_cancel_hist))
     return;
-    Histogram_2D *histo2d;
     string name;
-    for (map<string, Histogram_2D *>::iterator hit = m_histograms2d.begin();
-         hit != m_histograms2d.end(); hit++) {
-      histo2d = hit->second;
-      name = string(m_debugDIR_NLO) + "/" + hit->first + string(".dat");
-      // histo2d->MPISync();
-      histo2d->Finalize();
-      histo2d->Output(name);
-      delete histo2d;
+    for (auto &hit : m_histograms2d) {
+      name = string(m_debugDIR_NLO) + "/" + hit.first + string(".dat");
+      // hit.second->MPISync();
+      hit.second->Finalize();
+      hit.second->Output(name);
     }
-    Histogram *histo1d;
-    for (map<string, Histogram *>::iterator hit = m_histograms1d.begin();
-         hit != m_histograms1d.end(); hit++) {
-      histo1d = hit->second;
-      name = string(m_debugDIR_NLO) + "/" + hit->first + string(".dat");
-      histo1d->MPISync();
-      histo1d->Finalize();
-      histo1d->Output(name);
-      delete histo1d;
+    for (auto &hit : m_histograms1d) {
+      name = string(m_debugDIR_NLO) + "/" + hit.first + string(".dat");
+      hit.second->MPISync();
+      hit.second->Finalize();
+      hit.second->Output(name);
     }
+    // Owned by the maps; nothing to delete.
 }
 
 
@@ -230,7 +223,6 @@ void NLO_Base::CheckRealVirtualSub(Vec4D k) {
   out_finite.open(filename, std::ios_base::app);
   out_sub.open(filename1, std::ios_base::app);
   out_real.open(filename2, std::ios_base::app);
-  // if(k.E() < 0.8*sqrt(m_s)/2.) return;
   SubCheckAccumulator acc;
   for (double i = 1; i < 20; i += 0.01) {
     k = k / i;
@@ -244,7 +236,6 @@ void NLO_Base::CheckRealVirtualSub(Vec4D k) {
     // Relative cancellation of the two diverging RV pieces at this energy.
     const double rvmax = ATOOLS::Max(fabs(m_rv), fabs(m_rvsub));
     const double C = (rvmax > 0.) ? fabs(m_rv - m_rvsub) / rvmax : 0.;
-    // PRINT_VAR(real);
     out_finite << std::setprecision(16) << k.E() << "," << fabs(real) / m_born
                << "," << C << std::endl;
     out_real << std::setprecision(16) << k.E() << "," << m_rv << std::endl;
@@ -272,9 +263,6 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2) {
     filename1 += f.IDName();
     filename2 += f.IDName();
     filename3 += f.IDName();
-    // filename1 += "_";
-    // filename2 += "_";
-    // filename3 += "_";
   }
   filename1 += ".txt";
   filename2 += ".txt";
@@ -286,7 +274,6 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2) {
   if (ATOOLS::FileExists(filename3))
     ATOOLS::Remove(filename3);
   out_sub.open(filename1, std::ios_base::app);
-  // if(k.E() < 0.8*sqrt(m_s)/2.) return;
   // Run these soft-limit scans with RR_SOFT_CUT disabled, as for
   // RV_CANCEL_EPS/RV_SOFT_CUT in CheckRealVirtualSub: the whole point here is
   // to walk the photons into the soft region, which is exactly what the guard
@@ -299,9 +286,6 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2) {
     real = CalculateRealReal(k1, k2);
     out_sub << k1.E() << "," << fabs(real) / m_born << std::endl;
     acc1.Add(k1.E(), fabs(real) / m_born);
-    // if (k1.E() <= 1e-16)
-    //   break;
-    // m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
   }
   acc1.Print("RealReal subtraction check, k1 -> 0 (" + filename1 + ")");
   out_sub.close();
@@ -425,11 +409,21 @@ void NLO_Base::CEEXComparePoint() {
     msg_Out() << "  born[" << i << "] (" << m_flavs[i] << ") = "
               << m_bornMomenta[i] << "\n";
 
-  // The REAL-EMISSION configuration is what has to be handed to KKMC, not the
-  // Born momenta plus a photon: CalculateReal maps the Born configuration onto
-  // one that accommodates k (MapMomenta reduces the beams for an ISR photon),
-  // and born+k does not conserve momentum. Reproduce that mapping here purely
-  // so the point can be printed; CalculateReal below redoes it internally.
+  /*
+    The REAL-EMISSION configuration is what has to be handed to KKMC, not the
+    Born momenta plus a photon: born+k does not conserve momentum.
+
+    Note what this point IS. MapMomenta rebuilds the beams from
+    Q = sum(p_out) + k. In production k is one of the event's own photons and
+    m_plab already carries its recoil, so Q reconstructs the collider beams
+    (the "@@@ PHOT" check asserts photon energy + outgoing energy = sqrt(s)).
+    FixedTestPhoton() is SYNTHETIC and is not in m_plab, so here the beams come
+    out ABOVE the nominal collider energy - 45.6 GeV becomes 51.99 at x=0.3.
+    That is still a perfectly physical configuration: a collider at
+    sqrt(s)=103.98 radiating a photon down to a 91.2 hard system. It is simply
+    not the collider KKMC is initialised for, so the KKMC side must be told
+    CMSene = the sqrt(s) printed below, not the nominal beam energy.
+  */
   Vec4D_Vector pmap(m_plab);
   MapMomenta(pmap, k);
   pmap.push_back(k);
@@ -438,10 +432,65 @@ void NLO_Base::CEEXComparePoint() {
     msg_Out() << "  p[" << i << "] = " << pmap[i] << "\n";
   Vec4D bal(pmap[0]+pmap[1]);
   for (size_t i(2); i < pmap.size(); ++i) bal -= pmap[i];
+  msg_Out() << "  sqrt(s) of THIS point = " << (pmap[0]+pmap[1]).Mass()
+            << "   <-- set KKMC CMSene to this, not the beam energy\n";
   msg_Out() << "  balance (in - out) = " << bal
             << "   max|component| = "
             << Max(Max(dabs(bal[0]),dabs(bal[1])),Max(dabs(bal[2]),dabs(bal[3])))
             << "\n";
+  /*
+    Export EVERY input KKMC needs, in KKMC's own ReaData format, so that
+    nothing has to be matched by hand and the two generators cannot silently
+    disagree on a parameter.
+
+    KKee2f::Initialize reads KKMCee_defaults, then ./pro.input with a NEGATIVE
+    imax, which means "overwrite, do not zero". A third file read the same way
+    therefore overrides both, and this is that file: the KKMC driver applies it
+    last. No transcription, no remembering which knob is which index.
+
+    This exists because chasing a disagreement down to the matrix element cost
+    a day of comparing things that were never comparable: Sherpa ran ISR+FSR
+    against KeyFSR=0, Sherpa's Gamma_Z was the PDG 2.4952 against KKMC's Dizet
+    2.5007203 (26% of the residual soft-limit difference), and SIN2THETAW
+    differs by 3.9% (0.23155 vs 0.22276773). Sherpa now states all of it.
+
+    Note the sqrt(s) written here is the sqrt(s) of THIS POINT, not the beam
+    energy: FixedTestPhoton() is synthetic and not in m_plab, so the mapped
+    configuration sits above the nominal collider energy. It is a physical
+    point, just at a different sqrt(s) - and KKMC has to be told which.
+  */
+  {
+    const double sqrtsPoint((pmap[0] + pmap[1]).Mass());
+    double sin2tw(0.23155);
+    if (MODEL::s_model)
+      sin2tw = MODEL::s_model->ComplexConstant("csin2_thetaW").real();
+    const long kffin(m_flavs[2].Kfcode());
+    std::ofstream kp("ceex_kkmc.input");
+    kp << std::setprecision(17) << std::scientific;
+    kp << "BeginX  <- written by NLO_Base::CEEXComparePoint, do not edit\n";
+    kp << "*  Sherpa's inputs, overriding KKMCee_defaults and pro.input.\n";
+    kp << "    1  " << sqrtsPoint  << "  CMSene: sqrt(s) OF THIS POINT\n";
+    kp << "   30  " << 1./m_alpha  << "  Alfinv0 = 1/alpha(0)\n";
+    kp << "  502  " << Flavour(kf_Z).Mass()  << "  MZ\n";
+    kp << "  503  " << sin2tw                << "  swsq = sin^2(theta_W)\n";
+    kp << "  504  " << Flavour(kf_Z).Width() << "  GamZ\n";
+    kp << "   12  " << 0.0 << "  KeyELW: QED only, matching Sherpa's YFS\n";
+    kp << "   20  " << (HasISR() ? 1.0 : 0.0) << "  KeyISR\n";
+    kp << "   21  " << (HasFSR() ? 1.0 : 0.0) << "  KeyFSR\n";
+    kp << "   27  " << ((HasISR() && HasFSR()) ? 2.0 : 0.0) << "  KeyINT (IFI)\n";
+    // Final state: index 400+KF, one flag per channel, all others off.
+    for (long kf(1); kf <= 16; ++kf) {
+      if (kf > 6 && kf < 11) continue;             // no such channel
+      kp << "  " << (400 + kf) << "  " << (kf == kffin ? 1.0 : 0.0)
+         << "  KFfin " << kf << (kf == kffin ? "  <== selected" : "") << "\n";
+    }
+    kp << "EndX\n";
+    msg_Out() << "  wrote ceex_kkmc.input (KKMC ReaData format): sqrt(s)="
+              << sqrtsPoint << ", MZ=" << Flavour(kf_Z).Mass()
+              << ", GamZ=" << Flavour(kf_Z).Width() << ", swsq=" << sin2tw
+              << ", 1/alpha=" << 1./m_alpha << ", KFfin=" << kffin << "\n";
+  }
+
   // Machine-readable copy so the KKMC driver can consume the point directly
   // instead of it being transcribed by hand.
   std::ofstream pt("ceex_point.dat");

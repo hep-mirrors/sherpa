@@ -83,6 +83,11 @@ namespace PHASIC {
     YFS::Real           *p_yfsreal;
     YFS::RealVirtual    *p_yfsrealvirt;
     YFS::RealReal       *p_yfsrealreal;
+    //! Fixed-order real corrections and their processes above the double real,
+    //! indexed by photon multiplicity ([0..2] unused - 1 and 2 are p_yfsreal
+    //! and p_yfsrealreal). Populated up to YFS: NLO_MAX_PHOTONS.
+    std::vector<YFS::Real_Correction*> m_yfsrealn;
+    std::vector<Process_Base*>         m_realnprocs;
     YFS::VirtualVirtual *p_yfsvv;
 
     //! Make this process the one the shared YFS handler is configured for.

@@ -1,16 +1,14 @@
 set(YFSNLO_SOURCES NLO_Base.C
                  NLO_Checks.C
                  ME_Compare.C
-                 Real.C
-                 RealReal.C
+                 Real_Correction.C
                  RealVirtual.C
                  Virtual.C
                  VirtualVirtual.C)
 
 set(YFSNLO_HEADERS  NLO_Base.H
                  ME_Compare.H
-                 Real.H
-                 RealReal.H
+                 Real_Correction.H
                  RealVirtual.H
                  Virtual.H
                  VirtualVirtual.H)
