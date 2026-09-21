@@ -33,7 +33,7 @@ using namespace std;
 // Diagnostic output streams and the residual accumulator, used only by the
 // checks below.
 std::ofstream out_sub, out_real, out_finite;
-std::ofstream out_recola;
+std::ofstream out_virtual;
 
 struct SubCheckAccumulator {
   size_t n = 0;
@@ -400,7 +400,7 @@ void NLO_Base::CheckMassReg() {
   double virt;
   if (m_check_mass_reg == 1 && !m_realvirt) {
     out_sub.open("yfs-sub.txt", std::ios_base::app);
-    out_recola.open("virtual-res.txt",
+    out_virtual.open("virtual-res.txt",
                     std::ios_base::app); // append instead of overwrite
     out_finite.open("yfs-finite.txt", std::ios_base::app);
     if (!HasISR())
@@ -419,11 +419,11 @@ void NLO_Base::CheckMassReg() {
     std::cout << setprecision(15);
     out_sub << setprecision(15) << m_photonMass << ","
             << -sub * m_born / m_rescale_alpha << std::endl;
-    out_recola << setprecision(15) << m_photonMass << "," << virt << std::endl;
+    out_virtual << setprecision(15) << m_photonMass << "," << virt << std::endl;
     out_finite << setprecision(15) << m_photonMass << ","
                << virt - sub * m_born / m_rescale_alpha << std::endl;
     out_sub.close();
-    out_recola.close();
+    out_virtual.close();
     exit(0);
   }
 }
