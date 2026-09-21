@@ -51,7 +51,7 @@ namespace EXTAMP {
 
     /* Initialize KP terms */
     p_kpterms = new PHASIC::KP_Terms(this, ATOOLS::sbt::qcd,PartonIndices());
-    
+
     /* Set Dipole alpha for KP_Terms and make them calc both K and P*/
     p_kpterms->SetAlpha(1.0, 1.0, 1.0, 1.0);
     p_kpterms->SetKappa(1.0);
@@ -68,27 +68,27 @@ namespace EXTAMP {
     m_beta0 =  11./3.*m_CA - 4.0/3.0*m_TR*m_NF;
   }
 
-  
+
   BVI_Process::~BVI_Process()
   {
     if (p_loop_me) delete p_loop_me;
     if (p_corr_me) delete p_corr_me;
     if (p_kpterms) delete p_kpterms;
   }
-  
+
 
   double BVI_Process::Partonic(const ATOOLS::Vec4D_Vector &p,
                                Variations_Mode varmode,
                                int mode)
   {
     DEBUG_FUNC(this);
-    
+
    if (!Selector()->Result())
      return m_mewgtinfo.m_B=m_mewgtinfo.m_VI=m_mewgtinfo.m_KP=m_lastbxs=m_lastxs=0.0;
 
     double B(0.0),V(0.0),I(0.0),KP(0.0);
     std::pair<double,double> scaleterms;
-    
+
     /* Maybe move to PHASIC::Single_Process */
     ScaleSetter()->CalculateScale(p);
     double mur = p_scale->Scale(stp::ren,1);
@@ -103,28 +103,28 @@ namespace EXTAMP {
        scale dependence terms */
     I = Calc_I(p, mur);
     scaleterms = Calc_ScaleDependenceTerms_I(p, mur);
-    
+
     /* Calculate KP terms */
     if(m_flavs[0].Strong() || m_flavs[1].Strong())
       KP = Calc_KP(p);
-    
+
     /* Calculate V and corresponding scale dependence terms only for a
        fraction m_vfrac of PS points. */
     if(ATOOLS::ran->Get() < m_vfrac)
       {
 	V = Calc_V(p,B,mur)/m_vfrac;
-	
+
 	std::pair<double,double> vscterms =
 	  Calc_ScaleDependenceTerms_V(p,B,mur);
-	
-	scaleterms.first  += vscterms.first/m_vfrac; 
-	scaleterms.second += vscterms.second/m_vfrac; 
+
+	scaleterms.first  += vscterms.first/m_vfrac;
+	scaleterms.second += vscterms.second/m_vfrac;
       }
 
     /* Now divide all components by the symfac */
     B  /= NormFac(); V  /= NormFac(); I  /= NormFac(); KP /= NormFac();
     scaleterms.first /= NormFac(); scaleterms.second /= NormFac();
-    
+
     /* Store all XS components in ME weight info */
     m_mewgtinfo.m_B       = B  ;
     m_mewgtinfo.m_VI      = V+I;
@@ -158,9 +158,9 @@ namespace EXTAMP {
 
     p_loop_me->SetRenScale(mur);
     p_loop_me->Calc(p,B);
-    
-    /* mode 0: loop ME is missing Born factor 
-       mode 1: loop ME includes Born factor   
+
+    /* mode 0: loop ME is missing Born factor
+       mode 1: loop ME includes Born factor
        mode 2: loop ME includes Born factor and integrated subtraction terms */
     switch(p_loop_me->Mode())
       {
@@ -186,29 +186,29 @@ namespace EXTAMP {
 	{
 	  const ATOOLS::Flavour& fl_i(m_flavs[*i]);
 	  const ATOOLS::Flavour& fl_j(m_flavs[*j]);
-	  
+
 	  /* This assumes that p_corr_me->Calc(p) has already been called! */
 	  double M_ij = p_corr_me->GetValue(*i,*j)/Ti2(fl_i); // <m|TiTj/Ti^2|m>
 	  double M_ji = p_corr_me->GetValue(*j,*i)/Ti2(fl_j); // <m|TjTi/Tj^2|m>
-	  
+
 	  /* Eps_Scheme_Factor usually defaults to 4pi */
 	  double logf = log(4.0*M_PI*mur/(2.0*p[*i]*p[*j])/p_loop_me->Eps_Scheme_Factor(p));
-	  
-	  /* finite part of 
-	     [ 4\pi\mu^2_r / (2*p_i*p_k*Eps_Scheme_Factor) ]^\epsilon * V_{i/j}(\epsilon), 
+
+	  /* finite part of
+	     [ 4\pi\mu^2_r / (2*p_i*p_k*Eps_Scheme_Factor) ]^\epsilon * V_{i/j}(\epsilon),
 	     assume poles to be included in virtuals, rendering them finite */
 	  double Vi_fin = (Vi_eps0(fl_i, m_subtype) + Vi_eps1(fl_i)*logf +  0.5*Vi_eps2(fl_i)*sqr(logf));
 	  double Vj_fin = (Vi_eps0(fl_j, m_subtype) + Vi_eps1(fl_j)*logf +  0.5*Vi_eps2(fl_j)*sqr(logf));
 	  I += Vi_fin*M_ij + Vj_fin*M_ji;
-	  
+
 	}
-    
+
     /* Do not divide by symfac at this stage, this is done for all
        components simultaneously in Partonic */
     return -p_corr_me->AlphaQCD()/(2.0*M_PI) * I;
   }
 
-  
+
   std::pair<double,double> BVI_Process::
   Calc_ScaleDependenceTerms_V(const ATOOLS::Vec4D_Vector& p,
 			      const double& B,
@@ -232,15 +232,15 @@ namespace EXTAMP {
       default:
     	THROW(not_implemented, "Not implemented");
       }
-   
+
     /* Do not divide by symfac at this stage, this is done for all
        components simultaneously in Partonic */
     terms.first  *= p_corr_me->AlphaQCD()/(2.0*M_PI);
     terms.second *= p_corr_me->AlphaQCD()/(2.0*M_PI);
-    
+
     return terms;
   }
-  
+
 
   std::pair<double,double> BVI_Process::
   Calc_ScaleDependenceTerms_I(const ATOOLS::Vec4D_Vector& p,
@@ -256,11 +256,11 @@ namespace EXTAMP {
 	{
 	  const ATOOLS::Flavour& fl_i(m_flavs[*i]);
 	  const ATOOLS::Flavour& fl_j(m_flavs[*j]);
-	  
+
 	  /* This assumes that p_corr_me->Calc(p) has already been called! */
 	  double M_ij = p_corr_me->GetValue(*i,*j)/Ti2(fl_i); // <m|TiTj/Ti^2|m>
 	  double M_ji = p_corr_me->GetValue(*j,*i)/Ti2(fl_j); // <m|TjTi/Tj^2|m>
-	  
+
 	  double logf = log(4.0*M_PI*mur/(2.0*p[*i]*p[*j])/p_loop_me->Eps_Scheme_Factor(p));
 
 	  terms.first  -= M_ij*(Vi_eps1(fl_i) +  Vi_eps2(fl_i)*logf);
@@ -269,7 +269,7 @@ namespace EXTAMP {
 	  terms.second -= M_ij*Vi_eps2(fl_i);
 	  terms.second -= M_ji*Vi_eps2(fl_j);
 	}
-    
+
     /* Do not divide by symfac at this stage, this is done for all
        components simultaneously in Partonic */
     terms.first  *= p_corr_me->AlphaQCD()/(2.0*M_PI);
@@ -278,7 +278,7 @@ namespace EXTAMP {
     return terms;
   }
 
-  
+
   double BVI_Process::Vi_eps0(const ATOOLS::Flavour& flav,
                               ATOOLS::subscheme::code subtype)
   {
@@ -299,7 +299,7 @@ namespace EXTAMP {
     THROW(not_implemented, "Subtraction scheme not implemented");
   }
 
-  
+
   double BVI_Process::Vi_eps1(const ATOOLS::Flavour& flav)
   {
     if(flav.IsGluon())
@@ -309,7 +309,7 @@ namespace EXTAMP {
     THROW(fatal_error, "Internal error");
   }
 
-  
+
   double BVI_Process::Vi_eps2(const ATOOLS::Flavour& flav)
   {
     if(flav.IsGluon())
@@ -329,7 +329,7 @@ namespace EXTAMP {
     THROW(fatal_error, "Internal error");
   }
 
-  
+
   double BVI_Process::Calc_KP(const ATOOLS::Vec4D_Vector& p)
   {
     /* Calculate partonic momentum fractions of incoming partons*/
@@ -338,9 +338,9 @@ namespace EXTAMP {
     m_eta1 = (p[1][3]<0.0?p[1].PMinus()/rpa->gen.PBunch(1).PMinus():
 	      p[1].PPlus()/rpa->gen.PBunch(0).PPlus());
 
-    /* Randomly select x0 \in [eta0,1] 
-                       x1 \in [eta1,1] 
-       and calc weight corresponding to 
+    /* Randomly select x0 \in [eta0,1]
+                       x1 \in [eta1,1]
+       and calc weight corresponding to
        the volume of those intervals */
     double w(1.0);
     if(m_flavs[0].Strong())
@@ -359,7 +359,7 @@ namespace EXTAMP {
     /* Populate a 2D array with color correlated MEs for KP_Terms.
        This assumes that p_corr_me->Calc(p) has already been called!
        Diagonal entries must remain zero exept for the [0][0] entry,
-       which holds the squared born by convention. Also note 
+       which holds the squared born by convention. Also note
        KP_Terms expect: dsij[i][j] = M(PartonIndices()[i], PartonIndices()[j])
        NOT:             dsij[i][j] = M(i,                  j                 ) */
     std::vector<std::vector<double> >
@@ -373,16 +373,19 @@ namespace EXTAMP {
     p_kpterms->Calculate(p,dsij,m_x0,m_x1,m_eta0,m_eta1,w);
 
     /* Set all relevant members of ME_Weight_Info */
-    bool swap = p_int->Momenta()[0][3]<p_int->Momenta()[1][3];
+    bool swap = ISRSwapped();
     m_mewgtinfo.m_swap = swap;
     m_mewgtinfo.m_y1   = swap?m_x1:m_x0;
     m_mewgtinfo.m_y2   = swap?m_x0:m_x1;
     p_kpterms->FillMEwgts(m_mewgtinfo);
 
+    PDF::PDF_Base *pdfa(p_int->ISR()->PDF(0)), *pdfb(p_int->ISR()->PDF(1));
+    if (swap) std::swap(pdfa,pdfb);
+
     /* Do not divide by symfac at this stage, this is done for all
        components simultaneously in Partonic */
     double muf2(ScaleSetter()->Scale(stp::fac,1));
-    return p_kpterms->Get(p_int->ISR()->PDF(0),p_int->ISR()->PDF(1),
+    return p_kpterms->Get(pdfa,pdfb,
 			  m_x0, m_x1,
 			  m_eta0, m_eta1,
 			  muf2, muf2,
@@ -390,13 +393,15 @@ namespace EXTAMP {
 			  m_flavs[0], m_flavs[1]);
   }
 
-  
+
   double BVI_Process::KPTerms(int mode, double scalefac2)
   {
     /* Used by PHASIC::Single_Process for reweighting, so have to
        include the normalization factor here */
+    PDF::PDF_Base *pdfa(p_int->ISR()->PDF(0)), *pdfb(p_int->ISR()->PDF(1));
+    if (ISRSwapped()) std::swap(pdfa,pdfb);
     double muf2(ScaleSetter()->Scale(stp::fac,1));
-    return p_kpterms->Get(p_int->ISR()->PDF(0),p_int->ISR()->PDF(1),
+    return p_kpterms->Get(pdfa,pdfb,
 			  m_x0, m_x1,
 			  m_eta0, m_eta1,
 			  muf2, muf2,

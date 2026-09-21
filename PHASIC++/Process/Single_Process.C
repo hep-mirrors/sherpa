@@ -1092,6 +1092,11 @@ ATOOLS::Cluster_Sequence_Info Single_Process::ClusterSequenceInfo(
   return csi;
 }
 
+bool Single_Process::ISRSwapped() const
+{
+  return p_int->Momenta()[0][3]<p_int->Momenta()[1][3];
+}
+
 double Single_Process::KPTerms(const ATOOLS::QCD_Variation_Params * varparams)
 {
   double KP(KPTerms(0, varparams->p_pdf1,

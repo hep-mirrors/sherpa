@@ -24,6 +24,11 @@ namespace PHASIC {
     //! Override in a subclass that calculates KP terms to enable their reweighting
     virtual double KPTerms(int mode, double scalefac2=1.0) { return 0.; };
 
+    //! True if the ISR handler swapped the beams for the current point,
+    //! i.e. flavour 0 was drawn from beam 1. KP terms and ME weight info
+    //! are flavour-ordered, while the ISR handler's PDFs are beam-ordered.
+    bool ISRSwapped() const;
+
     //! Override in a subclass as a fallback if the underlying ME returns the
     //! special QCD order of 98, thus indicating that it would like to report
     //! its own renormalization scale reweighting factor.

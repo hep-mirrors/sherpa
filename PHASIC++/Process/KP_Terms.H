@@ -31,7 +31,7 @@ namespace PHASIC {
     ATOOLS::Flavour_Vector m_flavs;
 
     bool   m_massive, m_cemode, m_negativepdf;
-    double m_kpca[8], m_kpcb[8], m_cpldef, m_NC;
+    double m_kpca[8], m_kpcb[8], m_Ebeam[2], m_cpldef, m_NC;
     int    m_Vsubmode, m_facscheme;
     bool   m_sa,m_sb;
     int    m_typea, m_typeb;

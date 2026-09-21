@@ -15,8 +15,9 @@ KP_Terms::KP_Terms(Process_Base *const proc, const sbt::subtype st,
                  cs_kcontrib::Kt),
       m_subtype(subscheme::CS), p_proc(proc), p_nlomc(NULL), p_kernel(NULL),
       p_cpl(NULL), m_flavs(p_proc->Flavours()), m_massive(true),
-      m_cemode(false), m_cpldef(0.), m_NC(3.), m_Vsubmode(1), m_facscheme(0),
-      m_sa(false), m_sb(false), m_typea(m_flavs[0].IntSpin()),
+      m_cemode(false), m_Ebeam{0., 0.}, m_cpldef(0.), m_NC(3.),
+      m_Vsubmode(1), m_facscheme(0), m_sa(false), m_sb(false),
+      m_typea(m_flavs[0].IntSpin()),
       m_typeb(m_flavs[1].IntSpin()), m_plist(partonlist) {
   DEBUG_FUNC("");
   RegisterDefaults();
@@ -218,6 +219,13 @@ void KP_Terms::Calculate
                      << ", type(b)=" << m_typeb << ", beam(b)=" << m_sb);
   msg_Debugging()<<"x0="<<x0<<", x1="<<x1
                  <<", eta0="<<eta0<<", eta1="<<eta1<<std::endl;
+  // reset first
+  for (int i = 0; i < 8; i++)
+    m_kpca[i] = 0.;
+  for (int i = 0; i < 8; i++)
+    m_kpcb[i] = 0.;
+  m_Ebeam[0] = rpa->gen.PBunch(mom[0][3] > 0. ? 0 : 1)[0];
+  m_Ebeam[1] = rpa->gen.PBunch(mom[1][3] < 0. ? 1 : 0)[0];
   if (!m_sa && !m_sb) return;
   if ((m_sa && x0<eta0) || (m_sb && x1<eta1)) return;
   double cpl(Coupling());
@@ -226,10 +234,6 @@ void KP_Terms::Calculate
   if (m_sa && m_sb)
     pls++;
   double muf2(p_proc->ScaleSetter()->Scale(stp::fac, 1));
-  for (int i = 0; i < 8; i++)
-    m_kpca[i] = 0.;
-  for (int i = 0; i < 8; i++)
-    m_kpcb[i] = 0.;
 
   msg_Debugging() << "parton list: " << m_plist << std::endl;
 
@@ -633,9 +637,9 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb, const double &x0,
   // assumption: a/a' = gluon/photon, quark only
   if (m_sa) {
     msg_Debugging() << "sa" << std::endl;
-    if (m_cemode && eta0 * rpa->gen.PBunch(0)[0] < fl0.Mass(true)) {
+    if (m_cemode && eta0 * m_Ebeam[0] < fl0.Mass(true)) {
       msg_Tracking() << METHOD << "(): E < m ! ( "
-                     << eta0 * rpa->gen.PBunch(0)[0] << " vs. "
+                     << eta0 * m_Ebeam[0] << " vs. "
                      << fl0.Mass(true) << " )" << std::endl;
       return 0.0;
     }
@@ -701,9 +705,9 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb, const double &x0,
 
   if (m_sb) {
     msg_Debugging() << "sb" << std::endl;
-    if (m_cemode && eta1 * rpa->gen.PBunch(1)[0] < fl1.Mass(true)) {
+    if (m_cemode && eta1 * m_Ebeam[1] < fl1.Mass(true)) {
       msg_Tracking() << METHOD << "(): E < m ! ( "
-                     << eta1 * rpa->gen.PBunch(1)[0] << " vs. "
+                     << eta1 * m_Ebeam[1] << " vs. "
                      << fl1.Mass(true) << " )" << std::endl;
       return 0.0;
     }

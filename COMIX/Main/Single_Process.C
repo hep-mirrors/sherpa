@@ -355,7 +355,7 @@ bool COMIX::Single_Process::MapProcess()
 	My_Out_File map(mapfile);
 	if (map.Open()) {
 	  *map<<m_name<<" "<<mapname<<"\n"<<m_fmap.size()<<"\n";
-	  for (Flavour_Map::const_iterator 
+	  for (Flavour_Map::const_iterator
 		 fit(m_fmap.begin());fit!=m_fmap.end();++fit) {
 	    msg_Debugging()<<"  fmap '"<<fit->first
 			   <<"' onto '"<<fit->second<<"'\n";
@@ -390,10 +390,10 @@ bool COMIX::Single_Process::GeneratePoint()
     return true;
   }
   m_zero=true;
-  if (p_map!=NULL && m_lookup && p_map->m_lookup) 
+  if (p_map!=NULL && m_lookup && p_map->m_lookup)
     return !(m_zero=p_map->m_zero);
   if (!p_int->ColorIntegrator()->GeneratePoint()) return false;
-  if (p_int->HelicityIntegrator()!=NULL && 
+  if (p_int->HelicityIntegrator()!=NULL &&
       !p_int->HelicityIntegrator()->GeneratePoint()) return false;
   m_zero=false;
   return true;
@@ -464,7 +464,7 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
 	for (size_t j(0); j<sp->m_cols.m_perms.size(); ++j)
 	  m_dxs+=((*sp->p_hc)[i][j]*sp->m_cols.m_colfacs[i][j]).real();
     }
-    if (p_int->HelicityIntegrator()!=NULL) 
+    if (p_int->HelicityIntegrator()!=NULL)
       m_w*=p_int->HelicityIntegrator()->Weight();
     int isb(m_dxs==sp->p_bg->Born());
     double kb(sp->p_bg->Born()?sp->KFactor(1|2):1.0);
@@ -616,6 +616,7 @@ double COMIX::Single_Process::KPTerms
 {
   if (!(m_pinfo.m_fi.NLOType()&nlo_type::vsub)) return 0.0;
   const Vec4D &p0(p_int->Momenta()[0]), &p1(p_int->Momenta()[1]);
+  if (ISRSwapped()) std::swap(pdfa,pdfb);
   double eta0(p0[3]>0.0?p0.PPlus()/rpa->gen.PBunch(0).PPlus():
 	      p0.PMinus()/rpa->gen.PBunch(1).PMinus());
   double eta1(p1[3]<0.0?p1.PMinus()/rpa->gen.PBunch(1).PMinus():
@@ -627,7 +628,7 @@ double COMIX::Single_Process::KPTerms
 
 void COMIX::Single_Process::FillMEWeights(ME_Weight_Info &wgtinfo) const
 {
-  wgtinfo.m_swap=m_p[0][3]<m_p[1][3];
+  wgtinfo.m_swap=ISRSwapped();
   wgtinfo.m_y1=m_x[wgtinfo.m_swap];
   wgtinfo.m_y2=m_x[1-wgtinfo.m_swap];
   (p_map?p_map:this)->p_bg->FillMEWeights(wgtinfo);
@@ -774,7 +775,7 @@ Flavour COMIX::Single_Process::ReMap
 bool COMIX::Single_Process::Combinable
 (const size_t &idi,const size_t &idj)
 {
-  Combination_Set::const_iterator 
+  Combination_Set::const_iterator
     cit(m_ccombs.find(std::pair<size_t,size_t>(idi,idj)));
   return cit!=m_ccombs.end();
 }
