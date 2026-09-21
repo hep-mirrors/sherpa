@@ -29,37 +29,35 @@ using namespace std;
 template <class T> void set_writer_precision(const std::shared_ptr<T>& writer, const int precision) { writer->set_precision(precision); }
 inline void set_writer_precision(const std::shared_ptr<HepMC3::WriterHEPEVT>&, const int) { }
 
+template <class T, HepMC3::Compression compression>
+std::shared_ptr<HepMC3::Writer> create_compressed_writer(std::ofstream& outstream, const int precision,
+                              const std::string& basename, std::string& ext,
+                              const std::string& compression_extension)
+{
+  ext += compression_extension;
+  outstream.open((basename + ext).c_str());
+  if (!outstream.good()) THROW(fatal_error, "Could not open event file " + basename + ext + ".");
+  auto writer = std::make_shared<HepMC3::WriterGZ<T, compression>>(outstream);
+  set_writer_precision(std::static_pointer_cast<T>(writer->writer()), precision);
+  return writer;
+}
+
 template <class T>
 std::shared_ptr<HepMC3::Writer> create_writer(std::ofstream& outstream, const std::string &use_compression, const int precision,  const std::string& basename,  std::string & ext) {
 #if HEPMC3_USE_COMPRESSION
 #if HEPMC3_Z_SUPPORT
     if (use_compression == "GZ" )   {
-        ext += ".gz";
-        outstream.open((basename + ext).c_str());
-        if (!outstream.good()) THROW(fatal_error, "Could not open event file " + basename + ext + ".");
-        auto X = std::make_shared< HepMC3::WriterGZ<T,HepMC3::Compression::z> >(outstream);
-        set_writer_precision(X->writer(), precision);
-        return X;
+    return create_compressed_writer<T, HepMC3::Compression::z>(outstream, precision, basename, ext, ".gz");
     }
 #endif
 #if HEPMC3_LZMA_SUPPORT
     if (use_compression == "LZMA" ) {
-        ext += ".lz";
-        outstream.open((basename + ext).c_str());
-        if (!outstream.good()) THROW(fatal_error, "Could not open event file " + basename + ext + ".");
-        auto X = std::make_shared< HepMC3::WriterGZ<T,HepMC3::Compression::lzma> >(outstream);
-        set_writer_precision(X->writer(), precision);
-        return X;
+    return create_compressed_writer<T, HepMC3::Compression::lzma>(outstream, precision, basename, ext, ".lz");
     }
 #endif
 #if HEPMC3_BZ2_SUPPORT
     if (use_compression == "BZ2" )  {
-        ext += ".bz2";
-        outstream.open((basename + ext).c_str());
-        if (!outstream.good()) THROW(fatal_error, "Could not open event file " + basename + ext + ".");
-        auto X = std::make_shared< HepMC3::WriterGZ<T,HepMC3::Compression::bz2> >(outstream);
-        set_writer_precision(X->writer(), precision);
-        return X;
+    return create_compressed_writer<T, HepMC3::Compression::bz2>(outstream, precision, basename, ext, ".bz2");
     }
 #endif
 #endif
