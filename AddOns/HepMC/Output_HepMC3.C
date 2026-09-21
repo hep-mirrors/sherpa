@@ -26,8 +26,8 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-template <class T> void set_writer_precision(const std::shared_ptr<T>& writer, const int precision) { writer->set_precision(precision); }
-inline void set_writer_precision(const std::shared_ptr<HepMC3::WriterHEPEVT>&, const int) { }
+template <class T> inline void set_writer_precision(const std::shared_ptr<T>& writer, const int precision) { writer->set_precision(precision); }
+template <> inline void set_writer_precision<HepMC3::WriterHEPEVT>(const std::shared_ptr<HepMC3::WriterHEPEVT>&, const int) { }
 
 template <class T, HepMC3::Compression compression>
 std::shared_ptr<HepMC3::Writer> create_compressed_writer(std::ofstream& outstream, const int precision,
