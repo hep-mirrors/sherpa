@@ -19,6 +19,36 @@ The following parameters are used to steer the beam remnant handling:
    :local:
 
 
+.. _Beam break-up frames:
+
+Reference frames of the beam break-up
+=====================================
+
+The kinematic checks that decide whether a parton can be extracted from
+a beam are formulated in light-cone momenta along the respective beam
+direction.  Ratios of light-cone momenta are invariant under
+longitudinal boosts, so the extraction decisions do not depend on the
+frame in which the event record is given.  The minimal energy that must
+remain in a hadron remnant after an extraction is evaluated in the
+centre-of-momentum frame of the two colliding (bunch) particles, for
+example the photon--proton system in photoproduction.
+
+For beams with a spectrum -- equivalent photons, pomerons or reggeons --
+the beam break-up itself is also constructed in the centre-of-momentum
+frame of the two colliding particles: for low-energy photons the lab
+frame leaves too little energy for the companion spectators and their
+intrinsic transverse momenta.  The frame is confined to the construction
+of the beam-remnant blobs, and the event record before and after the
+beam-remnant stage is always given in the lab frame.  For monochromatic
+beams -- including asymmetric setups such as proton--lead collisions and
+deep-inelastic scattering -- and for purely leptonic collisions the
+construction proceeds in the lab frame, unchanged.
+
+There is deliberately no switch for this behaviour: the construction
+frame is an internal choice that maximises the available phase space for
+the break-up, while the extraction checks are frame-invariant.
+
+
 .. _BEAM_REMNANTS:
 
 BEAM_REMNANTS
@@ -63,6 +93,7 @@ REMNANTS
 .. index:: REMNANTS:MATTER_RADIUS_1
 .. index:: REMNANTS:MATTER_RADIUS_2
 .. index:: REMNANTS:MATTER_FORM
+.. index:: REMNANTS:SOFT_EXPONENT
 
 
 Sherpa organises the remnant handling by particle, with the PDG code as
@@ -72,16 +103,16 @@ tag-line.
 
    REMNANTS:
      2212:
-       KT_FORM: Gauss_limited
+       KT_FORM: Gauss_Limited
 
 The usual rules for yaml structure apply, c.f. :ref:`Input structure`.
 Longitudinal momenta for sea partons in hadrons are distributed according
 to a probability distribution in their light-cone momentum :math:`x` given by
 :math:`P(x)=x^{-1.5}`. If there are two valence partons left in the beam remnant
-after the shower initiators have been treated, the first of the two (usually the
-quark) will have a longitudinal momentum with :math:`P(x)=\exp(-1/x)`, while
-the last remaining valence parton (usually the di-quark for nucleons) carries
-the remaining longitudinal momentum.
+after the shower initiators have been treated, the valence di-quark (for
+nucleons) is assigned a longitudinal momentum fraction sampled from
+:math:`P(x)=\exp(-1/x)`, which is peaked towards large :math:`x`, while the
+last remaining valence quark carries the remaining longitudinal momentum.
 
 For the intrinsic transverse momentum, Sherpa differentiates between the
 transverse momentum for shower initiators (``SHOWER_INITIATOR_MEAN`` etc.)
@@ -95,7 +126,7 @@ two sets of partons per beam, see below (``KT_RECOIL``).
 
   * ``Gauss``: a simple Gaussian with mean and width;
   * ``Dipole``: a dipole form parameterised by :math:`Q^2`;
-  * ``Gauss_Limited``, ``dipole_Limited``: as above but further modified by a polynomial function of the form :math:`1-(k_{T}/k_{T,\rm{max}})^\eta`, where :math:`k_{T,\rm{max}}` and :math:`\eta` are given by the ``KTMAX`` and ``KTEXPO`` tags;
+  * ``Gauss_Limited``, ``Dipole_Limited``: as above but further modified by a polynomial function of the form :math:`1-(k_{T}/k_{T,\rm{max}})^\eta`, where :math:`k_{T,\rm{max}}` and :math:`\eta` are given by the ``KTMAX`` and ``KTEXPO`` tags;
   * ``None``: no intrinsic transverse momentum is assigned.
 
 :option:`KT_RECOIL (default: Beam_vs_Shower)`
@@ -126,12 +157,12 @@ two sets of partons per beam, see below (``KT_RECOIL``).
 :option:`BEAM_SPECTATOR_SIGMA   (default for nucleons: 0.25)`
   Same as for ``SHOWER_INITIATOR_SIGMA``.
 
-:option:`SHOWER_INITIATOR_Q2 (default for nucleons: 1.1)`
+:option:`SHOWER_INITIATOR_Q2 (default for nucleons: 0.77)`
   This parameter specifies the :math:`Q^2` in :math:`{\rm GeV}^2`
   of the limited or unlimited dipole distribution for the
   intrinsic transverse momentum.
 
-:option:`BEAM_SPECTATOR_Q2   (default for nucleons: 0.25)`
+:option:`BEAM_SPECTATOR_Q2   (default for nucleons: 0.77)`
   Same as for ``SHOWER_INITIATOR_Q2``.
 
 :option:`SHOWER_INITIATOR_KTMAX (default for nucleons: 2.7)`
@@ -159,11 +190,13 @@ two sets of partons per beam, see below (``KT_RECOIL``).
 :option:`ENERGY_SCALING_EXPO (default: 0.08)`
   This parameter specifies the energy extrapolation exponent.
 
-:option:`MATTER_FORM (default: Single_Gaussian)`
-  ``Double_Gaussian`` can be used to model the overlap between
-  the colliding particles.  ``None`` switches this off.
+:option:`MATTER_FORM (default for nucleons: Double_Gaussian, for mesons/photons: Single_Gaussian, for leptons: None)`
+  Functional form of the transverse matter distribution used to model the
+  overlap between the colliding particles.  Available options are
+  ``Single_Gaussian``, ``Double_Gaussian``, ``X-Dependent_Gaussian`` and
+  ``None`` (the latter switching the spatial distribution off).
 
-:option:`MATTER_RADIUS_1 (default for nucleons: 0.86, for mesons/photons: 0.75)`
+:option:`MATTER_RADIUS_1 (default for nucleons: 0.85, for mesons/photons: 0.75)`
   The radius of the (inner) Gaussian in fm. If used with the
   double-Gaussian matter form, this value must be smaller than ``MATTER_RADIUS_2``.
 
@@ -173,11 +206,16 @@ two sets of partons per beam, see below (``KT_RECOIL``).
   :math:`f^2` is distributed by the inner Gaussian :math:`r_1`, another fraction
   :math:`(1-f)^2` is distributed by the outer Gaussian :math:`r_2`,
   and the remaining fraction :math:`2f(1-f)` is distributed by the combined radius
-  :math:`r_\text{tot} = \sqrt{\frac{r_1^2+r_2^2}{2}}`. Defaults to ``0.5``.
+  :math:`r_\text{tot} = \sqrt{\frac{r_1^2+r_2^2}{2}}`. Defaults to ``0.65`` for nucleons.
 
 :option:`MATTER_RADIUS_2`
     Defaults to ``1.0``. It is only used for the case of a double-Gaussian
     overlap, see below.
+
+:option:`SOFT_EXPONENT (default for nucleons: 0.08, otherwise: 0.0)`
+    Exponent :math:`\alpha` of the :math:`x`-dependent matter radius
+    :math:`R(x) = R_1\,x^{-\alpha}`. Only used for the
+    ``X-Dependent_Gaussian`` matter form.
 
 
 If the option :option:`BEAM_REMNANTS: false` is specified at top level, pure
@@ -185,3 +223,29 @@ parton-level events are simulated, i.e. no beam remnants are
 generated. Accordingly, partons entering the hard scattering process
 do not acquire primordial transverse momentum.
 
+On-the-fly reweighting
+----------------------
+
+The parameters of the hadronic matter distribution, :option:`MATTER_RADIUS_1`, 
+:option:`MATTER_RADIUS_2` and :option:`MATTER_FRACTION_1`, enter the matter 
+overlap function that drives the multiple-parton interactions, cf. 
+:ref:`MPI Parameters`.
+
+Their effect can be reweighted on-the-fly, using the 
+same list syntax as for the MPI parameters (:ref:`Amisic`). For example,
+
+.. code-block:: yaml
+
+   REMNANTS:
+     2212:
+       MATTER_FORM:       Double_Gaussian
+       MATTER_RADIUS_1:   [0.85, 0.80, 0.90]
+       MATTER_FRACTION_1: [0.65, 0.60, 0.70]
+
+uses the nominal values ``0.85`` and ``0.65`` for event generation and 
+computes two additional weights corresponding to the listed variations.
+
+These variations are matched by list position and combined with the variations 
+of the MPI parameters (:ref:`Amisic`) and  of the colour-reconnection parameters 
+(:ref:`Colour_Reconnections`) (labelled as ``SoftPhysics.v1``, 
+``SoftPhysics.v2``, etc.).

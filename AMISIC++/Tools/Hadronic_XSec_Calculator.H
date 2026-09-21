@@ -2,7 +2,7 @@
 #define AMISIC_Tools_Hadronic_XSec_Calculator_H
 
 #include "AMISIC++/Tools/MI_Parameters.H"
-#include "AMISIC++/Tools/Lookup_Tables.H"
+#include "ATOOLS/Math/Lookup_Tables.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include <array>
 #include <list>
@@ -11,12 +11,19 @@
 namespace MODEL{ class Model_Base; }
 
 namespace AMISIC {
+  using ATOOLS::axis;
+  using ATOOLS::OneDim_Table;
+
   enum class xsec_type {
-    nucleon_nucleon = 0,
-    photon_nucleon  = 1,
-    nucleon_photon  = 2,
-    photon_photon   = 3,
-    hadron_hadron   = 10,
+    baryon_baryon   = 0,
+    meson_baryon    = 1,
+    baryon_meson    = 2,
+    meson_meson     = 3,
+    photon_baryon   = 10,
+    baryon_photon   = 11,
+    photon_meson    = 12,
+    meson_photon    = 13,
+    photon_photon   = 14,
     none            = 99
   };
 
@@ -31,7 +38,7 @@ namespace AMISIC {
     std::map<ATOOLS::Flavour, std::list<ATOOLS::Flavour> > m_hadroncomponents;
     static std::map<kf_code, size_t> s_indexmap;
     static std::map<kf_code, double> s_fVs;
-    double m_beta0[4];
+    double m_beta0[4], m_AQM[2];
 
     std::array<ATOOLS::Flavour,2> m_flavs;
     xsec_type      m_type;
@@ -41,7 +48,7 @@ namespace AMISIC {
     double m_mres, m_cres, m_s0, m_s1, m_Ypp, m_c0, m_c1;
     double m_prefElastic, m_prefSD, m_prefDD;
     double m_eps_pomeron, m_alphaP_pomeron, m_triple_pomeron, m_eta_reggeon;
-    double m_alphaQED;
+    double m_alphaQED, m_AQM_strange;
     double m_s, m_xstot, m_xsel, m_xssdA, m_xssdB, m_xsdd, m_xsnd, m_xsnd_norm;
     std::map<std::pair<ATOOLS::Flavour, ATOOLS::Flavour>, double> m_sigmaEl;
     std::map<std::pair<ATOOLS::Flavour, ATOOLS::Flavour>, double> m_sigmaSDA;
@@ -49,12 +56,17 @@ namespace AMISIC {
     std::map<std::pair<ATOOLS::Flavour, ATOOLS::Flavour>, double> m_sigmaDD;
     double m_GeV2mb;
     OneDim_Table * p_xsratio, * p_xshard;
+    size_t m_n_variations;
+    std::vector<double> m_sigma_nd_variations;
+    std::vector<OneDim_Table*> p_xsratio_variations;
+    std::vector<OneDim_Table*> p_xshard_variations;
     size_t m_testmode;
 
     void   FixType();
     void   FixTables();
     void   TestXSecs();
     void   CalculateXSecs();
+    double AQMFactor(const ATOOLS::Flavour & flav);
     double TotalXSec(const size_t hadtags[2]) const;
     double IntElXSec(const size_t hadtags[2], const double & xstot) const;
     double IntSDXSec(const size_t hadtags[2], const size_t & diff,
@@ -62,6 +74,7 @@ namespace AMISIC {
     double IntDDXSec(const size_t hadtags[2], const double masses[2]) const;
     double CalculateDoubleDXSec() const;
     void OutputXSratios(axis * sbins);
+    void OutputXSratios(axis * sbins, size_t ivar);
   public:
     explicit Hadronic_XSec_Calculator();
     ~Hadronic_XSec_Calculator();
@@ -70,6 +83,7 @@ namespace AMISIC {
 		    MODEL::Model_Base * model,const evt_type::code & type);
     void operator()(double s);
     void CalculateXSratios(MI_Processes * processes,axis * sbins);
+    void CalculateXSratios(MI_Processes * processes,axis * sbins, size_t ivar);
     void Output() const;
 
     inline const double & Smin()   const { return m_smin; }
@@ -80,10 +94,20 @@ namespace AMISIC {
     //////////////////////////////////////////////////////////////////////////
     inline OneDim_Table * GetXSratio() { return p_xsratio; }
     inline double XSratio(const double & s=-1.) { return (*p_xsratio)(s); }
+    inline double XSratio(const double & s, size_t ivar) {
+      if (ivar>=m_n_variations || p_xsratio_variations[ivar]==nullptr) 
+        return XSratio(s);
+      return s<0 ? 0. : (*p_xsratio_variations[ivar])(s);
+    }
     //////////////////////////////////////////////////////////////////////////
     // Hard cross section
     //////////////////////////////////////////////////////////////////////////
     inline double XShard(const double & s=-1.)  { return (*p_xshard)(s); }
+    inline double XShard(const double & s, size_t ivar) {
+      if (ivar>=m_n_variations || p_xshard_variations[ivar]==nullptr) 
+        return XShard(s);
+      return s<0 ? 0. : (*p_xshard_variations[ivar])(s);
+    }
     //////////////////////////////////////////////////////////////////////////
     // Non-diffractive cross section, given in GeV^-2
     //////////////////////////////////////////////////////////////////////////
@@ -144,6 +168,10 @@ namespace AMISIC {
 	  m_hadroncomponents[m_flavs[beam]].end() &&
 	  s_indexmap.find(flav)!=s_indexmap.end()) return s_indexmap[flav];
       return 0;
+    }
+    inline void SetVariations(size_t n_variations, const std::vector<double>& sigma_nd_variations) {
+      m_n_variations = n_variations;
+      m_sigma_nd_variations = sigma_nd_variations;
     }
   };
 }

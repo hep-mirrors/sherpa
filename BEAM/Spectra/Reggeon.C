@@ -62,6 +62,9 @@ bool Reggeon::CalculateWeight(double x, double q2)
            (std::exp(-m_B * tmin) * std::pow(x, 2. * m_alpha_slope * tmin) -
             std::exp(-m_B * tmax) * std::pow(x, 2. * m_alpha_slope * tmax))) /
           (m_B - 2. * m_alpha_slope * std::log(x));
+  // At large x the kinematic lower edge tmin can exceed tmax, i.e. the t
+  // integration range is empty and the flux vanishes; the signed t-integral
+  // above then comes out negative, so clamp it to zero.
   if (m_weight < 0.) m_weight = 0.;
   return true;
 }
@@ -83,6 +86,7 @@ void Reggeon::FixPosition() {
 
 void Reggeon::FixNormalisation()
 {
+  // normalised as in Goharipour:2018yov, following hep-ex/0606004 after eq. 14
   double x    = 0.003;
   double tmax = 1.;
   double tmin = sqr(m_proton_mass * x) / (1 - x);

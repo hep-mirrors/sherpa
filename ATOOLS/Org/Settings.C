@@ -16,6 +16,11 @@ void Settings::InitializeMainSettings(int argc, char* argv[])
   mainsettings = std::unique_ptr<Settings>(new Settings(argc, argv));
 }
 
+void Settings::InitializeMainSettings(const std::string& yaml)
+{
+  mainsettings = std::unique_ptr<Settings>(new Settings(yaml));
+}
+
 void Settings::FinalizeMainSettings()
 {
   Settings_Writer().WriteSettings(*mainsettings);

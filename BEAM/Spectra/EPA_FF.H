@@ -8,6 +8,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include <ATOOLS/Org/Run_Parameter.H>
 #include <cmath>
+#include <functional>
 
 namespace ATOOLS {
   class Settings;
@@ -63,7 +64,7 @@ namespace BEAM {
       return os << "Undefined";
     }
 
-    return os << "Unknown EPA form factor " << type << "\n";
+    return os << "Unknown EPA form factor (" << static_cast<int>(type) << ")\n";
   }
 
   inline std::istream& operator>>(std::istream& is, EPA_ff_type& type)
@@ -107,10 +108,6 @@ namespace BEAM {
   }
 
   class EPA_FF_Base {
-  private:
-
-    double m_norm_distribution;
-
   protected:
 
     ATOOLS::Flavour m_beam;
@@ -120,38 +117,107 @@ namespace BEAM {
     double m_xmin, m_xmax;
     double m_bmin,
         m_bmax; //< bmin, bmax only relative to radius
+    double m_chi_cut; //< upper cut on chi = x*m*b
     double m_Zsquared, m_b,
         m_b_pl_threshold; //< b, b_pl_threshold are absolute distances
     std::unique_ptr<ATOOLS::TwoDim_Table> p_N_xb;
 
     size_t m_nxbins, m_nbbins;
 
-    double SampleImpactParameter(const double& ran)
+    inline static bool s_cite = true;
+
+    // Importance-sample the impact parameter for this form factor's beam
+    // parameters; see SampleB for the 1/x support cap. Stores b in m_b.
+    double SampleImpactParameter(const double& x, const double& ran)
     {
-      // Sampling from b_abs/(b_abs^2 + R^2) with b_abs = b * R
-      m_b = sqrt((ATOOLS::sqr(m_bmin) + 1.) *
-                     std::exp(2. * ran * m_norm_distribution) -
-                 1.);
-      double weight = m_norm_distribution * (ATOOLS::sqr(m_b) + 1.) / m_b * m_R;
-      // multiply radius to convert b to physical distance
-      m_b *= m_R;
-      return weight;
+      return SampleB(x, ran, m_bmin, m_bmax, m_chi_cut, m_mass, m_R, m_b);
     }
     virtual void FillTables();
+
+    // ---- table caching (implemented in EPA_FF.C) -------------------------
+    // The on-disk format and the MPI-safe load/save go through the generic
+    // ATOOLS::Table_Cache facility; the logic below only builds the cache key
+    // and decides where the file lives. The tables are stored *inside* the
+    // result archive <RESULT_DIRECTORY>.zip (as entries EPA/<file>.tab), written
+    // via the My_File zip-DB just like the matrix-element results -- this is why
+    // BuildNxbTable opens that DB around the cache I/O. Caching is therefore
+    // gated on GENERATE_RESULT_DIRECTORY exactly as the ME results are.
+
+    // Content version baked into every cache key (see BaseCacheId). Bump
+    // whenever the table-construction logic changes in a way no other key
+    // parameter captures, to invalidate previously written caches.
+    // v2: fixed the EPA_HCS form factor argument (q*R instead of Q^2).
+    // v3: fixed the EPA_WoodSaxonApprox small-qR form factor and filled the
+    //     N(x,b) table boundary nodes (last x/b node was previously left zero).
+    // v4: guarded the N(x,b) kernel against x -> 1, where Q^2 diverged and the
+    //     x = xMax boundary node (filled since v3) became NaN for sqrt-based
+    //     form factors; invalidates v3 caches that stored that NaN node.
+    static constexpr int s_cache_version = 4;
+    bool m_cache{true};    //< caching enabled (EPA:CacheTables) for this beam
+    std::string m_respath; //< resolved RESULT_DIRECTORY root; cache lives inside
+                           //< <m_respath>.zip; empty => caching disabled
+
+    // Common part of the cache key (version + axes + beam scalars). Concrete
+    // form factors prepend a type tag and append their own parameters so that
+    // any change to a relevant input invalidates the cache exactly.
+    std::string BaseCacheId(const std::string& tag) const;
+    virtual std::string CacheId() const { return BaseCacheId("base"); }
+    std::string CacheFileName(const std::string& tag,
+                              const std::string& key) const;
+
+    // True iff table caching is active for this beam: enabled via
+    // EPA:CacheTables AND a result archive is being written. An empty m_respath
+    // means GENERATE_RESULT_DIRECTORY is off or RESULT_DIRECTORY is empty, i.e.
+    // there is no <RESULT_DIRECTORY>.zip to cache into.
+    bool CachingActive() const { return m_cache && !m_respath.empty(); }
+
+    // Load-or-(fill + save) a cached table via ATOOLS::Table_Cache. On a hit
+    // every rank loads it (rank 0 reads and broadcasts the bytes); on a miss
+    // every rank runs fill() (which populates target) and rank 0 writes the
+    // result for the next run. Shared by the N(x,b) and form-factor tables.
+    template <class Table>
+    void LoadOrBuild(const std::string& tag, const std::string& key,
+                     std::unique_ptr<Table>& target,
+                     const std::function<void()>& fill);
+
+    // Build p_N_xb: opens the result zip-DB (so this and any prerequisite
+    // form-factor table land inside <RESULT_DIRECTORY>.zip), then PrepareFill()
+    // builds that prerequisite (e.g. the Woods-Saxon form-factor table) before
+    // FillTables() fills the N(x,b) grid.
+    void BuildNxbTable();
+    virtual void PrepareFill() {}
 
   public:
 
     EPA_FF_Base(const ATOOLS::Flavour& beam, int dir);
     virtual ~EPA_FF_Base() = default;
+
+    // Pure importance-sampling of the (dimensionless) impact parameter for a
+    // given x. The upper limit is constrained by the physical b_max and the
+    // chi_max set by the user. The latter should be preferred as it does cut
+    // including the correct scaling with x.
+    static double SampleB(double x, double ran, double bmin, double bmax,
+                          double chi_cut, double mass, double R, double& b_phys)
+    {
+      const double bmaxx =
+          ATOOLS::Max(bmin, ATOOLS::Min(bmax, chi_cut / (x * mass * R)));
+      const double norm =
+          0.5 * std::log((ATOOLS::sqr(bmaxx) + 1.) / (ATOOLS::sqr(bmin) + 1.));
+      // Sampling from b_abs/(b_abs^2 + R^2) with b_abs = b * R
+      double b =
+          std::sqrt((ATOOLS::sqr(bmin) + 1.) * std::exp(2. * ran * norm) - 1.);
+      double weight = norm * (ATOOLS::sqr(b) + 1.) / b * R;
+      b_phys = b * R; // convert to physical distance
+      return weight;
+    }
+
     virtual double N(const double& x, const double& ran)
     {
-      double wt = SampleImpactParameter(ran);
+      double wt = SampleImpactParameter(x, ran);
       DEBUG_FUNC("x = " << x << ", ran = " << ran << ", b = " << m_b);
       if (m_b < m_b_pl_threshold) return (*p_N_xb)(x, m_b) * wt;
       // use point-like approximation for large impact parameters
       double chi = x * m_mass * m_b;
-      // do not compute the large-b large-x region, suppression by O(1e-45)
-      if (chi > 100) return 0.;
       return 2 * m_Zsquared * m_b * x * m_mass2 *
              (ATOOLS::sqr(ATOOLS::SF.Kn(1, chi)) +
               2. * m_mass / ATOOLS::rpa->gen.Ecms() *
@@ -211,6 +277,9 @@ namespace BEAM {
       // - we assume that m_b is in units of 1/GeV, qT is in GeV, overall
       // results are in GeV.
       //////////////////////////////////////////////////////////////////////////
+      // At x -> 1 the photon carries the full beam energy and the flux
+      // vanishes; also avoids divergence of Q2
+      if (m_x >= 1.) return 0.;
       double qT = y / m_b, qT2 = ATOOLS::sqr(qT);
       double Q2 = (qT2 + m_x * m_x * p_ff->Mass2()) / (1. - m_x);
       // integration variable is qT, so dy/dqT = b, hence Jacobian 1/b needed
@@ -270,6 +339,7 @@ namespace BEAM {
   private:
 
     double m_Q02;
+    std::string CacheId() const override;
 
   public:
 
@@ -278,12 +348,27 @@ namespace BEAM {
   };
 
   class EPA_HCS final: public EPA_FF_Base {
+  private:
+
+    std::string CacheId() const override;
+
   public:
 
     EPA_HCS(const ATOOLS::Flavour& beam, int dir);
-    double FF(const double& QR) override
+    double FF(const double& Q2) override
     {
-      return 3 *
+      // Homogeneously-charged-sphere form factor, a function of the
+      // dimensionless product q*R. The interface passes Q^2 (GeV^2), so the
+      // argument is q*R = sqrt(Q^2) * m_R, with m_R the beam radius in 1/GeV.
+      const double QR = std::sqrt(Q2) * m_R;
+      // For small q*R the two terms are each ~1/(q*R)^2 and cancel
+      // catastrophically, so below a safe threshold use the Taylor series
+      // F = 1 - (qR)^2/10 + (qR)^4/280 (F(0) = 1).
+      if (QR < 1.e-2) {
+        const double QR2 = QR * QR;
+        return 1. - QR2 / 10. + QR2 * QR2 / 280.;
+      }
+      return 3. *
              (std::sin(QR) / std::pow(QR, 3) - std::cos(QR) / ATOOLS::sqr(QR));
     }
   };
@@ -292,6 +377,7 @@ namespace BEAM {
   private:
 
     double m_Q02;
+    std::string CacheId() const override;
 
   public:
 
@@ -303,6 +389,10 @@ namespace BEAM {
   };
 
   class EPA_DipoleApprox final: public EPA_FF_Base {
+  private:
+
+    std::string CacheId() const override;
+
   public:
 
     explicit EPA_DipoleApprox(const ATOOLS::Flavour& beam, int dir);
@@ -312,16 +402,20 @@ namespace BEAM {
   class EPA_WoodSaxon final: public EPA_FF_Base {
   private:
 
-    double m_d, m_R_WS, m_rho0;
+    double m_d, m_R_WS;
+    size_t m_rnodes;     //< number of r-grid intervals for the Filon transform
+    double m_rmaxfactor; //< r_max = R_WS + m_rmaxfactor * d
     std::unique_ptr<ATOOLS::OneDim_Table> p_FF_Q;
     static constexpr double m_q_min = 0., m_q_max = 1.e2;
     static constexpr int m_q_n = 1e5;
 
-    static double
-    IntegrateWithAdaptiveRange(const std::function<double(double)>& integrand,
-                               double initial_rmax, double tolerance);
-    double CalculateDensity();
-    void InitFFTable();
+    void InitFFTable();   //< Filon sine transform of the Woods-Saxon density
+    void BuildFFQTable(); //< load-or-(InitFFTable + save) for p_FF_Q
+    // RWS / d / q-axis / r-grid part of the cache key (shared by the FF-table
+    // key and the N(x,b) key, since N(x,b) depends on the form factor).
+    std::string WSParamString() const;
+    std::string CacheId() const override;
+    void PrepareFill() override { BuildFFQTable(); }
 
   public:
 
@@ -330,6 +424,13 @@ namespace BEAM {
     {
       const double Q = sqrt(Q2);
       if (Q > m_q_max) return 0.;
+      // p_FF_Q is prebuilt on an N(x,b) cache miss (PrepareFill ->
+      // BuildFFQTable). It is null only after an N(x,b) cache hit (which skips
+      // the form-factor table) or when FF() is first reached via the debug CSV
+      // output; build it on demand so any caller gets the correct value instead
+      // of dereferencing a null table. InitFFTable() is pure local computation
+      // (no MPI/cache collectives), so building it from a single rank is safe.
+      if (!p_FF_Q) InitFFTable();
       return (*p_FF_Q)(Q);
     }
   };
@@ -338,6 +439,7 @@ namespace BEAM {
   private:
 
     double m_R_WS, m_a;
+    std::string CacheId() const override;
 
   public:
 
@@ -349,8 +451,18 @@ namespace BEAM {
       // Normalising the form factor/nuclear density can be performed
       // analytically and it yields \rho_0 = A / 4 / \pi * 3 / R^3
       const double qR = sqrt(Q2) * m_R_WS;
-      return 3. / std::pow(qR, 3) * (std::sin(qR) - qR * std::cos(qR)) /
-             (1. + ATOOLS::sqr(m_a) * Q2);
+      // The hard-sphere factor 3 (sin qR - qR cos qR)/(qR)^3 cancels
+      // catastrophically, and divides by zero at Q2=0, for small qR; use its
+      // Taylor series F = 1 - (qR)^2/10 + (qR)^4/280 below a safe threshold
+      // (as in EPA_HCS::FF).
+      double sphere;
+      if (qR < 1.e-2) {
+        const double qR2 = qR * qR;
+        sphere = 1. - qR2 / 10. + qR2 * qR2 / 280.;
+      } else {
+        sphere = 3. / std::pow(qR, 3) * (std::sin(qR) - qR * std::cos(qR));
+      }
+      return sphere / (1. + ATOOLS::sqr(m_a) * Q2);
     }
   };
 

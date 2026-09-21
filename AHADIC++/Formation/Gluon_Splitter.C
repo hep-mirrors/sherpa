@@ -18,7 +18,7 @@ void Gluon_Splitter::Init(const bool & isgluon) {
   // 1: z ~ z^alpha * (1-z)^alpha
   m_mode  = hadpars->Switch("GluonDecayForm");
   m_alpha = hadpars->Get("alphaG");
-  m_analyse = true;
+  m_analyse = false;
   if (m_analyse) {
     m_histograms[std::string("Yasym_frag_2")] = new Histogram(0,0.,8.,32);
   }
@@ -29,15 +29,20 @@ bool Gluon_Splitter::MakeLongitudinalMomenta() {
 	   4.*(m_Q2*m_kt2 + m_minQ2[0]*m_popped_mass2));
   if (m_arg<0.) return false;
   CalculateLimits();
-  do { m_z[1] = m_zselector(m_zmin[1],m_zmax[1]); } while (!CalculateXY());
-  return true;
+  bool success(false);
+  size_t attempts(1000);
+  while (attempts>0 && !success) {
+    m_z[1]  = m_zselector(m_zmin[1],m_zmax[1]);
+    success = CalculateXY();
+    attempts--;
+  }
+  return success;
 }
 
 void Gluon_Splitter::CalculateLimits() {
-  double mean1 = (m_Q2+m_minQ2[0]-m_popped_mass2)/(2.*m_Q2);
   double delta = sqrt(m_arg)/(2.*m_Q2);
-  m_zmin[0] = Max(0.0,mean1-delta);
-  m_zmax[0] = Min(1.0,mean1+delta);
+  // only the index-1 limits bound the sampling; m_z[0] is derived analytically
+  // in CalculateXY, so the index-0 limits are not computed.
   double mean2 = (m_Q2-m_minQ2[0]+m_popped_mass2)/(2.*m_Q2);
   m_zmin[1] = Max(0.0,mean2-delta/2.);
   m_zmax[1] = Min(1.0,mean2+delta);
@@ -48,7 +53,7 @@ bool Gluon_Splitter::CalculateXY() {
   double M2 = m_z[0]*(1.-m_z[1])*m_Q2;
   //This is a new addition w.r.t. original master
   double R2 = M2 - m_kt2;
-  if (R2 < m_mdec[0]) {
+  if (R2 < m_mdec2[0]) {
     M2     = m_mdec2[0];
     m_z[0] = M2/((1.-m_z[1])*m_Q2);
   }
@@ -78,7 +83,13 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
   default:
     break;
   }
+  // Accept/reject envelope: norm must be >= max of z^a+(1-z)^a over [zmin,zmax]
+  // so the returned weight stays in [0,1]. For a<0 the maxima are at the inner
+  // endpoints (zmin / 1-zmax); for a>0 they are at the outer endpoints
+  // (zmax / 1-zmin). The a>0 case was previously left at norm=1, which made the
+  // sampler accept unconditionally (weight>=1) and flattened the z spectrum.
   if (m_alpha<=0.) norm = pow(zmin,m_alpha) + pow(1.-zmax,m_alpha);
+  else             norm = pow(zmax,m_alpha) + pow(1.-zmin,m_alpha);
   return (pow(z,m_alpha)+pow(1.-z,m_alpha))/norm;
 }
 
@@ -196,10 +207,10 @@ Cluster * Gluon_Splitter::MakeCluster() {
 		  p_part[0]->Flavour()==Flavour(kf_b) ||
 		  p_part[0]->Flavour()==Flavour(kf_b).Bar());
     m_lastC    = (!m_lastB &&
-		  (newp12->Flavour()==Flavour(kf_b) ||
-		   newp12->Flavour()==Flavour(kf_b).Bar() ||
-		   p_part[0]->Flavour()==Flavour(kf_b) ||
-		   p_part[0]->Flavour()==Flavour(kf_b).Bar()));
+		  (newp12->Flavour()==Flavour(kf_c) ||
+		   newp12->Flavour()==Flavour(kf_c).Bar() ||
+		   p_part[0]->Flavour()==Flavour(kf_c) ||
+		   p_part[0]->Flavour()==Flavour(kf_c).Bar()));
     double y = cluster->Momentum().Y();
     m_histograms[std::string("Yasym_frag_2")]->Insert(dabs(y),(y>0.?1.:-1.));
   }

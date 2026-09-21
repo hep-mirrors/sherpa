@@ -181,10 +181,15 @@ void CS_Cluster_Definitions::KernelWeight
     return;
   }
   if (m_pdfcheck && (cs.m_mode&1)) {
+    // i->Id() is the ID, starting from 1, of the cluster leg 
+    // in the crossed cluster amplitude, 
+    // mo.Bar() is the flavour of the splitter
+    // because IS flavours are barred in the crossed ampl
     int beam=i->Id()&1?0:1;
     if (p_shower->ISR()->PDF(beam) &&
-	!p_shower->ISR()->PDF(beam)->Contains(mo)) {
-      msg_Debugging()<<"Not in PDF: "<<mo<<".\n";
+        !p_shower->ISR()->PDF(beam)->Contains(mo.Bar())) {
+      msg_Debugging()<<"Not in PDF: splitter flavour "<<mo.Bar()<<
+              ", corresponding to crossed flavour "<<mo<<" in cluster amplitude.\n";
       cs.m_wk=0.0;
       cs.m_kmode=-1;
       return;
@@ -213,7 +218,11 @@ void CS_Cluster_Definitions::KernelWeight
 	       p_shower->GetSudakov()->FSPT2Min());
   if (m_kfmode && !(kmode&16))
   cs.m_mu2*=cdip->Coupling()->CplFac(cs.m_mu2);
-  cs.m_cpl=cdip->PureQCD()?0:-1;
+  // m_cpl encodes the coupling type for the scale setters (MEPS/VBF/E_Gamma):
+  // 0 = QCD, 1 = QED. The value 2 is reserved for gg->colour-singlet
+  // (double-alpha_s) vertices and must not be assigned to ordinary QCD
+  // splittings, or the merging order bookkeeping is corrupted.
+  cs.m_cpl=cdip->PureQCD()?0:1;
   if (!(kmode&2)) return;
   else {
   double eta=1.0;

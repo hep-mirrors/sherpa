@@ -13,10 +13,11 @@
 #include "ATOOLS/Phys/Weights.H"
 #include <list>
 
-namespace ATOOLS { 
-  class Blob_Data_Base; 
+namespace ATOOLS {
+  class Blob_Data_Base;
   class Poincare;
   class Mass_Selector;
+  class Cluster_Amplitude;
   struct Weight_Info;
 }
 
@@ -43,7 +44,7 @@ namespace PHASIC {
   class Process_Base;
 
   class Phase_Space_Handler {
-  private: 
+  private:
     BEAM::Beam_Spectra_Handler * p_beamhandler;
     PDF::ISR_Handler           * p_isrhandler;
     YFS::YFS_Handler           * p_yfshandler;
@@ -51,6 +52,7 @@ namespace PHASIC {
     int                          m_nin, m_nout, m_nvec;
     ATOOLS::Flavour_Vector       p_flavours;
     ATOOLS::Vec4D_Vector         p_lab;
+    ATOOLS::Cluster_Amplitude  * p_point;
 
     Process_Integrator          * p_process, *p_active;
     Phase_Space_Integrator      * p_integrator;
@@ -163,6 +165,11 @@ namespace PHASIC {
     inline void SetISRIntegrator(Multi_Channel * channels)  { m_pspoint.SetISRIntegrator(channels); }
     inline void SetFSRIntegrator(Multi_Channel * channels)  { m_pspoint.SetFSRIntegrator(channels); }
 
+    inline void SetPoint(ATOOLS::Cluster_Amplitude *const ampl) {
+      p_point = ampl;
+      m_pspoint.SetPoint(ampl);
+    }
+
     inline BEAM::Beam_Spectra_Handler   * GetBeamSpectra() const { return p_beamhandler; }
     inline PDF::ISR_Handler              * GetISRHandler() const { return p_isrhandler; }
     inline YFS::YFS_Handler              * GetYFSHandler() const { return p_yfshandler; }
@@ -183,7 +190,7 @@ namespace PHASIC {
     inline void AddStats(const std::vector<double> &stats) {
       std::vector<double> nstats(1,m_stats.size()+1);
       nstats.insert(nstats.end(),stats.begin(),stats.end());
-      m_stats.push_back(nstats); 
+      m_stats.push_back(nstats);
     }
   };// end of class Phase_Space_Handler
 
@@ -195,9 +202,9 @@ namespace PHASIC {
   /*!
     \var ATOOLS::Integration_Info *Phase_Space_Handler::p_info
 
-    Phase_Space_Handler distributes information on the various 
+    Phase_Space_Handler distributes information on the various
     integration variables and weights through an instance of Integration_Info.
-    Each Single_Channel is able to gain access to the variables via the assignment 
+    Each Single_Channel is able to gain access to the variables via the assignment
     of an Info_Key during its initialization.
   */
 

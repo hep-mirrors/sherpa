@@ -76,6 +76,8 @@ namespace ATOOLS {
   public:
 
     static void InitializeMainSettings(int argc, char* argv[]);
+    /// seed the main settings from an inline YAML string (for unit tests)
+    static void InitializeMainSettings(const std::string& yaml);
     static void FinalizeMainSettings();
     static Settings& GetMainSettings();
 

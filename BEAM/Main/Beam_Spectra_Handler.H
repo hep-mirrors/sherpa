@@ -17,7 +17,7 @@ namespace BEAM {
     collidermode       m_collidermode;
     bool               m_on;
     int                m_mode,m_polarisation;
-    std::string        m_name,m_type;
+    std::string        m_type;
 
     bool InitTheBeams();
     bool InitTheKinematics();
@@ -25,6 +25,11 @@ namespace BEAM {
   public:
     Beam_Spectra_Handler();
     ~Beam_Spectra_Handler();
+
+    // Owns raw p_BeamBase/p_kinematics/p_weight pointers; copying would
+    // double-free, so copy (and, implicitly, move) are forbidden.
+    Beam_Spectra_Handler(const Beam_Spectra_Handler&) = delete;
+    Beam_Spectra_Handler& operator=(const Beam_Spectra_Handler&) = delete;
 
     void FixPositions();
     inline bool                       On()           const { return m_on; }
@@ -68,6 +73,7 @@ namespace BEAM {
     inline double Weight() const {
       return (*p_weight)();
     }
+    inline void SetRejectionERan(double eran) const { p_weight->SetERan(eran); }
 
     // possible deprecated methods
     int    Polarisation() const { return m_polarisation; }
@@ -132,10 +138,6 @@ namespace BEAM {
     - 1 beam one is not monochromatic, beam two is.
     - 2 beam one is monochromatic, beam two is not.
     - 3 both beams are not monochromatic.
-  */
-  /*!
-    var std::string Beam_Spectra_Handler::m_name
-    Name of the Beam_Spectra_Handler.
   */
   /*!
     var std::string Beam_Spectra_Handler::m_type

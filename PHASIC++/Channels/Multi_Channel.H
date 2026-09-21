@@ -128,6 +128,7 @@ namespace PHASIC {
     virtual int                 HandicapFactor() { return 1; }
     inline void AddERan(const std::string &id) { m_erans[id]=0.0; }
     inline double ERan(const std::string &id) const { return m_erans.find(id)->second; }
+    inline bool HasERan(const std::string &id) const { return m_erans.find(id)!=m_erans.end(); }
   };
 
 

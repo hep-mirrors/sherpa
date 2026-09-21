@@ -18,7 +18,7 @@ void DM_Annihilation_Kinematics::InitIntegration() {
   m_S    = sqr(Emin);
   m_x[0] = 0.5;
   m_x[1] = 1 - m_x[0];
-  // m_cosxi = 0.;
+  m_cosxi = 0.;
   m_on   = true;
   m_exponent[0] = .5;
   m_exponent[1] = 2.;
@@ -60,6 +60,7 @@ bool DM_Annihilation_Kinematics::operator()(Vec4D_Vector& p) {
   double x  = m_xkey[2];
   double E1 = x*Eprime;
   double E2 = (1-x)*Eprime;
+  if (sqr(E1) < m_m2[0] || sqr(E2) < m_m2[1]) return false;
   double p1 = sqrt(sqr(E1)-m_m2[0]);
   double p2 = sqrt(sqr(E2)-m_m2[1]);
 

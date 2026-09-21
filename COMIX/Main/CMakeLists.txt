@@ -11,7 +11,7 @@ set(ComixMain_HEADERS Process_Base.H
 
 sherpa_create_git_info(ComixMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(Comix SHARED ${ComixMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(Comix ${SHERPA_SUBLIB_TYPE} ${ComixMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(Comix Comix)
 add_dependencies(Comix ComixMain_Git_Info)
 if (SHERPA_ENABLE_THREADING)

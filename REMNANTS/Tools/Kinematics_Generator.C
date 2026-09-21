@@ -10,7 +10,8 @@ using namespace REMNANTS;
 using namespace ATOOLS;
 
 Kinematics_Generator::Kinematics_Generator() :
-  m_stretcher(Momenta_Stretcher("REMNANTS")), m_warns(0), m_errors(0) {}
+  p_rhandler(nullptr), p_softblob(nullptr),
+  m_stretcher("REMNANTS"), m_warns(0), m_errors(0) {}
 
 Kinematics_Generator::~Kinematics_Generator() {
   if (m_warns>0 || m_errors>0) {
@@ -20,7 +21,7 @@ Kinematics_Generator::~Kinematics_Generator() {
   }
 }
 
-void Kinematics_Generator::Initialize(Remnant_Handler *const rhandler) {
+void Kinematics_Generator::Initialize(Remnant_Handler* rhandler) {
   p_rhandler = rhandler;
   p_remnants = p_rhandler->GetRemnants();
   for (size_t beam = 0; beam < 2; beam++) {
@@ -52,6 +53,9 @@ void Kinematics_Generator::Reset() {
   }
   m_shuffledmap.clear();
   m_boostedblobs.clear();
+  // p_softblob aliases a blob owned by the event's Blob_List; drop the stale
+  // pointer after each event so it is only non-null while a soft blob exists.
+  p_softblob = nullptr;
 }
 
 Blob *Kinematics_Generator::MakeSoftBlob() {
@@ -77,7 +81,7 @@ bool Kinematics_Generator::FillBlobs(Blob_List *blobs) {
 
 bool Kinematics_Generator::CollinearKinematics(Blob_List *blobs) {
   // First a trivial check whether particles entering the shower are the beam particles
-  // (for example in elastic/diffractive scattering or some such).  In gthis case
+  // (for example in elastic/diffractive scattering or some such).  In this case
   // we just fill them into the beam blobs.
   size_t trivial=0;
   if (m_kintype==kin_type::intact &&
@@ -121,7 +125,7 @@ bool Kinematics_Generator::TransverseKinematics() {
 
 bool Kinematics_Generator::TransverseKinematicsDIS(const size_t &beam) {
   // Remnants fill the beam blobs with spectators and copies of the shower
-  // initiators (they will become outging particles of the soft blob, as well as
+  // initiators (they will become outgoing particles of the soft blob, as well as
   // copies of the spectators). if beam blobs cannot be filled return false and
   // trigger retrial Fill the beam remnant blob with the original particles and
   // put them also into the ktmaps.
@@ -192,7 +196,7 @@ bool Kinematics_Generator::AdjustFinalStateDIS(const size_t &beam) {
 
 bool Kinematics_Generator::TransverseKinematicsHH() {
   // Remnants fill the beam blobs with spectators and copies of the shower
-  // initiators (they will become outging particles of the soft blob, as well as
+  // initiators (they will become outgoing particles of the soft blob, as well as
   // copies of the spectators).
   for (size_t beam = 0; beam < 2; beam++) {
     // if beam blobs cannot be filled return false and trigger retrial
@@ -460,6 +464,12 @@ bool Kinematics_Generator::CheckRemnants() {
   double totmass(0.);
   for (size_t beam = 0; beam < 2; beam++) {
     Particle *recoiler = p_remnants[beam]->GetRecoiler();
+    // A hadron-like remnant must have a recoiler (it carries the residual
+    // longitudinal momentum below); bail rather than dereference null.
+    if (!recoiler) {
+      msg_Debugging() << METHOD << ": no recoiler for beam " << beam << ".\n";
+      return false;
+    }
     for (auto part : *p_spectators[beam]) {
       if (part == recoiler)
         continue;
@@ -470,7 +480,7 @@ bool Kinematics_Generator::CheckRemnants() {
       totmass += masses.back();
       m_checkmom[beam] -= part->Momentum();
     }
-    // Check if energies still positive - otherwise we are in deep truoble
+    // Check if energies still positive - otherwise we are in deep trouble
     if (m_checkmom[beam][0] < 0.) {
       msg_Debugging() << METHOD << " throws error: no momentum left in beam "
                       << beam << ", " << m_checkmom[beam] << "\n";
@@ -491,7 +501,7 @@ bool Kinematics_Generator::CheckRemnants() {
   }
   Poincare residualcms(tot);
   // After boosting into their c.m. frame, use the Momenta_Stretcher to rescale
-  // particles onto their mass shells and to account for their transvers
+  // particles onto their mass shells and to account for their transverse
   // momenta.
   for (size_t i = 0; i < moms.size(); i++)
     residualcms.Boost(moms[i]);
@@ -521,13 +531,17 @@ bool Kinematics_Generator::CheckRemnants() {
 bool Kinematics_Generator::AdjustShowerInitiators() {
   // iterate pairwise over both sets of extracted particles, i.e. the shower
   // initiators, obtain constructed momenta with kperp from the
-  // Kinematocs_Generator and boost the blobs downstream.
-  Part_Iterator plit[2];
-  for (size_t beam = 0; beam < 2; beam++)
+  // Kinematics_Generator and boost the blobs downstream.
+  Part_Iterator plit[2], end[2];
+  for (size_t beam = 0; beam < 2; beam++) {
     plit[beam] = p_remnants[beam]->GetExtracted()->begin();
-  bool runit = true;
+    end[beam]  = p_remnants[beam]->GetExtracted()->end();
+  }
   Particle *part[2];
-  while (runit) {
+  // The two beams' shower initiators are paired (one per beam per scatter), so
+  // the lists must be equal-length and non-empty; iterate them in lockstep and
+  // never dereference an end() iterator.
+  while (plit[0] != end[0] && plit[1] != end[1]) {
     Vec4D oldLab(0., 0., 0., 0.), newLab(0., 0., 0., 0.);
     for (size_t beam = 0; beam < 2; beam++) {
       part[beam] = (*plit[beam]);
@@ -542,13 +556,19 @@ bool Kinematics_Generator::AdjustShowerInitiators() {
       THROW(fatal_error, "wrong blob or nesting too deep.\n");
     }
     for (size_t beam = 0; beam < 2; beam++) {
-      plit[beam]++;
       part[beam]->SetMomentum(ShuffledMomentum(part[beam]));
       part[beam]->SetFinalMass(part[beam]->RefFlav().HadMass());
       p_softblob->AddToOutParticles(part[beam]);
-      if (plit[beam] == p_remnants[beam]->GetExtracted()->end())
-        runit = false;
+      plit[beam]++;
     }
+  }
+  // A count mismatch would leave a surplus initiator unprocessed (its momentum
+  // never added to the soft blob); reject rather than silently break
+  // four-momentum conservation.
+  if (plit[0] != end[0] || plit[1] != end[1]) {
+    msg_Error() << METHOD
+                << ": mismatched shower-initiator counts between beams.\n";
+    return false;
   }
   return true;
 }

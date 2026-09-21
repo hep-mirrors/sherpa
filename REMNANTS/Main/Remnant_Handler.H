@@ -65,7 +65,7 @@ namespace REMNANTS {
     ~Remnant_Handler();
 
     bool ExtractShowerInitiators(ATOOLS::Blob *const showerblob);
-    bool Extract(ATOOLS::Particle * part,const unsigned int beam);
+    bool Extract(ATOOLS::Particle * part,const int beam);
     bool ConnectColours(ATOOLS::Blob *const showerblob);
     void Reset();
 
@@ -88,6 +88,14 @@ namespace REMNANTS {
     }
     inline PDF::isr::id Id() const { return m_id; }
     inline strat::code  Type() const { return m_type; }
+
+    // Invariant mass squared of the two colliding (bunch) particles, e.g.
+    // the gamma-p system for EPA photoproduction.  Evaluated on demand: the
+    // beam-out momenta change per event for spectra beams.
+    inline double SPair() const {
+      return (p_remnants[0]->IncomingMomentum() +
+              p_remnants[1]->IncomingMomentum()).Abs2();
+    }
 
     inline std::array<std::shared_ptr<Remnant_Base>, 2> GetRemnants() const
     {

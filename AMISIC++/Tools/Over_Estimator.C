@@ -1,8 +1,10 @@
 #include "AMISIC++/Tools/Over_Estimator.H"
+#include "AMISIC++/Tools/Matter_Overlap.H"
 #include "AMISIC++/Perturbative/MI_Processes.H"
+#include "AMISIC++/Tools/Interaction_Probability.H"
+#include "AMISIC++/Tools/Matter_Overlap.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Math/Random.H"
-#include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace AMISIC;
@@ -23,16 +25,17 @@ using namespace ATOOLS;
 
 Over_Estimator::Over_Estimator() :
   m_muR_fac(1.), m_muF_fac(1.), m_pref(0.), m_npt2bins(1000),
-  p_prefs(nullptr)
+  p_prefs(nullptr), m_n_variations(1)
 {}
 
 Over_Estimator::~Over_Estimator() { if (p_prefs) delete p_prefs; }
 
 void Over_Estimator::
-Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,axis * sbins) {
+Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,axis * sbins,
+           Interaction_Probability * pint,Matter_Overlap * mo) {
   ///////////////////////////////////////////////////////////////////////////
   // Inheriting all relevant inputs from the MI_Processes which we aim to
-  // over-estimate.  
+  // over-estimate.
   ///////////////////////////////////////////////////////////////////////////
   m_s         = procs->S();
   m_pt02      = procs->PT02();
@@ -45,7 +48,7 @@ Initialize(PDF::ISR_Handler * isr,MI_Processes * procs,axis * sbins) {
     m_xmin[i] = Max(1.e-6,p_pdf[i]->XMin());
     m_xmax[i] = Max(1.-1.e-6,p_pdf[i]->XMax());
   }
-  FixMaximum(procs,sbins);
+  FixMaximum(procs,sbins,pint, mo);
   Output();
 }
 
@@ -59,29 +62,29 @@ void Over_Estimator::UpdateS(const double & s,const double & pt02,const double &
   m_ptmin2 = ptmin2;
 }
 
-void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins) {
+void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins,
+                                Interaction_Probability * pint,Matter_Overlap * mo) {
   ////////////////////////////////////////////////////////////////////////////
-  // Looping over all relevant s values from the Sudakov tables in the 
+  // Looping over all relevant s values from the Sudakov tables in the
   // MI_Processes to fill a look-up table of maxima.
-  // Note: This does not include any effect of the matter overlap
-  //       (its weight should be below unity)
+  // The matter overlap maximum O(b=0) is included so that the Sudakov trial
+  // rate matches the physics rate, keeping the acceptance weight O(b)/O_max
+  // close to unity and avoiding excessive (*p_processes)() evaluations.
+  // Without this factor the acceptance weight equals O(b) which is typically
+  // 0.1-0.25, causing a 4-10x excess of expensive cross-section evaluations.
   ////////////////////////////////////////////////////////////////////////////
   p_prefs    = new OneDim_Table(*sbins);
-  for (size_t sbin=0;sbin<sbins->m_nbins;sbin++) {
+  const double pt02_save = procs->PT02();
+  for (size_t sbin=0;sbin<=(sbins->m_nbins > 1 ? sbins->m_nbins : 0);sbin++) {
     m_s      = sbins->x(sbin);
     m_pt02   = mipars->CalculatePT02(m_s);
-    m_ptmin2 = mipars->CalculatePT02(m_s);
+    for (size_t ivar=1;ivar<m_n_variations;ivar++)
+      m_pt02 = Min(m_pt02,mipars->CalculatePT02(m_s,ivar));
+    procs->SetPT02(m_pt02);
+    m_ptmin2 = mipars->CalculatePTmin2(m_s);
     double ratioN  = pow(m_s/m_ptmin2,1./double(m_npt2bins));
     double maxpref = 0.;
     for (size_t i=0;i<m_npt2bins;i++) {
-      ///////////////////////////////////////////////////////////////////////
-      // The actual value of p_T^2 for the bin, giving the maximal rapidity 
-      // range through s' = x_1 x_2 s = 4 p_T^2 cosh (Delta y), where Delta y 
-      // is the (maximal) rapidty distance of the two outgoing partons, or 
-      // twice the maximal rapidity of each single parton.  yvol is the 
-      // very crude and massively overestimated rapidity volume both partons
-      // can occupy.
-      ///////////////////////////////////////////////////////////////////////
       double pt2    = m_ptmin2 * pow(ratioN,i);
       double xt     = sqrt(4.*pt2/m_s);
       if (xt*xt > m_xmax[0]*m_xmax[1]) continue;
@@ -94,12 +97,28 @@ void Over_Estimator::FixMaximum(MI_Processes * procs,axis * sbins) {
       // volume to define a constant prefactor that ensures that the
       // approximation is always larger than the exact calculation.
       ///////////////////////////////////////////////////////////////////////
-      double test   = procs->PDFnorm()*Max(approx,exact)*yvol*sqr(pt2+m_pt02/4.);
+      double test   = procs->PDFnorm()*Max(approx,exact)*yvol*sqr(pt2+mipars->CalculatePT02(m_s)/4.);
       if (test > maxpref) { maxpref = test; }
     }
+    if (mo) mo->SetKRadius(pint->K(m_s));
+    double omax = (mo ? (mo->IsDynamic() ? mo->MaxValue(0.0) : (*mo)(0.0)) : 1.0);
+    if (m_n_variations > 1) {
+      for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+        mo->SetMatterFormVariationIndex(ivar);
+        const double K_var = pint->K(m_s, ivar);
+        const double omax_var = (mo ?
+          (mo->IsDynamic() ? mo->MaxValue(0.0, K_var) : (*mo)(0.0, K_var)) : 1.0);
+        if (omax_var > omax) {
+          omax = omax_var;
+        }
+      }
+      mo->SetMatterFormVariationIndex(0);
+    }
+    maxpref *= omax*s_GeV2fm2;
     p_prefs->Fill(sbin,maxpref);
     if (sbins->m_nbins==1) m_pref = maxpref;
   }
+  procs->SetPT02(pt02_save);
 }
 
 double Over_Estimator::ApproxME(const double & pt2,const double & xt) {
@@ -141,7 +160,6 @@ double Over_Estimator::operator()(const double & pt2,const double & yvol) {
   // not present in the true differential cross section calculated by the
   // MI_Processes.
   //////////////////////////////////////////////////////////////////////////
-  double myvol = sqr(log(m_s/(4.*pt2)*sqr(1.+sqrt(1.-4.*pt2/m_s))));
   return m_pref/(yvol * sqr(pt2+m_pt02/4.));
 }
 
@@ -168,21 +186,6 @@ void Over_Estimator::Output() {
 	      <<sqrt(p_prefs->GetAxis().x(i))<<" | "
 	      <<std::setprecision(8)<<std::setw(16)<<p_prefs->Value(i)
 	      <<std::string(37,' ')<<"|\n";
-  msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";      
+  msg_Info()<<"   "<<std::string(77,'-')<<"\n\n";
 }
 
-void Over_Estimator::Test(const double & Q2,const long int & n) {
-  msg_Out()<<METHOD<<" for Q^2 = "<<Q2<<", s = "<<m_s<<".\n";
-  Histogram histo(0,0.0,Q2,100);
-  for (size_t i=0;i<n;i++) {
-    double pt2 = Q2;
-    size_t trial(0);
-    while (pt2>m_pt02) {
-      TrialPT2(pt2);
-      if (trial++==0) histo.Insert(pt2);
-    }
-  }
-  histo.Finalize();
-  histo.Output("Over_PT2");
-  msg_Out()<<METHOD<<": finished "<<n<<" dry runs.\n";
-}

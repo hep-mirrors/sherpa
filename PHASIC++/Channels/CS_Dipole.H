@@ -92,7 +92,7 @@ namespace PHASIC {
 		const std::vector<std::string> &info);
 
     // inline functions
-    inline const ATOOLS::NLO_subevt *GetSubEvt() const { return &m_sub; }
+    inline ATOOLS::NLO_subevt *GetSubEvt() { return &m_sub; }
 
     inline void SetAMin(const double &amin)   { m_amin=amin;   }
     inline void SetQ2Min(const double &q2min) { m_q2min=q2min; }
@@ -126,7 +126,7 @@ namespace PHASIC {
 
   };// end of struct Dipole
 
-  std::ostream &operator<<(std::ostream &ostr,const CS_Dipole &dip);
+  std::ostream &operator<<(std::ostream &ostr,CS_Dipole &dip);
 
   typedef std::vector<CS_Dipole*> CSDipole_Vector;
   typedef std::vector<CSDipole_Vector> CSDipole_Matrix;

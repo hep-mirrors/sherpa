@@ -7,6 +7,54 @@
 
 using namespace ATOOLS;
 
+namespace {
+  // Text helpers for table (de)serialisation. A text format is portable across
+  // builds/endianness and round-trips through ATOOLS::My_File, which is how
+  // Sherpa shares result files across MPI ranks (rank 0 reads the file and
+  // broadcasts its content). Doubles are written with 17 significant digits
+  // (std::numeric_limits<double>::max_digits10), which round-trips an IEEE
+  // double exactly, so a reloaded table reproduces a freshly computed one.
+
+  // Sanity cap on the bin count read from a (regenerable) cache file, so a
+  // corrupt count cannot trigger a runaway allocation; any real table is far
+  // smaller, and a violation is treated as a corrupt file (i.e. recompute).
+  constexpr size_t s_max_bins = 100000000; // 1e8
+
+  // The per-axis cap above still permits products like nx*ny ~ 1e16 for a 2D
+  // table, so bound the total element count too (checked without overflowing
+  // size_t). Caps the allocation at ~0.8 GB; any real table is far smaller.
+  constexpr size_t s_max_elements = 100000000; // 1e8 doubles
+
+  void WriteAxis(std::ostream& os, const axis& a)
+  {
+    os << a.m_nbins << ' ' << a.m_xmin << ' ' << a.m_xmax << ' '
+       << static_cast<int>(a.m_mode) << '\n';
+  }
+  axis ReadAxis(std::istream& is)
+  {
+    size_t nbins = 0;
+    double xmin = 0., xmax = 0.;
+    int mode = 0;
+    is >> nbins >> xmin >> xmax >> mode;
+    if (!is || nbins < 1 || nbins > s_max_bins ||
+        (mode != axis_mode::linear && mode != axis_mode::log))
+      THROW(fatal_error, "Corrupt axis while reading cache.");
+    return axis(nbins, xmin, xmax, static_cast<axis_mode::code>(mode));
+  }
+  void WriteValues(std::ostream& os, const std::vector<double>& v)
+  {
+    for (double x : v)
+      os << x << '\n';
+  }
+  // Fills an already-sized vector (its length is fixed by the axes), so no
+  // length is read from the file.
+  void ReadValues(std::istream& is, std::vector<double>& v)
+  {
+    for (double& x : v)
+      is >> x;
+  }
+} // namespace
+
 axis::axis(size_t nbins, double xmin, double xmax, axis_mode::code mode)
     : m_nbins(nbins), m_xmin(xmin), m_xmax(xmax), m_mode(mode), m_xstep(0.0)
 {
@@ -68,6 +116,10 @@ void OneDim_Table::Rescale(double factor)
 double OneDim_Table::operator()(double x) const
 {
   if (x < m_x.m_xmin || x > m_x.m_xmax) return 0.0;
+  // A single-bin table is flat: only m_values[0] is filled, so interpolating
+  // would scale it by a spurious weight (x may sit far from the lone node).
+  // Return the one stored value.
+  if (m_x.m_nbins == 1) return m_values[0];
 
   size_t bin = m_x.bin(x);
 
@@ -143,6 +195,23 @@ void OneDim_Table::OutputToCSV(std::ofstream& outfile) const
   }
 }
 
+void OneDim_Table::Write(std::ostream& os) const
+{
+  os.precision(17);
+  WriteAxis(os, m_x);
+  WriteValues(os, m_values);
+}
+
+std::unique_ptr<OneDim_Table> OneDim_Table::Read(std::istream& is)
+{
+  const axis x = ReadAxis(is);
+  auto table = std::make_unique<OneDim_Table>(x);
+  ReadValues(is, table->m_values);
+  if (!is)
+    THROW(fatal_error, "Corrupt OneDim_Table while reading cache.");
+  return table;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // Two-dimensional look-up table
 //////////////////////////////////////////////////////////////////////////////
@@ -170,16 +239,17 @@ double TwoDim_Table::operator()(double x, double y) const
   if (xbin >= m_x.m_nbins) xbin = m_x.m_nbins - 1;
   if (ybin >= m_y.m_nbins) ybin = m_y.m_nbins - 1;
 
-  // Get weights for interpolation
+  // Get weights for interpolation. A single-bin axis is flat (only index 0 is
+  // filled), so force its weight to zero rather than interpolate.
   double x1 = m_x.x(xbin);
   double dx =
       (m_x.m_mode == axis_mode::linear) ? m_x.m_xstep : m_x.x(xbin + 1) - x1;
-  double wx = (std::fabs(dx) > 0) ? (x - x1) / dx : 0.0;
+  double wx = (m_x.m_nbins != 1 && std::fabs(dx) > 0) ? (x - x1) / dx : 0.0;
 
   double y1 = m_y.x(ybin);
   double dy =
       (m_y.m_mode == axis_mode::linear) ? m_y.m_xstep : m_y.x(ybin + 1) - y1;
-  double wy = (std::fabs(dy) > 0) ? (y - y1) / dy : 0.0;
+  double wy = (m_y.m_nbins != 1 && std::fabs(dy) > 0) ? (y - y1) / dy : 0.0;
 
   // Bilinear interpolation
   const double v00 = Value(xbin, ybin);
@@ -243,11 +313,81 @@ std::unique_ptr<OneDim_Table> TwoDim_Table::Cumulative(double expo,
   return cumulative;
 }
 
+std::unique_ptr<TwoDim_Table> TwoDim_Table::Invert(size_t axislabel,
+                                                   size_t nbins) const
+{
+  if (axislabel != 1)
+    THROW(fatal_error, "Two-dim table inversion only available for 2nd axis.");
+  // Determine the monotonicity direction and the global value range over all
+  // x rows. The last y grid point is index m_y.m_nbins (intervals convention).
+  const size_t ylast = m_y.m_nbins;
+  bool   dir    = Value(0, 0) > Value(0, ylast);
+  double minval = dir ? Value(0, ylast) : Value(0, 0);
+  double maxval = dir ? Value(0, 0) : Value(0, ylast);
+  for (size_t i = 1; i <= m_x.m_nbins; ++i) {
+    if (dir) {
+      if (Value(i, ylast) < minval) minval = Value(i, ylast);
+      if (Value(i, 0)     > maxval) maxval = Value(i, 0);
+    } else {
+      if (Value(i, ylast) > maxval) maxval = Value(i, ylast);
+      if (Value(i, 0)     < minval) minval = Value(i, 0);
+    }
+  }
+  axis vaxis(nbins, minval, maxval, axis_mode::linear);
+  auto table = std::make_unique<TwoDim_Table>(m_x, vaxis);
+  for (size_t i = 0; i <= m_x.m_nbins; ++i) {
+    for (size_t j = 0; j <= nbins; ++j) {
+      double value = vaxis.x(j), val1 = 0., val2 = 0.;
+      size_t ybin = 0;
+      for (ybin = 0; ybin < m_y.m_nbins; ++ybin) {
+        val1 = Value(i, ybin);
+        val2 = Value(i, ybin + 1);
+        if (dir) {
+          if (val1 >= value && val2 <= value) break;
+        } else {
+          if (val1 <= value && val2 >= value) break;
+        }
+      }
+      double y1 = m_y.x(ybin), y2 = m_y.x(ybin + 1), y = 0.;
+      if (dir)
+        y = (y1 * (value - val2) + y2 * (val1 - value)) / (val1 - val2);
+      else
+        y = (y1 * (val2 - value) + y2 * (value - val1)) / (val2 - val1);
+      table->Fill(i, j, y);
+    }
+  }
+  return table;
+}
+
 void TwoDim_Table::OutputToCSV(std::ofstream& outfile) const
 {
   for (size_t i = 0; i <= m_x.m_nbins; ++i)
     for (size_t j = 0; j <= m_y.m_nbins; ++j)
       outfile << m_x.x(i) << "," << m_y.x(j) << "," << Value(i, j) << std::endl;
+}
+
+void TwoDim_Table::Write(std::ostream& os) const
+{
+  os.precision(17);
+  WriteAxis(os, m_x);
+  WriteAxis(os, m_y);
+  WriteValues(os, m_values);
+}
+
+std::unique_ptr<TwoDim_Table> TwoDim_Table::Read(std::istream& is)
+{
+  const axis x = ReadAxis(is);
+  const axis y = ReadAxis(is);
+  // ReadAxis guarantees nbins >= 1, so ny >= 2 and the division is safe; this
+  // bounds the product nx*ny without overflowing size_t.
+  const size_t nx = x.m_nbins + 1, ny = y.m_nbins + 1;
+  if (nx > s_max_elements / ny)
+    THROW(fatal_error, "Corrupt TwoDim_Table size while reading cache.");
+  auto table = std::make_unique<TwoDim_Table>(x, y);
+  ReadValues(is, table->m_values);
+  if (!is)
+    THROW(fatal_error, "Corrupt TwoDim_Table while reading cache.");
+  return table;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -287,21 +427,22 @@ double ThreeDim_Table::operator()(double x, double y, double z) const
   if (ybin >= m_y.m_nbins) ybin = m_y.m_nbins - 1;
   if (zbin >= m_z.m_nbins) zbin = m_z.m_nbins - 1;
 
-  // Get weights for interpolation
+  // Get weights for interpolation. A single-bin axis is flat (only index 0 is
+  // filled), so force its weight to zero rather than interpolate.
   double x1 = m_x.x(xbin);
   double dx =
       (m_x.m_mode == axis_mode::linear) ? m_x.m_xstep : m_x.x(xbin + 1) - x1;
-  double wx = (std::fabs(dx) > 0) ? (x - x1) / dx : 0.0;
+  double wx = (m_x.m_nbins != 1 && std::fabs(dx) > 0) ? (x - x1) / dx : 0.0;
 
   double y1 = m_y.x(ybin);
   double dy =
       (m_y.m_mode == axis_mode::linear) ? m_y.m_xstep : m_y.x(ybin + 1) - y1;
-  double wy = (std::fabs(dy) > 0) ? (y - y1) / dy : 0.0;
+  double wy = (m_y.m_nbins != 1 && std::fabs(dy) > 0) ? (y - y1) / dy : 0.0;
 
   double z1 = m_z.x(zbin);
   double dz =
       (m_z.m_mode == axis_mode::linear) ? m_z.m_xstep : m_z.x(zbin + 1) - z1;
-  double wz = (std::fabs(dz) > 0) ? (z - z1) / dz : 0.0;
+  double wz = (m_z.m_nbins != 1 && std::fabs(dz) > 0) ? (z - z1) / dz : 0.0;
 
   // Get 8 corner values
   const double v000 = Value(xbin, ybin, zbin);

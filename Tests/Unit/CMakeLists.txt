@@ -17,6 +17,13 @@ endif()
 # for Catch2 v2 change Catch2::Catch2WithMain to Catch2::Catch2
 target_link_libraries(sherpa_tests PRIVATE Catch2::Catch2WithMain SHERPAAll)
 
+if(SHERPA_ENABLE_MPI)
+  target_link_libraries(sherpa_tests PRIVATE MPI::MPI_CXX)
+  if(SHERPA_ENABLE_FORTRAN)
+    target_link_libraries(sherpa_tests PRIVATE MPI::MPI_Fortran)
+  endif()
+endif()
+
 #add_test(unit_tests sherpa_tests)
 include(CTest)
 include(Catch)

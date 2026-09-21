@@ -2,6 +2,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -17,7 +18,8 @@ namespace PDF {
     LHAPDF::PDF * p_pdf;
     int           m_smember;
     std::map<int, double> m_xfx;
-    std::map<int, bool>   m_calculated;
+    // -1: disallowed (always zero), 0: not yet calculated, 1: calculated
+    std::map<int, int>    m_calculated;
     double        m_x,m_Q2;
     std::vector<int> m_disallowedflavour;
     unsigned int m_A;
@@ -57,9 +59,16 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
 
   m_bunch = _bunch;
   if (m_bunch.IsIon()) m_A = m_bunch.GetMassNumber();
+  else {
+    // initialise parton mapping, dependent on bunch flavour
+    PDF_Id_Maps partonmapper; 
+    m_kfmap = partonmapper.GetIdMap(m_bunch.Kfcode()); 
+  }
   static std::set<std::string> s_init;
   if (s_init.find(m_set)==s_init.end()) {
     m_member=abs(m_smember);
+    if (mpi->MyRank() > 0)
+      LHAPDF::setVerbosity(0);
     int lhapdfverb(LHAPDF::verbosity());
     LHAPDF::setVerbosity(msg_LevelIsDebugging()?lhapdfverb:0);
     p_pdf = LHAPDF::mkPDF(m_set,m_smember);
@@ -104,7 +113,7 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   for (int i=0;i<kfcs.size();i++) if (p_pdf->hasFlavor(kfcs[i])) {
     m_partons.insert(Flavour(abs(kfcs[i]),kfcs[i]<0));
     m_xfx[kfcs[i]]=0.;
-    m_calculated[kfcs[i]]=false;
+    m_calculated[kfcs[i]]=0;
   }
   if (p_pdf->hasFlavor(kf_d)) {
     m_partons.insert(Flavour(kf_quark));
@@ -121,12 +130,15 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   m_disallowedflavour = s["DISALLOW_FLAVOUR"].GetVector<int>();
   if (m_disallowedflavour.size()) {
     msg_Info()<<METHOD<<"(): Set PDF for the following flavours to zero: ";
-    for (size_t i(0);i<m_disallowedflavour.size();++i)
+    for (size_t i(0);i<m_disallowedflavour.size();++i) {
       msg_Info()<<Flavour(abs(m_disallowedflavour[i]),m_disallowedflavour[i]<0)
                 <<" ";
+      m_xfx[m_disallowedflavour[i]]=0.;
+      m_calculated[m_disallowedflavour[i]]=-1;
+    }
     msg_Info()<<std::endl;
   }
-
+  // FillHisto(m_bunch);
   rpa->gen.AddCitation(1,"LHAPDF6 is published under \\cite{Buckley:2014ana}.");
 }
 
@@ -221,8 +233,8 @@ void LHAPDF_CPP_Interface::SetPDFMember()
 }
 
 void LHAPDF_CPP_Interface::CalculateSpec(const double& x,const double& Q2) {
-  for (std::map<int,bool>::iterator it=m_calculated.begin();
-       it!=m_calculated.end();++it) it->second=false;
+  for (std::map<int,int>::iterator it=m_calculated.begin();
+       it!=m_calculated.end();++it) if (it->second!=-1) it->second=0;
   m_x=x/m_rescale;
   m_Q2=Q2;
 }
@@ -237,19 +249,13 @@ double LHAPDF_CPP_Interface::GetXPDF(const kf_code& kf, bool anti) {
                        <<"returning zero."<<std::endl;
     return 0.;
   }
-  int kfc = (m_bunch.IsAnti()?-1:1)*(anti?-kf:kf);
+  int kfc = (m_bunch.IsAnti()?-1:1)*(anti?-m_kfmap[kf]:m_kfmap[kf]);
   if (kf==kf_gluon || kf==kf_photon)
     kfc = kf;
-  for (size_t i(0);i<m_disallowedflavour.size();++i) {
-    if (kfc==m_disallowedflavour[i]) {
-      m_xfx[kfc]=0.;
-      m_calculated[kfc]=true;
-      break;
-    }
-  }
+  if (m_calculated[kfc]==-1) return 0.;
   if (!m_calculated[kfc]) {
     m_xfx[kfc]=p_pdf->xfxQ2(kfc,m_x,m_Q2);
-    m_calculated[kfc]=true;
+    m_calculated[kfc]=1;
   }
   return m_rescale*m_xfx[kfc]*m_A;
 }

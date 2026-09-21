@@ -19,7 +19,6 @@ namespace AMISIC {
     int            m_sign;
     double         m_smin, m_smax, m_swt, m_weight;
     double         m_sprime, m_yprime, m_total, m_error, m_max;
-    evt_type::code m_evttype;
 
     void   CalculateXSecs();
     double TrialEvent();
@@ -30,11 +29,7 @@ namespace AMISIC {
     void Init(Hadronic_XSec_Calculator * xsecs,
 	      BEAM::Beam_Base * beam1,BEAM::Beam_Base * beam2);
     bool operator()();
-    inline const double        & Sprime()                    const { return m_sprime; }
-    inline const double        & Yprime()                    const { return m_yprime; }
-    inline const double        & XSec()                      const { return m_weight; }
     inline const double        & TotalXSec()                 const { return m_total; }
-    inline const ATOOLS::Vec4D & Momentum(const size_t beam) const { return m_inmoms[beam]; }
   };
 }
 

@@ -82,8 +82,6 @@ Initialization_Handler::Initialization_Handler() :
     msg_Out()<<"Sherpa will read in events as "<<m_evtform<<endl;
   }
 
-  ATOOLS::s_loader->SetCheck(s["CHECK_LIBLOCK"].Get<int>());
-
   rpa->Init();
   CheckVersion();
   LoadLibraries();
@@ -108,6 +106,7 @@ void Initialization_Handler::RegisterDefaults()
   s["MI_HANDLER"].UseNoneReplacements().SetDefault("Amisic");
   s["EVT_FILE_PATH"].SetDefault(".");
   s["ANALYSIS_OUTPUT"].SetDefault("Analysis/");
+  s["GENERATE_RESULT_DIRECTORY"].SetDefault(true);
   s["RESULT_DIRECTORY"].SetDefault("Results");
   s["CHECK_LIBLOCK"].SetDefault(0);
   s["OUTPUT_PRECISION"].SetDefault(12);
@@ -380,7 +379,7 @@ void Initialization_Handler::CheckVersion()
     while (req_pos < versioninfo[0].length()) {
       size_t req_next = versioninfo[0].find(".", req_pos);
       size_t cur_next = currentversion.find(".", cur_pos);
-      
+
       std::string req_component = (req_next == std::string::npos) ?
                                   versioninfo[0].substr(req_pos) :
                                   versioninfo[0].substr(req_pos, req_next - req_pos);
@@ -697,12 +696,12 @@ bool Initialization_Handler::InitializeTheIO()
     std::string libname(outputs[i]);
     if (libname.find('_')) libname=libname.substr(0,libname.find('_'));
     Output_Base* out=Output_Base::Getter_Function::GetObject
-      (outputs[i], Output_Arguments(outpath, outfile));
+      (outputs[i], Output_Arguments(outpath, outfile, this));
     if (out==NULL) {
       if (!s_loader->LoadLibrary("Sherpa"+libname+"Output"))
 	THROW(missing_module,"Cannot load output library Sherpa"+libname+"Output.");
       out=Output_Base::Getter_Function::GetObject
-	(outputs[i], Output_Arguments(outpath, outfile));
+	(outputs[i], Output_Arguments(outpath, outfile, this));
     }
     if (out==NULL) THROW(fatal_error,"Cannot initialize "+outputs[i]+" output");
     m_outputs.push_back(out);
@@ -806,24 +805,10 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     // define bunch particle-dependent PDF libraries and sets here
     /////////////////////////////////////////////////////////
     std::string deflib("None"), defset;
-    if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_p_plus) {
-      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_p_plus);
-      defset = PDF::pdfdefs->DefaultPDFSet(kf_p_plus);
-    }
-    else if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_e ||
-	     p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_mu) {
-      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_e);
-      defset = PDF::pdfdefs->DefaultPDFSet(kf_e);
-    }
-    else if (p_beamspectra->GetBeam(beam)->Bunch(0).IsPhoton()) {
-      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_photon);
-      defset = PDF::pdfdefs->DefaultPDFSet(kf_photon);
-    } else if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode() == kf_pomeron) {
-      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_pomeron);
-      defset = PDF::pdfdefs->DefaultPDFSet(kf_pomeron);
-    } else if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode() == kf_reggeon) {
-      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_reggeon);
-      defset = PDF::pdfdefs->DefaultPDFSet(kf_reggeon);
+    kf_code kf = p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode(); 
+    if (PDF::pdfdefs->HasDefaultsFor(kf)) {
+      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf);
+      defset = PDF::pdfdefs->DefaultPDFSet(kf);
     }
     // fix PDFs and default sets for the hard_process here
     if (pdflibs.empty()) m_pdflibs.insert(deflib);
@@ -956,11 +941,16 @@ InitISRHandler(const PDF::isr::id & pid,Settings& settings) {
     PDF_Arguments args = PDF_Arguments(flav,beam,set,version,order,scheme);
     if (pid != PDF::isr::bunch_rescatter) {
       PDF_Base* pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set, args);
-      if (m_bunch_particles[beam].IsHadron() && pdfbase == nullptr)
+      if (m_bunch_particles[beam].IsHadron() && pdfbase == nullptr) {
+	string pdflibnames = string("");
+	for (std::set<std::string>::iterator pdflib=m_pdflibs.begin();
+	     pdflib!=m_pdflibs.end();++pdflib) pdflibnames += (*pdflib)+" ";
         THROW(critical_error,
               "PDF '" + set + "' does not exist in any of the loaded" +
-                      " libraries for " + ToString(m_bunch_particles[beam]) +
-                      " bunch.");
+	      " libraries [" + pdflibnames + "] for " +
+	      ToString(m_bunch_particles[beam]) +
+	      " bunch.");
+      }
       if (pid == PDF::isr::hard_process) rpa->gen.SetPDF(beam, pdfbase);
       if (pdfbase == nullptr) {
         isrbases[beam] = new Intact(flav);
@@ -1013,7 +1003,6 @@ bool Initialization_Handler::InitializeTheRemnants() {
   // I have the feeling we will have to communicate the mode to the
   // Remnant_Handler in question
   ///////////////////////////////////////////////////////////
-  REMNANTS::Remnants_Parameters();
   m_remnanthandlers[isr::hard_process] =
     new Remnant_Handler(m_isrhandlers[isr::hard_process],p_yfshandler,p_beamspectra,
 			m_bunchtags[isr::hard_process]);

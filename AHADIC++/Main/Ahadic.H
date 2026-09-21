@@ -11,7 +11,6 @@
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Particle_List.H"
 #include "ATOOLS/Phys/Fragmentation_Base.H"
-#include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Return_Value.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include <list>
@@ -30,8 +29,6 @@ namespace AHADIC {
     Gluon_Decayer          m_gluondecayer;
     Cluster_Decayer        m_clusterdecayer;
 
-    ATOOLS::Vec4D m_totmom; 
-
     bool ExtractSinglets(ATOOLS::Blob * blob);
     bool ShiftBeamParticles();
     bool CheckSinglets();
@@ -42,7 +39,6 @@ namespace AHADIC {
     ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob * blob, int retry=0);
     void FillOutgoingParticles(ATOOLS::Blob * blob);
 
-    bool SanityCheck(ATOOLS::Blob * blob,double norm2);
     bool CheckKfcodes(ATOOLS::Blob * blob);
     void CleanUp(ATOOLS::Blob * blob);
   public:

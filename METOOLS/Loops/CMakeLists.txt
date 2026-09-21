@@ -12,6 +12,6 @@ set(Loops_HEADERS Divergence_Array.H
 
 sherpa_create_git_info(Loops ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(METoolsLoops SHARED ${Loops_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(METoolsLoops ${SHERPA_SUBLIB_TYPE} ${Loops_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(METoolsLoops METoolsLoops)
 add_dependencies(METoolsLoops Loops_Git_Info)

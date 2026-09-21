@@ -1,5 +1,5 @@
-#ifndef REMNANTS_Main_Proton_Remnant_H
-#define REMNANTS_Main_Proton_Remnant_H
+#ifndef REMNANTS_Main_Hadron_Remnant_H
+#define REMNANTS_Main_Hadron_Remnant_H
 
 #include "REMNANTS/Main/Remnant_Base.H"
 #include "REMNANTS/Tools/Form_Factor.H"
@@ -16,7 +16,7 @@ namespace REMNANTS {
     ATOOLS::Particle * p_valence, * p_remnant, * p_recoiler, * p_spectator;
 
     bool   m_valence;
-    double m_alpha, m_gamma, m_beta, m_invb, m_LambdaQCD, m_minE;
+    double m_alpha, m_gamma, m_beta, m_invb, m_minE;
 
     void ConstructConstituentFlavours();
     bool IsValence(ATOOLS::Particle * part);
@@ -37,7 +37,8 @@ namespace REMNANTS {
 
     bool FillBlob(Colour_Generator* colours, ATOOLS::ParticleMomMap* ktmap,
                   const bool& copy = true) override;
-    bool TestExtract(const ATOOLS::Flavour& flav, const ATOOLS::Vec4D& mom) override;
+    bool TestExtract(const ATOOLS::Flavour& flav, const ATOOLS::Vec4D& mom,
+                     const double& spair) override;
     void Reset(const bool& resc = false, const bool& DIS = false) override;
 
     inline ATOOLS::Particle* GetRecoiler() override { return p_recoiler; }

@@ -4,6 +4,7 @@
 #include "ATOOLS/Math/Algebra_Interpreter.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Fastjet_Helpers.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 namespace PHASIC {
 
@@ -69,6 +70,8 @@ Fastjet_Enhance_Observable::Fastjet_Enhance_Observable
   p_jdef(NULL)
 {
   rpa->gen.AddCitation(1,"FastJet is published under \\cite{Cacciari:2011ma}.");
+  fjcore::ClusterSequence::set_fastjet_banner_stream(
+      mpi->Rank() ? nullptr : &ATOOLS::msg->Out());
   std::string jtag(args.m_enhance);
   size_t pos(jtag.find("FASTJET["));
   if (pos==std::string::npos)

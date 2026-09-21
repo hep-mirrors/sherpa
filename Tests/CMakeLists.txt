@@ -23,12 +23,60 @@ if (SHERPA_ENABLE_INTEGRATION_TESTS)
   set_tests_properties( Main${test}part2 PROPERTIES DEPENDS Main${test}part1)
   set_tests_properties( Main${test}part3 PROPERTIES DEPENDS Main${test}part2)
 
+  set(test test-MCatNLO_Z)
+  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
+  add_test( NAME Main${test}part1 COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/MCatNLO_Z/Sherpa.yaml
+                                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+             )
+  add_test( NAME Main${test}part2 COMMAND ${makelibsscript}
+                                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+             )
+
+  add_test( NAME Main${test}part3 COMMAND Sherpa  ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/MCatNLO_Z/Sherpa.yaml
+                                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+             )
+
+  SET_TESTS_PROPERTIES( Main${test}part1 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
+  SET_TESTS_PROPERTIES( Main${test}part2 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
+  SET_TESTS_PROPERTIES( Main${test}part3 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
+
+  set_tests_properties( Main${test}part2 PROPERTIES DEPENDS Main${test}part1)
+  set_tests_properties( Main${test}part3 PROPERTIES DEPENDS Main${test}part2)
+
+
   set(test test-LO_Z)
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
   add_test( NAME Main${test}part1 COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/LO_Z/Sherpa.yaml
                                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
              )
   SET_TESTS_PROPERTIES( Main${test}part1 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
+
+  set(test test-LO_Z-FragmentationOff)
+  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
+  add_test( NAME Main${test}part1 COMMAND Sherpa  "FRAGMENTATION: Off"  ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/LO_Z/Sherpa.yaml
+                                  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+               )
+  SET_TESTS_PROPERTIES( Main${test}part1 PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
+
+  if (SHERPA_ENABLE_HDF5)
+    set(test test-HDF5-LO_mumu)
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
+    add_test(
+      NAME Main${test}part1
+      COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/HDF5/Sherpa.yaml
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+      )
+    add_test(
+      NAME Main${test}part2
+      COMMAND ${CMAKE_COMMAND}
+        -DOUTPUT_FILE=${CMAKE_CURRENT_BINARY_DIR}/${test}/events.hdf5
+        -P ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/HDF5/check_output.cmake
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+      )
+    set_tests_properties(Main${test}part1 Main${test}part2
+      PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
+    set_tests_properties(Main${test}part2 PROPERTIES DEPENDS Main${test}part1)
+  endif()
 
   if (SHERPA_ENABLE_PYTHIA8)
     set(test test-LO_Z-Pythia8)

@@ -7,6 +7,7 @@
 #include <iomanip>
 
 using namespace std;
+using namespace ATOOLS;
 
 namespace MODEL{
 
@@ -40,6 +41,12 @@ namespace MODEL{
     {
       ATOOLS::s_kftable[kf_none] = new ATOOLS::Particle_Info(kf_none,-1,0,0,0,0,0,-1,0,1,0,"no_particle","no_particle","no_particle","no_particle",1,1);
       ${particle_init}
+      // beam particles for diffractive setups, unless the UFO model
+      // already claims these kf codes
+      if (ATOOLS::s_kftable.find(kf_pomeron) == ATOOLS::s_kftable.end())
+        AddParticle(kf_pomeron, 0.0, 0.0, 0.0, 0, 0, 1, 0, "Pomeron", "{I\\!\\!P}");
+      if (ATOOLS::s_kftable.find(kf_reggeon) == ATOOLS::s_kftable.end())
+        AddParticle(kf_reggeon, 0.0, 0.0, 0.0, 0, 0, 1, 0, "Reggeon", "{I\\!\\!R}");
     }
     void ParamInit() override
     {

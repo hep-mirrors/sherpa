@@ -224,7 +224,7 @@ bool Jet_Selector::Trigger(Selector_List &sl)
     for (size_t i(0);i<input.size();++i)
       if (cs.exclusive_dmerge_max(i)>sqr(m_ptmin)) ++n;
     msg_Debugging()<<"Found "<<n<<" jets, asking for "<<m_nmin<<" .. "<<m_nmax<<"\n";
-    return (1-m_sel_log->Hit(1-(n>=m_nmin && n<=m_nmax)));
+    return m_sel_log->CountingIdentity(n>=m_nmin && n<=m_nmax);
   }
 
   size_t njets(0);
@@ -284,19 +284,16 @@ bool Jet_Selector::Trigger(Selector_List &sl)
   bool trigger(njets>=m_nmin && njets<=m_nmax);
   if (!trigger) {
     msg_Debugging()<<"Point discarded by jet finder"<<std::endl;
-    m_sel_log->Hit(true);
-    return false;
+    return m_sel_log->CountingIdentity(false);
   }
   for (size_t k=0;k<m_sels.size();++k) {
     if (!m_sels[k]->Trigger(sl)) {
       msg_Debugging()<<"Point discarded by subselector"<<std::endl;
-      m_sel_log->Hit(true);
-      return false;
+      return m_sel_log->CountingIdentity(false);
     }
   }
   msg_Debugging()<<"Point passed"<<std::endl;
-  m_sel_log->Hit(false);
-  return true;
+  return m_sel_log->CountingIdentity(true);
 }
 
 void Jet_Selector::BuildCuts(Cut_Data * cuts)

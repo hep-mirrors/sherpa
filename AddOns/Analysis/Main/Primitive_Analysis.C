@@ -444,7 +444,6 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,int mode)
       std::swap<PL_Container>(p_partner->m_pls,p_partner->m_slp);
     }
   }
-  if (mpi->Rank()==0)
 #endif
     {
       if (m_usedb) {

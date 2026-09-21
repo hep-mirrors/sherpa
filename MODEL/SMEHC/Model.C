@@ -132,6 +132,8 @@ void SMEHC::ParticleInit()
   AddParticle(kf_h0,125.09,.0,0.0041,0,0,0,-1,1,0,1,"h0","h0","h_{0}","h_{0}");
   AddParticle(kf_shgluon,0.0,.0,0.0,0,8,2,-1,1,1,0,"GS","GS","G_{S}","G_{S}",1);
   AddParticle(kf_gluon_qgc,0.0,.0,0.0,0,8,4,-1,1,1,0,"G4","G4","G_{4}","G_{4}",1);
+  AddParticle(kf_pomeron, 0.0, 0.0, 0.0, 0, 0, 1, 0, "Pomeron", "{I\\!\\!P}");
+  AddParticle(kf_reggeon, 0.0, 0.0, 0.0, 0, 0, 1, 0, "Reggeon", "{I\\!\\!R}");
 }
 
 bool SMEHC::ModelInit()

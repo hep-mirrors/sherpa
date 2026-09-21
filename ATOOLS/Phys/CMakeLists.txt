@@ -61,7 +61,7 @@ set(Phys_HEADERS fjcore.hh
 
 sherpa_create_git_info(Phys ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(ToolsPhys SHARED ${Phys_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(ToolsPhys ${SHERPA_SUBLIB_TYPE} ${Phys_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ToolsPhys ToolsPhys)
 add_dependencies(ToolsPhys Phys_Git_Info)
 # fjcore is vendored third-party code; exclude it from clang-tidy.

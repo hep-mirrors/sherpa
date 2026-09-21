@@ -49,12 +49,14 @@ option(SHERPA_ENABLE_DOXYGEN                 "Enables the 'docs' target for buil
 option(SHERPA_ENABLE_EWSUD                   "Enables building of EWSUD." OFF)
 option(SHERPA_ENABLE_GOSAM                   "Enables building with GoSam." OFF)
 option(SHERPA_ENABLE_GZIP                    "Enables building with GZIP." OFF)
+option(SHERPA_ENABLE_HDF5                    "Enables building with HDF5." OFF)
 option(SHERPA_ENABLE_HEPMC3                  "Enables building of HepMC3 interface." OFF)
 option(SHERPA_ENABLE_HEPMC3_ROOT             "Enables building of HepMC3+ROOT interface ." OFF)
 option(SHERPA_ENABLE_INTERNAL_PDFS           "Enables internal PDFs." ON)
 option(SHERPA_ENABLE_INSTALL_LIBZIP          "Enables internal LibZip." OFF)
 option(SHERPA_ENABLE_LHAPDF                  "Enables LHAPDF." ON)
 option(SHERPA_ENABLE_INSTALL_LHAPDF          "Enables internal LHAPDF." OFF)
+option(SHERPA_ENABLE_MERGED_LIBS             "Merge each module's libraries into one shared library per module." OFF)
 option(SHERPA_ENABLE_MADLOOP                 "Enables building with MadLoop." OFF)
 option(SHERPA_ENABLE_MANUAL                  "Enables building of manual." OFF)
 option(SHERPA_ENABLE_MCFM                    "Enables building with MCFM." OFF)
@@ -111,8 +113,8 @@ foreach (en IN LISTS alldirenables)
 endforeach()
 ###########################Options handeling############################
 set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS DOXYGEN
- EWSUD GOSAM GZIP HEPMC3 HEPMC3_ROOT
- INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF
+ EWSUD GOSAM GZIP HDF5 HEPMC3 HEPMC3_ROOT
+ INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF MERGED_LIBS
  MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
   message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
@@ -216,7 +218,7 @@ message(STATUS "SHERPA: CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
 ########################################################################
 
 set ( NEW_CMAKE_C_FLAGS " ")
-string(REPLACE " " ";" LIST_CMAKE_C_FLAGS "${C_C_FLAGS_TO_CHECK} ${CMAKE_C_FLAGS}")
+string(REPLACE " -" ";-" LIST_CMAKE_C_FLAGS "${C_C_FLAGS_TO_CHECK} ${CMAKE_C_FLAGS}")
 foreach(fx IN LISTS LIST_CMAKE_C_FLAGS)
   if (fx)
     check_c_compiler_flag(${fx} C_COMPILER_SUPPORTS_${fx})
@@ -235,7 +237,7 @@ message(STATUS "SHERPA: CMAKE_C_FLAGS=${CMAKE_C_FLAGS}")
 if (SHERPA_ENABLE_FORTRAN)
   include(CheckFortranCompilerFlag)
   set ( NEW_CMAKE_Fortran_FLAGS " ")
-  string(REPLACE " " ";" LIST_CMAKE_Fortran_FLAGS  "${F_Fortran_FLAGS_TO_CHECK} ${CMAKE_Fortran_FLAGS}")
+  string(REPLACE " -" ";-" LIST_CMAKE_Fortran_FLAGS  "${F_Fortran_FLAGS_TO_CHECK} ${CMAKE_Fortran_FLAGS}")
   foreach(fl IN LISTS LIST_CMAKE_Fortran_FLAGS)
     if (fl)
       check_Fortran_compiler_flag(${fl} Fortran_COMPILER_SUPPORTS_${fl})
@@ -325,6 +327,12 @@ if (SHERPA_ENABLE_THREADING)
   find_package(Threads REQUIRED)
 endif()
 
+if (SHERPA_ENABLE_MERGED_LIBS)
+  set(SHERPA_SUBLIB_TYPE OBJECT)
+else()
+  set(SHERPA_SUBLIB_TYPE SHARED)
+endif()
+
 macro(sherpa_handle_shared_library  mylib mylibname)
   if(SHERPA_ENABLE_MPI)
      target_link_libraries(${mylib} PRIVATE MPI::MPI_CXX)
@@ -336,15 +344,19 @@ macro(sherpa_handle_shared_library  mylib mylibname)
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}>)
-  install(TARGETS ${mylib} EXPORT SHERPATargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
-  set_target_properties(${mylib}        PROPERTIES POSITION_INDEPENDENT_CODE ON  SOVERSION 0.0.0)
-  set_target_properties(${mylib}        PROPERTIES DEFINE_SYMBOL "")
-  set_target_properties(${mylib}        PROPERTIES OUTPUT_NAME ${mylibname})
-  set_target_properties(${mylib} PROPERTIES  ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
-                                             LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
-                                             RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
-                                             EXPORT_NAME SHERPA::${mylib}
-                                               )
+  get_target_property(SHERPA_MYLIB_TYPE ${mylib} TYPE)
+  if (NOT SHERPA_MYLIB_TYPE STREQUAL "OBJECT_LIBRARY")
+    install(TARGETS ${mylib} EXPORT SHERPATargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
+    set_target_properties(${mylib}        PROPERTIES POSITION_INDEPENDENT_CODE ON  SOVERSION 0.0.0)
+    set_target_properties(${mylib}        PROPERTIES DEFINE_SYMBOL "")
+    set_target_properties(${mylib}        PROPERTIES OUTPUT_NAME ${mylibname})
+    set_target_properties(${mylib} PROPERTIES  ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
+                                               LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
+                                               RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/outputs/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/$<0:>
+                                               EXPORT_NAME SHERPA::${mylib}
+                                                 )
+  endif()
+  unset(SHERPA_MYLIB_TYPE)
 
 endmacro(sherpa_handle_shared_library  mylib mylibname)
 
@@ -655,6 +667,14 @@ if (SHERPA_ENABLE_GZIP)
        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Math/Sobol/21201
        VERBATIM)
 endif()
+if (SHERPA_ENABLE_HDF5)
+  set(HDF5_PREFER_PARALLEL true)
+  find_package(HDF5 REQUIRED)
+  list(GET HDF5_INCLUDE_DIRS 0 HDF5_INCLUDE_DIR)
+  get_filename_component(HDF5_PREFIX ${HDF5_INCLUDE_DIR} DIRECTORY)
+  message(STATUS "SHERPA: HDF5_VERSION=${HDF5_VERSION} HDF5_PREFIX=${HDF5_PREFIX} HDF5_INCLUDE_DIR=${HDF5_INCLUDE_DIR} HDF5_LIBRARIES=${HDF5_LIBRARIES}")
+  add_subdirectory(AddOns/HDF5)
+endif()
 if (SHERPA_ENABLE_INTERNAL_PDFS)
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/CT14/CT14Grid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc PATTERN "*ct14ll*" EXCLUDE  )
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/PDF/SAL/SALGrid DESTINATION  ${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING} COMPONENT doc  )
@@ -688,30 +708,58 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/PHASIC++/Main/plot_stats.sh
 add_library(SHERPAAll INTERFACE)
 add_library(SHERPA::All ALIAS SHERPAAll)
 set_target_properties(SHERPAAll PROPERTIES EXPORT_NAME SHERPA::All)
-target_link_libraries(SHERPAAll INTERFACE
-SherpaMain SherpaInitialization SherpaSingleEvents SherpaSoftPhysics SherpaPerturbativePhysics SherpaTools
-ShrimpsMain ShrimpsEvents ShrimpsLadders ShrimpsBeamRemnants ShrimpsXsecs ShrimpsEikonals ShrimpsTools
-HadronsMain HadronsMEs HadronsCurrents HadronsPSs
-Reconnections
-AhadicMain AhadicTools AhadicFormation AhadicDecays
-Amisic AmisicTools AmisicPerturbative
-PhotonsMain PhotonsTools PhotonsPhaseSpace PhotonsMEs PhotonsPhotonSplitter
-Remnants  RemnantsTools
-MCatNLOMain MCatNLOCalculators MCatNLOShowers MCatNLOTools
-DIMTools DIMShower DIMGauge DIMLorentz DIMMain
-CSMain CSCalculators CSShowers CSTools
-DireTools DireShower DireGauge DireLorentz DireMain
-PhasicScales Comix  ComixPhasespace ComixAmplitude
-YFSCEEX  YFSMain YFSNLO  YFSTools
-PhasicMain PhasicChannels PhasicProcess PhasicSelectors PhasicEnhance PhasicDecays
-Amegic DipoleSubtraction Amplitude AmegicPSGen
-String Zfunctions
-ExtAmp ExtraXSNLO ExtraXSSpecial ExtraXS2_2 ExtraXS1_2 ExtraXS1_3 ExtraXS
-METoolsExplicit METoolsCurrents METoolsVertices METoolsColors METoolsSpinCorrelations METoolsLoops METoolsMain ModelUFO ModelMain
-PDF
-BeamMain BeamSpectra
-ToolsPhys ToolsMath ToolsYaml ToolsOrg
-)
+if (SHERPA_ENABLE_MERGED_LIBS)
+  target_link_libraries(SHERPAAll INTERFACE
+    SherpaCore
+    Shrimps
+    Hadrons
+    Reconnections
+    Ahadic
+    AmisicCore
+    Photons
+    RemnantsCore
+    MCatNLO
+    DIM
+    CSShower
+    Dire
+    Phasic
+    ComixCore
+    YFS
+    AmegicCore
+    ExtraXSCore
+    ExtAmp
+    METools
+    ModelUFO ModelMain
+    PDF
+    Beam
+    ATOOLSCore
+  )
+else()
+  target_link_libraries(SHERPAAll INTERFACE
+    SherpaMain SherpaInitialization SherpaSingleEvents SherpaSoftPhysics SherpaPerturbativePhysics SherpaTools
+    ShrimpsMain ShrimpsEvents ShrimpsLadders ShrimpsBeamRemnants ShrimpsXsecs ShrimpsEikonals ShrimpsTools
+    HadronsMain HadronsMEs HadronsCurrents HadronsPSs
+    Reconnections
+    AhadicMain AhadicTools AhadicFormation AhadicDecays
+    Amisic AmisicTools AmisicPerturbative
+    PhotonsMain PhotonsTools PhotonsPhaseSpace PhotonsMEs PhotonsPhotonSplitter
+    Remnants  RemnantsTools
+    MCatNLOMain MCatNLOCalculators MCatNLOShowers MCatNLOTools
+    DIMTools DIMShower DIMGauge DIMLorentz DIMMain
+    CSMain CSCalculators CSShowers CSTools
+    DireTools DireShower DireGauge DireLorentz DireMain
+    PhasicScales Comix  ComixPhasespace ComixAmplitude
+    YFSCEEX  YFSMain YFSNLO  YFSTools
+    PhasicMain PhasicChannels PhasicProcess PhasicSelectors PhasicEnhance PhasicDecays
+    Amegic DipoleSubtraction Amplitude AmegicPSGen
+    String Zfunctions
+    ExtAmp ExtraXSNLO ExtraXSSpecial ExtraXS2_2 ExtraXS1_2 ExtraXS1_3 ExtraXS
+    METoolsExplicit METoolsCurrents METoolsVertices METoolsColors METoolsSpinCorrelations METoolsLoops METoolsMain ModelUFO ModelMain
+    PDF
+    BeamMain BeamSpectra
+    ToolsPhys ToolsMath ToolsYaml ToolsOrg
+  )
+endif()
 install(TARGETS SHERPAAll EXPORT SHERPATargets)
 get_target_property(TEMP_SHERPALIBS SHERPAAll INTERFACE_LINK_LIBRARIES)
 set(SHERPA_LIB_FLAGS "")
@@ -948,7 +996,9 @@ $<IF:$<BOOL:${SHERPA_ENABLE_GOSAM}>,#define GOSAM_PREFIX \"${GOSAM_PREFIX}\",/* 
 /* MadLoop installation prefix */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_MADLOOP}>,#define MADLOOP_PREFIX \"${MADLOOP_PREFIX}\",/* #undef MADLOOP_PREFIX */>\n\n\
 /* Recola installation prefix */\n\
-$<IF:$<BOOL:${SHERPA_ENABLE_RECOLA}>,#define RECOLA_PREFIX \"${RECOL_PREFIX}\",/* #undef RECOLA_PREFIX */>\n\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_RECOLA}>,#define RECOLA_PREFIX \"${RECOLA_PREFIX}\",/* #undef RECOLA_PREFIX */>\n\n\
+/* using Recola2 */\n\
+$<IF:$<BOOL:$<VERSION_GREATER_EQUAL:${RECOLA_VERSION},2.0.0>>,#define USING__RECOLA2 \"1\",/* #undef USING__RECOLA2 */>\n\n\
 /* using MCFM */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define USING__MCFM \"1\",/* #undef USING__MCFM */>\n\n\
 /* MCFM directory */\n\
@@ -1053,6 +1103,18 @@ $<IF:$<BOOL:${SHERPA_ENABLE_BINRELOC}>,#define ENABLE_BINRELOC \"1\",/* #undef E
 /* Using colour */\n\
 #define USING__COLOUR \"1\"\n\n\
 #define PYTHON_LIBS \"${SHERPA_Python_SITEARCH}\"\n\n\
+#if defined(__has_cpp_attribute)\n\
+#if __has_cpp_attribute(maybe_unused)\n\
+#define SHERPA_MAYBE_UNUSED [[maybe_unused]]\n\
+#endif\n\
+#endif\n\
+#ifndef SHERPA_MAYBE_UNUSED\n\
+#if defined(__GNUC__) || defined(__clang__)\n\
+#define SHERPA_MAYBE_UNUSED __attribute__((unused))\n\
+#else\n\
+#define SHERPA_MAYBE_UNUSED\n\
+#endif\n\
+#endif\n\
 #endif\n")
 file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS.H CONTENT "${CXXFLAGS_H_CONTENT}")
 ########################################################################
@@ -1065,15 +1127,6 @@ if (SHERPA_ENABLE_TESTING)
   message(STATUS "SHERPA: Will use the installed SHERPA for testing! Run ctest only after the installation!")
   set(STANDARDENVIRONMENT "SHERPA_CMAKE_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC;LHAPDF_DATA_PATH=${LHAPDF_DATA_PATH}:$ENV{LHAPDF_DATA_PATH};SHERPA_SHARE_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC")
   list(APPEND STANDARDENVIRONMENT "PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC/:$ENV{PATH}")
-  if (SHERPA_ENABLE_RIVET)
-    list(JOIN RIVET_CONFIG_LIB_DIRS ":" RIVET_RUNTIME_LIBS)
-    #string(REGEX_REPLACE ":$" "" RIVET_RUNTIME_LIBS  "${RIVET_RUNTIME_LIBS}")
-    list(APPEND STANDARDENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/:${LHAPDF_LIBRARY_DIR}:$ENV{LD_LIBRARY_PATH}")
-    list(APPEND STANDARDENVIRONMENT "DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/:${LHAPDF_LIBRARY_DIR}:$ENV{DYLD_LIBRARY_PATH}")
-  else()
-    list(APPEND STANDARDENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/:${LHAPDF_LIBRARY_DIR}:${RIVET_RUNTIME_LIBS}:$ENV{LD_LIBRARY_PATH}")
-    list(APPEND STANDARDENVIRONMENT "DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC/:${LHAPDF_LIBRARY_DIR}:${RIVET_RUNTIME_LIBS}:$ENV{DYLD_LIBRARY_PATH}")
-  endif()
   set (makelibsscript ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC/makelibs)
   message(STATUS "SHERPA: STANDARDENVIRONMENT=${STANDARDENVIRONMENT}")
   ENABLE_TESTING()

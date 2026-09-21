@@ -101,8 +101,12 @@ bool Beam_Channels::DefineColliderChannels() {
                      m_beamtype[1] == beamspectrum::Reggeon;
   if (beam0_is_on || beam1_is_on) {
     // register additional rans for the impact parameter in EPA
-    if (m_beamtype[0] == beamspectrum::EPA) AddERan("b_0");
-    if (m_beamtype[1] == beamspectrum::EPA) AddERan("b_1");
+    const bool reject =
+        Settings::GetMainSettings()["BEAM_OVERLAP_REJECTION"].SetDefault(0)
+            .Get<int>() > 0;
+    if (m_beamtype[0] == beamspectrum::EPA || reject) AddERan("b_0");
+    if (m_beamtype[1] == beamspectrum::EPA || reject) AddERan("b_1");
+    if (reject) AddERan("b_phi");
     double exponent = (int(beam0_is_on) +
                        int(beam1_is_on)) * 0.5;
     m_beamparams.push_back(Channel_Info(channel_type::simple, exponent));

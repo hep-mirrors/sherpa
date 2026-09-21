@@ -10,6 +10,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Running_AlphaS.H"
+#include "AMISIC++/Main/Amisic.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -167,7 +168,7 @@ ATOOLS::Return_Value::code Multiple_Interactions::InitRescatter() {
   // of the PDFs in the MPIs, which depend on the hadron energies)
   ////////////////////////////////////////////////////////////////////////////
   p_activeMI = (*p_mihandlers)[PDF::isr::bunch_rescatter];
-  FixMaxEnergies(true);
+  FixMaxEnergies();
   SwitchPerturbativeInputsToMIs();
   ////////////////////////////////////////////////////////////////////////////
   // Generate a first hard scatter - if successful move particles from
@@ -189,7 +190,7 @@ ATOOLS::Return_Value::code Multiple_Interactions::InitRescatter() {
   return Return_Value::Nothing;
 }
 
-void Multiple_Interactions::FixMaxEnergies(const bool & updateResidualE) {
+void Multiple_Interactions::FixMaxEnergies() {
   ////////////////////////////////////////////////////////////////////////////
   // The emax has to be set here (instead of e.g. the CleanUp()) to ensure
   // that the correct energy is taken in case of EPA-approximated beams.
@@ -200,8 +201,6 @@ void Multiple_Interactions::FixMaxEnergies(const bool & updateResidualE) {
 	(p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->InMomentum()-
 	 p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->OutMomentum())[0] :
 	p_activeMI->Remnants()->GetRemnant(i)->GetBeam()->OutMomentum()[0]);
-    if (updateResidualE)
-      p_activeMI->Remnants()->GetRemnant(i)->SetResidualEnergy();
   }
   p_activeMI->SetMaxEnergies(m_emax[0],m_emax[1]);
 }
@@ -236,7 +235,18 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
   if (CheckForMinBias())                 return InitMinBias();
   if (CheckForRescatter())               return InitRescatter();
   if (CheckForMPIs() && !InitMPIs())     return Return_Value::Nothing;
-  if (!p_activeMI || p_activeMI->Done()) return Return_Value::Nothing;
+  if (!p_activeMI || p_activeMI->Done()) {
+    if (p_activeMI && p_activeMI->Done() &&
+        p_activeMI->Generator() == MI_Handler::genID::amisic) {
+      Blob * signal = p_bloblist->FindFirst(btp::Signal_Process);
+      if (!signal) signal = p_bloblist->FindFirst(btp::Hard_Collision);
+      if (signal && p_activeMI->Amisic()) {
+        p_activeMI->Amisic()->ApplyVariationWeights(signal);
+        p_activeMI = nullptr;
+      }
+    }
+    return Return_Value::Nothing;
+  }
   ////////////////////////////////////////////////////////////////////////////
   // Sanity checks on blob_list: four-momentum is conserved, no blob in there
   // that needs to parton shower, beams are viable.
@@ -291,9 +301,10 @@ Return_Value::code Multiple_Interactions::Treat(Blob_List *bloblist) {
 }
 
 bool Multiple_Interactions::TestHardScatter(Blob * blob) {
+  const double spair = p_activeMI->Remnants()->SPair();
   for (size_t i=0;i<(size_t)blob->NInP();++i) {
     if (!p_activeMI->Remnants()->GetRemnant(i)->
-	TestExtract(blob->InParticle(i))) {
+	TestExtract(blob->InParticle(i), spair)) {
       return false;
     }
   }
@@ -342,7 +353,8 @@ bool Multiple_Interactions::ExtractISInfo(Blob * blob) {
     Particle *particle(blob->InParticle(i));
     if (particle->ProductionBlob()) continue;
     size_t beam = particle->Beam();
-    if (!p_activeMI->Remnants()->GetRemnant(beam)->TestExtract(particle)) {
+    if (!p_activeMI->Remnants()->GetRemnant(beam)->
+        TestExtract(particle, p_activeMI->Remnants()->SPair())) {
       if (!blob->IsConnectedTo(btp::Signal_Process)) {
         p_bloblist->DeleteConnected(blob);
         m_result = Return_Value::Retry_Phase;

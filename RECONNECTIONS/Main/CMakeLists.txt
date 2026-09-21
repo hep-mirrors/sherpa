@@ -2,13 +2,15 @@ set(ReconnectionsMain_SOURCES Reconnection_Handler.C
                  Reconnection_Base.C
                  Reconnect_By_Singlet.C
                  Reconnect_Statistical.C
-                 Reconnection_Weights.C)
+                 Reconnection_Weights.C
+                 Reconnection_Reweighting.C)
 
 set(ReconnectionsMain_HEADERS Reconnection_Handler.H
                  Reconnection_Base.H
                  Reconnect_By_Singlet.H
                  Reconnect_Statistical.H
-                 Reconnection_Weights.H)
+                 Reconnection_Weights.H
+                 Reconnection_Reweighting.H)
 
 sherpa_create_git_info(ReconnectionsMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  

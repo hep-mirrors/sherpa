@@ -30,7 +30,13 @@ void Collider_Kinematics::InitSystem() {
 
   m_on = (m_mode != collidermode::monochromatic);
   m_x[0] = m_x[1] = 0.;
-  m_LabBoost = Poincare(p_beams[0]->InMomentum() + p_beams[1]->InMomentum());
+  if (m_mode==collidermode::monochromatic) {
+    for (size_t i = 0; i < 2; ++i) {
+      p_beams[i]->SetOutMomentum(p_beams[i]->InMomentum());
+      rpa->gen.SetPBunch(i, p_beams[i]->InMomentum());
+    }
+  }
+  m_LabBoost = Poincare(p_beams[0]->InMomentum()  + p_beams[1]->InMomentum());
   m_CMSBoost = Poincare(p_beams[0]->OutMomentum() + p_beams[1]->OutMomentum());
 }
 
@@ -62,6 +68,7 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D_Vector& moms) {
   m_p_plus = bet * (pa - pa.Abs2() / gam * pb);
   m_p_minus = bet * (pb - pb.Abs2() / gam * pa);
   const double tau = CalculateTau();
+  if (tau < 0.) return false;
   if (m_mode == collidermode::spectral_1) {
     m_x[1] = m_xkey[5] = p_beams[1]->InMomentum().PMinus() / m_p_minus.PMinus();
     m_x[0] = m_xkey[4] = tau / m_x[1];
@@ -91,7 +98,7 @@ double Collider_Kinematics::CalculateTau() const {
   double tau = (m_sprime - m_m2[0] - m_m2[1]) / m_S / 2.;
   if (tau * tau < m_m2[0] * m_m2[1] / (m_S * m_S)) {
     msg_Error() << METHOD << "(): s' out of range." << std::endl;
-    return false;
+    return -1.;
   }
   tau += sqrt(tau * tau - m_m2[0] * m_m2[1] / (m_S * m_S));
   return tau;

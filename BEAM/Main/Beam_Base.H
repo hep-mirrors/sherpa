@@ -26,7 +26,7 @@ namespace BEAM {
   public:
     Beam_Base(beamspectrum type,const ATOOLS::Flavour& _beam,
 	      const double _energy,const double _polarisation,
-	      const int _dir, int mode = 0);
+	      const int _dir);
     virtual ~Beam_Base() = default;
 
     virtual Beam_Base* Copy() = 0;
@@ -52,7 +52,7 @@ namespace BEAM {
     const std::vector<ATOOLS::Vec4D>& OutMomenta() const { return m_vecouts; }
     const double& Energy() const { return m_energy; }
     const double& Polarisation() const { return m_polarisation; }
-    bool PolarisationOn() const { return (m_polarisation != 0.); }
+    virtual bool PolarisationOn() const { return (m_polarisation != 0.); }
     double X() const { return m_x; }
     double Weight() const { return m_weight; }
 
@@ -63,7 +63,8 @@ namespace BEAM {
 
     void SetERan(double eran) { m_eran = eran; }
 
-    virtual double ImpactParameter() const { return ATOOLS::ran->Get() * m_R; }
+    // Default impact parameter: sampled uniformly over radius
+    virtual double ImpactParameter() const { return m_R * m_eran; }
 
     virtual void SetInMomentum(const ATOOLS::Vec4D& in) { m_lab = in; }
     virtual void SetOutMomentum(const ATOOLS::Vec4D& out)

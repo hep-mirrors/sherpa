@@ -185,6 +185,7 @@ AnalysisHandler* Rivet_Interface::GetRivet(std::string proc,
   if (it==m_rivet.end()) {
     msg_Debugging()<<"create new "<<key.first<<" "<<key.second<<std::endl;
     m_rivet[key] = new AnalysisHandler();
+    Log::setLevel("Rivet", m_loglevel);
     m_rivet[key]->addAnalyses(m_analyses);
 #ifdef USING__RIVET4
     m_rivet[key]->setCheckBeams(!m_ignorebeams);
@@ -203,7 +204,6 @@ AnalysisHandler* Rivet_Interface::GetRivet(std::string proc,
     m_rivet[key]->setNLOSmearing(m_nlosmearing);
     if (dummyevent)
       m_rivet[key]->init(*dummyevent);
-    Log::setLevel("Rivet", m_loglevel);
   }
   return m_rivet[key];
 }
@@ -321,7 +321,7 @@ bool Rivet_Interface::Init()
       THROW(fatal_error, "Internal error.");
     }
 
-    m_loglevel = s["-l"].SetDefault(1000000).Get<int>();
+    m_loglevel = s["-l"].SetSynonyms({ "--log-level"}).SetDefault(20).Get<int>();
     m_histointerval = s["HISTO_INTERVAL"].SetSynonyms({"--histo-interval"}).SetDefault(0).Get<size_t>();
     m_ignorebeams = s["IGNORE_BEAMS"].SetSynonyms({"IGNOREBEAMS", "--ignore-beams"}).SetDefault(0).Get<int>();
     m_skipmerge = s["SKIP_MERGE"].SetSynonyms({"SKIPMERGE", "--skip-merge"}).SetDefault(0).Get<int>();
@@ -483,10 +483,8 @@ bool Rivet_Interface::Finish()
     mynames.resize(len);
     allnames.resize(len*mpi->Size()+1);
     mpi->Allgather(&mynames[0],len,MPI_CHAR,&allnames[0],len,MPI_CHAR);
-    char *catname = new char[len+1];
     for (size_t i(0);i<mpi->Size();++i) {
-      snprintf(catname, sizeof(catname),"%s",&allnames[len*i]);
-      std::string curname(catname);
+      std::string curname(&allnames[len*i], len-1);
       for (size_t epos(curname.find('|'));
            epos<curname.length();epos=curname.find('|')) {
         std::string cur(curname.substr(0,epos)), proc, jets;
@@ -514,7 +512,6 @@ bool Rivet_Interface::Finish()
         GetRivet(proc,ToType<int>(jets),&m_lastevent);
       }
     }
-    delete [] catname;
 
     // merge Rivet::AnalysisHandlers before finalising
     for (auto& it : m_rivet) {

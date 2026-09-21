@@ -24,7 +24,9 @@ set(Scales_SOURCES Cluster_Definitions.C
                    CCFM_KFactor_Setter.C
                    EWVirtKFactor_Setter.C
                    Variable_KFactor_Setter.C
-                   No_KFactor_Setter.C)
+                   No_KFactor_Setter.C
+                   E_Gamma_Scale_Setter.C
+                   E_Gamma_Core_Scale.C)
 
 set(Scales_HEADERS Cluster_Definitions.H
                    Scale_Setter_Base.H
@@ -37,6 +39,6 @@ set(Scales_HEADERS Cluster_Definitions.H
 
 sherpa_create_git_info(Scales ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(PhasicScales SHARED ${Scales_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(PhasicScales ${SHERPA_SUBLIB_TYPE} ${Scales_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhasicScales PhasicScales)
 add_dependencies(PhasicScales Scales_Git_Info)

@@ -26,7 +26,7 @@ add_custom_target(ufo_python_tests
         COMMAND ${Python_EXECUTABLE} -m unittest discover -v
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/Tests/UFO)
 enable_testing()
-add_test(NAME ufo_python_tests COMMAND ${CMAKE_COMMAND} --build . --target ufo_python_tests)
+add_test(NAME ufo_python_tests COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target ufo_python_tests)
 endif()
 
 endif()

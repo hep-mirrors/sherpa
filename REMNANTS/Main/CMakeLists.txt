@@ -18,6 +18,6 @@ set(RemnantsMain_HEADERS Remnant_Handler.H
 
 sherpa_create_git_info(RemnantsMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(Remnants SHARED ${RemnantsMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(Remnants ${SHERPA_SUBLIB_TYPE} ${RemnantsMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(Remnants Remnants)
 add_dependencies(Remnants RemnantsMain_Git_Info)

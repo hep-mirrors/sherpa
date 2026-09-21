@@ -3,7 +3,6 @@
 #include "AHADIC++/Tools/Constituents.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
-#include <cassert>
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -47,9 +46,6 @@ double Flavour_Selector::Norm(const double & mmax,const bool & vetodi)
 void Flavour_Selector::InitWeights() {
   Constituents * constituents(hadpars->GetConstituents());
   m_mmin = constituents->MinMass();
-  m_mmax = constituents->MaxMass();
-  m_mmin2 = ATOOLS::sqr(m_mmin);
-  m_mmax2 = ATOOLS::sqr(m_mmax);
   DecaySpecs * decspec;
   for (FlavCCMap_Iterator fdit=constituents->CCMap.begin();
        fdit!=constituents->CCMap.end();fdit++) {
@@ -60,5 +56,4 @@ void Flavour_Selector::InitWeights() {
       m_options[fdit->first] = decspec;
     }
   }
-  m_sumwt = Norm();
 }

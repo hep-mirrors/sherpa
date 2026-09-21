@@ -120,7 +120,8 @@ int Shower::RemnantTest(Parton *const p,const Poincare_Sequence *lt)
   double x(p_isr->CalcX(mom));
   if (x>1.0 && !IsEqual(x,1.0,1.0e-6)) return -1;
   if (!m_sudakov.CheckPDF(mom[0]/rpa->gen.PBunch(p->Beam())[0],p->GetFlavour(),p->Beam())) return -1;
-  return p_remnants->GetRemnant(p->Beam())->TestExtract(p->GetFlavour(),mom)?1:-1;
+  return p_remnants->GetRemnant(p->Beam())->TestExtract(p->GetFlavour(),mom,
+                                                        p_remnants->SPair())?1:-1;
 }
 
 int Shower::ReconstructDaughters(Singlet *const split,double &jcv,

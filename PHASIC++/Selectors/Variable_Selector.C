@@ -160,9 +160,9 @@ bool Variable_Selector::Trigger
 		   <<"="<<v<<" vs. {"<<m_bounds[u].first
 		   <<","<<m_bounds[u].second<<"}\n";
 #endif
-    bool res(v<m_bounds[u].first || v>m_bounds[u].second);
+    bool res(v>=m_bounds[u].first && v<=m_bounds[u].second);
     ++l; ++u;
-    return !m_sel_log->Hit(res);
+    return m_sel_log->CountingIdentity(res);
   }
   if (n==m_nfl[id][f]) return Trigger(sl,l,u,moms,f+1,0,0,id);
   moms.push_back(Vec4D());

@@ -322,7 +322,11 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
   m_subevtlist.push_back(&m_realevt);
 
   if (p_mapproc && !p_partner->NewLibs()) Minimize();
-  if (p_partner==this) msg_Info()<<"."<<std::flush;
+  if (p_partner==this) {
+    msg->BeginTaskProgressUpdate(1);
+    msg_Out()<<'.'<<std::flush;
+    msg->EndTaskProgressUpdate();
+  }
 
   if (status>=0) links.push_back(this);
   if (status<0) errs.push_back(this);
@@ -365,10 +369,10 @@ const Flavour_Vector &AMEGIC::Single_Real_Correction::CombinedFlavour
 
 bool Single_Real_Correction::SetUpIntegrator()
 {
-  if (m_nin==2) {
-    if ( (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass()) ||
-	 (m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) ) p_int->ISR()->SetPartonMasses(m_flavs);
-  }
+  if (m_nin==2 &&
+      (p_int->ISR()->Mass2(0) != sqr(m_flavs[0].Mass()) ||
+       p_int->ISR()->Mass2(1) != sqr(m_flavs[1].Mass())))
+      p_int->ISR()->SetPartonMasses(m_flavs);
   return p_tree_process->SetUpIntegrator();
 }
 

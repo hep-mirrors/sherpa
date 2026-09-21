@@ -1,7 +1,6 @@
 #include "AMISIC++/Perturbative/MI_Integrator.H"
 #include "AMISIC++/Perturbative/MI_Processes.H"
 #include "AMISIC++/Tools/Matter_Overlap.H"
-#include "AMISIC++/Tools/Lookup_Tables.H"
 #include "AMISIC++/Tools/MI_Parameters.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
@@ -10,22 +9,21 @@ using namespace ATOOLS;
 
 MI_Integrator::MI_Integrator(MI_Processes * procs) :
   p_procs(procs), m_pt2min(1.), m_xsmax(-1.),
-  m_MCpoints(10000) { }
+  m_target_acc(0.01) { }
 
 void MI_Integrator::Initialize(PDF::ISR_Handler * isr) {
   ////////////////////////////////////////////////////////////////////////////
   // Minimal pt2, maximal b, and minimal and maximal x from the PDFs
   ////////////////////////////////////////////////////////////////////////////
   m_pt2min    = p_procs->PT2Min();
-  m_Emin      = p_procs->EMin();
   for (size_t i=0;i<2;i++) {
     m_xmin[i] = Max(   1.e-6,isr->PDF(i)->XMin());
     m_xmax[i] = Min(1.-1.e-6,isr->PDF(i)->XMax());
   }
   ////////////////////////////////////////////////////////////////////////////
-  // 10000 points will yield errors of about 1%.
+  // Target relative accuracy for the MC integration.
   ////////////////////////////////////////////////////////////////////////////
-  m_MCpoints = ATOOLS::Min(size_t(100000),size_t((*mipars)["nMC_points"]));
+  m_target_acc = (*mipars)("xs_accuracy");
 }
 
 bool MI_Integrator::TrialEvent(const double & s,Matter_Overlap * mo) {
@@ -54,7 +52,7 @@ bool MI_Integrator::TrialEvent(const double & s,Matter_Overlap * mo) {
 double MI_Integrator::
 operator()(const double & s,Matter_Overlap * mo,const double & b) {
   ////////////////////////////////////////////////////////////////////////////
-  // MC-integrated total cross setion sigma_hard in 1/GeV^2
+  // MC-integrated total cross section sigma_hard in 1/GeV^2
   // 1/(16 pi) int dpt^2 int_{-ymax}^{+ymax} dy_1 dy_2  dsigma/dpt^2
   // with dsigma/dpt^2 given as below as
   // dsigma/dpt^2 = x_1 f(x_1, muF_1) x_2 f(x_2, muF_2)
@@ -62,15 +60,24 @@ operator()(const double & s,Matter_Overlap * mo,const double & b) {
   ////////////////////////////////////////////////////////////////////////////
   if (4.*m_pt2min>=(1.-1.e-6)*s) return 0.;
   double invpt2min = 1./m_pt2min, invpt2max = 4./s;
-  double pt2vol    = invpt2min-invpt2max; // s/4.-m_pt2min;  //
-  double sum  = 0., sum2 = 0., xsec = 0., uncert = 1.e12, xs;
+  double pt2vol    = invpt2min-invpt2max;
+  double sum  = 0., sum2 = 0., xs;
   double mowt = mo ? ( mo->IsDynamic() ? 0. : (*mo)(b)) : 1.;
-  unsigned int sumtrials = 0.;
+  unsigned int sumtrials = 0;
+  ////////////////////////////////////////////////////////////////////////////
+  // Keep integrating until the relative uncertainty reaches the target
+  // accuracy. Minimum number of points avoids premature termination, and a
+  // hard cap acts as a safeguard against non-converging configurations.
+  ////////////////////////////////////////////////////////////////////////////
+  const unsigned int min_points  = 10000;
+  const unsigned int check_every = 1000;
+  const unsigned int max_points  = 10000000;
+  m_xsec = m_uncert = 0.;
   do {
     ////////////////////////////////////////////////////////////////////////
     // Select pt^2 according to 1/pt^4 and calculate the Jacobean
     ////////////////////////////////////////////////////////////////////////
-    m_pt2  = 1./(invpt2min-ran->Get()*pt2vol); // m_pt2min + ran->Get()*pt2vol;
+    m_pt2  = 1./(invpt2min-ran->Get()*pt2vol);
     ////////////////////////////////////////////////////////////////////////
     // Fix the rest of the kinematics: rapidities, x's, Mandelstams.
     ////////////////////////////////////////////////////////////////////////
@@ -84,13 +91,21 @@ operator()(const double & s,Matter_Overlap * mo,const double & b) {
       sum  += xs * mowt;
       sum2 += sqr(xs * mowt);
     }
-    if (++sumtrials%(100*m_MCpoints)==0) {
-      xsec   = sum/double(sumtrials);
-      uncert = sqrt(sum2 - sqr(xsec))/double(sumtrials);
+    sumtrials++;
+    if (sumtrials>=min_points && sumtrials%check_every==0) {
+      m_xsec   = sum/double(sumtrials);
+      m_uncert = sqrt(sum2 - sqr(m_xsec))/double(sumtrials);
+      if (m_xsec>0. && m_uncert/m_xsec < m_target_acc) break;
     }
-  } while (xsec==0 || (uncert/xsec>5.e-2));
+  } while (sumtrials<max_points);
   m_xsec   = sum/double(sumtrials);
   m_uncert = sqrt(sum2 - sqr(m_xsec))/double(sumtrials);
+  if (m_xsec>0. && m_uncert/m_xsec > m_target_acc) {
+    msg_Error()<<"Warning in "<<METHOD<<"(s = "<<s<<"):\n"
+	       <<"   MC integration did not reach target accuracy "<<m_target_acc
+	       <<" after "<<sumtrials<<" points. "
+	       <<"Final accuracy: xs_uncert/xs = "<<(m_uncert/m_xsec)<<".\n";
+  }
   msg_Debugging()<<"*** "<<METHOD<<"(E = "<<std::setprecision(6)<<sqrt(s)<<", "
 		 <<"mo = "<<mowt<<") "
 		 <<"--> xs = "<<(m_xsec*rpa->Picobarn())

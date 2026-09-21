@@ -42,7 +42,7 @@ trigger_pages:
 # base snippet to build manual into its own path_prefix using the gitlab pages "parallel deployment" feature
 .manual-base:
   stage: deploy
-  image: $CI_REGISTRY_IMAGE:Fedora_42
+  image: $CI_REGISTRY_IMAGE:Fedora_44
   script:
     - cmake -S . -B build  -DSHERPA_ENABLE_MANUAL=ON -DLibZip_DIR=/usr -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=ON
     - cd build/doc; make; cd ../..;
@@ -80,7 +80,7 @@ manual-release:
 # also get older versions manuals from eos if available and add them
 manual-index:
   stage: deploy
-  image: $CI_REGISTRY_IMAGE:Fedora_42
+  image: $CI_REGISTRY_IMAGE:Fedora_44
   script:
     - rm -rf public
     - mkdir public
@@ -331,6 +331,7 @@ LCG_106_ATLAS_7_x86_64-el9-gcc13-opt:
 .ex:  &ex
     - if [ "${TOOLSET}" == "LLVM" ]; then export CXX=clang++; export CC=clang; export FC=gfortran; fi
     - if [ "${TOOLSET}" == "GNU" ]; then export CXX=g++; export CC=gcc; export FC=gfortran; fi
+    - if [ "${TOOLSET}" == "GNUMPI" ]; then source /etc/profile.d/modules.sh || true; module load openmpi || module load mpi/openmpi-x86_64 || true; export CXX=mpic++; export CC=mpicc; export FC=gfortran; fi
 
 .any-cmake:
   extends: .any
@@ -364,6 +365,7 @@ LCG_106_ATLAS_7_x86_64-el9-gcc13-opt:
     - export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_Fortran_COMPILER_LAUNCHER=f90cache"
     - 'if [ "${FREL}" == "7" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi'
     - 'if [ "${FREL}" == "0" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi'
+    - 'if [ "${TOOLSET}" == "GNUMPI" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi'
     # Display cache stats
     - ccache -s || true
   script:
@@ -389,16 +391,16 @@ LCG_106_ATLAS_7_x86_64-el9-gcc13-opt:
 ###########################################################################
 # Here we check if we have changes to the Docker files
 
-check_commit_Fedora42:
+check_commit_Fedora44:
   variables:
     OS: Fedora
-    FREL: 42
+    FREL: 44
   extends: .check_commit_Fedora
 
-check_commit_Fedora41:
+check_commit_Fedora43:
   variables:
     OS: Fedora
-    FREL: 41
+    FREL: 43
   extends: .check_commit_Fedora
 
 check_commit_CentOS9:
@@ -417,21 +419,21 @@ check_commit_Archlinux0:
 
 ###########################################################################
 #Build images
-build_image_Fedora42:
+build_image_Fedora44:
   variables:
     OS: Fedora
-    FREL: 42
+    FREL: 44
   extends: .build_image_Fedora
   needs:
-    - job: check_commit_Fedora42
+    - job: check_commit_Fedora44
 
-build_image_Fedora41:
+build_image_Fedora43:
   variables:
     OS: Fedora
-    FREL: 41
+    FREL: 43
   extends: .build_image_Fedora
   needs:
-    - job: check_commit_Fedora41
+    - job: check_commit_Fedora43
 
 build_image_CentOS9:
   variables:
@@ -452,10 +454,10 @@ build_image_Archlinux0:
 ###########################################################################
 
 # Main branch jobs use pull-push policy
-Fedora41-make-ccache-GNU:
+Fedora43-make-ccache-GNU:
   variables:
     OS: Fedora
-    FREL: 41
+    FREL: 43
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
@@ -464,13 +466,13 @@ Fedora41-make-ccache-GNU:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - when: never
   needs:
-    - job: build_image_Fedora41
+    - job: build_image_Fedora43
 
 # Feature branch variant uses pull-only policy
-Fedora41-make-ccache-GNU-feature:
+Fedora43-make-ccache-GNU-feature:
   variables:
     OS: Fedora
-    FREL: 41
+    FREL: 43
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
@@ -478,12 +480,12 @@ Fedora41-make-ccache-GNU-feature:
   rules:
     - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
   needs:
-    - job: build_image_Fedora41
+    - job: build_image_Fedora43
 
-Fedora42-make-ccache-GNU:
+Fedora44-make-ccache-GNU:
   variables:
     OS: Fedora
-    FREL: 42
+    FREL: 44
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
@@ -492,12 +494,12 @@ Fedora42-make-ccache-GNU:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - when: never
   needs:
-    - job: build_image_Fedora42
+    - job: build_image_Fedora44
 
-Fedora42-make-ccache-GNU-feature:
+Fedora44-make-ccache-GNU-feature:
   variables:
     OS: Fedora
-    FREL: 42
+    FREL: 44
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
@@ -505,12 +507,37 @@ Fedora42-make-ccache-GNU-feature:
   rules:
     - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
   needs:
-    - job: build_image_Fedora42
+    - job: build_image_Fedora44
 
-Fedora42-make-ccache-LLVM:
+Fedora44-ninja-ccache-GNU:
   variables:
     OS: Fedora
-    FREL: 42
+    FREL: 44
+    TOOLSET: GNU
+    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS -GNinja
+  extends: .any-cmake-ccache-main
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - when: never
+  needs:
+    - job: build_image_Fedora44
+
+Fedora44-ninja-ccache-GNU-feature:
+  variables:
+    OS: Fedora
+    FREL: 44
+    TOOLSET: GNU
+    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS -GNinja
+  extends: .any-cmake-ccache
+  rules:
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+  needs:
+    - job: build_image_Fedora44
+
+Fedora44-make-ccache-LLVM:
+  variables:
+    OS: Fedora
+    FREL: 44
     TOOLSET: LLVM
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
@@ -519,12 +546,12 @@ Fedora42-make-ccache-LLVM:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - when: never
   needs:
-    - job: build_image_Fedora42
+    - job: build_image_Fedora44
 
-Fedora42-make-ccache-LLVM-feature:
+Fedora44-make-ccache-LLVM-feature:
   variables:
     OS: Fedora
-    FREL: 42
+    FREL: 44
     TOOLSET: LLVM
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
@@ -532,7 +559,7 @@ Fedora42-make-ccache-LLVM-feature:
   rules:
     - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
   needs:
-    - job: build_image_Fedora42
+    - job: build_image_Fedora44
 
 CentOS9-make-ccache-GNU:
   variables:
@@ -585,4 +612,16 @@ Archlinux0-make-ccache-GNU-feature:
     - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
   needs:
     - job: build_image_Archlinux0
+
+Fedora44-make-ccache-GNU-mpi-hdf5:
+  variables:
+    OS: Fedora
+    FREL: 44
+    TOOLSET: GNUMPI
+    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS -DSHERPA_ENABLE_MPI:BOOL=ON -DSHERPA_ENABLE_HDF5:BOOL=ON -DSHERPA_ENABLE_MADLOOP:BOOL=OFF
+  extends: .any-cmake-ccache
+  rules:
+    - if: $CI_COMMIT_BRANCH
+  needs:
+    - job: build_image_Fedora44
 

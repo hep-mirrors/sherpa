@@ -26,6 +26,7 @@ Combined_Selector::~Combined_Selector()
 
 bool Combined_Selector::Initialize(const Selector_Key &key)
 {
+  std::string name_details = " (";
   for (auto s : key.GetSelectors()) {
     std::string name;
     if (s.IsList()) {
@@ -39,6 +40,8 @@ bool Combined_Selector::Initialize(const Selector_Key &key)
       }
       name = keys[0];
     }
+    if (name_details!=" (") name_details += ", ";
+    name_details+=name;
     Selector_Key subkey;
     subkey.m_settings = s;
     subkey.p_proc = p_proc;
@@ -51,6 +54,8 @@ bool Combined_Selector::Initialize(const Selector_Key &key)
       THROW(fatal_error, "Did not find selector \"" + name + "\".");
     }
   }
+  name_details += ")";
+  m_name +=name_details;
   return true;
 }
 

@@ -21,6 +21,6 @@ set(PhotonsTools_HEADERS Dipole_FF.H
 
 sherpa_create_git_info(PhotonsTools ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(PhotonsTools SHARED ${PhotonsTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(PhotonsTools ${SHERPA_SUBLIB_TYPE} ${PhotonsTools_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(PhotonsTools PhotonsTools)
 add_dependencies(PhotonsTools PhotonsTools_Git_Info)

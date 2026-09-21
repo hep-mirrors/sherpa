@@ -188,7 +188,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &str, const Frame_Line &f)
 
 
 indentbuf::indentbuf(std::streambuf* basebuf) :
-  m_basebuf(basebuf), m_indent(0), at_start(true)
+  m_basebuf(basebuf), m_indent(0), at_start(true), m_updatedlines(0), m_passthrough(false)
 {
 }
 
@@ -208,12 +208,16 @@ void indentbuf::DeIndent(size_t i)
 
 std::streambuf::int_type indentbuf::overflow(int_type ch)
 {
-  if (traits_type::eq_int_type(ch, traits_type::to_int_type('\r'))) {
-  }
   if (ch == traits_type::eof())
     return traits_type::not_eof(ch);
 
   if (traits_type::not_eof(ch)) {
+    if (!m_passthrough && !at_start && m_updatedlines > 0) {
+      for (size_t i = 0; i < m_updatedlines; ++i)
+        m_basebuf->sputc(traits_type::to_char_type('\n'));
+      at_start = true;
+      m_passthrough = true;
+    }
     if (at_start)
       for (size_t i = 0; i < m_indent; ++i)
         m_basebuf->sputc(traits_type::to_char_type(' '));
@@ -285,8 +289,8 @@ void Message::SetStandard()
 std::ostream &Message::Out()
 { 
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      mpi->Rank()) return m_devnull;
+  if (!m_mpimode &&
+      mpi && mpi->Rank()) return m_devnull;
 #endif
   return m_output; 
 }
@@ -294,8 +298,8 @@ std::ostream &Message::Out()
 std::ostream &Message::Error()
 { 
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      mpi->Rank()) return m_devnull;
+  if (!m_mpimode &&
+      mpi && mpi->Rank()) return m_devnull;
 #endif
   if (m_level >= 0) return m_output; 
   return m_devnull; 
@@ -304,8 +308,8 @@ std::ostream &Message::Error()
 std::ostream &Message::Events()
 { 
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      mpi->Rank()) return m_devnull;
+  if (!m_mpimode &&
+      mpi && mpi->Rank()) return m_devnull;
 #endif
   if (m_level & 1) return m_output; 
   return m_devnull;  
@@ -314,8 +318,8 @@ std::ostream &Message::Events()
 std::ostream &Message::Info()
 { 
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      mpi->Rank()) return m_devnull;
+  if (!m_mpimode &&
+      mpi && mpi->Rank()) return m_devnull;
 #endif
   if (m_level & 2) return m_output; 
   return m_devnull;  
@@ -324,8 +328,8 @@ std::ostream &Message::Info()
 std::ostream &Message::Tracking()
 { 
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      mpi->Rank()) return m_devnull;
+  if (!m_mpimode &&
+      mpi && mpi->Rank()) return m_devnull;
 #endif
   if (m_level & 4) return m_output; 
   return m_devnull;  
@@ -334,8 +338,8 @@ std::ostream &Message::Tracking()
 std::ostream &Message::Debugging()
 { 
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      mpi->Rank()) return m_devnull;
+  if (!m_mpimode &&
+      mpi && mpi->Rank()) return m_devnull;
 #endif
   if (m_level & 8) return m_output; 
   return m_devnull;  
@@ -344,8 +348,8 @@ std::ostream &Message::Debugging()
 std::ostream &Message::IODebugging()
 {
 #ifdef USING__MPI
-  if (!m_mpimode && 
-      mpi->Rank()) return m_devnull;
+  if (!m_mpimode &&
+      mpi && mpi->Rank()) return m_devnull;
 #endif
   if (m_level & 32) return m_output;
   return m_devnull;
@@ -439,4 +443,15 @@ void Message::PrintRates() const {
                 << "' exceeded frequency limit: " << item.second \
                 << "/" << m_limit << "\n" << ATOOLS::om::reset;
   }
+}
+
+void Message::BeginTaskProgressUpdate(size_t lines)
+{
+  m_buf.SetUpdatedLines(lines);
+  m_buf.SetPassthrough(true);
+}
+
+void Message::EndTaskProgressUpdate()
+{
+  m_buf.SetPassthrough(false);
 }

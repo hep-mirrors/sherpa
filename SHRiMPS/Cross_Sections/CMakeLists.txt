@@ -16,6 +16,6 @@ set(Cross_Sections_HEADERS Cross_Sections.H
 
 sherpa_create_git_info(Cross_Sections ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(ShrimpsXsecs SHARED ${Cross_Sections_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(ShrimpsXsecs ${SHERPA_SUBLIB_TYPE} ${Cross_Sections_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(ShrimpsXsecs ShrimpsXsecs)
 add_dependencies(ShrimpsXsecs Cross_Sections_Git_Info)

@@ -41,7 +41,7 @@ namespace Recola {
     // TODO: where to get this from?
     double mur=100.;
     int defflav=Recola_Interface::GetDefaultFlav();
-    set_alphas_rcl(aqcd,mur,defflav);
+    Recola_Interface::SetAlphas(aqcd,mur,defflav);
 
     
     double res(0.0);

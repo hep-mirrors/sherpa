@@ -16,7 +16,7 @@ namespace ATOOLS {
   std::map<btp::code,long unsigned int> Blob_List::s_momfails;
 }
 
-std::ostream &ATOOLS::operator<<(std::ostream &s,const Blob_List &list) 
+std::ostream &ATOOLS::operator<<(std::ostream &s,const Blob_List &list)
 {
   s<<"Blob List with "<<list.size()<<" elements {"<<std::endl;
   {
@@ -91,10 +91,10 @@ Blob_List Blob_List::FindConnected(const Particle *particle)
   return FindConnected(owner);
 }
 
-bool Blob_List::Delete(Blob *blob) 
+bool Blob_List::Delete(Blob *blob)
 {
   if (blob==NULL) return false;
-  for (Blob_List::iterator bit=begin();bit!=end();++bit) 
+  for (Blob_List::iterator bit=begin();bit!=end();++bit)
     if (*bit==blob) {
       erase(bit);
       blob->RemoveOwnedParticles();
@@ -109,10 +109,10 @@ void Blob_List::DeleteConnected(Blob *blob,std::set<Blob*> &deleted)
   if (blob==NULL || deleted.find(blob)!=deleted.end()) return;
   deleted.insert(blob);
   Particle_Vector parts(blob->GetInParticles());
-  for (Particle_Vector::iterator pit(parts.begin());pit!=parts.end();++pit) 
+  for (Particle_Vector::iterator pit(parts.begin());pit!=parts.end();++pit)
     DeleteConnected((*pit)->ProductionBlob(),deleted);
   parts=blob->GetOutParticles();
-  for (Particle_Vector::iterator pit(parts.begin());pit!=parts.end();++pit) 
+  for (Particle_Vector::iterator pit(parts.begin());pit!=parts.end();++pit)
     DeleteConnected((*pit)->DecayBlob(),deleted);
 }
 
@@ -151,8 +151,8 @@ bool Blob_List::TotalFourMomentum(Blob *blob,std::set<Blob*> &summed,
       const ATOOLS::Particle *part=blob->ConstInParticle(i);
       double abs2=part->Momentum().Abs2();
       if (abs2>0 && abs2<0) return false;
-      if (part->ProductionBlob()==NULL) inisum+=part->Momentum(); 
-      else 
+      if (part->ProductionBlob()==NULL) inisum+=part->Momentum();
+      else
 	if (!TotalFourMomentum(part->ProductionBlob(),
 			       summed,inisum,finsum,mode))
 	  success=false;
@@ -162,12 +162,19 @@ bool Blob_List::TotalFourMomentum(Blob *blob,std::set<Blob*> &summed,
       const ATOOLS::Particle *part=blob->ConstOutParticle(i);
       double abs2=part->Momentum().Abs2();
       if (abs2>0 && abs2<0) return false;
-      if (part->DecayBlob()==NULL) finsum+=part->Momentum(); 
-      else 
+      if (part->DecayBlob()==NULL) finsum+=part->Momentum();
+      else
 	if (!TotalFourMomentum(part->DecayBlob(),summed,inisum,finsum,mode))
 	  success=false;
     }
   return success;
+}
+
+void Blob_List::Boost(const Poincare& boost, std::set<Particle*>* treateds)
+{
+  for (auto & bit : *this) {
+    bit->Boost(boost, treateds);
+  }
 }
 
 Vec4D Blob_List::TotalFourMomentum() const
@@ -175,7 +182,7 @@ Vec4D Blob_List::TotalFourMomentum() const
   if (empty()) return Vec4D();
   Vec4D inisum,finsum;
   std::set<ATOOLS::Blob*> summed;
-  if (!TotalFourMomentum(*begin(),summed,inisum,finsum,0)) 
+  if (!TotalFourMomentum(*begin(),summed,inisum,finsum,0))
     return Vec4D(std::sqrt(-1.0),Vec3D());
   return finsum-inisum;
 }
@@ -221,7 +228,7 @@ bool Blob_List::FourMomentumConservation() const
     if (!allow) Abort();
     for (Blob_List::const_iterator bit=begin();bit!=end();++bit) {
       Vec4D sum((*bit)->CheckMomentumConservation());
-      if (!IsEqual(sum,Vec4D(),accu)) {      
+      if (!IsEqual(sum,Vec4D(),accu)) {
 	btp::code btype = (*bit)->Type();
 	if (s_momfails.find(btype)==s_momfails.end()) s_momfails[btype] = 1;
 	else s_momfails[btype] = s_momfails[btype]+1;
@@ -272,7 +279,7 @@ Particle_List Blob_List::ExtractLooseParticles(const int mode) const
   return particles;
 }
 
-void Blob_List::Clear(Blob * blob) 
+void Blob_List::Clear(Blob * blob)
 {
   if (blob==NULL) {
     while (!empty()) {
@@ -281,7 +288,7 @@ void Blob_List::Clear(Blob * blob)
     }
     return;
   }
-  for (int i(0);i<blob->NInP();++i) 
+  for (int i(0);i<blob->NInP();++i)
     if (blob->InParticle(i)->ProductionBlob()!=NULL)
       blob->InParticle(i)->ProductionBlob()->
 	RemoveOutParticle(blob->InParticle(i));
@@ -291,7 +298,7 @@ void Blob_List::Clear(Blob * blob)
 	RemoveInParticle(blob->OutParticle(i));
     blob->OutParticle(i)->SetStatus(part_status::active);
   }
-  for (const_iterator bit(begin());bit!=end();++bit) 
+  for (const_iterator bit(begin());bit!=end();++bit)
     if (*bit!=blob) delete *bit;
   resize(1);
   back()=blob;
@@ -374,7 +381,7 @@ bool Blob_List::MergeSubsequentType(btp::code mtype,btp::code dtype,
 	  while (daughter!=end()) {
 	    if ((*daughter)==blob) {
 	      NBlob--;
-	      delete blob; 
+	      delete blob;
 	      daughter = erase(daughter);
 	      break;
 	    }

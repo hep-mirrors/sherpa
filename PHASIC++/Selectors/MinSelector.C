@@ -56,12 +56,10 @@ bool MinSelector::Trigger(Selector_List &sl)
 {
   for (size_t k=0;k<m_sels.size();++k) {
     if (m_sels[k]->Trigger(sl)) {
-      m_sel_log->Hit(0);
-      return 1;
+      return m_sel_log->CountingIdentity(true);
     }
   }
-  m_sel_log->Hit(1);
-  return 0;
+  return m_sel_log->CountingIdentity(false);
 }
 
 void MinSelector::BuildCuts(Cut_Data * cuts) 

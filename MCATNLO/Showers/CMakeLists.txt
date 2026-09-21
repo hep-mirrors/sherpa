@@ -17,6 +17,6 @@ set(MCatNLOShowers_HEADERS Splitting_Function_Base.H
 
 sherpa_create_git_info(MCatNLOShowers ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(MCatNLOShowers SHARED ${MCatNLOShowers_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(MCatNLOShowers ${SHERPA_SUBLIB_TYPE} ${MCatNLOShowers_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(MCatNLOShowers MCatNLOShowers)
 add_dependencies(MCatNLOShowers MCatNLOShowers_Git_Info)

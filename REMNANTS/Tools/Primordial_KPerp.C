@@ -153,7 +153,7 @@ double Primordial_KPerp::KT_Gauss(const double & ktmax) const {
   // if ktmax is too small wrt. to sigma, the kt range is too narrow
   if (ktmax<(m_mean-3.*m_sigma) || ktmax<0.1 * m_sigma) return ktmax*ran->Get();
   do {
-    kt = abs(m_mean + Sign(0.5-ran->Get())*m_sigma*sqrt(-log(std::max(1.e-5,ran->Get()))));
+    kt = dabs(m_mean + Sign(0.5-ran->Get())*m_sigma*sqrt(-log(std::max(1.e-5,ran->Get()))));
   } while (kt>ktmax);
   return kt;
 }

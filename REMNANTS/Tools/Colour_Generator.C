@@ -8,7 +8,10 @@
 using namespace REMNANTS;
 using namespace ATOOLS;
 
-Colour_Generator::Colour_Generator() { p_remnants = {nullptr, nullptr}; }
+Colour_Generator::Colour_Generator() : p_inparts{nullptr, nullptr}
+{
+  p_remnants = {nullptr, nullptr};
+}
 
 void Colour_Generator::Initialize(Remnant_Handler* rhandler)
 {
@@ -18,23 +21,27 @@ void Colour_Generator::Initialize(Remnant_Handler* rhandler)
 bool Colour_Generator::ConnectColours(Blob* const showerblob)
 {
   // Extract incoming particles/shower initiators - they are the ones that
-  // matter for the colour handling.
+  // matter for the colour handling.  Clear the cache first so a stale pointer
+  // from a previous event/blob is never dereferenced.
+  p_inparts = {nullptr, nullptr};
   for (int i = 0; i < showerblob->NInP(); i++) {
     Particle* part = showerblob->InParticle(i);
-    size_t    beam = part->Beam();
-    if (beam == -1 || part->ProductionBlob() != nullptr) continue;
+    int       beam = part->Beam();
+    if (beam < 0 || part->ProductionBlob() != nullptr) continue;
     p_inparts[beam] = part;
   }
   // First replace t-channel connected colours in IS.  Without t-channel colour
   // exchange, go for the unconnected colour flows of both beams.
-  // The logic of the replacements is detailed in the methods.
-  if (!TChannelColourFlows() && !SChannelColourFlows()) {
+  // The logic of the replacements is detailed in the methods.  Both beam
+  // initiators must have been identified - the flow methods dereference both.
+  if (p_inparts[0] && p_inparts[1] &&
+      !TChannelColourFlows() && !SChannelColourFlows()) {
     msg_Error() << "Warning in " << METHOD
                 << ": No colours in incoming partons.\n"
                 << (*showerblob) << "\n";
   }
   if (!showerblob->CheckColour(true)) {
-    msg_Debugging() << METHOD << " did not conserved colour in:\n"
+    msg_Debugging() << METHOD << " did not conserve colour in:\n"
                     << (*showerblob) << "\n";
     return false;
   }
@@ -121,12 +128,18 @@ int Colour_Generator::DefineColourDonor(const size_t& tbeam)
   // recipient. It is possible that this means that the t-channel colour cannot
   // be replaced, and that colour replacements are delegated to the
   // SChannelColourFlow method.
-  if (tripcol && p_inparts[1 - tbeam]->Flav().IsGluon()) {
+  // tripcol guarantees m_cols[tbeam][0] is non-empty, anticol guarantees
+  // m_cols[1-tbeam][1] is non-empty; the conjugate stacks compared below are
+  // not guaranteed non-empty, so guard their front() (an empty stack cannot
+  // clash and therefore must not veto).
+  if (tripcol && p_inparts[1 - tbeam]->Flav().IsGluon() &&
+      !m_cols[1 - tbeam][0].empty()) {
     if (m_cols[1 - tbeam][0].front() == m_cols[tbeam][0].front()) {
       tripcol = false;
     }
   }
-  if (anticol && p_inparts[tbeam]->Flav().IsGluon()) {
+  if (anticol && p_inparts[tbeam]->Flav().IsGluon() &&
+      !m_cols[tbeam][1].empty()) {
     if (m_cols[tbeam][1].front() == m_cols[1 - tbeam][1].front()) {
       anticol = false;
     }
@@ -236,7 +249,7 @@ bool Colour_Generator::ConstrainedGQFlows(const size_t& tbeam)
       // There is a colour on stack for the quark - take it.
       Replace(1 - tbeam, 0, p_inparts[1 - tbeam]);
     } else if (aspec && ncola == 2) {
-      // There is nocolour on stack for the quark but a anti-colour for the
+      // There is no colour on stack for the quark but an anti-colour for the
       // potential spectator.
       Replace(1 - tbeam, 1, aspec);
     }
@@ -265,8 +278,8 @@ bool Colour_Generator::ConstrainedGQFlows(const size_t& tbeam)
 
 bool Colour_Generator::ConstrainedQGFlows(const size_t& tbeam)
 {
-  // Pretty similar to the two gluon case.  Gluon on triplet beam, with
-  // potentially dangerous colour, plus a quark on the anti-triplet beam
+  // Mirror of the GQ case: a quark on the triplet beam, with potentially
+  // dangerous colour, plus a gluon on the anti-triplet beam.
   int       ncolt = AvailableColours(tbeam);
   int       ncola = AvailableColours(1 - tbeam);
   bool      anti  = p_inparts[tbeam]->Flav().IsAnti();
@@ -367,10 +380,9 @@ bool Colour_Generator::ConstrainedQQFlows(const size_t& tbeam)
     }
     replacecol = true;
   } else if (!tanti && !aanti) {
-    // harmless - both quarks are anti-quarks - the anti-quark on the
-    // anti-triplet beam will get the potentially dangerous anti-triplet colour,
-    // the anti-quark on the triplet beam will either get a colour from stack -
-    // if available - or not.
+    // harmless - both partons are quarks - the quark on the triplet beam gets
+    // the potentially dangerous triplet colour, the quark on the anti-triplet
+    // beam will either get a colour from stack - if available - or not.
     Replace(tbeam, 0, p_inparts[tbeam]);
     if (ncola == 3) {
       Replace(1 - tbeam, 0, p_inparts[1 - tbeam]);
@@ -510,7 +522,7 @@ void Colour_Generator::ReplaceInFS(const int& oldcol, const int& newcol,
                                    const size_t& index, Blob* blob)
 {
   // Replace old colour with new colour at index, in all outgoing particles of
-  // the blob. Follow ghte replacement recursively downstream.
+  // the blob. Follow the replacement recursively downstream.
   for (int j = 0; j < blob->NOutP(); j++) {
     Particle* part = blob->OutParticle(j);
     if (part->GetFlow(index + 1) == oldcol) {

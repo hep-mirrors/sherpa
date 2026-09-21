@@ -17,7 +17,8 @@ Proto_Particle::Proto_Particle(const Proto_Particle & proto) :
 }
 
 Proto_Particle::Proto_Particle(const ATOOLS::Particle & part) :
-  m_flav(part.Flav()), m_momentum(part.Momentum()), m_kt2max(sqr(m_momentum[0])),
+  m_flav(part.Flav()), m_momentum(part.Momentum()), m_gen(1),
+  m_kt2max(sqr(m_momentum[0])),
   m_isleading(false), m_isbeam(part.Info()=='B')
 {
   s_protos.insert(this);
@@ -26,7 +27,8 @@ Proto_Particle::Proto_Particle(const ATOOLS::Particle & part) :
 Proto_Particle::Proto_Particle(const ATOOLS::Flavour & flav,
 			       const ATOOLS::Vec4D & mom,
 			       bool leading, bool beam) :
-  m_flav(flav), m_momentum(mom),m_isleading(leading),m_isbeam(beam)
+  m_flav(flav), m_momentum(mom), m_gen(1), m_kt2max(sqr(mom[0])),
+  m_isleading(leading), m_isbeam(beam)
 {
   s_protos.insert(this);
 }

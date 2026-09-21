@@ -14,6 +14,7 @@ RUN  dnf -y  install   \
       doxygen catch-devel \
       python3 python3-devel swig python3-matplotlib \
       python3-sympy python3-scipy \
+      && dnf -y install hdf5-devel highfive-devel openmpi openmpi-devel libfabric libfabric-devel hwloc-libs \
      && dnf -y copr enable averbyts/HEPrpms \
      && dnf -y  install  \
       gosam  fastjet fastjet-devel  YODA-devel Rivet-devel Rivet \

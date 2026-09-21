@@ -22,6 +22,6 @@ set(DireShower_HEADERS Gauge.H
 
 sherpa_create_git_info(DireShower ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(DireShower SHARED ${DireShower_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(DireShower ${SHERPA_SUBLIB_TYPE} ${DireShower_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(DireShower DireShower)
 add_dependencies(DireShower DireShower_Git_Info)

@@ -104,7 +104,7 @@ can be set by ``E_LASER``. ``P_LASER`` sets their polarisations,
 defaulting to ``0.``.  Both settings can either be set to a single
 value, applying to both beams, or to a list of two values, one for
 each beam.  The ``LASER_MODE`` takes the values ``-1``, ``0``, and
-``1``, defaulting to ``0``.  ``LASER_ANGLES`` and
+``1``, defaulting to ``1``.  ``LASER_ANGLES`` and
 ``LASER_NONLINEARITY`` can be set to ``true`` or to ``false``
 (default).
 
@@ -244,12 +244,16 @@ EPA Parameters
 .. index:: EPA:bMax
 .. index:: EPA:xBins
 .. index:: EPA:bBins
+.. index:: EPA:chiMax
 .. index:: EPA:AlphaQED
 .. index:: EPA:Q02
 .. index:: EPA:MagneticMu
 .. index:: EPA:WoodsSaxon_R
 .. index:: EPA:WoodsSaxon_d
+.. index:: EPA:WoodsSaxon_rNodes
+.. index:: EPA:WoodsSaxon_rMaxFactor
 .. index:: EPA:WoodsSaxonApprox_a
+.. index:: EPA:CacheTables
 .. index:: EPA:OutputSpectra
 
 :option:`Q2Max`
@@ -427,13 +431,23 @@ EPA Parameters
   determine :math:`Q^2_\text{max}`. Defaults to ``0.3``.
 
 :option:`bMin`
-  Minimum impact parameter **relative to the emitter's radius**. Defaults to ``0.1``.
+  Minimum impact parameter **relative to the emitter's radius**. Defaults to ``0.3``.
 
 :option:`bMax`
   Maximum impact parameter **relative to the emitter's radius**. Defaults to ``1e3``.
 
 :option:`bThreshold`
   For :math:`b>b_\mathrm{threshold} R`, use point-like approximation. Defaults to ``10.0``.
+
+:option:`chiMax`
+  Upper cut on the dimensionless variable :math:`\chi = x\,m\,b`, with :math:`b` the
+  physical impact parameter, that bounds the impact-parameter sampling range.
+  The flux at large :math:`b` is governed by the Bessel functions
+  :math:`K_{0,1}(\chi)`, which fall off like :math:`e^{-\chi}`, so the region of
+  large :math:`\chi` is strongly suppressed. The upper impact parameter is therefore
+  set to :math:`\min(b_\mathrm{max} R,\ \chi_\mathrm{max}/(x\,m))`, which improves the
+  sampling efficiency at large :math:`x` without affecting the result. Defaults to
+  ``100.0``.
 
 :option:`xBins`
   Number of :math:`x`-bins for :math:`N(x,b)` grids (logarithmic scaling). Defaults to ``100``.
@@ -451,13 +465,31 @@ EPA Parameters
   Proton magnetic moment for the ``Proton`` form factor. Defaults to ``2.79``.
 
 :option:`WoodsSaxon_R`
-  Woods-Saxon nuclear radius :math:`R` in fm. Defaults to ``6.49``.
+  Woods-Saxon nuclear radius :math:`R` in fm. Defaults to
+  :math:`1.118\,A^{1/3}` fm, with :math:`A` the nuclear mass number
+  (about ``6.6`` fm for lead).
 
 :option:`WoodsSaxon_d`
   Woods-Saxon skin depth :math:`d` in fm. Defaults to ``0.54``.
 
+:option:`WoodsSaxon_rNodes`
+  Number of radial integration intervals for the Filon sine transform of the
+  Woods-Saxon density when building the form-factor table. Must be at least 2.
+  Defaults to ``1024``.
+
+:option:`WoodsSaxon_rMaxFactor`
+  Sets the upper radius of that Filon integration to
+  :math:`r_\mathrm{max} = R + \mathrm{rMaxFactor}\cdot d`. Defaults to ``16``.
+
 :option:`WoodsSaxonApprox_a`
   Yukawa range :math:`a` in fm in the ``Approx_Woods-Saxon`` form factor. Defaults to ``0.7``.
+
+:option:`CacheTables`
+  If ``true``, the precomputed form-factor and :math:`N(x,b)` tables are written to
+  disk under ``<RESULT_DIRECTORY>/EPA`` and reloaded on subsequent runs with
+  identical parameters instead of being recomputed. Caching is disabled
+  automatically when no result directory is produced, i.e. when
+  :option:`GENERATE_RESULT_DIRECTORY` is ``false``. Defaults to ``true``.
 
 :option:`OutputSpectra`
   If ``true``, output CSV files with :math:`N(x,b)` and :math:`F(Q^2)` for the photon fluxes.
@@ -563,7 +595,7 @@ The following modes are available:
 
   **Proton-proton collisions:**
     Uses the :math:`\sqrt{s}`-dependent parameterization from
-    :cite:`Bertulani:2021umy` (Section 3):
+    :cite:`Shao:2022cly` (Section 3):
 
     .. math::
 

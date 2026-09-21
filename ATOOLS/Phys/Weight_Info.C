@@ -33,7 +33,7 @@ namespace ATOOLS {
   {
     return s<<" w = "<<wi.m_weightsmap.Nominal()<<", dxs = "<<wi.m_dxs
             <<", trials = "<<wi.m_ntrial
-            <<", pdfs = { "<<wi.m_pdf<<" }"<<std::endl;
+            <<", pdfs = { "<<wi.m_pdf<<" }";
   }
 }
 

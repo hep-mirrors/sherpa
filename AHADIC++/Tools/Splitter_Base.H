@@ -30,10 +30,9 @@ namespace AHADIC {
     bool   m_barrd;
     double m_minmass;
     double m_Q2, m_Q, m_E, m_mass[3], m_m2[3], m_Emax;
-    double m_lc[2];
 
     Flavour_Pair    m_flavs1, m_flavs2;
-    double          m_popped_mass, m_popped_mass2, m_msum[2], m_msum2[2];
+    double          m_popped_mass, m_popped_mass2, m_msum[2];
     ATOOLS::Flavour m_newflav[2];
     double          m_minQ[2], m_minQ2[2], m_mdec[2], m_mdec2[2];
     
@@ -49,7 +48,6 @@ namespace AHADIC {
     virtual bool InitSplitting(Proto_Particle * part1,Proto_Particle * part2,
 			       Proto_Particle * part3);
     virtual void FillMasses();
-    virtual void ConstructLightCone(const double & kt2=0.);
     virtual void ConstructPoincare();
 
     virtual bool MakeSplitting();

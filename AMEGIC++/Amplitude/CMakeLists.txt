@@ -43,7 +43,7 @@ set(AmegicAmplitude_HEADERS Single_Vertex.H
 
 sherpa_create_git_info(AmegicAmplitude ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(Amplitude SHARED ${AmegicAmplitude_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+add_library(Amplitude ${SHERPA_SUBLIB_TYPE} ${AmegicAmplitude_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
 sherpa_handle_shared_library(Amplitude Amplitude)
 target_include_directories(Amplitude PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/")
 add_dependencies(Amplitude AmegicAmplitude_Git_Info)

@@ -4,6 +4,8 @@
 #include "BEAM/Main/Beam_Base.H"
 #include "BEAM/Spectra/EPA_FF.H"
 
+#include <memory>
+
 namespace ATOOLS {
   class Settings;
 }
@@ -13,7 +15,7 @@ namespace BEAM {
   private:
 
     EPA_ff_type m_fftype;
-    EPA_FF_Base* p_ff;
+    std::unique_ptr<EPA_FF_Base> p_ff;
     double m_pref;
     double m_pt2max;
 
@@ -28,7 +30,7 @@ namespace BEAM {
 
     EPA(const ATOOLS::Flavour& beam, double energy, double pol, int dir);
     ~EPA() override = default;
-    Beam_Base* Copy() override { return new EPA(*this); }
+    Beam_Base* Copy() override;
 
     bool CalculateWeight(double x, double q2) override;
     void FixPosition() override;

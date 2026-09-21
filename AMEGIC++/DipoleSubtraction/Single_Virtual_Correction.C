@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
@@ -96,9 +97,9 @@ Single_Virtual_Correction::~Single_Virtual_Correction()
 }
 
 /*----------------------------------------------------------------------------
-  
+
   Generic stuff for initialization of Single_Virtual_Correctiones
-      
+
   ----------------------------------------------------------------------------*/
 
 void Single_Virtual_Correction::PolarizationNorm()
@@ -139,7 +140,7 @@ bool AMEGIC::Single_Virtual_Correction::Combinable
   return p_LO_process->Combinable(idi, idj);
 }
 
-  
+
 const Flavour_Vector &AMEGIC::Single_Virtual_Correction::CombinedFlavour
 (const size_t &idij)
 {
@@ -386,7 +387,11 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
     m_mewgtinfo.m_type|=mewgttype::KP;
   Minimize();
   if (p_partner==this && (Result()>0. || Result()<0.)) SetUpIntegrator();
-  if (p_partner==this) msg_Info()<<"."<<std::flush;
+  if (p_partner==this) {
+    msg->BeginTaskProgressUpdate(1);
+    msg_Out()<<'.'<<std::flush;
+    msg->EndTaskProgressUpdate();
+  }
 
   return 1;
 }
@@ -439,14 +444,14 @@ void AMEGIC::Single_Virtual_Correction::EndOptimize()
   if (m_eoreset) p_int->Reset();
 }
 
-bool AMEGIC::Single_Virtual_Correction::NewLibs() 
+bool AMEGIC::Single_Virtual_Correction::NewLibs()
 {
   return p_partner->GetLOProcess()->NewLibs();
 }
 /*------------------------------------------------------------------------------
-  
+
   Phase space initialization
-  
+
   ------------------------------------------------------------------------------*/
 
 bool AMEGIC::Single_Virtual_Correction::FillIntegrator
@@ -467,13 +472,13 @@ void Single_Virtual_Correction::RequestVariables(Phase_Space_Handler *const psh)
   if (p_fsmc==NULL) return;
   p_fsmc->AddERan("z_1");
   p_fsmc->AddERan("z_2");
-} 
+}
 
-bool Single_Virtual_Correction::SetUpIntegrator() 
-{  
+bool Single_Virtual_Correction::SetUpIntegrator()
+{
   if (m_nin==2) {
-    if ( (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass()) ||
-         (m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) )
+    if (p_int->ISR()->Mass2(0) != sqr(m_flavs[0].Mass()) ||
+        p_int->ISR()->Mass2(1) != sqr(m_flavs[1].Mass()))
       p_int->ISR()->SetPartonMasses(m_flavs);
     if (CreateChannelLibrary()) return 1;
   }
@@ -495,13 +500,13 @@ bool Single_Virtual_Correction::CreateChannelLibrary()
 }
 
 /*----------------------------------------------------------------------------
-  
+
   Process management
-  
+
   ----------------------------------------------------------------------------*/
 void Single_Virtual_Correction::SetLookUp(const bool lookup)
 {
-  m_lookup=lookup; 
+  m_lookup=lookup;
   if (p_LO_process) p_LO_process->SetLookUp(lookup);
   if (p_loopme && lookup==0) p_loopme->SwitchMode(lookup);
 }
@@ -521,7 +526,7 @@ void Single_Virtual_Correction::Minimize()
 /*----------------------------------------------------------------------------
 
   Calculating total cross sections
-  
+
   ----------------------------------------------------------------------------*/
 
 
@@ -797,7 +802,7 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::sbt::subtype st,
 
 
       double lsc(0.);
-      if (!p_loopme || !(p_loopme->fixedIRscale())) 
+      if (!p_loopme || !(p_loopme->fixedIRscale()))
         lsc = log(4.*M_PI*mur2/dabs(sik)/Eps_Scheme_Factor(mom));
       else{
         double irscale=p_loopme->IRscale();
@@ -838,16 +843,30 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
   if (p_int->ISR()->PDF(0) && p_int->ISR()->PDF(0)->Contains(m_flavs[0])) {
     m_eta0=mom[0][3]>0.0?mom[0].PPlus()/rpa->gen.PBunch(0).PPlus():
       mom[0].PMinus()/rpa->gen.PBunch(1).PMinus();
-    if (m_z0>0.) m_x0 = m_z0;
-    else         m_x0 = m_eta0+p_fsmc->ERan("z_1")*(1.-m_eta0);
+    if (m_z0 > 0.) {
+      m_x0 = m_z0;
+    } else if (p_read) {
+      m_x0 = m_eta0 + p_read->SubEvt()->m_x1 * (1. - m_eta0);
+      msg_Debugging() << "read in x0 = " << m_x0 << " ("
+                      << p_read->SubEvt()->m_x1 << ") " << m_eta0 << "\n";
+    } else {
+      m_x0 = m_eta0 + p_fsmc->ERan("z_1") * (1. - m_eta0);
+    }
     weight*=(1.-m_eta0);
     msg_Debugging()<<"x0="<<m_x0<<std::endl;
   }
   if (p_int->ISR()->PDF(1) && p_int->ISR()->PDF(1)->Contains(m_flavs[1])) {
     m_eta1=mom[1][3]<0.0?mom[1].PMinus()/rpa->gen.PBunch(1).PMinus():
       mom[1].PPlus()/rpa->gen.PBunch(0).PPlus();
-    if (m_z1>0.) m_x1 = m_z1;
-    else         m_x1 = m_eta1+p_fsmc->ERan("z_2")*(1.-m_eta1);
+    if (m_z1 > 0.) {
+      m_x1 = m_z1;
+    } else if (p_read) {
+      m_x1 = m_eta1 + p_read->SubEvt()->m_x2 * (1. - m_eta1);
+      msg_Debugging() << "read in x1 = " << m_x1 << " ("
+                      << p_read->SubEvt()->m_x2 << ") " << m_eta1 << "\n";
+    } else {
+      m_x1 = m_eta1 + p_fsmc->ERan("z_2") * (1. - m_eta1);
+    }
     weight*=(1.-m_eta1);
     msg_Debugging()<<"x1="<<m_x1<<std::endl;
   }
@@ -1114,19 +1133,19 @@ void Single_Virtual_Correction::FillAmplitudes
 
 
 
-int Single_Virtual_Correction::NumberOfDiagrams() { 
-  if (p_partner==this) return p_LO_process->NumberOfDiagrams(); 
+int Single_Virtual_Correction::NumberOfDiagrams() {
+  if (p_partner==this) return p_LO_process->NumberOfDiagrams();
   return p_partner->NumberOfDiagrams();
 }
 
-Point * Single_Virtual_Correction::Diagram(int i) { 
-  if (p_partner==this) return p_LO_process->Diagram(i); 
+Point * Single_Virtual_Correction::Diagram(int i) {
+  if (p_partner==this) return p_LO_process->Diagram(i);
   return p_partner->Diagram(i);
-} 
+}
 
-void Single_Virtual_Correction::AddChannels(std::list<std::string>* tlist) 
-{ 
-  if (p_partner==this) {    
+void Single_Virtual_Correction::AddChannels(std::list<std::string>* tlist)
+{
+  if (p_partner==this) {
     list<string>* clist = p_channellibnames;
     for (list<string>::iterator it=clist->begin();it!=clist->end();++it) {
       bool hit = 0;
@@ -1153,8 +1172,8 @@ void Single_Virtual_Correction::SetScale(const Scale_Setter_Arguments &args)
   p_scale=p_LO_process->Partner()->ScaleSetter();
 }
 
-void Single_Virtual_Correction::SetGenerator(ME_Generator_Base *const gen) 
-{ 
+void Single_Virtual_Correction::SetGenerator(ME_Generator_Base *const gen)
+{
   if (p_LO_process) p_LO_process->SetGenerator(gen);
   p_gen=gen;
 }

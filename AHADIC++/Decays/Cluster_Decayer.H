@@ -1,5 +1,5 @@
-#ifndef AHADIC_Decays_Gluon_Decayer_H
-#define AHADIC_Decays_Gluon_Decayer_H
+#ifndef AHADIC_Decays_Cluster_Decayer_H
+#define AHADIC_Decays_Cluster_Decayer_H
 
 #include "AHADIC++/Decays/Cluster_Splitter.H"
 #include "AHADIC++/Tools/Soft_Cluster_Handler.H"
@@ -14,8 +14,6 @@ namespace AHADIC {
     Cluster_Splitter m_splitter;
 
     bool Treat(Cluster * cluster);
-    void Test(const double & Q, const ATOOLS::Flavour & flav,
-	      bool clustermasses);
   public:
     Cluster_Decayer(std::list<Cluster *> * cluster_list,
 		    Soft_Cluster_Handler * softclusters);
@@ -23,7 +21,7 @@ namespace AHADIC {
     void Init();
     void Reset();
     
-    bool operator()(bool breakit=false);
+    bool operator()();
   };
 }
 

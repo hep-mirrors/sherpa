@@ -34,12 +34,26 @@ EPA::EPA(const Flavour& beam, const double energy, const double pol,
   Initialise();
 }
 
+Beam_Base* EPA::Copy()
+{
+  // Need to find out how to deal with the p_ff and the tables
+  THROW(not_implemented, "EPA::Copy() is not implemented.");
+  return nullptr;
+}
+
 bool EPA::CalculateWeight(double x, double q2)
 {
   m_x = x;
   m_weight = m_pref * p_ff->N(x, m_eran);
-  if (IsNan(m_weight))
-    msg_Out() << "Boink! " << METHOD << "(x = " << x << ") yields NaN.\n";
+  if (m_weight < 0.) {
+    msg_Debugging() << METHOD << ": negative flux at x = " << x << "\n";
+    m_weight = 0.;
+  }
+  if (IsNan(m_weight)) {
+    msg_Error() << METHOD << "(x = " << x
+                << ") yielded a NaN weight; setting it to zero.\n";
+    m_weight = 0.;
+  }
   return true;
 }
 
@@ -73,40 +87,40 @@ void EPA::Initialise()
   m_fftype = s["Form_Factor"].GetTwoVector<EPA_ff_type>()[b];
   switch (m_fftype) {
   case EPA_ff_type::point:
-    p_ff = new EPA_Point(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_Point>(m_beam, m_dir);
     break;
   case EPA_ff_type::pointApprox:
-    p_ff = new EPA_PointApprox(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_PointApprox>(m_beam, m_dir);
     break;
   case EPA_ff_type::proton:
-    p_ff = new EPA_Proton(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_Proton>(m_beam, m_dir);
     break;
   case EPA_ff_type::protonApprox:
-    p_ff = new EPA_ProtonApprox(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_ProtonApprox>(m_beam, m_dir);
     break;
   case EPA_ff_type::Gauss:
-    p_ff = new EPA_Gauss(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_Gauss>(m_beam, m_dir);
     break;
   case EPA_ff_type::hcs:
-    p_ff = new EPA_HCS(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_HCS>(m_beam, m_dir);
     break;
   case EPA_ff_type::dipole:
-    p_ff = new EPA_Dipole(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_Dipole>(m_beam, m_dir);
     break;
   case EPA_ff_type::dipoleApprox:
-    p_ff = new EPA_DipoleApprox(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_DipoleApprox>(m_beam, m_dir);
     break;
   case EPA_ff_type::ionApprox:
-    p_ff = new EPA_IonApprox(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_IonApprox>(m_beam, m_dir);
     break;
   case EPA_ff_type::ionApproxInt:
-    p_ff = new EPA_IonApproxIntegrated(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_IonApproxIntegrated>(m_beam, m_dir);
     break;
   case EPA_ff_type::WoodSaxon:
-    p_ff = new EPA_WoodSaxon(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_WoodSaxon>(m_beam, m_dir);
     break;
   case EPA_ff_type::WoodSaxonApprox:
-    p_ff = new EPA_WoodSaxonApprox(m_beam, m_dir);
+    p_ff = std::make_unique<EPA_WoodSaxonApprox>(m_beam, m_dir);
     break;
   default:
     THROW(not_implemented, "unknown EPA form factor. ");
@@ -127,6 +141,7 @@ void EPA::RegisterDefaults() const
   s["bMin"].SetDefault(0.3);
   s["bThreshold"].SetDefault(10.);
   s["bMax"].SetDefault(1.e3);
+  s["chiMax"].SetDefault(100.);
   s["bBins"].SetDefault(100);
   s["Form_Factor"].SetDefault(size_t(m_beam.IsIon() ? EPA_ff_type::WoodSaxon
                                      : m_beam.IsNucleon() ? EPA_ff_type::dipole
@@ -138,7 +153,14 @@ void EPA::RegisterDefaults() const
   s["WoodsSaxon_R"].SetDefault(1.118 *
                                std::pow(m_beam.GetMassNumber(), 1. / 3.));
   s["WoodsSaxon_d"].SetDefault(0.54);
+  // r-grid for the Filon form-factor transform: r_max = R_WS + rMaxFactor*d,
+  // with rNodes integration intervals (only needs to resolve the density).
+  s["WoodsSaxon_rNodes"].SetDefault(1024);
+  s["WoodsSaxon_rMaxFactor"].SetDefault(16.);
   s["WoodsSaxonApprox_a"].SetDefault(0.7);
+  // Cache the (expensive) form-factor and N(x,b) tables under
+  // <RESULT_DIRECTORY>/EPA and reload them on subsequent runs.
+  s["CacheTables"].SetDefault(true);
   s["AlphaQED"].SetDefault(1. / 137.03599976);
   s["ThetaMax"].SetDefault(0.3);
   s["OutputSpectra"].SetDefault(false);

@@ -24,11 +24,16 @@ Reconnection_Handler::~Reconnection_Handler() {
 }
 
 void Reconnection_Handler::Initialize() {
-  if (m_on) p_reconnector->Initialize();
+  if (!m_on) return;
+  m_reweighting.Initialize();
+  if (auto * stat = dynamic_cast<Reconnect_Statistical*>(p_reconnector))
+    stat->SetReweighting(&m_reweighting);
+  p_reconnector->Initialize();
 }
 
 void Reconnection_Handler::Reset() {
   if (m_on) p_reconnector->Reset();
+  m_reweighting.ResetEvent();
 }
 
 Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
@@ -40,19 +45,22 @@ Return_Value::code Reconnection_Handler::operator()(Blob_List *const blobs,
     if (m_nfails<5)
       msg_Error()<<"Error in "<<METHOD<<": reconnections didn't work out.\n"
 		 <<"   Ask for new event and hope for the best.\n";
-    p_reconnector->Reset();
     m_nfails++;
+    Reset();
     return Return_Value::New_Event;
   case 1:
     // added colour reconnections, produce a fragmentation blob.
     AddReconnectionBlob(blobs);
-    break;
+    m_reweighting.ApplyVariationWeights(blobs);
+    p_reconnector->Reset();
+    return Return_Value::Success;
   case 0:
     // didn't find any blob that needed reconnections
-    break;
+    p_reconnector->Reset();
+    return Return_Value::Nothing;
   }
   p_reconnector->Reset();
-  return Return_Value::Success; 
+  return Return_Value::Nothing;
 }
 
 void Reconnection_Handler::AddReconnectionBlob(Blob_List *const blobs) {
@@ -75,4 +83,3 @@ void Reconnection_Handler::AddReconnectionBlob(Blob_List *const blobs) {
   blob->SetPosition(pos/double(npart));
   blobs->push_back(blob);
 }
-

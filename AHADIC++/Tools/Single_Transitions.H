@@ -10,8 +10,10 @@ namespace AHADIC {
   public :
     bool operator() (const ATOOLS::Flavour & fl1,
 		     const ATOOLS::Flavour & fl2) const {
-      if (fl1.HadMass()>fl2.HadMass()) return true;
-      return false;
+      if (fl1==fl2) return false;
+      if (!ATOOLS::IsEqual(fl1.HadMass(),fl2.HadMass()))
+	return fl1.HadMass()>fl2.HadMass();
+      return fl1<fl2;
     }
   };
   

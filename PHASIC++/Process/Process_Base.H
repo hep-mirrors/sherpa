@@ -43,6 +43,7 @@ namespace PHASIC {
 
   class Process_Base;
   class BBar_Multi_Channel;
+  class Event_Reader;
 
   typedef std::vector<PHASIC::Process_Base*> Process_Vector;
 
@@ -85,6 +86,7 @@ namespace PHASIC {
     ATOOLS::ME_Weight_Info m_mewgtinfo;
 
     ATOOLS::Weights_Map m_last, m_lastb;
+    double m_lastxs;
     double m_symfac, m_issymfac;
     bool   m_lookup, m_use_biweight;
 
@@ -94,7 +96,10 @@ namespace PHASIC {
 
     NLOTypeStringProcessMap_Map *p_apmap;
 
+    ATOOLS::NLO_subevt *p_sub;
+
     Color_Matrix m_cols;
+    Event_Reader *p_read;
 
     static int s_usefmm;
 
@@ -123,9 +128,14 @@ namespace PHASIC {
 
     int NaiveMapping(Process_Base *proc) const;
 
+    void PrintStatistics(std::ostream &);
+
     std::string ShellName(std::string name="") const;
 
     Color_Matrix ColorMatrix(const ATOOLS::Flavour_Vector &fls) const;
+
+    bool SetupEventReader(const std::string &fnames);
+    bool IsZeroEvent();
 
     virtual void ConstructColorMatrix();
     virtual void FillProcessMap(NLOTypeStringProcessMap_Map *apmap);
@@ -148,6 +158,7 @@ namespace PHASIC {
         const int wmode,
         ATOOLS::Variations_Mode varmode=ATOOLS::Variations_Mode::all,
         const int mode=0) = 0;
+    virtual void ResetEvent();
 
     /*!
      * Calculate the nominal differential
@@ -284,6 +295,9 @@ namespace PHASIC {
 
     inline double Last() const { return m_last.Nominal(); }
     inline double LastB() const { return m_lastb.Nominal(); }
+    inline double LastXS() const { return m_lastxs; }
+
+    inline void SetLastXS(const double &lastxs) { m_lastxs=lastxs; }
 
     inline bool LookUp() const { return m_lookup; }
 
@@ -321,6 +335,14 @@ namespace PHASIC {
 
     inline const Color_Matrix &ColorMatrix(const int map=0) const
     { return map?(p_mapproc?p_mapproc->m_cols:m_cols):m_cols; }
+
+    inline void SetEventReader(Event_Reader *const read) { p_read=read; }
+
+    inline Event_Reader *EventReader() const { return p_read; }
+
+    inline ATOOLS::NLO_subevt *SubEvt() const { return p_sub; }
+
+    inline void SetSubEvt(ATOOLS::NLO_subevt *sub) { p_sub=sub; }
 
   };// end of class Process_Base
 

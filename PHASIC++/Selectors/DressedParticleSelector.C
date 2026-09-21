@@ -41,6 +41,9 @@ DressedParticleSelector::DressedParticleSelector(const Selector_Key &key) :
   if (algoparams.size() != 2)
     THROW(fatal_error, "DressingAlgorithm requires [<algorithm>, <dR>]");
   const auto algo = algoparams[0];
+  if (algo!="Cone" && algo!="kt" && algo!="antikt" && algo!="CA")
+    THROW(fatal_error, "Unknown DressingAlgorithm '"+algo+
+          "', expected one of: Cone, kt, antikt, CA");
   const auto dR = ToType<double>(algoparams[1]);
   p_dresser = new Particle_Dresser(algo,dR);
   const auto flavradiusparams = s["FlavourDependentRadius"]
@@ -77,13 +80,11 @@ bool DressedParticleSelector::Trigger(Selector_List &sl)
   for (size_t k=0;k<m_sels.size();++k) {
     if (!m_sels[k]->Trigger(sl)) {
       msg_Debugging()<<"Point discarded"<<std::endl;
-      m_sel_log->Hit(true);
-      return false;
+      return m_sel_log->CountingIdentity(false);
     }
   }
   msg_Debugging()<<"Point passed"<<std::endl;
-  m_sel_log->Hit(false);
-  return true;
+  return m_sel_log->CountingIdentity(true);
 }
 
 void DressedParticleSelector::BuildCuts(Cut_Data * cuts)

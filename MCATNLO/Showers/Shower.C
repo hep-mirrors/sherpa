@@ -81,13 +81,20 @@ int Shower::RemnantTest(Parton *const p)
   if (p->Momentum()[0]<0.0 || p->Momentum().Nan()) return -1;
   double x(p_isr->CalcX(p->Momentum()));
   if (x>1.0 && !IsEqual(x,1.0,1.0e-6)) return -1;
+  const double spair = (p_isr->GetRemnant(0)->IncomingMomentum() +
+                        p_isr->GetRemnant(1)->IncomingMomentum()).Abs2();
   return p_isr->GetRemnant(p->Beam())->
-    TestExtract(p->GetFlavour(),p->Momentum())?1:-1;
+    TestExtract(p->GetFlavour(),p->Momentum(),spair)?1:-1;
 }
 
 int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
 			    Parton *const newpC,double &jcv)
 {
+  // Trials vetoed by RemnantTest below never reach p_gamma->Reject(), yet the
+  // gamma weight is multiplied into the Sudakov weights for every trial; reset
+  // it so such trials contribute a factor of 1 instead of the previous trial's
+  // (possibly unbounded) accept/reject weight.
+  p_gamma->ResetWeight();
   newpB->SetStart(split->KtTest());
   newpC->SetStart(split->KtTest());
   newpB->SetKtMax(split->KtMax());
@@ -130,7 +137,7 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   split->SetFlow(2,sci[1]);
   split->SetMEFlow(1,scim[0]);
   split->SetMEFlow(2,scim[1]);
-  if (rd==0) {
+  if (rd==-1) {
     split->GetSpect()->SetMEFlow(1,scol[0]);
     split->GetSpect()->SetMEFlow(2,scol[1]);
   }
