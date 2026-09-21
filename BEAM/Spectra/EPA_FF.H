@@ -270,7 +270,7 @@ namespace BEAM {
     {
       return (m_pt2max > 0.)
                  ? ATOOLS::Min(m_q2max,
-                               (m_pt2max + ATOOLS::sqr(m_mass * x)) / (1 - x))
+                               m_pt2max * (1 - x) + ATOOLS::sqr(m_mass * x) / (1 - x))
                  : m_q2max;
     }
 
