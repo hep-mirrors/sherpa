@@ -49,6 +49,13 @@ public:
   PHASIC::Process_Base *p_rrproc;
   ATOOLS::Cluster_Amplitude *p_ampl;
 
+  //! RR_Generator as configured; see Real::m_gen for why this and
+  //! ActiveGenName() both exist.
+  std::string m_gen;
+  //! Name of whichever generator actually supplies Calc_R's value; see
+  //! Real::ActiveGenName().
+  std::string ActiveGenName() const;
+
   inline void SetProc(PHASIC::Process_Base *realproc) {p_rrproc=realproc;}
    ATOOLS::Cluster_Amplitude *CreateAmplitude
     (const ATOOLS::Vec4D_Vector &p) const;

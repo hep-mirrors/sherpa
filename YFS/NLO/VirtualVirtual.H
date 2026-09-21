@@ -28,6 +28,10 @@ namespace YFS{
         PHASIC::Tree_ME2_Base* p_born_me;
         double m_factor;
         PHASIC::Process_Base *p_vproc;
+        //! VV_Generator as configured; see RealVirtual::m_gen for why p_vproc
+        //! is not a valid generator label here either.
+        std::string m_gen;
+        inline std::string ActiveGenName() const { return m_gen.empty()?"none":m_gen; }
         inline void SetProc(PHASIC::Process_Base *proc) {p_vproc=proc;}
         inline bool FailCut() {return m_failcut;}
     };

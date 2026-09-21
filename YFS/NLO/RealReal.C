@@ -6,6 +6,7 @@
 
 #include "PHASIC++/Process/External_ME_Args.H"
 #include "PHASIC++/Process/Process_Base.H"
+#include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/Process_Info.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "EXTAMP/External_ME_Interface.H"
@@ -24,6 +25,7 @@ RealReal::RealReal(const PHASIC::Process_Info& pi)  {
   p_rrproc = NULL;
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   std::string gen = s["RR_Generator"].SetDefault("Comix").Get<std::string>();
+  m_gen = gen;
   // optional second EXTERNAL generator - if set, Compare_RR checks this
   // against RR_Generator directly (bypassing p_rrproc/Comix entirely)
   // instead of comparing RR_Generator against the internal ME.
@@ -59,10 +61,19 @@ RealReal::RealReal(const PHASIC::Process_Info& pi)  {
        p_real_me2->SetCouplings(m_cpls);
      }
      if(m_check_rr){
-      if(FileExists("recola-real-real.txt")) Remove("recola-real-real.txt");
-      if(FileExists("ps-points.yaml")) Remove("ps-points.yaml");
-      rr_out.open("recola-real-real.txt", std::ios_base::app); // append instead of overwrite
-      out_ps_rr.open("ps-points.yaml",std::ios_base::app);
+      // Tag with the internal ME_Generator (Comix/Amegic) computing the
+      // double-real amplitude, and with the process flavours: the previous
+      // literal names were the same for every process and every generator,
+      // so different runs silently overwrote each other's output -- and
+      // "ps-points.yaml" collided with the single-real check's own file of
+      // the same name (see Real::Real above) whenever both were active.
+      const std::string megen(pi.m_megenerator.empty()?"auto":pi.m_megenerator);
+      std::string rrfilename=megen+"_vs_"+gen;
+      for(auto f: m_flavs) { rrfilename+="_"; rrfilename+=f.IDName(); }
+      if(FileExists(rrfilename+"-recola-real-real.txt")) Remove(rrfilename+"-recola-real-real.txt");
+      if(FileExists(rrfilename+"-ps-points.yaml")) Remove(rrfilename+"-ps-points.yaml");
+      rr_out.open(rrfilename+"-recola-real-real.txt", std::ios_base::app); // append instead of overwrite
+      out_ps_rr.open(rrfilename+"-ps-points.yaml",std::ios_base::app);
       out_ps_rr<<"MOMENTA:"<<std::endl;
     }
   }
@@ -90,6 +101,12 @@ RealReal::RealReal(const PHASIC::Process_Info& pi)  {
 
 RealReal::~RealReal() {
   delete p_cmp;
+}
+
+std::string RealReal::ActiveGenName() const {
+  if (p_real_me) return m_gen;
+  if (p_rrproc && p_rrproc->Generator()) return p_rrproc->Generator()->Name();
+  return "none";
 }
 
 double RealReal::Calc_R(const ATOOLS::Vec4D_Vector& p){

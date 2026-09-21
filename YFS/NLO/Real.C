@@ -17,12 +17,14 @@
 #include "EXTAMP/External_ME_Interface.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "PHASIC++/Main/Phase_Space_Point.H"
+#include "ATOOLS/YAML/yaml-cpp/yaml.h"
 
 using namespace YFS;
 using namespace MODEL;
 using namespace PHASIC;
 
 std::ofstream real_out, out_ps, out_mom;
+std::ofstream wr_ps, wr_val;
 
 Real::Real(const PHASIC::Process_Info& pi)  {
    /* Load Real ME */
@@ -31,6 +33,7 @@ Real::Real(const PHASIC::Process_Info& pi)  {
    p_realproc = NULL;
    Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
    std::string gen = s["Real_Generator"].SetDefault("Comix").Get<std::string>();
+   m_gen = gen;
    // optional second EXTERNAL generator - if set, Compare_Real checks this
    // against Real_Generator directly (bypassing p_realproc/Comix entirely)
    // instead of comparing Real_Generator against the internal ME.
@@ -38,7 +41,10 @@ Real::Real(const PHASIC::Process_Info& pi)  {
    m_check = s["Compare_Real"].SetDefault(0).Get<bool>();
    m_writemom = s["Write_Real_Momenta"].SetDefault(0).Get<bool>();
    m_nmom = s["N_Real_Momenta"].SetDefault(100).Get<int>();
+   m_fill = 0;
+   const std::string readmom = s["Read_Real_Momenta"].SetDefault("").Get<std::string>();
    for(auto f: pi.ExtractFlavours()) m_flavs.push_back(f);
+   if (!readmom.empty()) ReadMomenta(readmom);
    if(m_check && gen=="") THROW(fatal_error, "Need two generators to compare.");
    if(gen!="Comix" && gen != "Amegic"){
      PHASIC::External_ME_Args args(pi.m_ii.GetExternal(),
@@ -64,13 +70,17 @@ Real::Real(const PHASIC::Process_Info& pi)  {
       p_real_me2->SetCouplings(m_cpls);
     }
     if(m_check_real){
-      std::string filename=gen;
+      // pi.m_megenerator is the INTERNAL ME_Generator (Comix/Amegic) that
+      // computes the amplitude being checked here; `gen` above is the
+      // EXTERNAL Real_Generator it is compared against. Tag with both, so
+      // runs made with different ME_Generator settings do not silently
+      // overwrite each other's diagnostic output.
+      const std::string megen(pi.m_megenerator.empty()?"auto":pi.m_megenerator);
+      std::string filename=megen+"_vs_"+gen;
       for(auto f: m_flavs) {
           filename+="_";
           filename+=f.IDName();
       }
-      filename+="_";
-      filename+=gen;
       filename+="_";
       if(FileExists(filename+"real.txt")) Remove(filename+"-real.txt");
       if(FileExists(filename+"ps-points.yaml")) Remove(filename+"-ps-points.yaml");
@@ -79,27 +89,24 @@ Real::Real(const PHASIC::Process_Info& pi)  {
       out_ps.open(filename+"ps-points.yaml",std::ios_base::app);
       out_ps<<"MOMENTA:"<<std::endl;
   }
-  // if(m_writemom){
-  //   m_fill=0;
-  //   std::string filename="Momenta";
-  //   std::string MEfilename="ME";
-  //   MEfilename+="_";
-  //   MEfilename+=gen;
-  //   for(auto f: m_flavs) {
-  //     filename+="_";
-  //     MEfilename+="_";
-  //     filename+=f.IDName();
-  //     MEfilename+=f.IDName();
-  //   }
-  //   filename+=".yaml";
-  //   MEfilename+=".yaml";
-  //   if(FileExists(filename)) Remove(filename);
-  //   if(FileExists(MEfilename)) Remove(MEfilename);
-  //   out_mom.open(filename, std::ios_base::app);
-  //   real_out.open(MEfilename, std::ios_base::app);
-  //   out_mom<<"MOMENTA:"<<std::endl;
-  //   real_out<<"ME:"<<std::endl;
-  // }
+  // Write_Real_Momenta: dump up to N_Real_Momenta phase-space points (and
+  // the value computed for each) so they can be replayed later with
+  // Read_Real_Momenta -- for regression testing, or to isolate one specific
+  // point (e.g. one SHERPA_SOFT_SCAN or a bad @@@ ROC line flagged) without
+  // depending on the random sequence reproducing it again. Deliberately its
+  // own files, independent of Compare_Real/m_check_real: the two features are
+  // orthogonal, and m_check_real's out_ps/real_out are only opened when
+  // Compare_Real is also on.
+  if (m_writemom) {
+    const std::string megen(pi.m_megenerator.empty()?"auto":pi.m_megenerator);
+    std::string filename = "Real_events_" + megen;
+    for (auto f: m_flavs) { filename += "_"; filename += f.IDName(); }
+    if (FileExists(filename+"-momenta.yaml")) Remove(filename+"-momenta.yaml");
+    if (FileExists(filename+"-values.yaml")) Remove(filename+"-values.yaml");
+    wr_ps.open(filename+"-momenta.yaml", std::ios_base::app);
+    wr_val.open(filename+"-values.yaml", std::ios_base::app);
+    wr_ps<<"MOMENTA:"<<std::endl;
+  }
   p_cmp = new ME_Compare(m_check, "Real_Histogram", "Real");
 }
 
@@ -109,6 +116,16 @@ Real::~Real() {
 
 double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
   {
+    // Read_Real_Momenta: on the first call, replay every point read in by
+    // ReadMomenta() instead of the one the phase-space generator produced,
+    // then end the run. `replaying` guards against the recursive calls
+    // ReplayMomenta makes back into Calc_R re-triggering this.
+    static bool replaying(false);
+    if (!m_replaypoints.empty() && !replaying) {
+      replaying = true;
+      ReplayMomenta();
+      THROW(normal_exit,"Replay done.");
+    }
     double external_real;
     m_failcut = false;
     if(m_nlocuts && !p_realproc->Trigger(p)) {
@@ -126,7 +143,14 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
                                            m_flavs, p_realproc->NIn());
         return external_real;
       }
-      if(!m_check) return external_real;
+      if(!m_check) {
+        // Same feature as below, reached here because an external
+        // Real_Generator with Compare_Real off returns before ever building
+        // the internal amplitude -- Write_Real_Momenta should still capture
+        // the point and the value actually returned.
+        if(m_writemom && m_fill < m_nmom) WriteMomentum(p, external_real);
+        return external_real;
+      }
     }
     METOOLS::Cancel_Probe::Reset();
     p_ampl=CreateAmplitude(p);
@@ -155,25 +179,8 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
       if(m_check) msg_Out()<<"Real is 0"<<std::endl;
       return 0;
     }
-    if(m_writemom && m_fill < m_nmom){
-      out_ps<<std::setprecision(20)<<"  - ["<<std::endl;
-      real_out<<std::setprecision(20)<<""<<m_fill<<":"<<std::endl;
-      real_out<<std::setprecision(20)<<"  value: "<< (p_real_me ? external_real : iR.Nominal())<<std::endl;
-      int j=0;
-      for(auto k: p){
-        out_ps<<"      [";
-        if(m_flavs[j].IsAnti()) out_ps<<"-"<<m_flavs[j].Kfcode()<<", ";
-        else out_ps<<m_flavs[j].Kfcode()<<", ";
-        for(int i=0; i<4; i++){
-          if(i!=3) out_ps<<k[i]<<",";
-          else out_ps<<k[i];
-        }
-        out_ps<<"],"<<std::endl;
-        j++;
-      }
-      out_ps<<"    ]"<<std::endl;
-      m_fill++;
-    } 
+    if(m_writemom && m_fill < m_nmom) WriteMomentum(p, p_real_me ? external_real : iR.Nominal());
+
     // double ratio = iR.Nominal()/(m_factor*R);
     if(p_ampl) p_ampl->Delete();
     // Input-conditioning probe: nudge every momentum component by one ulp and
@@ -198,11 +205,7 @@ double Real::Calc_R(const ATOOLS::Vec4D_Vector& p)
                <<" refdev="<<std::abs(iR.Nominal()/external_real-1.0)
                <<std::endl;
     }
-    // Rotation-invariance self-check: the ME is a Lorentz scalar, so a rigid
-    // rotation must leave it unchanged. Any difference is the calculation's own
-    // conditioning error on THIS point, measured against a symmetry the exact
-    // answer obeys - no reference amplitude needed. Unlike the cancellation
-    // heuristic this is not a proxy for the error, it IS an error estimate.
+    // Rotation-invariance self-check: 
     double rotdev(-1.0);
     static const bool rotchk(getenv("SHERPA_ROT_CHECK")!=NULL);
     if (rotchk && iR.Nominal()!=0.0) {
@@ -350,6 +353,78 @@ double Real::Calc_External(const ATOOLS::Vec4D_Vector &p){
   return R*m_factor;
 }
 
+
+void Real::WriteMomentum(const ATOOLS::Vec4D_Vector &p, double value) {
+  wr_ps<<std::setprecision(20)<<"  - ["<<std::endl;
+  wr_val<<std::setprecision(20)<<""<<m_fill<<":"<<std::endl;
+  wr_val<<std::setprecision(20)<<"  value: "<<value<<std::endl;
+  int j=0;
+  for(auto k: p){
+    wr_ps<<"      [";
+    if(m_flavs[j].IsAnti()) wr_ps<<"-"<<m_flavs[j].Kfcode()<<", ";
+    else wr_ps<<m_flavs[j].Kfcode()<<", ";
+    for(int i=0; i<4; i++){
+      if(i!=3) wr_ps<<k[i]<<",";
+      else wr_ps<<k[i];
+    }
+    wr_ps<<"],"<<std::endl;
+    j++;
+  }
+  wr_ps<<"    ]"<<std::endl;
+  m_fill++;
+}
+
+std::string Real::ActiveGenName() const {
+  if (p_real_me) return m_gen;
+  if (p_realproc && p_realproc->Generator()) return p_realproc->Generator()->Name();
+  return "none";
+}
+
+void Real::ReadMomenta(const std::string &path) {
+  SHERPA_YAML::Node root;
+  try { root = SHERPA_YAML::LoadFile(path); }
+  catch (const SHERPA_YAML::Exception &e) {
+    THROW(fatal_error, "Read_Real_Momenta: cannot parse '"+path+"': "+e.what());
+  }
+  // Same MOMENTA: schema Write_Real_Momenta produces below, and that
+  // Compare_Real's ps-points.yaml dump already used: a list of events, each
+  // a list of [pdgid, E, px, py, pz] legs in m_flavs order (incoming legs
+  // positive, matching this argument to Calc_R -- CreateAmplitude negates
+  // them itself on the way in).
+  const SHERPA_YAML::Node events = root["MOMENTA"];
+  if (!events || !events.IsSequence())
+    THROW(fatal_error, "Read_Real_Momenta: '"+path+"' has no MOMENTA: list.");
+  for (size_t i(0);i<events.size();++i) {
+    const SHERPA_YAML::Node ev = events[i];
+    if (!ev.IsSequence() || ev.size()!=m_flavs.size()) {
+      msg_Error()<<METHOD<<"(): "<<path<<": event "<<i<<" has "
+                 <<(ev.IsSequence()?ev.size():0)<<" legs, expected "
+                 <<m_flavs.size()<<" -- skipped.\n";
+      continue;
+    }
+    Vec4D_Vector pt(m_flavs.size());
+    for (size_t j(0);j<ev.size();++j) {
+      const SHERPA_YAML::Node leg = ev[j];
+      // [pdgid, x0, x1, x2, x3] with x0..x3 = (E,px,py,pz), Vec4D's own
+      // component order -- WriteMomentum writes k[0..3] verbatim, so this is
+      // a direct positional read, not a reordering.
+      pt[j] = Vec4D(leg[1].as<double>(), leg[2].as<double>(),
+                    leg[3].as<double>(), leg[4].as<double>());
+    }
+    m_replaypoints.push_back(pt);
+  }
+  msg_Info()<<METHOD<<"(): read "<<m_replaypoints.size()
+            <<" phase-space point(s) from "<<path<<".\n";
+}
+
+void Real::ReplayMomenta() {
+  msg_Out()<<"@@@ REPLAY start n="<<m_replaypoints.size()<<std::endl;
+  for (size_t i(0);i<m_replaypoints.size();++i) {
+    const double v(Calc_R(m_replaypoints[i]));
+    msg_Out()<<"@@@ REPLAY i="<<i<<" value="<<v<<std::endl;
+  }
+  msg_Out()<<"@@@ REPLAY done"<<std::endl;
+}
 
 Cluster_Amplitude *Real::CreateAmplitude(const ATOOLS::Vec4D_Vector &p) const
 {
