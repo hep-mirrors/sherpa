@@ -36,7 +36,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error,
       p_integrator(NULL), p_beamhandler(proc->Beam()), m_pspoint(Phase_Space_Point(this)),
       p_isrhandler(proc->ISR()), p_yfshandler(proc->YFS()), p_flavours(proc->Process()->Flavours()),
       m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(m_nin + m_nout), p_point(NULL),
-      m_initialized(false), m_sintegrator(0), m_killedpoints(0),
+      m_enhanceweight(1.0), m_initialized(false), m_sintegrator(0), m_killedpoints(0),
       m_printpspoint(false), m_enhanceObs(eobs), m_enhanceFunc(efunc) {
   RegisterDefaults();
   InitParameters(error);
@@ -56,8 +56,6 @@ bool Phase_Space_Handler::CreateIntegrators() {
     m_psenhance.Init(this);
     m_psenhance.SetObservable(m_enhanceObs, p_process->Process());
     m_psenhance.SetFunction(m_enhanceFunc, p_process->Process());
-    m_enhanceweight =
-        m_psenhance.Factor(p_process->TotalXS());
     return true;
   } else
     THROW(fatal_error, "Creation of integrators failed.")
