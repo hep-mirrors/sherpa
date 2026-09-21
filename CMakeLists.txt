@@ -48,6 +48,7 @@ option(SHERPA_ENABLE_DIHIGGS                 "Enables building of DIHIGGS." OFF)
 option(SHERPA_ENABLE_DOXYGEN                 "Enables the 'docs' target for building HTML documentation" OFF)
 option(SHERPA_ENABLE_EWSUD                   "Enables building of EWSUD." OFF)
 option(SHERPA_ENABLE_GOSAM                   "Enables building with GoSam." OFF)
+option(SHERPA_ENABLE_GRIFFIN                 "Enables building with Griffin." OFF)
 option(SHERPA_ENABLE_GZIP                    "Enables building with GZIP." OFF)
 option(SHERPA_ENABLE_HDF5                    "Enables building with HDF5." OFF)
 option(SHERPA_ENABLE_HEPMC3                  "Enables building of HepMC3 interface." OFF)
@@ -103,7 +104,7 @@ endif()
 unset(HEPMC3_DIR CACHE)
 ########################################################################
 ### enable option when path was provided explicitly via cmake
-set(alldirenables BLACKHAT GOSAM HepMC3 LHAPDF MCFM OPENLOOPS PYTHIA8 RECOLA RIVET)
+set(alldirenables BLACKHAT GOSAM GRIFFIN HepMC3 LHAPDF MCFM OPENLOOPS PYTHIA8 RECOLA RIVET)
 foreach (en IN LISTS alldirenables)
   if (${en}_DIR)
      string(TOUPPER "${en}" ENUP)
@@ -113,7 +114,7 @@ foreach (en IN LISTS alldirenables)
 endforeach()
 ###########################Options handeling############################
 set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS DOXYGEN
- EWSUD GOSAM GZIP HDF5 HEPMC3 HEPMC3_ROOT
+ EWSUD GOSAM GRIFFIN GZIP HDF5 HEPMC3 HEPMC3_ROOT
  INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF MERGED_LIBS
  MADLOOP MANUAL MCFM MPI OPENLOOPS PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
@@ -854,6 +855,14 @@ if (SHERPA_ENABLE_GOSAM)
   add_subdirectory(AddOns/GoSam)
 endif()
 
+if (SHERPA_ENABLE_GRIFFIN)
+  message(STATUS "SHERPA: GRIFFIN_DIR is ${GRIFFIN_DIR}")
+  find_package(GRIFFIN REQUIRED CONFIG HINTS ${GRIFFIN_DIR})
+  include_directories(${GRIFFIN_DIR})
+  message(STATUS "SHERPA: GRIFFIN_VERSION=${GRIFFIN_VERSION} GRIFFIN_PREFIX=${GRIFFIN_PREFIX} GRIFFIN_INCLUDE_DIR=${GRIFFIN_INCLUDE_DIR}")
+  add_subdirectory(AddOns/Griffin)
+endif()
+
 IF (SHERPA_ENABLE_ANALYSIS)
   add_subdirectory(AddOns/Analysis)
 endif()
@@ -991,6 +1000,8 @@ $<IF:$<BOOL:${SHERPA_ENABLE_BLACKHAT}>,#define BLACKHAT_PATH \"${BLACKHAT_PATH}\
 $<IF:$<BOOL:${SHERPA_ENABLE_OPENLOOPS}>,#define OPENLOOPS_PREFIX \"${OPENLOOPS_PREFIX}\",/* #undef OPENLOOPS_PREFIX */>\n\n\
 /* GoSam installation prefix */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_GOSAM}>,#define GOSAM_PREFIX \"${GOSAM_PREFIX}\",/* #undef GOSAM_PREFIX */>\n\n\
+/* Griffin installation prefix */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_GRIFFIN}>,#define GRIFFIN_PREFIX \"${GRIFFIN_PREFIX}\",/* #undef GRIFFIN_PREFIX */>\n\n\
 /* MadLoop installation prefix */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_MADLOOP}>,#define MADLOOP_PREFIX \"${MADLOOP_PREFIX}\",/* #undef MADLOOP_PREFIX */>\n\n\
 /* Recola installation prefix */\n\
