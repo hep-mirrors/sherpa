@@ -27,6 +27,8 @@ namespace YFS{
         double m_factor;
         //! Not owned; set by SetProc, may be null.
         PHASIC::Process_Base *p_vproc = nullptr;
+        std::string m_gen;
+        inline std::string ActiveGenName() const { return m_gen.empty()?"none":m_gen; }
         inline void SetProc(PHASIC::Process_Base *proc) {p_vproc=proc;}
         inline bool FailCut() {return m_failcut;}
     };

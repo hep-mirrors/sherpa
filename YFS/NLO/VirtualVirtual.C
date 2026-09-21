@@ -19,6 +19,7 @@ VirtualVirtual::VirtualVirtual(const PHASIC::Process_Info& pi)
 
     /* Load loop ME */
     PHASIC::Process_Info loop_pi(pi);
+    m_gen = pi.m_vvgenerator;
     loop_pi.m_fi.m_nlotype=ATOOLS::nlo_type::vv;
     loop_pi.m_mincpl[0] = pi.m_mincpl[0];
     loop_pi.m_maxcpl[0] = pi.m_maxcpl[0];

@@ -29,6 +29,13 @@ namespace YFS{
         PHASIC::Process_Base *p_rvproc = nullptr;
         ATOOLS::Flavour_Vector m_flavs;
         double m_sym, m_factor;
+        //! RV_Generator as configured. Unlike Real/RealReal there is no
+        //! internal-vs-external choice here: p_loop_me (the value this class
+        //! actually returns) is always built from RV_Generator directly, and
+        //! p_rvproc is used only for Trigger()/cuts, not for the value -- so
+        //! it must NOT be used as a generator label.
+        std::string m_gen;
+        inline std::string ActiveGenName() const { return m_gen.empty()?"none":m_gen; }
         inline void SetProc(PHASIC::Process_Base *realproc) {p_rvproc=realproc;}
         inline bool FailCut() {return m_failcut;}
     };

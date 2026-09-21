@@ -15,6 +15,7 @@ using namespace YFS;
 RealVirtual::RealVirtual(const PHASIC::Process_Info &pi) {
   /* Load loop ME */
   PHASIC::Process_Info rv_pi(pi);
+  m_gen = pi.m_rvgenerator;
   rv_pi.m_fi.m_nlotype = ATOOLS::nlo_type::rvirt;
   rv_pi.m_mincpl[0] = pi.m_mincpl[0];
   rv_pi.m_maxcpl[0] = pi.m_maxcpl[0];
