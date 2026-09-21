@@ -6,7 +6,8 @@
 #include "YFS/Main/ISR.H"
 #include "YFS/Main/FSR.H"
 #include "YFS/Main/Coulomb.H"
-#include "YFS/Tools/Debug.H"
+#include "YFS/Main/Debug.H"
+#include "YFS/Main/Photon.H"
 #include "YFS/NLO/NLO_Base.H"
 // #include "BEAM/Main/Beam_Base.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
@@ -55,6 +56,13 @@ namespace YFS {
         ATOOLS::Poincare m_cmsboost;
         ATOOLS::Vec4D   m_Wm, m_Wp;
         Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta;
+        // Every photon of the event, each tagged with the dipole it came from,
+        // so its ISR/FSR origin never has to be recovered positionally.
+        YFS::Photon_Vector m_photons;
+        // The photons the NLO layer sees: ISR plus the FSR *ME* photons
+        // (captured before HidePhotons), which is what InitNLO hands it and is
+        // NOT the same list as m_photons.
+        YFS::Photon_Vector m_me_photons;
         ATOOLS::Flavour_Vector m_flavs;
         std::vector<double> m_mass;
         ATOOLS::Momenta_Stretcher m_stretcher;
@@ -145,6 +153,8 @@ namespace YFS {
 
         inline void SetInFlav(Flavour &fl) {m_inflav.push_back(fl);}
         inline Flavour GetInFlav(int i) {return m_inflav[i];}
+        inline YFS::Photon_Vector       &Photons()       { return m_photons; }
+        inline const YFS::Photon_Vector &Photons() const { return m_photons; }
         inline void SetNLOType(ATOOLS::nlo_type::code nlo_type) {m_nlotype = nlo_type;}
         // Per-process request to drop the Born from the YFS weight, used when a
         // process is declared without 'B' in NLO_Part (e.g. an extra explicit

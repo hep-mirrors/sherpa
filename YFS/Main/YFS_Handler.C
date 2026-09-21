@@ -308,6 +308,9 @@ bool YFS_Handler::CalculateISR() {
   m_ISRPhotons   = p_isr->GetPhotons();
   m_isrphotonsforME = m_ISRPhotons; 
   m_isrWeight = p_isr->GetWeight();
+  m_photons.clear();
+  for (const Vec4D &k : m_ISRPhotons)
+    m_photons.push_back(YFS::Photon(k, &p_dipoles->GetDipoleII()));
   p_dipoles->GetDipoleII().AddPhotonsToDipole(m_ISRPhotons);
   p_dipoles->GetDipoleII().Boost();
   for(size_t i = 0; i < 2; ++i) {
@@ -467,10 +470,23 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   // get all photons
   m_FSRPhotons.clear();
   m_fsrphotonsforME.clear();
+  // Rebuilt in full here rather than appended to, so a re-entered
+  // CalculateFSR cannot leave last trial's photons behind.
+  m_photons.clear();
+  m_me_photons.clear();
+  if (p_dipoles->HasDipoleII())
+    for (const Vec4D &k : m_ISRPhotons)
+      m_photons.push_back(YFS::Photon(k, &p_dipoles->GetDipoleII()));
   YFS::DipoleView ffcollect(p_dipoles->GetDipoleFF());
   for (auto Dip = ffcollect.begin(); Dip != ffcollect.end(); ++Dip) {
-    for(auto &k: Dip->GetPhotons()) m_FSRPhotons.push_back(k);
-    for(auto &k: Dip->GetMEPhotons()) m_fsrphotonsforME.push_back(k);
+    for(auto &k: Dip->GetPhotons()) {
+      m_FSRPhotons.push_back(k);
+      m_photons.push_back(YFS::Photon(k, &*Dip));
+    }
+    for(auto &k: Dip->GetMEPhotons()) {
+      m_fsrphotonsforME.push_back(k);
+      m_me_photons.push_back(YFS::Photon(k, &*Dip));
+    }
   }
   // if(!CheckMomentumConservation()) return false;
   if(FixedOrder()==fixed_order::nlo){
@@ -579,6 +595,13 @@ void YFS_Handler::InitNLO(){
   p_nlo->m_ISRPhotons = m_ISRPhotons;
   if (m_nlo_fsr_photons) p_nlo->m_FSRPhotons = m_fsrphotonsforME;
   else                   p_nlo->m_FSRPhotons.clear();
+  // Mirror the two lines above: same photons, now carrying their dipole.
+  p_nlo->m_photons.clear();
+  if (p_dipoles->HasDipoleII())
+    for (const Vec4D &k : m_ISRPhotons)
+      p_nlo->m_photons.push_back(YFS::Photon(k, &p_dipoles->GetDipoleII()));
+  if (m_nlo_fsr_photons)
+    for (const YFS::Photon &k : m_me_photons) p_nlo->m_photons.push_back(k);
 }
 
 double YFS_Handler::CalculateNLO(){
@@ -708,7 +731,7 @@ void YFS_Handler::GenerateWeight() {
         // LO = (Born-level YFS weight) / (full weight), so that
         // nominal * YFS.LO == w_lo identically. Algebraically 1/m_real, but
         // built from the two weights themselves.
-        if (!IsZero(w_full)) emit("LO", w_lo/w_full);
+        // if (!IsZero(w_full)) emit("LO", w_lo/w_full);
         emit("EEX", ratio(m_eex, m_real));
         // Matching truncated to a fixed real-photon multiplicity, to see the
         // result "as if" only the 1 or 2 hardest photons were used in the

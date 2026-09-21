@@ -2,8 +2,8 @@
 #define YFS_Main_Define_Dipoles_H
 
 #include "ATOOLS/Phys/Particle.H"
-#include "YFS/Tools/Dipole.H"
-#include "YFS/Tools/DipoleSet.H"
+#include "YFS/Main/Dipole.H"
+#include "YFS/Main/DipoleSet.H"
 #include "YFS/Main/YFS_Base.H"
 #include "YFS/Main/YFS_Form_Factor.H"
 

@@ -1057,15 +1057,12 @@ double NLO_Base::CalculateRealReal() {
     return 0;
   double rr(0);
   m_rr_hard2 = 0.;
-  Vec4D_Vector photons;
-  for (auto k : m_ISRPhotons)
-    photons.push_back(k);
-  for (auto k : m_FSRPhotons)
-    photons.push_back(k);
+  // m_photons is m_ISRPhotons ++ m_FSRPhotons in that order, each carrying
+  // the dipole it came from, so origin is read off the photon instead of
+  // recovered from its index.
+  const YFS::Photon_Vector &photons(m_photons);
   if (photons.size() == 0)
     return 0;
-  size_t nISR = m_ISRPhotons.size();
-  size_t nFSR = m_FSRPhotons.size();
   // Identify the indices of the two hardest photons up front (energy
   // compare only) so their pair contribution can be captured inline below,
   // without a second, duplicate CalculateRealReal(k1,k2,...) call.
@@ -1082,10 +1079,10 @@ double NLO_Base::CalculateRealReal() {
   }
   for (int i = 0; i < photons.size(); ++i) {
     for (int j = i + 1; j < photons.size(); ++j) {
-      Vec4D k = photons[i];
-      Vec4D kk = photons[j];
-      const int isFSR_i = (i >= nISR) ? 1 : 0;
-      const int isFSR_j = (j >= nISR) ? 1 : 0;
+      Vec4D k = photons[i].K();
+      Vec4D kk = photons[j].K();
+      const int isFSR_i = photons[i].IsFSR() ? 1 : 0;
+      const int isFSR_j = photons[j].IsFSR() ? 1 : 0;
       double contrib = CalculateRealReal(k, kk, isFSR_i, isFSR_j);
       rr += contrib;
       if (i == i0 && j == j0) m_rr_hard2 = contrib;
