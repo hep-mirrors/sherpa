@@ -371,9 +371,8 @@ template <typename SType>
 void FFV_DCalculator<SType>::ConstructFVIDipole()
 {
   Current *cj(p_v->J(0));
-  p_v->Kin()->JIJT()->SetP(cj->P(),cj->P2());
-  p_v->Kin()->JKT()->SetP(p_v->Kin()->JK()->P(),
-			  p_v->Kin()->JK()->P2());
+  p_v->Kin()->JIJT()->SetP(cj->P());
+  p_v->Kin()->JKT()->SetP(p_v->Kin()->JK()->P());
   const CSpinorType_Matrix *c(cj->J().Get<CSpinorType>());
   CObject_Vector cc(2);
   cc[0]=c->front().front();
@@ -459,30 +458,3 @@ void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
 		    FFV_DCalculator<double> >::
 PrintInfo(std::ostream &str,const size_t width) const
 { str<<"FFV dipole vertex"; }
-
-// ---- QPREC_BEGIN: long-double instantiation ----
-DECLARE_GETTER(FFV_DCalculator<long double>,"QXFFV",
-	       Lorentz_Calculator,Vertex_Key);
-Lorentz_Calculator *ATOOLS::Getter
-<Lorentz_Calculator,Vertex_Key,FFV_DCalculator<long double> >::
-operator()(const Vertex_Key &key) const
-{ return new FFV_DCalculator<long double>(key); }
-
-void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
-		    FFV_DCalculator<long double> >::
-PrintInfo(std::ostream &str,const size_t width) const
-{ str<<"FFV dipole vertex"; }
-// ---- QPREC_END ----
-// ---- XPREC_BEGIN: double-double instantiation ----
-DECLARE_GETTER(FFV_DCalculator<ATOOLS::DDouble>,"XXFFV",
-	       Lorentz_Calculator,Vertex_Key);
-Lorentz_Calculator *ATOOLS::Getter
-<Lorentz_Calculator,Vertex_Key,FFV_DCalculator<ATOOLS::DDouble> >::
-operator()(const Vertex_Key &key) const
-{ return new FFV_DCalculator<ATOOLS::DDouble>(key); }
-
-void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
-		    FFV_DCalculator<ATOOLS::DDouble> >::
-PrintInfo(std::ostream &str,const size_t width) const
-{ str<<"FFV dipole vertex"; }
-// ---- XPREC_END ----

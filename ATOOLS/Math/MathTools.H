@@ -7,7 +7,6 @@
 #include <iomanip>
 
 #include "ATOOLS/Math/MyComplex.H"
-#include "ATOOLS/Math/DDouble.H"
 
 namespace ATOOLS {
 
@@ -62,21 +61,6 @@ namespace ATOOLS {
   {
     if (d<0) return Complex(0.,std::sqrt(-d));
     return std::sqrt(d);
-  }
-
-  // csqrt at the working precision. The double overload above silently
-  // narrows anything wider, which is exactly what must not happen inside a
-  // higher-precision spinor construction.
-  inline std::complex<long double> csqrt(const long double &d)
-  {
-    if (d<0.0L) return std::complex<long double>(0.0L,std::sqrt(-d));
-    return std::complex<long double>(std::sqrt(d),0.0L);
-  }
-  inline std::complex<DDouble> csqrt(const DDouble &d)
-  {
-    if (d<DDouble(0.0))
-      return std::complex<DDouble>(DDouble(0.0),sqrt(-d));
-    return std::complex<DDouble>(sqrt(d),DDouble(0.0));
   }
 
   inline double intpow(const double &a,int b)
@@ -143,36 +127,6 @@ namespace ATOOLS {
     return x>0.0?x:-x;
   }
 
-
-  template<> inline bool IsNan<DDouble>(const DDouble& x) {
-    return isnan(x);
-  }
-  template<> inline bool IsBad<DDouble>(const DDouble& x) {
-    return isnan(x)||isinf(x);
-  }
-  template<> inline bool IsZero<DDouble>(const DDouble& x) {
-    return abs(x)<DDouble(Accu())?1:0;
-  }
-  template<> inline DDouble Abs<DDouble>(const DDouble& x) {
-    return abs(x);
-  }
-
-  template<> inline bool IsNan<std::complex<DDouble> >
-  (const std::complex<DDouble>& x) {
-    return isnan(x.real())||isnan(x.imag());
-  }
-  template<> inline bool IsBad<std::complex<DDouble> >
-  (const std::complex<DDouble>& x) {
-    return IsNan(x)||isinf(x.real())||isinf(x.imag());
-  }
-  template<> inline bool IsZero<std::complex<DDouble> >
-  (const std::complex<DDouble>& x) {
-    return abs(x)<DDouble(Accu())?1:0;
-  }
-  template<> inline DDouble Abs<DDouble>
-  (const std::complex<DDouble>& x) {
-    return abs(x);
-  }
 
   template<> inline bool IsNan<Complex>(const Complex& x) {
     return (std::isnan(real(x)) || std::isnan(imag(x)) ||
@@ -241,18 +195,6 @@ namespace ATOOLS {
   DECLARE_PROMOTE(long double,long double,long double);
   DECLARE_PROMOTE(std::complex<long double>,std::complex<long double>,
 		  std::complex<long double>);
-
-  DECLARE_PROMOTE(DDouble,std::complex<DDouble>,std::complex<DDouble>);
-  DECLARE_PROMOTE(std::complex<DDouble>,DDouble,std::complex<DDouble>);
-  DECLARE_PROMOTE(int,DDouble,DDouble);
-  DECLARE_PROMOTE(DDouble,int,DDouble);
-  DECLARE_PROMOTE(double,DDouble,DDouble);
-  DECLARE_PROMOTE(DDouble,double,DDouble);
-  DECLARE_PROMOTE(int,std::complex<DDouble>,std::complex<DDouble>);
-  DECLARE_PROMOTE(std::complex<DDouble>,int,std::complex<DDouble>);
-  DECLARE_PROMOTE(DDouble,DDouble,DDouble);
-  DECLARE_PROMOTE(std::complex<DDouble>,std::complex<DDouble>,
-		  std::complex<DDouble>);
 
 #define PROMOTE(TYPE1,TYPE2) typename promote_trait<TYPE1,TYPE2>::T_promote
 

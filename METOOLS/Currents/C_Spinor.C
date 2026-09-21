@@ -1,9 +1,5 @@
 #include "METOOLS/Currents/C_Spinor.H"
 
-#include <cstdlib>
-#include "METOOLS/Currents/Cancel_Probe.H"
-#include <iostream>
-
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
@@ -14,7 +10,7 @@ using namespace METOOLS;
 using namespace ATOOLS;
 
 template <class Scalar>
-Scalar CSpinor<Scalar>::s_accu(1.0e-12);
+double CSpinor<Scalar>::s_accu(1.0e-12);
 
 template <class Scalar> std::ostream &
 METOOLS::operator<<(std::ostream &ostr,const CSpinor<Scalar> &s)
@@ -24,8 +20,6 @@ METOOLS::operator<<(std::ostream &ostr,const CSpinor<Scalar> &s)
 	     <<"),"<<s.H()<<","<<s.S()<<";"<<s(0)<<","<<s(1)<<";"
 	     <<s[0]<<","<<s[1]<<","<<s[2]<<","<<s[3]<<(s.B()>0?">":"|");
 } 
-
-namespace { const bool s_dump(getenv("SHERPA_SPINOR_DUMP")!=NULL); }
 
 template <class Scalar> void CSpinor<Scalar>::
 Construct(const int h,const Vec4<Scalar> &p,Scalar m2,const int ms)
@@ -53,13 +47,13 @@ Construct(const int h,const Vec4<Scalar> &p,Scalar m2,const int ms)
   else {
   Vec4<Scalar> ph(p[0]<0.0?-p.PSpat():p.PSpat(),p[1],p[2],p[3]);
   if ((m_r>0)^(h<0)) {// u+(p,m) / v-(p,m) 
-    Spinor<Scalar> sh(1,ph,true); 
+    Spinor<Scalar> sh(1,ph); 
     m_u[2]=sh[0]; 
     m_u[3]=sh[1]; 
     m_on=2;
   } 
   else {// u-(p,m) / v+(p,m) 
-    Spinor<Scalar> sh(-1,ph,true); 
+    Spinor<Scalar> sh(-1,ph); 
     if (p[0]<0.0) sh=-sh;
     m_u[0]=sh[1]; 
     m_u[1]=-sh[0]; 
@@ -68,37 +62,15 @@ Construct(const int h,const Vec4<Scalar> &p,Scalar m2,const int ms)
   if (m2<0.0) m2=p.Abs2();
   if (!ATOOLS::IsZero(m2)) {
     Scalar sgn((m_r>0)^(ms<0)?Scalar(1.0):Scalar(-1.0));
-    // omm carries the whole mass content of the spinor - the helicity-flip
-    // component - and must not be formed as p[0]-ph[0]. For a relativistic leg
-    // those agree to ~10 digits (a 45.6 GeV electron: 2.9e-9 out of 45.6), so
-    // the subtraction keeps ~6 digits of it. Worse, the difference is a
-    // property of the ROUNDED momentum: p[0] and p[3] carry an absolute error
-    // ulp(p[0]), so the mass p implies differs from the nominal one by
-    // ~2 p[0] ulp(p[0]) / m^2 - 1.2e-6 relative for a beam electron - and no
-    // amount of internal precision recovers it, which is why widening the
-    // scalar type changes nothing here. The caller already passes the exact
-    // m2, and p[0]^2 - ph[0]^2 = m2 identically, so divide instead of
-    // subtract. omp^2 - omm^2 = 1 is preserved exactly either way.
-    const Scalar spp(p[0]+ph[0]);
     Scalar omp(sqrt((p[0]+ph[0])/(2.0*ph[0])));
-    Scalar omm(spp!=Scalar(0.0)?sqrt(m2/(2.0*ph[0]*spp))
-                               :sqrt((p[0]-ph[0])/(2.0*ph[0])));
+    Scalar omm(sqrt((p[0]-ph[0])/(2.0*ph[0])));
     size_t r((m_r>0)^(h<0)?0:2);
     m_u[0+r]=sgn*omm*m_u[2-r];
     m_u[1+r]=sgn*omm*m_u[3-r];
     m_u[2-r]*=omp;
     m_u[3-r]*=omp;
     m_on=3;
-    if (s_dump)
-      std::cerr<<"@@@ SPIN m2="<<(double)m2<<" p0="<<(double)p[0]
-               <<" ph0="<<(double)ph[0]<<" omp="<<(double)omp
-               <<" omm="<<(double)omm
-               <<" omm_exact="<<(double)sqrt(m2/(2.0*ph[0]*(p[0]+ph[0])))
-               <<" on="<<m_on<<std::endl;
   }
-  else if (s_dump)
-    std::cerr<<"@@@ SPIN MASSLESS-BRANCH m2="<<(double)m2
-             <<" p0="<<(double)p[0]<<" on="<<m_on<<std::endl;
   if (abs(m_r)==2) m_r=0;
   if (m_b<0) {
     m_b=1;
@@ -135,9 +107,9 @@ CSpinor<Scalar> CSpinor<Scalar>::CConj() const
 template <class Scalar>
 bool CSpinor<Scalar>::operator==(const CSpinor<Scalar> &s) const
 {
-  Scalar max(Max(ATOOLS::Abs(m_u[0]),
-		 Max(ATOOLS::Abs(m_u[1]),
-		     Max(ATOOLS::Abs(m_u[2]),ATOOLS::Abs(m_u[3])))));
+  Scalar max(Max(std::abs(m_u[0]),
+		 Max(std::abs(m_u[1]),
+		     Max(std::abs(m_u[2]),std::abs(m_u[3]))))); 
   Scalar q(ATOOLS::IsZero(max)?Scalar(1.0):Scalar(1.0)/max);
   for (short unsigned int i(0);i<4;++i) {
     if (ATOOLS::Abs(q*(m_u[i]-s.m_u[i]))>Accuracy()) return false;
@@ -300,17 +272,6 @@ void CSpinor<Scalar>::Add(const CObject *c)
     Add(&cc);
     return;
   }
-  { // DIAG: cancellation detector, see Cancel_Probe.H
-    double amax(0.0), res(0.0);
-    for (int i(0);i<4;++i) {
-      const double a((double)ATOOLS::Abs(m_u[i]));
-      const double b((double)ATOOLS::Abs(s->m_u[i]));
-      if (a>amax) amax=a; if (b>amax) amax=b;
-      const std::complex<Scalar> t(m_u[i]+s->m_u[i]);
-      const double c((double)ATOOLS::Abs(t)); if (c>res) res=c;
-    }
-    Cancel_Probe::Note(amax,res);
-  }
   m_on|=s->m_on;
   if (m_on&1) {
   m_u[0]+=s->m_u[0]; 
@@ -432,8 +393,5 @@ namespace METOOLS {
 
   template class QDSpinor;
   template std::ostream &operator<<(std::ostream &ostr,const QDSpinor &s);
-
-  template class XDSpinor;
-  template std::ostream &operator<<(std::ostream &ostr,const XDSpinor &s);
 
 }

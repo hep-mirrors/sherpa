@@ -217,6 +217,7 @@ void Comix::RegisterDefaults() const
   s["VL_MODE"].SetDefault(0);  // vertex label mode
   s["N_GPL"].SetDefault(3);    // graphs per line
   s["THREADS"].SetDefault(0);  // number of threads
+  s["MOMENTUM_PROJECTION"].SetDefault(true);
 }
 
 PHASIC::Process_Base *Comix::

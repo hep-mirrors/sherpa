@@ -50,17 +50,11 @@ namespace METOOLS {
     Int_Vector    m_id, m_fid;
 
     ATOOLS::Vec4D  m_p;
-    // Double-double shadow of m_p, used ONLY for the p^2 bookkeeping below.
-    // m_p itself stays double on purpose: at the leaves it holds a phase-space
-    // momentum that is exactly a pair of doubles, so widening it there would
-    // add digits that carry no information. Above the leaves m_p is a SUM, and
-    // the sum is where the digits go missing - an internal line built from
-    // nearly-collinear externals reaches an O(E^2 theta^2) virtuality through
-    // O(E^2) partial sums. Carrying that sum at ~106 bits costs two doubles
-    // per current on a layer that is a negligible share of the flops.
+    // Double-double shadow of m_p, used only for the p^2 bookkeeping below.
+    // m_p itself stays double on purpose.
     ATOOLS::Vec4<ATOOLS::DDouble> m_ph;
     // Externally supplied wide momentum (Amplitude's joint on-shell /
-    // conserving projection). When set it WINS over the per-leg
+    // conserving projection). When set it wins over the per-leg
     // reconstruction in SetPWide(), because only a joint projection can
     // satisfy sum(p)=0 and p^2=m^2 at the same time.
     ATOOLS::Vec4<ATOOLS::DDouble> m_phx;
@@ -134,39 +128,12 @@ namespace METOOLS {
     // inline functions
     inline const CObject_Matrix &J() const { return m_j; }
 
-    // External / dipole-mapped legs are on their mass shell by construction,
-    // so seed the virtuality with the exact m^2 rather than with p.Abs2():
-    // the latter carries an O(E^2 eps) error that would swamp the small
-    // denominators this bookkeeping exists to protect.
-    /*!
-      Rebuild the WIDE momentum m_ph exactly on the mass shell given by m_p2.
-
-      The stored double components satisfy p^2 = m^2 only to about
-      2 E ulp(E) ~ 6e-13 GeV^2. That floor is ABSOLUTE: it comes from the
-      representation of an O(E) component, so it does not shrink with the mass
-      and no amount of arithmetic precision recovers it.
-
-      Everything downstream takes the VIRTUALITY from m_p2 (the exact nominal
-      m^2; ExactLCDot reconstructs the cancelling light-cone component from it)
-      but the KINEMATICS from m_ph. Leaving m_ph a widened copy of the raw
-      double makes those two mutually inconsistent at 6e-13, and that
-      inconsistency is inherited by every current built from this leg. It stays
-      invisible until a propagator denominator falls below it -- the collinear
-      ISR region, 2 p.k <~ 1e-12 -- which is exactly where the real ME departed
-      from the eikonal theorem.
-
-      Keep the large light-cone component and pT exactly as given and solve the
-      small one from p+ p- = p^2 + pT^2, the identity ExactLCDot already uses.
-      The momentum moves by ~3e-15 in one component; the shell becomes exact.
-    */
     inline void SetPWideExt(const ATOOLS::Vec4<ATOOLS::DDouble> &ph)
     { m_phx=ph; m_hasphx=true; }
 
     inline void SetPWide()
     {
       if (m_hasphx) { m_ph=m_phx; return; }
-      { extern long g_pwext_miss; if (++g_pwext_miss==1)
-          std::cerr<<"@@@ PWMISS first hit, flav="<<m_fl<<" cid="<<m_cid<<std::endl; }
       typedef ATOOLS::DDouble DD;
       DD pp(DD(m_p[0])+DD(m_p[3])), pm(DD(m_p[0])-DD(m_p[3]));
       const DD pt2(DD(m_p[1])*DD(m_p[1])+DD(m_p[2])*DD(m_p[2]));
@@ -178,12 +145,6 @@ namespace METOOLS {
 
     inline void SetP(const ATOOLS::Vec4D &p)
     { m_p=p; m_p2=ATOOLS::sqr(m_mass); SetPWide(); }
-
-    // For the few call sites that copy a momentum off another current, where
-    // the on-shell assumption above need not hold: carry that current's
-    // virtuality across explicitly instead of re-deriving it.
-    inline void SetP(const ATOOLS::Vec4D &p,const double &p2)
-    { m_p=p; m_ph=p; m_p2=p2; }
 
     inline void SetFId(const Int_Vector &fid) { m_fid=fid; }
     inline void SetKey(const size_t &key)     { m_key=key; }
@@ -206,23 +167,10 @@ namespace METOOLS {
 
     inline ATOOLS::Vec4D P() const { return m_p; }
 
-    // Narrowed for the ~60 call sites that only need a double; the recursion
-    // itself must use PH()/P2H() so the accumulation stays wide.
     inline double P2() const { return (double)m_p2; }
 
     inline const ATOOLS::Vec4<ATOOLS::DDouble> &PH() const { return m_ph; }
 
-    /*!
-      The on-shell wide momentum, narrowed to the scalar type a current tower
-      is instantiated at. Leaf currents must build their spinors and
-      polarisations from THIS, not from the raw Vec4D they were handed: the
-      raw one is off its nominal mass shell by ~6e-13 GeV^2 (see SetPWide),
-      and a spinor built from it is inconsistent with the m^2 passed alongside
-      it. At SType=double this is the raw momentum back again to within an
-      ulp, so it costs nothing there; at the wider PMODEs it is what lets the
-      extra mantissa actually carry mass information instead of re-rounding a
-      momentum that was never on shell.
-    */
     template <typename SType>
     inline ATOOLS::Vec4<SType> PW() const
     { return ATOOLS::Vec4<SType>((SType)m_ph[0],(SType)m_ph[1],
@@ -281,35 +229,7 @@ namespace METOOLS {
 
   };// end of class Current
 
-  // Amplitude keeps its result containers in double whatever PMODE is, and
-  // Current::Contract dispatches on the element type of those containers. A
-  // current tower instantiated at a wider SType therefore has to answer a
-  // Contract<double> call as well: this mixin does the contraction sum at
-  // SType and rounds only the finished amplitude down to double, so no
-  // cancellation is ever exposed to double precision. For SType == double it
-  // is empty - the class already is a Current_Contractor<double>.
-  template <typename Derived,typename SType>
-  class Downcast_Contractor: public Current_Contractor<double> {
-  public:
-
-    void SContract(const Current &c,const Int_Vector &pols,
-                   std::vector<std::complex<double> > &ress,
-                   const size_t &offset=0) const
-    {
-      std::vector<std::complex<SType> >
-        tmp(ress.size(),std::complex<SType>(0.0,0.0));
-      static_cast<const Derived*>(this)->SContract(c,pols,tmp,offset);
-      for (size_t i(0);i<ress.size();++i)
-        ress[i]+=std::complex<double>
-          ((double)tmp[i].real(),(double)tmp[i].imag());
-    }
-
-  };// end of class Downcast_Contractor
-
-  template <typename Derived>
-  class Downcast_Contractor<Derived,double> {};
-
-  template <class SType> inline void 
+  template <class SType> inline void
   Current::Contract(const Current &c,const Int_Vector &pols,
 		    std::vector<std::complex<SType> > &ress,
 		    const size_t &offset) const

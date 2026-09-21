@@ -46,30 +46,3 @@ void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
 		    SSS_Calculator<double> >::
 PrintInfo(std::ostream &str,const size_t width) const
 { str<<"SSS vertex"; }
-
-// ---- QPREC_BEGIN: long-double instantiation ----
-DECLARE_GETTER(SSS_Calculator<long double>,"QSSS",
-	       Lorentz_Calculator,Vertex_Key);
-Lorentz_Calculator *ATOOLS::Getter
-<Lorentz_Calculator,Vertex_Key,SSS_Calculator<long double> >::
-operator()(const Vertex_Key &key) const
-{ return new SSS_Calculator<long double>(key); }
-
-void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
-		    SSS_Calculator<long double> >::
-PrintInfo(std::ostream &str,const size_t width) const
-{ str<<"SSS vertex"; }
-// ---- QPREC_END ----
-// ---- XPREC_BEGIN: double-double instantiation ----
-DECLARE_GETTER(SSS_Calculator<ATOOLS::DDouble>,"XSSS",
-	       Lorentz_Calculator,Vertex_Key);
-Lorentz_Calculator *ATOOLS::Getter
-<Lorentz_Calculator,Vertex_Key,SSS_Calculator<ATOOLS::DDouble> >::
-operator()(const Vertex_Key &key) const
-{ return new SSS_Calculator<ATOOLS::DDouble>(key); }
-
-void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
-		    SSS_Calculator<ATOOLS::DDouble> >::
-PrintInfo(std::ostream &str,const size_t width) const
-{ str<<"SSS vertex"; }
-// ---- XPREC_END ----

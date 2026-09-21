@@ -1,12 +1,11 @@
 #include "METOOLS/Currents/C_Vector.H"
-#include "METOOLS/Currents/Cancel_Probe.H"
 
 #include "ATOOLS/Org/CXXFLAGS.H"
 
 using namespace METOOLS;
 
 template <class Scalar>
-Scalar CVec4<Scalar>::s_accu(1.0e-12);
+double CVec4<Scalar>::s_accu(1.0e-12);
 
 template <class Scalar> std::ostream &
 METOOLS::operator<<(std::ostream &s,const CVec4<Scalar> &vec)
@@ -34,15 +33,6 @@ template <class Scalar>
 void CVec4<Scalar>::Add(const CObject *c)
 {
   const CVec4 *v(static_cast<const CVec4*>(c));
-  { double amax(0.0), res(0.0);
-    for (int i(0);i<4;++i) {
-      const double a((double)ATOOLS::Abs(m_x[i]));
-      const double b((double)ATOOLS::Abs(v->m_x[i]));
-      if (a>amax) amax=a; if (b>amax) amax=b;
-      const double cc((double)ATOOLS::Abs(m_x[i]+v->m_x[i]));
-      if (cc>res) res=cc;
-    }
-    Cancel_Probe::Note(amax,res); }
   m_x[0]+=v->m_x[0]; 
   m_x[1]+=v->m_x[1];
   m_x[2]+=v->m_x[2]; 
@@ -161,8 +151,5 @@ namespace METOOLS {
 
   template class QCVec4D;
   template std::ostream &operator<<(std::ostream &ostr,const QCVec4D &s);
-
-  template class XCVec4D;
-  template std::ostream &operator<<(std::ostream &ostr,const XCVec4D &s);
 
 }

@@ -44,20 +44,7 @@ Amplitude::Amplitude():
   m_murcoeffvirt = s["NLO_MUR_COEFFICIENT_FROM_VIRTUAL"].Get<bool>();
   p_dinfo->SetMassive(0);
   m_pmode = comixsettings["PMODE"].Get<std::string>()[0];
-  // DIAGNOSTIC (Phase 0, localisation): choose the axis the spinor light-cone
-  // decomposition is taken along. Spinor::PMinus() forms p[0]-p[s_r3], which
-  // for a momentum collinear to the BEAM (s_r3 = z, gauge 0) is a catastrophic
-  // cancellation - measured to return exactly 0.0 at theta = 5e-5. Gauge 1/2
-  // put s_r3 on x/y, where the same quantity is ~E and cancels nothing. The
-  // amplitude is independent of this choice analytically, so any change in
-  // agreement with an external generator is pure numerics and localises the
-  // loss to the axis-aligned decomposition. Remove once Phase 0 concludes.
-  if (const char *g=getenv("COMIX_SPINOR_GAUGE")) {
-    const int gauge(ToType<int>(std::string(g)));
-    msg_Info()<<"Comix: spinor light-cone axis set to gauge "<<gauge
-              <<" (0=z/beam, 1=x, 2=y) via COMIX_SPINOR_GAUGE\n";
-    ATOOLS::Spinor<double>::SetDefaultGauge(gauge);
-  }
+  m_momproj = comixsettings["MOMENTUM_PROJECTION"].Get<bool>();
   m_wfmode = comixsettings["WF_MODE"].Get<int>();
   m_pgmode = comixsettings["PG_MODE"].Get<int>();
   m_ngpl = Min(1, Max(5, comixsettings["N_GPL"].Get<int>()));
@@ -1242,16 +1229,6 @@ void Amplitude::ResetZero()
   Project the external momenta onto the intersection of the mass shells and
   exact momentum conservation, in double-double.
 
-  Comix's recursion builds a current's momentum by summing its OWN leg
-  set. For a collinear internal line that is often the COMPLEMENTARY set rather
-  than the direct pair, and the two routes agree only if the inputs conserve
-  momentum exactly. 
-
-  The two constraints fight each other: putting a leg on its shell moves
-  it by ~3e-15 and re-breaks conservation at ~1e-14. So solve them together.
-  The required correction is ~1e-14, so one linearised (Newton) step is exact
-  to O(delta^2/E) ~ 1e-30. Minimising sum|delta_i|^2 subject to
-
       sum_i delta_i = R          R   = -sum_i P_i        (4 equations)
       2 P_i.delta_i = r_i        r_i = m_i^2 - P_i^2     (n equations)
 
@@ -1263,7 +1240,6 @@ void Amplitude::ResetZero()
 */
 void Amplitude::ProjectWideMomenta()
 {
-  typedef ATOOLS::DDouble DD;
   m_pw.resize(m_n);
   std::vector<DD> m2(m_n);
   for (size_t i(0);i<m_n;++i) {
@@ -1272,17 +1248,12 @@ void Amplitude::ProjectWideMomenta()
     const DD m(m_cur[1][i]->Mass());
     m2[i]=m*m;
   }
-  { static const bool off(getenv("COMIX_NO_MOMENTUM_PROJECTION")!=NULL);
-    if (off) return; }
+  if (!m_momproj) return;
   std::vector<DD> d(m_n),r(m_n);
   for (int pass(0);pass<2;++pass) {
     DD R[4]={DD(0.0),DD(0.0),DD(0.0),DD(0.0)};
     for (size_t i(0);i<m_n;++i)
       for (int n(0);n<4;++n) R[n]-=m_pw[i][n];
-    // d_i is the Euclidean norm of the covariant components. A leg with no
-    // momentum at all carries no mass-shell constraint and receives no
-    // correction, so nact -- not m_n -- multiplies L in the conservation row;
-    // otherwise that row would count legs that are never moved.
     size_t nact(0);
     for (size_t i(0);i<m_n;++i) {
       const DD pl[4]={m_pw[i][0],-m_pw[i][1],-m_pw[i][2],-m_pw[i][3]};
@@ -1346,13 +1317,6 @@ void Amplitude::ProjectWideMomenta()
 
 bool Amplitude::SetMomenta(const Vec4D_Vector &moms)
 {
-  // Amplitude::SetGauge() is called ONLY from GaugeTest(), so in production the
-  // photon polarisation reference vector is whatever the currents were built
-  // with and has never been varied. COMIX_AMPL_GAUGE forces one of the four
-  // choices on every evaluation so the physical result can be checked for
-  // dependence on it - a gauge-dependent answer is a broken polarisation sum.
-  static const char *ag(getenv("COMIX_AMPL_GAUGE"));
-  if (ag) SetGauge(atoi(ag));
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"():\n";
   Vec4D sum;
@@ -1506,7 +1470,7 @@ bool Amplitude::EvaluateAll(const bool& mode)
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"(): "<<m_ress.size()<<" amplitudes {\n";
 #endif
-  if (m_pmode=='D' || m_pmode=='Q' || m_pmode=='X') {
+  if (m_pmode=='D') {
     for (size_t i(0);i<m_ress.size();++i) {
       if (m_cur.back()[i]->Sub()) continue;
       for (size_t j(0);j<m_ress[i].size();++j) m_ress[i][j]=0.0;
@@ -2030,14 +1994,6 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
     int sd(Spinor<double>::DefaultGauge());
     Spinor<double>::SetGauge(sd>0?sd-1:sd+1);
   }
-  else if (m_pmode=='Q') {
-    int sd(Spinor<long double>::DefaultGauge());
-    Spinor<long double>::SetGauge(sd>0?sd-1:sd+1);
-  }
-  else if (m_pmode=='X') {
-    int sd(Spinor<DDouble>::DefaultGauge());
-    Spinor<DDouble>::SetGauge(sd>0?sd-1:sd+1);
-  }
   PHASIC::Virtual_ME2_Base *loop(p_loop);
   p_loop=NULL;
   SetGauge(1);
@@ -2048,8 +2004,6 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
   }
   double res(m_born?m_born:m_res);
   if (m_pmode=='D') Spinor<double>::ResetGauge();
-  else if (m_pmode=='Q') Spinor<long double>::ResetGauge();
-  else if (m_pmode=='X') Spinor<DDouble>::ResetGauge();
   SetGauge(0);
   SetMomenta(moms);
   if (!EvaluateAll(true)) {

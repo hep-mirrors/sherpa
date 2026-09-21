@@ -1,7 +1,4 @@
 #include "METOOLS/Explicit/Lorentz_Calculator.H"
-#include "METOOLS/Currents/Cancel_Probe.H"
-#include <algorithm>
-#include <cmath>
 #include "METOOLS/Currents/C_Spinor.H"
 #include "METOOLS/Currents/C_Vector.H"
 #include "METOOLS/Explicit/Vertex.H"
@@ -12,16 +9,6 @@
 using namespace ATOOLS;
 
 namespace METOOLS {
-
-  // Phase 1 trigger calibration: record max(|x|,|y|)/|x+y| for every FFV
-  // component, which is where the cancellation actually lives (measured 6.1e5,
-  // vs at most 51 for the sums between current contributions).
-  template <typename SC> inline SC CP_note(const SC &x,const SC &y)
-  { const SC r(x+y);
-    const double ax((double)ATOOLS::Abs(x)), ay((double)ATOOLS::Abs(y));
-    Cancel_Probe::Note(ax>ay?ax:ay,(double)ATOOLS::Abs(r));
-    return r; }
-
 
   template <typename SType>
   class FFV_Worker {
@@ -118,8 +105,8 @@ namespace METOOLS {
 #endif
 	CSpinorType *j(CSpinorType::New(a.R(),a.B(),0,0,0,a.S()|b.S(),1));
 	SComplex jp(PPlus(b)), jm(PMinus(b)), jt(PT(b)), jtc(PTC(b));
-	(*j)[0]=CP_note(a[2]*jp,a[3]*jt);
-	(*j)[1]=CP_note(a[2]*jtc,a[3]*jm);
+	(*j)[0]=(a[2]*jp+a[3]*jt);
+	(*j)[1]=(a[2]*jtc+a[3]*jm);
 	(*j)[3]=(*j)[2]=SComplex(0.0,0.0);
 	return j;
       }
@@ -131,8 +118,8 @@ namespace METOOLS {
 	CSpinorType *j(CSpinorType::New(a.R(),a.B(),0,0,0,a.S()|b.S(),2));
 	SComplex jp(PPlus(b)), jm(PMinus(b)), jt(PT(b)), jtc(PTC(b));
 	(*j)[1]=(*j)[0]=SComplex(0.0,0.0);
-	(*j)[2]=CP_note(a[0]*jp,a[1]*jtc);
-	(*j)[3]=CP_note(a[0]*jt,a[1]*jm);
+	(*j)[2]=(a[0]*jp+a[1]*jtc);
+	(*j)[3]=(a[0]*jt+a[1]*jm);
 	return j;
       }
       }
@@ -180,8 +167,8 @@ namespace METOOLS {
 #endif
 	CSpinorType *j(CSpinorType::New(a.R(),a.B(),0,0,0,a.S()|b.S(),3));
 	SComplex jp(PPlus(b)), jm(PMinus(b)), jt(PT(b)), jtc(PTC(b));
-	(*j)[0]=CP_note(a[2]*jp,a[3]*jt);
-	(*j)[1]=CP_note(a[2]*jtc,a[3]*jm);
+	(*j)[0]=(a[2]*jp+a[3]*jt);
+	(*j)[1]=(a[2]*jtc+a[3]*jm);
 	(*j)[2]=(a[0]*jm-a[1]*jt);
 	(*j)[3]=(-a[0]*jtc+a[1]*jp);
 	return j;
@@ -195,8 +182,8 @@ namespace METOOLS {
 	SComplex jp(PPlus(b)), jm(PMinus(b)), jt(PT(b)), jtc(PTC(b));
 	(*j)[0]=(a[2]*jm-a[3]*jtc);
 	(*j)[1]=(-a[2]*jt+a[3]*jp);
-	(*j)[2]=CP_note(a[0]*jp,a[1]*jtc);
-	(*j)[3]=CP_note(a[0]*jt,a[1]*jm);
+	(*j)[2]=(a[0]*jp+a[1]*jtc);
+	(*j)[3]=(a[0]*jt+a[1]*jm);
 	return j;
       }
       }
@@ -349,78 +336,3 @@ void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
 		    FFVR_Calculator<double> >::
 PrintInfo(std::ostream &str,const size_t width) const
 { str<<"FFVR vertex"; }
-
-// ---- QPREC_BEGIN: long-double instantiation of the same tower ----
-DECLARE_GETTER(FFV_Calculator<long double>,"QFFV",
-	       Lorentz_Calculator,Vertex_Key);
-Lorentz_Calculator *ATOOLS::Getter
-<Lorentz_Calculator,Vertex_Key,FFV_Calculator<long double> >::
-operator()(const Vertex_Key &key) const
-{ return new FFV_Calculator<long double>(key); }
-
-void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
-		    FFV_Calculator<long double> >::
-PrintInfo(std::ostream &str,const size_t width) const
-{ str<<"FFV vertex"; }
-
-DECLARE_GETTER(FFVL_Calculator<long double>,"QFFVL",
-	       Lorentz_Calculator,Vertex_Key);
-Lorentz_Calculator *ATOOLS::Getter
-<Lorentz_Calculator,Vertex_Key,FFVL_Calculator<long double> >::
-operator()(const Vertex_Key &key) const
-{ return new FFVL_Calculator<long double>(key); }
-
-void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
-		    FFVL_Calculator<long double> >::
-PrintInfo(std::ostream &str,const size_t width) const
-{ str<<"FFVL vertex"; }
-
-DECLARE_GETTER(FFVR_Calculator<long double>,"QFFVR",
-	       Lorentz_Calculator,Vertex_Key);
-Lorentz_Calculator *ATOOLS::Getter
-<Lorentz_Calculator,Vertex_Key,FFVR_Calculator<long double> >::
-operator()(const Vertex_Key &key) const
-{ return new FFVR_Calculator<long double>(key); }
-
-void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
-		    FFVR_Calculator<long double> >::
-PrintInfo(std::ostream &str,const size_t width) const
-{ str<<"FFVR vertex"; }
-// ---- QPREC_END ----
-// ---- XPREC_BEGIN: double-double instantiation ----
-DECLARE_GETTER(FFV_Calculator<ATOOLS::DDouble>,"XFFV",
-	       Lorentz_Calculator,Vertex_Key);
-Lorentz_Calculator *ATOOLS::Getter
-<Lorentz_Calculator,Vertex_Key,FFV_Calculator<ATOOLS::DDouble> >::
-operator()(const Vertex_Key &key) const
-{ return new FFV_Calculator<ATOOLS::DDouble>(key); }
-
-void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
-		    FFV_Calculator<ATOOLS::DDouble> >::
-PrintInfo(std::ostream &str,const size_t width) const
-{ str<<"FFV vertex"; }
-
-DECLARE_GETTER(FFVL_Calculator<ATOOLS::DDouble>,"XFFVL",
-	       Lorentz_Calculator,Vertex_Key);
-Lorentz_Calculator *ATOOLS::Getter
-<Lorentz_Calculator,Vertex_Key,FFVL_Calculator<ATOOLS::DDouble> >::
-operator()(const Vertex_Key &key) const
-{ return new FFVL_Calculator<ATOOLS::DDouble>(key); }
-
-void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
-		    FFVL_Calculator<ATOOLS::DDouble> >::
-PrintInfo(std::ostream &str,const size_t width) const
-{ str<<"FFVL vertex"; }
-
-DECLARE_GETTER(FFVR_Calculator<ATOOLS::DDouble>,"XFFVR",
-	       Lorentz_Calculator,Vertex_Key);
-Lorentz_Calculator *ATOOLS::Getter
-<Lorentz_Calculator,Vertex_Key,FFVR_Calculator<ATOOLS::DDouble> >::
-operator()(const Vertex_Key &key) const
-{ return new FFVR_Calculator<ATOOLS::DDouble>(key); }
-
-void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
-		    FFVR_Calculator<ATOOLS::DDouble> >::
-PrintInfo(std::ostream &str,const size_t width) const
-{ str<<"FFVR vertex"; }
-// ---- XPREC_END ----

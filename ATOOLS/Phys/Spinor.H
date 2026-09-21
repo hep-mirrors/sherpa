@@ -2,7 +2,6 @@
 #define ATOOLS_Phys_Spinor_H
 
 #include "ATOOLS/Math/Vec4.H"
-#include "ATOOLS/Math/MathTools.H"
 
 #include <complex>
 #include <vector>
@@ -36,23 +35,9 @@ namespace ATOOLS {
       m_r(r), m_u1(u1), m_u2(u2) {}
     inline Spinor(const int &r,const Vec4<Scalar> &p):
       m_r(r) { Construct(p); }
-    /*!
-      Light-like overload. p[0]-p[3] cancels catastrophically for a momentum
-      collinear to the beam -- at theta ~ 1e-5 it returns exactly 0 where the
-      true value is ~1e-21 -- and the spinor is then built from a zero
-      light-cone component. When p is known to satisfy p^2 = 0 the identity
-      (p0+pz)(p0-pz) = pT^2 gives the small component with no cancellation at
-      all. Callers that construct the massless projection themselves (see
-      CSpinor::Construct) know this and should use it.
-    */
-    inline Spinor(const int &r,const Vec4<Scalar> &p,const bool lightlike):
-      m_r(r) { if (lightlike) ConstructLC(p); else Construct(p); }
     
     // member functions
     void Construct(const Vec4<Scalar> &p);
-    /// As Construct(), but assuming p^2 = 0 and forming the cancelling
-    /// light-cone component as pT^2/(large) instead of by subtraction.
-    void ConstructLC(const Vec4<Scalar> &p);
 
     SComplex operator*(const Spinor &s) const;
 
@@ -139,6 +124,5 @@ namespace ATOOLS {
 
 #define DWSpinor ATOOLS::Spinor<double>
 #define QWSpinor ATOOLS::Spinor<long double>
-#define XWSpinor ATOOLS::Spinor<ATOOLS::DDouble>
 
 #endif

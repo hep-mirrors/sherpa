@@ -10,8 +10,7 @@ namespace METOOLS {
 
   template <typename SType>
   class CV: public Current,
-	    public Current_Contractor<SType>,
-	    public Downcast_Contractor<CV<SType>,SType> {
+	    public Current_Contractor<SType> {
   public:
 
     typedef std::complex<SType>   SComplex;
@@ -244,9 +243,7 @@ template <typename SType>
 void CV<SType>::AddPropagator()
 {
   // add propagator for off-shell leg
-  // m_p2, not m_p.Abs2(): see Current::Evaluate(). p2 is used twice below --
-  // once as the propagator denominator and once in the longitudinal
-  // projector -- so a cancelled value would enter the current twice over.
+  // m_p2, not m_p.Abs2(): see Current::Evaluate().
   SComplex p2(SType(this->m_p2)), prop(-M_I/(p2-m_cmass2));
   if (this->m_osd) prop=SComplex(M_I);
 #ifdef DEBUG__BG
@@ -367,36 +364,3 @@ PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"vector current (double)";
 }
-
-// ---- QPREC_BEGIN: long-double instantiation of the same tower ----
-DECLARE_GETTER(CV<long double>,"QV",Current,Current_Key);
-
-Current *ATOOLS::Getter<Current,Current_Key,CV<long double> >::
-operator()(const Current_Key &key) const
-{
-  if (key.m_fl.IsVector()) return new CV<long double>(key);
-  return NULL;
-}
-
-void ATOOLS::Getter<Current,Current_Key,CV<long double> >::
-PrintInfo(std::ostream &str,const size_t width) const
-{
-  str<<"vector current (long double)";
-}
-// ---- QPREC_END ----
-// ---- XPREC_BEGIN: double-double instantiation ----
-DECLARE_GETTER(CV<ATOOLS::DDouble>,"XV",Current,Current_Key);
-
-Current *ATOOLS::Getter<Current,Current_Key,CV<ATOOLS::DDouble> >::
-operator()(const Current_Key &key) const
-{
-  if (key.m_fl.IsVector()) return new CV<ATOOLS::DDouble>(key);
-  return NULL;
-}
-
-void ATOOLS::Getter<Current,Current_Key,CV<ATOOLS::DDouble> >::
-PrintInfo(std::ostream &str,const size_t width) const
-{
-  str<<"vector current (double-double)";
-}
-// ---- XPREC_END ----

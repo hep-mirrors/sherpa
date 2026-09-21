@@ -10,7 +10,6 @@ namespace ATOOLS {
 
   /*!
     \class DDouble
-    \brief Unevaluated-sum ("double-double") real number, ~106 bits of mantissa.
 
     A value is carried as an exact sum m_h + m_l of two doubles with
     |m_l| <= ulp(m_h)/2, so the pair represents roughly twice the significand
@@ -24,7 +23,6 @@ namespace ATOOLS {
     portable answer to that: it is 80-bit on x86 but a plain double on arm64,
     so a PMODE built on it gives different physics on different machines. This
     type is identical everywhere and needs no compiler or library support
-    beyond IEEE doubles and fma().
   */
   class DDouble {
   private:
@@ -32,8 +30,7 @@ namespace ATOOLS {
     double m_h, m_l;
 
     // Error-free transformations. two_sum is Knuth's; quick_two_sum needs
-    // |a| >= |b| and costs three flops instead of six; two_prod uses fma,
-    // which is a single instruction on every target we build for.
+    // |a| >= |b|
     static inline void QuickTwoSum(double a,double b,double &s,double &e)
     { s=a+b; e=b-(s-a); }
     static inline void TwoSum(double a,double b,double &s,double &e)
@@ -51,17 +48,12 @@ namespace ATOOLS {
     inline double High() const { return m_h; }
     inline double Low() const  { return m_l; }
 
-    // explicit: an implicit narrowing back to double would silently undo the
-    // whole point of the type wherever a double-typed temporary appears.
     inline explicit operator double() const { return m_h+m_l; }
     inline explicit operator long double() const
     { return (long double)m_h+(long double)m_l; }
 
     inline DDouble operator-() const { return DDouble(-m_h,-m_l); }
 
-    // Free, not member: a member operator* cannot convert its LEFT operand,
-    // so `2.0*x` would not compile even though DDouble is constructible from
-    // double. Mixed double/DDouble expressions are everywhere in the tower.
     friend inline DDouble operator+(const DDouble &a,const DDouble &b)
     {
       double s,e,s2,e2;
@@ -120,7 +112,7 @@ namespace ATOOLS {
 
   };// end of class DDouble
 
-  // Declaring abs/sqrt/fabs in ATOOLS would otherwise HIDE the global ones
+  // Declaring abs/sqrt/fabs in ATOOLS would otherwise hide the global ones
   // from every unqualified call inside the namespace: Vec3<double>::Abs()
   // calling sqrt(double) would convert its argument to DDouble and hand back
   // a DDouble. Pulling the standard overloads in keeps the set complete.
@@ -160,12 +152,6 @@ namespace ATOOLS {
 
 
 
-  // std::complex<T> reaches its scalar helpers through fully-qualified std::
-  // calls, whose overload set is fixed when <complex> is parsed - overloads
-  // added to namespace std afterwards are never found. So complex abs() and
-  // sqrt() are provided here instead: argument-dependent lookup on
-  // std::complex<ATOOLS::DDouble> reaches ATOOLS (DDouble is a template
-  // argument), and a non-template beats std::sqrt's template.
   inline DDouble abs(const std::complex<DDouble> &z)
   {
     const DDouble ax(abs(z.real())), ay(abs(z.imag()));
@@ -186,6 +172,8 @@ namespace ATOOLS {
     if (z.imag()<zero) im=-im;
     return std::complex<DDouble>(re,im);
   }
+
+  typedef ATOOLS::DDouble DD;
 
 }// end of namespace ATOOLS
 
