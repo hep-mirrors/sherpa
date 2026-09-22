@@ -15,7 +15,8 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
   m_subtype(subscheme::CS),
   p_proc(proc), p_nlomc(NULL), p_kernel(NULL),
   p_cpl(NULL), m_flavs(p_proc->Flavours()),
-  m_massive(true), m_cemode(false), m_cpldef(0.), m_NC(3.),
+  m_massive(true), m_cemode(false),
+  m_beam{0, 1}, m_cpldef(0.), m_NC(3.),
   m_Vsubmode(1), m_facscheme(0),
   m_sa(false), m_sb(false),
   m_typea(m_flavs[0].IntSpin()), m_typeb(m_flavs[1].IntSpin()),
@@ -203,8 +204,15 @@ void KP_Terms::Calculate
 {
   DEBUG_FUNC(m_itype<<": type(a)="<<m_typea<<", beam(a)="<<m_sa
                     <<", type(b)="<<m_typeb<<", beam(b)="<<m_sb);
+  // mom is flavour-ordered, the bunches are not
+  m_beam[0] = mom[0][3] > 0. ? 0 : 1;
+  m_beam[1] = mom[1][3] < 0. ? 1 : 0;
   msg_Debugging()<<"x0="<<x0<<", x1="<<x1
                  <<", eta0="<<eta0<<", eta1="<<eta1<<std::endl;
+  // reset first, so that a rejected point does not leak the previous
+  // point's coefficients into FillMEwgts
+  for (int i=0;i<8;i++) m_kpca[i]=0.;
+  for (int i=0;i<8;i++) m_kpcb[i]=0.;
   if (!m_sa && !m_sb) return;
   if ((m_sa && x0<eta0) || (m_sb && x1<eta1)) return;
   double cpl(Coupling());
@@ -212,8 +220,6 @@ void KP_Terms::Calculate
   size_t pls=1;
   if (m_sa&&m_sb) pls++;
   double muf2(p_proc->ScaleSetter()->Scale(stp::fac,1));
-  for (int i=0;i<8;i++) m_kpca[i]=0.;
-  for (int i=0;i<8;i++) m_kpcb[i]=0.;
 
   msg_Debugging()<<"parton list: "<<m_plist<<std::endl;
 
@@ -574,8 +580,8 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
   // assumption: a/a' = gluon/photon, quark only
   if (m_sa) {
     msg_Debugging()<<"sa"<<std::endl;
-    if (m_cemode && eta0*rpa->gen.PBunch(0)[0]<fl0.Mass(true)) {
-      msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta0*rpa->gen.PBunch(0)[0]
+    if (m_cemode && eta0*rpa->gen.PBunch(m_beam[0])[0]<fl0.Mass(true)) {
+      msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta0*rpa->gen.PBunch(m_beam[0])[0]
                     <<" vs. "<<fl0.Mass(true)<<" )"<<std::endl;
       return 0.0;
     }
@@ -632,8 +638,8 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
 
   if (m_sb) {
     msg_Debugging()<<"sb"<<std::endl;
-    if (m_cemode && eta1*rpa->gen.PBunch(1)[0]<fl1.Mass(true)) {
-      msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta1*rpa->gen.PBunch(1)[0]
+    if (m_cemode && eta1*rpa->gen.PBunch(m_beam[1])[0]<fl1.Mass(true)) {
+      msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta1*rpa->gen.PBunch(m_beam[1])[0]
                     <<" vs. "<<fl1.Mass(true)<<" )"<<std::endl;
       return 0.0;
     }
@@ -679,7 +685,7 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
           else                                fbq += sqr(quark[i].Charge())
                                                      *pdfb->GetXPDF(quark[i]);
         }
-      fbq/=eta0;
+      fbq/=eta1;
     }
 
     for (size_t i=0;i<m_xpb.size();i++) if (m_xpb[i].xp>eta1) {
