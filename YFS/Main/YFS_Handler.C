@@ -286,6 +286,11 @@ bool YFS_Handler::MakeYFS(ATOOLS::Vec4D_Vector &p)
 void YFS_Handler::MakeCEEX() {
   if (m_useceex) {
     Vec4D_Vector vv;
+    // The one-photon real provider, so CEEX: COMIX_REAL can ask it for
+    // Comix's helicity amplitudes. Re-pointed every event because the
+    // handler is shared by every process in the run card and the provider
+    // belongs to whichever one is currently selected.
+    if (p_nlo) p_ceex->SetRealProvider(p_nlo->RealProvider(1));
     p_ceex->SetBorn(m_born);
     for(size_t i = 0; i < m_ev.m_plab.size(); ++i) vv.push_back(m_ev.m_bornMomenta[i]);
     for(size_t i = 2; i < 4; ++i) vv.push_back(m_ev.m_plab[i]);
@@ -644,6 +649,20 @@ void YFS_Handler::CalculateBeta() {
       // GenerateWeight(). Assigning it only at the end of this function left
       // the comparison reading the PREVIOUS event's value.
       m_ev.m_ceexfactor = haveceex ? ceexfac : 0.;
+      /*
+        Bit-exact reference stream for refactors of the CEEX internals
+        (env SHERPA_CEEX_GOLDEN). The partition sum, the S-factors and the
+        amplitude container are all being generalised from the 2 -> 2 /
+        ISR-FSR form to arbitrary 2 -> N and arbitrary emission stages; every
+        one of those steps has to leave the N = 2 answer IDENTICAL, not close.
+        Printed at full precision so a diff is a real test rather than a
+        rounded one. Costs nothing when the variable is unset.
+      */
+      { static const bool gold(getenv("SHERPA_CEEX_GOLDEN")!=NULL);
+        if (gold)
+          std::cerr<<"@@@ CEEXGOLD "<<std::setprecision(17)
+                   <<" rhocrude="<<r0<<" result="<<r1
+                   <<" factor="<<m_ev.m_ceexfactor<<std::endl; }
       if (p_nlo) p_nlo->SetCeexVirtual(p_ceex->VirtualFactor());
     }
   }

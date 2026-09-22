@@ -1,12 +1,3 @@
-/*!
-  \file Ceex_Born.C
-
-  The Born spin amplitude - the spinor structures contracted with the
-  coupling x propagator factors - and beta_0^0, which is that Born dressed
-  with the event's S-factor product.
-
-*/
-
 #include "YFS/CEEX/Ceex_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "METOOLS/Main/Spin_Structure.H"
@@ -63,12 +54,6 @@ void Ceex_Base::BornAmplitude(const Vec4D_Vector &k, Amplitude &M,
   static const bool exactisrmass(
       Settings::GetMainSettings()["CEEX"]["EXACT_ISR_SPINOR_MASS"]
       .SetDefault(0).Get<int>() != 0);
-  // KKMC neglects the beam mass in the spinors (its Fleps convention). For
-  // Bhabha that is not available: the beam and the final-state fermion are
-  // the same particle, and the t-channel ties them together on one line, so
-  // a massless beam next to an exactly massive final state is inconsistent.
-  // The leading helicity configurations are unchanged either way - the
-  // difference is O(m_e^2/s) - but the mass-suppressed ones are not.
   const double mi(exactisrmass || m_bhabha ? m1 : 0.);
   const bool cached(slot >= 0 && slot < (int)m_spinvalid.size()
                     && m_spinvalid[slot]);
@@ -146,20 +131,10 @@ void Ceex_Base::BornAmplitude(const Vec4D_Vector &k, Amplitude &M,
   }
   // Bhabha t-channel couplings, carried by the crossed structures built above.
   //
-  // KKMC adds its t-channel W (GPS_BornWPlus) as a prefactor on the s-channel
-  // structures, but that does NOT carry over here. The W is purely left-handed
-  // and so forces hel1 = -hel2, which is the s-channel gate; a vector gamma/Z
-  // does not, and the two configurations it adds outside that gate are the pure
-  // t-channel ones carrying s^2/t^2 - 86% of |M|^2 at a wide angle. They need
-  // their own spinor structures, which is why m_Tampt/m_Uampt exist.
   for (int j = 0; j <= 1; j++) m_TCt[j] = m_UCt[j] = Complex(0., 0.);
   if (m_bhabha) {
     for (int j = 0; j <= 1; j++) {
       const double h(1. - 2.*j);
-      // Fermi statistics puts the exchange diagram in with the opposite sign.
-      // The coupling assignment mirrors the s-channel (Tt with mode 1, Ut with
-      // mode 0); determined against Comix, which pins it to 0.06% across
-      // angle, where a swapped assignment drifts 1.4%.
       m_TCt[j] = -(CouplingZ(h, 1) * m_propZt + CouplingG() * m_propGt);
       m_UCt[j] = -(CouplingZ(h, 0) * m_propZt + CouplingG() * m_propGt);
     }
@@ -210,49 +185,18 @@ Complex Ceex_Base::BornAmplitude(Vec4D p1, Vec4D p2, Vec4D p3, Vec4D p4, int h0,
 
 
 
+/*!
+  Born spin amplitudes from Comix. Always false, and structurally so.
+
+*/
 bool Ceex_Base::ComixBornAmplitude(const Vec4D_Vector &p, Amplitude &A)
 {
-  if (p_bornproc == nullptr) return false;
-  Cluster_Amplitude *ampl(Cluster_Amplitude::New());
-  const size_t nin(p_bornproc->NIn());
-  ampl->SetNIn(nin);
-  ampl->SetMS(p_bornproc->Generator());
-  ampl->SetMuF2(sqr(rpa->gen.Ecms()));
-  ampl->SetMuR2(sqr(rpa->gen.Ecms()));
-  ampl->SetMuQ2(sqr(rpa->gen.Ecms()));
-  ampl->SetMu2(sqr(rpa->gen.Ecms()));
-  for (size_t i(0); i < p.size() && i < p_bornproc->Flavours().size(); ++i)
-    ampl->CreateLeg(i < nin ? -p[i] : p[i], p_bornproc->Flavours()[i]);
-  ampl->SetProc(p_bornproc);
-
-  ampl->Delete();
-  const double diff(0.);
-  std::vector<METOOLS::Spin_Amplitudes> amps;
-  if (amps.empty()) return false;
-
-  const METOOLS::Spin_Amplitudes &sa(amps[0]);
-  for (int h0 = 0; h0 <= 1; ++h0)
-    for (int h1 = 0; h1 <= 1; ++h1)
-      for (int h2 = 0; h2 <= 1; ++h2)
-        for (int h3 = 0; h3 <= 1; ++h3) {
-          const size_t idx(h0 + 2*h1 + 4*h2 + 8*h3);
-          A.m_A[h0][h1][h2][h3] = (idx < sa.size()) ? sa[idx] : Complex(0.,0.);
-        }
-
-  if (m_checkxs) {
-    double ss(0.);
-    for (size_t i(0); i < sa.size(); ++i) ss += std::norm(sa[i]);
-    std::cerr<<"@@@ CEEXCOMIX sumsq="<<ss<<" diff="<<diff
-             <<" ratio="<<(ss!=0.? diff/ss : 0.)
-             <<" nhel="<<sa.size()<<std::endl;
-  }
-  return true;
+  return false;
 }
 
 
 void Ceex_Base::InfraredSubtractedME_0_0() {
   // This partition's Born, squared on its own and added to the INCOHERENT sum
-  // before it goes into the coherent m_AmpExpo0. KKMC's DistCru/CrudSum.
   double rc(0.);
   Amplitude AmpBorn;
   BornAmplitude(m_pceex, AmpBorn, -1., -1., 0);

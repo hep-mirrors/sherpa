@@ -149,6 +149,32 @@ public:
   bool m_keepamps = false;
   inline void KeepAmplitudes(bool k) { m_keepamps = k; }
 
+  /*!
+    Comix's per-helicity amplitudes at ONE arbitrary phase-space point,
+    evaluated on demand and cached in m_spinamps.
+
+    This is the evaluate-then-FillAmplitudes pair of Calc_R, factored out so
+    that CEEX can obtain the spin amplitudes of the real process WITHOUT
+    calling Process_Base::Differential() itself. That distinction is not
+    cosmetic: CEEX already runs inside the BORN process's Differential()
+    (Single_Process::AddISR calls p_int->YFS()->GenerateWeight()), so a
+    Differential() on the Born from there recurses without bound. The REAL
+    process is safe because Single_Process::Differential short-circuits to
+    YFSDifferential for any registered real provider (Single_Process.C:566),
+    i.e. it runs Partonic() only and never reaches AddISR.
+
+    Returns NULL when there is no process, the leg count does not match, or
+    Comix produced no amplitudes. The returned pointer is m_spinamps and is
+    valid until the next call to this or to Calc_R.
+  */
+  const std::vector<METOOLS::Spin_Amplitudes> *
+  ComixAmplitudes(const ATOOLS::Vec4D_Vector &p);
+
+  //! Nominal weight of the last ComixAmplitudes() evaluation. Its ratio to
+  //! SumSquare() is the constant spin-average/flux/symmetry factor, so a
+  //! drift in it means the amplitudes and the ME are not the same object.
+  double m_lastcomix = 0.;
+
 protected:
 
   size_t m_nphotons;

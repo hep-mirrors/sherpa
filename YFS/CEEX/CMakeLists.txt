@@ -4,6 +4,7 @@ set(CEEX_SOURCES Ceex_Base.C
                  Ceex_Virtual.C
                  Ceex_Real.C
                  Ceex_Partitions.C
+                 Ceex_Comix.C
                  Ceex_Checks.C
                  Ceex_Beta2.C)
 

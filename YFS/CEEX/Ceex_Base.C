@@ -1,13 +1,3 @@
-/*!
-  \file Ceex_Base.C
-
-  Construction, configuration and the per-event scaffolding: couplings,
-  propagators, the CEEX momentum set, and MakeRho.
-
-  Split out of Ceex_Base.C, which had reached 1867 lines. The pieces are
-  grouped by what they compute, not by call order.
-*/
-
 #include "YFS/CEEX/Ceex_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "METOOLS/Main/Spin_Structure.H"
@@ -47,18 +37,10 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
   m_onlyz = s["ONLYZ"].Get<int>();
   m_onlyg = s["ONLYG"].Get<int>();
   m_checkxs = s["CHECK_XS"].Get<int>();
+  m_comixreal = s["COMIX_REAL"].Get<int>();
+  m_comixflip = s["COMIX_REAL_FLIP"].Get<int>();
+  m_comixnorm = s["COMIX_REAL_NORM"].Get<double>();
   string widthscheme = ss["WIDTH_SCHEME"].Get<string>();
-  // Both of Sherpa's width schemes put a CONSTANT M*Gamma in the propagator:
-  // "Fixed" by definition, and "CMS" because the complex mass
-  // mu^2 = M^2 - i*M*Gamma gives 1/(s - M^2 + i*M*Gamma). CEEX already takes a
-  // complex sin^2(theta_W) from CMS, so the propagator has to follow it.
-  //
-  // KKMC instead uses an s-DEPENDENT width by default (CEEX.f:877-883; the
-  // constant form is reachable there only via KeyZet = -1). Following KKMC here
-  // disagreed with Sherpa's own Comix by up to +2.8% in |propZ|^2 at
-  // x = Gamma_Z/M_Z = 0.027, i.e. right where radiative return crosses the Z
-  // width. To compare against KKMC, set WIDTH_SCHEME: Fixed here AND run KKMC
-  // with KeyZet = -1, so that both sides use the constant width.
   m_fixedwidth = (widthscheme == "Fixed" || widthscheme == "CMS");
   m_flavs = flavs;
   if (flavs.size() != 4) {
@@ -138,6 +120,14 @@ void Ceex_Base::RegisterDefaults()
   s["ONLYG"].SetDefault(0);
   s["CHECK_XS"].SetDefault(0);
   s["WEAK"].SetDefault(1);
+  // Take the O(alpha) real (beta_1) from Comix's helicity amplitudes instead
+  // of the hand-coded spinor algebra. Off by default.
+  s["COMIX_REAL"].SetDefault(0);
+  // Which legs Comix labels with the opposite helicity index; see
+  // Ceex_Base::FetchComixReal and the @@@ CEEXFLIP diagnostic.
+  s["COMIX_REAL_FLIP"].SetDefault(26);
+  // Comix amplitude -> CEEX normalisation; measured by the soft probe.
+  s["COMIX_REAL_NORM"].SetDefault(0.5);
 }
 
 
@@ -190,12 +180,6 @@ void Ceex_Base::MakePropT(const Vec4D_Vector &p)
     return;
   }
   m_tinv = (p[0] - p[2]).Abs2();
-  // Fixed width, not the running form: t is spacelike, so a width scaled by t
-  // would put the pole on the wrong side. The width is kept rather than dropped
-  // because the complex-mass scheme carries the complex mass in every
-  // propagator, spacelike included - that is what keeps it gauge invariant, and
-  // it is the same scheme the complex sin^2(theta_W) above comes from. Dropping
-  // it costs a factor 12 in the agreement with Comix across scattering angle.
   m_propZt = 1. / Complex(m_tinv - sqr(m_MZ), m_gZ * m_MZ);
   m_propGt = 1. / Complex(m_tinv, 0.);
   if (m_onlyz) m_propGt = 0.;

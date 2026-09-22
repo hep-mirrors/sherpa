@@ -379,6 +379,29 @@ double Real_Correction::Calc_External(const ATOOLS::Vec4D_Vector &p){
   return R*m_factor;
 }
 
+const std::vector<METOOLS::Spin_Amplitudes> *
+Real_Correction::ComixAmplitudes(const ATOOLS::Vec4D_Vector &p)
+{
+  if (p_proc == NULL) return NULL;
+  if (p.size() != p_proc->Flavours().size()) return NULL;
+  // The cache this fills is the same one Calc_R fills; enabling it here is
+  // what takes KeepAmplitudes() out of dormancy.
+  m_keepamps = true;
+  Cluster_Amplitude *ampl(CreateAmplitude(p));
+  // Same rmode as Calc_R: 128 = GeneratePoint(), 2 = fixed scales from the
+  // amplitude, 1 = selector off (the point is not ours to cut).
+  const int rmode(128 + 2 + 1);
+  Weights_Map w(p_proc->Differential(*ampl, Variations_Mode::nominal_only,
+                                     rmode));
+  m_lastcomix = w.Nominal();
+  m_spinamps.clear();
+  std::vector<std::vector<Complex> > cols;
+  p_proc->FillAmplitudes(m_spinamps, cols);
+  ampl->Delete();
+  if (m_spinamps.empty()) return NULL;
+  return &m_spinamps;
+}
+
 Cluster_Amplitude *Real_Correction::CreateAmplitude(const ATOOLS::Vec4D_Vector &p) const
 {
   Cluster_Amplitude *ampl = Cluster_Amplitude::New();

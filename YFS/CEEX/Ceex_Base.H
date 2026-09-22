@@ -16,7 +16,11 @@ using namespace ATOOLS;
 using namespace std;
 using namespace METOOLS;
 
+namespace METOOLS { class Spin_Amplitudes; }
+
 namespace YFS {
+
+  class Real_Correction;
 
   typedef std::map<int,double> HelicityMap;
   typedef complex<double> dcmplx;
@@ -34,7 +38,7 @@ namespace YFS {
   public:
 
     Ceex_Base(const Flavour_Vector &flavs);
-    virtual ~Ceex_Base() { ReportBornShape(); }
+    virtual ~Ceex_Base() { ReportBornShape(); ReportComixReal(); }
 
     Flavour_Vector m_flavs;
     /*!
@@ -51,69 +55,70 @@ namespace YFS {
     inline void SetRealProc(PHASIC::Process_Base *p) { p_realproc = p; }
     //! Born spin amplitudes from Comix; false if unavailable.
     bool ComixBornAmplitude(const ATOOLS::Vec4D_Vector &p, Amplitude &A);
+
+    /*!
+      CEEX: COMIX_REAL. When set, the O(alpha) REAL correction of a
+      one-photon event is taken from Comix's helicity amplitudes for the
+      e+e- -> f fbar gamma process instead of the hand-coded spinor algebra
+      in Ceex_Real.C. Default 0 - nothing changes unless it is asked for.
+
+      Only the real is affected: the virtual stays where it is, and events
+      with a photon multiplicity other than one keep the hand-coded path
+      (see ApplyComixReal for why).
+    */
+    int m_comixreal = 0;
+    YFS::Real_Correction *p_realprov = nullptr;
+    inline void SetRealProvider(YFS::Real_Correction *p) { p_realprov = p; }
+    Amplitude m_comixM1;
+    Amplitude m_comixraw[2];
+    int m_comixdrawnhel = 0;
+    /*!
+      CEEX: COMIX_REAL_FLIP - which external legs Comix labels with the
+      OPPOSITE helicity index to CEEX. Bit i flips leg i: 0,1 the beams, 2,3
+      the outgoing pair, 4 the photon. See the note in FetchComixReal; the
+      @@@ CEEXFLIP diagnostic is what determines it.
+    */
+    int m_comixflip = 26;
+    /*!
+      CEEX: COMIX_REAL_NORM - Comix's amplitude in CEEX's normalisation.
+
+      MEASURED, not derived: the soft probe (SoftProbe) finds
+      |M1_comix|^2 / |e^2 (S_ini+S_fin) Born_hand|^2 -> 4.0000000 as the
+      photon softens, on every point tried and to seven digits, so the two
+      conventions differ by exactly a factor 2 in the amplitude. The factor
+      is invisible in the hand-coded CEEX because its weight is
+      rho1/RhoCrude and the same soft factors sit in both; it is NOT
+      invisible once the numerator comes from somewhere else.
+    */
+    double m_comixnorm = 0.5;
+    bool m_havecomixreal = false;
+    //! Fetch and re-index Comix's one-photon amplitude for this event.
+    bool FetchComixReal();
+    //! Replace the hand-coded real with it. No-op unless m_comixreal.
+    void ApplyComixReal();
+    //! Soft-limit ladder: beta_1 must vanish as the photon softens.
+    void SoftProbe();
+    //! End-of-run summary of the Comix real path.
+    void ReportComixReal() const;
+    //! Run totals of the Comix-vs-hand comparison (SHERPA_CEEX_COMIX).
+    double m_cxrnormsum = 0., m_cxrmetsum = 0.;
+    long   m_cxrn = 0, m_cxrfail = 0;
     Amplitude  m_bornAmp, m_Amp1U, m_Amp1V;
-    /*!
-      Cumulative spin amplitudes, one per order in alpha, exactly as KKMC's
-      m_AmpExpo0/1 (KKceex.cxx:1185). The betas are ADDED INTO these, helicity
-      indices intact, and only at the very end is the distribution formed as
-      sum_hel |A(hel)|^2 (MakeRho, KKceex.cxx:1234).
-
-      This replaced a scalar accumulation in which each beta was collapsed over
-      helicities by SumAmplitude() and the total then squared - i.e.
-      |sum_hel sum_beta|^2 instead of sum_hel |sum_beta|^2. Helicity
-      configurations are distinguishable, so that summed interference between
-      states that cannot interfere.
-    */
     Amplitude  m_AmpExpo0, m_AmpExpo1;
-    //! Per-helicity snapshots of the three additive pieces of m_AmpExpo1,
-    //! taken as each is added: the Born term, the O(alpha) virtual increment
-    //! (beta_0^1) and the real increment (beta_1^0). Lets the comparison
-    //! against KKMC be made piece by piece instead of only on the total.
     Amplitude  m_snapBorn, m_snapVirt, m_snapReal;
-    /*!
-      Born + virtual, with no real emission, accumulated over the SAME
-      partition sum as m_AmpExpo0/1. Its ratio to m_AmpExpo0 is the O(alpha)
-      VIRTUAL factor on its own, which is what NLO_Base wants when CEEX is
-      supplying the virtual in place of a loop ME.
-
-      Kept separate from m_snapVirt, which is a per-partition ASSIGNMENT for
-      the diagnostics and therefore only ever holds the last partition.
-    */
     Amplitude  m_AmpBornVirt;
-    //! Born + real, no virtual. Same partition sum; the mirror of m_AmpBornVirt.
     Amplitude  m_AmpBornReal;
-    /*!
-      Per-photon real emission: m_realphot[j] is photon j's beta_1^0, summed
-      over the partitions but NOT over the other photons. Lets the real be
-      compared against the external provider photon by photon - the external
-      stores its own in YFS::Photon::m_beta10 - instead of only in the total,
-      where a disagreement cannot be attributed to a particular emission.
 
-      Their sum is NOT the total real: rho is |B + sum_j R_j|^2, so the cross
-      terms between photons belong to no single j.
-    */
     std::vector<Amplitude> m_realphot;
     Vec4D_Vector m_allphotons_lab;
     double     m_resultbv = 0., m_resultbr = 0.;
-    /*!
-      The INCOHERENT partition sum of the Born, KKMC's RhoCrud: each
-      partition's beta_0^0 squared and added, rather than the amplitudes added
-      and then squared.
-
-      This is the denominator the CEEX weight needs. rho0 is the COHERENT sum,
-      so the partitions can cancel and it can approach zero - while the crude
-      weight it divides is a factorised eikonal times Born and does not. At
-      250 GeV that turned one event into a 1107 pb spike on a 4.86 pb cross
-      section. A sum of positive terms cannot do that.
-    */
     double     m_rhocrud = 0.;
     Vec4D_Vector   m_momenta, m_isrphotons, m_bornmomenta;
-    //! Final-state photons, and the two lists concatenated (ISR first). The
-    //! partition flag, the helicity and the two S-factors are all indexed
-    //! against m_allphotons.
     Vec4D_Vector   m_fsrphotons, m_allphotons;
-    std::vector<int>     m_isrflag;
-    std::vector<Complex> m_Sfac_ini, m_Sfac_fin;
+    int                  m_nstages = 2;
+    std::vector<int>     m_stage;
+    std::vector<char>    m_stagereduces;
+    std::vector<std::vector<Complex> > m_Sfac;
     //! (q1+q2)^2, the PHYSICAL final-pair invariant. Fixed for the event,
     //! where m_sp is the propagator scale and changes with the partition.
     double m_svarQ = 0.;
@@ -257,15 +262,6 @@ namespace YFS {
     void InfraredSubtractedME_1_0_FSR(const Vec4D &k, int hel,
                                       const Complex &sProd, const Complex &Sactu,
                                       double CKine, int slot=-1, int iphot=-1);
-    /*!
-      The ISR/FSR partition of the photons, KKMC's GPS_PartitionStart and
-      PartitionPlus. m_isrflag[j] is 1 if photon j hangs off the initial state
-      in the CURRENT partition and 0 if it hangs off the final state; the
-      amplitude is summed coherently over all 2^n of them, and THAT coherent
-      sum is what real initial-final interference is in CEEX.
-
-      last: 0 = keep going, 1 = this is the last one, 2 = stop immediately.
-    */
     void PartitionStart(int &last);
     void PartitionPlus(int &last);
     void InfraredSubtractedME_2_0();
@@ -284,13 +280,6 @@ namespace YFS {
     /*!
       The U / V transition matrices, eq.(222) of hep-ph/0006359.
 
-      M1/M2 are the SPINOR masses of p1/p2; negative means "take it from the
-      momentum". They matter only in the helicity-FLIPPING element, which is
-      the one proportional to the masses - and one of these legs is normally
-      the PHOTON, whose Vec4D::Mass() is the square root of whatever numerical
-      off-shellness the momentum happens to carry (measured: p^2 = -1.8e-15,
-      so Mass() = 4.2e-08) rather than zero. KKMC passes p1.M/p2.M, so its
-      photon leg carries MasPhot and its fermion leg the nominal mass.
     */
     Complex UGamma(const Vec4D &p1, const Vec4D &p2, const Vec4D &k, int h2, int i, int j,
                    bool NegMass=0, double M1=-1., double M2=-1.);
@@ -301,15 +290,6 @@ namespace YFS {
 
     Complex S(const Vec4D &p1, const Vec4D &p2, int h1, int h2);
     Complex S(const Vec4D &p1, const Vec4D &p2, double m1,double m2, int h1, int h2);
-    /*!
-      GPS spinor structures. C1/C2 are the spinor-type signs of the two legs.
-
-      M1/M2 are the SPINOR masses. A negative value means "take it from the
-      momentum", i.e. Vec4D::Mass() = sqrt(p^2), which is what every call site
-      used to do implicitly. Pass them explicitly to use the nominal flavour
-      mass instead: the momenta are only on shell to about 3e-7 here, and the
-      mass enters the helicity-conserving (mass-suppressed) branch linearly.
-    */
     Complex T(const Vec4D &p1, const Vec4D &p2, int h1, int h2, int C1=1, int C2=1,
               double M1=-1., double M2=-1.);
     Complex Tp(const Vec4D &p1, const Vec4D &p2, int h1, int h2, int C1=1, int C2=1,

@@ -1,12 +1,3 @@
-/*!
-  \file Ceex_Partitions.C
-
-  The ISR/FSR partition sum. Calculate() walks all 2^n assignments of the
-  photons to the initial or final line and accumulates the betas coherently;
-  that coherence IS initial-final interference in CEEX.
-
-*/
-
 #include "YFS/CEEX/Ceex_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "METOOLS/Main/Spin_Structure.H"
@@ -27,40 +18,48 @@ using namespace YFS;
 
 
 void Ceex_Base::CalculateSfactors() {
-  m_Sfac_ini.clear();
-  m_Sfac_fin.clear();
+  // Stage 1 = initial, stage 0 = final: the index convention the ISR/FSR
+  // version used, kept so the odometer enumerates partitions in the same
+  // order. A 2 -> N core adds stages here, one per resonant propagator, and
+  // nothing downstream changes
+  m_nstages = 2;
+  m_Sfac.assign(m_nstages, std::vector<Complex>());
+  m_stagereduces.assign(m_nstages, 0);
+  m_stagereduces[1] = 1;   // only initial-stage photons reduce X
   const Complex qratio(m_qe != 0. ? -m_qf/m_qe : 0., 0.);
   for (size_t i(0); i < m_allphotons.size(); ++i) {
-    m_Sfac_ini.push_back(Sfactor(m_bornmomenta[0], m_bornmomenta[1],
-                                 m_allphotons[i], m_PhoHel[i]));
-    m_Sfac_fin.push_back(qratio * Sfactor(m_pceex[2], m_pceex[3],
-                                          m_allphotons[i], m_PhoHel[i]));
+    m_Sfac[1].push_back(Sfactor(m_bornmomenta[0], m_bornmomenta[1],
+                                m_allphotons[i], m_PhoHel[i]));
+    m_Sfac[0].push_back(qratio * Sfactor(m_pceex[2], m_pceex[3],
+                                         m_allphotons[i], m_PhoHel[i]));
   }
 }
 
 
 void Ceex_Base::PartitionStart(int &last) {
   const bool fsr(HasFSR());
-  m_isrflag.assign(m_allphotons.size(), fsr ? 0 : 1);
+  m_stage.assign(m_allphotons.size(), fsr ? 0 : 1);
   last = fsr ? 0 : 1;
 }
 
 
 void Ceex_Base::PartitionPlus(int &last) {
-  const size_t n(m_isrflag.size());
+  const size_t n(m_stage.size());
   if (n == 0) { last = 2; return; }
-  if (n == 1) last = 1;
-  ++m_isrflag[0];
-  for (size_t i(0); i < n; ++i)
-    if (m_isrflag[i] == 2) {
-      m_isrflag[i] = 0;
-      if (i + 1 < n) {
-        ++m_isrflag[i+1];
-        if (m_isrflag[n-1] == 2) last = 2;
-      } else {
-        last = 2;   // carried off the top photon: every partition is done
-      }
-    }
+  // Odometer in base m_nstages, least significant photon first. At
+  // m_nstages = 2 this visits partitions in the same order as the original
+  // ISR/FSR increment it replaces.
+  size_t i(0);
+  for (; i < n; ++i) {
+    if (++m_stage[i] < m_nstages) break;
+    m_stage[i] = 0;
+  }
+  if (i == n) { last = 2; return; }   // carried off the top: enumeration done
+  // last = 1 marks the final partition, so the caller processes it and stops.
+  bool atmax(true);
+  for (size_t j(0); j < n; ++j)
+    if (m_stage[j] != m_nstages - 1) { atmax = false; break; }
+  last = atmax ? 1 : 0;
 }
 
 
@@ -123,7 +122,7 @@ void Ceex_Base::Calculate() {
                  <<"initial-final interference on them. Reported once."
                  <<std::endl;
     }
-    m_isrflag.assign(m_allphotons.size(), 1);
+    m_stage.assign(m_allphotons.size(), 1);
     last = 1;
   } else {
     PartitionStart(last);
@@ -135,9 +134,9 @@ void Ceex_Base::Calculate() {
     Complex sProd(1., 0.);
     std::vector<Complex> Sactu(m_allphotons.size(), Complex(1., 0.));
     for (size_t j(0); j < m_allphotons.size(); ++j) {
-      Sactu[j] = m_isrflag[j] ? m_Sfac_ini[j] : m_Sfac_fin[j];
+      Sactu[j] = m_Sfac[m_stage[j]][j];
       sProd   *= Sactu[j];
-      if (m_isrflag[j]) PX -= m_allphotons[j];
+      if (m_stagereduces[m_stage[j]]) PX -= m_allphotons[j];
     }
     const double svarX(PX.Abs2());
     if (m_checkxs) {
@@ -164,11 +163,11 @@ void Ceex_Base::Calculate() {
     InfraredSubtractedME_0_0();
     InfraredSubtractedME_0_1();
     for (size_t j(0); j < m_allphotons.size(); ++j) {
-      if (m_checkxs && m_isrflag[j]) {
+      if (m_checkxs && m_stagereduces[m_stage[j]]) {
         CheckSoftFactor(m_allphotons[j]);
         CheckUVDiagonality(m_allphotons[j]);
       }
-      if (m_isrflag[j]) {
+      if (m_stagereduces[m_stage[j]]) {
         InfraredSubtractedME_1_0(m_allphotons[j], m_PhoHel[j], sProd, Sactu[j],
                                  1 + 4*(int)j, (int)j);
       } else {
@@ -228,6 +227,11 @@ void Ceex_Base::Calculate() {
     }
     ++m_partn;
   }
+
+  // Comix-supplied O(alpha) real, if CEEX: COMIX_REAL asked for it. It
+  // OVERWRITES m_AmpExpo1 for one-photon events, so it has to run after the
+  // partition loop has finished accumulating and before MakeRho squares.
+  ApplyComixReal();
 
   MakeRho();
 
