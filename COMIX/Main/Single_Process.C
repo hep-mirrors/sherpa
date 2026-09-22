@@ -663,6 +663,8 @@ double COMIX::Single_Process::KPTerms
   if (kppointlike) *kppointlike=0.0;
   if (!(m_pinfo.m_fi.NLOType()&nlo_type::vsub)) return 0.0;
   const Vec4D &p0(p_int->Momenta()[0]), &p1(p_int->Momenta()[1]);
+  // pdfa/pdfb are beam-ordered, KP_Terms is flavour-ordered
+  if (ISRSwapped()) std::swap(pdfa,pdfb);
   double eta0(p0[3]>0.0?p0.PPlus()/rpa->gen.PBunch(0).PPlus():
 	      p0.PMinus()/rpa->gen.PBunch(1).PMinus());
   double eta1(p1[3]<0.0?p1.PMinus()/rpa->gen.PBunch(1).PMinus():
@@ -681,7 +683,7 @@ double COMIX::Single_Process::KPTerms
 
 void COMIX::Single_Process::FillMEWeights(ME_Weight_Info &wgtinfo) const
 {
-  wgtinfo.m_swap=m_p[0][3]<m_p[1][3];
+  wgtinfo.m_swap=ISRSwapped();
   wgtinfo.m_y1=m_x[wgtinfo.m_swap];
   wgtinfo.m_y2=m_x[1-wgtinfo.m_swap];
   (p_map?p_map:this)->p_bg->FillMEWeights(wgtinfo);

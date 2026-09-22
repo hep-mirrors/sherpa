@@ -373,16 +373,20 @@ namespace EXTAMP {
     p_kpterms->Calculate(p,dsij,m_x0,m_x1,m_eta0,m_eta1,w);
 
     /* Set all relevant members of ME_Weight_Info */
-    bool swap = p_int->Momenta()[0][3]<p_int->Momenta()[1][3];
+    bool swap = ISRSwapped();
     m_mewgtinfo.m_swap = swap;
     m_mewgtinfo.m_y1   = swap?m_x1:m_x0;
     m_mewgtinfo.m_y2   = swap?m_x0:m_x1;
     p_kpterms->FillMEwgts(m_mewgtinfo);
 
+    /* PDFs are beam-ordered, KP_Terms is flavour-ordered */
+    PDF::PDF_Base *pdfa(p_int->ISR()->PDF(0)), *pdfb(p_int->ISR()->PDF(1));
+    if (swap) std::swap(pdfa,pdfb);
+
     /* Do not divide by symfac at this stage, this is done for all
        components simultaneously in Partonic */
     double muf2(ScaleSetter()->Scale(stp::fac,1));
-    return p_kpterms->Get(p_int->ISR()->PDF(0),p_int->ISR()->PDF(1),
+    return p_kpterms->Get(pdfa,pdfb,
 			  m_x0, m_x1,
 			  m_eta0, m_eta1,
 			  muf2, muf2,
@@ -395,8 +399,11 @@ namespace EXTAMP {
   {
     /* Used by PHASIC::Single_Process for reweighting, so have to
        include the normalization factor here */
+    /* PDFs are beam-ordered, KP_Terms is flavour-ordered */
+    PDF::PDF_Base *pdfa(p_int->ISR()->PDF(0)), *pdfb(p_int->ISR()->PDF(1));
+    if (ISRSwapped()) std::swap(pdfa,pdfb);
     double muf2(ScaleSetter()->Scale(stp::fac,1));
-    return p_kpterms->Get(p_int->ISR()->PDF(0),p_int->ISR()->PDF(1),
+    return p_kpterms->Get(pdfa,pdfb,
 			  m_x0, m_x1,
 			  m_eta0, m_eta1,
 			  muf2, muf2,

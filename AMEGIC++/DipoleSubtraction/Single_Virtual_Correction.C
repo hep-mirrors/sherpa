@@ -924,6 +924,8 @@ double Single_Virtual_Correction::KPTerms
     else eta1=p_int->Momenta()[1].PPlus()/rpa->gen.PBunch(0).PPlus();
   }
   else THROW(fatal_error,"Invalid call");
+  // pdfa/pdfb are beam-ordered, KP_Terms is flavour-ordered
+  if (ISRSwapped()) std::swap(pdfa,pdfb);
   // determine KP terms
   double kpterm(0.), kppl(0.);
   if (p_partner->m_bvimode & 2) {
@@ -1259,7 +1261,7 @@ void Single_Virtual_Correction::SetSelectorOn(const bool on)
 
 void Single_Virtual_Correction::FillMEwgts(ATOOLS::ME_Weight_Info& wgtinfo)
 {
-  wgtinfo.m_swap=p_int->Momenta()[0][3]<p_int->Momenta()[1][3];
+  wgtinfo.m_swap=ISRSwapped();
   wgtinfo.m_y1=wgtinfo.m_swap?m_x1:m_x0;
   wgtinfo.m_y2=wgtinfo.m_swap?m_x0:m_x1;
   if (wgtinfo.m_type&mewgttype::VI)
