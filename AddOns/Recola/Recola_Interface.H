@@ -27,9 +27,9 @@ namespace Recola {
     static int          s_ewscheme;
     static int          s_amptype;
     static bool         s_compute_poles;
+    static bool         s_use_decay;
     static bool         s_mass_reg;
     static double       s_photon_mass;
-    static bool         s_use_decay;
     static size_t       s_getPDF_default;
 
     static std::vector<double> s_pdfmass;

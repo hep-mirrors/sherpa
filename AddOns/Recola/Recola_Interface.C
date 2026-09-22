@@ -198,9 +198,9 @@ bool           Recola::Recola_Interface::s_compute_poles = false;
 size_t         Recola::Recola_Interface::s_vmode = 0;
 int            Recola::Recola_Interface::s_ewscheme = 3;
 int            Recola::Recola_Interface::s_amptype = 1;
+bool           Recola::Recola_Interface::s_use_decay = 0;
 bool           Recola::Recola_Interface::s_mass_reg = 0;
 double         Recola::Recola_Interface::s_photon_mass = 0.1;
-bool           Recola::Recola_Interface::s_use_decay = 0;
 
   
 std::map<size_t,PHASIC::Process_Info> Recola::Recola_Interface::s_procmap;
@@ -392,29 +392,35 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
   set_output_file_rcl(recolaOutput.c_str());
   s_vmode = s["RECOLA_VMODE"].Get<int>();
   msg_Tracking()<<METHOD<<"(): Set V-mode to "<<s_vmode<<endl;
-  s_photon_mass = s["RECOLA_PHOTON_MASS"].Get<double>();
   s_use_decay   = s["RECOLA_USE_DECAY"].Get<bool>();
-  s_mass_reg = s["RECOLA_MASS_REG"].Get<bool>();
-  if(!s_mass_reg && yfs->Mode()!=YFS::yfsmode::off
-    && yfs->EnsureNLO()->p_virt!=NULL){ 
-    THROW(fatal_error, "Dimensional regularization is not supported for YFS. Use RECOLA_MASS_REG: 1");
-  }
-  if(s_mass_reg){
+  s_mass_reg    = s["RECOLA_MASS_REG"].Get<bool>();
+  if (s_mass_reg) {
+#ifdef USING__RECOLA2
+    THROW(fatal_error, "RECOLA_MASS_REG cannot be honoured by Recola 2:"
+                       " use_mass_reg_soft_rcl is a deprecated no-op, so the"
+                       " run would be dimensionally regularised while claiming"
+                       " otherwise. It remains available against Recola 1.");
+#else
     s_photon_mass = s["RECOLA_PHOTON_MASS"].Get<double>();
-    if(s_photon_mass != yfs->m_photonMass){
+    if (s_photon_mass != yfs->m_photonMass) {
       msg_Error()<<"Mismatch between YFS and Recola photon mass"
                  <<"\n mass in YFS = "<<yfs->m_photonMass
                  <<"\n mass in RECOLA = "<<s_photon_mass<<endl;
-      THROW(fatal_error,"Mismatch in photon mass regulator");
-        msg_Error()<<"Mismatch between YFS and Recola photon mass"
-                   <<"\n mass in YFS = "<<yfs->m_photonMass
-                   <<"\n mass in RECOLA = "<<s_photon_mass<<endl;
-        THROW(fatal_error,"Mismatch in photon mass regulator");
+      THROW(fatal_error, "Mismatch in photon mass regulator");
     }
-    
     set_dynamic_settings_rcl(1);
     use_mass_reg_soft_rcl(s_photon_mass);
+#endif
   }
+  if (yfs->Mode() != YFS::yfsmode::off && yfs->m_dim_reg == s_mass_reg)
+    THROW(fatal_error, yfs->m_dim_reg
+          ? std::string("YFS: Dim_Reg = 1 subtracts the loop's infrared piece"
+                        " dimensionally, so the loop must not be mass"
+                        " regularised. Drop RECOLA_MASS_REG.")
+          : std::string("YFS: Dim_Reg = 0 subtracts the loop's infrared piece"
+                        " with a photon mass, so the loop must be mass"
+                        " regularised too. Set RECOLA_MASS_REG: 1 (Recola 1"
+                        " only), or use YFS: Dim_Reg: 1."));
   
   if (s_vmode&2) THROW(fatal_error,"Inclusion of I operator not implemented.");
 
