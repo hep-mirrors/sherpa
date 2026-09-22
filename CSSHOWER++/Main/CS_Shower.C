@@ -45,7 +45,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   const int ckfmode { pss["CKFMODE"].Get<bool>() };
   const int pdfcheck{ pss["PDFCHECK"].Get<bool>() };
   const int _qcd    { pss["QCD_MODE"].Get<bool>() };
-  const bool _qed    { pss["EW_MODE"].Get<bool>() };
+  const int _qed    { pss["EW_MODE"].Get<bool>() };
   m_cluster_qed = pss["CLUSTER_QED"].SetDefault(false).Get<bool>() || _qed;
 
   if (_qed) {
