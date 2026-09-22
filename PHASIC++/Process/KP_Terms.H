@@ -44,9 +44,14 @@ namespace PHASIC {
 
     std::vector<xp_coeff> m_xpa, m_xpb;
 
+    //! pointlike mode: charge factors over m_plist and the per-event
+    //! charge-correlated Born built from the QCD Born
+    std::vector<std::vector<double> > m_Q2ij, m_dsijph;
+
     void RegisterDefaults() const;
     void SetColourFactors();
     void SetMassive();
+    void SetPhotonSplittingOnly(const bool on);
 
   public:
 
@@ -83,30 +88,18 @@ namespace PHASIC {
 
     inline void SetIType(ATOOLS::cs_itype::type itype) { m_itype=itype; }
 
-    // Restrict Calculate() to the off-diagonal a<-photon (gamma->q qbar)
-    // pointlike contribution, dropping the diagonal q<-q (q->q gamma) pieces.
-    // Used to add the resolved-photon pointlike term to an NLO QCD calculation.
-    inline void SetPhotonSplittingOnly(bool x) { m_photonsplittingonly=x; }
+    //! Resolved-photon gamma->q qbar pointlike term for an NLO QCD process:
+    //! an sbt::qed KP_Terms over the charged partons and photons, restricted
+    //! to the a<-photon splitting. Returns NULL when not applicable (no photon
+    //! bunch with a PDF, DISgamma scheme, fewer than two charged partons).
+    //! Calculate() takes the QCD dsij; the charge correlations are internal.
+    static KP_Terms *PhotonSplitting(Process_Base *const proc,
+                                     const MODEL::Coupling_Map *cpls,
+                                     const ATOOLS::cs_itype::type imode);
 
   };// end of class KP_Terms
 
-  // Helpers for the resolved-photon gamma->q qbar pointlike KP term, shared
-  // between the AMEGIC and COMIX subtraction paths.
-  // Initial-state-first list of the charged and photon partons.
-  std::vector<size_t>
-  ChargedAndPhotonPartons(const ATOOLS::Flavour_Vector &flavs);
-  // Fill the factorising charge-correlation matrix Q2ij[i][k] = (sign) Q_i Q_k
-  // (with Q2ij[i][i]=1) over plist; Q2ij must be pre-sized to plist.size() square
-  // and zeroed. nin is the number of initial-state particles (for the crossing
-  // sign).
-  void PhotonSplittingChargeFactors(const ATOOLS::Flavour_Vector &flavs,
-                                    const std::vector<size_t> &plist,
-                                    const size_t nin,
-                                    std::vector<std::vector<double> > &Q2ij);
-
-  // The KP:FACTORISATION_SCHEME setting (MSbar default; DISgamma drops the
-  // gamma->q qbar pointlike term, which is then absorbed into the photon PDF).
-  // Single source for the key and default; safe to call at any time.
+  //! The KP:FACTORISATION_SCHEME setting, single source for key and default
   ATOOLS::facscheme::code FactorisationScheme();
 
 };// end of namespace PHASIC

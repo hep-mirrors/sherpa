@@ -128,12 +128,9 @@ bool COMIX::Single_Process::Initialize
   // stype -> 0 QCD, 1 QED
   // smode -> 0 LO, 1 RS, 2 I, 4 B, 8 Polecheck, 16 V
   if (m_pinfo.m_fi.m_nlocpl.size()) {
-    // subtraction type = what the Born can develop a singularity in, restricted to
-    // what the user requested (mirrors AMEGIC GetSubType() & m_user_stype). Keys off
-    // the Born coupling order, NOT m_nlocpl: m_nlocpl=(1,0) for BOTH resolved (pure-QCD
-    // Born, EW order 0) and direct (photon-leg Born, EW order 1), so it cannot tell
-    // them apart, and OR-ing m_user_stype forced stype=3 for the resolved case, which
-    // COMIX's single-type VI machinery (ConstructDSijMap) cannot handle.
+    // subtraction type: what the process can radiate (m_mincpl includes the
+    // NLO order here), masked by what was requested, as in AMEGIC; COMIX's
+    // VI machinery handles a single type only
     int btype(0);
     if (m_pinfo.m_mincpl[0]>=1.) btype|=sbt::qcd;
     if (m_pinfo.m_mincpl[1]>=1.) btype|=sbt::qed;
@@ -596,25 +593,9 @@ void COMIX::Single_Process::ComputeHardMatrix(const int mode)
 void COMIX::Single_Process::BuildPhotonSplittingKP
 (MODEL::Coupling_Map *cpls, cs_itype::type imode)
 {
-  if (p_kpterms_ph) { delete p_kpterms_ph; p_kpterms_ph=NULL; }
-  if (!HasResolvedPhotonBeam()) return;
-  // In the DISgamma scheme the pointlike term is absorbed into the photon PDF.
-  if (FactorisationScheme()==facscheme::DISgamma) return;
-  std::vector<size_t> plqed(ChargedAndPhotonPartons(m_flavs));
-  if (plqed.size()<2) return;
-  m_Q2ij.assign(plqed.size(),std::vector<double>(plqed.size(),0.));
-  PhotonSplittingChargeFactors(m_flavs,plqed,m_nin,m_Q2ij);
-  // O(alpha) gamma->q qbar pointlike term, evaluated through the existing
-  // sbt::qed q<-photon (type-3) kernel restricted to the photon splitting, built
-  // with this process's (local) flavours so the charge weighting is correct even
-  // for COMIX's charge-blind mapped processes.
-  p_kpterms_ph = new KP_Terms(this, ATOOLS::sbt::qed, plqed);
-  p_kpterms_ph->SetIType(imode);
-  p_kpterms_ph->SetCoupling(cpls);
-  p_kpterms_ph->SetPhotonSplittingOnly(true);
-  m_dsij_ph.assign(plqed.size(),std::vector<double>(plqed.size(),0.));
-  msg_Tracking()<<"Enabled resolved-photon gamma->q qbar pointlike KP term for "
-                <<m_name<<"."<<std::endl;
+  // built on 'this' (not p_map) so the charges are those of this subprocess
+  if (p_kpterms_ph) delete p_kpterms_ph;
+  p_kpterms_ph=KP_Terms::PhotonSplitting(this,cpls,imode);
 }
 
 void COMIX::Single_Process::UpdateKPTerms(const int mode)
@@ -641,19 +622,9 @@ void COMIX::Single_Process::UpdateKPTerms(const int mode)
   }
   p_kpterms->Calculate(p_int->Momenta(),sp->p_bg->DSij(),
 		       m_x[0],m_x[1],eta0,eta1,w);
-  if (p_kpterms_ph) {
-    // resolved-photon pointlike term: charge-correlated Born = uncorrelated QCD
-    // Born (DSij()[0][0]) times the charge factors (the alpha comes from the
-    // splitting, via Alpha_QED). Non-photon-PDF beams drop out in Get() through
-    // Contains(photon)==false.
-    const std::vector<std::vector<double> > &dsij(sp->p_bg->DSij());
-    const double born(dsij.size() && dsij[0].size() ? dsij[0][0] : 0.0);
-    for (size_t i(0);i<m_dsij_ph.size();++i)
-      for (size_t k(0);k<m_dsij_ph[i].size();++k)
-        m_dsij_ph[i][k]=born*m_Q2ij[i][k];
-    p_kpterms_ph->Calculate(p_int->Momenta(),m_dsij_ph,
+  if (p_kpterms_ph)
+    p_kpterms_ph->Calculate(p_int->Momenta(),sp->p_bg->DSij(),
 			    m_x[0],m_x[1],eta0,eta1,w);
-  }
 }
 
 double COMIX::Single_Process::KPTerms

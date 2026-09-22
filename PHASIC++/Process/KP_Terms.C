@@ -111,7 +111,6 @@ void KP_Terms::RegisterDefaults() const
   s["KCONTRIB"].SetDefault("BSGT");
   s["CHECK_ENERGY"].SetDefault(false);
   s["ACCEPT_NEGATIVE_PDF"].SetDefault(true);
-  s["FACTORISATION_SCHEME"].SetDefault(facscheme::MSbar);
 }
 
 void KP_Terms::SetColourFactors()
@@ -187,7 +186,7 @@ void KP_Terms::SetKappa(const double &kappa)
 }
 
 void KP_Terms::Calculate
-(const Vec4D_Vector &mom,const std::vector<std::vector<double > > &dsij,
+(const Vec4D_Vector &mom,const std::vector<std::vector<double > > &dsij_,
  const double &x0_,const double &x1_,const double &eta0,const double &eta1,
  const double &wgt)
 {
@@ -196,12 +195,15 @@ void KP_Terms::Calculate
   // mom is flavour-ordered, the bunches are not
   m_beam[0] = mom[0][3] > 0. ? 0 : 1;
   m_beam[1] = mom[1][3] < 0. ? 1 : 0;
-  // Resolved-photon pointlike collapse: for a genuine photon bunch the mother
-  // photon has f_{gamma/gamma}(y)=delta(1-y), so y=eta/x=1 pins the (regular)
-  // q<-photon splitting variable to x=eta and removes the (1-eta) sampling
-  // measure (w=1). Get() then supplies fagx=1 instead of the (vanishing) photon
-  // PDF. Only the off-diagonal a<-photon coeffs survive here (SetPhotonSplitting-
-  // Only zeroes the diagonal), so evaluating the whole beam block at x=eta is safe.
+  // pointlike mode: charge-correlated Born from the QCD Born dsij_[0][0]
+  if (m_photonsplittingonly) {
+    const double born(dsij_.size() && dsij_[0].size() ? dsij_[0][0] : 0.);
+    for (size_t i(0);i<m_Q2ij.size();++i)
+      for (size_t k(0);k<m_Q2ij.size();++k) m_dsijph[i][k]=born*m_Q2ij[i][k];
+  }
+  const std::vector<std::vector<double > > &dsij(m_photonsplittingonly?m_dsijph:dsij_);
+  // photon bunch: f_{gamma/gamma}(y)=delta(1-y) pins the a<-photon splitting
+  // to x=eta and removes the (1-eta) measure; Get() then uses fagx=1
   const bool colla(m_photonsplittingonly && m_sa
                    && rpa->gen.Bunch(m_beam[0]).IsPhoton());
   const bool collb(m_photonsplittingonly && m_sb
@@ -219,10 +221,7 @@ void KP_Terms::Calculate
   msg_Debugging()<<"cpl="<<Coupling()<<std::endl;
   size_t pls=1;
   if (m_sa&&m_sb) pls++;
-  // map-aware: a mapped process has a NULL local scale setter, so delegate to
-  // the master's (ScaleSetter(1)). Matters for the COMIX pointlike p_kpterms_ph,
-  // which is built with the (mapped) subprocess 'this' to keep the per-subprocess
-  // photon-splitting charges correct; unmapped/AMEGIC callers are unaffected.
+  // ScaleSetter(1): a mapped process has no scale setter of its own
   double muf2(p_proc->ScaleSetter(1)->Scale(stp::fac,1));
 
   msg_Debugging()<<"parton list: "<<m_plist<<std::endl;
@@ -535,24 +534,16 @@ void KP_Terms::Calculate
   }
 
   if (m_photonsplittingonly) {
-    // Keep only the off-diagonal a<-photon (gamma->q qbar) coefficients
-    // (kpc[2,3] and their muF-variation partners kpc[6,7], which multiply the
-    // photon PDF in Get()) and drop the diagonal q<-q coefficients kpc[0,1,4,5].
-    // The latter are the O(alpha) q->q gamma initial-state radiation terms, a
-    // genuine EW correction that is not part of the NLO QCD pointlike photon term.
+    // keep only the a<-photon coefficients kpc[2,3,6,7]; the diagonal q<-q
+    // ones are the O(alpha) q->q gamma correction, not part of the pointlike term
     if (m_sa) m_kpca[0]=m_kpca[1]=m_kpca[4]=m_kpca[5]=0.;
     if (m_sb) m_kpcb[0]=m_kpcb[1]=m_kpcb[4]=m_kpcb[5]=0.;
   }
 
   if (m_facscheme==facscheme::DISgamma && m_stype==sbt::qed) {
-    // DISgamma scheme: for a genuine resolved-photon beam the pointlike (anomalous)
-    // q<-photon splitting is absorbed into the photon PDF, so it must NOT be
-    // subtracted here. Drop the a<-photon coefficients kpc[2,3] and their
-    // muF-variation partners kpc[6,7] ONLY for a photon bunch; a proton with a
-    // photon-inside PDF (e.g. LUXqed) keeps its q<-photon term (that splitting is a
-    // normal MSbar PDF term, not DISgamma-absorbed). The diagonal q<-q QED terms
-    // kpc[0,1,4,5] always stay. The bunch flavour (not pdf->Contains(photon), which
-    // is also true for LUXqed) is what distinguishes the two beam types.
+    // DISgamma: the pointlike q<-photon term is part of the photon PDF, so drop
+    // kpc[2,3,6,7] for photon bunches only (a proton with a photon-inside PDF,
+    // e.g. LUXqed, keeps its q<-photon term as an ordinary MSbar contribution)
     if (m_sa && rpa->gen.Bunch(m_beam[0]).IsPhoton())
       m_kpca[2]=m_kpca[3]=m_kpca[6]=m_kpca[7]=0.;
     if (m_sb && rpa->gen.Bunch(m_beam[1]).IsPhoton())
@@ -659,10 +650,7 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
       faq/=eta0;
     }
 
-    // pointlike collapse: for a genuine photon bunch the a<-photon splitting uses
-    // the delta-collapsed measure (see Calculate), so multiply the surviving
-    // kpca[3]/kpca[7] by fagx=1 instead of the vanishing photon-in-photon PDF.
-    // fag is irrelevant (kpca[2]/kpca[6]==0); fa keeps the real quark PDF divisor.
+    // pointlike collapse (see Calculate): fagx=1 replaces the photon-in-photon PDF
     if (m_photonsplittingonly && rpa->gen.Bunch(m_beam[0]).IsPhoton()) {
       fag=0.;
       fagx=1.;
@@ -726,7 +714,6 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
       fbq/=eta1;
     }
 
-    // pointlike collapse for beam b (see the beam-a comment above)
     if (m_photonsplittingonly && rpa->gen.Bunch(m_beam[1]).IsPhoton()) { fbg=0.; fbgx=1.; }
 
     for (size_t i=0;i<m_xpb.size();i++) if (m_xpb[i].xp>eta1) {
@@ -804,36 +791,47 @@ void KP_Terms::FillMEwgts(ATOOLS::ME_Weight_Info &wgtinfo)
   }
 }
 
-std::vector<size_t>
-PHASIC::ChargedAndPhotonPartons(const Flavour_Vector &flavs)
+void KP_Terms::SetPhotonSplittingOnly(const bool on)
 {
-  std::vector<size_t> plist;
-  for (size_t i(0);i<flavs.size();++i)
-    if (flavs[i].Charge() || flavs[i].IsPhoton()) plist.push_back(i);
-  return plist;
-}
-
-void PHASIC::PhotonSplittingChargeFactors(const Flavour_Vector &flavs,
-                                          const std::vector<size_t> &plist,
-                                          const size_t nin,
-                                          std::vector<std::vector<double> > &Q2ij)
-{
-  // Charge correlations factorise: Q2ij[i][k] = (sign) Q_i Q_k, with the sign
-  // from initial/final-state crossing. The PFF photon-spectator handling of the
-  // full-EW charge factors is not needed here: the photon-PDF Born partons are
-  // quarks.
-  for (size_t i(0);i<plist.size();++i) {
-    Q2ij[i][i]=1.;
-    for (size_t k(0);k<plist.size();++k) {
-      if (i==k) continue;
-      const double Qi(flavs[plist[i]].Charge());
-      const double Qk(flavs[plist[k]].Charge());
-      if (Qi && Qk) {
-        const bool inii(plist[i]<nin), inik(plist[k]<nin);
-        Q2ij[i][k]=(inii==inik?1.:-1.)*Qi*Qk;
-      }
+  m_photonsplittingonly=on;
+  m_Q2ij.clear();
+  m_dsijph.clear();
+  if (!on) return;
+  // charge correlations factorise, Q2ij = (crossing sign) Q_i Q_k, Q2ii = 1
+  const size_t n(m_plist.size()), nin(p_proc->NIn());
+  m_Q2ij.assign(n,std::vector<double>(n,0.));
+  m_dsijph.assign(n,std::vector<double>(n,0.));
+  for (size_t i(0);i<n;++i) {
+    m_Q2ij[i][i]=1.;
+    const double Qi(m_flavs[m_plist[i]].Charge());
+    for (size_t k(0);k<n;++k) {
+      const double Qk(m_flavs[m_plist[k]].Charge());
+      if (i==k || !Qi || !Qk) continue;
+      const bool ini(m_plist[i]<nin), ink(m_plist[k]<nin);
+      m_Q2ij[i][k]=(ini==ink?1.:-1.)*Qi*Qk;
     }
   }
+}
+
+KP_Terms *KP_Terms::PhotonSplitting(Process_Base *const proc,
+                                    const MODEL::Coupling_Map *cpls,
+                                    const cs_itype::type imode)
+{
+  if (!proc->HasResolvedPhotonBeam()) return NULL;
+  // in the DISgamma scheme the pointlike term is part of the photon PDF
+  if (FactorisationScheme()==facscheme::DISgamma) return NULL;
+  std::vector<size_t> plist;
+  const Flavour_Vector &flavs(proc->Flavours());
+  for (size_t i(0);i<flavs.size();++i)
+    if (flavs[i].Charge() || flavs[i].IsPhoton()) plist.push_back(i);
+  if (plist.size()<2) return NULL;
+  KP_Terms *kp(new KP_Terms(proc,sbt::qed,plist));
+  kp->SetIType(imode);
+  kp->SetCoupling(cpls);
+  kp->SetPhotonSplittingOnly(true);
+  msg_Tracking()<<"Enabled resolved-photon gamma->q qbar pointlike KP term for "
+                <<proc->Name()<<"."<<std::endl;
+  return kp;
 }
 
 facscheme::code PHASIC::FactorisationScheme()
