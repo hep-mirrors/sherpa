@@ -31,6 +31,8 @@ namespace PHASIC {
     ATOOLS::Flavour_Vector m_flavs;
 
     bool   m_massive, m_cemode, m_negativepdf;
+    //! beam each incoming flavour slot was drawn from, set in Calculate()
+    size_t m_beam[2];
     double m_kpca[8], m_kpcb[8], m_cpldef, m_NC;
     int    m_Vsubmode, m_facscheme;
     bool   m_sa,m_sb;
