@@ -181,8 +181,7 @@ void Ceex_Base::MakePhotonHel() {
   // still drawn, so the RNG stream - and therefore the phase-space sequence - is
   // identical to an unpinned run. That is what lets two runs be summed point by
   // point to recover the helicity sum.
-  static const char *pin(getenv("CEEX_PIN_PHOTON_HEL"));
-  static const int pinned(pin ? atoi(pin) : 0);
+  static const int pinned(ATOOLS::Settings::GetMainSettings()["CEEX"]["PIN_PHOTON_HEL"].Get<int>());
   m_PhoHel.clear();
   for (size_t i(0); i < m_allphotons.size(); ++i) {
     const int h(ran->Get() < 0.5 ? 1 : -1);
@@ -206,6 +205,39 @@ void Ceex_Base::Calculate() {
   m_beta01 = 0.0;
   m_beta00 = 0.0;
   BuildCeexMomenta();
+  /*
+    Born-configuration probe (env SHERPA_CEEX_BORNNORM), once per event.
+
+  */
+  { static const bool bn(ATOOLS::Settings::GetMainSettings()["CEEX"]["BORNNORM_CHECK"].Get<int>() != 0);
+    if (bn && m_bornmomenta.size() >= 4 && m_pceex.size() >= 4) {
+      const Vec4D Qb(m_bornmomenta[2] + m_bornmomenta[3]);
+      const Vec4D Qp(m_pceex[2] + m_pceex[3]);
+      Vec4D q2(m_pceex[2]), b0(m_pceex[0]);
+      Poincare cm(Qp);
+      cm.Boost(q2); cm.Boost(b0);
+      const double n1(Vec3D(q2).Abs()), n2(Vec3D(b0).Abs());
+      const double cth(n1 > 0. && n2 > 0. ? (Vec3D(q2)*Vec3D(b0))/(n1*n2) : 0.);
+      const double sp_save(m_sp);
+      m_sp = Qp.Abs2();
+      MakeProp();
+      Amplitude AB;
+      BornAmplitude(m_pceex, AB, -1., -1., -1);
+      double sum(0.);
+      const int nh(Amplitude::NHel());
+      for (int f = 0; f < nh; ++f) {
+        const Complex a(m_e * m_e * AB.m_A[f]);
+        sum += std::real(a * conj(a));
+      }
+      m_sp = sp_save;
+      MakeProp();
+      const double avg(sum / 4.);
+      std::cerr << "@@@ BORNANG m_born=" << m_born
+                << " sphys=" << Qp.Abs2() << " sborn=" << Qb.Abs2()
+                << " cth=" << cth
+                << " ceexborn=" << avg
+                << " ratio=" << (m_born != 0. ? avg/m_born : 0.) << std::endl;
+    } }
   ZerAmplit();
   m_allphotons = m_isrphotons;
   m_allphotons.insert(m_allphotons.end(),
@@ -359,10 +391,8 @@ void Ceex_Base::Calculate() {
 
   MakeRho();
 
-  static const double dumpxmin(getenv("SHERPA_CEEX_DUMP_XMIN") ?
-                               atof(getenv("SHERPA_CEEX_DUMP_XMIN")) : 0.);
-  static const size_t dumpn(getenv("SHERPA_CEEX_DUMP_NPHOT") ?
-                            atoi(getenv("SHERPA_CEEX_DUMP_NPHOT")) : 1);
+  static const double dumpxmin(ATOOLS::Settings::GetMainSettings()["CEEX"]["DUMP_XMIN"].Get<double>());
+  static const size_t dumpn(ATOOLS::Settings::GetMainSettings()["CEEX"]["DUMP_NPHOT"].Get<int>());
   const double xgam(!m_allphotons.empty() && m_momenta.size() >= 2 ?
                     2.*m_allphotons[0][0]/(m_momenta[0]+m_momenta[1]).Mass() : 0.);
   if (m_checkxs && !m_ceexdumped && m_allphotons.size() == dumpn &&
@@ -515,7 +545,7 @@ void Ceex_Base::Calculate() {
               << ",  E_gamma = " << m_allphotons[0][0] << " GeV\n";
   }
 
-  static const bool cxchk(getenv("SHERPA_CEEX_COMIX")!=NULL);
+  static const bool cxchk(ATOOLS::Settings::GetMainSettings()["CEEX"]["COMIX_CHECK"].Get<int>()!=0);
   if (cxchk && m_bornmomenta.size() >= 4 && p_bornproc) {
     msg_Debugging()<<METHOD<<"(): entering Comix Born comparison\n";
     Vec4D_Vector bp(m_bornmomenta);

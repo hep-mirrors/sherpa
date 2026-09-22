@@ -158,6 +158,20 @@ void Ceex_Base::RegisterDefaults()
   s["COMIX_REAL_FLIP"].SetDefault(26);
   // Comix amplitude -> CEEX normalisation; measured by the soft probe.
   s["COMIX_REAL_NORM"].SetDefault(0.5);
+  /*
+    Diagnostics. All off by default, each costing one branch on a cached
+    static once the run is going. They live here rather than in the
+    environment so that a run is fully specified by its YAML card: an
+    environment variable does not appear in the card, is not echoed in the
+    run summary and is not carried to a batch node with the job, so a
+    diagnostic run could not be reproduced from what was kept of it.
+  */
+  s["BORNNORM_CHECK"].SetDefault(0);   // @@@ BORNANG, Born normalisation
+  s["PIN_PHOTON_HEL"].SetDefault(0);   // pin photon helicity (+1/-1) for sums
+  s["DUMP_XMIN"].SetDefault(0.0);      // min x_gamma for the point dump
+  s["DUMP_NPHOT"].SetDefault(1);       // photon multiplicity to dump at
+  s["COMIX_CHECK"].SetDefault(0);      // @@@ CEEXCX, hand-coded vs Comix
+  s["GOLDEN"].SetDefault(0);           // @@@ CEEXGOLD, regression stream
 }
 
 
@@ -266,47 +280,50 @@ Complex Ceex_Base::CouplingG() {
 
 void Ceex_Base::BuildCeexMomenta()
 {
+  /*
+    m_momenta is {beam, beam, Born final state, lab final state}, MakeCEEX
+    appending the lab set. CEEX wants the beams and the LAB legs, those being
+    the ones that balance against the photons; the Born set is the fallback
+    when MakeCEEX has not appended yet.
+
+    Generalised from the fixed pair to nf = m_flavs.size() - 2 final legs. At
+    nf = 2 the offset is 4 or 2 exactly as before.
+  */
+  const size_t nf(m_flavs.size() >= 2 ? m_flavs.size() - 2 : 0);
   m_pceex.clear();
   m_pceex.push_back(m_momenta[0]);
   m_pceex.push_back(m_momenta[1]);
-  if (m_momenta.size() >= 6) {
-    m_pceex.push_back(m_momenta[4]);   // physical outgoing fermion
-    m_pceex.push_back(m_momenta[5]);
-  } else {
-    m_pceex.push_back(m_momenta[2]);
-    m_pceex.push_back(m_momenta[3]);
-  }
+  const bool havelab(m_momenta.size() >= 2 + 2*nf);
+  const size_t off(havelab ? 2 + nf : 2);
+  for (size_t i(0); i < nf && off + i < m_momenta.size(); ++i)
+    m_pceex.push_back(m_momenta[off + i]);
 }
 
 
 void Ceex_Base::ZerAmplit() {
-  for (int j1 = 0; j1 <= 1; ++j1)
-    for (int j2 = 0; j2 <= 1; ++j2)
-      for (int j3 = 0; j3 <= 1; ++j3)
-        for (int j4 = 0; j4 <= 1; ++j4) {
-          m_AmpExpo0.m_A[Idx(j1,j2,j3,j4)] = Complex(0., 0.);
-          m_AmpExpo1.m_A[Idx(j1,j2,j3,j4)] = Complex(0., 0.);
-          m_AmpBornVirt.m_A[Idx(j1,j2,j3,j4)] = Complex(0., 0.);
-          m_AmpBornReal.m_A[Idx(j1,j2,j3,j4)] = Complex(0., 0.);
-          m_snapBorn.m_A[Idx(j1,j2,j3,j4)] = Complex(0., 0.);
-          m_snapVirt.m_A[Idx(j1,j2,j3,j4)] = Complex(0., 0.);
-          m_snapReal.m_A[Idx(j1,j2,j3,j4)] = Complex(0., 0.);
-        }
+  // Every helicity entry the container actually holds, not the 16 a 2 -> 2
+  // final state happens to need.
+  const int nh(Amplitude::NHel());
+  for (int f = 0; f < nh; ++f) {
+    m_AmpExpo0.m_A[f]    = Complex(0., 0.);
+    m_AmpExpo1.m_A[f]    = Complex(0., 0.);
+    m_AmpBornVirt.m_A[f] = Complex(0., 0.);
+    m_AmpBornReal.m_A[f] = Complex(0., 0.);
+    m_snapBorn.m_A[f]    = Complex(0., 0.);
+    m_snapVirt.m_A[f]    = Complex(0., 0.);
+    m_snapReal.m_A[f]    = Complex(0., 0.);
+  }
 }
 
 
 
 void Ceex_Base::MakeRho() {
   double sum0(0.), sum1(0.);
-  for (int j1 = 0; j1 <= 1; ++j1)
-    for (int j2 = 0; j2 <= 1; ++j2)
-      for (int j3 = 0; j3 <= 1; ++j3)
-        for (int j4 = 0; j4 <= 1; ++j4) {
-          sum0 += std::real(m_AmpExpo0.m_A[Idx(j1,j2,j3,j4)]
-                            * conj(m_AmpExpo0.m_A[Idx(j1,j2,j3,j4)]));
-          sum1 += std::real(m_AmpExpo1.m_A[Idx(j1,j2,j3,j4)]
-                            * conj(m_AmpExpo1.m_A[Idx(j1,j2,j3,j4)]));
-        }
+  const int nh(Amplitude::NHel());
+  for (int f = 0; f < nh; ++f) {
+    sum0 += std::real(m_AmpExpo0.m_A[f] * conj(m_AmpExpo0.m_A[f]));
+    sum1 += std::real(m_AmpExpo1.m_A[f] * conj(m_AmpExpo1.m_A[f]));
+  }
   // Average over the four initial-state helicity configurations.
   m_result0 = sum0 / 4.;
   m_result  = sum1 / 4.;

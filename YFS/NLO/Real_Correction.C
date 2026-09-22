@@ -227,7 +227,7 @@ double Real_Correction::Calc_R(const ATOOLS::Vec4D_Vector& p)
       every CEEX bug found so far lived in that layer. If Comix can supply
       them, that layer goes away.
     */
-    static const bool campchk(getenv("SHERPA_COMIX_AMPS")!=NULL);
+    static const bool campchk(ATOOLS::Settings::GetMainSettings()["YFS"]["COMIX_AMPS"].Get<int>()!=0);
     if (m_keepamps) {
       std::vector<std::vector<Complex> > cols;
       m_spinamps.clear();
@@ -290,7 +290,7 @@ double Real_Correction::Calc_R(const ATOOLS::Vec4D_Vector& p)
     // last representable digit of its input. If both move together the phase
     // space point itself is under-determined here; if only one moves, that one
     // is doing something the other is not.
-    static const bool ulpchk(getenv("SHERPA_ULP_CHECK")!=NULL);
+    static const bool ulpchk(ATOOLS::Settings::GetMainSettings()["YFS"]["ULP_CHECK"].Get<int>()!=0);
     if (ulpchk && iR.Nominal()!=0.0 && external_real!=0.0) {
       Vec4D_Vector pu(p);
       for (size_t j(0);j<pu.size();++j)
@@ -313,7 +313,7 @@ double Real_Correction::Calc_R(const ATOOLS::Vec4D_Vector& p)
     // answer obeys - no reference amplitude needed. Unlike the cancellation
     // heuristic this is not a proxy for the error, it IS an error estimate.
     double rotdev(-1.0);
-    static const bool rotchk(getenv("SHERPA_ROT_CHECK")!=NULL);
+    static const bool rotchk(ATOOLS::Settings::GetMainSettings()["YFS"]["ROT_CHECK"].Get<int>()!=0);
     if (rotchk && iR.Nominal()!=0.0) {
       const double ca(cos(0.6)), sa(sin(0.6));
       Vec4D_Vector pr(p);
@@ -335,13 +335,13 @@ double Real_Correction::Calc_R(const ATOOLS::Vec4D_Vector& p)
                <<" cancel="<<METOOLS::Cancel_Probe::s_worst
                <<" gauge="<<gaugedev<<std::endl;
     }
-    if (getenv("SHERPA_SOFT_SCAN")) {
+    static const double softscan(ATOOLS::Settings::GetMainSettings()["YFS"]["SOFT_SCAN"].Get<double>());
+    if (softscan>0.0) {
       static bool done(false);
       // only bother with a point that actually disagrees, so the scan starts
       // inside the region under investigation
       if (!done && external_real!=0.0 &&
-          std::abs(iR.Nominal()/external_real-1.0)>
-          atof(getenv("SHERPA_SOFT_SCAN"))) {
+          std::abs(iR.Nominal()/external_real-1.0)>softscan) {
         done=true;
         SoftScan(p);
         THROW(normal_exit,"SoftScan done.");

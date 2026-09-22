@@ -294,7 +294,7 @@ double NLO_Base::CalculateReal() {
   m_ifi_prod = 1.;
   for (YFS::Photon &g : m_photons) {
     const Vec4D k(g.K());
-    { static const bool dg(getenv("SHERPA_PHOTON_DUMP")!=NULL);
+    { static const bool dg(ATOOLS::Settings::GetMainSettings()["YFS"]["PHOTON_DUMP"].Get<int>()!=0);
       if (dg) {
         ATOOLS::Vec4D tot; double eph(0.0);
         for (const YFS::Photon &h : m_photons) { tot+=h.K(); eph+=h.K().E(); }
@@ -333,7 +333,7 @@ double NLO_Base::CalculateReal() {
     real += contrib;
     if (m_check_real_sub == CHECK_REAL_SUB_SCATTER)
       RecordSubScatter(k, contrib, g.IsISR() ? "realISR" : "realFSR", m_eikeex);
-    { static const bool dg2(getenv("SHERPA_PHOTON_DUMP")!=NULL);
+    { static const bool dg2(ATOOLS::Settings::GetMainSettings()["YFS"]["PHOTON_DUMP"].Get<int>()!=0);
       if (dg2) std::cerr<<"@@@ PHC E="<<k.E()<<" isr="<<(g.IsISR()?1:0)
                         <<" contrib="<<contrib
                         <<" failcut="<<(p_real?(p_real->FailCut()?1:0):-1)
@@ -439,7 +439,7 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
   else
     msg_Error() << METHOD << " unknown YFS subtraction mode " << m_submode << "\n";
 
-  { static const bool ds(getenv("SHERPA_REAL_STAB")!=NULL);
+  { static const bool ds(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_STAB"].Get<int>()!=0);
     if (ds) {
       const double S(subloc * m_born / m_rescale_alpha);
       const double num(r * flux - S);
@@ -800,7 +800,7 @@ double NLO_Base::CalculateRealReal() {
       const double phemin(PhotonEminNLO());
       if (phemin>0.0 && (k.E()<phemin || kk.E()<phemin)) continue;
       double contrib = CalculateRealReal(k, kk);
-      static const bool betacheck(getenv("SHERPA_BETA_RECURSION")!=NULL);
+      static const bool betacheck(ATOOLS::Settings::GetMainSettings()["YFS"]["BETA_RECURSION"].Get<int>()!=0);
       if (betacheck) {
         const double gen(CalculateRealN((1u<<i) | (1u<<j)));
         std::cerr<<"@@@ BETA2 hand="<<contrib<<" rec="<<gen
@@ -1334,7 +1334,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D_Vector &k) {
     msg_Error() << "YFS Real mapping not conserving momentum in " << METHOD
                 << std::endl;
   }
-  { static const bool dm(getenv("SHERPA_REAL_STAB")!=NULL);
+  { static const bool dm(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_STAB"].Get<int>()!=0);
     if (dm) std::cerr<<"@@@ MAPQ sqrt_sqq="<<(sqq>0?sqrt(sqq):-1.)
                      <<" sqrt_s="<<sqrt(m_s)
                      <<" sqrt_sborn="<<(m_bornMomenta[2]+m_bornMomenta[3]).Mass()

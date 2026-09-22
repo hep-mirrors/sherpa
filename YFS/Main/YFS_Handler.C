@@ -658,7 +658,7 @@ void YFS_Handler::CalculateBeta() {
         Printed at full precision so a diff is a real test rather than a
         rounded one. Costs nothing when the variable is unset.
       */
-      { static const bool gold(getenv("SHERPA_CEEX_GOLDEN")!=NULL);
+      { static const bool gold(ATOOLS::Settings::GetMainSettings()["CEEX"]["GOLDEN"].Get<int>()!=0);
         if (gold)
           std::cerr<<"@@@ CEEXGOLD "<<std::setprecision(17)
                    <<" rhocrude="<<r0<<" result="<<r1

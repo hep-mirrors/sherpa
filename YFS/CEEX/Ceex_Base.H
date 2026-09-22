@@ -208,11 +208,22 @@ namespace YFS {
       For e+e- -> f fbar through gamma/Z the Born must go like
       a(1 + (b/a) cos(theta) + cos^2(theta)): the cos^2 coefficient is exactly
       1 and the linear one carries the forward-backward asymmetry. Fitting
-      that needs no external normalisation, which matters because there is no
-      valid external comparator here - Sherpa's m_born is a differential that
-      turns out to carry NO angular dependence at all (R^2 = 8e-05 against
-      cos(theta)), so an earlier version of this check measured the comparator
-      rather than the amplitude.
+      that needs no external normalisation.
+
+
+      m_born IS therefore a valid comparator, and fixes the normalisation
+      absolutely. Compared at matched kinematics - the Born rebuilt at the
+      physical pair's scale, not at a partition's m_sp - the measured relation
+      is
+
+          e^4 sum_hel |A_born|^2 / 4  =  m_born * (s/4) / s'
+
+      i.e. m_born = e^4 sum_hel |A_born|^2 * s'/s. The 1/s' is the flux factor
+      m_lastxs carries and the helicity sum does not. Verified at two beam
+      energies, which is what distinguishes s/4 from a constant: 15625.1
+      measured against s/4 = 15625 at 250 GeV, and 2079.06 against 2079.36 at
+      91.2 GeV.
+
     */
     double m_fit[3][3] = {{0.}}, m_fitb[3] = {0.}, m_fity = 0., m_fity2 = 0.;
     long   m_fitn = 0;

@@ -111,6 +111,18 @@ void YFS_Base::RegisterDefaults(){
   s["Ladder_Weights"].SetDefault(0);
   s["Dump_Dipoles"].SetDefault(0);
   s["CHECK_INVARIANTS"].SetDefault(0);
+  /*
+    NLO diagnostics. Off by default, read through Settings rather than the
+    environment for the same reason as the CEEX ones: a run has to be
+    reproducible from its card alone.
+  */
+  s["REAL_STAB"].SetDefault(0);        // @@@ RSTAB / @@@ MAPQ
+  s["PHOTON_DUMP"].SetDefault(0);      // @@@ PHC, per-photon contributions
+  s["BETA_RECURSION"].SetDefault(0);   // @@@ BETA2, hand vs recursive beta_2
+  s["COMIX_AMPS"].SetDefault(0);       // @@@ CAMP, Comix helicity amplitudes
+  s["ULP_CHECK"].SetDefault(0);        // last-digit sensitivity of the real
+  s["ROT_CHECK"].SetDefault(0);        // rotation invariance as an error bar
+  s["SOFT_SCAN"].SetDefault(0.0);      // rel. deviation that triggers SoftScan
   s["No_Born"].SetDefault(0);
   s["No_Sub"].SetDefault(0);
   s["Sub_Mode"].SetDefault(submode::global);

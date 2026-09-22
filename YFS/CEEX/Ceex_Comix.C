@@ -160,7 +160,7 @@ void Ceex_Base::ApplyComixReal()
   if (m_allphotons.size() != 1) return;
   if (!FetchComixReal()) return;
 
-  static const bool cxchk(getenv("SHERPA_CEEX_COMIX") != NULL);
+  static const bool cxchk(ATOOLS::Settings::GetMainSettings()["CEEX"]["COMIX_CHECK"].Get<int>() != 0);
   const Amplitude hand1(m_AmpExpo1);   // Born + virtual + hand-coded real
 
   const int nh(Amplitude::NHel());

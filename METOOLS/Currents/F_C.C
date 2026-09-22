@@ -103,6 +103,7 @@ namespace METOOLS {
 #include "METOOLS/Explicit/Dipole_Color.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 
@@ -190,11 +191,11 @@ void CF<SType>::AddPropagator()
   const CSpinorType hs;
   // add propagator for off-shell leg
   SComplex prop(M_I/(SType(this->m_p2)-m_cmass2));
-  // DIAG (env-gated, SHERPA_PROP_DUMP): true denominator vs. the residual
   // momentum-conservation floor left by Amplitude::ProjectWideMomenta -- only
   // printed when the denominator is small enough to be near that floor, so
   // this stays quiet outside the region under investigation.
-  { static const bool dg(getenv("SHERPA_PROP_DUMP")!=NULL);
+  { static const bool dg(ATOOLS::Settings::GetMainSettings()["COMIX"]
+                         ["PROP_DUMP"].SetDefault(0).Get<int>()!=0);
     static constexpr double PROP_DUMP_THRESHOLD_GEV2 = 1e-6;
     const double denom((double)this->m_p2-m_cmass2.real());
     if (dg && std::abs(denom)<PROP_DUMP_THRESHOLD_GEV2 && !this->m_osd) {
