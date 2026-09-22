@@ -118,7 +118,7 @@ namespace BEAM {
     ATOOLS::Flavour m_beam;
     size_t m_A;
     double m_mass, m_mass2, m_R;
-    double m_q2min, m_q2max, m_pt2max;
+    double m_q2min, m_q2max;
     double m_xmin, m_xmax;
     double m_bmin,
         m_bmax; //< bmin, bmax only relative to radius
@@ -248,10 +248,6 @@ namespace BEAM {
     }
     virtual double FF(const double& Q2) = 0;
 
-    void SetRadius(const double& R) { m_R = R; }
-    void SetPT2Max(const double& pt2max) { m_pt2max = pt2max; }
-    void SetQ2Max(const double q2max) { m_q2max = q2max; }
-
     double Mass2() const { return m_mass2; }
     double Gamma() const { return m_gamma; }
     double Radius() const { return m_R; }
@@ -262,16 +258,6 @@ namespace BEAM {
     double Q2min(const double& x) const
     {
       return ATOOLS::Max(m_q2min, ATOOLS::sqr(m_mass * x) / (1 - x));
-    }
-    // Use maximal angle for the scattered electron in Q^2_max,
-    // compare with hep-ph/9610406 and hep-ph/9310350 for the
-    // inclusion of term ~(x m)^2
-    double Q2max(const double& x) const
-    {
-      return (m_pt2max > 0.)
-                 ? ATOOLS::Min(m_q2max,
-                               m_pt2max * (1 - x) + ATOOLS::sqr(m_mass * x) / (1 - x))
-                 : m_q2max;
     }
 
     void OutputToCSV(const std::string& type);
@@ -322,6 +308,29 @@ namespace BEAM {
   };
 
   class EPA_Point final: public EPA_FF_Base {
+  private:
+
+    // Upper cut on the virtuality from the maximal tagging angle of the
+    // scattered lepton, (E * EPA:ThetaMax)^2. Only the point-like fluxes use
+    // it, which is why it lives here rather than on EPA_FF_Base. A value <= 0
+    // (i.e. EPA:ThetaMax <= 0, "no angular tagging") disables the cap and
+    // leaves the bare EPA:Q2Max.
+    double m_pt2max;
+
+    // Use maximal angle for the scattered electron in Q^2_max, compare with
+    // hep-ph/9610406 and hep-ph/9310350 for the inclusion of term ~(x m)^2.
+    // The scattered lepton carries pT = E (1-x) theta, so pT^2_max = m_pt2max
+    // (1-x)^2; one power of (1-x) cancels against the 1/(1-x) of the
+    // virtuality Q^2 = (pT^2 + x^2 m^2)/(1-x), leaving only the single factor
+    // below.
+    double Q2max(const double& x) const
+    {
+      return (m_pt2max > 0.)
+                 ? ATOOLS::Min(m_q2max, m_pt2max * (1 - x) +
+                                            ATOOLS::sqr(m_mass * x) / (1 - x))
+                 : m_q2max;
+    }
+
   public:
 
     EPA_Point(const ATOOLS::Flavour& beam, int dir, double energy);
@@ -331,6 +340,29 @@ namespace BEAM {
   };
 
   class EPA_PointApprox final: public EPA_FF_Base {
+  private:
+
+    // Upper cut on the virtuality from the maximal tagging angle of the
+    // scattered lepton, (E * EPA:ThetaMax)^2. Only the point-like fluxes use
+    // it, which is why it lives here rather than on EPA_FF_Base. A value <= 0
+    // (i.e. EPA:ThetaMax <= 0, "no angular tagging") disables the cap and
+    // leaves the bare EPA:Q2Max.
+    double m_pt2max;
+
+    // Use maximal angle for the scattered electron in Q^2_max, compare with
+    // hep-ph/9610406 and hep-ph/9310350 for the inclusion of term ~(x m)^2.
+    // The scattered lepton carries pT = E (1-x) theta, so pT^2_max = m_pt2max
+    // (1-x)^2; one power of (1-x) cancels against the 1/(1-x) of the
+    // virtuality Q^2 = (pT^2 + x^2 m^2)/(1-x), leaving only the single factor
+    // below.
+    double Q2max(const double& x) const
+    {
+      return (m_pt2max > 0.)
+                 ? ATOOLS::Min(m_q2max, m_pt2max * (1 - x) +
+                                            ATOOLS::sqr(m_mass * x) / (1 - x))
+                 : m_q2max;
+    }
+
   public:
 
     EPA_PointApprox(const ATOOLS::Flavour& beam, int dir, double energy);

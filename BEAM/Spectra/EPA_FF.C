@@ -75,7 +75,6 @@ EPA_FF_Base::EPA_FF_Base(const ATOOLS::Flavour& beam, const int dir,
       m_beam(beam), m_A(beam.IsIon() ? beam.GetMassNumber() : 1),
       m_mass(beam.Mass(true) / m_A), m_mass2(m_mass * m_mass),
       m_R(beam.Radius() / rpa->hBar_c()), m_q2min(-1.), m_q2max(1.),
-      m_pt2max(-1.),
       m_Zsquared(beam.IsIon() ? sqr(m_beam.GetAtomicNumber()) : 1.), m_b(0.),
       m_gamma(energy > m_mass ? energy / m_mass : 1.), p_N_xb(nullptr)
 {
@@ -298,10 +297,14 @@ EPA_Point::EPA_Point(const ATOOLS::Flavour& beam, const int dir,
                      const double energy)
     : EPA_FF_Base(beam, dir, energy)
 {
+  const auto& s = Settings::GetMainSettings()["EPA"];
+  size_t b = dir > 0 ? 0 : 1;
   // for point-like particles (i.e. leptons) we use the "classical"
   // lepton radius given by 1/alpha lambda_l/(2 pi)
   // with the Compton wavelength lambda_l
   m_b = rpa->hBar_c() / m_mass / (2. * M_PI / 137.);
+  // Maximal transverse momentum of the scattered lepton, entering Q2max().
+  m_pt2max = sqr(energy * s["ThetaMax"].GetTwoVector<double>()[b]);
 }
 
 double EPA_Point::N(const double& x, const double& ran)
@@ -326,10 +329,14 @@ EPA_PointApprox::EPA_PointApprox(const ATOOLS::Flavour& beam, const int dir,
                                  const double energy)
     : EPA_FF_Base(beam, dir, energy)
 {
+  const auto& s = Settings::GetMainSettings()["EPA"];
+  size_t b = dir > 0 ? 0 : 1;
   // for point-like particles (i.e. leptons) we use the "classical"
   // lepton radius given by 1/alpha lambda_l/(2 pi)
   // with the Compton wavelength lambda_l
   m_b = rpa->hBar_c() / m_mass / (2. * M_PI / 137.);
+  // Maximal transverse momentum of the scattered lepton, entering Q2max().
+  m_pt2max = sqr(energy * s["ThetaMax"].GetTwoVector<double>()[b]);
 }
 
 double EPA_PointApprox::N(const double& x, const double& ran)
