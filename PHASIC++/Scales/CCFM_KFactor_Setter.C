@@ -132,13 +132,14 @@ double CCFM_KFactor_Setter::KFactor
       int is((l->Id()&3)?1:0);
       if (l->K()==0) continue;
       Cluster_Leg *lj(ampl->IdLeg(ampl->IdNew()));
-      Vec4D qcur(lj->Mom()), Qold(p[ID(l->Id()).front()]), Qnew(Qold+qcur);
+      Vec4D qcur, Qold(p[ID(l->Id()).front()]), Qnew;
       for (size_t j(0), k(0);k<p.size();++j) {
 	if (ampl->Leg(j)==lj) {
-	  msg_Debugging()<<"<- p_"<<i<<" = "<<p[i]<<"\n";
-	  msg_Debugging()<<"<- p_"<<k<<" = "<<p[k]<<"\n";
+	  Qnew=Qold+(qcur=p[k]);
+	  msg_Debugging()<<"<- p_"<<i<<" = "<<p[i]<<", Qold "<<Qold<<"\n";
+	  msg_Debugging()<<"<- p_"<<k<<" = "<<p[k]<<", qcur "<<qcur<<"\n";
 	  p[i]+=p[k];
-	  msg_Debugging()<<"-> p_"<<i<<" = "<<p[i]<<"\n";
+	  msg_Debugging()<<"-> p_"<<i<<" = "<<p[i]<<", Qnew "<<Qnew<<"\n";
 	  p.erase(p.begin()+k);
 	  continue;
 	}
@@ -148,7 +149,9 @@ double CCFM_KFactor_Setter::KFactor
 	       Qnew.PPlus()/Qold.PPlus():
 	       Qnew.PMinus()/Qold.PMinus());
       std::map<ATOOLS::Flavour,CCFM_Sudakov*>::iterator sit(m_suds.find(l->Flav()));
-      if (!is || sit==m_suds.end()) continue;
+      int vproc(p_proc->Info().Has(nlo_type::vsub));
+      if (!is || sit==m_suds.end() ||
+	  (next->OrderQCD()-(vproc?1:0))<1) continue;
       double gamma[2]={0.0,0.0};
       if ((mode&1) && p_proc->Info().m_fi.m_nlotype!=nlo_type::lo) {
        	gamma[0]=sit->second->Delta1(z,qcur.PPerp2(),Qnew.PPerp2(),muR2);
@@ -174,9 +177,14 @@ CCFM_Sudakov::CCFM_Sudakov(const ATOOLS::Flavour &fl):
 
 double CCFM_Sudakov::Delta(const double &z,const double &q2,const double &Q2)
 {
-  double as2pi((*p_as)(q2)/(2.0*M_PI));
+  double as2pi((*p_as)(Q2)/(2.0*M_PI));
   if (m_fl.IsGluon()) {
-    return exp(-as2pi*3.0*(2.0*log(1.0/z)*log(Q2/q2/z)));
+    // From hep-ph/0204115, Eq.(27) (corrected for 2nd case, see hep-ph/9503266, Eq.(12))
+    // Their variables to ours: k_\perp^2 \to Q2, p_\perp^2 \to q2, q^2 \to q2/(1-z)^2
+    double qi2(q2/sqr(1.0-z));
+    if (Q2/qi2<=z*z) return 1.0;// case 3
+    if (Q2/qi2<=1) return exp(-as2pi*3.0*(2.0*sqr(log(sqrt(Q2/qi2)/z))));// case 2
+    return exp(-as2pi*3.0*(2.0*log(1.0/z)*log(Q2/qi2/z)));// case 1
   }
   return 1;
 }
@@ -185,7 +193,12 @@ double CCFM_Sudakov::Delta1(const double &z,const double &q2,const double &Q2,co
 {
   double as2pi((*p_as)(mur2)/(2.0*M_PI));
   if (m_fl.IsGluon()) {
-    return -as2pi*3.0*(2.0*log(1.0/z)*log(Q2/q2/z));
+    // From hep-ph/0204115, Eq.(27) (corrected for 2nd case, see hep-ph/9503266, Eq.(12))
+    // Their variables to ours: k_\perp^2 \to Q2, p_\perp^2 \to q2, q^2 \to q2/(1-z)^2
+    double qi2(q2/sqr(1.0-z));
+    if (Q2/qi2<=z*z) return 0.0;// case 3
+    if (Q2/qi2<=1) return -as2pi*3.0*(2.0*sqr(log(sqrt(Q2/qi2)/z)));// case 2
+    return -as2pi*3.0*(2.0*log(1.0/z)*log(Q2/qi2/z));// case 1
   }
   return 0;
 }
