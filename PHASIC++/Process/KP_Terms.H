@@ -32,6 +32,8 @@ namespace PHASIC {
 
     bool   m_massive, m_cemode, m_negativepdf;
     bool   m_photonsplittingonly;
+    //! beam each incoming flavour slot was drawn from, set in Calculate()
+    size_t m_beam[2];
     double m_kpca[8], m_kpcb[8], m_cpldef, m_NC;
     int    m_Vsubmode;
     ATOOLS::facscheme::code m_facscheme;

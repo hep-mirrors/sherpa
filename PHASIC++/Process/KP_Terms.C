@@ -16,7 +16,7 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
   p_proc(proc), p_nlomc(NULL), p_kernel(NULL),
   p_cpl(NULL), m_flavs(p_proc->Flavours()),
   m_massive(true), m_cemode(false), m_photonsplittingonly(false),
-  m_cpldef(0.), m_NC(3.),
+  m_beam{0, 1}, m_cpldef(0.), m_NC(3.),
   m_Vsubmode(1), m_facscheme(facscheme::MSbar),
   m_sa(false), m_sb(false),
   m_typea(m_flavs[0].IntSpin()), m_typeb(m_flavs[1].IntSpin()),
@@ -193,6 +193,9 @@ void KP_Terms::Calculate
 {
   DEBUG_FUNC(m_itype<<": type(a)="<<m_typea<<", beam(a)="<<m_sa
                     <<", type(b)="<<m_typeb<<", beam(b)="<<m_sb);
+  // mom is flavour-ordered, the bunches are not
+  m_beam[0] = mom[0][3] > 0. ? 0 : 1;
+  m_beam[1] = mom[1][3] < 0. ? 1 : 0;
   // Resolved-photon pointlike collapse: for a genuine photon bunch the mother
   // photon has f_{gamma/gamma}(y)=delta(1-y), so y=eta/x=1 pins the (regular)
   // q<-photon splitting variable to x=eta and removes the (1-eta) sampling
@@ -200,12 +203,16 @@ void KP_Terms::Calculate
   // PDF. Only the off-diagonal a<-photon coeffs survive here (SetPhotonSplitting-
   // Only zeroes the diagonal), so evaluating the whole beam block at x=eta is safe.
   const bool colla(m_photonsplittingonly && m_sa
-                   && rpa->gen.Bunch(0).IsPhoton());
+                   && rpa->gen.Bunch(m_beam[0]).IsPhoton());
   const bool collb(m_photonsplittingonly && m_sb
-                   && rpa->gen.Bunch(1).IsPhoton());
+                   && rpa->gen.Bunch(m_beam[1]).IsPhoton());
   const double x0(colla?eta0:x0_), x1(collb?eta1:x1_);
   msg_Debugging()<<"x0="<<x0<<", x1="<<x1
                  <<", eta0="<<eta0<<", eta1="<<eta1<<std::endl;
+  // reset first, so that a rejected point does not leak the previous
+  // point's coefficients into FillMEwgts
+  for (int i=0;i<8;i++) m_kpca[i]=0.;
+  for (int i=0;i<8;i++) m_kpcb[i]=0.;
   if (!m_sa && !m_sb) return;
   if ((m_sa && x0<eta0) || (m_sb && x1<eta1)) return;
   double cpl(Coupling());
@@ -217,8 +224,6 @@ void KP_Terms::Calculate
   // which is built with the (mapped) subprocess 'this' to keep the per-subprocess
   // photon-splitting charges correct; unmapped/AMEGIC callers are unaffected.
   double muf2(p_proc->ScaleSetter(1)->Scale(stp::fac,1));
-  for (int i=0;i<8;i++) m_kpca[i]=0.;
-  for (int i=0;i<8;i++) m_kpcb[i]=0.;
 
   msg_Debugging()<<"parton list: "<<m_plist<<std::endl;
 
@@ -548,9 +553,9 @@ void KP_Terms::Calculate
     // normal MSbar PDF term, not DISgamma-absorbed). The diagonal q<-q QED terms
     // kpc[0,1,4,5] always stay. The bunch flavour (not pdf->Contains(photon), which
     // is also true for LUXqed) is what distinguishes the two beam types.
-    if (m_sa && rpa->gen.Bunch(0).IsPhoton())
+    if (m_sa && rpa->gen.Bunch(m_beam[0]).IsPhoton())
       m_kpca[2]=m_kpca[3]=m_kpca[6]=m_kpca[7]=0.;
-    if (m_sb && rpa->gen.Bunch(1).IsPhoton())
+    if (m_sb && rpa->gen.Bunch(m_beam[1]).IsPhoton())
       m_kpcb[2]=m_kpcb[3]=m_kpcb[6]=m_kpcb[7]=0.;
   }
 
@@ -604,8 +609,8 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
   // assumption: a/a' = gluon/photon, quark only
   if (m_sa) {
     msg_Debugging()<<"sa"<<std::endl;
-    if (m_cemode && eta0*rpa->gen.PBunch(0)[0]<fl0.Mass(true)) {
-      msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta0*rpa->gen.PBunch(0)[0]
+    if (m_cemode && eta0*rpa->gen.PBunch(m_beam[0])[0]<fl0.Mass(true)) {
+      msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta0*rpa->gen.PBunch(m_beam[0])[0]
                     <<" vs. "<<fl0.Mass(true)<<" )"<<std::endl;
       return 0.0;
     }
@@ -658,7 +663,7 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
     // the delta-collapsed measure (see Calculate), so multiply the surviving
     // kpca[3]/kpca[7] by fagx=1 instead of the vanishing photon-in-photon PDF.
     // fag is irrelevant (kpca[2]/kpca[6]==0); fa keeps the real quark PDF divisor.
-    if (m_photonsplittingonly && rpa->gen.Bunch(0).IsPhoton()) {
+    if (m_photonsplittingonly && rpa->gen.Bunch(m_beam[0]).IsPhoton()) {
       fag=0.;
       fagx=1.;
     }
@@ -671,8 +676,8 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
 
   if (m_sb) {
     msg_Debugging()<<"sb"<<std::endl;
-    if (m_cemode && eta1*rpa->gen.PBunch(1)[0]<fl1.Mass(true)) {
-      msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta1*rpa->gen.PBunch(1)[0]
+    if (m_cemode && eta1*rpa->gen.PBunch(m_beam[1])[0]<fl1.Mass(true)) {
+      msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta1*rpa->gen.PBunch(m_beam[1])[0]
                     <<" vs. "<<fl1.Mass(true)<<" )"<<std::endl;
       return 0.0;
     }
@@ -722,7 +727,7 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
     }
 
     // pointlike collapse for beam b (see the beam-a comment above)
-    if (m_photonsplittingonly && rpa->gen.Bunch(1).IsPhoton()) { fbg=0.; fbgx=1.; }
+    if (m_photonsplittingonly && rpa->gen.Bunch(m_beam[1]).IsPhoton()) { fbg=0.; fbgx=1.; }
 
     for (size_t i=0;i<m_xpb.size();i++) if (m_xpb[i].xp>eta1) {
       pdfb->Calculate(eta1/m_xpb[i].xp,muf12*muf12fac);
