@@ -16,21 +16,31 @@
 
 using namespace YFS;
 
-Amplitude::Amplitude() {
-  for (int h0 = 0; h0 <= 1; ++h0) {
-    for (int h1 = 0; h1 <= 1; ++h1) {
-      for (int h2 = 0; h2 <= 1; ++h2) {
-        for (int h3 = 0; h3 <= 1; ++h3) {
-          m_A[h0][h1][h2][h3] = Complex(0, 0);
-        }
-      }
-    }
+int Amplitude::s_nlegs = 4;
+
+void Amplitude::SetLegs(int n) {
+  if (n < 1 || n > s_maxlegs) {
+    msg_Error()<<METHOD<<"(): "<<n<<" legs requested, capacity is "<<s_maxlegs
+               <<". Raise Amplitude::s_maxlegs."<<std::endl;
+    return;
   }
+  s_nlegs = n;
+}
+
+Amplitude::Amplitude() {
+  // Only the active extent: zeroing the whole capacity would cost 4 KB per
+  // construction, and one Amplitude is built per partition.
+  const int n(NHel());
+  for (int i = 0; i < n; ++i) m_A[i] = Complex(0, 0);
 }
 
 
 Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
 {
+  // The amplitude container's extent. 2 -> 2 gives 4 legs and 16 helicity
+  // entries, which is what the fixed m_A[2][2][2][2] used to hold.
+  Amplitude::SetLegs((int)flavs.size());
+
   RegisterDefaults();
   Scoped_Settings s{ Settings::GetMainSettings()["CEEX"] };
   Settings& ss = Settings::GetMainSettings();
@@ -43,8 +53,28 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
   string widthscheme = ss["WIDTH_SCHEME"].Get<string>();
   m_fixedwidth = (widthscheme == "Fixed" || widthscheme == "CMS");
   m_flavs = flavs;
+  /*
+    CEEX is 2 -> 2 only, and the binding reason is the Born: BornAmplitude()
+    hand-codes the four-fermion T/U spinor structures and indexes k[0..3], so
+    on more legs it would quietly build the wrong amplitude out of the first
+    four. The partition sum, the stage decomposition, the soft factors and the
+    amplitude container have all been generalised; this has not.
+
+    CEEX: DEV_MULTILEG lets a larger final state through anyway, for
+    DEVELOPMENT ONLY. The cross section it produces is meaningless. Its purpose
+    is to let the structural checks (stage charge neutrality, closure of the
+    stage currents against the total eikonal) run on a real 2 -> N process and
+    report what is still 2 -> 2, instead of everything hiding behind this one
+    throw.
+  */
+  static const int devmultileg(s["DEV_MULTILEG"].SetDefault(0).Get<int>());
   if (flavs.size() != 4) {
-    THROW(fatal_error, "CEEX is only for 2->2");
+    if (!devmultileg)
+      THROW(fatal_error, "CEEX is only for 2->2");
+    msg_Error()<<METHOD<<"(): CEEX: DEV_MULTILEG is set and this process has "
+               <<flavs.size()<<" legs. The hand-coded Born is 2 -> 2 only, so "
+               <<"ANY CROSS SECTION FROM THIS RUN IS MEANINGLESS. Development "
+               <<"switch for the structural checks only."<<std::endl;
   }
   if (flavs[2].IsNeutrino() && flavs[3].IsNeutrino()) {
     m_onlyz = true;
@@ -254,13 +284,13 @@ void Ceex_Base::ZerAmplit() {
     for (int j2 = 0; j2 <= 1; ++j2)
       for (int j3 = 0; j3 <= 1; ++j3)
         for (int j4 = 0; j4 <= 1; ++j4) {
-          m_AmpExpo0.m_A[j1][j2][j3][j4] = Complex(0., 0.);
-          m_AmpExpo1.m_A[j1][j2][j3][j4] = Complex(0., 0.);
-          m_AmpBornVirt.m_A[j1][j2][j3][j4] = Complex(0., 0.);
-          m_AmpBornReal.m_A[j1][j2][j3][j4] = Complex(0., 0.);
-          m_snapBorn.m_A[j1][j2][j3][j4] = Complex(0., 0.);
-          m_snapVirt.m_A[j1][j2][j3][j4] = Complex(0., 0.);
-          m_snapReal.m_A[j1][j2][j3][j4] = Complex(0., 0.);
+          m_AmpExpo0.m_A[Idx(j1,j2,j3,j4)] = Complex(0., 0.);
+          m_AmpExpo1.m_A[Idx(j1,j2,j3,j4)] = Complex(0., 0.);
+          m_AmpBornVirt.m_A[Idx(j1,j2,j3,j4)] = Complex(0., 0.);
+          m_AmpBornReal.m_A[Idx(j1,j2,j3,j4)] = Complex(0., 0.);
+          m_snapBorn.m_A[Idx(j1,j2,j3,j4)] = Complex(0., 0.);
+          m_snapVirt.m_A[Idx(j1,j2,j3,j4)] = Complex(0., 0.);
+          m_snapReal.m_A[Idx(j1,j2,j3,j4)] = Complex(0., 0.);
         }
 }
 
@@ -272,10 +302,10 @@ void Ceex_Base::MakeRho() {
     for (int j2 = 0; j2 <= 1; ++j2)
       for (int j3 = 0; j3 <= 1; ++j3)
         for (int j4 = 0; j4 <= 1; ++j4) {
-          sum0 += std::real(m_AmpExpo0.m_A[j1][j2][j3][j4]
-                            * conj(m_AmpExpo0.m_A[j1][j2][j3][j4]));
-          sum1 += std::real(m_AmpExpo1.m_A[j1][j2][j3][j4]
-                            * conj(m_AmpExpo1.m_A[j1][j2][j3][j4]));
+          sum0 += std::real(m_AmpExpo0.m_A[Idx(j1,j2,j3,j4)]
+                            * conj(m_AmpExpo0.m_A[Idx(j1,j2,j3,j4)]));
+          sum1 += std::real(m_AmpExpo1.m_A[Idx(j1,j2,j3,j4)]
+                            * conj(m_AmpExpo1.m_A[Idx(j1,j2,j3,j4)]));
         }
   // Average over the four initial-state helicity configurations.
   m_result0 = sum0 / 4.;
@@ -285,10 +315,10 @@ void Ceex_Base::MakeRho() {
     for (int j2 = 0; j2 <= 1; ++j2)
       for (int j3 = 0; j3 <= 1; ++j3)
         for (int j4 = 0; j4 <= 1; ++j4) {
-          sumbv += std::real(m_AmpBornVirt.m_A[j1][j2][j3][j4]
-                             * conj(m_AmpBornVirt.m_A[j1][j2][j3][j4]));
-          sumbr += std::real(m_AmpBornReal.m_A[j1][j2][j3][j4]
-                             * conj(m_AmpBornReal.m_A[j1][j2][j3][j4]));
+          sumbv += std::real(m_AmpBornVirt.m_A[Idx(j1,j2,j3,j4)]
+                             * conj(m_AmpBornVirt.m_A[Idx(j1,j2,j3,j4)]));
+          sumbr += std::real(m_AmpBornReal.m_A[Idx(j1,j2,j3,j4)]
+                             * conj(m_AmpBornReal.m_A[Idx(j1,j2,j3,j4)]));
         }
   m_resultbv = sumbv / 4.;
   m_resultbr = sumbr / 4.;
@@ -318,7 +348,7 @@ double Ceex_Base::RealFactorPhoton(size_t j) const
     for (int b = 0; b <= 1; ++b)
       for (int c = 0; c <= 1; ++c)
         for (int d = 0; d <= 1; ++d) {
-          const Complex z(m_AmpExpo0.m_A[a][b][c][d] + m_realphot[j].m_A[a][b][c][d]);
+          const Complex z(m_AmpExpo0.m_A[Idx(a,b,c,d)] + m_realphot[j].m_A[Idx(a,b,c,d)]);
           sum += std::real(z * conj(z));
         }
   return sum/4./m_result0 - 1.;

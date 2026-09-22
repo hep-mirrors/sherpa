@@ -25,11 +25,35 @@ namespace YFS {
   typedef std::map<int,double> HelicityMap;
   typedef complex<double> dcmplx;
 
+  /*!
+    A helicity amplitude over the external legs.
+
+    Storage is FLAT and indexed through Idx(), so the leg count is a runtime
+    property rather than four hard-coded subscripts. That is what lets the same
+    container hold a 2 -> 2 amplitude (4 legs, 16 entries) and a 2 -> N one;
+    the previous Complex m_A[2][2][2][2] could not, and no amount of work
+    elsewhere could get past it.
+
+    Idx packs leg 0 into the least significant bit, matching the convention
+    METOOLS::Spin_Amplitudes uses and therefore the one Comix hands over.
+
+    s_nlegs is set ONCE per run from the process (SetLegs), and the constructor
+    zeroes only the active 2^s_nlegs entries - not the whole capacity, which
+    would memset 4 KB per partition and is why the capacity can afford to be
+    generous.
+  */
   class Amplitude{
   public:
+    static const int s_maxlegs = 8;              //!< 2 -> 4 plus a photon is 7
+    static const int s_maxhel  = 1 << s_maxlegs;
+    static int s_nlegs;                          //!< active leg count
+    static inline int NHel() { return 1 << s_nlegs; }
+    static void SetLegs(int n);
+    static inline int Idx(int h0, int h1, int h2, int h3)
+    { return h0 | (h1 << 1) | (h2 << 2) | (h3 << 3); }
     Amplitude();
     ~Amplitude(){}
-    Complex m_A[2][2][2][2];
+    Complex m_A[s_maxhel];
     Complex m_U[2][2];
     Complex m_V[2][2];
   };
@@ -119,6 +143,28 @@ namespace YFS {
     std::vector<int>     m_stage;
     std::vector<char>    m_stagereduces;
     std::vector<std::vector<Complex> > m_Sfac;
+    /*!
+      One entry per leg of a stage: the index into m_pceex/m_bornmomenta and
+      the weight w = Q * theta (charge in units of e, theta = -1 incoming,
+      +1 outgoing). A stage's soft factor is sum_i w_i * (per-leg eikonal), and
+      Ceex_Base::Sfactor is exactly that sum for the charge-neutral two-leg
+      case, with implicit weights (+1,-1). Built by BuildStages().
+    */
+    struct StageLeg { int leg; double w; };
+    std::vector<std::vector<StageLeg> > m_stagelegs;
+    /*!
+      Momenta the stage legs index. The first m_flavs.size() entries are the
+      external legs - initial from the Born momenta, final from the CEEX ones,
+      which is the split the ISR/FSR version made implicitly - and anything
+      appended after them is a RECONSTRUCTED RESONANCE.
+
+      That last part is why stage legs index this rather than m_pceex directly:
+      a W in e+e- -> W+W- -> 4f radiates and belongs to three stages at once
+      (production, and its own decay), but is not an entry in the event's
+      flavour vector at all. DipoleSet::BuildPole already reconstructs it for
+      the pole scheme; a stage leg has to be able to name it.
+    */
+    std::vector<ATOOLS::Vec4D> m_stagemom;
     //! (q1+q2)^2, the PHYSICAL final-pair invariant. Fixed for the event,
     //! where m_sp is the propagator scale and changes with the partition.
     double m_svarQ = 0.;
@@ -262,6 +308,23 @@ namespace YFS {
     void InfraredSubtractedME_1_0_FSR(const Vec4D &k, int hel,
                                       const Complex &sProd, const Complex &Sactu,
                                       double CKine, int slot=-1, int iphot=-1);
+    /*!
+      Derive the emission stages from the process and check they are admissible.
+
+      A stage is gauge invariant only if it is separately charge-neutral,
+      sum_{i in g} Q_i theta_i = 0. That is the condition this enforces; a decomposition failing it is rejected
+      rather than silently producing a gauge-dependent answer.
+
+      Currently returns the 2 -> 2 decomposition (initial pair, final pair),
+      which is the KKMC ISR/FSR split. This is the ONE function a 2 -> N core
+      has to change: everything downstream reads m_stagelegs and m_nstages.
+    */
+    //! Helicity index into Amplitude::m_A. Forwarded so the convention lives
+    //! in one place (Amplitude) while call sites inside Ceex_Base stay short.
+    static inline int Idx(int h0, int h1, int h2, int h3)
+    { return Amplitude::Idx(h0, h1, h2, h3); }
+    Complex SfactorLeg(const ATOOLS::Vec4D &p, const ATOOLS::Vec4D &k, int hel);
+    bool BuildStages();
     void PartitionStart(int &last);
     void PartitionPlus(int &last);
     void InfraredSubtractedME_2_0();

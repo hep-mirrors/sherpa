@@ -33,7 +33,7 @@ Complex Ceex_Base::BornAmplitude(const Vec4D_Vector &k) {
             m_T = T(k[2], k[0], hel3, hel1) * Tp(k[1], k[3], hel2, hel4);
             m_U = Up(k[2], k[1], hel3, hel2) * U(k[0], k[3], hel1, hel4);
             m_ampborn[h0][h1][h2][h3] = (CouplingZ(hel1, 1) + CouplingG()) * m_T + (CouplingZ(hel1, 1) + CouplingG()) * m_U;
-            m_bornAmp.m_A[h0][h1][h2][h3] = (CouplingZ(hel1, 1) + CouplingG()) * m_T + (CouplingZ(hel1, 1) + CouplingG()) * m_U;
+            m_bornAmp.m_A[Idx(h0,h1,h2,h3)] = (CouplingZ(hel1, 1) + CouplingG()) * m_T + (CouplingZ(hel1, 1) + CouplingG()) * m_U;
             amp += (CouplingZ(hel1, 0) * m_propZ + CouplingG() * m_propG) * m_U + (CouplingZ(hel1, 1) * m_propZ + CouplingG() * m_propG) * m_T;
           }
         }
@@ -143,12 +143,12 @@ void Ceex_Base::BornAmplitude(const Vec4D_Vector &k, Amplitude &M,
     for (int h1 = 0; h1 <= 1; h1++) {
       for (int h2 = 0; h2 <= 1; h2++) {
         for (int h3 = 0; h3 <= 1; h3++) {
-          M.m_A[h0][h1][h2][h3] = m_TC[h0] * m_Tamp[h0][h1][h2][h3]
+          M.m_A[Idx(h0,h1,h2,h3)] = m_TC[h0] * m_Tamp[h0][h1][h2][h3]
                                 + m_UC[h0] * m_Uamp[h0][h1][h2][h3];
           if (m_bhabha)
-            M.m_A[h0][h1][h2][h3] += m_TCt[h0] * m_Tampt[h0][h1][h2][h3]
+            M.m_A[Idx(h0,h1,h2,h3)] += m_TCt[h0] * m_Tampt[h0][h1][h2][h3]
                                    + m_UCt[h0] * m_Uampt[h0][h1][h2][h3];
-          m_bornAmp.m_A[h0][h1][h2][h3] = M.m_A[h0][h1][h2][h3];
+          m_bornAmp.m_A[Idx(h0,h1,h2,h3)] = M.m_A[Idx(h0,h1,h2,h3)];
         }
       }
     }
@@ -205,12 +205,12 @@ void Ceex_Base::InfraredSubtractedME_0_0() {
     for (int j2 = 0; j2 <= 1; ++j2)
       for (int j3 = 0; j3 <= 1; ++j3)
         for (int j4 = 0; j4 <= 1; ++j4) {
-          const Complex a(fac * AmpBorn.m_A[j1][j2][j3][j4]);
+          const Complex a(fac * AmpBorn.m_A[Idx(j1,j2,j3,j4)]);
           rc += std::real(a * conj(a));
-          m_AmpExpo0.m_A[j1][j2][j3][j4] += a;
-          m_AmpBornVirt.m_A[j1][j2][j3][j4] += a;
-          m_AmpBornReal.m_A[j1][j2][j3][j4] += a;
-          m_AmpExpo1.m_A[j1][j2][j3][j4] += a;
+          m_AmpExpo0.m_A[Idx(j1,j2,j3,j4)] += a;
+          m_AmpBornVirt.m_A[Idx(j1,j2,j3,j4)] += a;
+          m_AmpBornReal.m_A[Idx(j1,j2,j3,j4)] += a;
+          m_AmpExpo1.m_A[Idx(j1,j2,j3,j4)] += a;
         }
   m_rhocrud += rc / 4.;
   m_snapBorn = m_AmpExpo1;   // Born term only, before any correction

@@ -25,10 +25,19 @@ using namespace ATOOLS;
 
 namespace {
 
-  //! CEEX and Comix both index a helicity as 0 -> +1, 1 -> -1, and with every
-  //! external leg two-valued the flat Spin_Amplitudes index is just the bits.
-  inline size_t FlatIndex(int h0, int h1, int h2, int h3, int hg)
-  { return h0 + 2*h1 + 4*h2 + 8*h3 + 16*hg; }
+  /*!
+    CEEX and Comix both index a helicity as 0 -> +1, 1 -> -1, and with every
+    external leg two-valued the flat Spin_Amplitudes index is just the bits:
+    leg i in bit i, the photon in the bit above the last fermion leg. That is
+    also how Amplitude::Idx packs them, so the fermion part of a Comix index
+    and a CEEX index are THE SAME NUMBER and no per-leg unpacking is needed.
+
+    The consequence used throughout below: flipping the helicity LABEL of a
+    set of legs is an XOR of the packed index with that set's bit mask, so the
+    relabelling is one operation rather than a loop over legs.
+  */
+  inline size_t FlatIndex(size_t ferm, int hg, int nlegs)
+  { return ferm | ((size_t)hg << nlegs); }
 
 }
 
@@ -37,25 +46,27 @@ bool Ceex_Base::FetchComixReal()
 {
   m_havecomixreal = false;
   if (p_realprov == NULL || p_realprov->p_proc == NULL) return false;
-  if (m_allphotons.size() != 1 || m_pceex.size() < 4 || m_PhoHel.empty())
+  const size_t nl(m_flavs.size());
+  if (m_allphotons.size() != 1 || m_pceex.size() < nl || m_PhoHel.empty())
     return false;
 
   // The real process must be this process plus one photon, in that order -
   // YFS_Process builds it by pushing a photon onto the final state, so it is,
   // but a mapped or reordered process would silently misindex every helicity.
   const Flavour_Vector &pf(p_realprov->p_proc->Flavours());
-  if (pf.size() != 5) return false;
-  for (size_t i(0); i < 4; ++i) if (pf[i] != m_flavs[i]) return false;
-  if (pf[4].Kfcode() != kf_photon) return false;
+  if (pf.size() != nl + 1) return false;
+  for (size_t i(0); i < nl; ++i) if (pf[i] != m_flavs[i]) return false;
+  if (pf[nl].Kfcode() != kf_photon) return false;
 
-  Vec4D_Vector p(5);
-  for (size_t i(0); i < 4; ++i) p[i] = m_pceex[i];
-  p[4] = m_allphotons[0];
+  Vec4D_Vector p(nl + 1);
+  for (size_t i(0); i < nl; ++i) p[i] = m_pceex[i];
+  p[nl] = m_allphotons[0];
 
   // m_pceex uses the LAB pair, which is the only one that balances against
   // the photons (see the comment on m_pceex). Check it rather than trust it:
   // Comix at a non-conserving point returns a number, not an error.
-  const Vec4D bal(p[0] + p[1] - p[2] - p[3] - p[4]);
+  Vec4D bal(p[0] + p[1]);
+  for (size_t i(2); i < p.size(); ++i) bal -= p[i];
   const double scale(sqrt(dabs(m_svarQ)) + 1.);
   double worst(0.);
   for (int c(0); c < 4; ++c) worst = Max(worst, dabs(bal[c]));
@@ -74,13 +85,14 @@ bool Ceex_Base::FetchComixReal()
     }
   }
   const METOOLS::Spin_Amplitudes &sa((*amps)[0]);
-  if (sa.size() != 32) {
+  const size_t nhel(((size_t)1) << (nl + 1));
+  if (sa.size() != nhel) {
     static bool warned(false);
     if (!warned) {
       warned = true;
-      msg_Error()<<METHOD<<"(): expected 32 helicity entries for 5 legs, got "
-                 <<sa.size()<<". CEEX: COMIX_REAL disabled for this run."
-                 <<std::endl;
+      msg_Error()<<METHOD<<"(): expected "<<nhel<<" helicity entries for "
+                 <<(nl+1)<<" legs, got "<<sa.size()
+                 <<". CEEX: COMIX_REAL disabled for this run."<<std::endl;
     }
     m_comixreal = 0;
     return false;
@@ -120,23 +132,19 @@ bool Ceex_Base::FetchComixReal()
     lines, not by reasoning about conventions.
   */
   const int fl(m_comixflip);
-  const int hgf(hg ^ ((fl >> 4) & 1));
-  for (int a = 0; a <= 1; ++a)
-    for (int b = 0; b <= 1; ++b)
-      for (int c = 0; c <= 1; ++c)
-        for (int d = 0; d <= 1; ++d)
-          m_comixM1.m_A[a][b][c][d] = m_comixnorm
-            * sa[FlatIndex(a ^ (fl & 1), b ^ ((fl >> 1) & 1),
-                           c ^ ((fl >> 2) & 1), d ^ ((fl >> 3) & 1), hgf)];
+  // NOTE the mask is per-process: the photon bit sits above the fermion legs,
+  // so a value fitted at 4 legs does NOT carry over to 6.
+  const size_t fmask((((size_t)1) << nl) - 1);
+  const int    hgf(hg ^ ((fl >> nl) & 1));
+  const size_t nf(((size_t)1) << nl);
+  for (size_t f(0); f < nf; ++f)
+    m_comixM1.m_A[f] = m_comixnorm
+      * sa[FlatIndex(f ^ (fl & fmask), hgf, (int)nl)];
   // The raw table, kept so the flip scan can look at maps other than the one
   // in force without a second Comix evaluation.
   for (int h = 0; h <= 1; ++h)
-    for (int a = 0; a <= 1; ++a)
-      for (int b = 0; b <= 1; ++b)
-        for (int c = 0; c <= 1; ++c)
-          for (int d = 0; d <= 1; ++d)
-            m_comixraw[h].m_A[a][b][c][d] = m_comixnorm
-              * sa[FlatIndex(a, b, c, d, h)];
+    for (size_t f(0); f < nf; ++f)
+      m_comixraw[h].m_A[f] = m_comixnorm * sa[FlatIndex(f, h, (int)nl)];
   m_comixdrawnhel = hg;
 
   m_havecomixreal = true;
@@ -155,25 +163,23 @@ void Ceex_Base::ApplyComixReal()
   static const bool cxchk(getenv("SHERPA_CEEX_COMIX") != NULL);
   const Amplitude hand1(m_AmpExpo1);   // Born + virtual + hand-coded real
 
-  for (int a = 0; a <= 1; ++a)
-    for (int b = 0; b <= 1; ++b)
-      for (int c = 0; c <= 1; ++c)
-        for (int d = 0; d <= 1; ++d) {
-          const Complex a0(m_AmpExpo0.m_A[a][b][c][d]);
-          const Complex bv(m_AmpBornVirt.m_A[a][b][c][d]);
+  const int nh(Amplitude::NHel());
+  for (int f = 0; f < nh; ++f) {
+          const Complex a0(m_AmpExpo0.m_A[f]);
+          const Complex bv(m_AmpBornVirt.m_A[f]);
           // The virtual as the per-helicity multiplicative factor it is.
           // Both sides of this ratio are hand-coded, so every spinor-phase
           // convention cancels out of it; that is the whole point.
           const Complex V(std::abs(a0) > 0. ? bv/a0 : Complex(1., 0.));
-          const Complex M1(m_comixM1.m_A[a][b][c][d]);
-          m_AmpExpo1.m_A[a][b][c][d]    = V*M1;
-          m_AmpBornReal.m_A[a][b][c][d] = M1;
+          const Complex M1(m_comixM1.m_A[f]);
+          m_AmpExpo1.m_A[f]    = V*M1;
+          m_AmpBornReal.m_A[f] = M1;
           // The real INCREMENT over the Born partition sum, for the SHPART
           // diagnostics. Phase-sensitive by construction - it is the one
           // place the two conventions are subtracted from one another - and
           // it feeds nothing that is squared.
-          m_snapReal.m_A[a][b][c][d]    = M1 - a0;
-        }
+          m_snapReal.m_A[f]    = M1 - a0;
+  }
 
   {
     // Norm-weighted, not worst-case: a worst case over 16 helicities is
@@ -182,13 +188,10 @@ void Ceex_Base::ApplyComixReal()
     double mnum(0.), mden(0.);
     double sh(0.), sc(0.), worst(0.);
     double sdiff(0.), sabsdiff(0.), s0(0.);
-    for (int a = 0; a <= 1; ++a)
-      for (int b = 0; b <= 1; ++b)
-        for (int c = 0; c <= 1; ++c)
-          for (int d = 0; d <= 1; ++d) {
-            const Complex H(hand1.m_A[a][b][c][d]);
-            const Complex C(m_comixM1.m_A[a][b][c][d]);
-            const Complex A0(m_AmpExpo0.m_A[a][b][c][d]);
+    for (int f = 0; f < nh; ++f) {
+            const Complex H(hand1.m_A[f]);
+            const Complex C(m_comixM1.m_A[f]);
+            const Complex A0(m_AmpExpo0.m_A[f]);
             sh += std::norm(H); sc += std::norm(C);
             const double den(std::abs(H) + std::abs(C));
             if (den > 0.) worst = Max(worst, std::abs(H - C)/den);
@@ -197,13 +200,13 @@ void Ceex_Base::ApplyComixReal()
             s0       += std::norm(A0);
             sdiff    += std::norm(C - A0);
             sabsdiff += sqr(std::abs(C) - std::abs(A0));
-          }
+    }
     if (sh > 0.) { m_cxrnormsum += sc/sh; ++m_cxrn; }
     if (mden > 0.) m_cxrmetsum += sqrt(mnum/mden);
     if (!cxchk) return;
     SoftProbe();
     /*
-      Which of the 32 index maps brings the two labellings into line.
+      Which of the 2^(nlegs+1) index maps brings the two labellings into line.
 
       MAGNITUDES only, so the question "do the two codes mean the same
       helicity by this index" is answered without the separate question "do
@@ -212,20 +215,17 @@ void Ceex_Base::ApplyComixReal()
       always ~1, because an entry that is zero in one code and 1e-9 in the
       other has relative difference 1 however right the map is.
     */
+    const int nlg((int)m_flavs.size());
+    const int fmaskx((1 << nlg) - 1);
     int bestmask(0); double bestmetric(1e30); double m0metric(-1.);
-    for (int mask(0); mask < 32; ++mask) {
+    for (int mask(0); mask < (1 << (nlg + 1)); ++mask) {
       double num(0.), den(0.);
-      const int hgm(m_comixdrawnhel ^ ((mask >> 4) & 1));
-      for (int a = 0; a <= 1; ++a)
-        for (int b = 0; b <= 1; ++b)
-          for (int c = 0; c <= 1; ++c)
-            for (int d = 0; d <= 1; ++d) {
-              const double H(std::abs(hand1.m_A[a][b][c][d]));
-              const double C(std::abs(m_comixraw[hgm]
-                                      .m_A[a^(mask&1)][b^((mask>>1)&1)]
-                                          [c^((mask>>2)&1)][d^((mask>>3)&1)]));
+      const int hgm(m_comixdrawnhel ^ ((mask >> nlg) & 1));
+      for (int f = 0; f < nh; ++f) {
+              const double H(std::abs(hand1.m_A[f]));
+              const double C(std::abs(m_comixraw[hgm].m_A[f ^ (mask & fmaskx)]));
               num += sqr(H - C); den += H*H + C*C;
-            }
+      }
       const double met(den > 0. ? sqrt(num/den) : 0.);
       if (mask == m_comixflip) m0metric = met;
       if (met < bestmetric) { bestmetric = met; bestmask = mask; }
@@ -249,8 +249,8 @@ void Ceex_Base::ApplyComixReal()
         for (int b = 0; b <= 1; ++b)
           for (int c = 0; c <= 1; ++c)
             for (int d = 0; d <= 1; ++d) {
-              const Complex H(hand1.m_A[a][b][c][d]);
-              const Complex C(m_comixM1.m_A[a][b][c][d]);
+              const Complex H(hand1.m_A[Idx(a,b,c,d)]);
+              const Complex C(m_comixM1.m_A[Idx(a,b,c,d)]);
               std::cerr<<"@@@ CEEXHEL "<<a<<b<<c<<d
                        <<" absH="<<std::abs(H)<<" absC="<<std::abs(C)
                        <<" H=("<<H.real()<<","<<H.imag()<<")"
@@ -360,17 +360,16 @@ void Ceex_Base::SoftProbe()
     const Complex soft(m_e*m_e*(Si + Sf));
 
     const int fl(m_comixflip);
-    const int hgi(((hg > 0 ? 0 : 1) ^ ((fl >> 4) & 1)));
+    const int nlg((int)m_flavs.size());
+    const int fmaskx((1 << nlg) - 1);
+    const int nh(Amplitude::NHel());
+    const int hgi(((hg > 0 ? 0 : 1) ^ ((fl >> nlg) & 1)));
     double sc(0.), shd(0.), scall(0.);
-    for (int a = 0; a <= 1; ++a)
-      for (int b = 0; b <= 1; ++b)
-        for (int c = 0; c <= 1; ++c)
-          for (int d = 0; d <= 1; ++d) {
-            const Complex C(sa[FlatIndex(a^(fl&1), b^((fl>>1)&1),
-                                         c^((fl>>2)&1), d^((fl>>3)&1), hgi)]);
-            sc  += std::norm(m_comixnorm*C);
-            shd += std::norm(soft*B.m_A[a][b][c][d]);
-          }
+    for (int f = 0; f < nh; ++f) {
+      const Complex C(sa[FlatIndex((size_t)(f ^ (fl & fmaskx)), hgi, nlg)]);
+      sc  += std::norm(m_comixnorm*C);
+      shd += std::norm(soft*B.m_A[f]);
+    }
     for (size_t i(0); i < sa.size(); ++i) scall += std::norm(sa[i]);
     /*
       The index map, determined where it can be determined: in the soft
@@ -379,20 +378,16 @@ void Ceex_Base::SoftProbe()
       the right one rather than the least wrong one. Magnitudes only.
     */
     int bm(0); double bmet(1e30), inusemet(-1.), phometh(-1.);
-    for (int mask(0); mask < 32; ++mask) {
+    for (int mask(0); mask < (1 << (nlg + 1)); ++mask) {
       double num(0.), den(0.);
-      const int hgm(((hg > 0 ? 0 : 1) ^ ((mask >> 4) & 1)));
-      for (int a = 0; a <= 1; ++a)
-        for (int b = 0; b <= 1; ++b)
-          for (int c = 0; c <= 1; ++c)
-            for (int d = 0; d <= 1; ++d) {
-              const double C(std::abs(m_comixnorm*
-                                      sa[FlatIndex(a^(mask&1), b^((mask>>1)&1),
-                                                   c^((mask>>2)&1),
-                                                   d^((mask>>3)&1), hgm)]));
-              const double H(std::abs(soft*B.m_A[a][b][c][d]));
-              num += sqr(H - C); den += H*H + C*C;
-            }
+      const int hgm(((hg > 0 ? 0 : 1) ^ ((mask >> nlg) & 1)));
+      for (int f = 0; f < nh; ++f) {
+        const double C(std::abs(m_comixnorm*
+                                sa[FlatIndex((size_t)(f ^ (mask & fmaskx)),
+                                             hgm, nlg)]));
+        const double H(std::abs(soft*B.m_A[f]));
+        num += sqr(H - C); den += H*H + C*C;
+      }
       const double met(den > 0. ? sqrt(num/den) : 0.);
       if (mask == m_comixflip) inusemet = met;
       if (mask == (m_comixflip ^ 16)) phometh = met;

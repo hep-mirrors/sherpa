@@ -226,6 +226,24 @@ Complex Ceex_Base::VGamma(const Vec4D &p1, const Vec4D &p2, const Vec4D &k, int 
 }
 
 
+/*!
+  One leg's contribution to the eikonal current, b(p,k)/(p.k), normalised so
+  that a charge-neutral pair reproduces Sfactor exactly:
+
+      Sfactor(p1,p2,k,hel)  ==  SfactorLeg(p1,k,hel) - SfactorLeg(p2,k,hel)
+
+  Sfactor computes that difference in one expression and is kept for the
+  two-leg case; a stage with more than two legs needs the per-leg terms
+  summed against their own weights w = Q*theta, which is what this exposes.
+  The two routes differ only in the order the rounding happens.
+*/
+Complex Ceex_Base::SfactorLeg(const Vec4D &p, const Vec4D &k, int hel) {
+  const Complex b(sqrt(2) * Xi(p, k)
+                  * (hel == -1 ? Sminus(k, p) : Splus(k, p)));
+  return 0.5 * m_e * b / (p * k);
+}
+
+
 Complex Ceex_Base::Sfactor(const Vec4D &p1, const Vec4D &p2, const Vec4D &k, int hel) {
   Complex s, b1, b2;
   if (Sminus(k, p1) != -conj(Splus(k, p1))) {

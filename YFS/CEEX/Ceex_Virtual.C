@@ -185,11 +185,11 @@ void Ceex_Base::InfraredSubtractedME_0_1() {
               ? m_TCt[j1]*m_Tampt[j1][j2][j3][j4]
               + m_UCt[j1]*m_Uampt[j1][j2][j3][j4]
               : Complex(0., 0.));
-          const Complex ms(born.m_A[j1][j2][j3][j4] - mt);
+          const Complex ms(born.m_A[Idx(j1,j2,j3,j4)] - mt);
           const Complex corr(fac * (ms*vert + mt*vertT + boxy));
-          m_AmpExpo1.m_A[j1][j2][j3][j4] += corr;
-          m_AmpBornVirt.m_A[j1][j2][j3][j4] += corr;
-          m_snapVirt.m_A[j1][j2][j3][j4] = corr;   // the beta_0^1 increment
+          m_AmpExpo1.m_A[Idx(j1,j2,j3,j4)] += corr;
+          m_AmpBornVirt.m_A[Idx(j1,j2,j3,j4)] += corr;
+          m_snapVirt.m_A[Idx(j1,j2,j3,j4)] = corr;   // the beta_0^1 increment
           m_beta01 += corr;   // scalar, for the diagnostics only
         }
 }

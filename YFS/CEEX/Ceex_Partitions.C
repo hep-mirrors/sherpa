@@ -17,21 +17,134 @@
 using namespace YFS;
 
 
-void Ceex_Base::CalculateSfactors() {
-  // Stage 1 = initial, stage 0 = final: the index convention the ISR/FSR
-  // version used, kept so the odometer enumerates partitions in the same
-  // order. A 2 -> N core adds stages here, one per resonant propagator, and
-  // nothing downstream changes
-  m_nstages = 2;
-  m_Sfac.assign(m_nstages, std::vector<Complex>());
+bool Ceex_Base::BuildStages() {
+  /*
+    Stage 1 = initial, stage 0 = final: the index convention the ISR/FSR
+    version used, kept so the odometer enumerates partitions in the same order.
+    A 2 -> N core replaces the four pushes below with one stage per resonant
+    propagator, and nothing downstream changes, because everything reads
+    m_stagelegs.
+
+    theta = -1 incoming, +1 outgoing, so w = Q*theta reproduces the weights
+    Sfactor already applies implicitly: (+1,-1) for the incoming e-/e+ pair,
+    and for an outgoing f/fbar pair the overall sign and magnitude that the
+    explicit qratio = -q_f/q_e used to carry.
+  */
+  if (m_flavs.size() < 4) return false;
+  // External legs first, in the order the stage legs will name them. Initial
+  // from the Born momenta, final from the CEEX momenta. A 2 -> N core appends
+  // its reconstructed resonances after these.
+  m_stagemom.clear();
+  for (size_t i(0); i < m_flavs.size(); ++i)
+    m_stagemom.push_back(i < 2 ? m_bornmomenta[i] : m_pceex[i]);
+
+  /*
+    The FLAT decomposition: every initial leg in the production stage, every
+    final leg in the decay stage. Valid for any N - the incoming pair is
+    charge neutral and the final state is neutral by charge conservation - and
+    at 2 -> 2 it is leg for leg the ISR/FSR split it replaces.
+
+    This is deliberately NOT the resonance decomposition. Sub-staging a final
+    state by its resonances (production, then one stage per resonance) is the
+    G > 2 case and needs the resonance grouping; until then a 2 -> N process
+    gets the flat scheme, which is a valid decomposition, just not the one
+    that resums initial-final interference through a resonance.
+  */
+  m_stagelegs.assign(2, std::vector<StageLeg>());
+  for (size_t i(0); i < m_flavs.size(); ++i) {
+    const double w(m_flavs[i].Charge() * (i < 2 ? -1. : +1.));
+    m_stagelegs[i < 2 ? 1 : 0].push_back({(int)i, w});
+  }
+
+  /*
+    A stage factor is gauge invariant only if that stage is separately
+    CHARGE-NEUTRAL: under eps -> eps + lambda k it varies by the partial sum
+    sum_{i in g} Q_i theta_i, which the total charge conservation of the
+    process does not make vanish. A decomposition failing this is rejected
+    rather than silently producing a gauge-dependent answer.
+  */
+  for (size_t g(0); g < m_stagelegs.size(); ++g) {
+    double qsum(0.);
+    for (size_t i(0); i < m_stagelegs[g].size(); ++i) qsum += m_stagelegs[g][i].w;
+    if (!IsZero(qsum)) {
+      static bool warned(false);
+      if (!warned) {
+        warned = true;
+        msg_Error()<<METHOD<<"(): stage "<<g<<" carries net charge "<<qsum
+                   <<", so its soft factor is gauge dependent. A valid stage "
+                   <<"decomposition partitions the charged legs into "
+                   <<"charge-neutral subsets. Refusing this decomposition."
+                   <<std::endl;
+      }
+      return false;
+    }
+  }
+  m_nstages = (int)m_stagelegs.size();
   m_stagereduces.assign(m_nstages, 0);
   m_stagereduces[1] = 1;   // only initial-stage photons reduce X
-  const Complex qratio(m_qe != 0. ? -m_qf/m_qe : 0., 0.);
-  for (size_t i(0); i < m_allphotons.size(); ++i) {
-    m_Sfac[1].push_back(Sfactor(m_bornmomenta[0], m_bornmomenta[1],
-                                m_allphotons[i], m_PhoHel[i]));
-    m_Sfac[0].push_back(qratio * Sfactor(m_pceex[2], m_pceex[3],
-                                         m_allphotons[i], m_PhoHel[i]));
+  return true;
+}
+
+
+void Ceex_Base::CalculateSfactors() {
+  if (!BuildStages()) { m_Sfac.clear(); return; }
+  m_Sfac.assign(m_nstages, std::vector<Complex>());
+  for (size_t i(0); i < m_allphotons.size(); ++i)
+    for (int g(0); g < m_nstages; ++g) {
+      /*
+        The stage's eikonal current, summed over its own legs against their
+        weights w = Q*theta. Any number of legs; a charge-neutral pair
+        reproduces the old single Sfactor() call up to the order the rounding
+        happens, which is why the reference stream shifts at 1e-16 and not
+        above it.
+
+        Legs name entries of m_stagemom, which holds the external legs first
+        and any reconstructed resonance after them.
+      */
+      const std::vector<StageLeg> &L(m_stagelegs[g]);
+      Complex sg(0., 0.);
+      for (size_t l(0); l < L.size(); ++l)
+        sg += L[l].w * SfactorLeg(m_stagemom[L[l].leg], m_allphotons[i],
+                                  m_PhoHel[i]);
+      m_Sfac[g].push_back(sg);
+    }
+
+  /*
+    Closure, eq. (6.4): the stage currents must sum to the TOTAL eikonal,
+
+        sum_g s_g(k)  =  s(k)  =  sum_{all legs i} w_i * SfactorLeg(p_i,k)
+
+    which is the statement that every emitter is counted exactly once. It is
+    what catches a leg assigned to two stages, one left out, a wrong theta
+    sign, or a resonance whose charge does not match its daughters -- an
+    internal resonance leg has to appear with opposite weight in its production
+    and its decay stage and cancel here.
+
+    Charge neutrality per stage (4.4) is necessary but NOT sufficient for this:
+    a decomposition can be neutral stage by stage and still double count.
+
+    Gated on CHECK_XS so production pays nothing.
+  */
+  if (m_checkxs) {
+    for (size_t i(0); i < m_allphotons.size(); ++i) {
+      Complex tot(0., 0.), sum(0., 0.);
+      for (size_t l(0); l < m_flavs.size() && l < m_stagemom.size(); ++l) {
+        const double w(m_flavs[l].Charge() * (l < 2 ? -1. : +1.));
+        tot += w * SfactorLeg(m_stagemom[l], m_allphotons[i], m_PhoHel[i]);
+      }
+      for (int g(0); g < m_nstages; ++g) sum += m_Sfac[g][i];
+      const double den(std::abs(tot) + std::abs(sum));
+      const double rel(den > 0. ? std::abs(sum - tot)/den : 0.);
+      if (rel > 1e-10) {
+        static bool warned(false);
+        if (!warned) {
+          warned = true;
+          msg_Error()<<METHOD<<"(): stage closure violated, |sum_g s_g - s| / "
+                     <<"scale = "<<rel<<". The stage decomposition is counting "
+                     <<"an emitter twice or missing one."<<std::endl;
+        }
+      }
+    }
   }
 }
 
@@ -99,6 +212,17 @@ void Ceex_Base::Calculate() {
                       m_fsrphotons.begin(), m_fsrphotons.end());
   MakePhotonHel();
   CalculateSfactors();
+  /*
+    CalculateSfactors clears m_Sfac when BuildStages rejects the decomposition
+    (a stage carrying net charge, so gauge dependent). Bail here rather than
+    index an empty table below: the event then contributes no CEEX weight,
+    which YFS_Handler already treats as "CEEX produced nothing".
+  */
+  if ((int)m_Sfac.size() != m_nstages
+      || (!m_allphotons.empty() && m_Sfac[0].size() != m_allphotons.size())) {
+    m_nparts = 0;
+    return;
+  }
   m_spincache.resize(1 + 4*m_allphotons.size());
   m_spinvalid.assign(m_spincache.size(), 0);
   m_realphot.assign(m_allphotons.size(), Amplitude());
@@ -338,7 +462,7 @@ void Ceex_Base::Calculate() {
          for (int j4 = 0; j4 <= 1; ++j4) {
            const Complex tt(m_Tamp[j1][j2][j3][j4]);
            const Complex uu(m_Uamp[j1][j2][j3][j4]);
-           const Complex bc(bref.m_A[j1][j2][j3][j4]);
+           const Complex bc(bref.m_A[Idx(j1,j2,j3,j4)]);
            if (std::abs(tt)==0. && std::abs(uu)==0. && std::abs(bc)==0.) continue;
            msg_Error() << "@@@ SHSPIN " << j1 << j2 << j3 << j4
                      << " TT=(" << tt.real() << "," << tt.imag() << ")"
@@ -354,12 +478,12 @@ void Ceex_Base::Calculate() {
       for (int j2 = 0; j2 <= 1; ++j2)
         for (int j3 = 0; j3 <= 1; ++j3)
           for (int j4 = 0; j4 <= 1; ++j4) {
-            const Complex a0(m_AmpExpo0.m_A[j1][j2][j3][j4]);
-            const Complex a1(m_AmpExpo1.m_A[j1][j2][j3][j4]);
+            const Complex a0(m_AmpExpo0.m_A[Idx(j1,j2,j3,j4)]);
+            const Complex a1(m_AmpExpo1.m_A[Idx(j1,j2,j3,j4)]);
             if (std::abs(a0) == 0. && std::abs(a1) == 0.) continue;
-            const Complex bo(m_snapBorn.m_A[j1][j2][j3][j4]);
-            const Complex vi(m_snapVirt.m_A[j1][j2][j3][j4]);
-            const Complex re(m_snapReal.m_A[j1][j2][j3][j4]);
+            const Complex bo(m_snapBorn.m_A[Idx(j1,j2,j3,j4)]);
+            const Complex vi(m_snapVirt.m_A[Idx(j1,j2,j3,j4)]);
+            const Complex re(m_snapReal.m_A[Idx(j1,j2,j3,j4)]);
             msg_Error() << "@@@ SHPART " << j1 << j2 << j3 << j4
                       << " born=(" << bo.real() << "," << bo.imag() << ")"
                       << " virt=(" << vi.real() << "," << vi.imag() << ")"
@@ -411,7 +535,7 @@ void Ceex_Base::Calculate() {
         for (int b = 0; b <= 1; ++b)
           for (int c = 0; c <= 1; ++c)
             for (int d = 0; d <= 1; ++d) {
-              const Complex H(m_e*m_e*hand.m_A[a][b][c][d]), C(cx.m_A[a][b][c][d]);
+              const Complex H(m_e*m_e*hand.m_A[Idx(a,b,c,d)]), C(cx.m_A[Idx(a,b,c,d)]);
               sh += std::norm(H); sc += std::norm(C);
               const double den(std::abs(H) + std::abs(C));
               if (den > 0.) worst = Max(worst, std::abs(H - C)/den);
@@ -426,7 +550,7 @@ void Ceex_Base::Calculate() {
           for (int b = 0; b <= 1; ++b)
             for (int c = 0; c <= 1; ++c)
               for (int d = 0; d <= 1; ++d) {
-                const Complex H(m_e*m_e*hand.m_A[a][b][c][d]), C(cx.m_A[a][b][c][d]);
+                const Complex H(m_e*m_e*hand.m_A[Idx(a,b,c,d)]), C(cx.m_A[Idx(a,b,c,d)]);
                 std::cerr<<"@@@ CEEXHEL "<<a<<b<<c<<d
                          <<" absH="<<std::abs(H)<<" absC="<<std::abs(C)
                          <<" H=("<<H.real()<<","<<H.imag()<<")"
@@ -450,7 +574,7 @@ void Ceex_Base::Calculate() {
       for (int j2 = 0; j2 <= 1; ++j2)
         for (int j3 = 0; j3 <= 1; ++j3)
           for (int j4 = 0; j4 <= 1; ++j4) {
-            const Complex a(m_e * m_e * b.m_A[j1][j2][j3][j4]);
+            const Complex a(m_e * m_e * b.m_A[Idx(j1,j2,j3,j4)]);
             sum += std::real(a * conj(a));
           }
     m_sp = sp_save;

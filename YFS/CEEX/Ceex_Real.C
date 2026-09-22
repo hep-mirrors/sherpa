@@ -54,7 +54,7 @@ void Ceex_Base::InfraredSubtractedME_1_0(const Vec4D &k, int helk,
   for (int a = 0; a <= 1; ++a)
     for (int b = 0; b <= 1; ++b)
       for (int c = 0; c <= 1; ++c)
-        for (int d = 0; d <= 1; ++d) B10.m_A[a][b][c][d] = Complex(0., 0.);
+        for (int d = 0; d <= 1; ++d) B10.m_A[Idx(a,b,c,d)] = Complex(0., 0.);
 
   const double gI(m_qe * m_e * m_e * m_e);
   AddU(B10, AmpBornU, AmpU,  gI / p1k / 2.);
@@ -69,12 +69,12 @@ void Ceex_Base::InfraredSubtractedME_1_0(const Vec4D &k, int helk,
     for (int b = 0; b <= 1; ++b)
       for (int c = 0; c <= 1; ++c)
         for (int d = 0; d <= 1; ++d) {
-          const Complex v(nrm * B10.m_A[a][b][c][d]);
-          m_AmpExpo1.m_A[a][b][c][d] += v;
-          m_AmpBornReal.m_A[a][b][c][d] += v;
+          const Complex v(nrm * B10.m_A[Idx(a,b,c,d)]);
+          m_AmpExpo1.m_A[Idx(a,b,c,d)] += v;
+          m_AmpBornReal.m_A[Idx(a,b,c,d)] += v;
           if (iphot >= 0 && iphot < (int)m_realphot.size())
-            m_realphot[iphot].m_A[a][b][c][d] += v;   // <-- the result MakeRho squares
-          m_snapReal.m_A[a][b][c][d] += v;   // the beta_1^0 increment
+            m_realphot[iphot].m_A[Idx(a,b,c,d)] += v;   // <-- the result MakeRho squares
+          m_snapReal.m_A[Idx(a,b,c,d)] += v;   // the beta_1^0 increment
           m_beta10 += v;                     // scalar, diagnostics only
         }
 }
@@ -105,7 +105,7 @@ void Ceex_Base::InfraredSubtractedME_1_0_FSR(const Vec4D &k, int helk,
   for (int a = 0; a <= 1; ++a)
     for (int b = 0; b <= 1; ++b)
       for (int c = 0; c <= 1; ++c)
-        for (int d = 0; d <= 1; ++d) B10.m_A[a][b][c][d] = Complex(0., 0.);
+        for (int d = 0; d <= 1; ++d) B10.m_A[Idx(a,b,c,d)] = Complex(0., 0.);
 
   const double gF(m_qf * m_e * m_e * m_e);
   AddUF(B10, AmpU, AmpBornU,  gF / p3k / 2.);
@@ -122,13 +122,13 @@ void Ceex_Base::InfraredSubtractedME_1_0_FSR(const Vec4D &k, int helk,
     for (int b = 0; b <= 1; ++b)
       for (int c = 0; c <= 1; ++c)
         for (int d = 0; d <= 1; ++d) {
-          const Complex v(nrm * B10.m_A[a][b][c][d]
-                          + kinfac * AmpBorn.m_A[a][b][c][d]);
-          m_AmpExpo1.m_A[a][b][c][d] += v;
-          m_AmpBornReal.m_A[a][b][c][d] += v;
+          const Complex v(nrm * B10.m_A[Idx(a,b,c,d)]
+                          + kinfac * AmpBorn.m_A[Idx(a,b,c,d)]);
+          m_AmpExpo1.m_A[Idx(a,b,c,d)] += v;
+          m_AmpBornReal.m_A[Idx(a,b,c,d)] += v;
           if (iphot >= 0 && iphot < (int)m_realphot.size())
-            m_realphot[iphot].m_A[a][b][c][d] += v;
-          m_snapReal.m_A[a][b][c][d] += v;
+            m_realphot[iphot].m_A[Idx(a,b,c,d)] += v;
+          m_snapReal.m_A[Idx(a,b,c,d)] += v;
           m_beta10 += v;
         }
 }
@@ -142,7 +142,7 @@ void Ceex_Base::AddU(Complex &sum, const Amplitude &Born, const Amplitude &U, co
         for (int h3 = 0; h3 <= 1; ++h3) {
           Complex CSum(0, 0);
           for (int  j = 0; j <= 1; j++) {
-            CSum += fac * Born.m_A[j][h1][h2][h3] * U.m_U[j][h1];
+            CSum += fac * Born.m_A[Idx(j,h1,h2,h3)] * U.m_U[j][h1];
           }
           sum += CSum;
         }
@@ -160,8 +160,8 @@ void Ceex_Base::AddU(Amplitude &out, const Amplitude &Born,
         for (int h3 = 0; h3 <= 1; ++h3) {
           Complex c(0., 0.);
           for (int j = 0; j <= 1; ++j)
-            c += fac * Born.m_A[j][h1][h2][h3] * U.m_U[j][h0];
-          out.m_A[h0][h1][h2][h3] += c;
+            c += fac * Born.m_A[Idx(j,h1,h2,h3)] * U.m_U[j][h0];
+          out.m_A[Idx(h0,h1,h2,h3)] += c;
         }
 }
 
@@ -174,7 +174,7 @@ void Ceex_Base::AddV(Complex &sum, const Amplitude &Born, const Amplitude &V, co
         for (int h3 = 0; h3 <= 1; ++h3) {
           Complex CSum(0, 0);
           for (int  j = 0; j <= 1; j++) {
-            CSum += fac * (V.m_V[h2][j]) * Born.m_A[h0][j][h2][h3];
+            CSum += fac * (V.m_V[h2][j]) * Born.m_A[Idx(h0,j,h2,h3)];
           }
           sum += CSum;
         }
@@ -192,8 +192,8 @@ void Ceex_Base::AddV(Amplitude &out, const Amplitude &Born,
         for (int h3 = 0; h3 <= 1; ++h3) {
           Complex c(0., 0.);
           for (int j = 0; j <= 1; ++j)
-            c += fac * V.m_V[h1][j] * Born.m_A[h0][j][h2][h3];
-          out.m_A[h0][h1][h2][h3] += c;
+            c += fac * V.m_V[h1][j] * Born.m_A[Idx(h0,j,h2,h3)];
+          out.m_A[Idx(h0,h1,h2,h3)] += c;
         }
 }
 
@@ -205,8 +205,8 @@ void Ceex_Base::AddUF(Amplitude &out, const Amplitude &U,
         for (int h3 = 0; h3 <= 1; ++h3) {
           Complex c(0., 0.);
           for (int j = 0; j <= 1; ++j)
-            c += fac * U.m_U[h2][j] * Born.m_A[h0][h1][j][h3];
-          out.m_A[h0][h1][h2][h3] += c;
+            c += fac * U.m_U[h2][j] * Born.m_A[Idx(h0,h1,j,h3)];
+          out.m_A[Idx(h0,h1,h2,h3)] += c;
         }
 }
 
@@ -219,8 +219,8 @@ void Ceex_Base::AddVF(Amplitude &out, const Amplitude &Born,
         for (int h3 = 0; h3 <= 1; ++h3) {
           Complex c(0., 0.);
           for (int j = 0; j <= 1; ++j)
-            c += fac * Born.m_A[h0][h1][h2][j] * V.m_V[j][h3];
-          out.m_A[h0][h1][h2][h3] += c;
+            c += fac * Born.m_A[Idx(h0,h1,h2,j)] * V.m_V[j][h3];
+          out.m_A[Idx(h0,h1,h2,h3)] += c;
         }
 }
 
@@ -232,7 +232,7 @@ void Ceex_Base::SumAmplitude(Complex &sum, const Amplitude &Amp, const Complex f
     for (int h1 = 0; h1 <= 1; ++h1) {
       for (int h2 = 0; h2 <= 1; ++h2) {
         for (int h3 = 0; h3 <= 1; ++h3) {
-          sum += fac * Amp.m_A[h0][h1][h2][h3];
+          sum += fac * Amp.m_A[Idx(h0,h1,h2,h3)];
         }
       }
     }
@@ -247,7 +247,7 @@ void Ceex_Base::SumAmplitude(Complex &sum, const Amplitude &Amp1, const Amplitud
       for (int h2 = 0; h2 <= 1; ++h2) {
         for (int h3 = 0; h3 <= 1; ++h3) {
           for (int  j = 0; j <= 1; j++) {
-            sum += fac * Amp2.m_A[j][h1][h2][h3] * Amp1.m_U[j][h1];
+            sum += fac * Amp2.m_A[Idx(j,h1,h2,h3)] * Amp1.m_U[j][h1];
           }
         }
       }
