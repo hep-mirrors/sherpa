@@ -76,6 +76,10 @@ namespace COMIX {
 
     const Hard_Matrix *ComputeHardMatrix
     (ATOOLS::Cluster_Amplitude *const ampl,const int mode);
+    bool BornSpinAmplitudes
+    (const ATOOLS::Vec4D_Vector &p,
+     std::vector<METOOLS::Spin_Amplitudes> &amps) override;
+
     double Partonic(const ATOOLS::Vec4D_Vector&,
                     ATOOLS::Variations_Mode varmode,
                     int mode);

@@ -191,7 +191,15 @@ Complex Ceex_Base::BornAmplitude(Vec4D p1, Vec4D p2, Vec4D p3, Vec4D p4, int h0,
 */
 bool Ceex_Base::ComixBornAmplitude(const Vec4D_Vector &p, Amplitude &A)
 {
-  return false;
+  if (p_bornproc == NULL) return false;
+  std::vector<METOOLS::Spin_Amplitudes> amps;
+  if (!p_bornproc->BornSpinAmplitudes(p, amps)) return false;
+  if (amps.empty()) return false;
+  const METOOLS::Spin_Amplitudes &sa(amps[0]);
+  const int nh(Amplitude::NHel());
+  if ((int)sa.size() < nh) return false;
+  for (int f = 0; f < nh; ++f) A.m_A[f] = sa[f];
+  return true;
 }
 
 

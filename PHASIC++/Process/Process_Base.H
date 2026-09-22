@@ -290,6 +290,10 @@ namespace PHASIC {
     inline virtual const bool   HasInternalScale() const { return m_hasinternalscale; }
     inline virtual const double InternalScale()    const { return m_internalscale; }
 
+    virtual bool BornSpinAmplitudes
+    (const ATOOLS::Vec4D_Vector &p,
+     std::vector<METOOLS::Spin_Amplitudes> &amps) { return false; }
+
     virtual void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                                 std::vector<std::vector<Complex> >& cols);
 
