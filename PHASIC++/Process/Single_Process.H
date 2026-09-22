@@ -160,10 +160,8 @@ namespace PHASIC {
                         BornLikeReweightingInfo& info,
                         const double& mur2fac,
                         const ATOOLS::Cluster_Sequence_Info* const nominalcsi);
-    //! Generate KP terms weight for variation parameters
-    // kppointlike, if given, returns the O(alpha) resolved-photon pointlike
-    // part of the KP terms separately (it scales with one fewer power of
-    // alpha_s than the QCD KP terms under renormalisation-scale variation)
+    //! Generate KP terms weight for variation parameters; kppointlike returns
+    //! the O(alpha) resolved-photon part, which carries one power of alpha_s less
     double KPTerms(const ATOOLS::QCD_Variation_Params *,
                    double *kppointlike=NULL);
     virtual double KPTerms(int mode, PDF::PDF_Base *pdfa,
