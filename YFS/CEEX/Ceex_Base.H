@@ -78,7 +78,8 @@ namespace YFS {
     inline void SetBornProc(PHASIC::Process_Base *p) { p_bornproc = p; }
     inline void SetRealProc(PHASIC::Process_Base *p) { p_realproc = p; }
     //! Born spin amplitudes from Comix; false if unavailable.
-    bool ComixBornAmplitude(const ATOOLS::Vec4D_Vector &p, Amplitude &A);
+    bool ComixBornAmplitude(const ATOOLS::Vec4D_Vector &p, Amplitude &A,
+                            double *me2 = NULL);
 
     /*!
       CEEX: COMIX_REAL. When set, the O(alpha) REAL correction of a
@@ -102,7 +103,18 @@ namespace YFS {
       the outgoing pair, 4 the photon. See the note in FetchComixReal; the
       @@@ CEEXFLIP diagnostic is what determines it.
     */
-    int m_comixflip = 26;
+    int m_comixflip = -1;
+    /*!
+      CEEX: COMIX_REAL_PHOTON_FLIP - the one bit the Born cannot determine.
+      The Born has no photon, so the calibration below fixes the four FERMION
+      bits and is blind to the fifth. The soft limit is blind to it too, and
+      for a reason: the soft factor is a scalar in helicity space with
+      |s_+| = |s_-|, so the wrong photon helicity is an overall constant there.
+      It comes from the hard-photon comparison against the hand-coded real,
+      which is decisive (0.046 with the bit set against 0.84 without, on 563
+      of 570 events).
+    */
+    int m_comixphoflip = 1;
     /*!
       CEEX: COMIX_REAL_NORM - Comix's amplitude in CEEX's normalisation.
 
@@ -114,7 +126,27 @@ namespace YFS {
       rho1/RhoCrude and the same soft factors sit in both; it is NOT
       invisible once the numerator comes from somewhere else.
     */
-    double m_comixnorm = 0.5;
+    double m_comixnorm = -1.;
+    //! Has the Born calibration been attempted yet? One attempt per run.
+    bool m_comixcalibrated = false;
+    /*!
+      What a Born-level calibration returns. The Born is where the
+      Comix-to-CEEX map can be DERIVED rather than fitted: it has no photon,
+      so the leg permutation and the overall normalisation are the only two
+      things that can differ, and both are visible directly - no soft limit,
+      no reference eikonal, no cancellation to lean on.
+    */
+    struct ComixCalib {
+      int    mask = -1;     //!< winning fermion flip mask
+      double met = -1.;     //!< its shape metric
+      double next = -1.;    //!< the runner-up's, i.e. how decisive the win is
+      double N = 0.;        //!< sqrt(sum|A_comix|^2 / sum|e^2 A_hand|^2)
+      double sh = 0., sc = 0., me2 = 0.;
+      double rmin = 0., rmax = 0.;   //!< per-helicity |C/H| spread
+      int    nlive = 0;     //!< helicity slots carrying real weight
+    };
+    bool CalibrateComixMap(ComixCalib &c);
+    void DeriveComixMap();
     bool m_havecomixreal = false;
     //! Fetch and re-index Comix's one-photon amplitude for this event.
     bool FetchComixReal();

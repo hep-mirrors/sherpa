@@ -50,6 +50,7 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
   m_comixreal = s["COMIX_REAL"].Get<int>();
   m_comixflip = s["COMIX_REAL_FLIP"].Get<int>();
   m_comixnorm = s["COMIX_REAL_NORM"].Get<double>();
+  m_comixphoflip = s["COMIX_REAL_PHOTON_FLIP"].Get<int>();
   string widthscheme = ss["WIDTH_SCHEME"].Get<string>();
   m_fixedwidth = (widthscheme == "Fixed" || widthscheme == "CMS");
   m_flavs = flavs;
@@ -153,11 +154,21 @@ void Ceex_Base::RegisterDefaults()
   // Take the O(alpha) real (beta_1) from Comix's helicity amplitudes instead
   // of the hand-coded spinor algebra. Off by default.
   s["COMIX_REAL"].SetDefault(0);
-  // Which legs Comix labels with the opposite helicity index; see
-  // Ceex_Base::FetchComixReal and the @@@ CEEXFLIP diagnostic.
-  s["COMIX_REAL_FLIP"].SetDefault(26);
-  // Comix amplitude -> CEEX normalisation; measured by the soft probe.
-  s["COMIX_REAL_NORM"].SetDefault(0.5);
+  /*
+    Both of these used to be fitted numbers (26 and 0.5). They are now DERIVED
+    at the Born, by Ceex_Base::CalibrateComixMap, which is why the defaults
+    are sentinels rather than values:
+
+      COMIX_REAL_FLIP  < 0  derive the fermion bits from the Born and take
+                            the photon bit from COMIX_REAL_PHOTON_FLIP
+      COMIX_REAL_NORM <= 0  derive from sum|A_comix|^2 / sum|e^2 A_hand|^2
+
+    A positive value overrides the derivation, which is how a disagreement
+    with the calibration gets investigated rather than papered over.
+  */
+  s["COMIX_REAL_FLIP"].SetDefault(-1);
+  s["COMIX_REAL_PHOTON_FLIP"].SetDefault(1);
+  s["COMIX_REAL_NORM"].SetDefault(-1.);
   /*
     Diagnostics. All off by default, each costing one branch on a cached
     static once the run is going. They live here rather than in the

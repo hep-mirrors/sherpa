@@ -292,7 +292,8 @@ namespace PHASIC {
 
     virtual bool BornSpinAmplitudes
     (const ATOOLS::Vec4D_Vector &p,
-     std::vector<METOOLS::Spin_Amplitudes> &amps) { return false; }
+     std::vector<METOOLS::Spin_Amplitudes> &amps,
+     double *me2 = NULL) { return false; }
 
     virtual void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                                 std::vector<std::vector<Complex> >& cols);

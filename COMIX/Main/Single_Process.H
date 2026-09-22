@@ -78,7 +78,8 @@ namespace COMIX {
     (ATOOLS::Cluster_Amplitude *const ampl,const int mode);
     bool BornSpinAmplitudes
     (const ATOOLS::Vec4D_Vector &p,
-     std::vector<METOOLS::Spin_Amplitudes> &amps) override;
+     std::vector<METOOLS::Spin_Amplitudes> &amps,
+     double *me2 = NULL) override;
 
     double Partonic(const ATOOLS::Vec4D_Vector&,
                     ATOOLS::Variations_Mode varmode,

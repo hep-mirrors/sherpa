@@ -791,19 +791,25 @@ CombinedFlavour(const size_t &idij)
 }
 
 bool COMIX::Single_Process::BornSpinAmplitudes
-(const Vec4D_Vector &p, std::vector<Spin_Amplitudes> &amps)
+(const Vec4D_Vector &p, std::vector<Spin_Amplitudes> &amps, double *me2)
 {
   /*
     Evaluate at p and hand back the helicity amplitudes, without going through
     Differential().
   */
   if (p.size() != Flavours().size()) return false;
+  Amplitude *bg(p_map != NULL ? p_map->p_bg : p_bg);
+  if (bg == NULL) return false;
+  const Vec4D_Vector pold(bg->Momenta());
+  if (!bg->SetMomenta(p)) { bg->SetMomenta(pold); return false; }
   const double s_lastxs(m_lastxs), s_dxs(m_dxs), s_w(m_w);
-  Partonic(p, Variations_Mode::nominal_only, 0);
+  const double xs(Partonic(p, Variations_Mode::nominal_only, 0));
   amps.clear();
   std::vector<std::vector<Complex> > cols;
   FillAmplitudes(amps, cols);
   m_lastxs = s_lastxs; m_dxs = s_dxs; m_w = s_w;
+  bg->SetMomenta(pold);
+  if (me2) *me2 = xs;
   return !amps.empty();
 }
 

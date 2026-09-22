@@ -546,47 +546,20 @@ void Ceex_Base::Calculate() {
   }
 
   static const bool cxchk(ATOOLS::Settings::GetMainSettings()["CEEX"]["COMIX_CHECK"].Get<int>()!=0);
-  if (cxchk && m_bornmomenta.size() >= 4 && p_bornproc) {
-    msg_Debugging()<<METHOD<<"(): entering Comix Born comparison\n";
-    Vec4D_Vector bp(m_bornmomenta);
-    Poincare bcms(bp[0] + bp[1]);
-    for (size_t i(0); i < bp.size(); ++i) bcms.Boost(bp[i]);
-    Amplitude cx, hand;
-    const double sp_save(m_sp);
-    m_sp = (bp[2] + bp[3]).Abs2();
-    MakeProp();
-    BornAmplitude(bp, hand);
-    const bool ok(ComixBornAmplitude(bp, cx));
-    m_sp = sp_save;
-    MakeProp();
-    if (ok) {
-      double sh(0.), sc(0.), worst(0.);
-      for (int a = 0; a <= 1; ++a)
-        for (int b = 0; b <= 1; ++b)
-          for (int c = 0; c <= 1; ++c)
-            for (int d = 0; d <= 1; ++d) {
-              const Complex H(m_e*m_e*hand.m_A[Idx(a,b,c,d)]), C(cx.m_A[Idx(a,b,c,d)]);
-              sh += std::norm(H); sc += std::norm(C);
-              const double den(std::abs(H) + std::abs(C));
-              if (den > 0.) worst = Max(worst, std::abs(H - C)/den);
-            }
-      std::cerr<<"@@@ CEEXCMP sum_hand="<<sh<<" sum_comix="<<sc
-               <<" ratio="<<(sc!=0.? sh/sc : 0.)
-               <<" worst_elem_reldiff="<<worst
-               <<" t="<<m_tinv<<" cth="<<cos(bp[2].Theta())<<std::endl;
-      static int nrow(0);
-      if (nrow++ < 3)
-        for (int a = 0; a <= 1; ++a)
-          for (int b = 0; b <= 1; ++b)
-            for (int c = 0; c <= 1; ++c)
-              for (int d = 0; d <= 1; ++d) {
-                const Complex H(m_e*m_e*hand.m_A[Idx(a,b,c,d)]), C(cx.m_A[Idx(a,b,c,d)]);
-                std::cerr<<"@@@ CEEXHEL "<<a<<b<<c<<d
-                         <<" absH="<<std::abs(H)<<" absC="<<std::abs(C)
-                         <<" H=("<<H.real()<<","<<H.imag()<<")"
-                         <<" C=("<<C.real()<<","<<C.imag()<<")"<<std::endl;
-              }
-    }
+  if (cxchk) {
+    ComixCalib c;
+    if (CalibrateComixMap(c))
+      std::cerr<<std::setprecision(10)
+               <<"@@@ CEEXCMP sum_hand="<<c.sh<<" sum_comix="<<c.sc
+               <<" comix_me2="<<c.me2
+               <<" sc_over_me2="<<(c.me2!=0.? c.sc/c.me2 : 0.)
+               <<" N="<<c.N
+               <<" mask="<<c.mask<<" met="<<c.met<<" next="<<c.next
+               <<" nlive="<<c.nlive
+               <<" absratio=["<<c.rmin<<","<<c.rmax<<"]"
+               <<" m_born="<<m_born
+               <<" cth="<<(m_bornmomenta.size()>2?cos(m_bornmomenta[2].Theta()):0.)
+               <<std::endl;
   }
 
   if (m_checkxs && m_bornmomenta.size() >= 4) {

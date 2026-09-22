@@ -189,11 +189,12 @@ Complex Ceex_Base::BornAmplitude(Vec4D p1, Vec4D p2, Vec4D p3, Vec4D p4, int h0,
   Born spin amplitudes from Comix. Always false, and structurally so.
 
 */
-bool Ceex_Base::ComixBornAmplitude(const Vec4D_Vector &p, Amplitude &A)
+bool Ceex_Base::ComixBornAmplitude(const Vec4D_Vector &p, Amplitude &A,
+                                   double *me2)
 {
   if (p_bornproc == NULL) return false;
   std::vector<METOOLS::Spin_Amplitudes> amps;
-  if (!p_bornproc->BornSpinAmplitudes(p, amps)) return false;
+  if (!p_bornproc->BornSpinAmplitudes(p, amps, me2)) return false;
   if (amps.empty()) return false;
   const METOOLS::Spin_Amplitudes &sa(amps[0]);
   const int nh(Amplitude::NHel());

@@ -158,6 +158,8 @@ void Ceex_Base::ApplyComixReal()
   if (!m_comixreal) return;
   // Only the O(alpha) real, i.e. exactly one photon - see the file header.
   if (m_allphotons.size() != 1) return;
+  if (!m_comixcalibrated) DeriveComixMap();
+  if (!m_comixreal) return;   // calibration may have switched it off
   if (!FetchComixReal()) return;
 
   static const bool cxchk(ATOOLS::Settings::GetMainSettings()["CEEX"]["COMIX_CHECK"].Get<int>() != 0);
@@ -408,4 +410,137 @@ void Ceex_Base::SoftProbe()
   m_sp = sp_save;
   MakeProp();
   MakePropT(m_pceex);
+}
+
+
+bool Ceex_Base::CalibrateComixMap(ComixCalib &c)
+{
+  if (p_bornproc == NULL || m_bornmomenta.size() < 4) return false;
+  // The Born configuration, in its own rest frame.
+  Vec4D_Vector bp(m_bornmomenta);
+  Poincare bcms(bp[0] + bp[1]);
+  for (size_t i(0); i < bp.size(); ++i) bcms.Boost(bp[i]);
+
+  Amplitude cx, hand;
+  const double sp_save(m_sp);
+  m_sp = (bp[2] + bp[3]).Abs2();
+  MakeProp();
+  BornAmplitude(bp, hand);
+  double cxme2(0.);
+  const bool ok(ComixBornAmplitude(bp, cx, &cxme2));
+  m_sp = sp_save;
+  MakeProp();
+  if (!ok) return false;
+
+  const int nh(Amplitude::NHel());
+  double sh(0.), sc(0.);
+  for (int f = 0; f < nh; ++f) {
+    sh += std::norm(m_e*m_e*hand.m_A[f]);
+    sc += std::norm(cx.m_A[f]);
+  }
+  if (!(sh > 0.) || !(sc > 0.)) return false;
+
+  const double rh(1./sqrt(sh)), rc(1./sqrt(sc));
+  int bestmask(-1);
+  double bestmet(-1.), nextmet(-1.);
+  for (int m = 0; m < nh; ++m) {
+    double met(0.);
+    for (int f = 0; f < nh; ++f)
+      met += sqr(std::abs(m_e*m_e*hand.m_A[f])*rh - std::abs(cx.m_A[f ^ m])*rc);
+    met = sqrt(met);
+    if (bestmask < 0 || met < bestmet) { nextmet = bestmet;
+                                         bestmet = met; bestmask = m; }
+    else if (nextmet < 0. || met < nextmet) nextmet = met;
+  }
+
+  /*
+    With the winning mask in hand, |C/H| has to be the SAME number in every
+    helicity slot that carries weight, or the two objects are not the same
+    amplitude in two conventions. The threshold below is deliberately coarse:
+    with a massive electron Comix populates the helicity-FLIP entries at the
+    m_e/E level, which the hand-coded Born sets to exactly zero by its
+    hel1 == -hel2 gate, so a loose cut mixes a convention test with a
+    mass-suppression test and the ratio wanders for a reason that has nothing
+    to do with conventions.
+  */
+  double rmin(0.), rmax(0.);
+  int nlive(0);
+  for (int f = 0; f < nh; ++f) {
+    const Complex H(m_e*m_e*hand.m_A[f]), C(cx.m_A[f ^ bestmask]);
+    if (std::abs(H) > 1e-3*sqrt(sh) && std::abs(C) > 1e-3*sqrt(sc)) {
+      const double a(std::abs(C/H));
+      if (nlive++ == 0) rmin = rmax = a;
+      else { rmin = Min(rmin, a); rmax = Max(rmax, a); }
+    }
+  }
+
+  c.mask = bestmask; c.met = bestmet; c.next = nextmet;
+  c.N = sqrt(sc/sh);  c.sh = sh; c.sc = sc; c.me2 = cxme2;
+  c.rmin = rmin; c.rmax = rmax; c.nlive = nlive;
+  return true;
+}
+
+
+/*!
+  Adopt the calibration, for whichever of the two constants was left to be
+  derived (COMIX_REAL_FLIP < 0, COMIX_REAL_NORM <= 0). One attempt per run:
+  the map is a property of the two codes' conventions, not of the event.
+*/
+void Ceex_Base::DeriveComixMap()
+{
+  m_comixcalibrated = true;
+  const bool needflip(m_comixflip < 0), neednorm(!(m_comixnorm > 0.));
+  if (!needflip && !neednorm) return;
+
+  ComixCalib c;
+  if (!CalibrateComixMap(c)) {
+    // Falling back to the fitted values would hide the failure behind numbers
+    // that happen to be right for THIS process, so refuse instead.
+    msg_Error()<<METHOD<<"(): Born calibration failed; the Comix real cannot"
+               <<" be normalised. Set CEEX: COMIX_REAL_NORM and"
+               <<" COMIX_REAL_FLIP by hand, or leave COMIX_REAL off.\n";
+    m_comixreal = 0;
+    return;
+  }
+
+  const size_t nl(m_flavs.size());
+  if (needflip) m_comixflip = c.mask | (m_comixphoflip ? (1 << (int)nl) : 0);
+
+  /*
+    N = 2 is not a coincidence and not a fit. sum_hel |A_comix|^2 comes out at
+    four times Comix's own matrix element, and Comix's matrix element is
+    spin-AVERAGED; sum_hel |e^2 A_hand|^2 reproduces that averaged element
+    directly. So the hand-coded CEEX amplitude carries sqrt(1/4) - the square
+    root of the initial state's spin multiplicity - inside its normalisation,
+    which is KKMC's convention.
+
+    That makes the value EXACT, and the measurement its confirmation rather
+    than its source: the constant used is 1/sqrt(2s+1 per incoming leg), and
+    the measured N only has to agree. Taking the measured number instead would
+    make the whole run depend on which event happened to calibrate it, at the
+    1e-11 level where the two Born constructions differ over the electron
+    mass - reproducibility thrown away for nothing.
+  */
+  double nspin(1.);
+  for (size_t i(0); i < 2 && i < nl; ++i) nspin *= m_flavs[i].IntSpin() + 1.;
+  const double expected(nspin > 0. ? 1./sqrt(nspin) : 0.);
+  if (neednorm) {
+    const bool agrees(expected > 0. && c.N > 0.
+                      && std::abs(c.N*expected - 1.) < 1e-2);
+    m_comixnorm = agrees ? expected : (c.N > 0. ? 1./c.N : 0.);
+    if (!agrees)
+      msg_Error()<<METHOD<<"(): measured N = "<<c.N<<" is not"
+                 <<" sqrt(initial spin states) = "<<(expected>0.?1./expected:0.)
+                 <<"; falling back to the measured value, but the amplitudes"
+                 <<" are then not in the convention assumed here.\n";
+  }
+
+  msg_Info()<<METHOD<<"(): Comix -> CEEX map derived from the Born:\n"
+            <<"  flip mask   = "<<m_comixflip<<"  (fermion bits "<<c.mask
+            <<", metric "<<c.met<<" against "<<c.next<<" for the runner-up"
+            <<(m_comixphoflip ? "; photon bit set" : "; photon bit clear")<<")\n"
+            <<"  normalisation = "<<m_comixnorm<<"  (N = "<<c.N
+            <<"; 1/sqrt(initial spin states) = "<<expected<<")\n"
+            <<"  |C/H| over the "<<c.nlive<<" live helicities: ["
+            <<c.rmin<<", "<<c.rmax<<"]\n";
 }
