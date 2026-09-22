@@ -100,49 +100,23 @@ NLO_Base::NLO_Base() {
   if (m_rv_cancel_hist) {
     if (!ATOOLS::DirectoryExists(m_debugDIR_NLO))
       ATOOLS::MakeDir(m_debugDIR_NLO);
-    // Plateau-scan diagnostics for the RV soft/cancellation cut. Each RV photon
-    // that reaches the beta_1^1 (i.e. passes the coarse energy pre-filter) is
-    // filled here BEFORE the cancellation guard, weighted by its contribution
-    // tot. Summing the weight from the hard side down to a given bin gives
-    // RV_total(cut): a plateau followed by jitter marks where physics ends and
-    // roundoff begins - the safe placement for RV_CANCEL_EPS / RV_SOFT_CUT.
-    // *_w = weighted by tot (the integrand); *_n = unweighted counts per bin.
     m_histograms1d["RV_tot_by_logC_w"] = std::make_unique<Histogram>(0, -16., 0., 80);
     m_histograms1d["RV_tot_by_logC_n"] = std::make_unique<Histogram>(0, -16., 0., 80);
     m_histograms1d["RV_tot_by_Efrac_w"] = std::make_unique<Histogram>(0, 0., 0.5, 100);
     m_histograms1d["RV_tot_by_Efrac_n"] = std::make_unique<Histogram>(0, 0., 0.5, 100);
-    // Matrix-element stability ratio log10(|rv| / subtraction-scale) for every
-    // RV photon. ~0 when healthy (rv tracks its subtraction), large when the
-    // one-loop provider is unstable. "_all" is the full sample; "_hardwide" is
-    // restricted to energetic, well-separated photons (E/sqrt(s)>0.1, no charged
-    // leg within ~26deg). A tail at large log10 in "_hardwide" means the
-    // instability reaches hard wide-angle (cannot simply skip); if only "_all"
-    // has the tail, the failures are purely soft/collinear (safe to skip).
     m_histograms1d["RV_MEstab_all"] = std::make_unique<Histogram>(0, -2., 40., 84);
     m_histograms1d["RV_MEstab_hardwide"] = std::make_unique<Histogram>(0, -2., 40., 84);
-    // Same binning but weighted by the contribution tot, so cumulative-from-low
-    // gives RV_total(cut) as a function of the RV_ME_MAX_RATIO threshold: the
-    // physical RV is the plateau reached before the instability shoulder/spike
-    // starts inflating the integral. Answers "how much does the surviving
-    // ratio=1e2..1e4 shoulder inflate RV?" from a single run.
     m_histograms1d["RV_tot_by_MEstab_w"] = std::make_unique<Histogram>(0, -2., 40., 84);
   }
 }
 
 NLO_Base::~NLO_Base() {
   WriteHistograms();
-  // p_virt, p_real, p_realvirt, p_realreal and p_vv are NOT deleted here: they
-  // are owned by the YFS_Process they were built for (see SetProviders), since
-  // one NLO_Base is shared by every process in the run card.
   msg_Out()<<"Total zero V: "<<m_zeroV<<std::endl;
   msg_Out()<<"Total zero RV: "<<m_zeroRV<<std::endl;
   msg_Out()<<"Total zero RR: "<<m_zeroRR<<std::endl;
   msg_Out()<<"Total non-zero RR: "<<m_nonZeroRR<<std::endl;
   msg_Out()<<"Total non-zero RV: "<<m_nonZeroRV<<std::endl;
-  // Job-wide totals for the production RV guards. These are plain ints printed
-  // only on rank 0, so Allreduce them (collective: every rank runs this
-  // destructor and reaches the call). Always on - independent of the
-  // RV_CANCEL_HIST diagnostics below.
 #ifdef USING__MPI
   if (mpi->Size() > 1) {
     int gbuf[3] = {m_softRV, m_rvUnstable, m_softRR};
@@ -156,11 +130,6 @@ NLO_Base::~NLO_Base() {
   msg_Out()<<"Total unstable-ME RV skipped (RV_ME_MAX_RATIO): "<<m_rvUnstable<<std::endl;
   msg_Out()<<"Total soft RR pairs skipped: "<<m_softRR<<std::endl;
   if (m_rv_cancel_hist) {
-    // Sum the per-rank diagnostic counters across all ranks. Unlike the
-    // histograms (Allreduced in MPISync), these are plain ints printed only on
-    // rank 0, so without this a blow-up landing on a non-zero rank would be
-    // invisible. Collective: every rank runs this destructor and m_rv_cancel_hist
-    // is read identically everywhere, so all ranks reach the Allreduce together.
 #ifdef USING__MPI
     if (mpi->Size() > 1) {
       int buf[6] = {m_rvHiC,      m_rvBlowup,    m_rvBlowupRtree0,
@@ -196,9 +165,6 @@ NLO_Base::~NLO_Base() {
 void NLO_Base::SetProviders(YFS::Virtual *virt, YFS::Real *real,
                             YFS::RealVirtual *realvirt, YFS::RealReal *realreal,
                             YFS::VirtualVirtual *vv) {
-  // Non-owning: the providers belong to the YFS_Process they were built for.
-  // The "has this correction" flags follow the pointers, so switching process
-  // switches the available corrections consistently.
   p_virt     = virt;
   p_real     = real;
   p_realvirt = realvirt;
@@ -213,12 +179,6 @@ void NLO_Base::SetProviders(YFS::Virtual *virt, YFS::Real *real,
 
 void NLO_Base::Init(Flavour_Vector &flavs, Vec4D_Vector &plab,
                     Vec4D_Vector &born) {
-  // The raw-residual cache is keyed on a bitmask over THIS event's photon
-  // list, so it has to die with the event. Clearing it in
-  // NLO_Base::CalculateNLO() is not enough: YFS_Handler::CalculateNLO()
-  // drives the corrections by calling CalculateReal()/CalculateRealReal()
-  // directly and never goes through it, so the cache survived into the next
-  // event and handed back another event's beta_2 under the same mask.
   m_rawbeta.clear();
   m_flavs = flavs;
   m_plab = plab;
@@ -226,20 +186,6 @@ void NLO_Base::Init(Flavour_Vector &flavs, Vec4D_Vector &plab,
 }
 
 double NLO_Base::CalculateVirtual() {
-  /*
-    CEEX already holds the O(alpha) virtual - beta_0^1, i.e. the initial- and
-    final-state vertex form factors times the Born, plus the gamma-gamma and
-    gamma-Z boxes that carry the virtual initial-final interference. When no
-    Loop_Generator was named there is no external loop ME to ask, and asking
-    threw "Couldn't find virtual ME for this process".
-
-    Returned in the same convention as the EEX branch below: the CONTRIBUTION,
-    (factor - 1) * Born, not the factor.
-
-    If a Loop_Generator WAS named, m_looptool is true, this branch is skipped
-    and the external virtual drives the nominal weight; CEEX is then still
-    evaluated and leaves via the YFS.CEEX named weight instead of replacing it.
-  */
   if (CeexSuppliesVirtual())
     return (m_ceexvirt - 1.) * m_born;
   if (m_eex_virt) {
@@ -328,22 +274,6 @@ double NLO_Base::CalculateVirtual() {
   return m_oneloop;
 }
 
-/*!
-  Threshold below which a photon gets NO fixed-order real correction.
-
-  Returned in GeV. The YFS infrared cutoff energy is IR_CUTOFF/2 for BOTH
-  generators: ISR builds m_Kmin = sqrt(s)*m_isrcut/2 and FSR builds
-  m_Emin = 0.5*sqrt(s)*m_isrcut, and m_isrcut is IR_CUTOFF/sqrt(s). The setting
-  NLO_PHOTON_EMIN is a multiple of that energy, so 1 means exactly the infrared
-  cutoff and 0 (the default) disables the guard.
-
-  A photon below the cutoff is unresolved by construction: it belongs to the
-  resummed form factor, not to a hard correction. Computing beta_n for it is a
-  cancellation with no physical content, evaluated where the numerics are at
-  their worst, and in practice it is where the real ME disagreed with an
-  external generator. Left OFF by default because switching it on changes which
-  photons receive a correction, which is a scheme choice, not a bug fix.
-*/
 double NLO_Base::PhotonEminNLO() const
 {
   static const double fac
@@ -364,8 +294,6 @@ double NLO_Base::CalculateReal() {
   m_ifi_prod = 1.;
   for (YFS::Photon &g : m_photons) {
     const Vec4D k(g.K());
-    // DIAG (env-gated, SHERPA_PHOTON_DUMP): which photons actually reach the
-    // NLO real correction, and where they sit relative to the IR cutoff.
     { static const bool dg(getenv("SHERPA_PHOTON_DUMP")!=NULL);
       if (dg) {
         ATOOLS::Vec4D tot; double eph(0.0);
@@ -379,20 +307,12 @@ double NLO_Base::CalculateReal() {
       } }
     const double phemin(PhotonEminNLO());
     if (phemin>0.0 && k.E()<phemin) { g.m_beta10 = 0.; continue; }
-    // CheckRealSub shrinks its trigger photon down toward the soft limit, so
-    // it needs a HARD starting point for the shrink to have room to run.
     static constexpr double SOFT_LIMIT_CHECK_TRIGGER_FRAC = 0.2;
     if (m_check_real_sub == CHECK_REAL_SUB_SOFT && (g.IsFSR() || !HasFSR())) {
       if (k.E() < SOFT_LIMIT_CHECK_TRIGGER_FRAC * sqrt(m_s))
         continue;
       CheckRealSub(k, 0);
     }
-    // CheckRealCollinearSub holds the trigger photon's energy FIXED and
-    // sweeps only its angle, comparing against the closed-form eikonal S.
-    // That comparison is only meaningful for a photon soft enough that the
-    // leading eikonal approximation is trustworthy across the whole sweep --
-    // the opposite requirement from the soft-limit check above, so it needs
-    // its own (upper, not lower) bound rather than reusing that trigger.
     static constexpr double COLLINEAR_CHECK_TRIGGER_FRAC = 0.01;
     if (m_check_real_sub == CHECK_REAL_SUB_COLLINEAR && (g.IsFSR() || !HasFSR())) {
       if (k.E() > COLLINEAR_CHECK_TRIGGER_FRAC * sqrt(m_s))
@@ -402,8 +322,6 @@ double NLO_Base::CalculateReal() {
     double contrib;
     if (g.IsISR() && (m_isr_debug || m_fsr_debug)) {
       contrib = CalculateReal(k);
-      // m_betaorder (the runcard's BETA) explicitly: Beta1 used to read the
-      // order off the dipole, which nothing had set on this path.
       double coll = p_dipoles->GetDipoleII().Beta1(k, m_betaorder);
       coll /= p_dipoles->GetDipoleII().Eikonal(k);
       if (contrib != 0)
@@ -521,14 +439,15 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
   else
     msg_Error() << METHOD << " unknown YFS subtraction mode " << m_submode << "\n";
 
-  // DIAG (env-gated, SHERPA_REAL_STAB): how deep the R - S~B cancellation runs
-  // for this photon. depth = |S~B| / |R*flux - S~B| is the condition number of
-  // the subtraction, so log10(depth) is the number of significant digits the
-  // numerator loses regardless of how exactly R itself was computed.
   { static const bool ds(getenv("SHERPA_REAL_STAB")!=NULL);
     if (ds) {
       const double S(subloc * m_born / m_rescale_alpha);
       const double num(r * flux - S);
+      const double subb_k(p_dipoles->CalculateRealSubEEX(k));
+      const double subloc_kk(p_nlodipoles->CalculateRealSub(kk));
+      const double dk((k-kk).PSpat()/(kk.PSpat()>0.?kk.PSpat():1.));
+      const double coskk(Vec3D(k)*Vec3D(kk)
+                         /(Vec3D(k).Abs()*Vec3D(kk).Abs()));
       double cmin(2.), pkmin(1e300);
       for (size_t i(0); i < m_plab.size(); ++i) {
         if (m_flavs[i].Charge() == 0.) continue;
@@ -544,7 +463,11 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
                 << " S=" << S
                 << " num=" << num
                 << " depth=" << (num != 0. ? std::fabs(S / num) : -1.)
-                << " tot=" << tot << " born=" << m_born << std::endl;
+                << " tot=" << tot << " born=" << m_born
+                << " subloc=" << subloc << " subb=" << subb
+                << " subb_k=" << subb_k << " subloc_kk=" << subloc_kk
+                << " dk=" << dk << " 1-cos_kkk=" << (1.-coskk)
+                << std::endl;
     } }
 
   const bool ifi_above = (kk.E() > p_dipoles->IFIOmega());
@@ -578,12 +501,6 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
                   << " tot=" << tot << "\n";
 
   if (m_isr_debug || m_fsr_debug) {
-    // The "Real_diff" histogram that used to be filled here compared r/subloc
-    // against rcoll/subb - but rcoll was never assigned anywhere in this
-    // translation unit, so every entry was built from an uninitialised double.
-    // Removed rather than guessed at; whatever rcoll was meant to hold (the
-    // collinear-approximation real, on the naming) is not recoverable from
-    // what is left.
     if (m_isr_debug)
       m_histograms2d["Real_Flux"]->Insert(
           flux, sqrt(p_dipoles->GetDipoleII().Sprime()));
@@ -644,10 +561,6 @@ double NLO_Base::CalculateRealVirtual() {
   m_rv_hard1 = 0.;
   m_rv_hard2 = 0.;
   if (m_rv_hard_photon==2) {
-    // Hard photons are rare in the YFS spectrum, so RV_Hard_Photon=1 means
-    // waiting many events for MostEnergeticPhoton() to clear the 0.2*sqrt(s)
-    // CHECK_RV threshold. RV_Hard_Photon=2 exercises the RV formula/
-    // subtraction on the same fixed photon every event instead.
     Vec4D k = FixedTestPhoton();
     if (m_check_rv) CheckRealVirtualSub(k);
     m_rv_hard1 = CalculateRealVirtual(k);
@@ -744,9 +657,6 @@ double NLO_Base::CalculateRealVirtual(Vec4D k) {
     msg_Error() << "Real-Virtual is " << r << std::endl;
     return 0;
   }
-  // Tree-level real-emission ME at the same mapped kinematics; needed for
-  // the YFS virtual subtraction of the real-virtual, beta_1^1 =
-  // [RV - B_fin*R] - S(k)*[V - B_fin*Born].
   double rtree(0.);
   if (m_realtool)
     rtree = p_real->Calc_R(p) / norm;
@@ -878,10 +788,6 @@ double NLO_Base::CalculateRealReal() {
   const YFS::Photon_Vector &photons(m_photons);
   if (photons.size() == 0)
     return 0;
-  // The two hardest photons, so the pair they form can be captured inline
-  // below without a second CalculateRealReal call. Was a hand-written two-max
-  // scan over indices plus Min/Max juggling to recover the ordered pair;
-  // pointer identity says the same thing without the arithmetic.
   const YFS::Photon *h1 = nullptr, *h2 = nullptr;
   for (const YFS::Photon &g : photons) {
     if (!h1 || g.E() > h1->E())      { h2 = h1; h1 = &g; }
@@ -893,16 +799,7 @@ double NLO_Base::CalculateRealReal() {
       Vec4D kk = photons[j].K();
       const double phemin(PhotonEminNLO());
       if (phemin>0.0 && (k.E()<phemin || kk.E()<phemin)) continue;
-      // Origin no longer selects a recoil here: both photons come off the
-      // beams regardless. YFS::Photon still carries it, for the callers that
-      // do care.
       double contrib = CalculateRealReal(k, kk);
-      // Validation of the general subset recursion against this hand-derived
-      // pair subtraction. The recursion's |mask|=2 case IS this formula,
-      // modulo the m_rescale_alpha placement noted in RawBeta (a no-op at the
-      // default USE_MODEL_ALPHA: 1). Here rather than inside
-      // CalculateRealReal(k1,k2) because the mask needs the photon INDICES.
-      // Off unless asked for: it re-evaluates every ME of the point again.
       static const bool betacheck(getenv("SHERPA_BETA_RECURSION")!=NULL);
       if (betacheck) {
         const double gen(CalculateRealN((1u<<i) | (1u<<j)));
@@ -956,18 +853,6 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2) {
                   << " k1=" << k1 << " E1=" << k1.E() << " pt1=" << k1.PPerp()
                   << " k2=" << k2 << " E2=" << k2.E() << " pt2=" << k2.PPerp() << "\n";
 
-  // Real-real recoils both photons off the beams, the same treatment
-  // CalculateReal() gives a single real emission. There is no final-state
-  // branch: a photon's ISR/FSR origin does not change how the pair is
-  // recoiled here.
-  //
-  // Three FSR branches used to sit here, selected by per-photon fsr1/fsr2
-  // flags, adding the photons to the FF dipoles and recoiling with BoostNLO()
-  // plus a MapInitial() beam rebuild. They were introduced in error and are
-  // gone; what is worth remembering is that one of them - the k2-only case -
-  // was missing the Dip->ClearPhotons() its two siblings had, so it recoiled
-  // against photons left over from an earlier call. Look here if the NNLO
-  // instability is ever traced back through this path.
   MapMomenta(p, k1, k2);
 
   p.push_back(k1);
@@ -1018,11 +903,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2) {
 
   const double sub1  = p_dipoles->CalculateRealSubEEX(kk1);
   const double sub2  = p_dipoles->CalculateRealSubEEX(kk2);
-  // crude eikonal product this pair is divided by (see tot below); exposed so
-  // the accumulating scatter can separate the 1/S~ blow-up from the physical
-  // contribution (residual*m_rr_eik = r*flux + fullsub).
   m_rr_eik = sub1 * sub2;
-  // raw: real-real subtracts for itself below, so take the unsubtracted value.
   const double real1 = CalculateReal(kk1, /*raw*/true);
   const double real2 = CalculateReal(kk2, /*raw*/true);
   m_recola_evts += 1;
@@ -1049,11 +930,6 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2) {
     msg_Error() << METHOD << " NNLO RR is NaN: r=" << r << " flux=" << flux
                 << " fullsub=" << fullsub << " sub1=" << sub1 << " sub2=" << sub2 << "\n";
 
-  // Validation of the general subset recursion against this hand-derived
-  // two-photon subtraction. They must agree: the recursion's |mask|=2 case IS
-  // this formula, modulo the m_rescale_alpha placement noted in RawBeta (a
-  // no-op at the default USE_MODEL_ALPHA=1). Off unless asked for, because it
-  // re-evaluates every matrix element of the point a second time.
   if (!IsZero(tot)) m_nonZeroRR++;
   return tot;
 }
@@ -1064,9 +940,6 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2) {
 
 YFS::Real_Correction *NLO_Base::RealProvider(size_t nphotons) const
 {
-  // 1 and 2 keep their dedicated pointers so every existing call site and the
-  // YFS_Process construction stay as they are; everything above comes out of
-  // the table YFS_Process filled.
   if (nphotons == 1) return p_real;
   if (nphotons == 2) return p_realreal;
   if (nphotons < m_realprov.size()) return m_realprov[nphotons];
@@ -1089,13 +962,6 @@ size_t NLO_Base::MaxRealPhotons() const
   return n;
 }
 
-/*!
-  Runcard ceiling on the fixed-order photon multiplicity.
-
-  Defaults to 2: a run that does not ask for more gets exactly the corrections
-  it got before. Raising it makes YFS_Process build the extra providers, after
-  which the subset recursion and the subset loop need no changes at all.
-*/
 size_t NLO_Base::RequestedMaxRealPhotons()
 {
   static const int n
@@ -1128,7 +994,6 @@ bool NLO_Base::RealMEForSubset(unsigned mask, double &me,
     return false;
   }
 
-  // the photons of this subset, and where each sits in `photons`
   Vec4D_Vector ks;
   std::vector<size_t> idx;
   for (size_t i(0); i < m_photons.size(); ++i)
@@ -1145,9 +1010,6 @@ bool NLO_Base::RealMEForSubset(unsigned mask, double &me,
   p_nlodipoles->MakeDipoles  (m_flavs, hard, m_plab);
   p_nlodipoles->MakeDipolesIF(m_flavs, hard, m_plab);
 
-  // LOCAL eikonals, in this subset's own mapped frame. Each lower beta in the
-  // recursion carries the eikonals of ITS own mapping, which is what the
-  // hand-written two-photon subtraction did via CalculateReal(k,raw).
   subloc.assign(m_photons.size(), 0.);
   for (size_t j(0); j < n; ++j)
     subloc[idx[j]] = p_nlodipoles->CalculateRealSub(ks[j]);
@@ -1182,11 +1044,6 @@ bool NLO_Base::RealMEForSubset(unsigned mask, double &me,
 
 double NLO_Base::RawBeta(unsigned mask)
 {
-  // beta_0. Note the alpha rescaling sits HERE and nowhere else: the
-  // hand-written two-photon subtraction divided its whole bracket by
-  // m_rescale_alpha, which applied 1/alpha a second time to the beta_1 terms
-  // that already carried it. USE_MODEL_ALPHA defaults to 1, making
-  // m_rescale_alpha exactly 1, which is why that never showed up.
   if (mask == 0) return m_born / m_rescale_alpha;
 
   std::unordered_map<unsigned, double>::const_iterator it(m_rawbeta.find(mask));
@@ -1194,13 +1051,6 @@ double NLO_Base::RawBeta(unsigned mask)
 
   double beta(0.);
   if (PopCount(mask) == 1) {
-    // One photon: reuse the single-real path, which also fills the histograms,
-    // the IFI reweight and the counters. Its raw return IS
-    // beta_1 = M_1*flux - Stilde_loc(k)*beta_0.
-    // Computed once per event, not once per subset: this is the reuse the
-    // per-photon residuals were always meant to give. CalculateReal also
-    // fills the histograms, the IFI reweight and the counters, so calling it
-    // C(m,n) times instead of m times would also inflate those.
     beta = CalculateReal(m_photons[LowestBit(mask)].K(), /*raw*/true);
   } else {
     double me(0.);
@@ -1441,21 +1291,6 @@ void NLO_Base::RandomRotate(Vec4D &p) {
   p[2] = sin(m_ranPhi) * t1[1] + cos(m_ranPhi) * t1[2];
 }
 
-// Transverse-recoil validation of the momentum mapping, shared by every photon
-// multiplicity. After the boost into the rest frame of Q = (hard system) +
-// (photons), the outgoing hard system p[2..] must balance the total photon
-// three-momentum exactly, so their vector sum is zero.
-//
-// The imbalance is measured against the scale of the momenta involved rather
-// than component by component with IsEqual(). IsEqual() is RELATIVE
-// (|a-b|/(|a|+|b|)), so on the near-zero transverse components that dominate
-// here it calls a difference of a few ulp a failure. The guard that used to
-// suppress that noise - "k[1] > 1e-6 && k[2] > 1e-6 && k[3] > 1e-6" - tested
-// SIGNED components with &&, so it also suppressed every genuine failure
-// outside the all-positive octant, including any photon travelling backwards
-// in z. Between that and the check being commented out entirely in the
-// two-photon mapping, the mapping has in practice gone unvalidated at both
-// multiplicities.
 void NLO_Base::CheckMappingRecoil(const Vec4D_Vector &p, const Vec4D &ksum) {
   Vec4D q;
   for (size_t i(2); i < p.size(); ++i) q += p[i];
@@ -1469,19 +1304,6 @@ void NLO_Base::CheckMappingRecoil(const Vec4D_Vector &p, const Vec4D &ksum) {
                 << ")" << std::endl;
 }
 
-/*!
-  Map the Born configuration p onto one that accommodates the photons k,
-  for ANY photon multiplicity.
-
-  This replaced two byte-identical copies at the one- and two-photon
-  signatures, which differed only in "Q += k" versus "Q += k1 + k2" and one
-  extra rotate-and-boost pair. That duplication is how the incoming-leg
-  crossing bug came to exist twice and need fixing twice, and it is why the
-  recoil check below was live in one copy and commented out in the other.
-
-  The photons are boosted in place, as before: callers pass the lab-frame
-  photons and get back the ones belonging to the mapped configuration.
-*/
 void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D_Vector &k) {
   Vec4D Q;
   Vec4D QQ;
@@ -1512,17 +1334,11 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D_Vector &k) {
     msg_Error() << "YFS Real mapping not conserving momentum in " << METHOD
                 << std::endl;
   }
-  // Anchor the beam-0 z-orientation to the FIXED Born beam, not to p[0] after
-  // boostQ. boostQ is built from Q = p[2..]+k, and p[2..] are still the Born
-  // back-to-back pair here, so Q carries the photons' full transverse
-  // momentum: the boost is fully 3D and p[0][3] becomes a smooth function of
-  // the photon direction, flipping sign once the recoil against beam 0 is hard
-  // enough (p_z' = gamma*(p_z - beta*E)). That silently swapped beams 0/1 for
-  // those events, mirroring the real ME's forward-backward asymmetry and
-  // showing up as an excess AFB in cos(theta) of the outgoing leptons. Matches
-  // the convention Dipole::BoostNLO() uses for the subtraction terms
-  // (Dipole.C:245), which anchors to m_bornmomenta[0][3] with no boost
-  // involved -- so numerator and subtraction now agree on beam labelling.
+  { static const bool dm(getenv("SHERPA_REAL_STAB")!=NULL);
+    if (dm) std::cerr<<"@@@ MAPQ sqrt_sqq="<<(sqq>0?sqrt(sqq):-1.)
+                     <<" sqrt_s="<<sqrt(m_s)
+                     <<" sqrt_sborn="<<(m_bornMomenta[2]+m_bornMomenta[3]).Mass()
+                     <<" Eksum="<<ksum[0]<<std::endl; }
   const double sign_z = (m_bornMomenta[0][3] < 0 ? -1 : 1);
   const double m1 = m_flavs[0].Mass();
   const double m2 = m_flavs[1].Mass();
@@ -1547,9 +1363,6 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D_Vector &k) {
   }
 }
 
-// Fixed-multiplicity wrappers. They exist so the existing call sites keep
-// reading as they did; the photons are copied in and back out because the
-// mapping boosts them in place.
 void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
   Vec4D_Vector ks{k};
   MapMomenta(p, ks);
@@ -1641,22 +1454,6 @@ bool NLO_Base::CheckMomentumConservation(Vec4D_Vector p) {
 }
 
 
-
-namespace {
-// Accumulates a soft-photon subtraction scan (energy vs |residual|/Born) and
-// prints a convergence summary - the residual must vanish as the photon(s)
-// soften; this is the pass/fail signal the raw per-point dump doesn't give
-// you without plotting it first.
-}
-
-
-
-
-
-
-
-
-
 Vec4D NLO_Base::MostEnergeticPhoton() const {
   Vec4D hardest;
   for (const auto &k : m_ISRPhotons)
@@ -1665,29 +1462,6 @@ Vec4D NLO_Base::MostEnergeticPhoton() const {
     if (k.E() > hardest.E()) hardest = k;
   return hardest;
 }
-
-// Deterministic stand-in for MostEnergeticPhoton(), for CHECK_RV validation:
-// hard photons are rare in the YFS spectrum, so selecting on
-// MostEnergeticPhoton() means waiting many events for one hard enough to
-// exercise CalculateRealVirtual()/CheckRealVirtualSub(). This instead builds
-// a photon of fixed energy fraction (RV_TEST_PHOTON_X, of sqrt(s)/2) and
-// direction (RV_TEST_PHOTON_THETA/PHI) in the Born CMS, then rotates/boosts
-// it into the same frame as m_bornMomenta, matching the tail of MapMomenta.
-// One-shot dump of beta_0 and beta_1 at a single, fully specified phase-space
-// point, for the number-for-number comparison against KKMC's CEEX
-// (Test/SherpaCompare/kkmc_ceex_crosscheck.cxx in the KKMC repo). Enabled with
-// YFS: CEEX_Compare: 1.
-//
-// Why a hook inside a running Sherpa rather than a standalone driver: unlike
-// YFS_Form_Factor and Dipole (pure functions of their arguments, hence the
-// FSR/IFI harnesses), beta_1 needs p_real and p_virt wired to real ME
-// providers, which means the whole process/model/generator stack. Reusing the
-// live wiring is far cheaper and cannot drift from what production does.
-//
-// The Born configuration is whatever the phase-space generator produced for
-// this event, so the momenta are PRINTED - feed them to the KKMC driver so both
-// sides evaluate at exactly the same point. Only the photon is deterministic
-// (FixedTestPhoton, from RV_TEST_PHOTON_X/THETA/PHI).
 
 
 Vec4D NLO_Base::FixedTestPhoton() const {
