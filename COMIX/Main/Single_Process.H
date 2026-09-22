@@ -40,12 +40,6 @@ namespace COMIX {
     ATOOLS::cs_itype::type m_user_imode;
     ATOOLS::NLO_subevtlist m_subs;
 
-    // resolved-photon pointlike (gamma->q qbar) KP term, O(alpha), added on top
-    // of the QCD KP terms when a beam is a resolved photon (via p_kpterms_ph):
-    // m_Q2ij is the static charge-correlation matrix, m_dsij_ph the per-event
-    // charge-correlated Born handed to p_kpterms_ph.
-    std::vector<std::vector<double> > m_Q2ij, m_dsij_ph;
-
     void InitPSGenerator(const size_t &ismode);
 
     void MapSubEvts(const int mode);
@@ -59,7 +53,6 @@ namespace COMIX {
 		   PDF::PDF_Base *pdfb,double scalefac2=1.0,
 		   double *kppointlike=NULL);
 
-    // resolved-photon pointlike KP term helper
     void BuildPhotonSplittingKP(MODEL::Coupling_Map *cpls,
                                 ATOOLS::cs_itype::type imode);
 

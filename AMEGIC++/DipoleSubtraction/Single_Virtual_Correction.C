@@ -287,28 +287,14 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
     p_kpterms_ew->SetCoupling(p_LO_process->CouplingMap());
     p_kernel_ew=p_kpterms_ew->Kernel();
   }
-  // Resolved photoproduction: in a pure NLO QCD calculation a resolved-photon
-  // beam additionally needs the O(alpha) gamma->q qbar integrated KP term (the
-  // pointlike/inhomogeneous photon-PDF component). Build the EW KP terms even
-  // though only the QCD subtraction was requested, restricted to the photon
-  // splitting contribution. No QED I-operator is added: Calc_I(sbt::qed) only
-  // runs for m_stype&sbt::qed, which stays unset here.
-  // In the DISgamma scheme the pointlike term is absorbed into the photon PDF,
-  // so it must not be added here.
-  else if ((m_stype&sbt::qcd) && HasResolvedPhotonBeam()
-           && FactorisationScheme()!=facscheme::DISgamma) {
-    // PartonListQED() is empty here (only built for m_stype&sbt::qed), so build a
-    // local charged+photon parton list.
-    m_plqed=ChargedAndPhotonPartons(m_flavs);
-    if (m_plqed.size()>=2) {
+  // resolved photon in NLO QCD: add the O(alpha) gamma->q qbar KP term
+  // (no QED I-operator, m_stype stays QCD)
+  else if (m_stype&sbt::qcd) {
+    p_kpterms_ew=KP_Terms::PhotonSplitting(this,p_LO_process->CouplingMap(),
+                                           m_user_imode);
+    if (p_kpterms_ew) {
       m_photonsplitting=true;
-      p_kpterms_ew = new KP_Terms(this, sbt::qed, m_plqed);
-      p_kpterms_ew->SetIType(m_user_imode);
-      p_kpterms_ew->SetCoupling(p_LO_process->CouplingMap());
-      p_kpterms_ew->SetPhotonSplittingOnly(true);
       p_kernel_ew=p_kpterms_ew->Kernel();
-      msg_Tracking()<<"Enabled resolved-photon gamma->q qbar pointlike KP term "
-                    <<"for "<<m_name<<"."<<std::endl;
     }
   }
 
@@ -365,10 +351,7 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
         m_dsijqcd[i][j]=0.;
       }
     }
-    // for the pointlike term size over the local m_plqed list (PartonListQED()
-    // is empty in the pure-QCD-Born case that triggers m_photonsplitting)
-    size_t nijew(m_photonsplitting ? m_plqed.size()
-                                   : p_LO_process->PartonListQED().size());
+    size_t nijew(p_LO_process->PartonListQED().size());
     m_dsijew.resize(nijew);
     for (size_t i=0;i<nijew;i++) {
       m_dsijew[i].resize(nijew);
@@ -384,10 +367,7 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
         m_Q2ij[i][j]=0.;
       }
     }
-    if (m_photonsplitting)
-      PhotonSplittingChargeFactors(m_flavs,m_plqed,m_nin,m_Q2ij);
-    else
-      ComputeChargeFactors();
+    ComputeChargeFactors();
     // set requested Born to correct entry
     if      (m_stype==sbt::qcd)               p_reqborn=&m_dsijqcd[0][0];
     else if (m_stype==sbt::qed)               p_reqborn=&m_dsijew[0][0];
@@ -904,7 +884,7 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
     p_kpterms_qcd->Calculate(p_int->Momenta(),m_dsijqcd,
                              m_x0,m_x1,m_eta0,m_eta1,weight);
   if (p_kpterms_ew  && (p_LO_process->HasInitialStateQEDEmitter() || m_photonsplitting))
-    p_kpterms_ew->Calculate(p_int->Momenta(),m_dsijew,
+    p_kpterms_ew->Calculate(p_int->Momenta(),m_photonsplitting?m_dsijqcd:m_dsijew,
                             m_x0,m_x1,m_eta0,m_eta1,weight);
 }
 
@@ -965,8 +945,7 @@ double Single_Virtual_Correction::Get_KPTerms(PDF_Base *pdfa, PDF_Base *pdfb,
   if (p_kpterms_ew  && (p_LO_process->HasInitialStateQEDEmitter() || m_photonsplitting)) {
     double ew(p_kpterms_ew->Get(pdfa,pdfb,m_x0,m_x1,eta0,eta1,muf2,muf2,sf,sf,fl0,fl1));
     res+=ew;
-    // only the resolved-photon pointlike use of the EW KP terms is O(alpha)
-    // inside a QCD-order process and needs the separate alpha_s scaling
+    // the pointlike term is O(alpha): reported separately for the alpha_s reweighting
     if (m_photonsplitting) pl=ew;
   }
   if (kppointlike) *kppointlike = pl * p_partner->m_lastki;
@@ -1098,19 +1077,6 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
   p_LO_process->Calc_AllXS(p_int->Momenta(),&_mom.front(),
                            m_dsijqcd,m_dsijew,mode);
   AttachChargeFactors();
-  if (m_photonsplitting && m_Q2ij.size()
-      && m_dsijqcd.size() && m_dsijqcd[0].size()) {
-    // Resolved-photon pointlike term: the gamma->q qbar KP term multiplies the
-    // QCD Born (the alpha prefactor comes from the splitting, via Alpha_QED).
-    // With only the QCD subtraction requested, m_dsijew was filled at zeroed EW
-    // coupling orders and AttachChargeFactors() was skipped, so rebuild the EW
-    // charge-correlated Born from the uncorrelated QCD Born times the charge
-    // factors. (Off-diagonal q<-photon needs no further colour/charge weighting
-    // beyond Q2ij; non-photon-PDF beams drop out via Contains(photon)==false.)
-    for (size_t i(0);i<m_dsijew.size();++i)
-      for (size_t k(0);k<m_dsijew[i].size();++k)
-        m_dsijew[i][k]=m_dsijqcd[0][0]*m_Q2ij[i][k];
-  }
   PrintDSij();
   double kfactorb((m_bvimode&1)?KFactor(1|2):1.0);
   double kfactorvi(m_lastki=m_lastk=(m_bvimode&6)?KFactor((m_bvimode&1)?0:2):1.0);

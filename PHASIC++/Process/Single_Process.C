@@ -907,9 +907,7 @@ void Single_Process::ReweightBVI(ClusterAmplitude_Vector& ampls)
                              m_mewgtinfo.m_wren[1] * 0.5 * ATOOLS::sqr(logR)) *
                             alphasfac};
 
-        // KP terms. The O(alpha) resolved-photon pointlike piece carries one
-        // fewer power of alpha_s than the QCD KP terms (its alpha_s dependence
-        // is the Born only), so it scales with bornalphasfac, not alphasfac.
+        // KP terms; the O(alpha) pointlike piece scales like the Born
         double KPpointlike {0.0};
         const double KPtot {KPTerms(&varparams, &KPpointlike)};
         const double KPnew {(KPtot - KPpointlike) * alphasfac

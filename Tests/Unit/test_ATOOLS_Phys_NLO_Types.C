@@ -8,12 +8,8 @@
 
 using namespace ATOOLS;
 
-// The KP:FACTORISATION_SCHEME setting selects the collinear scheme; DISgamma
-// gates the resolved-photon pointlike-KP mask in KP_Terms::Calculate. That gate
-// is only correct if the facscheme enum round-trips through YAML: SetDefault
-// stringifies via ToString (operator<<) and the value is parsed back through
-// operator>>. "DIS" is a substring of "DISgamma", so a regression in the
-// operator>> ordering would silently collapse DISgamma to DIS (or throw).
+// KP:FACTORISATION_SCHEME is read as a facscheme enum, so operator<< and
+// operator>> must round-trip exactly (SetDefault stringifies via ToString).
 
 TEST_CASE("facscheme stringifies to a single whitespace-free token",
           "[ATOOLS::facscheme]") {
@@ -34,7 +30,6 @@ TEST_CASE("facscheme round-trips ToString -> operator>>",
 
 TEST_CASE("facscheme operator>> keeps DISgamma distinct from DIS",
           "[ATOOLS::facscheme]") {
-  // The explicit regression guard for the substring hazard.
   facscheme::code fs;
   MyStrStream("DISgamma") >> fs;
   CHECK(fs == facscheme::DISgamma);
@@ -50,9 +45,7 @@ TEST_CASE("facscheme accepts the legacy integer codes",
   MyStrStream("2") >> fs;  CHECK(fs == facscheme::DISgamma);
 }
 
-// The read path FactorisationScheme() depends on: SetDefault(MSbar).Get<> over
-// a KP:FACTORISATION_SCHEME entry. A local Settings exercises the exact
-// stringify/parse round-trip without touching the main-settings singleton.
+// the read path of FactorisationScheme(), on a local Settings instance
 TEST_CASE("KP:FACTORISATION_SCHEME reads back through Settings",
           "[ATOOLS::facscheme]") {
   if (!msg) msg = new Message();

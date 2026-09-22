@@ -31,9 +31,6 @@ namespace AMEGIC {
 
     std::vector<std::vector<double> > m_dsijqcd,m_dsijew;
     std::vector<std::vector<double> > m_Q2ij;
-    // local charged+photon parton list for the resolved-photon pointlike term
-    // (PartonListQED() is empty when m_stype lacks qed, i.e. for a pure-QCD Born)
-    std::vector<size_t>               m_plqed;
 
     Single_Virtual_Correction        * p_partner;
     Single_LOProcess                 * p_LO_process;
@@ -47,8 +44,7 @@ namespace AMEGIC {
 
     bool   m_force_init, m_sccmur, m_murcoeffvirt, m_loopmapped;
     bool   m_checkborn, m_checkpoles, m_checkfinite;
-    // resolved-photon pointlike mode: add the gamma->q qbar integrated KP term
-    // (O(alpha), via p_kpterms_ew) on top of the QCD terms in an NLO QCD calc
+    // p_kpterms_ew holds the resolved-photon pointlike term (NLO QCD process)
     bool   m_photonsplitting;
     size_t m_pspisrecscheme, m_pspfsrecscheme;
     size_t m_pspissplscheme, m_pspfssplscheme;
