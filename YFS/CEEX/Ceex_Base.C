@@ -18,6 +18,22 @@ using namespace YFS;
 
 int Amplitude::s_nlegs = 4;
 
+std::vector<int> Amplitude::s_bit;
+
+void Amplitude::SetLegs(const ATOOLS::Flavour_Vector &flavs)
+{
+  s_bit.assign(flavs.size(), -1);
+  int nb(0);
+  for (size_t i(0); i < flavs.size(); ++i) {
+    // the same rule METOOLS uses: a massless vector has two states, anything
+    // else has 2s+1, so a scalar has one and is not packed at all
+    const int ns(flavs[i].IsVector() && !flavs[i].IsMassive()
+                 ? 2 : flavs[i].IntSpin() + 1);
+    if (ns > 1) s_bit[i] = nb++;
+  }
+  SetLegs(nb);
+}
+
 void Amplitude::SetLegs(int n) {
   if (n < 1 || n > s_maxlegs) {
     msg_Error()<<METHOD<<"(): "<<n<<" legs requested, capacity is "<<s_maxlegs
@@ -39,7 +55,10 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
 {
   // The amplitude container's extent. 2 -> 2 gives 4 legs and 16 helicity
   // entries, which is what the fixed m_A[2][2][2][2] used to hold.
-  Amplitude::SetLegs((int)flavs.size());
+  // Counts the legs that carry two helicity states, not the legs: a scalar
+  // in the final state is not packed, which is what makes the container size
+  // agree with Comix's Spin_Amplitudes.
+  Amplitude::SetLegs(flavs);
 
   RegisterDefaults();
   Scoped_Settings s{ Settings::GetMainSettings()["CEEX"] };
@@ -51,42 +70,114 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
   m_comixflip = s["COMIX_REAL_FLIP"].Get<int>();
   m_comixnorm = s["COMIX_REAL_NORM"].Get<double>();
   m_comixphoflip = s["COMIX_REAL_PHOTON_FLIP"].Get<int>();
+  m_perphoton    = s["COMIX_REAL_PER_PHOTON"].Get<int>();
+  m_comixborn    = s["COMIX_BORN"].Get<int>();
+  m_vpon         = s["VIRT_PARTITION_CHECK"].Get<int>() != 0;
+  /*
+    Any path that asks Comix for the PARTITION Born hands it CEEX's own
+    arguments: full-energy beam spinors with the physical pair, and the
+    propagator moved to the partition scale. Those momenta do not conserve -
+    the photons carry the difference, measured at over 100 GeV in energy - and
+    that is not a defect, it is what the partition sum is: the Born as a
+    function of a scale decoupled from the kinematics.
+
+    Comix itself is content with that; its recursion carries the propagator as
+    a separate factor. What is not content is Amplitude::SetMomenta, which
+    checks conservation only under DEBUG__BG and then calls
+    ProjectWideMomenta unconditionally. Handed a non-conserving set that
+    projection returns NaN, silently - no error, no warning, just a matrix
+    element that is not a number.
+
+    So refuse the combination up front rather than let a run produce NaN and
+    be debugged twice. With MOMENTUM_PROJECTION off the same call reproduces
+    the hand-coded partition Born to 1.7e-8 on every partition.
+  */
+  if ((s["PARTITION_BORN_CHECK"].Get<int>() != 0 || m_comixborn || m_perphoton)
+      && ss["COMIX"]["MOMENTUM_PROJECTION"].SetDefault(true).Get<bool>())
+    THROW(fatal_error,
+          "CEEX asks Comix for the partition Born, whose arguments do not"
+          " conserve momentum by construction. ProjectWideMomenta turns that"
+          " into a silent NaN. Set COMIX: {MOMENTUM_PROJECTION: 0}, and note"
+          " that it is also Comix's collinear-stability fix, so weigh what"
+          " else in the run depends on it.");
   string widthscheme = ss["WIDTH_SCHEME"].Get<string>();
   m_fixedwidth = (widthscheme == "Fixed" || widthscheme == "CMS");
   m_flavs = flavs;
   /*
-    CEEX is 2 -> 2 only, and the binding reason is the Born: BornAmplitude()
-    hand-codes the four-fermion T/U spinor structures and indexes k[0..3], so
-    on more legs it would quietly build the wrong amplitude out of the first
-    four. The partition sum, the stage decomposition, the soft factors and the
-    amplitude container have all been generalised; this has not.
+    CEEX past 2 -> 2 is no longer blocked by the Born. BornAmplitude() used to
+    index k[0..3] blindly, which on more legs built the amplitude out of the
+    first four - for H l+ l- that is (e-, e+, H, mu-), a scalar in a fermion
+    slot. It now takes the outgoing FERMION pair, and the Comix Born can be
+    substituted wholesale (CEEX: COMIX_BORN), which for H l+ l- agrees with the
+    hand-coded one to 1e-5 at every partition.
 
-    CEEX: DEV_MULTILEG lets a larger final state through anyway, for
-    DEVELOPMENT ONLY. The cross section it produces is meaningless. Its purpose
-    is to let the structural checks (stage charge neutrality, closure of the
-    stage currents against the total eikonal) run on a real 2 -> N process and
-    report what is still 2 -> 2, instead of everything hiding behind this one
-    throw.
+    What that leaves is a PER-PROCESS question rather than a structural one.
+    The hand-coded spinor algebra is the four-fermion T/U structure, so it is
+    right exactly when the Born collapses to that - true for H l+ l-, where
+    the Z propagator numerator and the ZZH vertex contract to the 2 -> 2
+    current-current form, and NOT something to assume for the next final
+    state. CEEX's own virtual is still 2 -> 2 (see CeexOwnVirtual), and the
+    Comix REAL covers one photon.
+
+    So DEV_MULTILEG stays a development switch: it says "this process has not
+    been shown to reduce to the structure CEEX hand-codes", not "the number is
+    meaningless".
   */
   static const int devmultileg(s["DEV_MULTILEG"].SetDefault(0).Get<int>());
   if (flavs.size() != 4) {
     if (!devmultileg)
       THROW(fatal_error, "CEEX is only for 2->2");
     msg_Error()<<METHOD<<"(): CEEX: DEV_MULTILEG is set and this process has "
-               <<flavs.size()<<" legs. The hand-coded Born is 2 -> 2 only, so "
-               <<"ANY CROSS SECTION FROM THIS RUN IS MEANINGLESS. Development "
-               <<"switch for the structural checks only."<<std::endl;
+               <<flavs.size()<<" legs. CEEX's hand-coded amplitude is the"
+               <<" four-fermion spinor structure; whether this process reduces"
+               <<" to it has to be shown per process, not assumed. Cross-check"
+               <<" against CEEX: COMIX_BORN, which is derived rather than"
+               <<" hand-coded, before believing the CEEX column. Note also"
+               <<" that CEEX's own virtual is 2 -> 2 (use YFS:"
+               <<" CEEX_Virtual: external) and the Comix real covers one"
+               <<" photon."<<std::endl;
   }
-  if (flavs[2].IsNeutrino() && flavs[3].IsNeutrino()) {
+  /*
+    The outgoing FERMION pair, by inspection rather than by position. Neutral
+    fermions count - e+e- -> nu nubar is a legitimate CEEX process - so the
+    test is on being a fermion, not on carrying charge. At 2 -> 2 this
+    returns 2 and 3 and nothing downstream changes.
+  */
+  { size_t n(0);
+    for (size_t i(2); i < flavs.size() && n < 2; ++i)
+      if (flavs[i].IsFermion()) { (n == 0 ? m_if1 : m_if2) = i; ++n; }
+    if (n < 2)
+      msg_Error()<<METHOD<<"(): no outgoing fermion pair found among "
+                 <<flavs.size()<<" legs; the electroweak couplings will be "
+                 <<"those of legs 2 and 3, which is almost certainly wrong."
+                 <<std::endl;
+  }
+
+  /*
+    CEEX's own virtual is a 2 -> 2 object - the vertex and box functions in
+    Ceex_Virtual.C are analytic expressions for e+e- -> f fbar. Used at any
+    other multiplicity it does not fail, it returns a number: measured on
+    e+e- -> H mu+ mu- it gave <rho1/rho0 - 1> = +22, a 2200% "correction",
+    while every other column of the same run was correct to a few percent.
+    That is the failure this refuses.
+  */
+  if (m_flavs.size() != 4 && m_useceex && m_ceexvirtsrc == ceexvirt::ceex)
+    THROW(fatal_error,
+          "CEEX's own virtual is 2 -> 2 only, and this process has "
+          + ATOOLS::ToString(m_flavs.size()) + " legs. Set YFS: CEEX_Virtual:"
+          " external to take the helicity-summed virtual from the loop"
+          " provider instead (which needs V in NLO_Part).");
+
+  if (flavs[m_if1].IsNeutrino() && flavs[m_if2].IsNeutrino()) {
     m_onlyz = true;
   }
 
   m_Q1Q2I = flavs[0].Charge() * flavs[1].Charge();
-  m_QIQF  = flavs[0].Charge() * flavs[2].Charge();
+  m_QIQF  = flavs[0].Charge() * flavs[m_if1].Charge();
   // Bhabha: the final pair is the beam pair, so a t-channel gamma/Z is exchanged
   // between the two fermion lines on top of the s-channel annihilation.
-  m_bhabha = (flavs[0] == flavs[2]);
-  m_Q1Q2F = flavs[2].Charge() * flavs[3].Charge();
+  m_bhabha = (flavs[0] == flavs[m_if1]);
+  m_Q1Q2F = flavs[m_if1].Charge() * flavs[m_if2].Charge();
   m_MZ = Flavour(kf_Z).Mass();
   m_gZ = Flavour(kf_Z).Width();
   double mw = Flavour(kf_Wplus).Mass();
@@ -108,10 +199,10 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
   m_cW = 1. - m_sW;
   m_norm = sqrt(16. * m_sW * (1. - m_sW));
   m_qe       = m_flavs[0].Charge();
-  m_qf       = m_flavs[2].Charge();
+  m_qf       = m_flavs[m_if1].Charge();
   m_Q1Q2I = m_flavs[0].Charge() * m_flavs[1].Charge();
   m_ae       = 2.*m_flavs[0].IsoWeak();
-  m_af       = 2.*m_flavs[2].IsoWeak();
+  m_af       = 2.*m_flavs[m_if1].IsoWeak();
   // Keep 2*T3 and 4*Q*sw^2 separately: the electroweak kappa factors multiply
   // only the sin^2 piece (GPS_EWFFact), so the two cannot be pre-combined.
   m_t3e2 = m_ae;
@@ -124,17 +215,17 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
   m_af /= m_norm;
   m_weak = s["WEAK"].Get<int>();
   m_mass_I = flavs[0].Mass();
-  m_mass_F = flavs[2].Mass();
+  m_mass_F = flavs[m_if1].Mass();
   // full EW couplings
   m_I_L = -m_I * sqrt(4 * M_PI * m_alpha) / (2.*m_sW * m_cW) * (2.*flavs[0].IsoWeak()
           - 2.*flavs[0].Charge() * m_sW * m_sW);
 
   m_I_R = -m_I * sqrt(4 * M_PI * m_alpha) / (2.*m_sW * m_cW) * (-2.*flavs[0].Charge() * m_sW * m_sW);
 
-  m_F_L = -m_I * sqrt(4 * M_PI * m_alpha) / (2.*m_sW * m_cW) * (2.*flavs[2].IsoWeak()
-          - 2.*flavs[2].Charge() * m_sW * m_sW);
+  m_F_L = -m_I * sqrt(4 * M_PI * m_alpha) / (2.*m_sW * m_cW) * (2.*flavs[m_if1].IsoWeak()
+          - 2.*flavs[m_if1].Charge() * m_sW * m_sW);
 
-  m_F_R = -m_I * sqrt(4 * M_PI * m_alpha) / (2.*m_sW * m_cW) * (-2.*flavs[2].Charge() * m_sW * m_sW);
+  m_F_R = -m_I * sqrt(4 * M_PI * m_alpha) / (2.*m_sW * m_cW) * (-2.*flavs[m_if1].Charge() * m_sW * m_sW);
   m_cL = -m_I * sqrt(4 * M_PI * m_alpha) / (2.*m_sW * m_cW) * (2.*m_flavs[1].IsoWeak()
          - 2.*m_flavs[1].Charge() * m_sW * m_sW) / m_norm;
   m_cR = -m_I * sqrt(4 * M_PI * m_alpha) / (2.*m_sW * m_cW) * (-2.*m_flavs[1].Charge() * m_sW * m_sW) / m_norm;
@@ -170,6 +261,46 @@ void Ceex_Base::RegisterDefaults()
   s["COMIX_REAL_PHOTON_FLIP"].SetDefault(1);
   s["COMIX_REAL_NORM"].SetDefault(-1.);
   /*
+    Let the Comix amplitude be used above one photon. OFF: the exact n-photon
+    amplitude is not infrared subtracted and carries soft content that exp(Y)
+    and the crude S-factors already hold, so it is a different matching scheme
+    rather than an extension of this one. Kept reachable because the machinery
+    is in place and the comparison is worth being able to make.
+  */
+  s["COMIX_REAL_MULTIPHOTON"].SetDefault(0);
+  /*
+    Take the one-photon real from Comix once per PHOTON, at every
+    multiplicity, instead of once per event with every photon attached. This
+    is the structure CEEX actually has - beta_1 is a sum over photons - and it
+    needs only the one-photon process, which always exists.
+  */
+  s["COMIX_REAL_PER_PHOTON"].SetDefault(0);
+  // How many events the soft probe walks down the lambda ladder. Each rung
+  // costs a Comix evaluation and perturbs the random sequence, so it is a
+  // diagnostic budget, not something to leave large.
+  s["SOFT_PROBE_EVENTS"].SetDefault(10);
+  // @@@ PARTBORN: the partition Born against the Born at the configuration
+  // that realises the partition's scale.
+  s["PARTITION_BORN_CHECK"].SetDefault(0);
+  /*
+    Take the partition Born from Comix instead of the hand-coded spinor
+    algebra. That algebra is the 2 -> 2 specific part of CEEX, so this is the
+    step that makes the partition sum process independent. Requires
+    COMIX: MOMENTUM_PROJECTION: 0 - see the check in the constructor.
+  */
+  s["COMIX_BORN"].SetDefault(0);
+  // @@@ BORNALIGN: is the Comix -> CEEX Born alignment scale independent?
+  s["BORN_ALIGN_CHECK"].SetDefault(0);
+  // @@@ BETA1: the Comix hard remainder against the hand-coded one, vs E_gamma
+  s["BETA1_CHECK"].SetDefault(0);
+  // Hand Comix CEEX's own (non-conserving) beta_1 arguments rather than a
+  // mapped conserving configuration. Needs COMIX: MOMENTUM_PROJECTION: 0.
+  s["COMIX_REAL_CEEX_ARGS"].SetDefault(0);
+  // Write the |beta_1|/beta_0 vs E_gamma scan (the real-validation figure).
+  s["BETA1_SCAN"].SetDefault(0);
+  // @@@ VIRTPART: does the virtual factor V(h) depend on the partition?
+  s["VIRT_PARTITION_CHECK"].SetDefault(0);
+  /*
     Diagnostics. All off by default, each costing one branch on a cached
     static once the run is going. They live here rather than in the
     environment so that a run is fully specified by its YAML card: an
@@ -183,6 +314,7 @@ void Ceex_Base::RegisterDefaults()
   s["DUMP_NPHOT"].SetDefault(1);       // photon multiplicity to dump at
   s["COMIX_CHECK"].SetDefault(0);      // @@@ CEEXCX, hand-coded vs Comix
   s["GOLDEN"].SetDefault(0);           // @@@ CEEXGOLD, regression stream
+  s["WEIGHT_PROBE"].SetDefault(0);     // @@@ CEEXWT, what makes a heavy event
 }
 
 

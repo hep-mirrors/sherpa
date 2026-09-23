@@ -244,7 +244,11 @@ void CV<SType>::AddPropagator()
 {
   // add propagator for off-shell leg
   // m_p2, not m_p.Abs2(): see Current::Evaluate().
-  SComplex p2(SType(this->m_p2)), prop(-M_I/(p2-m_cmass2));
+  SComplex p2(SType(this->m_p2));
+  // The pole may be moved off the current's own p^2; see Current::m_p2prop.
+  const SComplex pp2(this->m_p2prop > 0.0
+                     ? SComplex(SType(this->m_p2prop)) : p2);
+  SComplex prop(-M_I/(pp2-m_cmass2));
   if (this->m_osd) prop=SComplex(M_I);
 #ifdef DEBUG__BG
   msg_Debugging()<<"propagator: "<<prop<<"\n";

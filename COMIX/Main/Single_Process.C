@@ -790,8 +790,18 @@ CombinedFlavour(const size_t &idij)
   return fit->second;
 }
 
+ATOOLS::Weights_Map COMIX::Single_Process::DifferentialWithPropScale
+(const ATOOLS::Cluster_Amplitude &ampl, ATOOLS::Variations_Mode varmode,
+ int mode, const double propscale, const double decscale, const size_t deccid)
+{
+  Amplitude *bg(p_map != NULL ? p_map->p_bg : p_bg);
+  Amplitude::Scoped_Prop_Scale guard(bg, propscale, decscale, deccid);
+  return Differential(ampl, varmode, mode);
+}
+
 bool COMIX::Single_Process::BornSpinAmplitudes
-(const Vec4D_Vector &p, std::vector<Spin_Amplitudes> &amps, double *me2)
+(const Vec4D_Vector &p, std::vector<Spin_Amplitudes> &amps, double *me2,
+ const double propscale, const double decscale, const size_t deccid)
 {
   /*
     Evaluate at p and hand back the helicity amplitudes, without going through
@@ -802,6 +812,8 @@ bool COMIX::Single_Process::BornSpinAmplitudes
   if (bg == NULL) return false;
   const Vec4D_Vector pold(bg->Momenta());
   if (!bg->SetMomenta(p)) { bg->SetMomenta(pold); return false; }
+  // The guard owns the restore; the mutator is private to Amplitude.
+  Amplitude::Scoped_Prop_Scale guard(bg, propscale, decscale, deccid);
   const double s_lastxs(m_lastxs), s_dxs(m_dxs), s_w(m_w);
   const double xs(Partonic(p, Variations_Mode::nominal_only, 0));
   amps.clear();

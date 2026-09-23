@@ -36,6 +36,34 @@ struct wwscheme {
   };
 };
 
+/*!
+  Where CEEX's O(alpha) VIRTUAL comes from. It used to be decided implicitly -
+  CEEX supplied its own if and only if no loop provider happened to exist -
+  which is how e+e- -> H l+ l- silently took CEEX's 2 -> 2 vertex and boxes and
+  reported a +2200% correction with nothing to say so.
+
+  The three are genuinely different physics, not implementations:
+
+    ceex      CEEX's own hand-coded vertex and boxes, per helicity. Amplitude
+              level, which is what CEEX is for - and 2 -> 2 ONLY, because the
+              expressions are.
+    external  the loop provider's helicity-SUMMED virtual through
+              Virtual_ME2_Base, applied to |A|^2. Works for any process today.
+              The helicity dependence of the boxes is then averaged over, which
+              is exactly the coherence CEEX exists to keep, so this is a
+              deliberate trade and not a free one.
+    helicity  the provider's virtual resolved BY HELICITY, so amplitude-level
+              matching survives at any multiplicity. Recola can supply this
+              (get_amplitude_r1_rcl); not yet implemented.
+*/
+struct ceexvirt {
+  enum code {
+    ceex     = 0,
+    external = 1,
+    helicity = 2
+  };
+};
+
 struct wgt {
   enum code {
     off       = 0,
@@ -59,6 +87,8 @@ struct fixed_order {
 
 
 std::istream &operator>>(std::istream &str, wwscheme::code &sm);
+std::istream &operator>>(std::istream &str, ceexvirt::code &sm);
+std::ostream &operator<<(std::ostream &str, const ceexvirt::code &sm);
 std::ostream &operator<<(std::ostream &str, const wwscheme::code &sm);
 std::istream &operator>>(std::istream &str, submode::code &sm);
 std::istream &operator>>(std::istream &str, yfsmode::code &sm);
@@ -222,6 +252,7 @@ public:
   std::string m_name, m_type, m_debugDIR_ISR, m_debugDIR_FSR, m_debugDIR_NLO;
   Vec4D m_beam1, m_beam2;
 
+  ceexvirt::code m_ceexvirtsrc = ceexvirt::ceex;
   submode::code m_submode;
   yfsmode::code m_mode;
   fixed_order::code m_fixedOrder;

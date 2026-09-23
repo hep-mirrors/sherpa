@@ -168,7 +168,9 @@ public:
     valid until the next call to this or to Calc_R.
   */
   const std::vector<METOOLS::Spin_Amplitudes> *
-  ComixAmplitudes(const ATOOLS::Vec4D_Vector &p);
+  ComixAmplitudes(const ATOOLS::Vec4D_Vector &p,
+                  const double propscale = -1.0,
+                  const double decscale = -1.0, const size_t deccid = 0);
 
   //! Nominal weight of the last ComixAmplitudes() evaluation. Its ratio to
   //! SumSquare() is the constant spin-average/flux/symmetry factor, so a

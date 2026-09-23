@@ -211,9 +211,9 @@ void Ceex_Base::Calculate() {
   */
   { static const bool bn(ATOOLS::Settings::GetMainSettings()["CEEX"]["BORNNORM_CHECK"].Get<int>() != 0);
     if (bn && m_bornmomenta.size() >= 4 && m_pceex.size() >= 4) {
-      const Vec4D Qb(m_bornmomenta[2] + m_bornmomenta[3]);
-      const Vec4D Qp(m_pceex[2] + m_pceex[3]);
-      Vec4D q2(m_pceex[2]), b0(m_pceex[0]);
+      const Vec4D Qb(m_bornmomenta[m_if1] + m_bornmomenta[m_if2]);
+      const Vec4D Qp(m_pceex[m_if1] + m_pceex[m_if2]);
+      Vec4D q2(m_pceex[m_if1]), b0(m_pceex[0]);
       Poincare cm(Qp);
       cm.Boost(q2); cm.Boost(b0);
       const double n1(Vec3D(q2).Abs()), n2(Vec3D(b0).Abs());
@@ -258,11 +258,28 @@ void Ceex_Base::Calculate() {
   m_spincache.resize(1 + 4*m_allphotons.size());
   m_spinvalid.assign(m_spincache.size(), 0);
   m_realphot.assign(m_allphotons.size(), Amplitude());
-  m_svarQ = (m_pceex[2] + m_pceex[3]).Abs2();
+  /*
+    The invariant of the outgoing FERMION pair, not of legs 2 and 3. With
+    anything else in the final state those are not the same: for
+    e+e- -> H l+ l- leg 2 is the Higgs, so this was (p_H + p_l-)^2 rather than
+    the dilepton mass. m_svarQ is the denominator of the pseudo-flux factor
+    m_cfac = sProd*(svarX/m_svarQ) and feeds the FSR kinematic term, so it is
+    load bearing, and being wrong there is silent - it is a perfectly good
+    invariant, just not the one the decay propagator sits at.
+  */
+  m_svarQ = (m_pceex[m_if1] + m_pceex[m_if2]).Abs2();
   m_sQ    = m_svarQ;
   MakePropT(m_pceex);
 
   
+  // One Comix/hand ratio per photon, before the partition loop: inside it the
+  // soft weights are in scope but the photon's TOTAL amplitude is not.
+  { static const bool bs(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                         ["BETA1_SCAN"].Get<int>() != 0);
+    if (bs) Beta1Scan(); }
+  BuildComixBornAlignment();
+  BuildComixPhotonRatios();
+
   int last(0), nparts(0);
   
   static const size_t maxphot(Settings::GetMainSettings()["CEEX"]["MAX_PARTITION_PHOTONS"]
@@ -309,15 +326,46 @@ void Ceex_Base::Calculate() {
     }
     m_sp   = svarX;
     m_Sprod = sProd;
-    m_cfac = sProd * Complex(svarX/m_svarQ, 0.);
+    /*
+      The pseudo-flux factor relates the invariant flowing INTO the radiating
+      final-state system to that system's own invariant, m_svarQ. KKMC writes
+      it as svarX/svarQ (KKceex.cxx:395) and hep-ph/0006359 eq.(42) fixes the
+      meaning: it "disappears in the in-space situation p_a+p_b = p_c+p_d" and
+      "really matters if at least one hard FSR photon is present" - i.e. it is
+      1 when there is no FSR photon.
+
+      svarX is the whole X system. At 2 -> 2 that IS the radiating system
+      (X = q_c + q_d + sum_FSR k by momentum conservation), so svarX/svarQ is
+      1 + O(x_gamma) and cancels against the FSR (1-CKine) term below, which is
+      what KKMC designed it to do ("Contribution -svarX/svarQ from HERE cancels
+      exactly with svarX/svarQ in beta0", KKceex.cxx:1499).
+
+      Past 2 -> 2 the two part company: for e+e- -> H mu+ mu- the numerator
+      carries the Higgs and the denominator does not, so the ratio is s/m_ll^2
+      ~ 7.5 with NO photon at all. Squared that is 56.5, which is exactly the
+      factor by which the Comix real was observed to suppress the CEEX weight -
+      the real carries no m_cfac while m_rhocrud carries m_cfac^2.
+
+      So subtract the final legs that are NOT the radiating pair. At 2 -> 2 the
+      loop body never runs, PY is PX itself and svarY is bit-for-bit svarX, so
+      the 2 -> 2 stream is untouched by construction rather than by rounding.
+    */
+    Vec4D PY(PX);
+    for (size_t i(2); i < m_pceex.size(); ++i)
+      if (i != m_if1 && i != m_if2) PY -= m_pceex[i];
+    const double svarY(PY.Abs2());
+    m_svarY = svarY;          // the decay line's own partition-shifted scale
+    m_cfac = sProd * Complex(svarY/m_svarQ, 0.);
     MakeProp();
     // Electroweak form factors at THIS partition's scale, and the scattering
     // angle the WW/ZZ boxes depend on. No-op unless CEEX: WEAK is set.
-    MakeEWFF(m_sp, cos(m_pceex[2].Theta()));
+    MakeEWFF(m_sp, cos(m_pceex[m_if1].Theta()));
     MakeBoxMandelstams(PX);
 
     InfraredSubtractedME_0_0();
-    InfraredSubtractedME_0_1();
+    // Only when a virtual was asked for and CEEX is its source; see
+    // Ceex_Base::CeexOwnVirtual.
+    if (CeexOwnVirtual()) InfraredSubtractedME_0_1();
     for (size_t j(0); j < m_allphotons.size(); ++j) {
       if (m_checkxs && m_stagereduces[m_stage[j]]) {
         CheckSoftFactor(m_allphotons[j]);
@@ -328,7 +376,7 @@ void Ceex_Base::Calculate() {
                                  1 + 4*(int)j, (int)j);
       } else {
         // CKine = (q1+q2+k)^2/(q1+q2)^2, KKMC's svarX1/svarQ.
-        const double CKine((m_pceex[2] + m_pceex[3]
+        const double CKine((m_pceex[m_if1] + m_pceex[m_if2]
                             + m_allphotons[j]).Abs2() / m_svarQ);
         InfraredSubtractedME_1_0_FSR(m_allphotons[j], m_PhoHel[j],
                                      sProd, Sactu[j], CKine, 3 + 4*(int)j, (int)j);
@@ -339,6 +387,61 @@ void Ceex_Base::Calculate() {
     PartitionPlus(last);
     if (last == 2) break;
   }
+  /*
+    Comix's beta_1 against what the partition loop ACTUALLY accumulated for
+    each photon. m_realphot[j] is that object - the stage pieces with their
+    partition weights - whereas HandOnePhotonAmplitude is a standalone
+    reconstruction, and a reconstruction is not the reference: it produced
+    |beta_1| LARGER than the full amplitude on some photons, which cannot be.
+  */
+  { static const bool b1(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                         ["BETA1_CHECK"].Get<int>() != 0);
+    static int nd(0);
+    if (b1 && nd < 14)
+      for (size_t j(0); j < m_allphotons.size() && nd < 14; ++j) {
+        if (j >= m_cxratiook.size() || !m_cxratiook[j]) continue;
+        ++nd;
+        double nr(0.), ncs(0.);
+        const int nh(Amplitude::NHel());
+        for (int f = 0; f < nh; ++f) {
+          nr  += std::norm(m_realphot[j].m_A[f]);
+          ncs += std::norm(m_cxcsub[j].m_A[f]);
+        }
+        std::cerr<<"@@@ BETA1REF Ek="<<m_allphotons[j][0]
+                 <<" |realphot|="<<sqrt(nr)
+                 <<" |Csub|="<<sqrt(ncs)
+                 <<" ratio="<<(nr>0.? sqrt(ncs/nr) : -1.)<<std::endl;
+      } }
+  /*
+    Report the per-event spread of V(h) across partitions, then reset. Only
+    the helicities that carry weight are shown; the mass-suppressed ones have
+    a Born near zero and their ratio means nothing.
+  */
+  { static const bool vp(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                         ["VIRT_PARTITION_CHECK"].Get<int>() != 0);
+    static int nv(0);
+    if (vp && nv < 8 && !m_vpmin.empty()) {
+      ++nv;
+      double worst(0.); int nl(0);
+      for (size_t f(0); f < m_vpmin.size(); ++f) {
+        if (m_vpmax[f] < m_vpmin[f]) continue;
+        ++nl;
+        const double mid(0.5*(m_vpmax[f] + m_vpmin[f]));
+        if (mid > 0.) worst = Max(worst, (m_vpmax[f] - m_vpmin[f])/mid);
+      }
+      // the actual range, not just the relative spread: a spread of 2 means
+      // the minimum reached zero, which needs to be visible
+      double gmin(1e30), gmax(-1e30);
+      for (size_t f(0); f < m_vpmin.size(); ++f) {
+        if (m_vpmax[f] < m_vpmin[f]) continue;
+        gmin = Min(gmin, m_vpmin[f]); gmax = Max(gmax, m_vpmax[f]);
+      }
+      std::cerr<<"@@@ VIRTPART nparts="<<nparts<<" nphot="<<m_allphotons.size()
+               <<" nlive="<<nl<<" worst_spread="<<worst
+               <<" |V| in ["<<gmin<<","<<gmax<<"]"
+               <<" sQ="<<m_svarQ<<std::endl;
+    }
+    m_vpmin.clear(); m_vpmax.clear(); }
   m_nparts = nparts;
   if (m_checkxs && nparts > 1 && m_pzmin > 0.) {
     const size_t n(Min(m_allphotons.size(), size_t(15)));

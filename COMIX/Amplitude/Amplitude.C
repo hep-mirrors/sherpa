@@ -1956,6 +1956,105 @@ void Amplitude::SetNLOMC(PDF::NLOMC_Base *const mc)
     m_scur[i]->Sub()->In().front()->Kin()->SetNLOMC(mc);
 }
 
+Amplitude::Scoped_Prop_Scale::Scoped_Prop_Scale
+(Amplitude *const amp, const double &s, const double &sdec,
+ const size_t deccid): p_amp(s > 0.0 ? amp : NULL)
+{ if (p_amp != NULL) p_amp->SetPropScale(s, sdec, deccid); }
+
+Amplitude::Scoped_Prop_Scale::~Scoped_Prop_Scale()
+{ if (p_amp != NULL) p_amp->SetPropScale(-1.0, -1.0, 0); }
+
+void Amplitude::SetPropScale(const double &s, const double &sdec,
+                             const size_t deccid)
+{
+  /*
+    Only the S-CHANNEL line takes the imposed scale - the current carrying the
+    whole final state, equivalently the whole initial state.
+
+    This used to pin EVERY internal current to s. At 2 -> 2 that is the same
+    thing, because the one internal line IS the full final state, which is why
+    the behaviour there is unchanged to the last bit. Past 2 -> 2 it is not:
+    e+e- -> H mu+ mu- also has a Z -> mu mu line, and pinning that to the
+    production scale drags it off the dilepton pole. Measured against the
+    hand-coded Born event by event, that produced a median ratio of 1.198 with
+    p95 = 28275 - and the damage sat precisely where the coherent partition sum
+    cancels, which is what a displaced resonance does.
+
+    The caller asks for a scale on the line whose invariant its sum runs over;
+    every other propagator keeps its own p^2.
+  */
+  /*
+    A RESTORE clears every current, not just the ones this call would have
+    selected. The decay line is pinned through a different branch below, and
+    resetting only the s-channel left its m_p2prop frozen at the last
+    partition's svarY for every later evaluation in the process - including the
+    real ME behind the nominal weight, which turned the Hll BR column NEGATIVE
+    (-0.0916 against +0.005973). Whatever is set here has to be unset here.
+  */
+  if (!(s>0.0)) {
+    for (size_t j(2);j<m_cur.size();++j)
+      for (size_t i(0);i<m_cur[j].size();++i) m_cur[j][i]->SetPropScale(-1.0);
+    for (size_t i(0);i<m_scur.size();++i) m_scur[i]->SetPropScale(-1.0);
+    return;
+  }
+  /*
+    PROP_SCALE_ALL restores the old blanket behaviour, so the claim that the
+    selection is a no-op at 2 -> 2 can be MEASURED rather than asserted.
+  */
+  static const bool all_(ATOOLS::Settings::GetMainSettings()["COMIX"]
+                         ["PROP_SCALE_ALL"].SetDefault(0).Get<int>()!=0);
+  const size_t all((1ull<<m_n)-1), fin(all^((1ull<<m_nin)-1));
+  for (size_t j(2);j<m_cur.size();++j)
+    for (size_t i(0);i<m_cur[j].size();++i) {
+      const size_t c(m_cur[j][i]->CId());
+      if (all_ || c==fin || c==(all^fin)) m_cur[j][i]->SetPropScale(s);
+    }
+  for (size_t i(0);i<m_scur.size();++i) {
+    const size_t c(m_scur[i]->CId());
+    if (all_ || c==fin || c==(all^fin)) m_scur[i]->SetPropScale(s);
+  }
+  /*
+    The DECAY line. CEEX's partition sum gives every resonant propagator in the
+    chain its own shifted invariant - hep-ph/0006359 after eq.(29) for the
+    s-channel, arXiv:1906.09071 eqs.(4.10)-(4.11) for the general multi-stage
+    case, YFSWW3 (hep-ph/0007012) per resonance. Pinning only the s-channel and
+    leaving the decay at its physical p^2 freezes the propagator that is ON the
+    pole while moving the one that is far off it, which is backwards.
+
+    Matched on CId and its complement, like the s-channel above: Berends-Giele
+    builds the same internal line from either side. At 2 -> 2 deccid is the
+    whole final state, so this re-sets the line the s-channel branch just set,
+    with svarY == svarX - a no-op, which is why the 2 -> 2 stream is untouched.
+  */
+  if (sdec>0.0 && deccid) {
+    for (size_t j(2);j<m_cur.size();++j)
+      for (size_t i(0);i<m_cur[j].size();++i) {
+        const size_t c(m_cur[j][i]->CId());
+        if (c==deccid || c==(all^deccid)) m_cur[j][i]->SetPropScale(sdec);
+      }
+    for (size_t i(0);i<m_scur.size();++i) {
+      const size_t c(m_scur[i]->CId());
+      if (c==deccid || c==(all^deccid)) m_scur[i]->SetPropScale(sdec);
+    }
+  }
+  { static const bool ck(ATOOLS::Settings::GetMainSettings()["COMIX"]
+                         ["PROP_SCALE_CHECK"].SetDefault(0).Get<int>()!=0);
+    static bool done(false);
+    if (ck && !done) { done=true;
+      size_t nt(0), nh(0);
+      for (size_t j(2);j<m_cur.size();++j)
+        for (size_t i(0);i<m_cur[j].size();++i) {
+          ++nt; const size_t c(m_cur[j][i]->CId());
+          if (c==fin || c==(all^fin)) ++nh;
+        }
+      for (size_t i(0);i<m_scur.size();++i) {
+        ++nt; const size_t c(m_scur[i]->CId());
+        if (c==fin || c==(all^fin)) ++nh;
+      }
+      msg_Error()<<"PROPSCALE n="<<m_n<<" nin="<<m_nin<<" finmask="<<fin
+               <<" currents="<<nt<<" overridden="<<nh<<std::endl; } }
+}
+
 void Amplitude::SetGauge(const size_t &n)
 {
   Vec4D k(1.0,0.0,1.0,0.0);

@@ -380,7 +380,9 @@ double Real_Correction::Calc_External(const ATOOLS::Vec4D_Vector &p){
 }
 
 const std::vector<METOOLS::Spin_Amplitudes> *
-Real_Correction::ComixAmplitudes(const ATOOLS::Vec4D_Vector &p)
+Real_Correction::ComixAmplitudes(const ATOOLS::Vec4D_Vector &p,
+                                 const double propscale,
+                                 const double decscale, const size_t deccid)
 {
   if (p_proc == NULL) return NULL;
   if (p.size() != p_proc->Flavours().size()) return NULL;
@@ -391,8 +393,13 @@ Real_Correction::ComixAmplitudes(const ATOOLS::Vec4D_Vector &p)
   // Same rmode as Calc_R: 128 = GeneratePoint(), 2 = fixed scales from the
   // amplitude, 1 = selector off (the point is not ours to cut).
   const int rmode(128 + 2 + 1);
-  Weights_Map w(p_proc->Differential(*ampl, Variations_Mode::nominal_only,
-                                     rmode));
+  /*
+    The scale travels as an argument, so there is no window in which this
+    process carries a moved pole that a later call could pick up.
+  */
+  Weights_Map w(p_proc->DifferentialWithPropScale(
+                  *ampl, Variations_Mode::nominal_only, rmode,
+                  propscale, decscale, deccid));
   m_lastcomix = w.Nominal();
   m_spinamps.clear();
   std::vector<std::vector<Complex> > cols;

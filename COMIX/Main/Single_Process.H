@@ -76,10 +76,17 @@ namespace COMIX {
 
     const Hard_Matrix *ComputeHardMatrix
     (ATOOLS::Cluster_Amplitude *const ampl,const int mode);
+    ATOOLS::Weights_Map DifferentialWithPropScale
+    (const ATOOLS::Cluster_Amplitude &ampl,
+     ATOOLS::Variations_Mode varmode, int mode,
+     const double propscale, const double decscale = -1.0,
+     const size_t deccid = 0) override;
+
     bool BornSpinAmplitudes
     (const ATOOLS::Vec4D_Vector &p,
      std::vector<METOOLS::Spin_Amplitudes> &amps,
-     double *me2 = NULL) override;
+     double *me2 = NULL, const double propscale = -1.0,
+     const double decscale = -1.0, const size_t deccid = 0) override;
 
     double Partonic(const ATOOLS::Vec4D_Vector&,
                     ATOOLS::Variations_Mode varmode,

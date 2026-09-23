@@ -169,6 +169,24 @@ namespace METOOLS {
 
     inline double P2() const { return (double)m_p2; }
 
+    /*!
+      Override for the POLE of this current's propagator, and for nothing
+      else. CEEX's partition Born is the Born with the spinors at the physical
+      momenta and the propagator at the partition's reduced scale - the two are
+      independent there, which is why no momentum configuration realises it and
+      why it has had to be hand coded. Setting this makes that object
+      reachable from the recursion, which already carries the propagator as a
+      separate factor.
+
+      The transverse projector deliberately keeps the true p^2: only the pole
+      moves, matching what the partition sum asks for.
+
+      <= 0 (the default) means "use the current's own p^2", i.e. no override.
+    */
+    double m_p2prop = -1.0;
+    inline void SetPropScale(const double &s) { m_p2prop = s; }
+    inline double PropScale() const { return m_p2prop; }
+
     inline const ATOOLS::Vec4<ATOOLS::DDouble> &PH() const { return m_ph; }
 
     template <typename SType>

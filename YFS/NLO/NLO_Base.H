@@ -165,8 +165,20 @@ public:
   inline bool NeedsVirtualProvider(bool ext=true) const
   { return !m_eex_virt && (ext || !m_useceex); }
   /// whether CEEX is the thing supplying the virtual on this run
+  /*!
+    Whether CEEX's OWN virtual is used, rather than the provider's.
+
+    The condition used to be `!m_looptool` - CEEX supplied it exactly when no
+    loop provider happened to exist. That is an accident of the card, not a
+    choice, and it is how e+e- -> H l+ l- came to use CEEX's 2 -> 2 vertex and
+    boxes: no V in NLO_Part, so no loop tool, so CEEX's own, reporting +2200%
+    with nothing to flag it. The source is now stated
+    (YFS: CEEX_Virtual), and `ceex` still needs a provider to be absent,
+    since the two would otherwise both be applied.
+  */
   inline bool CeexSuppliesVirtual() const
-  { return m_useceex && !m_eex_virt && !m_looptool; }
+  { return m_useceex && !m_eex_virt && !m_looptool
+           && m_ceexvirtsrc == ceexvirt::ceex; }
   /*!
     The O(alpha) virtual factor from CEEX, rho(Born+virtual)/rho(Born), pushed
     in by YFS_Handler after MakeCEEX() has run. Only consulted when

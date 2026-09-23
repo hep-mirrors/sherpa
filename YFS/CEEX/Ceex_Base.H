@@ -46,9 +46,29 @@ namespace YFS {
   public:
     static const int s_maxlegs = 8;              //!< 2 -> 4 plus a photon is 7
     static const int s_maxhel  = 1 << s_maxlegs;
-    static int s_nlegs;                          //!< active leg count
+    static int s_nlegs;            //!< legs carrying TWO helicity states
     static inline int NHel() { return 1 << s_nlegs; }
     static void SetLegs(int n);
+    /*!
+      Spin-aware version: counts only the legs with more than one spin state
+      and records where each leg sits in the packed index.
+
+      METOOLS indexes a Spin_Amplitudes as a MIXED-RADIX product over the
+      per-leg spin multiplicities (Spin_Structure::GetNumber:
+      num += mult*spins[i]; mult *= m_spins[i]), and a scalar has
+      multiplicity ONE - it contributes index 0 and does not advance mult. So
+      for e+e- -> H mu+mu- the 2x2x1x2x2 mixed-radix index collapses to
+      h0 + 2h1 + 4h3 + 8h4, which is exactly this binary packing over the four
+      two-valued legs. The two conventions already agree; what was wrong was
+      counting the scalar as a leg, which made CEEX ask for 2^5 entries
+      against Comix's 16.
+
+      s_bit[i] is leg i's bit position, or -1 for a leg with one spin state.
+    */
+    static std::vector<int> s_bit;
+    static void SetLegs(const ATOOLS::Flavour_Vector &flavs);
+    static inline int Bit(size_t i)
+    { return i < s_bit.size() ? s_bit[i] : -1; }
     static inline int Idx(int h0, int h1, int h2, int h3)
     { return h0 | (h1 << 1) | (h2 << 2) | (h3 << 3); }
     Amplitude();
@@ -79,7 +99,20 @@ namespace YFS {
     inline void SetRealProc(PHASIC::Process_Base *p) { p_realproc = p; }
     //! Born spin amplitudes from Comix; false if unavailable.
     bool ComixBornAmplitude(const ATOOLS::Vec4D_Vector &p, Amplitude &A,
-                            double *me2 = NULL);
+                            double *me2 = NULL,
+                            const double propscale = -1.0,
+                            const double decscale = -1.0);
+    /*
+      The COMIX leg bitmask of the outgoing fermion pair - the DECAY line. At
+      2 -> 2 this is the whole final state, so it names the same current the
+      s-channel branch already pins and the second scale is a no-op.
+    */
+    //! Per-event quantities the weight probe reports; see CEEX: WEIGHT_PROBE.
+    inline size_t NPhot()  const { return m_allphotons.size(); }
+    inline double SvarQ()  const { return m_svarQ; }
+    inline double SvarY()  const { return m_svarY; }
+    inline size_t DecayCId() const
+    { return (((size_t)1)<<m_if1) | (((size_t)1)<<m_if2); }
 
     /*!
       CEEX: COMIX_REAL. When set, the O(alpha) REAL correction of a
@@ -92,8 +125,39 @@ namespace YFS {
       (see ApplyComixReal for why).
     */
     int m_comixreal = 0;
-    YFS::Real_Correction *p_realprov = nullptr;
-    inline void SetRealProvider(YFS::Real_Correction *p) { p_realprov = p; }
+    /*!
+      Real matrix-element providers, indexed by photon multiplicity. One per
+      multiplicity because the n-photon amplitude comes from a DIFFERENT
+      process (this one plus n photons), not from a recursion over the
+      one-photon one. Slot 0 is unused.
+    */
+    /*!
+      Whether a virtual was ASKED FOR - i.e. whether NLO_Part contains V.
+      YFS_Base::m_looptool is the LOOP_TOOL setting and says nothing about it;
+      NLO_Base shadows that name with (p_virt != NULL), which is the real
+      answer, so the handler pushes it in.
+    */
+    bool m_hasvirtual = false;
+    inline void SetHasVirtual(bool h) { m_hasvirtual = h; }
+    /*!
+      Does CEEX build its OWN virtual into its amplitude?
+
+      Only when it was asked for one AND it is the nominated source. Without
+      the first condition CEEX added a virtual to a Born+Real run: measured on
+      e+e- -> H mu+ mu- with NLO_Part: BR, the NLO column had no virtual at all
+      (YFS.Virtual = 0) while the CEEX column still carried its own, and the
+      two differed by 36% for that reason alone. Without the second, CEEX would
+      add its own on top of a provider's.
+    */
+    inline bool CeexOwnVirtual() const
+    { return m_hasvirtual && m_ceexvirtsrc == ceexvirt::ceex; }
+
+    std::vector<YFS::Real_Correction*> m_realprov;
+    inline void SetRealProvider(size_t n, YFS::Real_Correction *p)
+    { if (m_realprov.size() <= n) m_realprov.resize(n+1, NULL);
+      m_realprov[n] = p; }
+    inline YFS::Real_Correction *RealProvider(size_t n) const
+    { return n < m_realprov.size() ? m_realprov[n] : NULL; }
     Amplitude m_comixM1;
     Amplitude m_comixraw[2];
     int m_comixdrawnhel = 0;
@@ -145,6 +209,80 @@ namespace YFS {
       double rmin = 0., rmax = 0.;   //!< per-helicity |C/H| spread
       int    nlive = 0;     //!< helicity slots carrying real weight
     };
+    /*!
+      Per-photon, per-helicity factor turning the hand-coded one-photon
+      amplitude into Comix's. Built once per event per photon and applied
+      inside the partition loop, where the soft weights sProd/Sactu live.
+      A RATIO rather than a difference, because it must survive being applied
+      to each stage's share of the photon separately: r is a constant in the
+      partition index, so sum_stages w_s B_s r = r sum_stages w_s B_s.
+    */
+    std::vector<Amplitude> m_cxratio;
+    //! Comix's beta_1 per photon, kept so it can be compared with what the
+    //! partition loop actually accumulates (m_realphot), rather than with a
+    //! standalone reconstruction of it.
+    std::vector<Amplitude> m_cxcsub;
+    std::vector<char>      m_cxratiook;
+    int m_perphoton = 0;
+    //! Per-PHOTON accounting, kept apart from the per-EVENT counters above:
+    //! one run has as many of these as it has photons, not as it has events,
+    //! and averaging the two together produces a number that is neither.
+    long   m_cxppn = 0, m_cxppfail = 0;
+    double m_cxppdev = 0.;
+    void BuildComixPhotonRatios();
+    //! |beta_1|/beta_0 against E_gamma, the real-subtraction validation
+    //! figure, for the hand-coded and the Comix beta_1 on one normalisation.
+    void Beta1Scan();
+    /*!
+      Per-helicity factor turning Comix's Born into CEEX's, built once per
+      event. Its modulus is COMIX_REAL_NORM; its phase is the per-leg spinor
+      convention difference, which the Born calibration showed is NOT constant
+      across helicities and so cannot be one number. Scale independent if the
+      two codes' couplings agree - which is exactly what using it at every
+      partition scale tests.
+    */
+    //! Per-helicity spread of the virtual factor over one event's partitions.
+    std::vector<double> m_vpmin, m_vpmax;
+    bool m_vpon = false;
+    Amplitude m_cxbalign;
+    bool      m_cxbalignok = false;
+    int       m_comixborn = 0;
+    /*
+      The normalisation between Comix's amplitudes and CEEX's is a true
+      CONSTANT only when the two differ by the spin-average alone, which is
+      the 2 -> 2 case (1/sqrt(initial spin states), exact). Past that the
+      hand-coded Born carries the process's own factors - for H l+ l- the
+      Higgs coupling and propagator - and the ratio moves with the event.
+      Calibrating it ONCE then makes the whole run depend on which event
+      happened to calibrate it: measured over three seeds, the derived
+      normalisation came out 13.587, 6.869 and 7.273, and the CEEX column with
+      COMIX_REAL followed it to -8.7%, +446% and +14.2%.
+
+      So m_normexact says whether the constant is the exact one. When it is
+      not, the real takes m_cxrnorm instead - the same ratio rebuilt per event
+      from that event's Born, which is legitimate because whatever the
+      hand-coded Born is missing multiplies the one-photon real identically
+      and cancels in the ratio.
+    */
+    bool      m_normexact = false;
+    /*
+      The DECAY-side invariant of the current partition,
+      (q_if1 + q_if2 + sum_FSR k)^2. Built in the partition loop as PY, the
+      same object the pseudo-flux numerator uses. At 2 -> 2 it equals svarX.
+    */
+    double    m_svarY = -1.;
+    double    m_cxrnorm = -1.;
+    void BuildComixBornAlignment();
+    //! Normalisation for Comix REAL amplitudes: exact constant, else per event
+    inline double RealNorm() const
+    { return (m_normexact || !(m_cxrnorm > 0.)) ? m_comixnorm : m_cxrnorm; }
+    bool ComixRealAt(const ATOOLS::Vec4D_Vector &pp, int hel, Amplitude &M1,
+                     const double propscale = -1.0);
+    bool ComixOnePhotonAmplitude(const ATOOLS::Vec4D &k, int hel,
+                                 ATOOLS::Vec4D_Vector &bp, Amplitude &M1,
+                                 ATOOLS::Vec4D &kmap);
+    bool HandOnePhotonAmplitude(const ATOOLS::Vec4D_Vector &bp,
+                                const ATOOLS::Vec4D &k, int hel, Amplitude &M1);
     bool CalibrateComixMap(ComixCalib &c);
     void DeriveComixMap();
     bool m_havecomixreal = false;
@@ -159,6 +297,17 @@ namespace YFS {
     //! Run totals of the Comix-vs-hand comparison (SHERPA_CEEX_COMIX).
     double m_cxrnormsum = 0., m_cxrmetsum = 0.;
     long   m_cxrn = 0, m_cxrfail = 0;
+    //! Events taken by the Comix path, and refused by it, per photon
+    //! multiplicity - so that "it runs" is not mistaken for "it was used".
+    std::vector<long> m_cxrnbyn, m_cxrfailbyn;
+    //! First reason the Comix path declined at each multiplicity.
+    std::vector<std::string> m_cxrwhy;
+    //! Agreement with the hand-coded amplitude, per photon multiplicity.
+    //! Aggregated over all n it is meaningless: at n = 1 the hand-coded side
+    //! is the exact one-photon matching, at n > 1 it is the partition sum,
+    //! and those are different objects being compared to different things.
+    std::vector<double> m_cxrnormbyn, m_cxrmetbyn;
+    void CountComixReal(size_t ng, bool ok);
     Amplitude  m_bornAmp, m_Amp1U, m_Amp1V;
     Amplitude  m_AmpExpo0, m_AmpExpo1;
     Amplitude  m_snapBorn, m_snapVirt, m_snapReal;
@@ -320,6 +469,14 @@ namespace YFS {
     Complex m_rawboxGG, m_rawboxGZ, m_rawboxSub, m_rawcoef;
     double     m_Q1Q2I, m_Q1Q2F, m_QIQF, m_MZ, m_gZ, m_isrformfactor, m_sQ;
     double     m_mass_I, m_mass_F, m_qe, m_qf, m_crude;
+    /*!
+      Where the outgoing fermion pair sits. At 2 -> 2 this is legs 2 and 3 and
+      the whole coupling layer said so literally. With anything else in the
+      final state it is not: for e+e- -> H l+ l- leg 2 is the HIGGS, so
+      m_qf = flavs[2].Charge() made the final-state Z coupling that of a
+      neutral scalar and CouplingZ reported "Z coupling is Zero!".
+    */
+    size_t m_if1 = 2, m_if2 = 3;
     double     m_result, m_result0, m_e;
     void RegisterDefaults();
     void Init(const Vec4D_Vector &p);

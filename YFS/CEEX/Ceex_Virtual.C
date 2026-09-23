@@ -191,5 +191,45 @@ void Ceex_Base::InfraredSubtractedME_0_1() {
           m_AmpBornVirt.m_A[Idx(j1,j2,j3,j4)] += corr;
           m_snapVirt.m_A[Idx(j1,j2,j3,j4)] = corr;   // the beta_0^1 increment
           m_beta01 += corr;   // scalar, for the diagnostics only
+          /*
+            The virtual FACTOR for this partition and helicity,
+            V = 1 + corr/born. Both sides must be the PARTITION's values -
+            taking the accumulated m_AmpBornVirt - m_AmpExpo0 against a single
+            partition's Born gives a spread of exactly 2, which is the
+            signature of the minimum hitting zero rather than a measurement.
+
+            The spread of V over an event's partitions decides how a provider's
+            virtual can be taken: flat means one evaluation per event suffices,
+            varying means one per partition, i.e. 2^n.
+          */
+          if (m_vpon) {
+            const int f(Idx(j1,j2,j3,j4));
+            if ((int)m_vpmin.size() <= f) { m_vpmin.resize(f+1, 1e30);
+                                            m_vpmax.resize(f+1, -1e30); }
+            /*
+              Only helicities carrying real weight. With a massive electron
+              the flip configurations are non-zero at the m_e/E level, and a
+              ratio there is a mass-suppression artefact, not a measurement -
+              the same trap that made the Born calibration read a spread of 2.
+            */
+            double bmax(0.);
+            for (int g = 0; g < Amplitude::NHel(); ++g)
+              bmax = Max(bmax, std::abs(born.m_A[g]));
+            /*
+              Divide by the WEIGHTED Born, fac*born, which is what
+              InfraredSubtractedME_0_0 actually adds - corr carries the same
+              fac (the soft-factor product sProd times svarX/svarQ), and
+              dividing it by the bare amplitude leaves that weight in the
+              ratio. Measured that way |V| ran to 1e22, which is the soft
+              factors, not a virtual correction.
+            */
+            const Complex b0(fac*born.m_A[f]);
+            if (std::abs(b0) > 1e-3*std::abs(fac)*bmax) {
+              const double v(std::abs(1. + corr/b0));
+              m_vpmin[f] = Min(m_vpmin[f], v);
+              m_vpmax[f] = Max(m_vpmax[f], v);
+            }
+          }
         }
+
 }

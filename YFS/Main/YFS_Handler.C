@@ -286,14 +286,30 @@ bool YFS_Handler::MakeYFS(ATOOLS::Vec4D_Vector &p)
 void YFS_Handler::MakeCEEX() {
   if (m_useceex) {
     Vec4D_Vector vv;
-    // The one-photon real provider, so CEEX: COMIX_REAL can ask it for
-    // Comix's helicity amplitudes. Re-pointed every event because the
-    // handler is shared by every process in the run card and the provider
-    // belongs to whichever one is currently selected.
-    if (p_nlo) p_ceex->SetRealProvider(p_nlo->RealProvider(1));
+    // The real providers, one per photon multiplicity, so CEEX: COMIX_REAL
+    // can ask for Comix's helicity amplitudes at whatever multiplicity the
+    // event came out with. Re-pointed every event because the handler is
+    // shared by every process in the run card and the providers belong to
+    // whichever one is currently selected.
+    if (p_nlo) {
+      for (size_t n(1); n <= p_nlo->MaxRealPhotons(); ++n)
+        p_ceex->SetRealProvider(n, p_nlo->RealProvider(n));
+      // Whether a virtual was requested at all, so CEEX's weight carries the
+      // same perturbative content the card asked for.
+      p_ceex->SetHasVirtual(p_nlo->HasVirtual());
+    }
     p_ceex->SetBorn(m_born);
     for(size_t i = 0; i < m_ev.m_plab.size(); ++i) vv.push_back(m_ev.m_bornMomenta[i]);
-    for(size_t i = 2; i < 4; ++i) vv.push_back(m_ev.m_plab[i]);
+    /*
+      Every lab final leg, not just two. BuildCeexMomenta wants
+      {beams, Born final state, lab final state} and decides it has the lab
+      set by counting - so appending only legs 2 and 3 of a longer final state
+      left it one short, and it fell back to the BORN legs, which do not
+      balance against the photons. That surfaced as Comix refusing the real
+      with "momenta do not balance", several layers away.
+    */
+    for(size_t i = 2; i < m_ev.m_plab.size(); ++i)
+      vv.push_back(m_ev.m_plab[i]);
     p_ceex->Init(vv);
     p_ceex->SetISRPhotons(m_ev.m_ISRPhotons);
     if (HasFSR()) p_ceex->SetFSRPhotons(m_ev.m_FSRPhotons);
@@ -663,6 +679,33 @@ void YFS_Handler::CalculateBeta() {
           std::cerr<<"@@@ CEEXGOLD "<<std::setprecision(17)
                    <<" rhocrude="<<r0<<" result="<<r1
                    <<" factor="<<m_ev.m_ceexfactor<<std::endl; }
+      /*
+        What makes a heavy CEEX event? The golden stream cannot answer it - it
+        carries only rhocrude/result/factor, and adding fields would change the
+        md5 the regression depends on. So this is a SEPARATE line: the factor
+        alongside the photon multiplicity and the two invariants that drive the
+        partition sum, so the tail can be binned against something physical.
+      */
+      { static const bool wp(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                             ["WEIGHT_PROBE"].Get<int>()!=0);
+        if (wp)
+          std::cerr<<"@@@ CEEXWT factor="<<m_ev.m_ceexfactor
+                   <<" nphot="<<p_ceex->NPhot()
+                   <<" mll="<<(p_ceex->SvarQ()>0.?sqrt(p_ceex->SvarQ()):-1.)
+                   <<" svarY="<<p_ceex->SvarY()
+                   <<" yfsw="<<m_ev.m_yfsweight
+          /*
+            rho0/rhocrud is the ONLY ratio here that is bounded: m_AmpExpo0
+            accumulates the Born term alone, coherently, and m_rhocrud sums the
+            same per-partition objects incoherently, so Cauchy-Schwarz gives
+            rho0/rhocrud <= 2^nphot exactly. The full factor r1/r0 is NOT
+            bounded - m_AmpExpo1 also carries beta_1 and the virtual, which
+            m_rhocrud does not - so a large factor there is not by itself a
+            defect. Print both, and test the bound on the one that has it.
+          */
+                   <<" rho0ovcr="<<(p_ceex->GetRhoCrude()>0. ?
+                                    p_ceex->GetResult0()/p_ceex->GetRhoCrude() : -1.)
+                   <<std::endl; }
       if (p_nlo) p_nlo->SetCeexVirtual(p_ceex->VirtualFactor());
     }
   }

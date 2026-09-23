@@ -172,6 +172,7 @@ namespace COMIX {
 
     void SetGauge(const size_t &n);
 
+
     void CalcJL();
 
     void SetCouplings() const;
@@ -180,6 +181,42 @@ namespace COMIX {
 
     void WriteOutGraph(std::ostream &str,Graph_Node *graph,
 		       size_t &ng,std::set<std::string> &cvs) const;
+
+  public:
+    /*
+      The ONLY way to impose a propagator scale. The mutator itself is private
+      because an imposed pole that outlives its scope silently mis-evaluates
+      every later call on this amplitude - which is not hypothetical: a reset
+      that skipped one branch left a decay line frozen at the last imposed
+      value and turned a downstream cross section negative. Construct the
+      guard, evaluate, let it go out of scope.
+
+      s goes on the S-CHANNEL line - the current carrying the whole final
+      state, equivalently the whole initial state. sdec, when positive, goes on
+      the line whose CId() is deccid or its complement; for CEEX that is the
+      resonance in the DECAY, which carries its own partition-shifted
+      invariant. s <= 0 puts every current back on its own p^2.
+    */
+    class Scoped_Prop_Scale {
+    private:
+      Amplitude *p_amp;
+    public:
+      Scoped_Prop_Scale(Amplitude *const amp, const double &s,
+                        const double &sdec = -1.0, const size_t deccid = 0);
+      ~Scoped_Prop_Scale();
+      Scoped_Prop_Scale(const Scoped_Prop_Scale &) = delete;
+      Scoped_Prop_Scale &operator=(const Scoped_Prop_Scale &) = delete;
+    };
+
+  private:
+
+    /*!
+      Move the pole of every INTERNAL current's propagator to s, or back to
+      the current's own p^2 with s <= 0. External currents are left alone -
+      they carry no propagator. Reachable only through Scoped_Prop_Scale.
+    */
+    void SetPropScale(const double &s, const double &sdec = -1.0,
+                      const size_t deccid = 0);
 
   public:
 

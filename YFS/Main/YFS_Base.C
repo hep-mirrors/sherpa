@@ -104,6 +104,12 @@ void YFS_Base::RegisterDefaults(){
   s["PHOTON_MASS"].SetDefault(0.1);
   s["CEEX"].SetDefault(0);
   s["CEEX_WEIGHT"].SetDefault(0);
+  /*
+    Where CEEX's virtual comes from. The default reproduces what the code did
+    implicitly - CEEX's own when no loop provider exists - but now says so, and
+    refuses rather than proceeding when that choice cannot be right.
+  */
+  s["CEEX_Virtual"].SetDefault(ceexvirt::ceex);
   s["Collinear_Real"].SetDefault(0);
   s["CLUSTERING_THRESHOLD"].SetDefault(10);
   s["TChannel"].SetDefault(0);
@@ -148,7 +154,7 @@ void YFS_Base::RegisterDefaults(){
   // Yisr, Yfsr AND Yint alike, so the IF cutoff belongs on the same scale.
   //
   // 0 therefore means "use FSR::Initialize()'s m_Emin", which is IR_CUTOFF/2.
-  s["IFI_Omega"].SetDefault(0.);
+  s["IFI_Omega"].SetDefault(1e-5);
   // Diagnostic clamp on the per-photon IF reweight, OFF by default (<= 0).
   // RealIFWeight cancels against beta_1 exactly, so clamping is not a safety
   // net - it injects a residue exactly where it fires. Only for bisecting.
@@ -228,6 +234,7 @@ void YFS_Base::RegisterSettings(){
   m_photonMass = s["PHOTON_MASS"].Get<double>();
   m_useceex = s["CEEX"].Get<int>();
   m_ceex_weight = s["CEEX_WEIGHT"].Get<int>();
+  m_ceexvirtsrc = s["CEEX_Virtual"].Get<ceexvirt::code>();
   m_coll_real = s["Collinear_Real"].Get<bool>();
   m_resonace_max = s["CLUSTERING_THRESHOLD"].Get<double>();
   m_nlo_weight_breakdown = s["NLO_Weight_Breakdown"].Get<int>();
@@ -284,6 +291,28 @@ void YFS_Base::RegisterSettings(){
   if (m_use_model_alpha) m_rescale_alpha = 1.;//m_rescale_alpha = alpha0/m_alpha;
   else m_rescale_alpha = m_alpha / s_model->ScalarConstant("alpha_QED");
   m_alpi = m_alpha/M_PI;
+}
+
+std::istream &YFS::operator>>(std::istream &str, ceexvirt::code &sc)
+{
+  std::string tag;
+  str>>tag;
+  if      (tag=="ceex"     || tag=="CEEX"     || tag=="0") sc=ceexvirt::ceex;
+  else if (tag=="external" || tag=="External" || tag=="1") sc=ceexvirt::external;
+  else if (tag=="helicity" || tag=="Helicity" || tag=="2") sc=ceexvirt::helicity;
+  else THROW(fatal_error, "Unknown YFS CEEX_Virtual '"+tag
+                          +"'; use ceex, external or helicity.");
+  return str;
+}
+
+std::ostream &YFS::operator<<(std::ostream &str, const ceexvirt::code &sc)
+{
+  switch (sc) {
+  case ceexvirt::ceex:     return str<<"ceex";
+  case ceexvirt::external: return str<<"external";
+  case ceexvirt::helicity: return str<<"helicity";
+  }
+  return str<<"unknown";
 }
 
 std::istream &YFS::operator>>(std::istream &str, wwscheme::code &sc)

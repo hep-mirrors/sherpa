@@ -290,10 +290,46 @@ namespace PHASIC {
     inline virtual const bool   HasInternalScale() const { return m_hasinternalscale; }
     inline virtual const double InternalScale()    const { return m_internalscale; }
 
+    /*!
+      \param propscale > 0 moves the pole of every internal propagator to this
+             value, leaving the spinors at p. That combination is not an
+             S-matrix element at any momentum configuration - it is what the
+             CEEX partition sum asks for, and the recursion can supply it
+             because it carries the propagator as a separate factor.
+    */
+    /*!
+      Move the pole of every internal propagator to s, or back to each
+      current's own p^2 with s <= 0. Only the pole moves; the numerator keeps
+      the true momenta. No-op unless the generator carries the propagator as a
+      separable factor, which the Berends-Giele recursion does.
+    */
+    /*
+      Evaluate with an imposed propagator scale and leave NOTHING set on the
+      process afterwards.
+
+      This replaces a public SetPropagatorScale mutator that callers had to
+      pair with a restore by hand. That pattern cost a real bug: an incomplete
+      restore left a decay line's pole frozen at the last imposed value for
+      every later evaluation on the process, which silently turned a
+      downstream Born+real cross section negative. The scale is not state the
+      caller should be able to leave behind, so it is an argument, and the
+      generator that honours it owns the restore.
+
+      The default ignores the scales, which is right for every generator that
+      cannot separate the propagator pole from the rest of the amplitude.
+    */
+    virtual ATOOLS::Weights_Map DifferentialWithPropScale
+    (const ATOOLS::Cluster_Amplitude &ampl,
+     ATOOLS::Variations_Mode varmode, int mode,
+     const double propscale, const double decscale = -1.0,
+     const size_t deccid = 0)
+    { return Differential(ampl, varmode, mode); }
+
     virtual bool BornSpinAmplitudes
     (const ATOOLS::Vec4D_Vector &p,
      std::vector<METOOLS::Spin_Amplitudes> &amps,
-     double *me2 = NULL) { return false; }
+     double *me2 = NULL, const double propscale = -1.0,
+     const double decscale = -1.0, const size_t deccid = 0) { return false; }
 
     virtual void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                                 std::vector<std::vector<Complex> >& cols);
