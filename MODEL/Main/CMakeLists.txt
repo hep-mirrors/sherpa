@@ -17,8 +17,15 @@ set(ModelMain_HEADERS Color_Function.H
                  Running_Fermion_Mass.H)
 
 sherpa_create_git_info(ModelMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+if (SHERPA_ENABLE_ALPHAQEDHAD)
+    list(APPEND ModelMain_SOURCES ${ALPHAQEDHAD_SRC})
+endif()
  
 add_library(ModelMain SHARED ${ModelMain_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
-sherpa_handle_shared_library(ModelMain ModelMain)
+if (SHERPA_ENABLE_ALPHAQEDHAD)
+    sherpa_handle_shared_library(ModelMain ModelMain hadr5x${SHERPA_ALPHAQEDHAD_VERSION})
+else()
+    sherpa_handle_shared_library(ModelMain ModelMain)
+endif()
 add_dependencies(ModelMain ModelMain_Git_Info)
 target_link_libraries(ModelMain PRIVATE ModelVariations)
