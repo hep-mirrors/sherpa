@@ -348,15 +348,15 @@ void Ceex_Base::ApplyComixReal()
       if (mask == m_comixflip) m0metric = met;
       if (met < bestmetric) { bestmetric = met; bestmask = mask; }
     }
-    std::cerr<<"@@@ CEEXFLIP inuse="<<m_comixflip<<" metric="<<m0metric
+    msg_Error()<<"@@@ CEEXFLIP inuse="<<m_comixflip<<" metric="<<m0metric
              <<" best="<<bestmask<<" bestmetric="<<bestmetric<<std::endl;
     const double ecm((m_momenta[0]+m_momenta[1]).Mass());
     const double x(ecm > 0. ? 2.*m_allphotons[0][0]/ecm : 0.);
-    std::cerr<<"@@@ CEEXCMP nphot=1 x="<<x
+    msg_Error()<<"@@@ CEEXCMP nphot=1 x="<<x
              <<" sum_hand="<<sh<<" sum_comix="<<sc
              <<" ratio="<<(sc != 0. ? sh/sc : 0.)
              <<" worst_elem_reldiff="<<worst<<std::endl;
-    std::cerr<<"@@@ CEEXSOFT x="<<x
+    msg_Error()<<"@@@ CEEXSOFT x="<<x
              <<" rel="<<(s0 > 0. ? sqrt(sdiff/s0) : -1.)
              <<" relabs="<<(s0 > 0. ? sqrt(sabsdiff/s0) : -1.)
              <<" handrel="<<(s0 > 0. ? sqrt(std::abs(sh-s0)/s0) : -1.)
@@ -369,7 +369,7 @@ void Ceex_Base::ApplyComixReal()
             for (int d = 0; d <= 1; ++d) {
               const Complex H(hand1.m_A[Idx(a,b,c,d)]);
               const Complex C(m_comixM1.m_A[Idx(a,b,c,d)]);
-              std::cerr<<"@@@ CEEXHEL "<<a<<b<<c<<d
+              msg_Error()<<"@@@ CEEXHEL "<<a<<b<<c<<d
                        <<" absH="<<std::abs(H)<<" absC="<<std::abs(C)
                        <<" H=("<<H.real()<<","<<H.imag()<<")"
                        <<" C=("<<C.real()<<","<<C.imag()<<")"<<std::endl;
@@ -596,14 +596,14 @@ void Ceex_Base::SoftProbe()
           const double ct(q3.PSpat() > 0. && k.PSpat() > 0.
                           ? (Vec3D(q3)*Vec3D(k))/(q3.PSpat()*k.PSpat()) : 0.);
           const double cb(k.PSpat() > 0. ? k[3]/k.PSpat() : 0.);
-          std::cerr<<"@@@ CEEXSOFTPHASE lam="<<lam<<" nlive="<<nl2
+          msg_Error()<<"@@@ CEEXSOFTPHASE lam="<<lam<<" nlive="<<nl2
                    <<" |r|=["<<amin<<","<<amax<<"]"
                    <<" arg(r)=["<<phmin<<","<<phmax<<"]"
                    <<" hel="<<hg<<" cos_kf="<<ct<<" cos_kbeam="<<cb
                    <<" phi_k="<<atan2(k[2], k[1])
                    <<" sQ="<<s2<<std::endl;
         } else {
-          std::cerr<<"@@@ CEEXSOFTPHASE lam="<<lam
+          msg_Error()<<"@@@ CEEXSOFTPHASE lam="<<lam
                    <<" Comix Born unavailable"<<std::endl;
         }
       }
@@ -630,7 +630,7 @@ void Ceex_Base::SoftProbe()
       if (mask == (m_comixflip ^ 16)) phometh = met;
       if (met < bmet) { bmet = met; bm = mask; }
     }
-    std::cerr<<"@@@ CEEXSOFTFLIP lam="<<lam<<" inuse="<<m_comixflip
+    msg_Error()<<"@@@ CEEXSOFTFLIP lam="<<lam<<" inuse="<<m_comixflip
              <<" metric="<<inusemet<<" photonflipped="<<phometh
              <<" hel="<<hg
              <<" best="<<bm<<" bestmetric="<<bmet<<std::endl;
@@ -653,11 +653,11 @@ void Ceex_Base::SoftProbe()
                                           - mel*mel/(pk2*pk2) : 0.);
       double nb(0.);
       for (int f = 0; f < nh; ++f) nb += std::norm(B.m_A[f]);
-      std::cerr<<"@@@ CEEXEIKFLAT lam="<<lam
+      msg_Error()<<"@@@ CEEXEIKFLAT lam="<<lam
                <<" x="<<(2.*k[0]/sqrt(m_s))
                <<" ratio="<<((Scl != 0. && nb > 0.) ? sc/(Scl*nb) : -1.)
                <<std::endl; }
-    std::cerr<<"@@@ CEEXSOFTSCAN lam="<<lam
+    msg_Error()<<"@@@ CEEXSOFTSCAN lam="<<lam
              <<" x="<<2.*k[0]/sqrt(dabs((p1+p2).Abs2()))
              <<" R="<<(shd > 0. ? sc/shd : -1.)
              <<" sum_comix="<<sc<<" sum_eikborn="<<shd
@@ -991,22 +991,137 @@ bool Ceex_Base::ComixOnePhotonAmplitude(const Vec4D &k, int hel,
 }
 
 
-/*!
-  One ratio per photon, built before the partition loop.
 
-  Applied inside the loop it turns every partition's share of that photon into
-  Comix's amplitude, because the ratio is constant in the partition index and
-  the shares add: sum_s w_s B_s r = r sum_s w_s B_s, and sum_s w_s B_s is the
-  hand-coded amplitude the ratio divides by.
-
-  The approximation this makes, stated plainly: r is one number per helicity,
-  so the SAME correction is applied to the photon's initial-state and
-  final-state shares. It would be exact if Comix could be asked for the
-  amplitude with only one stage's emitters radiating, which it cannot. The
-  two shares agree in the soft limit, where both reduce to the eikonal, so
-  the approximation is in the hard region - the same region where the
-  hand-coded and Comix amplitudes differ by the 9% that is not yet explained.
+/*
+  Closure test for the lambda subtraction, with NO hand-coded reference.
+  M1 = s beta_0 + beta_1 defines s, so solving
+        s_implied(hel) = (M1(hel) - beta_1(hel)) / beta_0(hel)
+  gives the soft factor the Comix amplitudes actually obey. If the lambda
+  subtraction is right, s_implied is the SAME for every live helicity (the
+  eikonal is a scalar, it cannot depend on hel) and its ratio to CEEX's own
+  Sfactor is the convention constant.
 */
+void Ceex_Base::Beta1Closure()
+{
+  if (m_allphotons.empty()) return;
+  /*
+    The SOFTEST photon of the event, not "events with one photon". One-photon
+    events are inherently HARD - a single emission that survives took most of
+    the energy, measured x_gamma 0.76-0.94 - and the identity being tested
+    needs beta_0 at the reduced kinematics, which only coincides with the
+    unreduced one when the photon is soft. ComixRealAt evaluates the
+    one-photon process for whichever photon it is handed, so any photon of any
+    event is a valid configuration for this test.
+  */
+  size_t js(0);
+  for (size_t i(1); i < m_allphotons.size(); ++i)
+    if (m_allphotons[i][0] < m_allphotons[js][0]) js = i;
+  const int nh(Amplitude::NHel());
+  const int msk(m_comixflip & (Amplitude::NHel()-1));
+  const double rn(RealNorm());
+  if (!(rn > 0.)) return;
+  Amplitude B0, M1, B1;
+  if (!ComixBornAmplitude(m_pceex, B0, NULL, m_svarQ)) return;
+  Vec4D_Vector pp(m_pceex); pp.push_back(m_allphotons[js]);
+  if (!ComixRealAt(pp, m_PhoHel[js], M1, m_svarQ)) return;
+  if (!ComixBeta1At(m_allphotons[js], m_PhoHel[js], m_svarQ, B1)) return;
+  const Complex qratio(m_qe != 0. ? -m_qf/m_qe : 0., 0.);
+  const Complex sceex(Sfactor(m_pceex[0], m_pceex[1],
+                              m_allphotons[js], m_PhoHel[js])
+                      + qratio*Sfactor(m_pceex[m_if1], m_pceex[m_if2],
+                                       m_allphotons[js], m_PhoHel[js]));
+  double nb(0.);
+  for (int f(0); f < nh; ++f) nb += std::norm(B0.m_A[f]);
+  nb = sqrt(nb);
+  if (!(nb > 0.) || std::abs(sceex) == 0.) return;
+  int nlive(0); Complex first(0.,0.); double worst(0.);
+  for (int f(0); f < nh; ++f) {
+    if (std::abs(B0.m_A[f]) < 1e-3*nb) continue;
+    const Complex m1((M1.m_A[f ^ msk])/rn), b1((B1.m_A[f ^ msk])/rn);
+    const Complex si((m1 - b1)/B0.m_A[f]);
+    if (nlive++ == 0) first = si;
+    else if (std::abs(first) > 0.)
+      worst = Max(worst, std::abs(si/first - 1.));
+  }
+  if (nlive < 2 || std::abs(first) == 0.) return;
+  const double xg(m_s > 0. ? 2.*m_allphotons[js][0]/sqrt(m_s) : -1.);
+  std::cerr<<"@@@ B1CLOSE xg="<<xg<<" nlive="<<nlive
+           <<" hel_spread="<<worst
+           <<" s_implied_over_Sceex="<<std::abs(first/sceex)
+           <<" arg="<<std::arg(first/sceex)<<std::endl;
+}
+
+
+/*
+  The YFS theorem fixes the amplitude-level soft factor with no reference to
+  anyone's conventions: summing s(k,hel) s*(k,hel) over the two photon
+  helicities must give the ordinary (squared-level) eikonal
+
+     Stilde(k) = - sum_ij Q_i Q_j th_i th_j (p_i.p_j)/((p_i.k)(p_j.k))
+                 + sum_i  Q_i^2 m_i^2 / (p_i.k)^2
+
+  up to the overall e^2. So the ratio of the two IS the normalisation of
+  Sfactor, measured rather than assumed - and once s is pinned,
+  beta_1 = M1 - s M0 is fully determined.
+*/
+void Ceex_Base::SoftNormCheck(const Vec4D &k)
+{
+  if (m_pceex.size() < 4) return;
+  // the charged legs with their YFS signs: incoming +, outgoing -
+  std::vector<Vec4D>  pl;
+  std::vector<double> Q, th;
+  pl.push_back(m_pceex[0]);     Q.push_back(m_qe); th.push_back(+1.);
+  pl.push_back(m_pceex[1]);     Q.push_back(-m_qe); th.push_back(+1.);
+  pl.push_back(m_pceex[m_if1]); Q.push_back(m_qf); th.push_back(-1.);
+  pl.push_back(m_pceex[m_if2]); Q.push_back(-m_qf); th.push_back(-1.);
+  double st(0.);
+  for (size_t i(0); i < pl.size(); ++i) {
+    const double pik(pl[i]*k);
+    if (pik == 0.) return;
+    for (size_t j(0); j < pl.size(); ++j) {
+      const double pjk(pl[j]*k);
+      if (pjk == 0.) return;
+      st -= Q[i]*Q[j]*th[i]*th[j]*(pl[i]*pl[j])/(pik*pjk);
+    }
+    st += Q[i]*Q[i]*pl[i].Abs2()/(pik*pik);
+  }
+  // sum over the two photon helicities of |s|^2, with CEEX's own Sfactor
+  const Complex qratio(m_qe != 0. ? -m_qf/m_qe : 0., 0.);
+  double ss(0.);
+  for (int h(-1); h <= 1; h += 2) {
+    const Complex sa(Sfactor(m_pceex[0], m_pceex[1], k, h)
+                     + qratio*Sfactor(m_pceex[m_if1], m_pceex[m_if2], k, h));
+    ss += std::norm(sa);
+  }
+  if (st == 0.) return;
+  std::cerr<<"@@@ SOFTNORM xg="<<(m_s>0.?2.*k[0]/sqrt(m_s):-1.)
+           <<" sum_hel|s|^2="<<ss<<" Stilde="<<st
+           <<" ratio="<<(ss/st)<<std::endl;
+}
+
+bool Ceex_Base::ComixBeta1At(const Vec4D &k, int hel,
+                             const double propscale, Amplitude &B1)
+{
+  const double xg(m_s > 0. ? 2.*k[0]/sqrt(m_s) : 0.);
+  static const double X_EIK(1e-4);
+  // Already eikonal: beta_1 is below the precision of the difference, and it
+  // vanishes there anyway. Zero is the honest answer, not a hand-coded one.
+  if (!(xg > 10.*X_EIK)) {
+    for (int f(0); f < Amplitude::NHel(); ++f) B1.m_A[f] = Complex(0., 0.);
+    return true;
+  }
+  const double lam(X_EIK/xg);
+  Vec4D_Vector pp(m_pceex), pps(m_pceex);
+  pp.push_back(k);
+  pps.push_back(lam*k);
+  Amplitude C, Cs;
+  if (!ComixRealAt(pp,  hel, C,  propscale)) return false;
+  if (!ComixRealAt(pps, hel, Cs, propscale)) return false;
+  for (int f(0); f < Amplitude::NHel(); ++f)
+    B1.m_A[f] = C.m_A[f] - lam*Cs.m_A[f];
+  return true;
+}
+
 void Ceex_Base::BuildComixPhotonRatios()
 {
   const size_t ng(m_allphotons.size());
@@ -1269,7 +1384,7 @@ void Ceex_Base::BuildComixPhotonRatios()
         double nb(0.);
         for (int f = 0; f < nh; ++f)
           nb += std::norm(Bc.m_A[f ^ (m_comixflip & fmaskx)]);
-        std::cerr<<"@@@ SOFTRAT Ek="<<m_allphotons[j][0]
+        msg_Error()<<"@@@ SOFTRAT Ek="<<m_allphotons[j][0]
                  <<" x="<<(2.*m_allphotons[j][0]/sqrt(m_s))
                  <<" |M1|^2/(S~|B|^2)="<<(sden>0.? snum/sden : -1.)
                  <<" eik_flat="<<((Scl != 0. && nb > 0.)
@@ -1291,11 +1406,11 @@ void Ceex_Base::BuildComixPhotonRatios()
           nsb  += std::norm(SB);
           ndir += std::norm(C.m_A[f] - SB);
         }
-        std::cerr<<"@@@ BETA1DIR Ek="<<m_allphotons[j][0]
+        msg_Error()<<"@@@ BETA1DIR Ek="<<m_allphotons[j][0]
                  <<" |M1|="<<sqrt(nc)<<" |S*B|="<<sqrt(nsb)
                  <<" |M1|/|S*B|="<<(nsb>0.? sqrt(nc/nsb) : -1.)
                  <<" |M1-S*B|/|H|="<<(nh2>0.? sqrt(ndir/nh2) : -1.)<<std::endl;
-        std::cerr<<"@@@ BETA1 Ek="<<m_allphotons[j][0]
+        msg_Error()<<"@@@ BETA1 Ek="<<m_allphotons[j][0]
                  <<" |M1_comix|="<<sqrt(nc)
                  <<" |Csub|="<<sqrt(ncs)
                  <<" |H_hand|="<<sqrt(nh2)

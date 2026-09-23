@@ -201,6 +201,7 @@ void Ceex_Base::Calculate() {
 
   m_justdumped = false;
   m_rhocrud = 0.0;
+  m_b1n = 0; m_b1min = m_b1max = m_b1sum = m_b1sq = 0.;  // beta_1 spread, per event
   m_beta10 = 0.0;
   m_beta01 = 0.0;
   m_beta00 = 0.0;
@@ -362,6 +363,27 @@ void Ceex_Base::Calculate() {
     MakeEWFF(m_sp, cos(m_pceex[m_if1].Theta()));
     MakeBoxMandelstams(PX);
 
+    /*
+      Does Comix's beta_1 depend on the partition? If it does not, one
+      evaluation pair per photon serves all 2^n partitions and the per-photon
+      real is affordable; if it does, the cost is 2 x n x 2^n per event.
+    */
+    { static const bool b1chk(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                              ["BETA1_PARTITION_CHECK"].Get<int>() != 0);
+      if (b1chk && !m_allphotons.empty()) {
+        Amplitude B1;
+        if (ComixBeta1At(m_allphotons[0], m_PhoHel[0], m_sp, B1)) {
+          double n2(0.);
+          for (int f(0); f < Amplitude::NHel(); ++f) n2 += std::norm(B1.m_A[f]);
+          const double nb(sqrt(n2));
+          if (nb > 0.) {
+            if (m_b1n == 0) { m_b1min = m_b1max = nb; }
+            else { m_b1min = Min(m_b1min, nb); m_b1max = Max(m_b1max, nb); }
+            m_b1sum += nb; m_b1sq += nb*nb;
+            ++m_b1n;
+          }
+        }
+      } }
     InfraredSubtractedME_0_0();
     // Only when a virtual was asked for and CEEX is its source; see
     // Ceex_Base::CeexOwnVirtual.
@@ -387,6 +409,17 @@ void Ceex_Base::Calculate() {
     PartitionPlus(last);
     if (last == 2) break;
   }
+  { static const bool b1chk(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                            ["BETA1_PARTITION_CHECK"].Get<int>() != 0);
+    if (b1chk && m_b1n > 1 && m_b1min > 0.)
+      { const double mean(m_b1sum/m_b1n);
+        const double var(m_b1sq/m_b1n - mean*mean);
+        std::cerr<<"@@@ B1PART nphot="<<m_allphotons.size()
+                 <<" nparts="<<m_b1n
+                 <<" spread="<<(m_b1max/m_b1min)
+                 <<" maxovmean="<<(mean>0.?m_b1max/mean:-1.)
+                 <<" cv="<<(mean>0.?sqrt(var>0.?var:0.)/mean:-1.)
+                 <<std::endl; } }
   /*
     Comix's beta_1 against what the partition loop ACTUALLY accumulated for
     each photon. m_realphot[j] is that object - the stage pieces with their
@@ -493,6 +526,16 @@ void Ceex_Base::Calculate() {
   ApplyComixReal();
 
   MakeRho();
+  { static const bool bc(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                         ["BETA1_CLOSURE"].Get<int>() != 0);
+    if (bc) Beta1Closure(); }
+  { static const bool sn(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                         ["SOFT_NORM_CHECK"].Get<int>() != 0);
+    if (sn && !m_allphotons.empty()) {
+      size_t js(0);
+      for (size_t i(1); i < m_allphotons.size(); ++i)
+        if (m_allphotons[i][0] < m_allphotons[js][0]) js = i;
+      SoftNormCheck(m_allphotons[js]); } }
 
   static const double dumpxmin(ATOOLS::Settings::GetMainSettings()["CEEX"]["DUMP_XMIN"].Get<double>());
   static const size_t dumpn(ATOOLS::Settings::GetMainSettings()["CEEX"]["DUMP_NPHOT"].Get<int>());

@@ -271,6 +271,8 @@ namespace YFS {
       same object the pseudo-flux numerator uses. At 2 -> 2 it equals svarX.
     */
     double    m_svarY = -1.;
+    //! beta_1 partition spread, see CEEX: BETA1_PARTITION_CHECK
+    double    m_b1min = 0., m_b1max = 0., m_b1sum = 0., m_b1sq = 0.;  int m_b1n = 0;
     double    m_cxrnorm = -1.;
     void BuildComixBornAlignment();
     //! Normalisation for Comix REAL amplitudes: exact constant, else per event
@@ -278,6 +280,27 @@ namespace YFS {
     { return (m_normexact || !(m_cxrnorm > 0.)) ? m_comixnorm : m_cxrnorm; }
     bool ComixRealAt(const ATOOLS::Vec4D_Vector &pp, int hel, Amplitude &M1,
                      const double propscale = -1.0);
+    /*
+      Comix's IR-subtracted one-photon amplitude for photon k, at an imposed
+      propagator scale. beta_1 = M1(k) - lambda M1(lambda k): under k -> lam k
+      the polarisation vector depends only on the photon DIRECTION and every
+      p.k picks up one lambda, so the eikonal obeys s(lam k) = s(k)/lam
+      exactly and the soft piece cancels between the two terms. No
+      polarisation vector, no relative phase, no projection - both terms are
+      Comix's own amplitude at CEEX's own (non-conserving) arguments.
+    */
+    /*
+      The beta-provider form of the weight, built WITHOUT the partition sum:
+        A(hel) = beta_0 + sum_i beta_1(k_i)/s_i + ...
+        rho    = sum_hel |A|^2
+      Run alongside the partition sum so the two can be compared - the
+      partition sum is the IFI reference until the beta form is shown to
+      reproduce it. Returns false if it cannot handle this multiplicity.
+    */
+    void Beta1Closure();
+    void SoftNormCheck(const ATOOLS::Vec4D &k);
+    bool ComixBeta1At(const ATOOLS::Vec4D &k, int hel,
+                      const double propscale, Amplitude &B1);
     bool ComixOnePhotonAmplitude(const ATOOLS::Vec4D &k, int hel,
                                  ATOOLS::Vec4D_Vector &bp, Amplitude &M1,
                                  ATOOLS::Vec4D &kmap);

@@ -88,18 +88,32 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
     projection returns NaN, silently - no error, no warning, just a matrix
     element that is not a number.
 
-    So refuse the combination up front rather than let a run produce NaN and
-    be debugged twice. With MOMENTUM_PROJECTION off the same call reproduces
-    the hand-coded partition Born to 1.7e-8 on every partition.
+    This used to be REFUSED up front, with the user told to set
+    COMIX: MOMENTUM_PROJECTION: 0 by hand. Set it here instead: a run that asks
+    for the Comix Born should not also have to know what that implies for
+    Comix. With the projection off the same call reproduces the hand-coded
+    partition Born to 1.7e-8 on every partition.
+
+    It is still a GLOBAL switch, and it is also Comix's collinear-stability
+    fix, so this degrades every other Comix evaluation in the run. Scoping it
+    to the CEEX calls is the right answer and needs a hook PHASIC++ owns and
+    COMIX fulfils: Real_Correction holds a Process_Base, so a COMIX-side
+    override is not reached for the real, and the real is where it matters most
+    (measured on H l+ l-: +101% unscoped against +0.29%). Until that exists,
+    say so loudly rather than let the setting be forgotten.
   */
-  if ((s["PARTITION_BORN_CHECK"].Get<int>() != 0 || m_comixborn || m_perphoton)
-      && ss["COMIX"]["MOMENTUM_PROJECTION"].SetDefault(true).Get<bool>())
-    THROW(fatal_error,
-          "CEEX asks Comix for the partition Born, whose arguments do not"
-          " conserve momentum by construction. ProjectWideMomenta turns that"
-          " into a silent NaN. Set COMIX: {MOMENTUM_PROJECTION: 0}, and note"
-          " that it is also Comix's collinear-stability fix, so weigh what"
-          " else in the run depends on it.");
+  if (s["PARTITION_BORN_CHECK"].Get<int>() != 0 || m_comixborn || m_comixreal
+      || m_perphoton) {
+    Scoped_Settings comix{ ss["COMIX"] };
+    if (comix["MOMENTUM_PROJECTION"].SetDefault(true).Get<bool>()) {
+      comix["MOMENTUM_PROJECTION"].OverrideScalar<bool>(false);
+      msg_Info()<<METHOD<<"(): CEEX asks Comix for amplitudes at momenta that"
+                <<" do not conserve by construction, so COMIX:"
+                <<" MOMENTUM_PROJECTION has been turned off for this run."
+                <<" That is also Comix's collinear-stability fix, so weigh"
+                <<" what else in the run depends on it."<<std::endl;
+    }
+  }
   string widthscheme = ss["WIDTH_SCHEME"].Get<string>();
   m_fixedwidth = (widthscheme == "Fixed" || widthscheme == "CMS");
   m_flavs = flavs;
@@ -125,18 +139,29 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
   */
   static const int devmultileg(s["DEV_MULTILEG"].SetDefault(0).Get<int>());
   if (flavs.size() != 4) {
-    if (!devmultileg)
-      THROW(fatal_error, "CEEX is only for 2->2");
-    msg_Error()<<METHOD<<"(): CEEX: DEV_MULTILEG is set and this process has "
-               <<flavs.size()<<" legs. CEEX's hand-coded amplitude is the"
-               <<" four-fermion spinor structure; whether this process reduces"
-               <<" to it has to be shown per process, not assumed. Cross-check"
-               <<" against CEEX: COMIX_BORN, which is derived rather than"
-               <<" hand-coded, before believing the CEEX column. Note also"
-               <<" that CEEX's own virtual is 2 -> 2 (use YFS:"
-               <<" CEEX_Virtual: external) and the Comix real covers one"
-               <<" photon."<<std::endl;
+    /*
+      The throw is about the BORN, so it applies only when the hand-coded Born
+      is the one selected. That used to be unconditional, which was right while
+      the hand-coded Born was the default - it indexes a four-fermion T/U
+      structure and on more legs quietly builds the wrong amplitude. Now that
+      COMIX_BORN is on by default the Born is derived per process and general,
+      so the binding reason is gone and only the warning below is owed.
+
+      DEV_MULTILEG remains the override for the hand-coded case.
+    */
+    if (!m_comixborn && !devmultileg)
+      THROW(fatal_error, "CEEX past 2 -> 2 needs the Comix Born. Either leave"
+            " CEEX: COMIX_BORN at its default, or set CEEX: DEV_MULTILEG to"
+            " use the hand-coded 2 -> 2 spinor structure anyway.");
+    msg_Error()<<METHOD<<"(): this process has "<<flavs.size()<<" legs."
+               <<" The Born is taken from Comix and is general, but CEEX's own"
+               <<" virtual is 2 -> 2 (use YFS: CEEX_Virtual: external) and the"
+               <<" Comix real covers one photon, above which the hand-coded"
+               <<" beta_1 runs. Whether this process reduces to CEEX's"
+               <<" four-fermion structure has to be shown, not assumed."
+               <<std::endl;
   }
+
   /*
     The outgoing FERMION pair, by inspection rather than by position. Neutral
     fermions count - e+e- -> nu nubar is a legitimate CEEX process - so the
@@ -244,7 +269,13 @@ void Ceex_Base::RegisterDefaults()
   s["WEAK"].SetDefault(1);
   // Take the O(alpha) real (beta_1) from Comix's helicity amplitudes instead
   // of the hand-coded spinor algebra. Off by default.
-  s["COMIX_REAL"].SetDefault(0);
+  /*
+    ON by default, same reasoning - but it applies at ONE photon only, so a
+    sample with multiphoton events mixes the Comix real with the hand-coded
+    beta_1 above one photon (see ApplyComixReal). COMIX_REAL: 0 selects the
+    hand-coded real throughout.
+  */
+  s["COMIX_REAL"].SetDefault(1);
   /*
     Both of these used to be fitted numbers (26 and 0.5). They are now DERIVED
     at the Born, by Ceex_Base::CalibrateComixMap, which is why the defaults
@@ -275,6 +306,10 @@ void Ceex_Base::RegisterDefaults()
     needs only the one-photon process, which always exists.
   */
   s["COMIX_REAL_PER_PHOTON"].SetDefault(0);
+  s["BETA1_PARTITION_CHECK"].SetDefault(0);  // @@@ B1PART
+  s["BETA1_CLOSURE"].SetDefault(0);          // @@@ B1CLOSE
+  s["SOFT_NORM_CHECK"].SetDefault(0);        // @@@ SOFTNORM
+  s["SFAC_CALIB"].SetDefault(0);             // @@@ SFACCAL
   // How many events the soft probe walks down the lambda ladder. Each rung
   // costs a Comix evaluation and perturbs the random sequence, so it is a
   // diagnostic budget, not something to leave large.
@@ -288,7 +323,13 @@ void Ceex_Base::RegisterDefaults()
     step that makes the partition sum process independent. Requires
     COMIX: MOMENTUM_PROJECTION: 0 - see the check in the constructor.
   */
-  s["COMIX_BORN"].SetDefault(0);
+  /*
+    ON by default: the Comix Born is the DERIVED object and the hand-coded
+    2 -> 2 spinor algebra is the fallback. At 2 -> 2 it reproduces the
+    hand-coded CEEX weight to round-off; past 2 -> 2 the hand-coded Born is not
+    the right amplitude at all. COMIX_BORN: 0 selects the hand-coded one.
+  */
+  s["COMIX_BORN"].SetDefault(1);
   // @@@ BORNALIGN: is the Comix -> CEEX Born alignment scale independent?
   s["BORN_ALIGN_CHECK"].SetDefault(0);
   // @@@ BETA1: the Comix hard remainder against the hand-coded one, vs E_gamma
