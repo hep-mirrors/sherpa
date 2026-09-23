@@ -154,7 +154,22 @@ void YFS_Base::RegisterDefaults(){
   // Yisr, Yfsr AND Yint alike, so the IF cutoff belongs on the same scale.
   //
   // 0 therefore means "use FSR::Initialize()'s m_Emin", which is IR_CUTOFF/2.
-  s["IFI_Omega"].SetDefault(1e-5);
+  /*
+    0 is a SENTINEL, not the omega -> 0 limit: it selects a different branch in
+    the IF form factor. Measured on small-angle Bhabha at the Z pole, which is
+    the case that exposes it because the initial and final electron are nearly
+    collinear so the IF dipole invariant is t:
+
+        IFI_Omega   0      sigma 783240   (analytic 4 pi alpha^2/t_min: 869377)
+                    1e-5         2.85e6
+                    5e-4         2.05e6
+
+    i.e. NOT monotonic in omega - 0 is off the curve entirely. The default had
+    been changed from 0. to 1e-5 without a note, which inflated small-angle
+    Bhabha by a factor 3.6. It went unnoticed because every other card in the
+    tree pins IFI_Omega explicitly.
+  */
+  s["IFI_Omega"].SetDefault(0.);
   // Diagnostic clamp on the per-photon IF reweight, OFF by default (<= 0).
   // RealIFWeight cancels against beta_1 exactly, so clamping is not a safety
   // net - it injects a residue exactly where it fires. Only for bisecting.
