@@ -130,7 +130,8 @@ Complex FF_0_PPP_Base::operator()(const ATOOLS::Vec4D_Vector& moms) {
   // the same, as do the FF_KS/FF_RChiPT base-class defaults below.
   switch (m_ffmodel) {
   case ff_model::none:    return m_norm;
-  case ff_model::KS:      return m_norm * FF_KS(s123,s12,s13);
+  case ff_model::KS:
+  case ff_model::KS_flatte: return m_norm * FF_KS(s123,s12,s13);
   // KS_CLEO (102): CLEO-fitted alternative parametrizations - 3pi's
   // "CLEO/default-TAUOLA" current and Kpipi's "CLEO K1 data-driven
   // alternative" (see tau_two_meson_currents_KS_RChiT.tex). Routed
@@ -206,7 +207,7 @@ protected:
   // current (nonzero here, unlike the pure-pion modes where G-parity
   // forbids it) - see that class below.
   Summed_Propagator * p_TK1a, * p_TKstar1_pi0K;
-  double  m_xiK1;
+  Complex m_xiK1;
 
   // --- RChL2012 (1203.3955 Sec.2.1 + 1310.1053 sigma extension) ---
   // Defaults below are the BaBar-fitted values of Table I of
@@ -250,21 +251,24 @@ protected:
   // own closed-form running-width prescription (Eq.(eq:CLEO-running-
   // width)), not Sherpa's generic decay-channel-based running widths.
   //
-  // IMPORTANT CAVEAT (please verify): the note gives F1^CLEO, F2^CLEO,
-  // F3^CLEO as three SEPARATELY nonzero transverse axial form factors,
-  // but the general PPPcurrent basis states "only two transverse axial
-  // structures are independent" - F1,F2,F3 multiplying (p2-p3),
-  // (p3-p1),(p1-p2) with coefficients c1,c2,c3 are NOT all independent
-  // (those three vectors sum to zero identically). This implementation
-  // ASSUMES c1=c2=c3=1 (the natural reading when all three are given
-  // separately, since the note never restates c1,c2,c3 specifically
-  // for the CLEO variant - only for KS90/RChL2012, where c3=0) and
-  // reduces the three-term sum onto this class's existing two-term
-  // (F1,F2) architecture via
-  //   F1_eff = F1^CLEO - F3^CLEO,   F2_eff = F2^CLEO - F3^CLEO,
-  // using the identity (p1-p2)=-(p2-p3)-(p3-p1). If the real
-  // convention uses different c_i, this reduction needs revisiting -
-  // flagged rather than silently assumed correct.
+  // BASIS REDUCTION (previously flagged as a caveat, now resolved by
+  // the note): the note gives F1^CLEO, F2^CLEO, F3^CLEO as three
+  // analytic functions, but the general PPPcurrent basis states "only
+  // two transverse axial structures are independent" - F1,F2,F3
+  // multiplying (p2-p3),(p3-p1),(p1-p2) with coefficients c1,c2,c3 are
+  // NOT all independent (those three vectors sum to zero identically).
+  // The note's "Active transverse basis in the default TAUOLA-CLEO
+  // current" now states the active coefficients explicitly:
+  //   c1=+2sqrt2/3,  c2=-2sqrt2/3,  c3=0,  c4=c5=0,
+  // so the reduction is just F1_eff=F1^CLEO, F2_eff=F2^CLEO with NO F3
+  // term (Eq.(eq:CLEO-two-slot-map)); the generic fold
+  // F_i-(c3/c_i)F3 (Eq.(eq:CLEO-generic-fold)) vanishes. An earlier
+  // version of this class assumed c1=c2=c3=1 and subtracted F3 - the
+  // note's "Implementation warning" says explicitly that this is not
+  // the default TAUOLA-CLEO convention. See FF_KS below for the slot
+  // assignment that goes with it. CLEO_F3term is kept (correct as
+  // written, coefficient zero in this current, useful for comparing
+  // against a redundant three-vector basis).
   double  m_MCLEOrho, m_GCLEOrho, m_MCLEOrhop, m_GCLEOrhop;
   double  m_MCLEOsigma, m_GCLEOsigma, m_MCLEOf0, m_GCLEOf0, m_MCLEOf2, m_GCLEOf2;
   double  m_MCLEOa1, m_GCLEOa1, m_MCLEOa1p, m_GCLEOa1p;
@@ -313,7 +317,7 @@ public :
 F1_0_PiPlusPiZeroPiZero::F1_0_PiPlusPiZeroPiZero(const FF_Parameters & params)  :
   FF_0_PPP_Base(params),
   p_a1s(NULL), p_rhos(NULL),
-  p_TK1a(NULL), p_TKstar1_pi0K(NULL), m_xiK1(0.33),
+  p_TK1a(NULL), p_TKstar1_pi0K(NULL), m_xiK1(0.33,0.),
   m_isF2(false), 
   m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.))
 {
@@ -392,7 +396,7 @@ void F1_0_PiPlusPiZeroPiZero::Construct_3Pi(const FF_Parameters & params) {
     m_mpi2_iso   = sqr((Flavour(kf_pi).HadMass()*1.+
 			2.*Flavour(kf_pi_plus).HadMass())/3.);
     m_lambda_p   = RChL::Lambda_p(m_F_rchl,m_FA_rchl,m_GV_rchl);
-    m_lambda_pp  = RChL::Lambda_pp(m_FV_rchl,m_GV_rchl,m_lambda_p);
+    m_lambda_pp  = RChL::Lambda_pp(m_F_rchl,m_GV_rchl,m_lambda_p);
     if (m_mode==FF_0_PPP_mode::piM_piP_piP) {
       // Table I of 1310.1053: default (unscaled) sigma couplings.
       m_alphasigma = (*params.p_model)("alphasigma_rchl3pi",-8.795938);
@@ -490,7 +494,26 @@ void F1_0_PiPlusPiZeroPiZero::Construct_Pi0Pi0K(const FF_Parameters & params) {
 		    (3.*m_fpi), 0.);
   // xi: relative K1(1270) admixture in T_K1^(a), Eq.(32)-(33) of
   // FM95: |xi|=0.33, sign preferred by data is xi=+0.33 (Sec.VII).
-  m_xiK1 = (*params.p_model)("xiK1",0.33);
+  // xi_K1 weights K1(1270) against K1(1400) in T_K1^(a), Eq.(9):
+  //   T_K1^(a) = BW_K1(1400) + xi_K1 BW_K1(1270).
+  // FM95 quote a real 0.33, but that was fitted alongside THEIR K1
+  // line shapes.  Exposed as a complex here for two reasons: the two
+  // physical K1 states are K1A/K1B (3P1/1P1) mixtures, so a relative
+  // PHASE between them is physically expected and a real coefficient
+  // cannot produce it; and the magnitude needs re-deriving whenever the
+  // K1 line shapes change - as they did when K1(1270) was given its
+  // PDG channels (see K1_Decays.C).
+  //
+  // The default is MODEL-DEPENDENT.  FM95's 0.33 is not a fit: Eq.(33)
+  // DERIVES |xi| = 0.33 from Gamma(K1(1270)->K*pi)/Gamma(K1(1400)->K*pi) after
+  // phase-space correction, against a fixed-width K1(1270).  Model 106 replaces
+  // that K1(1270) with a Flatte, so the ratio the derivation rests on no longer
+  // holds and xi has to be re-determined; 0.70 is the measured optimum against
+  // BaBar 2007 / Belle 2010 / CLEO 2000.  Carrying FM95's 0.33 into 106 would
+  // silently give a much worse model (chi2/ndf 40.9 vs 10.6 at 150k).
+  m_xiK1 = ReadComplexParam(params.p_model,"xiK1Mag",
+                            m_ffmodel==ff_model::KS_flatte ? 0.70 : 0.33,
+                            "xiK1Phase");
 
   // T_K1^(a) = [BW_K1(1400) + xi*BW_K1(1270)] / (1+xi), Eq.(32).
   // K1(1270)/K1(1400) lineshapes built and registered (K1_Decays.H/.C,
@@ -511,7 +534,7 @@ void F1_0_PiPlusPiZeroPiZero::Construct_Pi0Pi0K(const FF_Parameters & params) {
     Propagator_Base * K11270 = new BreitWigner(wK11270);
     p_TK1a = new Summed_Propagator();
     p_TK1a->Add(K11400, Complex(1.,0.));
-    p_TK1a->Add(K11270, Complex(m_xiK1,0.));
+    p_TK1a->Add(K11270, m_xiK1);
   }
   // T_K*^(1) = [BW_K*(892) + beta_K* BW_K*(1410)]/(1+beta_K*), Eq.(10).
   double betaKst = (*params.p_model)("betaKstar_pi0pi0K",-0.135);
@@ -717,15 +740,36 @@ FF_KS(const double & s123,const double & s12,const double & s13) {
     // bilinear; the note itself says so explicitly for an analogous
     // overall-sign choice) and omitted here, consistent with the
     // existing KS90 branch above, which also does not apply it.
+    // The earlier CAVEAT above is now RESOLVED by the note, in two ways.
+    //
+    // (1) No F3 folding. The note's "Active transverse basis in the
+    // default TAUOLA-CLEO current" gives the active coefficients
+    // explicitly as c1=+2sqrt2/3, c2=-2sqrt2/3, c3=0 (Eq.(eq:CLEO-
+    // active-coefficients)), so the two-slot map is simply
+    // F1_eff=F1^CLEO, F2_eff=F2^CLEO (Eq.(eq:CLEO-two-slot-map)). The
+    // generic reduction F_i - (c3/c_i)F3 (Eq.(eq:CLEO-generic-fold))
+    // has a vanishing fold term here. The note's "Implementation
+    // warning" states outright that c1=c2=c3=1 is NOT the default
+    // TAUOLA-CLEO convention, which is what the previous version
+    // assumed. CLEO_F3term is deliberately kept below: it is correct
+    // as written and is needed to compare against a redundant
+    // three-vector basis, it just has coefficient zero here.
+    //
+    // (2) Slot assignment. The note's F1^CLEO leads with BW(s1;rho),
+    // s1=(p2+p3)^2, and multiplies (p2-p3) - which is v2 in
+    // VA_0_PiPiPi::Calc, not v1. Since this class's F1 slot multiplies
+    // v1=T(p1-p3), that slot must carry the (1,3) subsystem, i.e. the
+    // note's F2=F1(1<->2). This is exactly the pairing the KS90 branch
+    // below already uses (F1 -> rhos(s13), F2 -> rhos(paper_s1)); the
+    // previous version had the two orderings the other way round, so
+    // the CLEO and KS branches of the same class disagreed and only KS
+    // matched the basis vectors. No extra sign is needed: c2=-c1 is
+    // already absorbed by building v1 as (p1-p3) rather than (p3-p1).
     if (!m_isF2) {
-      Complex F1 = CLEO_F1term(s123, paper_s1, paper_s2, paper_s3, m1_2, m2_2, m3_2);
-      Complex F3 = CLEO_F3term(s123, paper_s1, paper_s2, paper_s3, m1_2, m2_2, m3_2);
-      return F1 - F3;
+      return CLEO_F1term(s123, paper_s2, paper_s1, paper_s3, m2_2, m1_2, m3_2);
     }
     else {
-      Complex F2 = CLEO_F1term(s123, paper_s2, paper_s1, paper_s3, m2_2, m1_2, m3_2);
-      Complex F3 = CLEO_F3term(s123, paper_s1, paper_s2, paper_s3, m1_2, m2_2, m3_2);
-      return F2 - F3;
+      return CLEO_F1term(s123, paper_s1, paper_s2, paper_s3, m1_2, m2_2, m3_2);
     }
   }
   if (m_mode==FF_0_PPP_mode::pi0_pi0_KM) {
@@ -737,17 +781,30 @@ FF_KS(const double & s123,const double & s12,const double & s13) {
     if (m_isF2) {
       double s1 = s123 - s12 - s13 +
 	m_masses2[m_pi[0]] + m_masses2[m_pi[1]] + m_masses2[m_pi[2]];
-      return m_norm * TK1a * (*p_TKstar1_pi0K)(s1);
+      return TK1a * (*p_TKstar1_pi0K)(s1);
     }
-    return m_norm * TK1a * (*p_TKstar1_pi0K)(s13);
+    return TK1a * (*p_TKstar1_pi0K)(s13);
   }
   if (p_a1s==NULL || p_rhos==NULL) return Complex(0.,0.);
+  // NOTE: do NOT multiply by m_norm here. FF_0_PPP_Base::operator()
+  // already applies it ("case ff_model::KS: return m_norm*FF_KS(...)"),
+  // so every FF_XXX() override must return the DIMENSIONLESS shape only -
+  // as the base-class fallbacks state ("F=1 times whatever is already in
+  // m_norm") and as every other derived class in this file does.
+  // This function used to apply m_norm a second time, squaring it in the
+  // rate: for 3pi, |m_norm| = 2sqrt2*Vud/(3 fpi) = 9.93, so the partial
+  // width came out |m_norm|^2 = 98.7 times too large (measured 96.6/94.1
+  // times the PDG value for pi-pi0pi0 / pi-pi-pi+ before this fix).
+  // The pi0_pi0_KM branch above had the same double-application, with
+  // |m_norm| = 0.573 there, so that channel was instead a factor
+  // |m_norm|^2 = 0.328 too SMALL - its apparent agreement with the PDG
+  // rate was an artefact of this bug, not evidence the mode was right.
   if (m_isF2) {
     double s1 = s123 - s12 - s13 +
       m_masses2[m_pi[0]] + m_masses2[m_pi[1]] + m_masses2[m_pi[2]];
-    return m_norm * (*p_a1s)(s123) * (*p_rhos)(s1);
+    return (*p_a1s)(s123) * (*p_rhos)(s1);
   }
-  return m_norm * (*p_a1s)(s123) * (*p_rhos)(s13);
+  return (*p_a1s)(s123) * (*p_rhos)(s13);
 }
 
 Complex F1_0_PiPlusPiZeroPiZero::
@@ -1647,7 +1704,7 @@ public:
 
 class F1_0_KPiPi : public FF_0_PPP_Base {
   bool    m_isF2;
-  double  m_xiK1;
+  Complex m_xiK1;
   Summed_Propagator * p_TK1a, * p_Trho1, * p_TKstar1;
   Propagator_Base    * p_TK1b;
 
@@ -1674,7 +1731,7 @@ class F1_0_KPiPi : public FF_0_PPP_Base {
   }
 public:
   F1_0_KPiPi(const FF_Parameters & params) :
-    FF_0_PPP_Base(params), m_isF2(false), m_xiK1(0.33),
+    FF_0_PPP_Base(params), m_isF2(false), m_xiK1(0.33,0.),
     p_TK1a(NULL), p_Trho1(NULL), p_TKstar1(NULL), p_TK1b(NULL),
     p_KstCLEO(NULL)
   {
@@ -1691,11 +1748,31 @@ public:
 };
 
 void F1_0_KPiPi::Construct(const FF_Parameters & params) {
-  if (m_ffmodel==ff_model::KS || m_ffmodel==ff_model::KS_f0) {
+  if (m_ffmodel==ff_model::KS || m_ffmodel==ff_model::KS_f0 ||
+      m_ffmodel==ff_model::KS_flatte) {
   double fpi = (*params.p_model)("fpi",0.1307)/sqrt(2.);
   double Vus = (*params.p_model)("Vus",Tools::Vus);
   double pref = 2.*sqrt(2.)/(3.*fpi);
-  m_xiK1 = (*params.p_model)("xiK1",0.33);
+  // xi_K1 weights K1(1270) against K1(1400) in T_K1^(a), Eq.(9):
+  //   T_K1^(a) = BW_K1(1400) + xi_K1 BW_K1(1270).
+  // FM95 quote a real 0.33, but that was fitted alongside THEIR K1
+  // line shapes.  Exposed as a complex here for two reasons: the two
+  // physical K1 states are K1A/K1B (3P1/1P1) mixtures, so a relative
+  // PHASE between them is physically expected and a real coefficient
+  // cannot produce it; and the magnitude needs re-deriving whenever the
+  // K1 line shapes change - as they did when K1(1270) was given its
+  // PDG channels (see K1_Decays.C).
+  //
+  // The default is MODEL-DEPENDENT.  FM95's 0.33 is not a fit: Eq.(33)
+  // DERIVES |xi| = 0.33 from Gamma(K1(1270)->K*pi)/Gamma(K1(1400)->K*pi) after
+  // phase-space correction, against a fixed-width K1(1270).  Model 106 replaces
+  // that K1(1270) with a Flatte, so the ratio the derivation rests on no longer
+  // holds and xi has to be re-determined; 0.70 is the measured optimum against
+  // BaBar 2007 / Belle 2010 / CLEO 2000.  Carrying FM95's 0.33 into 106 would
+  // silently give a much worse model (chi2/ndf 40.9 vs 10.6 at 150k).
+  m_xiK1 = ReadComplexParam(params.p_model,"xiK1Mag",
+                            m_ffmodel==ff_model::KS_flatte ? 0.70 : 0.33,
+                            "xiK1Phase");
   switch (m_mode) {
   case FF_0_PPP_mode::KM_piM_piP:
     m_norm = Complex(-pref*Vus/2., 0.); break;                   // row 7
@@ -1716,10 +1793,37 @@ void F1_0_KPiPi::Construct(const FF_Parameters & params) {
 	       <<"identically zero.\n";
   }
   else {
+    // 106 swaps the K1(1270) Breit-Wigner for the two-channel Flatte in
+    // BOTH T_K1^(a) and T_K1^(b), so each side sees the same threshold
+    // dynamics.  K1(1400) stays a Breit-Wigner either way.
+    const bool flatte = (m_ffmodel==ff_model::KS_flatte);
+    // FM95 Eq.(34) is explicit that the K1 envelopes are CONSTANT-width,
+    // normalized Breit-Wigners, with Eq.(35) mK1(1400)=1.402, G=0.174.  Model
+    // 100 keeps the running-width registry propagator it was validated with;
+    // 106 follows the paper, because a running Gamma(s) grows with s and
+    // suppresses exactly the 1.45-1.7 GeV tail this resonance has to supply.
+    // The values are overridable: they are parameters of FM95's fit, not the
+    // flavour's PDG pole, so they are NOT read from the shared registry.
+    // Named for the MODEL, not for a source: the same slot legitimately
+    // carries either fit, and naming it after one while defaulting it to the
+    // other is how the ff-ppp-work branch's "FM95_m_K1_1400 = 1.463" came to
+    // be read as an FM95 number for years.  Both fits, for the record:
+    //   FM95 Eq.(35), hep-ph/9503474   1.402 / 0.174
+    //   CLEO (Asner et al.)            1.463 / 0.300   <- default here
+    // FF_0_PPP.C's own CLEO branch carries the identical CLEO pair as
+    // MK1_1400_CLEO / GK1_1400_CLEO.  106 defaults to CLEO's because the data
+    // prefer it decisively (chi2/ndf 20.8 -> 10.6 at 150k, BaBar d03 12.7 ->
+    // 4.0); set these to 1.402/0.174 to recover FM95's own K1(1400).
+    const double mK1400 = (*params.p_model)("MK1_1400_106", 1.463);
+    const double GK1400 = (*params.p_model)("GK1_1400_106", 0.300);
     p_TK1a = new Summed_Propagator();
-    p_TK1a->Add(new BreitWigner(wK11400), Complex(1.,0.));
-    p_TK1a->Add(new BreitWigner(wK11270), Complex(m_xiK1,0.));
-    p_TK1b = new BreitWigner(wK11270);
+    p_TK1a->Add(flatte ? (Propagator_Base*)new FM95_Fixed_BW(mK1400,GK1400)
+                       : (Propagator_Base*)new BreitWigner(wK11400),
+                Complex(1.,0.));
+    p_TK1a->Add(flatte ? MakeK1_1270_Flatte()
+                       : (Propagator_Base*)new BreitWigner(wK11270), m_xiK1);
+    p_TK1b = flatte ? MakeK1_1270_Flatte()
+                    : (Propagator_Base*)new BreitWigner(wK11270);
   }
   // Same unified KS parameter names as pipi_plus/Kpi_plus (FF_0_PP.C)
   // and F1_0_KPiK above - same physical rho(770)+rho(1450) and
@@ -1728,7 +1832,20 @@ void F1_0_KPiPi::Construct(const FF_Parameters & params) {
 				      "gammaMag_pipi3",-0.145,"gammaPhase_pipi3");
   Complex gammaKst = ReadComplexParam(params.p_model,
 				      "gammaMag_Kpi_100",-0.135,"gammaPhase_Kpi_100");
-  Propagator_Base * rho770  = new BreitWigner(LineShapes->Get(Flavour(kf_rho_770)));
+  // 106 puts rho(770) on a Gounaris-Sakurai shape.  GS carries the dispersive
+  // real part of the self-energy that a running-width BW drops, which is the
+  // correct analytic description of a broad resonance sitting on its own
+  // threshold (Gounaris & Sakurai, PRL 21 (1968) 244).  Measured on the ff-ppp
+  // branch as -29%/-45% on the 3pi spectra and a wash on Kpipi; it is taken
+  // here on correctness grounds, not because it moves this channel.
+  // rho(1450) deliberately stays a Breit-Wigner: GS assumes an ELASTIC pi pi
+  // width, true of rho(770) at 99.9% but not of rho(1450) (19.7% pi pi).
+  // NOTE this is a departure from FM95, which uses a running-width BW
+  // throughout - same category as the Flatte K1(1270).
+  const resonance_type rho_type = (m_ffmodel==ff_model::KS_flatte) ?
+                                  resonance_type::GS : resonance_type::running;
+  Propagator_Base * rho770  = new BreitWigner(LineShapes->Get(Flavour(kf_rho_770)),
+                                              rho_type);
   Propagator_Base * rho1450 = new BreitWigner(LineShapes->Get(Flavour(kf_rho_1450_plus)));
   p_Trho1 = new Summed_Propagator();
   p_Trho1->Add(rho770,  Complex(1.,0.));
@@ -1880,10 +1997,25 @@ public:
 };
 
 void FS_0_KPiPi::Construct(const FF_Parameters & params) {
-  if (m_ffmodel!=ff_model::KS && m_ffmodel!=ff_model::KS_f0) return;
+  // CLEO (102/104) set F3 = 0 in their own analysis and folded the
+  // uncertainty into their systematics, so the anomalous piece is built only
+  // for the FM95-family models.  Kiers et al., arXiv:0808.1707, restore F3 on
+  // top of the CLEO F1/F2; that was tried here and is recorded in FF_KS below.
+  if (m_ffmodel!=ff_model::KS && m_ffmodel!=ff_model::KS_f0 &&
+      m_ffmodel!=ff_model::KS_flatte) return;
   double fpi  = (*params.p_model)("fpi",0.1307)/sqrt(2.);
   double Vus  = (*params.p_model)("Vus",Tools::Vus);
   double pref = 1./(2.*sqrt(2.)*sqr(M_PI)*pow(fpi,3));
+  // NOTE on the Clebsch: these are FM95 Tab.II (vector) values, which are
+  // deliberately NOT the Tab.I (axial) ones used by F1_0_KPiPi::Construct.
+  // Eq.(eq:FM-3P-master) writes a single A^(abc) for F1,F2,F3, but that is
+  // a simplification of the source: the note's own KKpi section gives
+  // A_KKpi = -cos(theta_C)/2 for the axial and A_{V,KKpi} = -cos(theta_C)
+  // for the vector, a factor 2 apart. So axial and anomalous Clebsches
+  // must be read from their respective tables, not derived from each
+  // other - do not ""unify"" them. (Checked 2026-08-24 while chasing the
+  // Kpipi rate excess; deriving these from the axial values made the
+  // agreement worse and contradicts the KKpi counter-example.)
   switch (m_mode) {
   case FF_0_PPP_mode::KM_piM_piP:    m_norm = Complex(pref*Vus,0.);          break;
   case FF_0_PPP_mode::piM_K0bar_pi0:
@@ -1911,7 +2043,20 @@ void FS_0_KPiPi::Construct(const FF_Parameters & params) {
 
   Complex gammaRho = ReadComplexParam(params.p_model,
 				      "gammaMag_pipi3",-0.145,"gammaPhase_pipi3");
-  Propagator_Base * rho770  = new BreitWigner(LineShapes->Get(Flavour(kf_rho_770_plus)));
+  // 106 puts rho(770) on a Gounaris-Sakurai shape.  GS carries the dispersive
+  // real part of the self-energy that a running-width BW drops, which is the
+  // correct analytic description of a broad resonance sitting on its own
+  // threshold (Gounaris & Sakurai, PRL 21 (1968) 244).  Measured on the ff-ppp
+  // branch as -29%/-45% on the 3pi spectra and a wash on Kpipi; it is taken
+  // here on correctness grounds, not because it moves this channel.
+  // rho(1450) deliberately stays a Breit-Wigner: GS assumes an ELASTIC pi pi
+  // width, true of rho(770) at 99.9% but not of rho(1450) (19.7% pi pi).
+  // NOTE this is a departure from FM95, which uses a running-width BW
+  // throughout - same category as the Flatte K1(1270).
+  const resonance_type rho_type = (m_ffmodel==ff_model::KS_flatte) ?
+                                  resonance_type::GS : resonance_type::running;
+  Propagator_Base * rho770  = new BreitWigner(LineShapes->Get(Flavour(kf_rho_770_plus)),
+                                              rho_type);
   Propagator_Base * rho1450 = new BreitWigner(LineShapes->Get(Flavour(kf_rho_1450_plus)));
   p_Trho1 = new Summed_Propagator();
   p_Trho1->Add(rho770,  Complex(1.,0.));
@@ -1945,6 +2090,18 @@ FF_KS(const double & s123,const double & s12,const double & s13) {
     m_masses2[m_pi[0]] + m_masses2[m_pi[1]] + m_masses2[m_pi[2]];
   Complex TKstar2 = (*p_TKstar2)(s123);
   switch (m_mode) {
+  // NOTE, from chasing FM95 Tab.II back to its own primary source:
+  // Decker, Mirkes, Sauer and Was, Z.Phys. C58 (1993) 445, Eq.(29) write this
+  // bracket as [T_rho^(1)(s1) + alpha T_K*(s2)]/(1+alpha) and FIT alpha =
+  // -0.20..-0.25 from tau -> K- pi- K+, because the K* is not seen in
+  // e+e- -> K Kbar pi.  FM95's 1/2 [T_rho + T_K*] below is that expression at
+  // alpha = 1, i.e. FM95 silently dropped the fitted suppression.  Decker's
+  // alpha was TRIED here (2026-08-28) and made the Kpipi shape WORSE - chi2/ndf
+  // 57.2 -> 63.4, degrading BABAR d04 (the K- pi+ mass, where the K* term
+  // lives) 6.0 -> 8.1.  Not adopted.  Note this is a weak test of alpha: F3
+  // carries ~13% of the width here, whereas Decker fitted it on K- pi- K+
+  // where the anomalous piece is proportionally much larger.  If the question
+  // is reopened, reopen it on KKpi.
   case FF_0_PPP_mode::KM_piM_piP:
     // G3 = 1/2 T_K*2 [T_rho1(s1) + T_K*1(s2=s13)]
     return 0.5*TKstar2*( (*p_Trho1)(s1) + (*p_TKstar1)(s13) );
@@ -2042,17 +2199,30 @@ void FS_0_EtaPiPi::Construct(const FF_Parameters & params) {
   if (m_ffmodel!=ff_model::KS) return;
   bool isPrime = (m_mode==FF_0_PPP_mode::EtaprimePiPi_pi0);
   double fpi = (*params.p_model)("fpi",0.1307)/sqrt(2.);
-  // FIXME: the note does not give a numeric value for the combined
-  // WZW-anomaly-normalization/eta-eta' mixing Clebsch N_WZW^eta(') -
-  // it only states that IF the master current's explicit 1/(4pi^2F^2)
-  // anomaly prefactor is used, only the channel mixing coefficient
-  // remains. Best-effort default below: a plausible 1/(4pi^2 fpi^2)
-  // anomaly-scale prefactor times a placeholder mixing coefficient
-  // (default 1, like N_Keta/N_Ketaprime elsewhere) - please supply the
-  // actual eta-eta' mixing convention/normalization you want used.
+  // The note's Eq.(PPPcurrent) writes the anomalous term as
+  // -i c5/(4 pi^2 F^2) eps^{mu nu rho sigma} p1 p2 p3 F5, INSIDE an
+  // overall normalization N.  This code has no separate N - everything
+  // is folded into m_norm - so transcribing that 1/(4 pi^2 F^2)
+  // literally drops the 1/F that N carries, which is what happened
+  // here: the prefactor used sqr(fpi) where it needs pow(fpi,3).
+  //
+  // The dimensional argument is internal to this codebase and does not
+  // depend on resolving the note's convention.  Every VA_0_XXX 3-meson
+  // current assembles m_norm*(F1*v1 + F2*v2 + F3*q + FS*v4) with
+  // v4 = cross(p1,p2,p3), so every FS_* feeding that same slot must
+  // share dimensions.  FS_0_PiPlusPiZeroPiZero uses
+  // Vus/(2 sqrt2 pi^2 fpi^3) (FM95 Eq.(25)); this one used fpi^2, two
+  // powers, and was therefore 1/fpi = 10.8x too small in amplitude.
+  //
+  // Effect: Gamma(tau- -> pi- pi0 eta nu) 2.917e-17 -> 3.415e-15 GeV,
+  // i.e. 0.0095x -> 1.12x the Belle measurement
+  // B = (1.35 +- 0.03 +- 0.07)e-3 [arXiv:0811.0088, Inami et al].
+  // N_etapipi stays a genuine O(1) mixing coefficient, default 1, as
+  // it should be - it was previously absorbing a factor of 10 that was
+  // never a mixing effect.
   double Nmix = (*params.p_model)(isPrime ? "N_etaprimepipi" : "N_etapipi", 1.);
   m_norm = Complex((*params.p_model)("Vud",Tools::Vud) * Nmix /
-		    (4.*sqr(M_PI)*sqr(fpi)), 0.);
+		    (4.*sqr(M_PI)*pow(fpi,3)), 0.);
 
   Complex gammaRho = ReadComplexParam(params.p_model,
 				      "gammaMag_pipi3",-0.145,"gammaPhase_pipi3");

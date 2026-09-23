@@ -251,7 +251,10 @@ HADRON_DECAYS:
   # they are silent, not fatal, when they collide.
   ######################################################################
 
-    421:
+    15:
+    ######################################################
+    # Leptonic decays
+    ######################################################
     #
     # =====================================================
     #  D^0 -> K^- l^+ nu   (VA_P_P, J^P = 0^-)
@@ -267,17 +270,14 @@ HADRON_DECAYS:
                 Type: VA_0_FF
                 Indices: [2, 3]
               J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.97349
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.7383
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -2.28
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3170
+                Type: VA_F_F
+                Indices: [3, 2]
+                v: 1.
+                a: -1.
+        PhaseSpace:
+          - Dalitz_W_23:
+              Weight: 1.0
+        IntResults: [4.0482e-13, 4.0439e-16, 4.3169e-12]
 
       -321,14,-13:
         BR: [0.2787907357, 0.001582527306]
@@ -288,17 +288,14 @@ HADRON_DECAYS:
                 Type: VA_0_FF
                 Indices: [2, 3]
               J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.97349
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.7383
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -2.28
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3170
+                Type: VA_F_F
+                Indices: [3, 2]
+                v: 1.
+                a: -1.
+        PhaseSpace:
+          - Dalitz_W_23:
+              Weight: 1.0
+        IntResults: [3.9395e-13, 3.9328e-16, 3.7839e-12]
 
     #
     # =====================================================
@@ -339,62 +336,18 @@ HADRON_DECAYS:
                 Type: VA_0_FF
                 Indices: [3, 4]
               J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           1
-                USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
-                AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
-                PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.46
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     3           # LASS = background + resonance
-                Swave_KF0:       10321       # K*_0(1430)+
-                Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
-                Swave_LASS_A:    1.94        # scattering length [GeV^-1]
-                Swave_LASS_R:    1.76        # effective range [GeV^-1]
-                A1_0:            0.618
-                rV:              1.42
-                r2:              0.75
-                PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
-                V_SHAPE:         2
-                V_MPOLE:         2.11220
-                A1_SHAPE:        2
-                A1_MPOLE:        2.45950
-                A2_SHAPE:        2
-                A2_MPOLE:        2.45950
-                A0_SHAPE:        2
-                A0_MPOLE:        1.96835
-                Pwave_L:         1
-                Pwave_MODEL:     1           # single resonance
-                Pwave_KF0:       323         # K*(892)+
-                Pwave_TYPE0:     1           # running
-                A1T_0:           1.0
-                rVT:             1.0
-                r2T:             1.0
-                DWAVE_MASS:      1.4324
-                VT_SHAPE:        2
-                VT_MPOLE:        2.11220
-                A1T_SHAPE:       2
-                A1T_MPOLE:       2.45950
-                A2T_SHAPE:       2
-                A2T_MPOLE:       2.45950
-                A0T_SHAPE:       2
-                A0T_MPOLE:       1.96835
-                Dwave_L:         2
-                Dwave_MODEL:     1
-                Dwave_KF0:       325         # K*_2(1430)
-                Dwave_TYPE0:     1
-                AMP_D:           1.0
-                PHASE_D:         0.0
+                Type: VA_0_PiPi
+                Indices: [2, 1]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 200
+                gammaMag_pipi2_200: -0.15
+                gammaPhase_pipi2_200: -0.36
+                deltaMag_pipi2_200: 0.12
+                deltaPhase_pipi2_200: -0.02
+        PhaseSpace:
+          - Dalitz_rho(770)+_12:
+              Weight: 1.0
+        IntResults: [5.7692e-13, 5.7494e-16, 5.8128e-12]
 
       -311,-211,14,-13:
         BR: [0.1142030015, 0.003262942899]
@@ -405,132 +358,62 @@ HADRON_DECAYS:
                 Type: VA_0_FF
                 Indices: [3, 4]
               J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           1
-                USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
-                AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
-                PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.46
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     3           # LASS = background + resonance
-                Swave_KF0:       10321       # K*_0(1430)+
-                Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
-                Swave_LASS_A:    1.94        # scattering length [GeV^-1]
-                Swave_LASS_R:    1.76        # effective range [GeV^-1]
-                A1_0:            0.618
-                rV:              1.42
-                r2:              0.75
-                PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
-                V_SHAPE:         2
-                V_MPOLE:         2.11220
-                A1_SHAPE:        2
-                A1_MPOLE:        2.45950
-                A2_SHAPE:        2
-                A2_MPOLE:        2.45950
-                A0_SHAPE:        2
-                A0_MPOLE:        1.96835
-                Pwave_L:         1
-                Pwave_MODEL:     1           # single resonance
-                Pwave_KF0:       323         # K*(892)+
-                Pwave_TYPE0:     1           # running
-                A1T_0:           1.0
-                rVT:             1.0
-                r2T:             1.0
-                DWAVE_MASS:      1.4324
-                VT_SHAPE:        2
-                VT_MPOLE:        2.11220
-                A1T_SHAPE:       2
-                A1T_MPOLE:       2.45950
-                A2T_SHAPE:       2
-                A2T_MPOLE:       2.45950
-                A0T_SHAPE:       2
-                A0T_MPOLE:       1.96835
-                Dwave_L:         2
-                Dwave_MODEL:     1
-                Dwave_KF0:       325         # K*_2(1430)
-                Dwave_TYPE0:     1
-                AMP_D:           1.0
-                PHASE_D:         0.0
+                Type: VA_0_PiPi
+                Indices: [2, 1]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+                gammaMag_Kpi_100: -0.135
+                gammaPhase_Kpi_100: 0.
+        IntResults: [1.0953e-14, 1.0953e-17, 9.2621e-13]
 
-      -321,111,12,-11:
-        BR: [0.05791723646, 0.001713045022]
-        Origin: "PDG2026: mu-mode (7.10+-0.21)E-3 OUR FIT reused; the e-mode average (1.6+1.3-0.5)E-2 is twice the isospin expectation with a >50 percent error and is not used"
+    #
+    # tau- -> nu_tau K_S pi- (Kpi_plus via K_S) - see the K pi note above.
+    #
+    # tau- -> nu_tau K_S pi- and tau- -> nu_tau pi- K_L are the two CP
+    # projections of the SINGLE decay tau- -> nu_tau K0bar pi-, each
+    # exactly half of it, so they MUST carry the same model and the same
+    # parameters and must predict the same width.
+    #
+    # They previously did not: this entry ran RChiPT/200 while the K_L
+    # entry below ran KS/100, deliberately, to get a two-model
+    # cross-check for free.  That does not belong here - this file
+    # generates events, and the mismatch put a 41% asymmetry
+    # (7.34e-15 vs 1.03e-14) between two halves of one decay into every
+    # sample, which is not physics.  Both now run 100.  Comparing two
+    # models on one channel is a job for a run card overriding
+    # FORM_FACTOR, which leaves this file consistent.
+    #
+    # Why 100 and not 200: against PDG (0.42%, = half of K0 pi-),
+    # 100 gives 1.084 x and 200 gives 0.771 x.  200 wins the shape
+    # marginally (chi2/ndf 5.00 vs 5.76 at 150k) but 100 is the one
+    # inside the 20% rate target, and it matches the K^- pi^0 and
+    # pi- K_L entries so the whole Kpi family is now consistent.
+    #
+      310,-211,16:
+        BR: [0.0, 0.0] # [0.0042, 0.0042]
         ME:
           - Current_ME:
               J1:
                 Type: VA_0_FF
                 Indices: [3, 4]
               J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           1
-                USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
-                AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
-                PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.46
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     3           # LASS = background + resonance
-                Swave_KF0:       10321       # K*_0(1430)+
-                Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
-                Swave_LASS_A:    1.94        # scattering length [GeV^-1]
-                Swave_LASS_R:    1.76        # effective range [GeV^-1]
-                A1_0:            0.618
-                rV:              1.42
-                r2:              0.75
-                PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
-                V_SHAPE:         2
-                V_MPOLE:         2.11220
-                A1_SHAPE:        2
-                A1_MPOLE:        2.45950
-                A2_SHAPE:        2
-                A2_MPOLE:        2.45950
-                A0_SHAPE:        2
-                A0_MPOLE:        1.96835
-                Pwave_L:         1
-                Pwave_MODEL:     1           # single resonance
-                Pwave_KF0:       323         # K*(892)+
-                Pwave_TYPE0:     1           # running
-                A1T_0:           1.0
-                rVT:             1.0
-                r2T:             1.0
-                DWAVE_MASS:      1.4324
-                VT_SHAPE:        2
-                VT_MPOLE:        2.11220
-                A1T_SHAPE:       2
-                A1T_MPOLE:       2.45950
-                A2T_SHAPE:       2
-                A2T_MPOLE:       2.45950
-                A0T_SHAPE:       2
-                A0T_MPOLE:       1.96835
-                Dwave_L:         2
-                Dwave_MODEL:     1
-                Dwave_KF0:       325         # K*_2(1430)
-                Dwave_TYPE0:     1
-                AMP_D:           1.0
-                PHASE_D:         0.0
+                Type: VA_0_PiPi
+                Indices: [2, 1]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+                gammaMag_Kpi_100: -0.135
+                gammaPhase_Kpi_100: 0.
+        IntResults: [1.03186e-14, 1.03182e-17, 8.54277e-13]
 
-      -321,111,14,-13:
-        BR: [0.05791723646, 0.001713045022]
-        Origin: "PDG2026 (7.10+-0.21)E-3 OUR FIT, K- pi0 mu+ nu TOTAL"
+    #
+    # tau- -> nu_tau pi- K_L (Kpi_plus via K_L) - FORM_FACTOR 100
+    # (KS/FM95), matching the K_S pi- entry above and the K^- pi^0 entry
+    # (same model, same gammaMag_Kpi_100).  Gamma(K_S pi^-) and
+    # Gamma(K_L pi^-) now agree to 0.07%, as they must - see the note on
+    # the K_S entry above for why they were previously allowed to differ.
+    #
+      -211,130,16:
+        BR: [0.0, 0.0] # [0.0042, 0.0042]
         ME:
           - Current_ME:
               J1:
@@ -1706,11 +1589,11 @@ HADRON_DECAYS:
               J1:
                 Type: VA_0_FF
                 Indices: [1, 2]
-              J2:
-                Type: VA_P_0
-                Indices: [0]
-                fP:              0.2067      # f_D [GeV]
-                Vxx:             0.22486
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+                gammaMag_Kpi_100: -0.135
+                gammaPhase_Kpi_100: 0.
+        IntResults: [1.032e-14, 1.0318e-17, 8.5431e-13]
 
       16,-15:
         BR: [0.003187479816, 0.0003863611898]
@@ -1721,10 +1604,15 @@ HADRON_DECAYS:
                 Type: VA_0_FF
                 Indices: [1, 2]
               J2:
-                Type: VA_P_0
-                Indices: [0]
-                fP:              0.2067
-                Vxx:             0.22486
+                Type: VA_0_PiPi
+                Indices: [2, 1]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 200
+                gammaMag_KK_200: -0.15
+                gammaPhase_KK_200: -1.88
+                deltaMag_KK_200: 0.
+                deltaPhase_KK_200: 0.
+        IntResults: [1.2657e-15, 1.2628e-18, 1.2172e-14]
 
     #
     # =====================================================
@@ -1758,9 +1646,33 @@ HADRON_DECAYS:
                 A0_SHAPE:        2           # SHAPE only - A0(0) is fixed by Eq.(A0constraint)
                 A0_MPOLE:        1.86966
 
-      223,14,-13:
-        BR: [0.005702304801, 0.0006793517588]
-        Origin: "PDG2026 (1.77+-0.21)E-3 OUR AVERAGE"
+    ##### K eta #####
+    #
+    # tau- -> nu_tau K- eta (Keta_plus). No genuine original KS Keta
+    # model exists in the source literature (see the cross-check note)
+    # - the KS entry here is a KS-STYLE EXTENSION reusing the Kpi
+    # K*(892)+K*(1410) tower, with its own beta_K* and an eta-eta'
+    # mixing normalisation N_Keta (currently a placeholder = 1 - FIXME:
+    # supply the mixing angle you want used, e.g. theta_P=-13.3+-0.5deg
+    # octet-singlet or phi_P=41.4+-0.5deg quark-flavour, from the
+    # note's Keta parameter table).
+    #
+    # Available FORM_FACTOR options:
+    #   100 = KS-style extension: gammaMag_Keta_100/gammaPhase_Keta_100.
+    #   102 = KS_CLEO: CLEO/TAUOLA-type tune, K*(892)-0.038*K*(1680).
+    #         gammaMag_Keta_102/gammaPhase_Keta_102.
+    #   200 = RChiPT ("Level 1: bare RChiPT"): the SAME K*(892)+
+    #         K*(1410) two-resonance form as Kpi governs Keta too (up
+    #         to channel-specific running-width thresholds, which stay
+    #         Kpi-dominated per the note - shares MKst/MKstp with the
+    #         Kpi RChiPT entry above). gammaMag_Keta_200/
+    #         gammaPhase_Keta_200.
+    # Reference: cross-check note's Keta section (joint Kpi-Keta
+    # "Combined 2014" fit for RChiPT).
+    ######################################################
+        IntResults: [1.2678e-15, 1.2657e-18, 1.2176e-14]
+      -321,221,16:
+        BR: [0.0, 0.0]
         ME:
           - Current_ME:
               J1:
@@ -1784,15 +1696,29 @@ HADRON_DECAYS:
                 A0_MPOLE:        1.86966
 
     #
-    # =====================================================
-    #  D^+ -> eta'(958) l^+ nu   (VA_P_P)
-    #  f+(0)=0.263, r1=-21.5, BESIII arXiv:2410.08603. The very
-    #  large |r1| is genuine - the phase space is tiny here, so
-    #  z stays small and r1 is correspondingly poorly bounded.
-    # =====================================================
-      331,12,-11:
-        BR: [0.0005912678469, 6.08518874e-05]
-        Origin: "PDG2026 (1.84+-0.19)E-4 OUR AVERAGE"
+    # tau- -> nu_tau K- eta' (Ketaprime_plus). This is the smallest/
+    # least-established of the two-pseudoscalar branching fractions
+    # (PDG only quotes an upper limit, no established spectrum - see
+    # the note's summary table).
+    #
+    # Available FORM_FACTOR options:
+    #   200 = RChiPT ("Level 1: bare RChiPT"): the note states the same
+    #         K*(892)+K*(1410) two-resonance vector current governs
+    #         Kpi, Keta AND Keta' (shares p_GKst/p_GKstp, MKst/MKstp
+    #         with the Kpi/Keta RChiPT entries above, not separately
+    #         rebuilt). The "Combined 2014" fit quoted in the note is
+    #         in fact a joint Kpi-Keta fit, so these defaults are
+    #         identical to Kpi_plus's own RChiPT defaults - own
+    #         parameter/normalisation names per channel in case a
+    #         dedicated fit ever supersedes the joint one.
+    #         gammaMag_Ketaprime_200/gammaPhase_Ketaprime_200.
+    # No KS/KS_CLEO model exists for this channel in the source.
+    # Reference: cross-check note's Keta'/Ketap-vector-relation
+    # section.
+    ######################################################
+        IntResults: [5.3026e-16, 5.2983e-19, 5.464e-15]
+      -321,331,16:
+        BR: [0.0, 0.0]
         ME:
           - Current_ME:
               J1:
@@ -1811,9 +1737,26 @@ HADRON_DECAYS:
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3000
 
-      331,14,-13:
-        BR: [0.0006181779038, 9.369258854e-05]
-        Origin: "PDG2026 (1.92+-0.29)E-4 OUR AVERAGE"
+    ##### pi eta #####
+    #
+    # tau- -> nu_tau pi- eta (etapi_plus). EGSR16 (arXiv:1601.03989)
+    # second-class current - normalized vector form factor is
+    # IDENTICAL to pipi_plus's own (same rho tower, deliberately
+    # reusing its gammaMag_pipi2_100/deltaMag_pipi2_100 names, not
+    # separate ones - see the pi pi section above), times the isospin-
+    # breaking mixing eps_pieta below.
+    #
+    # Available FORM_FACTOR options:
+    #   100 = KS only (no RChiPT/RChL2012 implementation exists for
+    #         this channel) - other FORM_FACTOR values fall back to a
+    #         flat constant normalisation. eps_pieta (isospin-breaking
+    #         mixing weight) is this channel's own parameter, not
+    #         shared with anything else.
+    # Reference: EGSR16, arXiv:1601.03989.
+    ######################################################
+        IntResults: [2.7917e-17, 2.7832e-20, 2.0969e-16]
+      -211,221,16:
+        BR: [0.0, 0.0]
         ME:
           - Current_ME:
               J1:
@@ -1834,14 +1777,16 @@ HADRON_DECAYS:
 
     431:
     #
-    # =====================================================
-    #  D_s^+ -> phi(1020) l^+ nu   (VA_P_V)
-    #  rV, r2, A1(0) and the pole masses of the BABAR fit,
-    #  PRD 78, 051101 (2008): mV=2.1 fixed, mA=2.28 fitted.
-    # =====================================================
-      333,12,-11:
-        BR: [0.1290250971, 0.006629846342]
-        Origin: "PDG2026 (2.34+-0.12)E-2 OUR AVERAGE"
+    # tau- -> nu_tau pi- eta' (etaprimepi_plus). Same EGSR16 second-
+    # class current as pi eta above, smaller mixing factor.
+    #
+    # Available FORM_FACTOR options:
+    #   100 = KS only, same caveat as pi eta above.
+    # Reference: EGSR16, arXiv:1601.03989.
+    ######################################################
+        IntResults: [6.914e-16, 6.9126e-19, 2.4363e-14]
+      -211,331,16:
+        BR: [0.0, 0.0]
         ME:
           - Current_ME:
               J1:
@@ -1863,29 +1808,54 @@ HADRON_DECAYS:
                 A0_SHAPE:        2           # SHAPE only - A0(0) is fixed by Eq.(A0constraint)
                 A0_MPOLE:        1.96835
 
-      333,14,-13:
-        BR: [0.123572601, 0.006187856586]
-        Origin: "PDG2026 (2.24+-0.11)E-2 OUR AVERAGE"
+    ##### pi pi pi #####
+    #
+    # tau- -> nu_tau pi- pi0 pi0 (a1 -> rho pi cascade)
+    #
+    # Available FORM_FACTOR options:
+    #   100 = KS (KS90): a1(1260) -> rho(770)+gammaMag_pipi3*rho(1450).
+    #         gammaMag_pipi3/gammaPhase_pipi3 - genuinely, deliberately
+    #         SHARED with every other 3-body channel below that reuses
+    #         this same rho tower (Kpipi's piM_K0bar_pi0 rho region,
+    #         KKpi's RChL2012 rho region, EtaPiPi's rho towers) - one
+    #         override here changes all of them by design (same
+    #         physical resonance mix, per the note).
+    #   102 = KS_CLEO: full CLEO/Novosibirsk 3pi parametrization
+    #         (rho, rho', f2, sigma, f0(1370) resonances) - NOT
+    #         currently used by any channel below (all use 100); see
+    #         beta2..7Mag/Phase_3pi_CLEO parameters in FF_0_PPP.C if
+    #         you want to switch a channel to it.
+    #   201 = RChL2012: includes a genuine f0(500)/sigma contribution
+    #         (Msigma_rchl3pi etc.) - NOT currently used below either.
+    # Reference: KS90 for the base model; CLEO/Novosibirsk collab. for
+    # 102; 1310.1053 for the RChL2012 sigma extension.
+    ######################################################
+        IntResults: [4.0324e-18, 4.032e-21, 9.7297e-17]
+      -211,111,111,16:
+        BR: [0.0, 0.0] # [0.0917, 0.0917]
         ME:
           - Current_ME:
               J1:
                 Type: VA_0_FF
                 Indices: [2, 3]
               J2:
-                Type: VA_P_V
-                Indices: [0, 1]
-                Vcq:             0.97349
-                A1_0:            0.607
-                rV:              1.849
-                r2:              0.763
-                V_SHAPE:         2
-                V_MPOLE:         2.10000
-                A1_SHAPE:        2
-                A1_MPOLE:        2.28000
-                A2_SHAPE:        2
-                A2_MPOLE:        2.28000
-                A0_SHAPE:        2           # SHAPE only - A0(0) is fixed by Eq.(A0constraint)
-                A0_MPOLE:        1.96835
+                Type: VA_0_PPP
+                Indices: [3, 2, 1]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+        # 2 chains (which pi0 pairs with pi-) x 2 inner resonances
+        # (rho(770), rho(1450)) = 4 combinations, each weight 0.25.
+        PhaseSpace:
+          - TwoResonances_a(1)(1260)+_2_rho(770)+_13:
+              Weight: 0.25
+          - TwoResonances_a(1)(1260)+_3_rho(770)+_12:
+              Weight: 0.25
+          - TwoResonances_a(1)(1260)+_2_rho(1450)+_13:
+              Weight: 0.25
+          - TwoResonances_a(1)(1260)+_3_rho(1450)+_12:
+              Weight: 0.25
+        AlwaysIntegrate: 1
+        IntResults: [2.0335e-13, 2.0226e-16, 8.6285e-12]
 
     #
     # =====================================================
@@ -1901,21 +1871,37 @@ HADRON_DECAYS:
                 Type: VA_0_FF
                 Indices: [2, 3]
               J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.97349
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.4642
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -2.63
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3170
+                Type: VA_0_PPP
+                Indices: [2, 3, 1]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+        PhaseSpace:
+          - TwoResonances_a(1)(1260)+_2_rho(770)+_13:
+              Weight: 0.25
+          - TwoResonances_a(1)(1260)+_3_rho(770)+_12:
+              Weight: 0.25
+          - TwoResonances_a(1)(1260)+_2_rho(1450)+_13:
+              Weight: 0.25
+          - TwoResonances_a(1)(1260)+_3_rho(1450)+_12:
+              Weight: 0.25
+        AlwaysIntegrate: 1
+        IntResults: [2.0213e-13, 2.0124e-16, 1.0484e-11]
 
-      221,14,-13:
-        BR: [0.1237179051, 0.003977907805]
-        Origin: "PDG2026 (2.24+-0.07)E-2 OUR AVERAGE"
+    #
+    # tau- -> nu_tau K- pi0 pi0 (pi0_pi0_KM mode, FM95 Tab.I/II row 6,
+    # T_K1^(a)/T_K*^(1)). K^- is listed FIRST in the channel key, so
+    # the Indices array below is permuted ([2,3,1]) to route the two
+    # pi0's to m_pi[0]/m_pi[1] and K^- to m_pi[2], matching FixMode's
+    # pi0_pi0_KM requirement.
+    #
+    # Available FORM_FACTOR options:
+    #   100 = KS: only model implemented for this mode. Outer =
+    #         K1(1400)[weight 1]+K1(1270)[weight xiK1Mag=0.33], inner =
+    #         K*(892)[weight 1]+K*(1410)[weight betaKstar_pi0pi0K].
+    # Reference: FM95 (hep-ph/9503474), Tab.I/II row 6.
+    #
+      -321,111,111,16:
+        BR: [0.0, 0.0] # [0.00058, 0.00058]
         ME:
           - Current_ME:
               J1:
@@ -1935,13 +1921,94 @@ HADRON_DECAYS:
                 Fzero_MPOLE:     2.3170
 
     #
-    # =====================================================
-    #  D_s^+ -> eta'(958) l^+ nu   (VA_P_P)
-    #  f+(0)=0.540, r1=-6.3, BESIII arXiv:2306.05194.
-    # =====================================================
-      331,12,-11:
-        BR: [0.04452505355, 0.002171274677]
-        Origin: "PDG2026 (8.1+-0.4)E-3 OUR AVERAGE"
+    # tau- -> nu_tau K- pi+ pi- (KM_piM_piP mode). FM95's own
+    # convention needs q1=K-, q2=pi- SPECIFICALLY, q3=pi+ SPECIFICALLY
+    # (row 7) - not interchangeable, since F1 evaluates the K*
+    # propagator on the (q1,q3)=(K,pi+) pair specifically. The Indices
+    # array below ([1,3,2]) routes pi-(idx3) to m_pi[1] and pi+(idx2)
+    # to m_pi[2] accordingly.
+    #
+    # This current has two structurally DIFFERENT chains (unlike the
+    # simple pi-pi-pi case above): F1 uses the outer K1 mix x bare
+    # K*(892) on the K-pi+ pair (raw indices 1,3, spectator=2); F2 uses
+    # [A*K1(1270)] only x [rho(770)+rho(1450)(+f0(600) if FORM_FACTOR
+    # 104)] on the pi+pi- pair (raw indices 2,3, spectator=1).
+    #
+    # Available FORM_FACTOR options:
+    #   100 = KS (FM95): gammaMag_Kpi_100 (shared with the 2-body Kpi
+    #         entries above, see that section). T_K1a/T_K1b mix with
+    #         xiK1Mag/xiK1Phase admixture.
+    #   102 = KS_CLEO: CLEO K1 data-driven alternative. A/B/C/D real
+    #         weights (A=0.94,B=0,C=0.20,D=0.27 by default),
+    #         MK1_1270_CLEO/GK1_1270_CLEO/MK1_1400_CLEO/GK1_1400_CLEO
+    #         (fixed-width K1's, distinct from FM95's own, narrower
+    #         values). Bare K*(892), no K*(1410) admixture.
+    #   103 = KS_f0: FM95 (100) + an f0(500)/sigma admixture on the
+    #         pi+pi- tower. deltaMag_pipi_f0/deltaPhase_pipi_f0
+    #         (default -0.2, reusing Sherpa's own registered f0(600)
+    #         running width - NOT from a specific literature fit,
+    #         retune against data).
+    #   104 = CLEO_f0: CLEO K1 (102) + the same f0(500)/sigma addition,
+    #         same deltaMag_pipi_f0 parameter. Run here below as the
+    #         active choice, alongside KS_f0 (103) on the K_S/K_L
+    #         entries further down, so the current setup exercises both
+    #         new f0 variants.
+    # Reference: FM95 (hep-ph/9503474) for 100; CLEO/TAUOLA for 102/104.
+    ######################################################
+        IntResults: [3.641e-15, 2.9301e-18, 1.2738e-13]
+      -321,211,-211,16:
+        BR: [0.0, 0.0] # [0.00342, 0.00342]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_0_FF
+                Indices: [2, 3]
+              J2:
+                Type: VA_0_KPiPi
+                Indices: [1, 3, 2]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 106
+        # 2 K* combinations (K1(1270)/K1(1400) x bare K*(892), spectator
+        # =2) + 3 pi-pi combinations (K1(1270) x rho(770)/rho(1450)/
+        # f0(600), spectator=1) - 50/50 split between the two chains,
+        # then evenly within each.
+        PhaseSpace:
+          - TwoResonances_K(1)(1270)+_2_K*(892)+_13:
+              Weight: 0.25
+          - TwoResonances_K(1)(1400)+_2_K*(892)+_13:
+              Weight: 0.25
+          - TwoResonances_K(1)(1270)+_1_rho(770)+_23:
+              Weight: 0.166667
+          - TwoResonances_K(1)(1270)+_1_rho(1450)+_23:
+              Weight: 0.166667
+          - TwoResonances_K(1)(1270)+_1_f(0)(600)+_23:
+              Weight: 0.166667
+        AlwaysIntegrate: 1
+
+    #
+    # tau- -> nu_tau K_S pi- pi0 (piM_K0bar_pi0 mode, K_S recognised
+    # with the extra 1/sqrt(2) projection factor - m_isKSKL). K_S is
+    # listed FIRST in the channel key, so the Indices array below
+    # ([2,1,3]) routes pi- to m_pi[0], K_S to m_pi[1], pi0 to m_pi[2].
+    #
+    # G1 = (2/3)*T_K1b*T_rho1(pi- pi0 pair) + (1/3)*T_K1a*T_K*1(K_S pi-
+    # pair); G2 = (1/3)*T_K1a*[T_K*1(K_S pi0 pair)-T_K*1(K_S pi- pair)].
+    # T_K1b=K1(1270) alone; T_K1a=K1(1400)+K1(1270) mix (K1(1400) used
+    # as the representative/dominant proxy in the PhaseSpace sampling
+    # below, rather than also splitting that mix out - keeps this to 3
+    # sampling regions x (2 or 3) inner resonances instead of a larger
+    # combinatorial blowup).
+    #
+    # Available FORM_FACTOR options:
+    #   100 = KS (FM95).
+    #   103 = KS_f0: adds an f0(500)/sigma admixture to the pi-pi0
+    #         tower (deltaMag_pipi_f0, same parameter/caveat as the
+    #         K-pi+pi- entry above) - active choice here.
+    # Reference: FM95 (hep-ph/9503474), row 8.
+    #
+        IntResults: [3.7671e-15, 3.7669e-18, 3.3345e-13]
+      310,-211,111,16:
+        BR: [0.0, 0.0] # [0.00185, 0.00185]
         ME:
           - Current_ME:
               J1:
@@ -1960,38 +2027,20 @@ HADRON_DECAYS:
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3170
 
-      331,14,-13:
-        BR: [0.04443571637, 0.003386746506]
-        Origin: "PDG2026 (8.0+-0.6)E-3 OUR AVERAGE"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.97349
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.5400
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -6.3
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3170
-
     #
-    # =====================================================
-    #  D_s^+ -> K^0 l^+ nu   (VA_P_P)
-    #  f+(0)=0.623, r1=-4.000, BESIII arXiv:2510.05904.
-    #  Cabibbo-suppressed c->d, but unlike D->pi the D* IS
-    #  subthreshold here (m_D*^2=4.04 < t_+=6.08) so the
-    #  Blaschke factor is kept - see the note at the top.
-    # =====================================================
-      311,12,-11:
-        BR: [0.01592654837, 0.001419892092]
-        Origin: "PDG2026 (2.88+-0.26)E-3 OUR AVERAGE"
+    # tau- -> nu_tau pi- K_L pi0 (piM_K0bar_pi0 mode via K_L, same
+    # 1/sqrt(2) projection as the K_S entry above). Listed order
+    # already matches FixMode's requirement directly (Indices=[1,2,3]).
+    # Same FORM_FACTOR (103=KS_f0) and 3-region PhaseSpace structure as
+    # the K_S entry above, remapped for this channel's own raw index
+    # layout:
+    #   rho region:  pi-(idx1)+pi0(idx3), spectator=K_L(idx2)
+    #   K* region A: pi-(idx1)+K_L(idx2), spectator=pi0(idx3)
+    #   K* region B: K_L(idx2)+pi0(idx3), spectator=pi-(idx1)
+    #
+        IntResults: [1.1144e-14, 1.0274e-17, 6.3481e-13]
+      -211,130,111,16:
+        BR: [0.0, 0.0] # [0.00185, 0.00185]
         ME:
           - Current_ME:
               J1:
@@ -2010,46 +2059,91 @@ HADRON_DECAYS:
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3000
 
-      311,14,-13:
-        BR: [0.01592654837, 0.001419892092]
-        Origin: "PDG2026 (2.88+-0.26)E-3 e-mode value reused, no PDG mu entry"
+    ##### K K pi (charged-charged only) #####
+    #
+    # tau- -> nu_tau K+ K- pi- (KP_KM_piM mode). Implemented ONLY by
+    # the dedicated VA_0_KKPi Current class (F1_0_KKPi/F5_0_KKPi), NOT
+    # by VA_0_PPP (whose underlying class recognises this mode in
+    # FixMode() but never actually implements it anywhere - using
+    # VA_0_PPP here would silently produce exactly zero rate).
+    #
+    # Available FORM_FACTOR options:
+    #   100 = KS (FM95), via VA_0_KPiK - the default below. Same model
+    #         and Current class as the other K K pi charge modes in
+    #         this file, so the whole family is now described
+    #         consistently. Note the mode is selected by the POSITION
+    #         of the pion in Indices, not by a key: FixMode() is
+    #         charge-blind, so (K,pi,K) picks FM95's KM_piM_KP while
+    #         (K,K,pi) picks RChL2012's KP_KM_piM.
+    #   201 = RChL2012, via VA_0_KKPi with Indices [1,2,3]. Uses a
+    #         CUSTOM inline a1 width function (RChL::Gamma_a1_PionFit,
+    #         M=1.12 GeV by default), not the standard registered
+    #         a1(1260) lineshape used elsewhere in this file - the
+    #         "a(1)(1260)+" name in the PhaseSpace block below is a
+    #         best-effort importance-sampling approximation, not an
+    #         exact match to what that model evaluates internally.
+    # FM95 is the default because it describes this channel better on
+    # both axes: rate 1.40 -> 1.13 x PDG, and a markedly better shape
+    # against the CLEO K+K-pi- spectrum.
+    # Reference: Finkemeier & Mirkes hep-ph/9503474 Tabs.I/II row 1;
+    # RChL2012 as cited in FF_0_PPP.C's F1_0_KKPi/F5_0_KKPi.
+    ######################################################
+        IntResults: [1.115e-14, 1.0245e-17, 7.247e-13]
+      321,-321,-211,16:
+        BR: [0.0, 0.0] # [0.0932, 0.0932]
         ME:
           - Current_ME:
               J1:
                 Type: VA_0_FF
                 Indices: [2, 3]
               J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.22486
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.6230
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -4.000
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3000
+                Type: VA_0_KPiK
+                Indices: [2, 3, 1]
+                RUNNING_WIDTH: 1
+                FORM_FACTOR: 100
+        # Indices are FM95's own q1,q2,q3 = K^-(idx2), pi^-(idx3),
+        # K^+(idx1). PhaseSpace below names PARTICLE indices, which are
+        # unaffected by that reordering:
+        #   rho region:  K+(idx1)+K-(idx2),  spectator=pi-(idx3)
+        #   K* region A: K+(idx1)+pi-(idx3), spectator=K-(idx2)
+        #   K* region B: K-(idx2)+pi-(idx3), spectator=K+(idx1)
+        PhaseSpace:
+          - TwoResonances_a(1)(1260)+_3_rho(770)+_12:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_3_rho(1450)+_12:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_2_K*(892)+_13:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_2_K*(1410)+_13:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_1_K*(892)+_23:
+              Weight: 0.166667
+          - TwoResonances_a(1)(1260)+_1_K*(1410)+_23:
+              Weight: 0.166667
+        AlwaysIntegrate: 1
 
     #
-    # =====================================================
-    #  PURELY LEPTONIC   (VA_P_0)
-    #  <0| qbar gamma^mu (1-gamma5) c |P> = i f_P V p^mu.
-    #  Not semileptonic, but they are large: Ds -> tau nu at
-    #  5.4 percent is comparable to the whole Ds inclusive
-    #  semileptonic rate, and leaving them out makes the D+ and
-    #  Ds tables incomplete as decay tables.
-    #  The current is proportional to the decaying momentum,
-    #  so the rate is helicity suppressed and survives only
-    #  through the charged-lepton mass - which is why tau nu is
-    #  ten times mu nu despite far less phase space, and why
-    #  e nu (1.1e-8 for D+) is dropped here as negligible.
-    #  f_P and V are the legacy tabulated values, f_D = 0.2067,
-    #  f_Ds = 0.260 GeV; override with fP / Vxx.
-    # =====================================================
-      14,-13:
-        BR: [0.02966856238, 0.0006077359147]
-        Origin: "PDG2026 (5.37+-0.11)E-3 OUR AVERAGE, Ds+ -> mu+ nu"
+    # tau- -> nu_tau K- K_S pi0 and tau- -> nu_tau K- K_L pi0
+    # (KM_pi0_K0 mode - these are NOT a separate isospin combination
+    # from the mode above; they are the SAME KM_pi0_K0 current with its
+    # K0bar observed as K_S/K_L rather than the bare flavour
+    # eigenstate, exactly like piM_K0bar_pi0 and the two-meson Kpi_
+    # plus/KK_plus channels. FixMode()'s KM_pi0_K0 branch recognises
+    # K_S/K_L directly, with the same extra 1/sqrt(2) projection
+    # factor, m_isKSKL - implemented via VA_0_KPiK, NOT VA_0_KKPi).
+    #
+    # G1 = BWA1*[2/3*T_rho1(K- K_S/L pair)+1/3*T_K*1(K- pi0 pair)];
+    # G2 = (1/3)*BWA1*[T_K*1(K_S/L pi0 pair)-T_K*1(K- pi0 pair)]. Outer
+    # is plain a1(1260) throughout (no K1 mixing here, unlike the
+    # KPiPi piM_K0bar_pi0 channels above).
+    #
+    # Available FORM_FACTOR options:
+    #   100 = KS (FM95): only model implemented for this mode.
+    # Reference: FM95 (hep-ph/9503474), row 5.
+    ######################################################
+        IntResults: [4.6352e-15, 4.6009e-18, 2.1711e-13]
+      -321,310,111,16:
+        BR: [0.0, 0.0]
         ME:
           - Current_ME:
               J1:
@@ -2061,9 +2155,14 @@ HADRON_DECAYS:
                 fP:              0.260       # f_Ds [GeV]
                 Vxx:             0.97349
 
-      16,-15:
-        BR: [0.2977905982, 0.004972384756]
-        Origin: "PDG2026 (5.39+-0.09)E-2 OUR AVERAGE, Ds+ -> tau+ nu - the largest single mode in this block"
+    #
+    # tau- -> nu_tau K- K_L pi0 - identical raw index layout to the
+    # K_S entry above (just K_L instead of K_S) - same PhaseSpace block
+    # applies verbatim.
+    #
+        IntResults: [1.5113e-15, 1.5032e-18, 6.741e-14]
+      -321,130,111,16:
+        BR: [0.0, 0.0]
         ME:
           - Current_ME:
               J1:
@@ -2084,20 +2183,13 @@ HADRON_DECAYS:
     #  modes and that phi and omega fail - leaving it
     #  quasi-two-body was an inconsistency, not a decision.
     #
-    #  THE S WAVE IS A GUESS. Ds -> (K pi)_S has never been
-    #  measured. The 6 percent S-wave fraction is carried over
-    #  from the four measured D -> K pi modes, where it comes
-    #  out 5.7, 5.8, 5.9 and 6.4 percent - isospin-consistent,
-    #  as it must be. The justification is that the S/P ratio
-    #  is largely a property of K pi scattering rather than of
-    #  the weak vertex; that is an assumption, and the D+ and
-    #  Ds transitions are c->s and c->d respectively, so it is
-    #  not guaranteed. Treat the S-wave here as a model.
-    #  The quoted BRs follow: total = P/(1-0.06), split 2:1.
-    # =====================================================
-      321,-211,12,-11:
-        BR: [0.008033163817, 0.0007734820732]
-        Origin: "GUESSTIMATE: PDG measures only the K*(892)0 P wave, (2.05+-0.20)E-3. Total K pi = P/(1-0.06) with a 6 percent S-wave fraction carried over from the four measured D -> K pi modes, then split 2/3 by isospin"
+    # Available FORM_FACTOR options:
+    #   100 = KS (FM95): only model implemented.
+    # Reference: FM95 (hep-ph/9503474), Eq.50-52 family.
+    #
+        IntResults: [1.5116e-15, 1.5095e-18, 6.1586e-14]
+      310,-211,130,16:
+        BR: [0.0, 0.0] # [0.00055, 0.00055]
         ME:
           - Current_ME:
               J1:
@@ -2161,9 +2253,21 @@ HADRON_DECAYS:
                 AMP_D:           1.0
                 PHASE_D:         0.0
 
-      321,-211,14,-13:
-        BR: [0.007690621756, 0.0007734820732]
-        Origin: "GUESSTIMATE as the e mode, scaled by the generated mu/e ratio 0.958"
+    #
+    # tau- -> nu_tau K_S K_S pi- (KS_piM_KS mode - pion listed LAST in
+    # the channel key, Indices=[1,3,2] routes it to the middle slot).
+    # G1 = BWA1*T_K*1(K_S(1) pi- pair); G2 = -BWA1*[T_K*1(pi- K_S(2)
+    # pair)+T_K*1(K_S(1) pi- pair)]. NO rho term for this mode - both
+    # K_S's are identical, so the two K* regions below are physically
+    # equivalent, still listed both for even coverage.
+    #
+    # Available FORM_FACTOR options:
+    #   100 = KS (FM95): only model implemented.
+    # Reference: FM95 (hep-ph/9503474), Eq.52.
+    #
+        IntResults: [1.6886e-15, 1.6332e-18, 8.6607e-14]
+      310,310,-211,16:
+        BR: [0.0, 0.0] # [0.00024, 0.00024]
         ME:
           - Current_ME:
               J1:
@@ -2227,9 +2331,20 @@ HADRON_DECAYS:
                 AMP_D:           1.0
                 PHASE_D:         0.0
 
-      311,111,12,-11:
-        BR: [0.004016581909, 0.0003922659086]
-        Origin: "GUESSTIMATE: isospin 1/3 partner of Ds -> K+ pi-"
+    #
+    # tau- -> nu_tau pi- K_L K_L (KL_piM_KL mode = -KS_piM_KS, pion
+    # listed FIRST here so Indices=[2,1,3] is permuted accordingly).
+    # Same structure as K_S K_S pi- above, no rho term, 2 equivalent K*
+    # regions:
+    #   K* region A: K_L(idx2)+pi-(idx1), spectator=K_L(idx3)
+    #   K* region B: pi-(idx1)+K_L(idx3), spectator=K_L(idx2)
+    #
+    # Available FORM_FACTOR options:
+    #   100 = KS (FM95): only model implemented.
+    #
+        IntResults: [8.8771e-16, 8.8129e-19, 2.5547e-14]
+      -211,130,130,16:
+        BR: [0.0, 0.0] # [0.00024, 0.00024]
         ME:
           - Current_ME:
               J1:
@@ -2293,9 +2408,23 @@ HADRON_DECAYS:
                 AMP_D:           1.0
                 PHASE_D:         0.0
 
-      311,111,14,-13:
-        BR: [0.003845310878, 0.0003922659086]
-        Origin: "GUESSTIMATE: isospin 1/3 partner, mu mode"
+    ##### K K K #####
+    #
+    # tau- -> nu_tau K+ K- K- - NOT recognised by any FixMode() branch
+    # (no 3-kaon mode exists at all); the cross-check note is explicit
+    # that no implementation-ready KKK current exists in the literature
+    # surveyed there ("do not imply a precision model"). This entry is
+    # a status marker, producing EXACTLY ZERO rate (relies on the
+    # NULL-pointer-crash fix applied to VA_0_PPP's Calc() - the getter
+    # returns NULL for this flavour combination, which used to segfault
+    # before that fix, now cleanly falls back to zero). Not a gap to
+    # quietly fill.
+    #
+    # Available FORM_FACTOR options: none - no dedicated current exists.
+    ######################################################
+        IntResults: [8.861e-16, 8.8391e-19, 2.543e-14]
+      321,-321,-321,16:
+        BR: [0.0, 0.0] # [3.7e-05, 3.7e-05]
         ME:
           - Current_ME:
               J1:
@@ -2410,9 +2539,19 @@ HADRON_DECAYS:
                 Swave_MA20:      0.493677
                 Swave_MB20:      0.493677
 
-      211,-211,14,-13:
-        BR: [0.008712723067, 0.0006906089939]
-        Origin: "INFERRED: e value 1.64E-3 scaled by the generated mu/e ratio 0.962"
+    ##### eta eta pi #####
+    #
+    # tau- -> nu_tau eta eta pi- - NOT recognised by any FixMode()
+    # branch. Belle set an upper limit on this mode; the cross-check
+    # note is explicit that no mature KS/RChiPT current exists for it -
+    # status marker only, EXACTLY ZERO rate (relies on the same NULL-
+    # pointer-crash fix as the KKK entry above).
+    #
+    # Available FORM_FACTOR options: none - no dedicated current exists.
+    ######################################################
+        IntResults: [3.41626e-15, 3.04616e-18, 1.74292e-13]
+      221,221,-211,16:
+        BR: [0.0, 0.0] # [0.0001, 0.0001]
         ME:
           - Current_ME:
               J1:
@@ -2443,9 +2582,49 @@ HADRON_DECAYS:
                 Swave_MA20:      0.493677
                 Swave_MB20:      0.493677
 
-      111,111,12,-11:
-        BR: [0.004364648842, 0.0008287307927]
-        Origin: "PDG2026 (7.9+-1.5)E-4, f_0(980) -> pi0 pi0; ratio to pi+ pi- is 2.08 against the I=0 prediction of 2"
+    #
+    # tau- -> nu_tau K- pi+ pi- pi0, via the K-omega projection
+    # (K-omega -> K pi+pi-pi0: tau_two_meson_currents_KS_RChiT.tex
+    # Sec."K omega -> K pi+pi-pi0: four-pseudoscalar channel", NEW this
+    # session, VA_0_KOmega3Pi.C). A genuinely new current structure
+    # (quasi-two-body K-omega weak production feeding the anomalous
+    # omega->3pi vertex), not built on the FF_0_PPP scalar-form-factor
+    # pattern used by every 3-body channel above. All four daughters
+    # are physically distinct, so the listed Indices order is exact
+    # but not a special Bose-symmetrization convention (no ambiguity
+    # possible here, unlike the identical-boson cases in the Three
+    # pseudoscalars section).
+    #
+    # Available FORM_FACTOR options: none in the usual sense - this
+    # current is self-contained (not built on FF_0_PPP.C's getter
+    # dispatch), so FORM_FACTOR/RUNNING_WIDTH keys are not read for
+    # this channel; all parameters are read directly in
+    # SetModelParameters() instead.
+    #
+    # The h_R*t_{R omega K} strong-coupling products now default to the
+    # meson-dominance table of Wang, Guo, Liu and Li, EPJC 74 (2014)
+    # 3140 [arXiv:1408.0086] Tab.I. That paper treats K rho and K omega
+    # together and states that the leading-order production form
+    # factors are common to both, so these are the source's own K omega
+    # numbers rather than an SU(3) substitution made here. Override per
+    # channel if wanted:
+    #   hKtK_KOmegaMag: <value>      hKtK_KOmegaPhase: <value>
+    #   hA1tA1_KOmegaMag: <value>    hA1tA1_KOmegaPhase: <value>
+    #   hA2tA2_KOmegaMag: <value>    hA2tA2_KOmegaPhase: <value>
+    #   hV1tV1_KOmegaMag: <value>    hV1tV1_KOmegaPhase: <value>
+    #   hV2tV2_KOmegaMag: <value>    hV2tV2_KOmegaPhase: <value>
+    # (all as siblings of Indices below). N_omega3pi is still a
+    # placeholder (default 1); the overall rate therefore carries that
+    # normalisation and should be checked against the measured
+    # B(tau- -> K- omega nu) before being trusted.
+    #
+      -321,211,-211,111,16:
+        # CLEO III, hep-ex/0501042: B(tau- -> K- omega nu) = (4.1+-0.6+-0.7)e-4,
+        # times B(omega -> pi+pi-pi0) = 89.2%, is the K omega part of this
+        # final state. The measured total, B(tau- -> K- pi+pi-pi0 nu, ex. K0)
+        # = (7.4+-0.8+-1.1)e-4, is about twice that; the non-K-omega
+        # remainder has no current here, so only the K omega piece is quoted.
+        BR: [0.0, 0.0] # [0.000366, 0.000366]
         ME:
           - Current_ME:
               J1:
@@ -2476,39 +2655,67 @@ HADRON_DECAYS:
                 Swave_MA20:      0.493677
                 Swave_MB20:      0.493677
 
-      111,111,14,-13:
-        BR: [0.004193377811, 0.000795581561]
-        Origin: "INFERRED: e value 7.9E-4 scaled by the generated mu/e ratio 0.961"
+    #
+    # tau- -> nu_tau pi- pi0 pi0 pi0 and tau- -> nu_tau pi- pi- pi+ pi0
+    # (Novosibirsk/CVC 4pi current, Bondar et al.,
+    # tau_two_meson_currents_KS_RChiT.tex Sec."4pi: implementation-
+    # ready Novosibirsk/CVC current" - NEW this session,
+    # VA_0_Novosibirsk4Pi.C, covers both pure-4pi charge modes in one
+    # class). No Bose-symmetrization ordering is required for either
+    # channel key below - any consistent index assignment works, since
+    # the explicit permutation sums in Calc() already cover the
+    # identical-particle ambiguity.
+    #
+    # Available FORM_FACTOR options: none in the usual sense - self-
+    # contained current, not built on FF_0_PPP.C's getter dispatch.
+    #
+    # IMPORTANT model convention
+    # (see VA_0_Novosibirsk4Pi.H for the full note):
+    #  - Uses the fitted pole parameters and TAUOLA's analytic/tabulated
+    #    running widths together with the three G(Q^2) tables. Replacing
+    #    any of them by a shared registry line shape creates a hybrid
+    #    model because the G tables were fitted with this complete set.
+    #  - The mixed-charge mode's a1pi and omegapi pieces are combined
+    #    COHERENTLY here, unlike the published TAUOLA implementation
+    #    (incoherent/rate-level).
+    #  - f0(500)/sigma admixture in the rho tower (request: "add a set
+    #    of new models... plus the f0"): unlike the Kpipi channels
+    #    above (which need an explicit FORM_FACTOR switch to 103/104),
+    #    this current has NO separate model number - the f0 admixture
+    #    (kappaF0_4piMag/Phase, default -0.2) is read directly in
+    #    SetModelParameters() and is ON BY DEFAULT for both channels
+    #    below with no YAML change needed. Set kappaF0_4piMag: 0 to
+    #    recover the original (no-f0) Bondar-based current instead.
+    # Reference: Bondar et al. (Novosibirsk/CVC), as reproduced in
+    # tau_two_meson_currents_KS_RChiT.tex Sec."4pi".
+    #
+      111,111,111,-211,16:
+        BR: [0.33333333, 0.33333333]
         ME:
           - Current_ME:
               J1:
                 Type: VA_0_FF
                 Indices: [3, 4]
               J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           0           # forbidden, see the channel note
-                USE_D:           0
-                AMP_S:           0.6004      # calibrated so the generated width matches PDG
-                PHASE_S:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.460
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     1
-                Swave_KF0:       9010221
-                Swave_TYPE0:     4           # 1 running BW, 3 complex pole
-                Swave_MFLAT0:    0.9650      # Flatte mass - NOT the PDG mass;
-                Swave_G10:       0.1650      # coupling to THIS channel [GeV^2]
-                Swave_G20:       0.6950      # coupling to the second channel
-                Swave_MA20:      0.493677
-                Swave_MB20:      0.493677
+                Type: VA_0_Novosibirsk4Pi
+                Indices: [1, 2, 3, 4]
+        AlwaysIntegrate: 1
+        IntResults: [2.6034e-14, 2.6031e-17, 3.1638e-12]
 
+      -211,-211,211,111,16:
+        BR: [0.33333333, 0.33333333]
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_F_F
+                Indices: [5, 0]
+                v: 1.
+                a: -1.
+              J2:
+                Type: VA_0_Novosibirsk4Pi
+                Indices: [1, 2, 3, 4]
+        AlwaysIntegrate: 1
+        IntResults: [1.0112e-13, 1.0112e-16, 7.3573e-11]
 
   ######################################################################
   # DAUGHTER DECAYS

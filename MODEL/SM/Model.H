@@ -8,8 +8,8 @@ namespace MODEL {
 
   class Standard_Model: public Model_Base {
   private:
-
     int  m_ckmorder, m_dec_g4;
+    double m_alpha;
 
     void FixEWParameters();
     void FixCKM();
@@ -20,6 +20,7 @@ namespace MODEL {
     void InitQCDVertices();
     void InitEWVertices();
 
+    void AddLowEnergyVertices();
   public :
 
     Standard_Model();

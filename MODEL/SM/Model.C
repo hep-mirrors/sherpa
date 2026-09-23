@@ -1,4 +1,5 @@
 #include "MODEL/SM/Model.H"
+#include "MODEL/SM/LowEnergy_Model.H"
 #include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "MODEL/Main/Running_AlphaQED.H"
@@ -435,10 +436,12 @@ void Standard_Model::InitVertices()
   InitQEDVertices();
   InitQCDVertices();
   InitEWVertices();
+  AddLowEnergyVertices();
 }
 
 void Standard_Model::InitQEDVertices()
 {
+  msg_Out()<<METHOD<<" 1/alpha = "<<(1./ScalarConstant("alpha_QED"))<<"\n";
   if (!Flavour(kf_photon).IsOn()) return;
   Kabbala g1("g_1",sqrt(4.*M_PI*ScalarConstant("alpha_QED")));
   Kabbala cpl=g1*Kabbala("i",Complex(0.,1.));
@@ -744,4 +747,17 @@ void Standard_Model::InitEWVertices()
     m_v.back().cpl.push_back(-I*M*M*three/(vev*vev));
     m_v.back().order[1]=2;
   }
+}
+
+void Standard_Model::AddLowEnergyVertices() {
+  LowEnergy_Model LE;
+  //  Model_Base::Model_Getter_Function::GetObject("LowEnergy",
+  //						 Model_Arguments(true));
+  msg_Out()<<METHOD<<": LE = |"<<&LE<<"|\n";
+  LE.ModelInit();
+  LE.InitVertices();
+  const std::vector<Single_Vertex> & LEvertices = LE.Vertices();
+  for (std::vector<Single_Vertex>::const_iterator vit=LEvertices.begin();
+       vit!=LEvertices.end();vit++)
+    m_v.push_back(Single_Vertex(*vit));
 }

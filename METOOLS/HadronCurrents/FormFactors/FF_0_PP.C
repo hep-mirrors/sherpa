@@ -259,6 +259,13 @@ Fplus_0_PiZeroPiPlus::Fplus_0_PiZeroPiPlus(const FF_Parameters & params)  :
   m_mpi2(sqr(Flavour(kf_pi_plus).HadMass())),
   m_mK2(sqr(Flavour(kf_K_plus).HadMass())),
   m_useCLEO(false),
+  // These were previously left uninitialised and set only inside the RChiPT
+  // branches, so the RChL2012 path read m_mV2 = 0 and its rho propagator
+  // collapsed - see Construct_PiPi/Construct_KK below. Initialised here as
+  // well, so a future model that forgets to set them fails visibly rather
+  // than silently losing its leading resonance.
+  m_mV(0.), m_mV2(0.), m_mVp(0.), m_mVp2(0.), m_mVpp(0.), m_mVpp2(0.),
+  m_GVp(0.), m_GVpp(0.),
   m_MKst_RChiPT(0.), m_MKst2_RChiPT(0.),
   m_MKstp_RChiPT(0.), m_MKstp2_RChiPT(0.), m_gammaKpi_RChiPT(0.,0.),
   p_GRho(NULL), p_GRhop(NULL), p_GRhopp(NULL), p_GKst(NULL), p_GKstp(NULL)
@@ -340,7 +347,20 @@ void Fplus_0_PiZeroPiPlus::Construct(const FF_Parameters & params) {
 }
 
 void Fplus_0_PiZeroPiPlus::Construct_PiPi(const FF_Parameters & params) {
-  m_norm = (*params.p_model)("Vud", Tools::Vud);
+  // The isospin factor for <pi- pi0| dbar gamma^mu u |0> is sqrt(2):
+  //   H^mu = sqrt(2) Vud (p_pi- - p_pi0)^mu Ftilde_+^pipi(s),
+  // with Ftilde_+(0)=1. The note fixes this internally rather than by
+  // quoting C_pipi directly: Eq.(eq:pieta-current-pm) gives c_piP^V =
+  // sqrt(2) for the pi eta / pi eta' currents, and
+  // Eq.(eq:pieta-vff-data) states F_+^{pi eta} = eps_pieta *
+  // Ftilde_+^{pipi}, i.e. those channels carry the SAME normalised pipi
+  // form factor and differ only by the isospin-breaking eps. So pi pi
+  // must carry the identical sqrt(2), with eps -> 1 - see
+  // Construct_EtaPi below, which already has it.
+  // This sqrt(2) was previously missing here, making Gamma(tau -> pi-
+  // pi0 nu) exactly a factor 2 too small (measured 0.499 x PDG before
+  // this fix, for the highest-branching-fraction hadronic mode there is).
+  m_norm = (*params.p_model)("Vud", Tools::Vud) * sqrt(2.);
   // "CLEO/KS-type" 3-resonance tune (rho(770)+rho(1450)+rho(1700),
   // weights -0.167/+0.050) - confirmed against
   // tau_two_meson_currents_KS_RChiT.tex Table "KSparams", row
@@ -407,6 +427,16 @@ void Fplus_0_PiZeroPiPlus::Construct_PiPi(const FF_Parameters & params) {
     m_mu2_rchl = sqr(Flavour(kf_rho_770_plus).HadMass()); // mu=Mrho, fn.42
     m_mpi0_2   = sqr(Flavour(kf_pi).HadMass());
     m_mK0_2    = sqr(Flavour(kf_K).HadMass());
+    // The rho(770) itself, which FF_RChL2012's leading term needs. This used
+    // to be set only in the RChiPT branch above, leaving m_mV2 = 0 here, so
+    // the leading term degenerated from
+    //   (M^2 + s(gamma+delta)) / (M^2 - s - i M Gamma(s))  to  -(gamma+delta)
+    // - the rho propagator vanished outright. That put tau -> pi- pi0 a factor
+    // |gamma+delta|^2 = 3.8e-3 low (measured 0.001 x PDG), and K- K_S, where
+    // gamma = delta = 0 by construction, at EXACTLY zero.
+    m_mV       = (*params.p_model)("Mrho_rchl",
+				    Flavour(kf_rho_770_plus).HadMass());
+    m_mV2      = sqr(m_mV);
     m_mVp      = (*params.p_model)("Mrhop_rchl",
 				    Flavour(kf_rho_1450_plus).HadMass());
     m_mVp2     = sqr(m_mVp);
@@ -488,6 +518,13 @@ void Fplus_0_PiZeroPiPlus::Construct_KK(const FF_Parameters & params) {
     m_mu2_rchl = sqr(Flavour(kf_rho_770_plus).HadMass());
     m_mpi0_2   = sqr(Flavour(kf_pi).HadMass());
     m_mK0_2    = sqr(Flavour(kf_K).HadMass());
+    // See the identical note in Construct_PiPi: without this m_mV2 is 0 here
+    // too, and since gamma = delta = 0 for this channel the leading term
+    // becomes (0 + 0)/(0 - s) = 0, i.e. the whole form factor vanishes - which
+    // is why tau -> K- K_S integrated to EXACTLY zero on this model.
+    m_mV       = (*params.p_model)("Mrho_rchl",
+				    Flavour(kf_rho_770_plus).HadMass());
+    m_mV2      = sqr(m_mV);
     m_gammaRC  = ReadComplexParam(params.p_model,
 				  "gammaMag_KK_RChL2012",0.,"gammaPhase_KK_RChL2012",0.);
     m_deltaRC  = ReadComplexParam(params.p_model,
@@ -526,10 +563,21 @@ void Fplus_0_PiZeroPiPlus::Construct_EtaPi(const FF_Parameters & params) {
 }
 
 void Fplus_0_PiZeroPiPlus::Construct_Kpi(const FF_Parameters & params) {
+  // This one method serves two physically DIFFERENT charge states, whose
+  // isospin Clebsch factors are not the same:
+  //   K^- pi^0   : Vus/sqrt(2)
+  //   K0bar pi^- : Vus            (a factor sqrt(2) LARGER)
+  // Isospin gives A(K0bar pi^-) = sqrt(2) A(K^- pi^0), which the measured
+  // rates confirm: BR(K0bar pi^-) = 2 BR(K_S pi^-) = 0.0084 against
+  // BR(K^- pi^0) = 0.0045, i.e. a ratio of 1.87 ~ 2.
+  // The K0bar pi^- final state is then observed as K_S or K_L, each
+  // carrying an ADDITIONAL 1/sqrt(2) amplitude projection. Those two
+  // factors cancel exactly, so the K_S/K_L modes end up with the SAME
+  // m_norm as K^- pi^0 - they must NOT get a further 1/sqrt(2) on top of
+  // the K^- pi^0 Clebsch, which is what this code used to do, making
+  // those rates a factor 2 too small (measured 0.553 x PDG for pi- K_L
+  // and 0.415 for K_S pi-, against 1.073 for K- pi0 on the same model).
   m_norm = (*params.p_model)("Vus", Tools::Vus)/sqrt(2.);
-  // K_S/K_L projection - see Construct_KK above and the m_isKSKL
-  // member comment in FF_0_PP.H for the reasoning.
-  if (m_isKSKL) m_norm /= sqrt(2.);
   // Family-base (KS=100): FM95 (hep-ph/9503474), Eq.(FM95-Kpi):
   // beta_K*=-0.135+-0.025. ALWAYS computed - this is both the KS(100)
   // result itself and, per request #2, the fallback used whenever
@@ -716,15 +764,15 @@ Complex Fplus_0_PiZeroPiPlus::FF_RChiPT(const double & s) {
 		  Complex(m_mVp2-s, m_mVp*Gamma_Vp(s))/
 		  (sqr(m_mVp2-s)+sqr(m_mVp*Gamma_Vp(s)))           *
 		  exp(-s*Gamma_Vp(m_mVp2)/
-		      (M_PI*pow(m_mVp*
-				sqrt(1.-4.*m_mpi2/m_mVp2),3./2.)) *
+		      (M_PI*pow(m_mVp,3.)*
+		       pow(1.-4.*m_mpi2/m_mVp2,3./2.)) *
 		      A(m_mpi2,s,m_mV2).real())                           );
   Complex Vpp = ( s*m_delta                                             *
 		  Complex(m_mVpp2-s, m_mVpp*Gamma_Vpp(s))/
 		  (sqr(m_mVpp2-s)+sqr(m_mVpp*Gamma_Vpp(s)))        *
 		  exp(-s*Gamma_Vpp(m_mVpp2)/
-		      (M_PI*pow(m_mVpp*
-				sqrt(1.-4.*m_mpi2/m_mVpp2),3./2.)) *
+		      (M_PI*pow(m_mVpp,3.)*
+		       pow(1.-4.*m_mpi2/m_mVpp2,3./2.)) *
 		      A(m_mpi2,s,m_mV2).real())                          );
   return V + Vp + Vpp;
 }
@@ -808,14 +856,22 @@ double Fplus_0_PiZeroPiPlus::Gamma_V(const double & s) {
 
 double Fplus_0_PiZeroPiPlus::Gamma_Vp(const double & s) {
   if (s<4.*m_mpi2) return 0.;
+  // Eq.(eq:RchiT-rhop-width-complete): Gamma(s) = Gamma * (s/M^2) *
+  // sigma_pi^3(s)/sigma_pi^3(M^2), with sigma_pi(x)=sqrt(1-4mpi^2/x) -
+  // i.e. the VELOCITY ratio, same convention as Gamma_V above. An
+  // earlier version used the momentum ratio ((s-4mpi^2)/(M^2-4mpi^2))
+  // ^(3/2), which differs by a factor (s/M^2)^(3/2): exact at the pole
+  // (so it survives any on-shell width check) but a factor ~3 too
+  // small at s=1 GeV^2, i.e. wrong right where the pi pi spectrum is.
   return (m_GVp * s/m_mVp2 *
-	  pow((s-4.*m_mpi2)/(m_mVp2-4.*m_mpi2),3./2.));
+	  pow(1.-4.*m_mpi2/s,3./2.)/pow(1.-4.*m_mpi2/m_mVp2,3./2.));
 }
 
 double Fplus_0_PiZeroPiPlus::Gamma_Vpp(const double & s) {
   if (s<4.*m_mpi2) return 0.;
+  // Velocity ratio, exactly as in Gamma_Vp above - see the comment there.
   return (m_GVpp * s/m_mVpp2 *
-	  pow((s-4.*m_mpi2)/(m_mVpp2-4.*m_mpi2),3./2.));
+	  pow(1.-4.*m_mpi2/s,3./2.)/pow(1.-4.*m_mpi2/m_mVpp2,3./2.));
 }
 
 //////////////////////////////////////////////////////////////////////////////////

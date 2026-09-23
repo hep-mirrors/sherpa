@@ -1,6 +1,7 @@
 #include "METOOLS/HadronCurrents/FormFactors/K1_Decays.H"
 #include "METOOLS/HadronCurrents/FormFactors/Vector_Decays.H"
 #include "METOOLS/HadronCurrents/FormFactors/Line_Shapes.H"
+#include "METOOLS/HadronCurrents/FormFactors/Propagator.H"
 
 
 using namespace METOOLS;
@@ -115,4 +116,33 @@ K1_1400_plus_Lineshape::K1_1400_plus_Lineshape() :
   outflavs = { Kstar_plus, pi_0 };
   Partial_Width_Base * K1_2piKstar = new V_VP(m_inflav,outflavs,0.5);
   m_channels.insert(K1_2piKstar);
+}
+
+Propagator_Base * METOOLS::MakeK1_1270_Flatte() {
+  // Validated BaBar 2007 working point, carried over from the ff-ppp-work
+  // branch where it took d03 chi2/ndf from 22.7 (fixed-width FM95) to 4.7.
+  // g_i have dimensions of GeV^2.
+  const double mass           = 1.254;
+  const double g_KstarPi      = 0.114114;
+  const double g_Krho         = 0.136937;
+  const double gamma_residual = 0.1092;  // modes outside the two explicit channels
+
+  // The BARE POLE 1.254 is NOT PDG's Breit-Wigner mass 1.272, and must not be
+  // replaced by the registry value: 1.272 sits ABOVE the K rho threshold
+  // (~1.264), which inverts the sign of the dispersive term that makes the
+  // Flatte work.  Different quantities - see RESONANCE_LIBRARY_PLAN section 4.6.
+  //
+  // Charged and neutral K1(1270) share these two channels; the isospin
+  // partners differ only by Clebsch factors, which belong to the current, not
+  // to the line shape.  The width argument is NULL because a Flatte has no
+  // total-width object - its denominator is built entirely from the channel
+  // phase spaces and the residual term.
+  return new Two_Channel_Flatte(NULL,mass,
+                                Complex(g_KstarPi,0.),
+                                Flavour(kf_K_star_892_plus).HadMass(),
+                                Flavour(kf_pi_plus).HadMass(),
+                                Complex(g_Krho,0.),
+                                Flavour(kf_K_plus).HadMass(),
+                                Flavour(kf_rho_770).HadMass(),
+                                gamma_residual);
 }

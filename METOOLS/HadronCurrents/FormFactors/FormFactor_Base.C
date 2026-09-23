@@ -15,10 +15,17 @@ FormFactor_Base::FormFactor_Base(const FF_Parameters & params) :
   m_name(params.m_name),
   p_model(params.p_model)
 {
+  // Two loops, NOT one: m_pi holds the decay indices and is generally SHORTER
+  // than m_flavs (five flavours but three hadrons for e+e- -> pi+ pi- pi0, or
+  // for a tau decay).  Indexing m_pi by the flavour loop reads past its end --
+  // harmless for a current that only ever touches m_pi[0..2], but it fills the
+  // vector with garbage that bites anything iterating over m_pi.size().
   for (size_t i=0;i<params.m_flavs.size();i++) {
     m_flavs.push_back(params.m_flavs[i]);
     m_masses.push_back(params.m_masses[i]);
     m_masses2.push_back(params.m_masses2[i]);
+  }
+  for (size_t i=0;i<params.m_pi.size();i++) {
     m_pi.push_back(params.m_pi[i]);
   }
 }

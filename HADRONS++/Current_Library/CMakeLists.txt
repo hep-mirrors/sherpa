@@ -1,4 +1,4 @@
-set(Current_Library_SOURCES VA_P_P.C
+set(Current_Library_SOURCES #VA_P_P.C
                             #VA_P_S.C
                             #VA_P_V.C
                             #VA_P_T.C
@@ -16,9 +16,9 @@ set(Current_Library_SOURCES VA_P_P.C
                             #VA_B_B.C
                             #VA_B_B3.C
                             #VA_B_B_hepph9409272.C
-                            VA_F_F.C
+                            #VA_F_F.C
 			  )
-set(Current_Library_HEADERS VA_P_P.H
+set(Current_Library_HEADERS #VA_P_P.H
                             #VA_P_S.H
                             #VA_P_V.H
                             #VA_P_T.H
@@ -35,7 +35,7 @@ set(Current_Library_HEADERS VA_P_P.H
                             #VA_B_DstarPi.H
                             #VA_B_B.H
                             #VA_B_B3.H
-                            VA_F_F.H
+                            #VA_F_F.H
 			  )
 			  
 sherpa_create_git_info(Current_Library)

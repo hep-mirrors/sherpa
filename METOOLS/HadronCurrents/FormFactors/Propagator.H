@@ -5,6 +5,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/MyComplex.H"
 #include <map>
+#include <vector>
 #include <string>
 
 namespace METOOLS {
@@ -114,6 +115,187 @@ namespace METOOLS {
   // paper, each channel's code uses whichever convention is literally
   // printed for that channel's own equations - see FF_0_PPP.C's
   // comments at the point of use for which is which.
+
+  // FM95 Eq.(34): the NORMALIZED, CONSTANT-width Breit-Wigner that
+  // hep-ph/9503474 specifies for the K1 envelopes,
+  //     BW(s) = (-m^2 + i m G) / (s - m^2 + i m G),
+  // identical to Tools::BreitWignerFix(s,m^2,m*G).  This is deliberately NOT
+  // the running-width BreitWigner above: FM95 says "normalized Breit-Wigner
+  // propagators with constant widths", and a running Gamma(s) grows with s,
+  // which inflates the denominator and suppresses the high-mass tail that the
+  // K1(1400) is supposed to supply.  Mass and width are passed explicitly
+  // rather than taken from a Total_Width_Base, because the paper's Eq.(35)
+  // values are parameters of its own fit, not the flavour's PDG pole.
+  class FM95_Fixed_BW : public Propagator_Base {
+  private:
+    double m_G;
+  public:
+    FM95_Fixed_BW(const double & mass,const double & width);
+    const Complex operator()(const double & s);
+    const Complex Normalised(const double & s);
+    const double  Normalised2(const double & s);
+  };
+
+  ///////////////////////////////////////////////////////////////////////////
+  //
+  // Constant-width Breit-Wigner:  M^2 / (M^2 - s - i M Gamma).
+  //
+  // Deliberately NOT BreitWigner with resonance_type::fixed -- that class
+  // always evaluates (*p_width)(s), so "fixed" never reaches the denominator.
+  // Here M and Gamma are given explicitly and no Total_Width_Base is involved.
+  //
+  // The imaginary part is M*Gamma, NOT sqrt(s)*Gamma.  That is the convention
+  // of hep-ph/0512180 Eq. (5), 1/(s/m^2 - 1 + i Gamma/m), and it is a genuine
+  // constant: sqrt(s)*Gamma still grows with s, which is precisely the defect
+  // this class exists to avoid.
+  //
+  // WHY IT EXISTS.  A running width built from a decay phase-space integral is
+  // the right description of a resonance near its own pole, and the wrong one
+  // when the propagator is evaluated far above it inside a larger amplitude,
+  // because Gamma(s) keeps growing.  Measured for omega(782): by 1.6 GeV the
+  // running-width propagator is a factor 3 smaller than this one and rotated
+  // in phase by 72 degrees, which is enough to wreck an amplitude in which the
+  // omega term dominates.  Use this whenever a narrow resonance is evaluated
+  // well off its pole.
+  //
+  ///////////////////////////////////////////////////////////////////////////
+
+  class FixedBreitWigner : public Propagator_Base {
+  private:
+    double m_Gamma;
+  public:
+    FixedBreitWigner(const double & M,const double & Gamma);
+    const Complex operator()(const double & s);
+    const Complex Normalised(const double & s);
+    const double  Normalised2(const double & s);
+  };
+
+  ///////////////////////////////////////////////////////////////////////////
+  //
+  // Gounaris-Sakurai with the imaginary part M*Gamma(s).
+  //
+  // DELIBERATELY SEPARATE from BreitWigner's resonance_type::GS, which builds
+  // the denominator as  M^2 - s + f(s) - i sqrt(s) Gamma(s)  where this uses
+  //                     M^2 - s + F(s) - i M       Gamma(s).
+  // Those are different functions, and resonance_type::GS is used by FF_0_PP,
+  // FF_0_PPP and VA_0_PiPiPi -- the tau currents -- so it must not be changed
+  // to suit this one.
+  //
+  // This form is the one FF_0_Isoscalar3Pi's couplings were FITTED against.
+  // A line shape and the couplings multiplying it are a matched pair; swap one
+  // and the other stops meaning what it did.
+  //
+  // Self-contained: it takes the flavour and the pion mass and derives its own
+  // pole quantities, so it needs no Total_Width_Base and does not care whether
+  // the registry hands out widths or propagators.
+  //
+  ///////////////////////////////////////////////////////////////////////////
+
+  class GounarisSakuraiM : public Propagator_Base {
+  private:
+    double m_G0, m_mpi, m_mpi2;
+    double m_k0, m_h0, m_dh0, m_d, m_num;
+
+    double K(const double & s) const;
+    double H(const double & s) const;
+    double F(const double & s) const;
+    double Width(const double & s) const;
+  public:
+    GounarisSakuraiM(const ATOOLS::Flavour & flav,const double & mpi);
+    const Complex operator()(const double & s);
+    const Complex Normalised(const double & s);
+    const double  Normalised2(const double & s);
+  };
+  ///////////////////////////////////////////////////////////////////////////
+  //
+  // COMPOSING AMPLITUDES ACROSS SEVERAL INVARIANTS
+  //
+  // Summed_Propagator and Multiplied_Propagator combine propagators that are
+  // all functions of the SAME s, because Propagator_Base::operator() takes one
+  // argument.  Some amplitudes are not of that shape.  hep-ph/0512180 Eq. (10)
+  // for gamma* -> 3 pi is
+  //
+  //   F = [A BW_om + B BW_phi + C BW_om' + D BW_om''](q^2) x H_rho770(s_ij)
+  //     +  E BW_phi(q^2)                                   x H_rho1450(s_ij)
+  //     +  F BW_om''(q^2)                                  x H_rho1700(s_ij)
+  //
+  // i.e. products of a function of q^2 with a function of a two-body
+  // sub-invariant, summed.  Two things there are out of reach of the classes
+  // above: a product whose factors take DIFFERENT invariants, and a sum of the
+  // SAME propagator at several sub-invariants (each H is one line shape summed
+  // over the three pion pairings).
+  //
+  // The classes below fix that by having every entry carry a tag naming which
+  // invariant it is evaluated at.  A leaf cannot decide that for itself -- a
+  // rho(1450) object has no idea whether it is playing the pi+ pi- pairing or
+  // the pi+ pi0 one -- so the tag lives with the parent that assembled it.
+  //
+  // They deliberately do NOT derive from Propagator_Base: they cannot honour
+  // its single-argument operator(), and pretending otherwise would let them be
+  // passed where a line shape is expected and silently evaluated wrongly.
+  //
+  // Entries are BORROWED, not owned.  The same propagator commonly appears at
+  // more than one invariant -- the charged rho serves two of the three pairings
+  // -- so the caller keeps ownership and deletes once.
+  //
+  ///////////////////////////////////////////////////////////////////////////
+
+  //! Which invariant an entry is evaluated at.  The sub-invariants are indices
+  //! into the caller's own ordering; the amplitude decides what they mean.
+  enum class invariant_arg { total = -1, sub_0 = 0, sub_1 = 1, sub_2 = 2 };
+
+  struct Invariants {
+    double              m_q2;
+    std::vector<double> m_sub;
+    Invariants(const double & q2,const std::vector<double> & sub) :
+      m_q2(q2), m_sub(sub) {}
+    double At(const invariant_arg & a) const;
+  };
+
+  class Invariant_Term {
+  public:
+    virtual ~Invariant_Term() {}
+    virtual Complex operator()(const Invariants & k) const = 0;
+  };
+
+  //! One line shape at one named invariant, times a weight.
+  class Line_Shape_Term : public Invariant_Term {
+  private:
+    Propagator_Base * p_prop;
+    invariant_arg     m_arg;
+    Complex           m_weight;
+  public:
+    Line_Shape_Term(Propagator_Base * prop,const invariant_arg & arg,
+                    const Complex & weight=Complex(1.,0.));
+    Complex operator()(const Invariants & k) const;
+  };
+
+  //! Sum of terms.  Children are borrowed; see the note above.
+  class Sum_Term : public Invariant_Term {
+  private:
+    std::vector<Invariant_Term *> m_terms;
+  public:
+    ~Sum_Term();
+    //! Takes ownership of the term itself (not of any propagator inside it).
+    void Add(Invariant_Term * term);
+    //! Convenience: wrap a borrowed line shape at one invariant.
+    void Add(Propagator_Base * prop,const invariant_arg & arg,
+             const Complex & weight=Complex(1.,0.));
+    Complex operator()(const Invariants & k) const;
+  };
+
+  //! Product of terms, each free to take a different invariant.
+  class Product_Term : public Invariant_Term {
+  private:
+    std::vector<Invariant_Term *> m_terms;
+  public:
+    ~Product_Term();
+    void Add(Invariant_Term * term);
+    void Add(Propagator_Base * prop,const invariant_arg & arg,
+             const Complex & weight=Complex(1.,0.));
+    Complex operator()(const Invariants & k) const;
+  };
+
   class RChL_BW : public Propagator_Base {
   public:
     RChL_BW(Total_Width_Base * width) :
@@ -123,66 +305,93 @@ namespace METOOLS {
     const double  Normalised2(const double & s);
   };
 
-  // Complex-pole propagator,
-  //     D(s) = s_pole / (s_pole - s),   s_pole = (M - i Gamma/2)^2,
-  // normalised to D(0) = 1 so that it matches the convention of
-  // BreitWigner above (M^2/(M^2-s-i sqrt(s) Gamma(s)) -> 1 at s=0) and
-  // can be dropped into a Summed_Propagator alongside one.
+  // ------------------------------------------------------------------
+  // Propagators of the Novosibirsk four-pion parameterisation, as
+  // TAUOLA implements them (tauola-factory/Binp/binp.f).
   //
-  // Takes no Total_Width_Base: there is no running width to evaluate,
-  // which is the whole point. The flavour is carried separately, only
-  // so that DumpPropagatorStructure can label it.
-  class Complex_Pole : public Propagator_Base {
+  // These are NOT the BreitWigner above and NOT the paper's Eq.(18).
+  // Two differences matter:
+  //   * they are NORMALISED to be dimensionless - binp.f divides by
+  //     M^2 (and the rho additionally by 1 + (Gamma/M) dm(0)) - with
+  //     the dimensions restored by the current's overall 1/M_rho^4/Q;
+  //   * the rho carries a Gounaris-Sakurai dispersive real part dm(s).
+  //     That is the same physics as BreitWigner's resonance_type::GS,
+  //     but binp.f groups and normalises it differently, so reusing
+  //     ValueGS() here would not reproduce the published widths.
+  //
+  // They return D, not 1/D, matching binp.f's z_drho/z_dsigma/z_da1/
+  // z_domega - callers divide.  Which resonance is selected by the
+  // novo4pi_resonance tag rather than by four near-identical classes.
+  // ------------------------------------------------------------------
+  enum class novo4pi_resonance { rho, sigma, a1, omega };
+
+  class Novo4Pi_Propagator : public Propagator_Base {
   private:
-    Complex         m_spole;
-    double          m_Mpole, m_Gpole;
-    ATOOLS::Flavour m_flav;
+    novo4pi_resonance m_res;
+    double         m_G;        // pole width
+    double         m_scaleA;   // a1 form-factor scale (this is Lambda^2)
+    Complex        m_z;        // sigma/rho mixing, needed by the a1 width
+    double         m_mdau;     // daughter mass, for the sigma phase space
+    double         m_rhonorm;  // cached 1/(1 + (Gamma/M) dm(0))
+    double         m_g1;       // cached width normalisation at the pole
+    bool           m_keepshape;
   public:
-    Complex_Pole(const double & Mpole,const double & Gpole,
-                 const ATOOLS::Flavour & flav=ATOOLS::Flavour(kf_none));
-    ATOOLS::Flavour Flav() const { return m_flav; }
+    // width may be NULL: these propagators use the parameterisation's
+    // own analytic/tabulated widths, not a registered line shape.
+    // width is normally NULL: these propagators use the
+    // parameterisation's own analytic/tabulated widths.  Passing a
+    // registered line shape instead makes the a1 use
+    //   D = s/M^2 - 1 + i Gamma(s)/M
+    // i.e. Bondar's form with his tabulated g_a1 replaced by Sherpa's
+    // running width.  Provided so the two can be compared; see the
+    // note in VA_0_Novosibirsk4Pi.H on why the tabulated one is the
+    // default.
+    Novo4Pi_Propagator(const novo4pi_resonance & res,
+                    const double & M,const double & G,
+                    const double & mdau=0.13957,
+                    const Complex & z=Complex(1.269,0.591),
+                    const double & scaleA=1.2,
+                    Total_Width_Base * width=NULL,
+                    // rho only: keep Bondar's Gounaris-Sakurai real part
+                    // and his normalisation, swapping ONLY the width
+                    // function for the registered one.  Exists to
+                    // isolate which of the three differences between
+                    // his propagator and a plain registry one matters.
+                    const bool & keepshape=false);
     const Complex operator()(const double & s);
     const Complex Normalised(const double & s);
     const double  Normalised2(const double & s);
-    virtual double OnShellWidth() const { return m_Gpole; }
-    virtual Complex PoleNumerator() const { return m_spole; }
-    inline Complex PolePosition() const { return m_spole; }
   };
 
-  // Flatte, two channels:
+  // Two-channel Flatte, for a resonance sitting ON a threshold, where a
+  // Breit-Wigner - fixed OR running width - cannot work: the channel phase
+  // space must go IMAGINARY below threshold, which is the whole point.  The
+  // motivating case is K1(1270), whose pole is essentially on the K rho
+  // threshold (1.269 vs a 1.27 pole).
   //
-  //   D(s) = M^2 / ( M^2 - s - i [ g_1 rho_1(s) + g_2 rho_2(s) ] ),
-  //
-  // with the two-body phase-space factors
-  //   rho_ab(s) = sqrt( (1-(m_a+m_b)^2/s)(1-(m_a-m_b)^2/s) )
-  // continued ANALYTICALLY below threshold, where rho becomes
-  // i|rho| and the term moves from the imaginary to the real part of
-  // the denominator. The couplings g_i carry GeV^2.
-  //
-  // The M^2 numerator matches the BreitWigner convention in this file
-  // (D -> 1 at s=0 up to the subthreshold rho's), so PoleNumerator()
-  // returns M^2 and callers deriving a coupling from a width divide it
-  // out exactly as they do for a Breit-Wigner.
-  class Flatte : public Propagator_Base {
+  // TRAP, and it is a real one: the Flatte's BARE pole is NOT the PDG
+  // Breit-Wigner mass.  For K1(1270) the bare pole is 1.254 while PDG quotes
+  // 1.272, and 1.272 sits ABOVE the K rho threshold (~1.264), which INVERTS
+  // the sign of the dispersive term that makes the Flatte work.  They are
+  // different quantities; never substitute the registry mass here.
+  class Two_Channel_Flatte : public Propagator_Base {
   private:
-    double m_g1, m_g2;
-    double m_ma1, m_mb1, m_ma2, m_mb2;
-    ATOOLS::Flavour m_flav;
-    Complex Rho(const double & s,const double & ma,
-                const double & mb) const;
+    Complex m_g1, m_g2;
+    double m_m11, m_m12, m_m21, m_m22;
+    double m_gamma0;
+
+    Complex PhaseSpace(const double & s,const double & m1,
+                       const double & m2) const;
+
   public:
-    Flatte(const double & M,const double & g1,const double & g2,
-           const double & ma1,const double & mb1,
-           const double & ma2,const double & mb2,
-           const ATOOLS::Flavour & flav=ATOOLS::Flavour(kf_none));
+    Two_Channel_Flatte(Total_Width_Base * width,const double & mass,
+                       const Complex & g1,const double & m11,
+                       const double & m12,
+                       const Complex & g2,const double & m21,
+                       const double & m22,const double & gamma0=0.);
     const Complex operator()(const double & s);
     const Complex Normalised(const double & s);
     const double  Normalised2(const double & s);
-    // Width at the pole from the OPEN channel only, so that a caller
-    // deriving a decay coupling gets something meaningful.
-    virtual double OnShellWidth() const;
-    virtual Complex PoleNumerator() const { return Complex(m_M2,0.); }
-    ATOOLS::Flavour Flav() const { return m_flav; }
   };
 
   class Summed_Propagator : public Propagator_Base {

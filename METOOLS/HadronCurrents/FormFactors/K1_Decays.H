@@ -41,6 +41,11 @@ namespace METOOLS {
   public:
     K1_1400_plus_Lineshape();
   };
+
+  // Flatte line shape for the K1(1270), for form-factor model 106.  Standalone:
+  // it takes no Total_Width_Base and reads only stable-hadron masses, so it is
+  // independent of the K1 width registry above.  See K1_Decays.C.
+  Propagator_Base * MakeK1_1270_Flatte();
 }
 
 #endif

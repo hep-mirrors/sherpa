@@ -1,8 +1,12 @@
+#include "METOOLS/HadronCurrents/Tools.H"
 #include "METOOLS/HadronCurrents/FormFactors/Propagator.H"
+#include "METOOLS/HadronCurrents/FormFactors/Novosibirsk4pi_GTables.H"
 #include "METOOLS/HadronCurrents/FormFactors/Resonance_Base.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include <cmath>
 
 using namespace METOOLS;
@@ -215,6 +219,166 @@ const Complex BreitWigner::Normalised(const double & s) {
 //
 ///////////////////////////////////////////////////////////////////////////
 
+FM95_Fixed_BW::FM95_Fixed_BW(const double & mass,const double & width) :
+  Propagator_Base(NULL,resonance_type::fixed), m_G(width) {
+  m_M  = mass;
+  m_M2 = mass*mass;
+}
+
+const Complex FM95_Fixed_BW::operator()(const double & s) {
+  return Tools::BreitWignerFix(s,m_M2,m_M*m_G);
+}
+
+const Complex FM95_Fixed_BW::Normalised(const double & s) {
+  return (*this)(s);
+}
+
+const double FM95_Fixed_BW::Normalised2(const double & s) {
+  return norm((*this)(s));
+}
+
+FixedBreitWigner::FixedBreitWigner(const double & M,const double & Gamma) :
+  Propagator_Base(NULL,resonance_type::fixed), m_Gamma(Gamma) {
+  m_M  = M;
+  m_M2 = M*M;
+}
+
+const Complex FixedBreitWigner::operator()(const double & s) {
+  return m_M2/Complex(m_M2-s,-m_M*m_Gamma);
+}
+
+const Complex FixedBreitWigner::Normalised(const double & s) {
+  return (*this)(s);
+}
+
+const double FixedBreitWigner::Normalised2(const double & s) {
+  return norm((*this)(s));
+}
+
+GounarisSakuraiM::GounarisSakuraiM(const Flavour & flav,const double & mpi) :
+  Propagator_Base(NULL,resonance_type::GS),
+  m_G0(flav.Width()), m_mpi(mpi), m_mpi2(sqr(mpi))
+{
+  m_M  = flav.HadMass();
+  m_M2 = sqr(m_M);
+
+  m_k0  = K(m_M2);
+  m_h0  = H(m_M2);
+  // dh/ds evaluated at the pole.
+  m_dh0 = m_h0*(1./(8.*sqr(m_k0))-1./(2.*m_M2))+1./(2.*M_PI*m_M2);
+  // Published closed form for d.  Do NOT try to recover this as f(0)/(G0*m0)
+  // using a real-valued f: below threshold k^2 is negative and the
+  // k^2*(h(s)-h(m0^2)) term stays finite, so the naive continuation is wrong
+  // by a constant factor of about 1.137.
+  m_d = (3./M_PI)*(m_mpi2/sqr(m_k0))*log((m_M+2.*m_k0)/(2.*m_mpi))
+      + m_M/(2.*M_PI*m_k0)
+      - (m_mpi2*m_M)/(M_PI*pow(m_k0,3.));
+  // The published GS normalisation, which makes the amplitude 1 at s=0 given
+  // the exact f(s), matching BreitWigner and Two_Channel_Flatte here so the
+  // mixing coefficients of a coherent sum keep their meaning.  F() below is
+  // the above-threshold form, so evaluating this literally at s=0 comes out
+  // about 1% high; that region is never probed, since every call site passes a
+  // physical two-pion invariant mass.
+  m_num = m_M2*(1.+m_d*m_G0/m_M);
+}
+
+double GounarisSakuraiM::K(const double & s) const {
+  if (s<=4.*m_mpi2) return 0.;
+  return 0.5*sqrt(s-4.*m_mpi2);
+}
+
+double GounarisSakuraiM::H(const double & s) const {
+  const double k = K(s);
+  if (k<=0. || s<=0.) return 0.;
+  const double rs = sqrt(s);
+  return (2./M_PI)*(k/rs)*log((rs+2.*k)/(2.*m_mpi));
+}
+
+double GounarisSakuraiM::F(const double & s) const {
+  // f(m0^2) = 0 by construction, so the pole sits where it should.
+  const double k = K(s);
+  return m_G0*m_M2/pow(m_k0,3.) *
+         (sqr(k)*(H(s)-m_h0) + (m_M2-s)*sqr(m_k0)*m_dh0);
+}
+
+double GounarisSakuraiM::Width(const double & s) const {
+  const double k = K(s);
+  if (k<=0. || s<=0.) return 0.;
+  return m_G0*(m_M/sqrt(s))*pow(k/m_k0,3.);
+}
+
+const Complex GounarisSakuraiM::operator()(const double & s) {
+  return m_num/Complex(m_M2-s+F(s),-m_M*Width(s));
+}
+
+const Complex GounarisSakuraiM::Normalised(const double & s) {
+  return (*this)(s);
+}
+
+const double GounarisSakuraiM::Normalised2(const double & s) {
+  return norm((*this)(s));
+}
+
+
+double Invariants::At(const invariant_arg & a) const {
+  if (a==invariant_arg::total) return m_q2;
+  // Braces, not parentheses: 'size_t i(size_t(a))' parses as a function
+  // declaration, not a variable.
+  const size_t i{static_cast<size_t>(a)};
+  if (i>=m_sub.size())
+    THROW(fatal_error,"Invariants::At: sub-invariant "+ATOOLS::ToString(i)+
+          " requested but only "+ATOOLS::ToString(m_sub.size())+" supplied.");
+  return m_sub[i];
+}
+
+Line_Shape_Term::Line_Shape_Term(Propagator_Base * prop,
+                                 const invariant_arg & arg,
+                                 const Complex & weight) :
+  p_prop(prop), m_arg(arg), m_weight(weight)
+{
+  if (p_prop==NULL) THROW(fatal_error,"Line_Shape_Term: null propagator.");
+}
+
+Complex Line_Shape_Term::operator()(const Invariants & k) const {
+  return m_weight*(*p_prop)(k.At(m_arg));
+}
+
+Sum_Term::~Sum_Term() {
+  // The terms are ours; the propagators inside them are not.
+  while (!m_terms.empty()) { delete m_terms.back(); m_terms.pop_back(); }
+}
+
+void Sum_Term::Add(Invariant_Term * term) { m_terms.push_back(term); }
+
+void Sum_Term::Add(Propagator_Base * prop,const invariant_arg & arg,
+                   const Complex & weight) {
+  m_terms.push_back(new Line_Shape_Term(prop,arg,weight));
+}
+
+Complex Sum_Term::operator()(const Invariants & k) const {
+  Complex result(0.,0.);
+  for (size_t i(0);i<m_terms.size();++i) result += (*m_terms[i])(k);
+  return result;
+}
+
+Product_Term::~Product_Term() {
+  while (!m_terms.empty()) { delete m_terms.back(); m_terms.pop_back(); }
+}
+
+void Product_Term::Add(Invariant_Term * term) { m_terms.push_back(term); }
+
+void Product_Term::Add(Propagator_Base * prop,const invariant_arg & arg,
+                       const Complex & weight) {
+  m_terms.push_back(new Line_Shape_Term(prop,arg,weight));
+}
+
+Complex Product_Term::operator()(const Invariants & k) const {
+  // Empty product is 1, so that a term built up conditionally still behaves.
+  Complex result(1.,0.);
+  for (size_t i(0);i<m_terms.size();++i) result *= (*m_terms[i])(k);
+  return result;
+}
+
 const Complex RChL_BW::operator()(const double & s) {
   return 1./Complex(s-m_M2,-m_M*(*p_width)(s));
 }
@@ -405,4 +569,110 @@ void METOOLS::DumpPropagatorStructure(const std::string & label,
     return;
   }
   DumpPropagatorEntry(props, Complex(1.,0.), "", false);
+}
+
+// ====================================================================
+// Novo4Pi_Propagator - see Propagator.H for why these are not BreitWigner
+// with resonance_type::GS.
+// ====================================================================
+
+Novo4Pi_Propagator::Novo4Pi_Propagator(const novo4pi_resonance & res,
+                                 const double & M,const double & G,
+                                 const double & mdau,
+                                 const Complex & z,const double & scaleA,
+                                 Total_Width_Base * width,
+                                 const bool & keepshape) :
+  Propagator_Base(width,resonance_type::running),
+  m_res(res), m_G(G), m_scaleA(scaleA), m_z(z), m_mdau(mdau),
+  m_rhonorm(1.), m_g1(1.), m_keepshape(keepshape) {
+  m_M = M; m_M2 = M*M;
+  if (m_res==novo4pi_resonance::rho) {
+    const double d0 = Novo4PiDM(0.,m_M);
+    const double n  = 1.+m_G/m_M*d0;
+    m_rhonorm = (std::abs(n)>1.e-12) ? 1./n : 1.;
+  }
+}
+
+const Complex Novo4Pi_Propagator::operator()(const double & s) {
+  // A registered line shape gives the same dimensionless form for every
+  // resonance: Bondar's D with his g_R(s)/g_R(M^2) replaced by Sherpa's
+  // running width.  The pole width cancels in the ratio, leaving
+  // Gamma(s)/M.  For the rho this also drops the Gounaris-Sakurai
+  // dispersive real part, which binp.f carries and the paper does not.
+  if (p_width && m_keepshape && m_res==novo4pi_resonance::rho) {
+    // Bondar's rho with only the width function replaced.
+    Complex D(s-m_M2-Novo4PiDM(s,m_M)*m_G*m_M, m_M*(*p_width)(s));
+    return D/m_M2*m_rhonorm;
+  }
+  if (p_width) return Complex(s/m_M2-1., (*p_width)(s)/m_M);
+  // Only the sigma reaches here: every other resonance is constructed
+  // with a registered line shape and returns above.
+  switch (m_res) {
+  case novo4pi_resonance::sigma: {
+    // binp.f z_dsigma: equal daughter masses, so the two Kallen
+    // factors coincide.
+    const double d  = 1.-4.*sqr(m_mdau)/s;
+    const double d0 = 1.-4.*sqr(m_mdau)/m_M2;
+    const double pm  = sqrt(Max(d*d,1.e-16));
+    const double pm0 = sqrt(Max(d0*d0,1.e-16));
+    return Complex(s/m_M2-1., m_G/m_M*pm/pm0);
+  }
+  }
+  return Complex(1.,0.);
+}
+
+const Complex Novo4Pi_Propagator::Normalised(const double & s) {
+  // These are already dimensionless by construction; "normalised" here
+  // means the same thing, so nothing further to do.
+  return (*this)(s);
+}
+
+const double Novo4Pi_Propagator::Normalised2(const double & s) {
+  return norm((*this)(s));
+}
+
+Two_Channel_Flatte::Two_Channel_Flatte(Total_Width_Base * width,
+                                       const double & mass,
+                                       const Complex & g1,const double & m11,
+                                       const double & m12,
+                                       const Complex & g2,const double & m21,
+                                       const double & m22,
+                                       const double & gamma0) :
+  Propagator_Base(width,resonance_type::bespoke),
+  m_g1(g1), m_m11(m11), m_m12(m12),
+  m_g2(g2), m_m21(m21), m_m22(m22),
+  m_gamma0(gamma0)
+{
+  m_M  = mass;
+  m_M2 = sqr(m_M);
+}
+
+Complex Two_Channel_Flatte::PhaseSpace(const double & s,const double & m1,
+                                       const double & m2) const {
+  if (s==0.) return Complex(0.,0.);
+  const double splus  = sqr(m1+m2);
+  const double sminus = sqr(m1-m2);
+  // Complex sqrt on purpose: below threshold this is imaginary, which is
+  // exactly what a Flatte needs and what a running width cannot express.
+  return sqrt(Complex((s-splus)*(s-sminus)/(s*s),0.));
+}
+
+const Complex Two_Channel_Flatte::operator()(const double & s) {
+  const Complex sigma =
+    m_g1*PhaseSpace(s,m_m11,m_m12) +
+    m_g2*PhaseSpace(s,m_m21,m_m22);
+  // gamma0 carries residual modes not represented by the two explicit
+  // threshold channels.  The complex g_i have dimensions of GeV^2 and allow
+  // phenomenological relative phases between the coupled channels.
+  const Complex denom =
+    Complex(m_M2-s,0.)-Complex(0.,1.)*(sqrt(s)*m_gamma0+sigma);
+  return m_M2/denom;
+}
+
+const Complex Two_Channel_Flatte::Normalised(const double & s) {
+  return (*this)(s);
+}
+
+const double Two_Channel_Flatte::Normalised2(const double & s) {
+  return norm((*this)(s));
 }

@@ -82,6 +82,7 @@ bool Simple_XS::Initialize(Model_Base *const model,
 
 Process_Base *Simple_XS::InitializeProcess(const Process_Info &pi, bool add)
 {
+  msg_Out()<<METHOD<<" for:\n"<<pi<<"\n";
   bool oneisgroup(pi.m_ii.IsGroup()||pi.m_fi.IsGroup());
   if (oneisgroup) {
     Process_Group* newxs = new Process_Group();
@@ -100,6 +101,7 @@ Process_Base *Simple_XS::InitializeProcess(const Process_Info &pi, bool add)
     return newxs;
   }
   else {
+    msg_Out()<<METHOD<<" recognises single process.\n";
     Single_Process* newxs = new Single_Process();
     newxs->SetGenerator(this);
     newxs->Init(pi,p_int->Beam(),p_int->ISR(),p_int->YFS());

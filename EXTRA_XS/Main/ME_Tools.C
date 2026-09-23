@@ -36,10 +36,15 @@ std::vector<Vertex*> EXTRAXS::ConstructVertices(Current* cur1,
     ret.back()->AddJ(vkey->m_j);
     ret.back()->SetJC(prop);
   }
-  vkey->Delete();
+  if (vkey) vkey->Delete();
 
-  if (ret.size()==0) THROW(fatal_error, "vertex not found: "+vkey->ID());
-
+  if (ret.size()==0) {
+    std::string error_string = ( std::string("no vertex found: ") +
+				 cur1->Flav().IDName() + std::string(" ") +
+				 cur2->Flav().IDName() + std::string(" ") +
+				 prop->Flav().IDName());
+    THROW(fatal_error, error_string) ;
+  }
   return ret;
 }
 

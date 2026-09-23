@@ -46,6 +46,12 @@ namespace METOOLS {
     // f0(600) running width. See F1_0_KPiPi::Construct().
     KS_f0     = 103,
     CLEO_f0   = 104,
+    // (105 was a Kiers-et-al. CLEO+F3 model, arXiv:0808.1707.  Removed:
+    //  measured WORSE than plain CLEO on BaBar 2007 and its F3 normalisation
+    //  was never calibrated - their N/N3 are in a convention with no explicit
+    //  CKM factor, so their numbers cannot be used directly.  See the note in
+    //  FS_0_KPiPi::FF_KS.)
+    KS_flatte = 106,
     // --- 200s: Resonance Chiral Theory / chiral-resonance family
     //     (tree-level exchange, full RChL currents, and dispersive
     //     refinements built on RChL input) - consecutive numbering. ---

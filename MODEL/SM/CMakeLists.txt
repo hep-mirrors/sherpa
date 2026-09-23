@@ -1,6 +1,8 @@
-set(SM_SOURCES  Model.C)
+set(SM_SOURCES  Model.C
+                LowEnergy_Model.C)
 
-set(SM_HEADERS Model.H)
+set(SM_HEADERS  Model.H
+                LowEnergy_Model.H)
 
 sherpa_create_git_info(SM)
  

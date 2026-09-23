@@ -151,8 +151,8 @@ namespace MODEL {
     // in order to synchronize UFO model parameters
     const ScalarConstantsMap & ScalarConstants() const {return *p_constants; }
 
-    inline  const Vertex_Table *VertexTable() const { return &m_vtable; }
-
+    inline  const Vertex_Table * VertexTable() const { return &m_vtable; }
+    
     virtual bool CheckFlavours(int nin, int nout, ATOOLS::Flavour* flavs);
 
     inline ATOOLS::Flavour_Vector IncludedFlavours() const { return m_fls; }
@@ -176,6 +176,7 @@ namespace MODEL {
     void CheckForNegativeCouplingOrders();
     inline bool HasNegativeCouplingOrders() const 
     { return m_hasnegativecouplingorders; }
+
   };
 
   extern Model_Base *s_model;

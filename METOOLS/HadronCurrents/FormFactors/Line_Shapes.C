@@ -41,7 +41,17 @@ void Line_Shapes::Init() {
   Add(Flavour(kf_omega_1600),       new Omega_1600_Lineshape());
   Add(Flavour(kf_a_1_1260_plus),    new A1_1260_plus_Lineshape());
   Add(Flavour(kf_a_1_1260),         new A1_1260_0_Lineshape());
+  // The NEUTRAL K*(892) and K*(1410) lineshapes were already
+  // implemented in Kstar_Decays.C but never registered here, so
+  // LineShapes->Get(K*(892)^0) returned NULL and any caller asking for
+  // 313 either threw or silently fell back on the charged partner.
+  // They differ from the charged ones in more than a label: the
+  // neutral K*(892) has K gamma at 0.246% against 0.098% for the
+  // charged one, and the K pi running widths use the K0/K+ and
+  // pi0/pi+ mass splittings.
+  Add(Flavour(kf_K_star_892),       new Kstar_892_0_Lineshape());
   Add(Flavour(kf_K_star_892_plus),  new Kstar_892_plus_Lineshape());
+  Add(Flavour(kf_K_star_1410),      new Kstar_1410_0_Lineshape());
   Add(Flavour(kf_K_star_1410_plus), new Kstar_1410_plus_Lineshape());
   Add(Flavour(kf_K_0_star_1430),      new Kstar0_1430_0_Lineshape());
   Add(Flavour(kf_K_0_star_1430_plus), new Kstar0_1430_plus_Lineshape());

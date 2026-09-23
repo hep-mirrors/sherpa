@@ -66,7 +66,7 @@ Omega_782_Lineshape::Omega_782_Lineshape() :
   ///////////////////////////////////////////////////////////////////////////////////
   outflavs = { Flavour(kf_eta), Flavour(kf_photon) };
   Partial_Width_Base * omega2etagamma = new V_PGamma(m_inflav,outflavs,0.00045);
-  m_channels.insert(omega2pigamma);
+  m_channels.insert(omega2etagamma);
 }
 
 Omega_1420_Lineshape::Omega_1420_Lineshape() :
