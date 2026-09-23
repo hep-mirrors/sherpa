@@ -45,6 +45,8 @@ namespace AMISIC {
     void AnalyseWeight(const double & weight);
 
   public:
+    static constexpr int s_minbias_tries = 10;
+
     Single_Collision_Handler();
     ~Single_Collision_Handler();
     

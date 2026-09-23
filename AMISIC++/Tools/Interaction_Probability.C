@@ -60,10 +60,15 @@ double Interaction_Probability::SelectB(const double & s) {
   /////////////////////////////////////////////////////////////////////////////
   // Selecting b according to the (normalised)  d^2b P_int(b),
   // where the norm is the non-diffractive cross section.
-  // We have encoded this in a look-up table obtained from inverting the
-  // probability distribution.
+  // Between two s nodes, one is picked with its interpolation weight, and b
+  // is obtained by inverting the tabulated cumulative of that node.
   /////////////////////////////////////////////////////////////////////////////
-  return (*p_inverted)(s,ran->Get());
+  const double ss   = Max(p_sbins->m_xmin, Min(s, p_sbins->m_xmax));
+  size_t       sbin = Min(p_sbins->bin(ss), p_sbins->m_nbins-1);
+  if (p_sbins->m_nbins>1 &&
+      ran->Get()*(p_sbins->x(sbin+1)-p_sbins->x(sbin)) < ss-p_sbins->x(sbin))
+    sbin++;
+  return m_cumulative[sbin].Inverse(ran->Get());
 }
 
 void Interaction_Probability::FixKandSmin() {
@@ -190,10 +195,12 @@ void Interaction_Probability::FixKandSmin(size_t ivar) {
 }
 
 void Interaction_Probability::FillIntegrated() {
-  TwoDim_Table integrated(*p_sbins,*p_bbins);
-  // Fill the full node grid (0..m_nbins): Invert reads the top b-node as the
-  // CDF maximum, so leaving it at 0 collapses the inverted table to [0,0].
+  m_cumulative.clear();
+  // Fill the full node grid (0..m_nbins): Inverse reads the top b-node as the
+  // CDF maximum.
   for (size_t sbin=0;sbin<=p_sbins->m_nbins;sbin++) {
+    m_cumulative.emplace_back(*p_bbins);
+    OneDim_Table & integrated = m_cumulative.back();
     double s   = p_sbins->x(sbin);
     double b1  = 0.,            b2 = 0.;
     double xs1 = (*this)(s,b1), xs2 = 0., norm = 0., integ = 0.;
@@ -204,18 +211,17 @@ void Interaction_Probability::FillIntegrated() {
       b1    = b2;
       xs1   = xs2;
     }
-    integrated.Fill(sbin,0,0.);
+    integrated.Fill(0,0.);
     b1 = 0.; xs1 = (*this)(s,b1), b2 = 0., xs2 = 0.;
     for (size_t bbin=1;bbin<=p_bbins->m_nbins;bbin++) {
       b2     = p_bbins->x(bbin);
       xs2    = (*this)(s,b2);
       integ += (b2-b1)*(b2*xs2+b1*xs1)/2./norm;
-      integrated.Fill(sbin,bbin,integ);
+      integrated.Fill(bbin,integ);
       b1     = b2;
       xs1    = xs2;
     }
   }
-  p_inverted = integrated.Invert(1,1000);
 }
 
 

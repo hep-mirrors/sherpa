@@ -7,6 +7,7 @@
 #include "AMISIC++/Perturbative/MI_Processes.H"
 #include "AMISIC++/Perturbative/Single_Collision_Handler.H"
 #include "ATOOLS/Phys/Weights.H"
+#include "ATOOLS/Math/Gauss_Integrator.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include <algorithm>
@@ -89,13 +90,110 @@ void MI_Reweighting::Initialize(const MI_Parameters      * mipars,
     RegisterSoftPhysicsVariations(m_n_variations);
 }
 
+void MI_Reweighting::CheckReweightingSampling(const double & s, bool IsMinBias) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Impact parameters are only drawn from the nominal density: warn for any
+  // variation with more than 1% of its b density beyond the nominal 99.9%
+  // quantile, where the nominal sample has (almost) no support.
+  ///////////////////////////////////////////////////////////////////////////
+  if (m_n_variations <= 1 || !p_pint || !p_mo) return;
+  const axis bbins(4000, 0., p_pint->Bmax(), axis_mode::linear);
+  double norm_nom = 0., norm_var = 0.;
+  const std::unique_ptr<OneDim_Table> cnom =
+    BSamplingDensity(s, bbins, 0, IsMinBias).Cumulative(1., norm_nom);
+  if (!(norm_nom>0.)) return;
+  const double b999 = cnom->Inverse(0.999*norm_nom);
+  const double knom = p_pint->K(s);
+  for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
+    const std::unique_ptr<OneDim_Table> cvar =
+      BSamplingDensity(s, bbins, ivar, IsMinBias).Cumulative(1., norm_var);
+    const double cover = (norm_var>0.) ? (*cvar)(b999)/norm_var : 0.;
+    if (cover < 0.99)
+      msg_Error()<<"Warning in "<<METHOD<<": nominal b sampling covers only "
+                 <<(100.*cover)<<"% of variation v"<<ivar<<" (k_var/k_nom = "
+                 <<(knom>0. ? p_pint->K(s,ivar)/knom : 0.)
+                 <<"), expect large weights in the peripheral b tail.\n";
+  }
+}
+
+OneDim_Table MI_Reweighting::BSamplingDensity(const double & s,
+                                              const axis & bbins,
+                                              const size_t ivar,
+                                              const bool IsMinBias) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Tabulate the density per unit area b is sampled from for variation ivar:
+  // P_int(s,b) for MinBias and the matter overlap O(b) otherwise.
+  ///////////////////////////////////////////////////////////////////////////
+  OneDim_Table density(bbins);
+  if (!IsMinBias) p_mo->SetMatterFormVariationIndex(ivar);
+  for (size_t i=0; i<=bbins.m_nbins; ++i) {
+    const double b = bbins.x(i);
+    const double q = ( IsMinBias ?
+                       (ivar==0 ? (*p_pint)(s,b) : (*p_pint)(s,b,ivar)) :
+                       (*p_mo)(b, ivar==0 ? p_pint->K(s) : p_pint->K(s,ivar)) );
+    density.Fill(i, (std::isfinite(q) && q>0.) ? q : 0.);
+  }
+  p_mo->SetMatterFormVariationIndex(0);
+  return density;
+}
+
+void MI_Reweighting::InitializeMinBiasNormalisation(const axis * sbins) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Correct MinBias normalisation for discarded impact-parameter attempts.
+  // Each b is retained with probability A = 1 - (1-P_int)^N, where N is the
+  // number of scatter tries. The correction is the ratio of nominal to
+  // varied integrals of P_int*A, each normalised by its sigma_ND.
+  // Applied per energy and variation after P_int initialisation.
+  ///////////////////////////////////////////////////////////////////////////
+  m_minbias_norm.clear();
+  if (m_n_variations <= 1 || !p_pint || !sbins) return;
+  MinBias_Kept_Integrand integrand(p_pint,Single_Collision_Handler::s_minbias_tries);
+  Gauss_Integrator       gauss(&integrand);
+
+  for (size_t ivar=0; ivar<m_n_variations; ++ivar) m_minbias_norm.emplace_back(*sbins);
+  std::vector<double> kept(m_n_variations, 0.);
+  const size_t nnodes = sbins->m_nbins > 1 ? sbins->m_nbins : 0;
+  for (size_t sbin=0; sbin<=nnodes; ++sbin) {
+    const double s = sbins->x(sbin);
+    integrand.SetS(s);
+    for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+      integrand.SetVariation(ivar);
+      kept[ivar] = s<=4. ? 0. : gauss.Integrate(0.,p_pint->Bmax(),1.e-6);
+    }
+    for (size_t ivar=0; ivar<m_n_variations; ++ivar) {
+      double c = ( (kept[0]/m_sigma_nd_variations[0]) /
+                   (kept[ivar]/m_sigma_nd_variations[ivar]) );
+      if (!std::isfinite(c) || c<=0.) c = 1.;
+      m_minbias_norm[ivar].Fill(sbin, c);
+    }
+  }
+}
+
+double MI_Reweighting::MinBiasNormalisation(const double & s,
+                                            const size_t ivar) const {
+  if (ivar>=m_minbias_norm.size()) return 1.;
+  const axis & sbins = m_minbias_norm[ivar].GetAxis();
+  const double c = m_minbias_norm[ivar](Max(sbins.m_xmin,Min(s,sbins.m_xmax)));
+  return (std::isfinite(c) && c>0.) ? c : 1.;
+}
+
+double MinBias_Kept_Integrand::operator()(double b) {
+  ///////////////////////////////////////////////////////////////////////////
+  // Integrand for d^2b P_int(b) A(b) = 2 pi b db P_int(b) A(b), where
+  // A(b) = 1 - (1-P_int(b))^N is the probability that b is retained in
+  // MinBias events, i.e. not discarded after N failed scatter tries.
+  ///////////////////////////////////////////////////////////////////////////
+  const double pint = m_ivar==0 ? (*p_pint)(m_s,b) : (*p_pint)(m_s,b,m_ivar);
+  return 2.*M_PI*b*pint*(1.-exp(m_ntries*log1p(-pint)));
+}
+
 void MI_Reweighting::ResetEvent() {
   ///////////////////////////////////////////////////////////////////////////
   // Reset variation weights to 1.0 for a new event.
   ///////////////////////////////////////////////////////////////////////////
   m_variation_weights.resize(m_n_variations);
   std::fill(m_variation_weights.begin(), m_variation_weights.end(), 1.);
-  m_b_weights.assign(m_n_variations, 1.);
+  m_bsampling_weights.assign(m_n_variations, 1.);
   m_overlap_ratios.assign(m_n_variations, 1.);
   m_sudakov_weights.assign(m_n_variations, 1.);
 }
@@ -105,7 +203,9 @@ void MI_Reweighting::SetOverlapRatios(const double & s, const double & b) {
   // Set m_overlap_ratios[ivar] = O_var(b) / O_nom(b) at the (s, b) point.
   // Used by AcceptRejectReweighting for the Sudakov probability ratio, and
   // by ImpactParameterReweighting. Called standalone from FirstRescatter,
-  // which inherits b from the prior event and must NOT re-apply a b-weight.
+  // which inherits b from the prior event and must NOT re-apply a b-weight,
+  // and from SelectPT2 for dynamic overlaps, whose ratio changes with the
+  // x of every trial.
   ///////////////////////////////////////////////////////////////////////////
   if (m_n_variations <= 1) return;
   const double overlap_nom = (*p_mo)(b);
@@ -126,9 +226,10 @@ void MI_Reweighting::ImpactParameterReweighting(const double & s, const double &
   // SetOverlapRatios) and compute the impact-parameter weight w_b for the
   // b-sampling distribution of this event type:
   //   MPI     : b ~ d^2b O(b)
-  //             w_b = O_var(b) / O_nom(b)
+  //             w_b *= O_var(b) / O_nom(b)
   //   MinBias : b ~ d^2b P_int/sigma_ND
-  //             w_b = [P_int_var/sigma_ND_var] / [P_int_nom/sigma_ND_nom]
+  //             w_b  = [P_int_var/sigma_ND_var] / [P_int_nom/sigma_ND_nom]
+  //                    * C_var(s), see InitializeMinBiasNormalisation
   ///////////////////////////////////////////////////////////////////////////
   if (m_n_variations <= 1) return;
   SetOverlapRatios(s, b);
@@ -138,13 +239,14 @@ void MI_Reweighting::ImpactParameterReweighting(const double & s, const double &
       double w_b = 1.;
       const double pint_var = (*p_pint)(s, b, ivar);
       double pint_ratio = pint_var / pint_nom;
-      w_b = pint_ratio * m_sigma_nd_variations[0] / m_sigma_nd_variations[ivar];
+      w_b = ( pint_ratio * m_sigma_nd_variations[0] / m_sigma_nd_variations[ivar]
+              * MinBiasNormalisation(s, ivar) );
       if (!std::isfinite(w_b) || w_b < 0.) w_b = 1.;
-      m_b_weights[ivar] = w_b;
+      m_bsampling_weights[ivar] *= w_b;
     }
   } else {
     for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
-      m_b_weights[ivar] = m_overlap_ratios[ivar];
+      m_bsampling_weights[ivar] *= m_overlap_ratios[ivar];
     }
   }
 }
@@ -208,7 +310,7 @@ void MI_Reweighting::ApplyVariationWeights(ATOOLS::Blob * blob) {
   // and w_b accounts for the changed impact parameter sampling distribution.
   ///////////////////////////////////////////////////////////////////////////
   for (size_t ivar=1; ivar<m_n_variations; ++ivar) {
-    double w_total = m_b_weights[ivar] * m_sudakov_weights[ivar];
+    double w_total = m_bsampling_weights[ivar] * m_sudakov_weights[ivar];
     if (m_max_reweight_factor > 0. && w_total > m_max_reweight_factor) {
       w_total = m_max_reweight_factor;
     }

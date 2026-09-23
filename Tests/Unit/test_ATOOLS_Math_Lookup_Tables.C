@@ -8,8 +8,8 @@
 using namespace ATOOLS;
 
 namespace {
-  // THROW (the axis ctor's input checks and Invert's axislabel guard) touches
-  // the message singleton, which is null in a bare test binary. Create it once.
+  // THROW (the axis ctor's input checks) touches the message singleton, which
+  // is null in a bare test binary. Create it once.
   void EnsureMsg() { if (!msg) msg = new Message(); }
 }
 
@@ -81,7 +81,7 @@ TEST_CASE("OneDim_Table interpolates and inverts a cumulative",
   }
 }
 
-TEST_CASE("TwoDim_Table interpolates and inverts in its 2nd axis",
+TEST_CASE("TwoDim_Table interpolates in its 2nd axis",
           "[ATOOLS::TwoDim_Table]") {
   EnsureMsg();
 
@@ -94,35 +94,6 @@ TEST_CASE("TwoDim_Table interpolates and inverts in its 2nd axis",
     CHECK(t(1.5, 0.5) == Catch::Approx(2.0));
   }
 
-  SECTION("Invert round-trips an increasing CDF (y), v -> y") {
-    axis ax(2, 0., 1., axis_mode::linear), ay(4, 0., 1., axis_mode::linear);
-    TwoDim_Table cdf(ax, ay);
-    // T(x,y) = y : increasing in y, independent of x -> inverse is I(x,v) = v.
-    for (size_t i = 0; i <= ax.m_nbins; ++i)
-      for (size_t j = 0; j <= ay.m_nbins; ++j) cdf.Fill(i, j, ay.x(j));
-    auto inv = cdf.Invert(1, 20);
-    CHECK((*inv)(0.5, 0.0) == Catch::Approx(0.0).margin(1e-9));
-    CHECK((*inv)(0.5, 0.3) == Catch::Approx(0.3));
-    CHECK((*inv)(0.5, 1.0) == Catch::Approx(1.0));
-  }
-
-  SECTION("Invert round-trips a decreasing CDF (y), v -> 1-y") {
-    axis ax(2, 0., 1., axis_mode::linear), ay(4, 0., 1., axis_mode::linear);
-    TwoDim_Table cdf(ax, ay);
-    // T(x,y) = 1-y : decreasing in y -> inverse is I(x,v) = 1-v.
-    for (size_t i = 0; i <= ax.m_nbins; ++i)
-      for (size_t j = 0; j <= ay.m_nbins; ++j) cdf.Fill(i, j, 1.0 - ay.x(j));
-    auto inv = cdf.Invert(1, 20);
-    CHECK((*inv)(0.5, 0.3) == Catch::Approx(0.7));
-    CHECK((*inv)(0.5, 0.8) == Catch::Approx(0.2));
-  }
-
-  SECTION("Invert rejects inversion of the 1st axis") {
-    axis ax(2, 0., 1., axis_mode::linear), ay(2, 0., 1., axis_mode::linear);
-    TwoDim_Table t(ax, ay);
-    REQUIRE_THROWS(t.Invert(0, 10));
-  }
-
   SECTION("single-bin x-axis (fixed energy) is flat in x") {
     const double S = 13000. * 13000.;
     axis ax(1, S, (1. + 1.e-6) * S, axis_mode::linear);
@@ -131,23 +102,6 @@ TEST_CASE("TwoDim_Table interpolates and inverts in its 2nd axis",
     for (size_t j = 0; j <= ay.m_nbins; ++j) t.Fill(0, j, ay.x(j)); // value = y
     CHECK(t(S, 0.3) == Catch::Approx(0.3));
     CHECK(t(S, 0.75) == Catch::Approx(0.75));
-  }
-
-  SECTION("Invert spans the full range when the CDF reaches 1 at the top node") {
-    // Regression guard for Interaction_Probability::FillIntegrated: the CDF must
-    // be filled across the WHOLE node grid (0..m_nbins) so it reaches 1.0 at the
-    // top node that Invert reads as the maximum. A consumer that fills only
-    // < m_nbins leaves that node at 0, collapsing the inverted value-axis to
-    // [0,0] and making SelectB return ~0 for every draw.
-    axis ax(2, 0., 1., axis_mode::linear), ay(8, 0., 4., axis_mode::linear);
-    TwoDim_Table cdf(ax, ay);
-    for (size_t i = 0; i <= ax.m_nbins; ++i)
-      for (size_t j = 0; j <= ay.m_nbins; ++j)
-        cdf.Fill(i, j, ay.x(j) / ay.m_xmax); // 0 at b=0, exactly 1 at b=bmax
-    auto inv = cdf.Invert(1, 50);
-    CHECK((*inv)(0.5, 0.0) == Catch::Approx(0.0).margin(1e-9));
-    CHECK((*inv)(0.5, 0.5) == Catch::Approx(2.0));
-    CHECK((*inv)(0.5, 1.0) == Catch::Approx(4.0)); // full b-range, not collapsed
   }
 }
 

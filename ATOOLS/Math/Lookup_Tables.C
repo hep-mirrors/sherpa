@@ -313,52 +313,6 @@ std::unique_ptr<OneDim_Table> TwoDim_Table::Cumulative(double expo,
   return cumulative;
 }
 
-std::unique_ptr<TwoDim_Table> TwoDim_Table::Invert(size_t axislabel,
-                                                   size_t nbins) const
-{
-  if (axislabel != 1)
-    THROW(fatal_error, "Two-dim table inversion only available for 2nd axis.");
-  // Determine the monotonicity direction and the global value range over all
-  // x rows. The last y grid point is index m_y.m_nbins (intervals convention).
-  const size_t ylast = m_y.m_nbins;
-  bool   dir    = Value(0, 0) > Value(0, ylast);
-  double minval = dir ? Value(0, ylast) : Value(0, 0);
-  double maxval = dir ? Value(0, 0) : Value(0, ylast);
-  for (size_t i = 1; i <= m_x.m_nbins; ++i) {
-    if (dir) {
-      if (Value(i, ylast) < minval) minval = Value(i, ylast);
-      if (Value(i, 0)     > maxval) maxval = Value(i, 0);
-    } else {
-      if (Value(i, ylast) > maxval) maxval = Value(i, ylast);
-      if (Value(i, 0)     < minval) minval = Value(i, 0);
-    }
-  }
-  axis vaxis(nbins, minval, maxval, axis_mode::linear);
-  auto table = std::make_unique<TwoDim_Table>(m_x, vaxis);
-  for (size_t i = 0; i <= m_x.m_nbins; ++i) {
-    for (size_t j = 0; j <= nbins; ++j) {
-      double value = vaxis.x(j), val1 = 0., val2 = 0.;
-      size_t ybin = 0;
-      for (ybin = 0; ybin < m_y.m_nbins; ++ybin) {
-        val1 = Value(i, ybin);
-        val2 = Value(i, ybin + 1);
-        if (dir) {
-          if (val1 >= value && val2 <= value) break;
-        } else {
-          if (val1 <= value && val2 >= value) break;
-        }
-      }
-      double y1 = m_y.x(ybin), y2 = m_y.x(ybin + 1), y = 0.;
-      if (dir)
-        y = (y1 * (value - val2) + y2 * (val1 - value)) / (val1 - val2);
-      else
-        y = (y1 * (val2 - value) + y2 * (value - val1)) / (val2 - val1);
-      table->Fill(i, j, y);
-    }
-  }
-  return table;
-}
-
 void TwoDim_Table::OutputToCSV(std::ofstream& outfile) const
 {
   for (size_t i = 0; i <= m_x.m_nbins; ++i)

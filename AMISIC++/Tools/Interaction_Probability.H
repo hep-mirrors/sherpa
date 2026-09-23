@@ -22,7 +22,7 @@ namespace AMISIC {
     axis           * p_sbins, * p_bbins;
     OneDim_Table   * p_k;
     TwoDim_Table   * p_diffxsec;
-    std::unique_ptr<TwoDim_Table> p_inverted;
+    std::vector<OneDim_Table> m_cumulative;
     double           m_pdfnorm, m_bmax, m_smin;
     size_t m_n_variations;
     std::vector<double> m_sigma_nd_variations;

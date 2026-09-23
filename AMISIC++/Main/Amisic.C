@@ -55,6 +55,10 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
     // For dynamic matter overlaps this includes fixing the effective radius
     ///////////////////////////////////////////////////////////////////////////
     m_pint.Initialize(&m_mo,&m_processes,p_sbins);
+    const bool isminbias =
+      Settings::GetMainSettings()["EVENT_TYPE"].Get<std::string>()=="MinimumBias";
+    if (isminbias) m_reweighting.InitializeMinBiasNormalisation(p_sbins);
+    m_reweighting.CheckReweightingSampling(m_S, isminbias);
     ///////////////////////////////////////////////////////////////////////////
     // Initialize the Over_Estimator - mainly fixing an effective prefactor
     // to allow for a quick'n'dirty fix to create fast estimates of the next

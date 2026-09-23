@@ -77,8 +77,10 @@ double Matter_Overlap::operator()(const double b, const double k) {
   const double k2 = sqr(k);
   if (k2<=0.) return 0.;
   if (m_dynamic) {
-    double effradius2 = k2 * m_dynradius2_variations[m_matter_form_ivar];
-    if (effradius2<=0.) return 0.;
+    const double effradius2 = k2 * ( m_matter_form_ivar==0 ? m_dynradius2 :
+                                     m_dynradius2_variations[m_matter_form_ivar] );
+    if (effradius2<=0.)
+      THROW(fatal_error,"Non-positive radius in dynamic matter overlap.");
     return m_norm/effradius2 * exp(-b2/effradius2);
   }
   const std::array<double,4> & r2    = m_r2_variations[m_matter_form_ivar];
@@ -104,8 +106,11 @@ double Matter_Overlap::MaxValue(const double & b) {
 
 double Matter_Overlap::MaxValue(const double & b, double k) {
   if (!m_dynamic) return (*this)(b, k);
-  return ( m_norm/(sqr(k*m_fixradius_variations[m_matter_form_ivar]))*
-	   exp(-sqr(b/(k*m_maxradius_variations[m_matter_form_ivar])) ));
+  const double fixradius = ( m_matter_form_ivar==0 ? m_fixradius :
+                             m_fixradius_variations[m_matter_form_ivar] );
+  const double maxradius = ( m_matter_form_ivar==0 ? m_maxradius :
+                             m_maxradius_variations[m_matter_form_ivar] );
+  return ( m_norm/(sqr(k*fixradius))*exp(-sqr(b/(k*maxradius))) );
 }
 
 double Matter_Overlap::SelectB() const {
@@ -325,14 +330,12 @@ void Matter_Overlap::InitializeDynamicFFParams(PDF::ISR_Handler * const isr) {
   for (size_t i=0;i<2;i++) {
     m_xmin[i] = isr->XMin(i); m_xmax[i] = isr->XMax(i);
   }
-  FixDynamicRadius(m_xmin[0],m_xmin[1]);
-  m_maxradius = sqrt(m_dynradius2);
-
   const size_t n_matter_form_variations = MatterFormVariationSize();
   m_dynradius2_variations.assign(n_matter_form_variations, 0.);
   m_fixradius_variations.assign(n_matter_form_variations, 0.);
   m_maxradius_variations.assign(n_matter_form_variations, 0.);
-  if (n_matter_form_variations <= 1) return;
+  FixDynamicRadius(m_xmin[0],m_xmin[1]);
+  m_maxradius = sqrt(m_dynradius2);
   for (size_t ivar=0; ivar<n_matter_form_variations; ++ivar) {
     const double R0_1 = p_ffs[0]->Radius1At(ivar);
     const double R0_2 = p_ffs[1]->Radius1At(ivar);
@@ -355,10 +358,11 @@ void Matter_Overlap::FixDynamicRadius(const double & x1,  const double & x2,
                   sqr(p_ffs[1]->Radius(Max(m_xmin[1],Min(m_xmax[1],x2)),Q22)) );
 
   const size_t n_matter_form_variations = m_dynradius2_variations.size();
+  m_dynradius2_variations[0] = m_dynradius2;
   if (n_matter_form_variations <= 1) return;
   const double x1c = Max(m_xmin[0],Min(m_xmax[0],x1));
   const double x2c = Max(m_xmin[1],Min(m_xmax[1],x2));
-  for (size_t ivar=0; ivar<n_matter_form_variations; ++ivar) {
+  for (size_t ivar=1; ivar<n_matter_form_variations; ++ivar) {
     m_dynradius2_variations[ivar] =
       ( sqr(p_ffs[0]->Radius(x1c, Q21, ivar)) +
         sqr(p_ffs[1]->Radius(x2c, Q22, ivar)) );
