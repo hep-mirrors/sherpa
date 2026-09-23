@@ -1,0 +1,78 @@
+BEAMS: [11, -11]
+BEAM_ENERGIES: 91.1876/2.
+
+EVENT_GENERATION_MODE: Weighted
+
+ALPHAS(MZ): 0.1188
+ORDER_ALPHAS: 1
+BEAM_REMNANTS: None
+FRAGMENTATION: None
+SHOWER_GENERATOR: None
+SCALES: VAR{E_CMS*E_CMS}
+EW_SCHEME: alpha0
+# WIDTH_SCHEME: Fixed
+#  0.22345876
+OL_PARAMETERS:
+    check_collection: 0
+    qed: 1
+    photon_selfenergy: 0
+PARTICLE_DATA:
+    11:
+        Massive: true
+    13:
+        Massive: true
+    15:
+        Width: 0
+    23:
+        Mass:  91.1876
+        Width:  2.5007203
+    24:
+        Mass:  80.35595115098
+        Width: 2.089646
+
+PDF_LIBRARY: None
+CEEX:
+   WEAK: 0
+   CHECK_XS: 1
+#     BOXES: 0
+
+PROCESSES:
+- 11 -11 -> 11 -11:
+    Order: {QCD: 0, EW: 2}
+
+ANALYSIS: None
+
+RIVET:
+    # IGNORE_BEAMS: 1
+    OUTLIER_THRESHOLDS: [1,3,5]
+    ANALYSES:
+        - bhabhaNW 
+
+# Small-angle Bhabha at the Z pole. The t-channel photon pole diverges as
+# theta -> 0, so |t| has to be regulated at generator level.
+#
+# The generator cut must sit BELOW the analysis acceptance, not inside it:
+# bhabhaNW vetoes unless BOTH leptons are at 24-58 mrad from their OWN beam,
+# which at sqrt(s) = 91.1876 is |t| ~ 1.2 to 7.0 GeV^2. Cutting at 0.3 GeV^2
+# leaves a factor ~4 of margin below the acceptance so the low edge is fed by
+# direct production rather than only by radiative migration.
+#
+# Q2 is an INITIAL-FINAL selector (Standard_Selector.C, IQ2_Selector): it sets
+# cuts->scut[i][j] between an incoming and an outgoing leg, i.e. exactly the
+# t-channel invariant. Syntax: [Q2, kf1, kf2, min, max].
+SELECTORS:
+  - [Q2, 11, 11, 0.3, 1.0e6]
+
+RESULT_DIRECTORY: Results_bhLO
+
+
+# #   - [Mass, 15, -15, 60, 120]
+# # #   - [PT, -15, 10, E_CMS]
+# # #   - [PT, 15, 10, E_CMS]
+
+
+# Nominal                       1256.62         0 %      3.36567      0.26 % │
+# │ YFS.CEEX                      1448.84     15.29 %      4.54692      0.31 % │
+# │ YFS.LO                        1325.24      5.46 %      1.78932      0.13 % │
+# │ YFS.NLO                       1256.62         0 %      3.36567      0.26 % │
+# └────────────────────────────────────────────────────────────────────────────┘
