@@ -9,10 +9,29 @@
 
 namespace METOOLS {
   enum class resonance_type {
-    fixed    = 0,
-    running  = 1,
-    GS       = 2,
-    bespoke  = 99
+    fixed        = 0,
+    running      = 1,
+    GS           = 2,
+    // Pole of the T-matrix on the second Riemann sheet, sqrt(s_pole)
+    // = M - i Gamma/2, with NO running width and no real-axis mass.
+    // For a state as broad as the f_0(500)/sigma this is not a
+    // refinement of the Breit-Wigner, it is the only well-defined
+    // option: the sigma pole sits ~275 MeV off the real axis, the
+    // "width" exceeds the "mass", and different BW parametrizations
+    // of the same data return masses spread over hundreds of MeV.
+    // The T-matrix pole is the parametrization-independent statement
+    // and is what the PDG actually quotes for these states.
+    complex_pole = 3,
+    // Two-channel Flatte. The right description for a resonance
+    // sitting ON a threshold - f_0(980) and a_0(980) both straddle
+    // K Kbar - where a Breit-Wigner is wrong for a structural reason:
+    // below the second threshold that channel cannot contribute to the
+    // width, but it DOES contribute to the real part of the
+    // self-energy, and it is that subthreshold real part which
+    // produces the characteristic cusp. A running-width BW has no
+    // mechanism for it, and a complex pole has no threshold at all.
+    flatte       = 4,
+    bespoke      = 99
   };
 
   class Total_Width_Base;
@@ -35,7 +54,19 @@ namespace METOOLS {
     // in Resonance_Base.H, included by Propagator.C but not here), so
     // calling its methods requires the complete type to be visible.
     inline double Mass() const { return m_M; }
-    double OnShellWidth() const;
+    // virtual so that propagators without a Total_Width_Base (the
+    // complex pole) can still report a meaningful width to the
+    // diagnostic dump instead of a silent zero.
+    virtual double OnShellWidth() const;
+    // Constant numerator this propagator carries on top of the BARE
+    // pole 1/(M^2-s-i...). BreitWigner returns M^2/(...), i.e. it is
+    // normalised to 1 at s=0, and Complex_Pole returns s_pole/(...).
+    // A coupling derived from a decay width assumes the bare pole, so
+    // anything combining the two must divide by this. Getting it wrong
+    // is a pure M^4 error in the rate and is easy to miss: it left the
+    // D -> K pi widths at 0.60 of PDG and D0 -> pi- pi0 at 0.349,
+    // which is m_rho^4 = 0.3515 to within half a percent.
+    virtual Complex PoleNumerator() const { return Complex(m_M2,0.); }
     ATOOLS::Flavour Flav() const;
   };
 
@@ -92,6 +123,68 @@ namespace METOOLS {
     const double  Normalised2(const double & s);
   };
 
+  // Complex-pole propagator,
+  //     D(s) = s_pole / (s_pole - s),   s_pole = (M - i Gamma/2)^2,
+  // normalised to D(0) = 1 so that it matches the convention of
+  // BreitWigner above (M^2/(M^2-s-i sqrt(s) Gamma(s)) -> 1 at s=0) and
+  // can be dropped into a Summed_Propagator alongside one.
+  //
+  // Takes no Total_Width_Base: there is no running width to evaluate,
+  // which is the whole point. The flavour is carried separately, only
+  // so that DumpPropagatorStructure can label it.
+  class Complex_Pole : public Propagator_Base {
+  private:
+    Complex         m_spole;
+    double          m_Mpole, m_Gpole;
+    ATOOLS::Flavour m_flav;
+  public:
+    Complex_Pole(const double & Mpole,const double & Gpole,
+                 const ATOOLS::Flavour & flav=ATOOLS::Flavour(kf_none));
+    ATOOLS::Flavour Flav() const { return m_flav; }
+    const Complex operator()(const double & s);
+    const Complex Normalised(const double & s);
+    const double  Normalised2(const double & s);
+    virtual double OnShellWidth() const { return m_Gpole; }
+    virtual Complex PoleNumerator() const { return m_spole; }
+    inline Complex PolePosition() const { return m_spole; }
+  };
+
+  // Flatte, two channels:
+  //
+  //   D(s) = M^2 / ( M^2 - s - i [ g_1 rho_1(s) + g_2 rho_2(s) ] ),
+  //
+  // with the two-body phase-space factors
+  //   rho_ab(s) = sqrt( (1-(m_a+m_b)^2/s)(1-(m_a-m_b)^2/s) )
+  // continued ANALYTICALLY below threshold, where rho becomes
+  // i|rho| and the term moves from the imaginary to the real part of
+  // the denominator. The couplings g_i carry GeV^2.
+  //
+  // The M^2 numerator matches the BreitWigner convention in this file
+  // (D -> 1 at s=0 up to the subthreshold rho's), so PoleNumerator()
+  // returns M^2 and callers deriving a coupling from a width divide it
+  // out exactly as they do for a Breit-Wigner.
+  class Flatte : public Propagator_Base {
+  private:
+    double m_g1, m_g2;
+    double m_ma1, m_mb1, m_ma2, m_mb2;
+    ATOOLS::Flavour m_flav;
+    Complex Rho(const double & s,const double & ma,
+                const double & mb) const;
+  public:
+    Flatte(const double & M,const double & g1,const double & g2,
+           const double & ma1,const double & mb1,
+           const double & ma2,const double & mb2,
+           const ATOOLS::Flavour & flav=ATOOLS::Flavour(kf_none));
+    const Complex operator()(const double & s);
+    const Complex Normalised(const double & s);
+    const double  Normalised2(const double & s);
+    // Width at the pole from the OPEN channel only, so that a caller
+    // deriving a decay coupling gets something meaningful.
+    virtual double OnShellWidth() const;
+    virtual Complex PoleNumerator() const { return Complex(m_M2,0.); }
+    ATOOLS::Flavour Flav() const { return m_flav; }
+  };
+
   class Summed_Propagator : public Propagator_Base {
   private:
     std::map<Propagator_Base *, Complex> m_props;
@@ -105,6 +198,10 @@ namespace METOOLS {
     const Complex Normalised(const double & s);
     const double  Normalised2(const double & s);
     inline std::map<Propagator_Base *, Complex> & GetAll() { return m_props; }
+    // Ambiguous for a sum - each component carries its own. Returns 1
+    // so that a caller dividing by it is left with the components'
+    // own normalisations, which is the only defensible default.
+    virtual Complex PoleNumerator() const { return Complex(1.,0.); }
   };
 
   // Diagnostic dump (request #1): print the constituent resonances of
@@ -131,6 +228,10 @@ namespace METOOLS {
     const Complex Normalised(const double & s);
     const double  Normalised2(const double & s);
     inline std::map<Propagator_Base *, Complex> & GetAll() { return m_props; }
+    // Ambiguous for a sum - each component carries its own. Returns 1
+    // so that a caller dividing by it is left with the components'
+    // own normalisations, which is the only defensible default.
+    virtual Complex PoleNumerator() const { return Complex(1.,0.); }
   };
 }
 

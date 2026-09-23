@@ -15,6 +15,8 @@ set(FormFactors_SOURCES Line_Shapes.C
 			FF_0_PP.C
 			FF_0_PPP.C
 			FF_0_DD.C
+			FF_P_X.C
+			FF_PP_Wave.C
 			RChL_Functions.C
 			Novosibirsk4pi_GTables.C
 		      )
@@ -35,6 +37,8 @@ set(FormFactors_HEADERS Line_Shapes.H
 			FF_0_PP.H
 			FF_0_PPP.H
 			FF_0_DD.H
+			FF_P_X.H
+			FF_PP_Wave.H
 			RChL_Functions.H
 			Novosibirsk4pi_GTables.H
 		      )

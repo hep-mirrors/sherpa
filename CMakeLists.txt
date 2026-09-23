@@ -691,7 +691,7 @@ set_target_properties(SHERPAAll PROPERTIES EXPORT_NAME SHERPA::All)
 target_link_libraries(SHERPAAll INTERFACE
 SherpaMain SherpaInitialization SherpaSingleEvents SherpaSoftPhysics SherpaPerturbativePhysics SherpaTools
 ShrimpsMain ShrimpsEvents ShrimpsLadders ShrimpsBeamRemnants ShrimpsXsecs ShrimpsEikonals ShrimpsTools
-HadronsMain HadronsMEs HadronsCurrents HadronsPSs
+HadronsMain HadronsMEs HadronsPSs
 Reconnections
 AhadicMain AhadicTools AhadicFormation AhadicDecays
 Amisic AmisicTools AmisicPerturbative
@@ -706,7 +706,7 @@ YFSCEEX  YFSMain YFSNLO  YFSTools
 PhasicMain PhasicChannels PhasicProcess PhasicSelectors PhasicEnhance PhasicDecays
 Amegic DipoleSubtraction Amplitude AmegicPSGen
 String Zfunctions
-ExtAmp ExtraXSNLO ExtraXSSpecial ExtraXS2_2 ExtraXS1_2 ExtraXS1_3 ExtraXS
+ExtAmp ExtraXSNLO ExtraXSSpecial ExtraXS2_2 ExtraXS1_2 ExtraXS1_3 ExtraXS2_2_AB ExtraXS
 METoolsExplicit METoolsCurrents METoolsHadronCurrents METoolsFormFactors METoolsVertices METoolsColors METoolsSpinCorrelations METoolsLoops METoolsMain ModelUFO ModelMain
 PDF
 BeamMain BeamSpectra

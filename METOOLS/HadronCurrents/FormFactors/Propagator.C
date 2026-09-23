@@ -26,6 +26,103 @@ ATOOLS::Flavour Propagator_Base::Flav() const {
 
 ///////////////////////////////////////////////////////////////////////////
 //
+// Complex-pole propagator. See Propagator.H for why a Breit-Wigner is
+// not an acceptable substitute for the very broad scalars.
+//
+// PDG T-matrix poles, sqrt(s_pole) = M - i Gamma/2:
+//   f_0(500)/sigma     M = 449 (+22-16) MeV,  Gamma/2 = 275 +- 12 MeV
+//   K*_0(700)/kappa    M = 680 +- 50 MeV,     Gamma/2 = 300 +- 40 MeV
+// i.e. Gamma > M for the sigma. Note that Gamma here is the FULL pole
+// width, so the imaginary part of sqrt(s_pole) is Gamma/2.
+//
+///////////////////////////////////////////////////////////////////////////
+
+Complex_Pole::Complex_Pole(const double & Mpole,const double & Gpole,
+                           const ATOOLS::Flavour & flav) :
+  Propagator_Base(NULL,resonance_type::complex_pole),
+  m_Mpole(Mpole), m_Gpole(Gpole), m_flav(flav) {
+  const Complex sqrts(m_Mpole,-0.5*m_Gpole);
+  m_spole = sqrts*sqrts;
+  // m_M/m_M2 are left as the REAL part of the pole position purely so
+  // that Mass() reports something sensible in a dump; nothing in the
+  // propagator itself uses them.
+  m_M  = m_Mpole;
+  m_M2 = m_M*m_M;
+}
+
+const Complex Complex_Pole::operator()(const double & s) {
+  return m_spole/(m_spole-s);
+}
+
+const Complex Complex_Pole::Normalised(const double & s) {
+  return (*this)(s);
+}
+
+const double Complex_Pole::Normalised2(const double & s) {
+  const Complex v = (*this)(s);
+  return (v*conj(v)).real();
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Flatte. See Propagator.H for why a Breit-Wigner will not do for a
+// resonance sitting on a threshold.
+//
+// Standard parameter sets, couplings in GeV^2:
+//   f_0(980), BES:            M = 0.965, g_pipi = 0.165, g_KK = 0.695
+//                             (g_KK/g_pipi = 4.21)
+//   a_0(980), Crystal Barrel: M = 0.999, g_etapi = 0.221, g_KK = 0.256
+// Note that these M values are NOT the PDG "mass": for a Flatte the
+// parameters are correlated and only meaningful as a set.
+//
+///////////////////////////////////////////////////////////////////////////
+
+Flatte::Flatte(const double & M,const double & g1,const double & g2,
+               const double & ma1,const double & mb1,
+               const double & ma2,const double & mb2,
+               const ATOOLS::Flavour & flav) :
+  Propagator_Base(NULL,resonance_type::flatte),
+  m_g1(g1), m_g2(g2),
+  m_ma1(ma1), m_mb1(mb1), m_ma2(ma2), m_mb2(mb2), m_flav(flav) {
+  m_M = M; m_M2 = M*M;
+}
+
+Complex Flatte::Rho(const double & s,const double & ma,
+                    const double & mb) const {
+  if (s<=0.) return Complex(0.,0.);
+  const double a = 1.-sqr(ma+mb)/s, b = 1.-sqr(ma-mb)/s;
+  const double r2 = a*b;
+  // Above threshold rho is real; below it the square root is imaginary
+  // and the channel feeds the REAL part of the denominator instead.
+  if (r2>=0.) return Complex(sqrt(r2),0.);
+  return Complex(0.,sqrt(-r2));
+}
+
+const Complex Flatte::operator()(const double & s) {
+  const Complex den = Complex(m_M2-s,0.)
+    - Complex(0.,1.)*(m_g1*Rho(s,m_ma1,m_mb1)+m_g2*Rho(s,m_ma2,m_mb2));
+  if (std::abs(den)<1.e-30) return Complex(0.,0.);
+  return m_M2/den;
+}
+
+const Complex Flatte::Normalised(const double & s) { return (*this)(s); }
+
+const double Flatte::Normalised2(const double & s) {
+  const Complex v = (*this)(s);
+  return (v*conj(v)).real();
+}
+
+double Flatte::OnShellWidth() const {
+  // Gamma = (g_1 rho_1 + g_2 rho_2)/M at s=M^2, counting only the
+  // channels that are actually open there.
+  const Complex r1 = Rho(m_M2,m_ma1,m_mb1), r2 = Rho(m_M2,m_ma2,m_mb2);
+  return (m_g1*r1.real()+m_g2*r2.real())/m_M;
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+//
 // Simple Breit Wigner (m_type==fixed/running), and Gounaris-Sakurai
 // (m_type==GS).
 //

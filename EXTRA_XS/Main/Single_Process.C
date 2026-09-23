@@ -73,6 +73,7 @@ bool Single_Process::Initialize()
     DEBUG_INFO("searching tree process");
     p_born_me2=dynamic_cast<ME2_Base*>
       (PHASIC::Tree_ME2_Base::GetME2(m_pinfo));
+    msg_Out()<<METHOD<<": trying my luck with |"<<p_born_me2<<"|\n";
     if (p_born_me2!=NULL) {
       DEBUG_INFO("found");
       p_born_me2->SetCouplings(m_cpls);
