@@ -359,6 +359,35 @@ std::unique_ptr<TwoDim_Table> TwoDim_Table::Invert(size_t axislabel,
   return table;
 }
 
+double TwoDim_Table::Inverse(double x, double value) const
+{
+  // OneDim_Table::Inverse applied to the values of a single row (fixed x).
+  auto rowinverse = [this, value](size_t xbin) -> double {
+    const auto rowbegin = m_values.begin() + Index(xbin, 0);
+    const auto rowend   = m_values.begin() + Index(xbin + 1, 0);
+    auto it = std::lower_bound(rowbegin, rowend, value);
+
+    if (it == rowbegin) return m_y.m_xmin;
+    if (it == rowend) return m_y.m_xmax;
+
+    size_t ybin = std::distance(rowbegin, it) - 1;
+
+    double val1 = Value(xbin, ybin);
+    double val2 = Value(xbin, ybin + 1);
+
+    if (std::fabs(val2 - val1) < 1.e-12 * std::fabs(val1)) return m_y.x(ybin);
+
+    return (m_y.x(ybin) * (val2 - value) + m_y.x(ybin + 1) * (value - val1)) /
+           (val2 - val1);
+  };
+  if (m_x.m_nbins == 1) return rowinverse(0);
+  // Interpolate between the two rows around the requested x value.
+  x = std::max(m_x.m_xmin, std::min(x, m_x.m_xmax));
+  const size_t xbin = std::min(m_x.bin(x), m_x.m_nbins - 1);
+  const double wx = (x - m_x.x(xbin)) / (m_x.x(xbin + 1) - m_x.x(xbin));
+  return (1.0 - wx) * rowinverse(xbin) + wx * rowinverse(xbin + 1);
+}
+
 void TwoDim_Table::OutputToCSV(std::ofstream& outfile) const
 {
   for (size_t i = 0; i <= m_x.m_nbins; ++i)

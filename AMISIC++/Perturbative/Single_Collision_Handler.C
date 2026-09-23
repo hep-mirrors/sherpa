@@ -103,21 +103,23 @@ bool Single_Collision_Handler::FirstMPI(Blob * signal) {
   double pt2veto = sqr((*signal)["MI_Scale"]->Get<double>());
   double x1      = (*signal)["PDFInfo"]->Get<PDF_Info>().m_x1;
   double x2      = (*signal)["PDFInfo"]->Get<PDF_Info>().m_x2;
-  p_overlap->FixDynamicRadius(x1,x2,pt2veto,pt2veto);
+  if (p_reweighting) p_reweighting->ResetEvent();
+  m_nextpt2 = pt2veto;
   do {
     /////////////////////////////////////////////////////////////////////////
     // Form_Factor (and by extension Matter_Overlap) has radii etc. in fm,
     // event record needs it in mm, therefore we have to divide by 10^12.
     /////////////////////////////////////////////////////////////////////////
-    if (p_reweighting) p_reweighting->ResetEvent();
+    p_overlap->FixDynamicRadius(x1,x2,pt2veto,pt2veto);
     m_pt2 = m_lastpt2 = m_S/4.;
     do {
       m_b   = p_overlap->SelectB();
+      if (p_reweighting) p_reweighting->ImpactParameterReweighting(m_S, m_b);
     } while (!p_overlap->SelectPositionForScatter(m_b,x1,m_pt2,x2,m_pt2,m_deltapos));
-    if (p_reweighting) p_reweighting->ImpactParameterReweighting(m_S, m_b);
-  } while (SelectPT2()==0 && m_pt2>pt2veto);
-  m_lastpt2 = pt2veto;
-  if (m_pt2<=m_pt2min) m_done = true;
+  } while (SelectPT2()==0);
+  m_nextpt2 = -1.;
+  m_lastpt2 = m_pt2 = pt2veto;
+  if (pt2veto<=m_pt2min) m_done = true;
   return true;
 }
 
@@ -146,17 +148,15 @@ bool Single_Collision_Handler::FirstMinBiasScatter(Blob * blob) {
   blob->ClearAllData();
   blob->DeleteOwnedParticles();
   bool success = false;
-  int  trials  = 10;
   while (!success) {
     if (p_reweighting) p_reweighting->ResetEvent();
-    m_b    = p_pint->SelectB(m_S);
+    m_b = p_pint->SelectB(m_S);
     if (p_reweighting) p_reweighting->ImpactParameterReweighting(m_S, m_b, true);
-    trials = 10;
-    do {
+    for (int trial=0; trial<s_minbias_tries && !success; ++trial) {
       m_done  = false;
       m_pt2   = m_lastpt2 = m_S/4.;
       success = NextScatter(blob);
-    } while (!success && (trials--)>0);
+    }
   }
   ///////////////////////////////////////////////////////////////////////////////
   // Updating the new "signal" blob of the min bias event and adding the last
@@ -294,6 +294,8 @@ int Single_Collision_Handler::SelectPT2() {
     if (m_pt2<=m_nextpt2) { m_pt2 = m_nextpt2; return 1; }
     if (!p_integrator->MakeKinematics(m_pt2,m_S)) continue;
     p_overlap->FixDynamicRadius(p_integrator->X(0),p_integrator->X(1));
+    if (p_reweighting && p_overlap->IsDynamic())
+      p_reweighting->SetOverlapRatios(m_S, m_b);
     double wt = ( p_processes->PDFnorm()*(*p_processes)()/
 		  (*p_overestimator)(m_pt2,p_integrator->Yvol()) *
 		  (*p_overlap)(m_b) * s_GeV2fm2);

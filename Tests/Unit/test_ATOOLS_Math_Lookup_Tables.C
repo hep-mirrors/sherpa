@@ -149,6 +149,38 @@ TEST_CASE("TwoDim_Table interpolates and inverts in its 2nd axis",
     CHECK((*inv)(0.5, 0.5) == Catch::Approx(2.0));
     CHECK((*inv)(0.5, 1.0) == Catch::Approx(4.0)); // full b-range, not collapsed
   }
+
+  SECTION("Inverse spans the full range when the CDF reaches 1 at the top node") {
+    axis ax(2, 0., 1., axis_mode::linear), ay(8, 0., 4., axis_mode::linear);
+    TwoDim_Table cdf(ax, ay);
+    for (size_t i = 0; i <= ax.m_nbins; ++i)
+      for (size_t j = 0; j <= ay.m_nbins; ++j)
+        cdf.Fill(i, j, ay.x(j) / ay.m_xmax); // 0 at b=0, exactly 1 at b=bmax
+    CHECK(cdf.Inverse(0.5, 0.0) == Catch::Approx(0.0).margin(1e-9));
+    CHECK(cdf.Inverse(0.5, 0.5) == Catch::Approx(2.0));
+    CHECK(cdf.Inverse(0.5, 1.0) == Catch::Approx(4.0)); // full b-range
+  }
+
+  SECTION("Inverse interpolates linearly between x nodes") {
+    axis ax(2, 0., 1., axis_mode::linear), ay(4, 0., 1., axis_mode::linear);
+    TwoDim_Table cdf(ax, ay);
+    // T(x_i,y) = y/(1+x_i) -> the row inverse is v*(1+x_i).
+    for (size_t i = 0; i <= ax.m_nbins; ++i)
+      for (size_t j = 0; j <= ay.m_nbins; ++j)
+        cdf.Fill(i, j, ay.x(j) / (1. + ax.x(i)));
+    CHECK(cdf.Inverse(0.25, 0.4) == Catch::Approx(0.5)); // (0.4 + 0.6)/2
+    CHECK(cdf.Inverse(2.0, 0.4) == Catch::Approx(0.8));  // x clamped to 1
+  }
+
+  SECTION("Inverse with a single-bin x-axis (fixed energy) uses node 0") {
+    const double S = 13000. * 13000.;
+    axis ax(1, S, (1. + 1.e-6) * S, axis_mode::linear);
+    axis ay(4, 0., 1., axis_mode::linear);
+    TwoDim_Table t(ax, ay);
+    for (size_t j = 0; j <= ay.m_nbins; ++j) t.Fill(0, j, ay.x(j)); // value = y
+    CHECK(t.Inverse(S, 0.3) == Catch::Approx(0.3));
+    CHECK(t.Inverse((1. + 0.5e-6) * S, 0.75) == Catch::Approx(0.75));
+  }
 }
 
 TEST_CASE("OneDim_Table survives a binary round-trip",

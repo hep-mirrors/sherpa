@@ -14,6 +14,8 @@
 namespace AMISIC {
   class MI_Reweighting;
 
+  static const int s_minbias_tries = 10;
+
   class Single_Collision_Handler {
   private:
     evt_type::code m_evttype;

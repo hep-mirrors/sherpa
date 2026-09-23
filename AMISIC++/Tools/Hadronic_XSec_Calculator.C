@@ -278,7 +278,10 @@ CalculateXSratios(MI_Processes * processes, axis * sbins, size_t ivar)
   for (size_t sbin=0; sbin<=(sbins->m_nbins > 1 ? sbins->m_nbins : 0); ++sbin) {
     const double s          = sbins->x(sbin);
     processes->UpdateS(s);
-    const double xshard_var = processes->TotalCrossSection(s, sbin==0, ivar);
+    const double xshard_var =
+      ( mipars->CalculatePTmin2(s, ivar)==mipars->CalculatePTmin2(s) &&
+        mipars->CalculatePT02(s, ivar)==mipars->CalculatePT02(s) ) ?
+      p_xshard->Value(sbin) : processes->TotalCrossSection(s, sbin==0, ivar);
     (*this)(s);
     p_xshard_variations[ivar]->Fill(sbin, xshard_var);
     p_xsratio_variations[ivar]->Fill(

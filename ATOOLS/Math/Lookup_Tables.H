@@ -76,6 +76,11 @@ namespace ATOOLS {
     // returns a table I(x, v) = y such that (*this)(x, y) = v, sampled on
     // nbins linearly-spaced v values spanning the global value range.
     std::unique_ptr<TwoDim_Table> Invert(size_t axislabel, size_t nbins) const;
+    // Invert a table that is monotonically increasing in its 2nd axis on the
+    // fly: returns y such that (*this)(x, y) = value. Each x node is inverted
+    // like OneDim_Table::Inverse, x is clamped to its axis range and the
+    // results of the two neighbouring x nodes are interpolated.
+    double Inverse(double x, double value) const;
     void OutputToCSV(std::ofstream& outfile) const;
 
     // Text (de)serialisation of axes + values, for caching (see Lookup_Tables.C).
