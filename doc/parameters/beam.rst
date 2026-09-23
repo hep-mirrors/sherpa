@@ -186,7 +186,7 @@ form factor with the following formula :cite:`Vidovic:1992ik`:
 .. math::
 
    f_{\gamma}(x,\mathbf{r})
-   =& \frac{Z^2 \alpha_{\text{em}}}{\pi^2}\,\frac{1}{x}\,
+   =& \frac{Z^2 \alpha_{\text{em}}}{\pi^2}\,\frac{1}{x(1-x)}\,
      \left|
        \int_0^\infty \mathrm{d}k_\perp\,
        \frac{k_\perp^2}{Q^2}\,
@@ -194,7 +194,7 @@ form factor with the following formula :cite:`Vidovic:1992ik`:
        J_1(|\mathbf{r}|\,k_\perp)
      \right|^2 \\
    \implies f_{\gamma}(x, b)
-   =& \frac{2 Z^2 \alpha_{\text{em}}}{\pi}\,\frac{1}{x}\,
+   =& \frac{2 Z^2 \alpha_{\text{em}}}{\pi}\,\frac{1}{x(1-x)}\,
      \left|
        \int_0^\infty \mathrm{d}k_\perp\,
        \frac{k_\perp^2}{Q^2}\,

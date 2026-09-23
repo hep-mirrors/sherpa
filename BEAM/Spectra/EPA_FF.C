@@ -223,13 +223,18 @@ void EPA_FF_Base::FillTables()
   // is allocated and interpolated accordingly, so the upper-boundary nodes must
   // be filled too (otherwise the last x/b interval interpolates towards zero).
   for (size_t i = 0; i <= xaxis.m_nbins; i++) {
+    const double x = xaxis.x(i), omx = 1. - x;
+    // Flux prefactor 1/(x(1-x)). The top node of a log axis can overshoot
+    // xMax = 1; the kernel vanishes there, so set the prefactor to zero rather
+    // than evaluate 0 * inf.
+    const double fac = omx > 0. ? 2 * m_Zsquared / (x * omx) : 0.;
     for (size_t j = 0; j <= baxis.m_nbins; j++) {
-      msg_Debugging() << METHOD << ": Filling table for x = " << xaxis.x(i)
-                      << ", and b = " << baxis.x(j) << "\n";
-      kernel.SetXB(xaxis.x(i), baxis.x(j));
+      const double b = baxis.x(j);
+      msg_Debugging() << METHOD << ": Filling table for x = " << x
+                      << ", and b = " << b << "\n";
+      kernel.SetXB(x, b);
       // Jacobian is d^2b = b db dphi and phi can be integrated out immediately
-      double value = 2 * m_Zsquared * sqr(bessel()) / xaxis.x(i) * baxis.x(j);
-      p_N_xb->Fill(i, j, value);
+      p_N_xb->Fill(i, j, fac * sqr(bessel()) * b);
     }
   }
 }
@@ -685,12 +690,15 @@ void EPA_IonApprox::FillTables()
             << " fm.\n";
   p_N_xb = std::make_unique<TwoDim_Table>(xaxis, baxis);
   for (size_t i = 0; i <= xaxis.m_nbins; i++) {
+    // The (1-x) multiplies here, taking Max to prevent infinities when xMax>1
+    const double fac =
+        2 * m_Zsquared * Max(0., 1. - xaxis.x(i)) * xaxis.x(i) * m_mass2;
     for (size_t j = 0; j <= baxis.m_nbins; j++) {
       double chi = xaxis.x(i) * m_mass * baxis.x(j);
       // Same expression as the large-b point-like branch of EPA_FF_Base::N(),
-      // longitudinal gamma^-2 term included, so that the debug output and the
-      // flux actually used in the integration cannot drift apart.
-      double val = 2 * m_Zsquared * baxis.x(j) * xaxis.x(i) * m_mass2 *
+      // duplicated so that the CSV and the flux used in the integration
+      // cannot drift apart.
+      double val = baxis.x(j) * fac *
                    (ATOOLS::sqr(ATOOLS::SF.Kn(1, chi)) +
                     ATOOLS::sqr(ATOOLS::SF.Kn(0, chi)) / ATOOLS::sqr(m_gamma));
       p_N_xb->Fill(i, j, val);
@@ -718,7 +726,8 @@ EPA_IonApproxIntegrated::EPA_IonApproxIntegrated(const ATOOLS::Flavour& beam,
 double EPA_IonApproxIntegrated::N(const double& x, const double& ran)
 {
   double chi = x * m_mass * m_R * Max(1., m_bmin);
-  return 2 * m_Zsquared / x *
+  // (1-x) as in the b-dependent flux that this integrates over
+  return 2 * m_Zsquared * (1. - x) / x *
          (chi * SF.Kn(0, chi) * SF.Kn(1, chi) -
           chi * chi / 2. * (sqr(SF.Kn(1, chi)) - sqr(SF.Kn(0, chi))));
 }

@@ -305,10 +305,12 @@ namespace {
   // Transverse term of Eq. (11) in the normalisation FillTables stores, i.e.
   // including the d^2b = 2 pi b db Jacobian and without the alpha/pi prefactor.
   // The table carries no longitudinal term: it descends from C(Q^2) = 0.
+  // With the exact virtuality the transform evaluates to (1-x) x m K_1(chi),
+  // and chi = x m b is independent of that choice.
   double AnalyticFlux(double x, double b_phys)
   {
     const double chi = x * s_mass * b_phys;
-    return 2. * b_phys * x * s_mass * s_mass * ATOOLS::sqr(K1(chi));
+    return 2. * b_phys * x * s_mass * s_mass * (1. - x) * ATOOLS::sqr(K1(chi));
   }
 
 } // namespace
@@ -352,6 +354,39 @@ TEST_CASE("EPA b-dependent flux closes against the analytic point-like result",
                   << " rel=" << (got / want - 1.));
         CHECK_THAT(got, Catch::Matchers::WithinRel(want, 2.e-3));
       }
+    }
+  }
+
+  SECTION("the (1-x) is present, probed where it is large")
+  {
+    // The sections above reach x = 1e-2, where (1-x) is a 1% effect: enough to
+    // break the tolerance, not enough to read as deliberate. Node 180 is
+    // x = 10^-0.5 exactly -- 5 decades over 200 bins puts a decade every 40th
+    // node -- where the factor is 0.684 and nothing else could account for it.
+    //
+    // Only the inner b nodes, chi <~ 2.3, are probed. Beyond that the
+    // oscillatory integration loses the exponentially small transform in the
+    // cancellation between its partial sums: 0.7% high at chi = 4.6, 68% high
+    // at chi = 9.3. That limit is independent of the virtuality used, since
+    // EPA_DipoleApprox has F(Q^2) = 1 and its kernel is therefore the same
+    // function either way. Production stays below chi = 1; the
+    // OutputAllSpectra dumps, running to x = 0.89 with the point-like branch
+    // disabled, do not.
+    const double x = xaxis.x(180);
+    REQUIRE(x == Catch::Approx(0.31622776601683794));
+    for (size_t j : {10u, 30u, 50u}) {
+      const double b_dimless = baxis.x(j) / R;
+      double b_phys = -1.;
+      const double got = TabulatedFlux(x, b_dimless, R, b_phys);
+      const double chi = x * s_mass * b_phys;
+      // Spelled out rather than taken from AnalyticFlux, so that dropping the
+      // factor in the code cannot be masked by dropping it in the reference.
+      const double want_exact =
+          2. * b_phys * x * s_mass * s_mass * (1. - x) * ATOOLS::sqr(K1(chi));
+      INFO("x=" << x << " b/R=" << b_dimless << " chi=" << chi << " got=" << got
+                << " want=" << want_exact << " rel=" << (got / want_exact - 1.)
+                << " (without the (1-x): " << want_exact / (1. - x) << ")");
+      CHECK_THAT(got, Catch::Matchers::WithinRel(want_exact, 2.e-3));
     }
   }
 
@@ -404,7 +439,8 @@ TEST_CASE("EPA b-dependent flux closes against the analytic point-like result",
       // branch, which adds the longitudinal K_0^2/gamma^2 term; below it the
       // table carries the transverse term only.
       const double chi_t = std::min(chi_b, x * s_mass * s_bthr * R);
-      const double want = pref * 2. / x *
+      // (1-x) as in AnalyticFlux, b-independent and hence outside the integral.
+      const double want = pref * 2. * (1. - x) / x *
                           ((A1(chi_b) - A1(chi_a)) +
                            (A0(chi_b) - A0(chi_t)) / ATOOLS::sqr(gamma));
 

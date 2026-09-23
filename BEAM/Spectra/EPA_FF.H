@@ -164,11 +164,15 @@ namespace BEAM {
     // v4: guarded the N(x,b) kernel against x -> 1, where Q^2 diverged and the
     //     x = xMax boundary node (filled since v3) became NaN for sqrt-based
     //     form factors; invalidates v3 caches that stored that NaN node.
-    // v5: N(x,b) kernel switched to the small-x virtuality Q^2 = qT^2 + x^2 m^2
-    //     (was (qT^2 + x^2 m^2)/(1-x)), making the form-factor argument
-    //     consistent with the prefactor in FillTables(), which carries no
-    //     1/(1-x) Jacobian. Changes every cached N(x,b) table.
-    static constexpr int s_cache_version = 5;
+    // v5: switched the N(x,b) kernel to the small-x virtuality
+    //     Q^2 = qT^2 + x^2 m^2 (was (qT^2 + x^2 m^2)/(1-x)), making the
+    //     form-factor argument consistent with the 1/x prefactor used in
+    //     FillTables(). Changes every cached N(x,b) table.
+    // v6: replaced v5's small-x scheme by the exact one: the kernel evaluates
+    //     form factor and propagator at Q^2 = (qT^2 + x^2 m^2)/(1-x), and
+    //     FillTables() uses the matching 1/(x(1-x)) prefactor. Changes every
+    //     cached N(x,b) table.
+    static constexpr int s_cache_version = 6;
     bool m_cache{true};    //< caching enabled (EPA:CacheTables) for this beam
     std::string m_respath; //< resolved RESULT_DIRECTORY root; cache lives inside
                            //< <m_respath>.zip; empty => caching disabled
@@ -233,15 +237,18 @@ namespace BEAM {
       DEBUG_FUNC("x = " << x << ", ran = " << ran << ", b = " << m_b);
       if (m_b < m_b_pl_threshold) return (*p_N_xb)(x, m_b) * wt;
       // Use the point-like approximation for large impact parameters:
-      //   n_PL(x,b) ~ x m^2 [ K_1^2(chi) + gamma^-2 K_0^2(chi) ],
+      //   n_PL(x,b) ~ (1-x) x m^2 [ K_1^2(chi) + gamma^-2 K_0^2(chi) ],
       // the second, longitudinal term being suppressed by gamma^-2. Note that
       // the small-b branch above descends from the C(Q^2) = 0 approximation and
       // so carries no longitudinal term -- except for EPA_IonApprox, which
       // tabulates this very expression and therefore matches across the
       // threshold. Either way the mismatch at m_b_pl_threshold is O(gamma^-2)
       // ~ 1e-7 for Pb at the LHC, far below the table's interpolation error.
+      // chi carries no (1-x): the pole of the transform sits at
+      // qT^2 = -x^2 m^2 whichever virtuality is used. Giving the longitudinal
+      // term the same (1-x) as the transverse one is ambiguous at O(x gamma^-2).
       double chi = x * m_mass * m_b;
-      return 2 * m_Zsquared * m_b * x * m_mass2 *
+      return 2 * m_Zsquared * m_b * x * (1. - x) * m_mass2 *
              (ATOOLS::sqr(ATOOLS::SF.Kn(1, chi)) +
               ATOOLS::sqr(ATOOLS::SF.Kn(0, chi)) / ATOOLS::sqr(m_gamma)) *
              wt;
@@ -282,7 +289,7 @@ namespace BEAM {
       //////////////////////////////////////////////////////////////////////////
       // Integration argument y here is bT*qT as mandated by the Bessel
       // function:
-      // - argument of form factor Q^2 = qT^2+x^2m^2 with qT^2 = y^2/bT^2
+      // - argument of form factor Q^2 = (qT^2+x^2m^2)/(1-x), qT^2 = y^2/bT^2
       // - we assume that m_b is in units of 1/GeV, qT is in GeV, overall
       // results are in GeV.
       //////////////////////////////////////////////////////////////////////////
@@ -290,17 +297,7 @@ namespace BEAM {
       // vanishes.
       if (m_x >= 1.) return 0.;
       double qT = y / m_b, qT2 = ATOOLS::sqr(qT);
-      // Small-x form of the virtuality, Q^2 = qT^2 + x^2 m^2, i.e. the exact
-      // Q^2 = (qT^2 + x^2 m^2)/(1-x) with the 1/(1-x) dropped. This is the
-      // convention the b-space flux is derived in: going from the general
-      // flux differential in dQ^2 to one differential in dqT introduces a
-      // Jacobian 1/(1-x), which is absent from the prefactor in FillTables().
-      // Keeping the exact Q^2 here while omitting that Jacobian mixes the two
-      // schemes; the small-x form is the self-consistent choice and is what
-      // Shao/d'Enterria (arXiv:2207.03012, Eq. 13) and the standard point-like
-      // results, Kn-based, are built on. Numerically irrelevant for UPC phase
-      // space (x <~ 1e-2), but the two must match.
-      double Q2 = qT2 + m_x * m_x * p_ff->Mass2();
+      double Q2 = (qT2 + m_x * m_x * p_ff->Mass2()) / (1. - m_x);
       // integration variable is qT, so dy/dqT = b, hence Jacobian 1/b needed
       double res = qT2 / Q2 * p_ff->FF(Q2) / m_b;
       return res;
