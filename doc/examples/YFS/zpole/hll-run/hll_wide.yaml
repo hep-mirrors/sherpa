@@ -1,0 +1,101 @@
+BEAMS: [11, -11]
+BEAM_ENERGIES: 250/2.
+
+EVENT_GENERATION_MODE: Weighted
+
+ALPHAS(MZ): 0.1188
+ORDER_ALPHAS: 1
+BEAM_REMNANTS: None
+FRAGMENTATION: None
+SHOWER_GENERATOR: None
+SCALES: VAR{E_CMS*E_CMS}
+EW_SCHEME: alpha0
+# WIDTH_SCHEME: Fixed
+#  0.22345876
+OL_PARAMETERS:
+    check_collection: 0
+    qed: 1
+    photon_selfenergy: 0
+PARTICLE_DATA:
+    11:
+        Massive: true
+    13:
+        Massive: true
+    15:
+        Width: 0
+    25:
+        Width: 0
+    23:
+        Mass:  91.1876
+        Width:  2.5007203
+    24:
+        Mass:  80.35595115098
+        Width: 2.089646
+
+PDF_LIBRARY: None
+CEEX:
+   WEAK: 0
+   CHECK_XS: 1
+#     BOXES: 0
+YFS:
+    BETA: 1
+    MODE: ISRFSR
+    Real_Generator: OpenLoops
+    RR_Generator: OpenLoops
+    Integrate_NLO: 1
+    # Collinear_Real: 1
+    # NLO_FSR_PHOTONS: 0
+    # SKIP_NEG_WEIGHTS: 1
+    CEEX: 1
+    KKMC_ANG: 2
+    IFI_Real: 1
+    FULL_FORM: 1
+    NLO_Weight_Breakdown: 1
+    Ladder_Weights: 1
+    IFI_Omega: 5e-4
+    # IR_CUTOFF: 1e-11
+    # NLO_PHOTON_EMIN: 1e2
+    # NLO_CUTS: 1
+    # No_Flux: 1
+    # CEEX_Compare: 12
+    # NLO_FSR_FROM_EVENT: 1
+    # RR_SOFT_CUT: 1e-4
+
+PROCESSES:
+- 11 -11 -> 25 13 -13:
+    Order: {QCD: 0, EW: 3}
+    NLO_Mode: YFS
+    NLO_Part: BR
+    NLO_Order: {EW: 1, QCD: 0}
+    Loop_Generator: OpenLoops
+    RV_Generator: OpenLoops
+
+ANALYSIS: None
+
+RIVET:
+    # IGNORE_BEAMS: 1
+    OUTLIER_THRESHOLDS: [1,3,5]
+    ANALYSES:
+        - MC_ZINC:LMODE=MU:SCHEME=BARE 
+
+# The generator window must BRACKET the analysis acceptance with room for
+# radiation, never sit inside it. MC_ZINC applies Cuts::massIn(66,116) and
+# books Z_mass over exactly that range, with its own per-lepton pT > 25 GeV
+# and |eta| < 3.5. A generator cut of 70-110 (tried, and wrong) leaves the
+# 66-70 and 110-116 bins reachable only by radiative migration outward and
+# never by direct production, and removes the feed-down INTO the window from
+# true masses above it - biasing the whole lineshape, not just the edges.
+#
+# 40-160 clears 66-116 by 26 GeV on the low side and 44 on the high side. No
+# generator pT cut: the analysis already imposes a tighter 25 GeV.
+SELECTORS:
+  - [Mass, 13, -13, 40, 160]
+
+RESULT_DIRECTORY: Results_wide
+
+
+# Nominal                       1256.62         0 %      3.36567      0.26 % │
+# │ YFS.CEEX                      1448.84     15.29 %      4.54692      0.31 % │
+# │ YFS.LO                        1325.24      5.46 %      1.78932      0.13 % │
+# │ YFS.NLO                       1256.62         0 %      3.36567      0.26 % │
+# └────────────────────────────────────────────────────────────────────────────┘
