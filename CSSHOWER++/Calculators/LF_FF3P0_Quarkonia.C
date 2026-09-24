@@ -173,8 +173,8 @@ double LF_FF3P0_Quarkonia_FI::operator()(const double z, const double y,
         + 2*rij*sqr(1-z)*(2+9*ri+18*sqr(ri)-28*cube(ri)-16*sqr(sqr(ri)))
         - sqr(rij)*cube(1-z)*(1+6*ri+16*sqr(ri)-32*cube(ri))));
   value += sqr(M)/(den) * z*sqr(1 - 4*ri - (1-z)*(1-4*ri)*(1-2*ri)-ri*rij*sqr(1-z)*(3-4*ri));
-  value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
-  value *= 1. / (1 + sqr( 1 - z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
+  // value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
+  // value *= 1. / (1 + sqr( 1 - z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
   double prefactor = GetLDME(m_flavs[2].Kfcode());
   prefactor *= 4.0 / 27 / pow(mi,5);
   return prefactor * sqr(p_cf->Coupling(scale, 0)) * value * JFI(y, eta, scale);

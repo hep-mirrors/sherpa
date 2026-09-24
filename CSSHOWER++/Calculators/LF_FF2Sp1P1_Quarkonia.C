@@ -236,8 +236,8 @@ double LF_FF2Sp1P1_Quarkonia_FI::operator()(const double z, const double y,
   const double den = sij - sqr(rij * M);
   double value = 0;
   value  = sqr(m_ctheta) * D_FF1P1(z, sij, ri, rij, M) + sqr(m_stheta) * D_FF3P1(z, sij, ri, rij, M);
-  value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
-  value *= 1. / (1 + sqr( 1 - z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
+  // value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
+  // value *= 1. / (1 + sqr( 1 - z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
   double prefactor = GetLDME(m_flavs[2].Kfcode());
   prefactor *= 4.0 / 27 / pow(mi,5);
   return prefactor * sqr(p_cf->Coupling(scale, 0)) * value * JFI(y, eta, scale);

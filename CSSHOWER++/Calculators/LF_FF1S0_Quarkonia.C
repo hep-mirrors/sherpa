@@ -142,8 +142,9 @@ double LF_FF1S0_Quarkonia_FF::OverIntegrated(const double zmin, const double zma
   const double rij = mij / (mi + mij);
   m_zmin = zmin; 
   m_zmax = zmax;
-  double prefactor = GetLDME(m_flavs[2].Kfcode());
-  prefactor *= m_flavs[2].StrongCharge() == 0 ?  4.0/27/cube(mi) : 4.0/27/cube(mi) * 1.0/48;
+  double prefactor = GetLDME(m_flavs[2].Kfcode())/2; 
+  //the extra factor of 1/2 is ad-hoc to catch the correct normalisation
+  prefactor *= 4.0/27/cube(mi) * (m_flavs[2].StrongCharge() == 0 ?  1. : 1.0/48);
   return prefactor * sqr(p_cf->MaxCoupling(0)) * ri * cube(rij) / sqr(sqr(1-rij)) * 0.1 * (zmax - zmin);
 }
 
@@ -153,7 +154,7 @@ double LF_FF1S0_Quarkonia_FF::OverEstimated(const double z, const double y) {
   const double ri = mi / (mi + mij);
   const double rij = mij / (mi + mij);
   double prefactor = GetLDME(m_flavs[2].Kfcode());
-  prefactor *= m_flavs[2].StrongCharge() == 0 ?  4.0/27/cube(mi) : 4.0/27/cube(mi) * 1.0/48;
+  prefactor *= 4.0/27/cube(mi) * (m_flavs[2].StrongCharge() == 0 ?  1. : 1.0/48);
   return prefactor * sqr(p_cf->MaxCoupling(0)) * ri * cube(rij) / sqr(sqr(1-rij)) * 0.1 ;
 }
 
@@ -167,10 +168,10 @@ double LF_FF1S0_Quarkonia_FI::operator()(const double z, const double y,
   // assuming the variables work in the same way as PHASIC::ClusterFIDipole
   double mi  = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true); // works with the mapping c -> c J/psi
   double mj  = ATOOLS::Flavour(m_flavs[2].Kfcode()).Mass(true);
-  double ma  = ATOOLS::Flavour(m_flspec.Kfcode()).Mass(true);
+  double ma  = p_ms->Mass(m_flspec);
   double mij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
   double mui2 = sqr(mi) / Q2, muj2 = sqr(mj) / Q2, muk2 = sqr(ma) / Q2, muij2 = sqr(mij) / Q2;
-  const double yt = ((Q2 - sqr(ma) - sqr(mij)) / (Q2 - sqr(ma) - sqr(mi) - sqr(mj)) - (1-y))/(1-y);
+  const double yt = ((Q2 - sqr(ma) - sqr(mij)) / (Q2 - sqr(ma) - sqr(mi) - sqr(mj)) - (1-y))/(1-y); // in practice (1-xij,a)/xij,a
   const double sij = (sqr(mi) + sqr(mj))*(1+yt) - yt * (Q2 - sqr(ma));
   const double M = mi + mij;
   const double ri = mi / M;
@@ -181,6 +182,9 @@ double LF_FF1S0_Quarkonia_FI::operator()(const double z, const double y,
   value += sqr(sqr(M))/sqr(den) * ( -(1-rij*(1-z)))*( 2*(1-2*ri) - (3-4*ri+4*sqr(ri))*(1-z) + rij*(1-2*ri)*sqr(1-z) );
   value += sqr(M)/(den) * z * sqr( 1 + ri*z );
   value *= ri*cube(rij)/sqr(1-rij*(1-z));
+  // value *= 1./((sqr(mi)+sqr(mj))*(1-yt)/yt - sqr(mij)/yt - (Q2 - sqr(ma)));
+  value *= scale / den; // rescale the denominator to match Sudakov factorisation
+  value *= (yt - (sqr(mi)*sqr(1-z) + sqr(mj)*sqr(z))/(Q2-sqr(ma)-sqr(mij))/z/(1-z)*(1 - (Q2 - sqr(mi) - sqr(mj) - sqr(ma))/(Q2 - sqr(mij) - sqr(ma))*y));
   double prefactor = GetLDME(m_flavs[2].Kfcode());
   prefactor *= 4.0 / 27 / cube(mi) * (m_flavs[2].StrongCharge() == 0 ? 1. :  1.0 / 48);
   return prefactor * sqr(p_cf->Coupling(scale, 0)) * value * JFI(y, eta, scale);
@@ -219,7 +223,7 @@ double LF_FF1S0_Quarkonia_FI::OverIntegrated(const double zmin, const double zma
   const double ri = mi / (mi + mij);
   const double rij = mij / (mi + mij);
   double prefactor = GetLDME(m_flavs[2].Kfcode())*2;
-  prefactor *= m_flavs[2].StrongCharge() == 0 ?  4.0/27/cube(mi) : 4.0/27/cube(mi) * 1.0/48;
+  prefactor *= 4.0/27/cube(mi) * (m_flavs[2].StrongCharge() == 0 ?  1. : 1.0/48);
   return prefactor * sqr(p_cf->MaxCoupling(0)) * ri * cube(rij) / sqr(sqr(1-rij)) * 0.1 * (zmax - zmin) * m_Jmax;
 }
 
@@ -229,8 +233,8 @@ double LF_FF1S0_Quarkonia_FI::OverEstimated(const double z, const double y) {
   const double ri = mi / (mi + mij);
   const double rij = mij / (mi + mij);
   double prefactor = GetLDME(m_flavs[2].Kfcode())*2;
-  prefactor *= m_flavs[2].StrongCharge() == 0 ?  4.0/27/cube(mi) : 4.0/27/cube(mi) * 1.0/48;
-  return prefactor * sqr(p_cf->MaxCoupling(0)) * ri * cube(rij) / sqr(sqr(1-rij)) * 0.1 * m_Jmax;
+  prefactor *= 4.0/27/cube(mi) * (m_flavs[2].StrongCharge() == 0 ?  1. : 1.0/48);
+  return prefactor * sqr(p_cf->MaxCoupling(0))  * ri * cube(rij) / sqr(sqr(1-rij)) * 0.1 * m_Jmax;
 }
 
 double LF_FF1S0_Quarkonia_FI::Z() {

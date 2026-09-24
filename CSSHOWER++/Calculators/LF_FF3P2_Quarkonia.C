@@ -183,8 +183,8 @@ double LF_FF3P2_Quarkonia_FI::operator()(const double z, const double y,
     - 2 * (1 - 2 * ri) * (3 + 2 * sqr(ri)) * cube(1 - z) 
     + (3 - 12 * ri + 12 * sqr(ri) + 2 * sqr(sqr(ri))) * sqr(sqr((1 - z)))
   );
-  value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
-  value *= 1. / (1 + sqr( 1 - z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
+  // value *= 1. / ( (1 - mui2 - muj2 - muk2) + 1./ y * ( mui2 + muj2 - muij2 ) );
+  // value *= 1. / (1 + sqr( 1 - z) * sqr(mi) / scale + sqr(z) * sqr(mj) / scale);
   double prefactor = GetLDME(m_flavs[2].Kfcode());
   prefactor *= 4.0 / 27 / pow(mi,5);
   return prefactor * sqr(p_cf->Coupling(scale, 0)) * value * JFI(y, eta, scale);
@@ -195,7 +195,7 @@ double LF_FF3P2_Quarkonia_FI::OverIntegrated(const double zmin, const double zma
                                            const double xbj) {
   m_zmin = zmin;
   m_zmax = zmax;
-  m_Jmax = 5.;
+  m_Jmax = 1.;
   const double mi = ATOOLS::Flavour(m_flavs[1].Kfcode()).Mass(true);
   const double mij = ATOOLS::Flavour(m_flavs[0].Kfcode()).Mass(true);
   const double rij = mij / (mi + mij);

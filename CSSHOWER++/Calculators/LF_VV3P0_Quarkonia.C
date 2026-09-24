@@ -3,6 +3,8 @@
 #include "ATOOLS/Phys/LDME.H"
 #include "MODEL/Main/Single_Vertex.H"
 
+#define ZMIN 1e-6
+
 namespace CSSHOWER {
 
 class LF_VV3P0_Quarkonia_FF : public SF_Lorentz {
@@ -109,24 +111,24 @@ double LF_VV3P0_Quarkonia_FF::operator()(
     if (sqr(p_cf->Coupling(scale, 0)) * value * JFF(y, 0, muj2, muk2, 0) > sqr(p_cf->MaxCoupling(0)) * 0.2) {
           msg_Out() << METHOD << " too high " << std::endl;
     }
-    const double prefactor = 64./243*GetLDME(m_flavs[2].Kfcode())/pow(M/2,5);
-    return prefactor * sqr(p_cf->Coupling(scale, 0)) * value * JFF(y, 0, muj2, muk2, 0);
+    // const double prefactor = 64./243*GetLDME(m_flavs[2].Kfcode())/pow(M/2,5);
+    return sqr(p_cf->Coupling(scale, 0)) * value * JFF(y, 0, muj2, muk2, 0);
 }
 
 double LF_VV3P0_Quarkonia_FF::OverIntegrated(const double zmin, const double zmax,
                                            const double scale,
                                            const double xbj) {
-  m_zmin = std::max(zmin, 0.); //safety cut to catch singularity at z=0
+  m_zmin = std::max(zmin, ZMIN); //safety cut to catch singularity at z=0
   m_zmax = std::min(zmax, 1.);
   const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
   const double prefactor = 64./243*GetLDME(m_flavs[2].Kfcode())/pow(m,5);
-  return prefactor * sqr(p_cf->MaxCoupling(0)) * 0.2 * (m_zmax - m_zmin);  ;
+  return prefactor * sqr(p_cf->MaxCoupling(0)) * 0.2 * (m_zmax - m_zmin);
 }
 
 double LF_VV3P0_Quarkonia_FF::OverEstimated(const double z, const double y) {
   const double m = Flavour((m_flavs[2].Kfcode()/10)%10).Mass(true);
-  const double prefactor = 64./243*GetLDME(m_flavs[2].Kfcode())/pow(m,5);
-  return prefactor * sqr(p_cf->MaxCoupling(0)) * 0.2;
+  // const double prefactor = 64./243*GetLDME(m_flavs[2].Kfcode())/pow(m,5);
+  return sqr(p_cf->MaxCoupling(0)) * 0.2;
 }
 
 double LF_VV3P0_Quarkonia_FF::Z() {
@@ -137,31 +139,34 @@ double LF_VV3P0_Quarkonia_FI::operator()(
   const double z, const double y, const double eta, const double scale,
   const double Q2) {
   const double mj  =  m_flavs[2].Mass();
-  const double mk  =  m_flspec.Mass();
-  const double muj2 = sqr(m_flavs[2].Mass(true))/Q2;
+  const double ma  =  m_flspec.Mass();
   const double muk2 = sqr(m_flspec.Mass(true))/Q2;
-  const double yt = ((Q2 - sqr(mk)) / (Q2 - sqr(mk) - sqr(mj)) - (1.0 - y)) / (1.0 - y);
-  const double sij = sqr(mj) * (1.0 + yt) - yt * (Q2 - sqr(mk));
+  const double q2 = -Q2;
+  const double yt = ((q2 - sqr(ma)) / (q2 - sqr(ma) - sqr(mj)) - (1.0 - y)) / (1.0 - y);
+  const double sij = sqr(mj) * (1.0 + yt) - yt * (q2 - sqr(ma));
   const double M = 2*Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  double value = 0;
-  value  = sqr(sij) + sqr(sqr(M)) - 2 * (1 - z) * (sij + sqr(M))*sij + 2*sqr(sij*(1-z));
-  value /= sij*sqr(sij-sqr(M));
-  value *= 1. / ( (1 - muj2 - muk2) + 1./ y * ( muj2 ) );
-  value *= 1. / (1 + sqr(z) * sqr(mj) / scale);
-  return sqr(p_cf->Coupling(scale, 0)) * value * JFI(y, eta, scale);
+  const double muj2 = sqr(mj)/Q2;
+  const double xija = (1-y)*(q2-sqr(ma)-sqr(mj))/(q2-sqr(ma));
+  double value = sqr(sij - 3*sqr(M));
+  value *= ( sqr(sij - sqr(M)) - 2*z*sij*((1-z)*sij - sqr(M)) );
+  value /= sqr(sqr(( sij - sqr(M))));
+  value *= sqr(M/2)/sij;
+  value *= (1+muj2)/(1 + muj2 - xija) * ( 1 - xija - xija * z * muj2 / ( 1 - z ));
+  // value *= (1+muj2)/(1 + muj2 - xija) * ( yt - z * muj2 / ( 1 - z )) ;
+  return sqr(p_cf->Coupling(scale, 0)) * value ; //* JFI(y, eta, scale);
 }
 
 double LF_VV3P0_Quarkonia_FI::OverIntegrated(const double zmin, const double zmax, const double scale, const double xbj) {
-  m_zmin = std::max(zmin,0.15);
+  m_zmin = std::max(zmin,ZMIN);
   m_zmax = std::min(zmax,1.);
-  m_Jmax = 5.;
+  m_Jmax = 1.;
   const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  const double prefactor = 4./27*GetLDME(m_flavs[0].Kfcode())/m;
+  const double prefactor = 4./27*GetLDME(m_flavs[2].Kfcode())/m;
   return prefactor * sqr(p_cf->MaxCoupling(0)) / sqr(2*m) * (zmax - zmin) * m_Jmax;
 }
 
 double LF_VV3P0_Quarkonia_FI::OverEstimated(const double z, const double y) {
-  const double m = Flavour((m_flavs[0].Kfcode() / 10) % 10).Mass(true);
+  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
   return sqr(p_cf->MaxCoupling(0)) /sqr(2*m) * m_Jmax;
 }
 
@@ -174,28 +179,28 @@ double LF_VV3P0_Quarkonia_IF::operator()(const double z, const double y, const d
   const double mk  =  m_flspec.Mass(true);
   const double muj2 = sqr(m_flavs[2].Mass(true))/Q2;
   const double muk2 = sqr(m_flspec.Mass(true))/Q2;
-  const double zt = (1.0 - y) / (z - y);
   const double sai = sqr(mj) * (1.0 - y / z) + (Q2 - sqr(mk)) * (y / z);
   const double M = 2*Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
   double value = 0;
-  value  = sqr(sai) + sqr(sqr(M)) - 2 * (1 - zt) * (sai + sqr(M))*sai + 2*sqr(sai*(1-zt));
+  value  = sqr(sai) + sqr(sqr(M)) - 2 * (1 - z) * (sai + sqr(M))*sai + 2*sqr(sai*(1-z));
   value /= sai*sqr(sai-sqr(M));
-  value *= 1. / ( (1 - muj2 - muk2) + 1./ y * ( muj2 ) );
-  value *= 1. / (1 + sqr(zt) * sqr(mj) / scale);
-  return sqr(p_cf->Coupling(scale, 0)) * value * JIF(z, y, eta, scale);
+
+  value *= 1. / ( 1. + muj2 / (1 - muk2 - muj2) * z / y ) * ( 1 - y ) / ( 1 - 2*y);
+
+  return sqr(p_cf->Coupling(scale, 0)) * value;// * JIF(z, y, eta, scale);
 }
 
 double LF_VV3P0_Quarkonia_IF::OverIntegrated(const double zmin, const double zmax, const double scale, const double xbj) {
-  m_zmin = std::max(zmin,0.15);
+  m_zmin = std::max(zmin,ZMIN);
   m_zmax = std::min(zmax,1.);
   m_Jmax = m_flavs[0].Kfcode() < 3 ? 5. : 1.;
   const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  const double prefactor = 4./27*GetLDME(m_flavs[0].Kfcode())/m;
+  const double prefactor = 4./27*GetLDME(m_flavs[2].Kfcode())/m;
   return prefactor * sqr(p_cf->MaxCoupling(0)) / sqr(2*m) * (zmax - zmin) * m_Jmax;
 }
 
 double LF_VV3P0_Quarkonia_IF::OverEstimated(const double z, const double y) {
-  const double m = Flavour((m_flavs[0].Kfcode() / 10) % 10).Mass(true);
+  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
   return sqr(p_cf->MaxCoupling(0)) /sqr(2*m) * m_Jmax;
 }
 
@@ -208,24 +213,23 @@ double LF_VV3P0_Quarkonia_II::operator()(const double z, const double y, const d
   const double mb  =  m_flspec.Mass(true);
   const double muj2 = sqr(m_flavs[2].Mass(true))/Q2;
   const double muk2 = sqr(m_flspec.Mass(true))/Q2;
-  const double zt = 1.0 / (z + y);
-  const double sab = (Q2 - (1.0 - z) * sqr(mb)) / z;
+  const double sab = Q2*((1 - muj2)/z - muj2*(1-z)/z);
   const double saj = sqr(mj) - y * (sab - sqr(mb));
   const double M = 2*Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
   double value = 0;
-  value  = sqr(saj) + sqr(sqr(M)) - 2 * (1 - zt) * (saj + sqr(M))*saj + 2*sqr(saj*(1-zt));
+  value  = sqr(saj) + sqr(sqr(M)) - 2 * (1 - z) * (saj + sqr(M))*saj + 2*sqr(saj*(1-z));
   value /= saj*sqr(saj-sqr(M));
-  value *= 1. / ( (1 - muj2 - muk2) + 1./ y * ( muj2 ) );
-  value *= 1. / (1 + sqr(zt) * sqr(mj) / scale);
-  return sqr(p_cf->Coupling(scale, 0)) * value * JII(z, y, eta, scale);
+
+  value *= 1. / ( sqr(mj) / (sab - sqr(mb)) / y - 1) * (1 - z - y) / (1 - z - 2*y);
+  return sqr(p_cf->Coupling(scale, 0)) * value; // * JII(z, y, eta, scale);
 }
 
 double LF_VV3P0_Quarkonia_II::OverIntegrated(const double zmin, const double zmax, const double scale, const double xbj) {
-  m_zmin = std::max(zmin,0.15);
+  m_zmin = std::max(zmin,ZMIN);
   m_zmax = std::min(zmax,1.);
   m_Jmax = m_flavs[0].Kfcode() < 3 ? 5. : 1.;
   const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  const double prefactor = 4./27*GetLDME(m_flavs[0].Kfcode())/m;
+  const double prefactor = 4./27*GetLDME(m_flavs[2].Kfcode())/m;
   return prefactor * sqr(p_cf->MaxCoupling(0)) / sqr(2*m) * (zmax - zmin) * m_Jmax;
 }
 
@@ -245,7 +249,7 @@ double LF_V3P0V_Quarkonia_FF::operator()(const double z, const double y, const d
     const double mui2 = mi/Q2;
     const double muk2 = sqr(m_flspec.Mass(true))/Q2;
     const double sij = y * (Q2 - sqr(mk)) + (1-y)*(sqr(mi));
-    const double M = 2*Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
+    const double M = 2*Flavour((m_flavs[1].Kfcode() / 10) % 10).Mass(true);
     double value = 0;
     value  = sqr(sij) + sqr(sqr(M)) - 2 * (z) * (sij + sqr(M))*sij + 2*sqr(sij*(z));
     value /= sij*sqr(sij-sqr(M));
@@ -255,15 +259,15 @@ double LF_V3P0V_Quarkonia_FF::operator()(const double z, const double y, const d
 }
 
 double LF_V3P0V_Quarkonia_FF::OverIntegrated(const double zmin, const double zmax, const double scale, const double xbj) {
-  m_zmin = std::max(zmin,0.15);
-  m_zmax = std::min(zmax,1.);
-  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
+  m_zmin = std::max(zmin,0.);
+  m_zmax = std::min(zmax,1.-ZMIN);
+  const double m = Flavour((m_flavs[1].Kfcode() / 10) % 10).Mass(true);
   const double prefactor = 4./27*GetLDME(m_flavs[2].Kfcode())/m;
-  return prefactor * sqr(p_cf->MaxCoupling(0)) / sqr(2*m) * (zmax - zmin);
+  return prefactor * sqr(p_cf->MaxCoupling(0)) / sqr(2*m) * (m_zmax - m_zmin);
 }
 
 double LF_V3P0V_Quarkonia_FF::OverEstimated(const double z, const double y) {
-  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
+  const double m = Flavour((m_flavs[1].Kfcode() / 10) % 10).Mass(true);
   return sqr(p_cf->MaxCoupling(0)) /sqr(2*m);
 }
 
@@ -277,7 +281,7 @@ double LF_V3P0V_Quarkonia_FI::operator()(const double z, const double y, const d
   const double mui2 = mi/Q2;
   const double muk2 = sqr(m_flspec.Mass(true))/Q2;
   const double sij = (Q2 + sqr(mi)) * y / (1 - y) + sqr(mi);
-  const double M = 2*Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
+  const double M = 2*Flavour((m_flavs[1].Kfcode() / 10) % 10).Mass(true);
   double value = 0;
   value  = sqr(sij) + sqr(sqr(M)) - 2 * (z) * (sij + sqr(M))*sij + 2*sqr(sij*(z));
   value /= sij*sqr(sij-sqr(M));
@@ -287,16 +291,16 @@ double LF_V3P0V_Quarkonia_FI::operator()(const double z, const double y, const d
 }
 
 double LF_V3P0V_Quarkonia_FI::OverIntegrated(const double zmin, const double zmax, const double scale, const double xbj) {
-  m_zmin = std::max(zmin,0.15);
+  m_zmin = std::max(zmin,ZMIN);
   m_zmax = std::min(zmax,1.);
   m_Jmax = 5.;//?
-  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  const double prefactor = 4./27*GetLDME(m_flavs[2].Kfcode())/m;
+  const double m = Flavour((m_flavs[1].Kfcode() / 10) % 10).Mass(true);
+  const double prefactor = 4./27*GetLDME(m_flavs[1].Kfcode())/m;
   return prefactor * sqr(p_cf->MaxCoupling(0)) / sqr(2*m) * (zmax - zmin) * m_Jmax;
 }
 
 double LF_V3P0V_Quarkonia_FI::OverEstimated(const double z, const double y) {
-  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
+  const double m = Flavour((m_flavs[1].Kfcode() / 10) % 10).Mass(true);
   return sqr(p_cf->MaxCoupling(0)) /sqr(2*m) * m_Jmax;
 }
 

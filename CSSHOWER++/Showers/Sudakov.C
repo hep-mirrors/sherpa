@@ -286,14 +286,14 @@ void Sudakov::AddQuarkoniaSplittingFunctions(Model_Base *md, const int kfmode) {
     splitypes.pop_front();
     v.cpl.push_back(cpl0); // Check later
     v.order[0] = 1;
-    Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
-    Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
-    Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
-    Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+    // Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+    // Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+    // Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+    // Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::FI, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
+    // Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::IF, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
+    // Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::IF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
     Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
     Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::II, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
-    Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::IF, kfmode, m_qcdmode, m_ewmode,  1, m_pdfmin)));
-    Add(new Splitting_Function_Base(SF_Key(&v, 0, cstp::IF, kfmode, m_qcdmode, m_ewmode, -1, m_pdfmin)));
   }
 
   msg_Out() << METHOD << ": by now " << m_splittings.size()
