@@ -845,9 +845,18 @@ Variation output
 ----------------
 
 .. index:: OUTPUT_ME_ONLY_VARIATIONS
+.. index:: VARIATION_STATISTICS
 
 The total cross section for all variations along with the nominal cross section
 are written to the standard output after the event generation has finalized.
+For each variation, the table also lists the mean and the effective sample size,
+:math:`(\sum_i x_i)^2/(N\sum_i x_i^2)`, of the weights :math:`x_i` of the :math:`N` events. For
+``VARIATION_STATISTICS: Ratio`` (the default), the :math:`x_i` are the
+reweighting factors :math:`r_i`, which relate the variation and the nominal
+weight of each event via :math:`w_{\text{var},i} = r_i\,w_{\text{nom},i}`, for
+``VARIATION_STATISTICS: Total`` the variation weights :math:`w_{\text{var},i}` themselves
+(relevant for e.g. weighted events, where the nominal weights vary as well).
+``VARIATION_STATISTICS: None`` omits them.
 Additionally, some event output (see :ref:`Event output formats`) and analysis methods
 (see :ref:`ANALYSIS`) are able to process alternate event weights.
 Currently, the only supported event output method is

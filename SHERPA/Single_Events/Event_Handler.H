@@ -25,6 +25,7 @@ namespace SHERPA {
     double m_mn;
     std::map<std::string,double> m_maxweights;
     int m_checkweight;
+    std::string m_varstats;
     size_t m_lastrss;
     int m_decayer;
 
@@ -36,6 +37,8 @@ namespace SHERPA {
     const ATOOLS::Variations  * p_variations;
     ATOOLS::Weights_Map m_wgtmapsum, m_wgtmapsumsqr;
     ATOOLS::Weights_Map m_mwgtmapsum, m_mwgtmapsumsqr;
+    ATOOLS::Weights_Map m_rewsum, m_rewsumsqr;
+    ATOOLS::Weights_Map m_mrewsum, m_mrewsumsqr;
     
     void WriteRNGStatus(const std::string &file,
 			const std::string &message) const;
@@ -47,6 +50,8 @@ namespace SHERPA {
 			    ATOOLS::blob_status::code status);
     bool AnalyseEvent();
     bool WeightsAreGood(const ATOOLS::Weights_Map&);
+    void AddReweightingFactors(const ATOOLS::Weights_Map&,
+                               const bool subtract=false);
     int  IterateEventPhases(eventtype::code & mode);
 
     void MPISync();
