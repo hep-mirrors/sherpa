@@ -27,6 +27,8 @@ Event_Handler::Event_Handler():
   m_n(0), m_mn(0), m_addn(0), m_maxweight(0.0),
   m_wgtmapsum{0.0}, m_wgtmapsumsqr{0.0},
   m_mwgtmapsum{0.0}, m_mwgtmapsumsqr{0.0},
+  m_rewsum{0.0}, m_rewsumsqr{0.0},
+  m_mrewsum{0.0}, m_mrewsumsqr{0.0},
   p_filter(NULL), p_variations(NULL)
 {
   p_phases  = new Phase_List;
@@ -207,6 +209,7 @@ bool Event_Handler::AnalyseEvent() {
 	  m_addn = trials;
 	  m_wgtmapsum -= lastwgtmap;
 	  m_wgtmapsumsqr -= lastwgtmap*lastwgtmap;
+	  AddReweightingFactors(lastwgtmap, true);
 	  Return_Value::IncCall((*pit)->Name());
 	  Return_Value::IncNewEvent((*pit)->Name());
 	  Reset();
@@ -409,6 +412,7 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
   m_addn    = 0.0;
   m_wgtmapsum += wgtmap;
   m_wgtmapsumsqr += wgtmap*wgtmap;
+  AddReweightingFactors(wgtmap);
 
   return AnalyseEvent();
 }
@@ -448,6 +452,7 @@ bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {
   m_n++;
   m_wgtmapsum += wgtmap;
   m_wgtmapsumsqr += wgtmap*wgtmap;
+  AddReweightingFactors(wgtmap);
 
   return AnalyseEvent();
 }
@@ -540,6 +545,23 @@ void Event_Handler::Finish() {
                               Variations_Name_Type::human_readable);
   }
 
+  // Obtain the sums of the reweighting factors and of their squares.
+  std::map<std::string, double> rew_sums;
+  m_mrewsum.FillVariations(rew_sums, Variations_Source::all,
+                           Variations_Name_Type::human_readable);
+  std::map<std::string, double> rew_sumsqrs;
+  m_mrewsumsqr.FillVariations(rew_sumsqrs, Variations_Source::all,
+                              Variations_Name_Type::human_readable);
+  if (Settings::GetMainSettings()["OUTPUT_ME_ONLY_VARIATIONS"].Get<bool>()) {
+    m_mrewsum.FillVariations(rew_sums, Variations_Source::main,
+                             Variations_Name_Type::human_readable);
+    m_mrewsumsqr.FillVariations(rew_sumsqrs, Variations_Source::main,
+                                Variations_Name_Type::human_readable);
+  }
+  const double rew_n {m_mrewsum.Nominal()};
+  const double rew_nsqr {m_mrewsumsqr.Nominal()};
+  const bool print_rew {!xs_wgts.empty()};
+
   // Find longest weights name
   static const std::string name_column_title {"Nominal or variation name"};
   size_t max_weight_name_size {name_column_title.size()};
@@ -551,8 +573,11 @@ void Event_Handler::Finish() {
   const int reldev_size {12};
   const int abserr_size {13};
   const int relerr_size {12};
+  const int rewavg_size {15};
+  const int rewess_size {15};
   const int table_size{static_cast<int>(max_weight_name_size) + xs_size +
-                       reldev_size + abserr_size + relerr_size + 4};
+                       reldev_size + abserr_size + relerr_size +
+                       (print_rew ? rewavg_size + rewess_size : 0) + 4};
 
   // Print cross section table header.
   msg_Out() << Frame_Header{table_size};
@@ -562,12 +587,18 @@ void Event_Handler::Finish() {
        << "XS [pb]" << std::right << std::setw(12) << "RelDev" << std::right
        << std::setw(13) << "AbsErr [pb]" << std::right << std::setw(12)
        << "RelErr";
+  if (print_rew)
+    line << std::setw(rewavg_size) << "RewAvgWeight"
+         << std::setw(rewess_size) << "RewEss";
   msg_Out() << Frame_Line{line.str(), table_size};
   msg_Out() << Frame_Separator{table_size};
   // Define table row printer.
   auto printxs = [table_size, max_weight_name_size, xs_size, reldev_size,
-                  abserr_size, relerr_size](const std::string &name, double xs,
-                                            double nom, double err) {
+                  abserr_size, relerr_size, print_rew, rewavg_size,
+                  rewess_size](const std::string &name,
+                               double xs, double nom, double err,
+                               const std::string &rewavg,
+                               const std::string &rewess) {
     MyStrStream line;
     line << om::bold << std::left << std::setw(max_weight_name_size)
 	 << name << om::reset << std::right << om::blue << om::bold
@@ -576,16 +607,36 @@ void Event_Handler::Finish() {
 	 << ((int((xs - nom) / nom * 10000)) / 100.0) << " %" << om::red
 	 << std::setw(abserr_size) << err << std::setw(relerr_size - 2)
 	 << ((int(err / xs * 10000)) / 100.0) << " %" << om::reset;
+    if (print_rew)
+      line << om::brown << std::setw(rewavg_size) << rewavg
+           << std::setw(rewess_size) << rewess << om::reset;
     msg_Out() << Frame_Line{line.str(), table_size};
+  };
+
+  auto rewstats = [&rew_sums, &rew_sumsqrs, rew_n, rew_nsqr](
+      const std::string &name) -> std::pair<std::string, std::string> {
+    const auto sum = rew_sums.find(name);
+    const auto sumsqr = rew_sumsqrs.find(name);
+    if (rew_n <= 0.0 || rew_nsqr <= 0.0 ||
+        sum == rew_sums.end() || sumsqr == rew_sumsqrs.end())
+      return {"-", "-"};
+    const double avg {sum->second / rew_n};
+    const double avgsqr {sumsqr->second / rew_nsqr};
+    MyStrStream avgstr, essstr;
+    avgstr << std::fixed << std::setprecision(6) << avg;
+    essstr << std::fixed << std::setprecision(6)
+           << (avgsqr == 0.0 ? 0.0 : 100.0 * avg * avg / avgsqr) << " %";
+    return {avgstr.str(), essstr.str()};
   };
 
   // Print nominal cross section and variations.
   double nom = xs_wgtmap.Nominal();
-  printxs("Nominal", nom, nom, err_wgtmap.Nominal());
+  printxs("Nominal", nom, nom, err_wgtmap.Nominal(), "-", "-");
   for (const auto& kv : xs_wgts) {
     const double xs = kv.second;
     const double err = err_wgts[kv.first];
-    printxs(kv.first, xs, nom, err);
+    const auto rew = rewstats(kv.first);
+    printxs(kv.first, xs, nom, err, rew.first, rew.second);
   }
 
   // Print cross section table footer.
@@ -604,10 +655,14 @@ void Event_Handler::MPISync()
 #endif
   m_mwgtmapsum = m_wgtmapsum;
   m_mwgtmapsumsqr = m_wgtmapsumsqr;
+  m_mrewsum = m_rewsum;
+  m_mrewsumsqr = m_rewsumsqr;
 #ifdef USING__MPI
   if (mpi->Size() > 1) {
     m_mwgtmapsum.MPI_Allreduce();
     m_mwgtmapsumsqr.MPI_Allreduce();
+    m_mrewsum.MPI_Allreduce();
+    m_mrewsumsqr.MPI_Allreduce();
   }
 #endif
 }
@@ -750,6 +805,22 @@ bool Event_Handler::WeightsAreGood(const Weights_Map& wgtmap)
   }
 
   return true;
+}
+
+void Event_Handler::AddReweightingFactors(const Weights_Map& wgtmap,
+                                          const bool subtract)
+{
+  const double nominal {wgtmap.Nominal()};
+  if (nominal == 0.0 || IsBad(nominal)) return;
+  const Weights_Map rewmap {wgtmap / nominal};
+  if (subtract) {
+    m_rewsum -= rewmap;
+    m_rewsumsqr -= rewmap*rewmap;
+  }
+  else {
+    m_rewsum += rewmap;
+    m_rewsumsqr += rewmap*rewmap;
+  }
 }
 
 std::string Event_Handler::CurrentProcess() const
