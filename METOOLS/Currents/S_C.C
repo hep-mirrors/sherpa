@@ -109,7 +109,10 @@ void CS<SType>::AddPropagator()
 {
   // add propagator for off-shell leg
   // m_p2, not m_p.Abs2(): see Current::Evaluate().
-  SComplex prop(M_I/(SType(this->m_p2)-m_cmass2));
+  const SComplex pp2(this->m_haveshift
+                     ? SComplex(SType((this->m_p + this->m_pshift).Abs2()))
+                     : SComplex(SType(this->m_p2)));
+  SComplex prop(M_I/(pp2-m_cmass2));
   if (this->m_osd) prop=SComplex(M_I);
 #ifdef DEBUG__BG
   msg_Debugging()<<"propagator: "<<prop<<" <- p^2 = "

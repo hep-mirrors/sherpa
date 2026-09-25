@@ -1,4 +1,5 @@
 #include "ATOOLS/Org/Message.H"
+#include <sstream>
 #include "YFS/Main/YFS_Handler.H"
 #include "BEAM/Main/Beam_Base.H"
 #include "YFS/Main/ISR.H"
@@ -297,6 +298,7 @@ void YFS_Handler::MakeCEEX() {
       // Whether a virtual was requested at all, so CEEX's weight carries the
       // same perturbative content the card asked for.
       p_ceex->SetHasVirtual(p_nlo->HasVirtual());
+      p_ceex->SetNLO(p_nlo.get());
     }
     p_ceex->SetBorn(m_born);
     for(size_t i = 0; i < m_ev.m_plab.size(); ++i) vv.push_back(m_ev.m_bornMomenta[i]);
@@ -311,10 +313,31 @@ void YFS_Handler::MakeCEEX() {
     for(size_t i = 2; i < m_ev.m_plab.size(); ++i)
       vv.push_back(m_ev.m_plab[i]);
     p_ceex->Init(vv);
+    /*
+      The phase-space point that actually realises s': the ISR-reduced beams
+      in the SAME frame as the recoiled final legs. m_plab[0..1] have been
+      boosted to the lab while m_plab[2..] have not, so m_plab itself does not
+      balance; m_sprimeBeams is the pre-boost pair.
+    */
+    if (m_ev.m_sprimeBeams.size() == 2) {
+      Vec4D_Vector sp(m_ev.m_sprimeBeams);
+      for (size_t i = 2; i < m_ev.m_plab.size(); ++i) sp.push_back(m_ev.m_plab[i]);
+      p_ceex->SetLabMomenta(sp);
+    }
     p_ceex->SetISRPhotons(m_ev.m_ISRPhotons);
     if (HasFSR()) p_ceex->SetFSRPhotons(m_ev.m_FSRPhotons);
     p_ceex->SetBornMomenta(m_ev.m_bornMomenta);
     p_ceex->SetISRFormFactor(m_ev.m_formfactor);
+    /*
+      The radiating final-state dipoles are CEEX's final stages: one per
+      resonance pair, so that each resonance propagator carries its own
+      partition-shifted invariant. Leg labels are positions in the process
+      flavour list.
+    */
+    { std::vector<std::vector<int> > groups;
+      for (auto &D : p_dipoles->GetDipoleFF())
+        if (D.IsResonance()) groups.push_back({D.Left(), D.Right()});
+      p_ceex->SetStageGroups(groups); }
     p_ceex->Calculate();
   }
 
@@ -354,8 +377,10 @@ bool YFS_Handler::CalculateISR() {
   m_ev.m_isrphotonsforME = m_ev.m_ISRPhotons;
   m_isrWeight = res.weight;
   m_ev.m_photons = res.photons;
+  m_ev.m_sprimeBeams.assign(2, Vec4D());
   for(size_t i = 0; i < 2; ++i) {
     m_ev.m_plab[i] = p_dipoles->GetDipoleII().GetNewMomenta(i); 
+    m_ev.m_sprimeBeams[i] = m_ev.m_plab[i];   // before ToLab: the pair frame
     ToLab(m_ev.m_plab[i]);
   }
   double sp = (m_ev.m_plab[0] + m_ev.m_plab[1]).Abs2();
@@ -642,7 +667,28 @@ void YFS_Handler::CalculateBeta() {
   double ceexfac(1.);
   bool   haveceex(false);
   if (m_useceex) {
+    /*
+      CEEX: TRACE_FACTOR_ABOVE. The beta_1 trace writes to std::cerr as the
+      partition loop runs, before the factor is known; so cerr is captured
+      into a buffer for the duration of MakeCEEX and the buffer is printed
+      only for the events whose factor exceeds the threshold.
+    */
+    static const double heavy(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                              ["TRACE_FACTOR_ABOVE"].Get<double>());
+    std::ostringstream tracebuf;
+    std::streambuf *cerrbuf(NULL);
+    if (heavy > 0.) cerrbuf = std::cerr.rdbuf(tracebuf.rdbuf());
     MakeCEEX();
+    if (cerrbuf) std::cerr.rdbuf(cerrbuf);
+    if (heavy > 0. && p_ceex) {
+      const double r0(p_ceex->GetRhoCrude()), r1(p_ceex->GetResult());
+      if (r0 > 0. && r1/r0 > heavy) {
+        std::cerr<<"@@@ HEAVY factor="<<r1/r0<<" nphot="<<p_ceex->NPhot()
+                 <<" BRfactor="<<m_ev.m_real<<std::endl;
+        p_ceex->PrintKinematics(std::cerr);
+        std::cerr<<tracebuf.str()<<"@@@ HEAVY end"<<std::endl;
+      }
+    }
     if (p_ceex) {
       /*
         Denominator = the INCOHERENT partition sum (KKMC's RhoCrud), not rho0.
@@ -687,7 +733,7 @@ void YFS_Handler::CalculateBeta() {
         partition sum, so the tail can be binned against something physical.
       */
       { static const bool wp(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                             ["WEIGHT_PROBE"].Get<int>()!=0);
+                             ["WEIGHT_PROBE"].SetDefault(0).Get<int>()!=0);
         if (wp)
           std::cerr<<"@@@ CEEXWT factor="<<m_ev.m_ceexfactor
                    <<" nphot="<<p_ceex->NPhot()
@@ -705,6 +751,8 @@ void YFS_Handler::CalculateBeta() {
           */
                    <<" rho0ovcr="<<(p_ceex->GetRhoCrude()>0. ?
                                     p_ceex->GetResult0()/p_ceex->GetRhoCrude() : -1.)
+                   <<" t02="<<p_ceex->T02()<<" t13="<<p_ceex->T13()
+                   <<" cthk="<<p_ceex->HardestPhotonCosTheta()
                    <<std::endl; }
       if (p_nlo) p_nlo->SetCeexVirtual(p_ceex->VirtualFactor());
     }
@@ -715,6 +763,26 @@ void YFS_Handler::CalculateBeta() {
     else m_ev.m_real=(m_born+CalculateNLO())/m_born;
     m_ev.m_nlo_current = true;
     if (m_ceex_compare && haveceex) CeexCompare();
+    /*
+      The same event's CEEX factor next to the fixed-order one it is compared
+      with (YFS.CEEX / YFS.BR is the event average of their ratio), with the
+      hardest ISR and FSR photon energies. Part of CEEX: WEIGHT_PROBE.
+    */
+    { static const bool wp(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                           ["WEIGHT_PROBE"].SetDefault(0).Get<int>()!=0);
+      if (wp && haveceex) {
+        double ei(0.), ef(0.);
+        for (const Vec4D &k : m_ev.m_ISRPhotons) ei = Max(ei, k[0]);
+        for (const Vec4D &k : m_ev.m_FSRPhotons) ef = Max(ef, k[0]);
+        std::cerr<<"@@@ CEEXCMP ceex="<<m_ev.m_ceexfactor<<" br="<<m_ev.m_real
+                 <<" eex="<<m_ev.m_eex<<" nisr="<<m_ev.m_ISRPhotons.size()
+                 <<" nfsr="<<m_ev.m_FSRPhotons.size()
+                 <<" xisr="<<2.*ei/sqrt(m_s)<<" xfsr="<<2.*ef/sqrt(m_s)
+                 <<" mll="<<(p_ceex->SvarQ()>0.?sqrt(p_ceex->SvarQ()):-1.)
+                 <<" yfsw="<<m_ev.m_yfsweight
+                 <<" rho1="<<p_ceex->GetResult()<<" rho0="<<p_ceex->GetResult0()
+                 <<" rhocr="<<p_ceex->GetRhoCrude()<<" born="<<m_born<<std::endl;
+      } }
   }
 
   /*
@@ -866,6 +934,29 @@ void YFS_Handler::CeexCompare() {
 
 void YFS_Handler::InitNLO(){
   p_nlo->Init(m_flavs,m_ev.m_reallab,m_ev.m_bornMomenta);
+  p_nlo->SetPostEmissionMomenta(m_ev.m_plab);
+  /*
+    YFS: REAL_STAB diagnostic. Per radiating final-state pair, the residual
+    of Q_D(pre-emission) - q_1' - q_2' - K_D, which is what
+    NLO_Base::MapMomentaFSRDipole assumes vanishes when it rebuilds the pair
+    from the pre-emission legs (MapMomentaFSR starts from the post-emission
+    legs plus the photons instead); a non-zero value is the difference
+    between the two constructions on a single pair.
+  */
+  { static const bool ds(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_STAB"].Get<int>()!=0);
+    static long nprint(0);
+    if (ds && nprint < 40 && m_ev.m_reallab.size() == m_ev.m_plab.size()) {
+      for (auto &D : p_dipoles->GetDipoleFF()) {
+        if (!D.IsResonance()) continue;
+        Vec4D res(m_ev.m_reallab[D.Left()] + m_ev.m_reallab[D.Right()]
+                  - m_ev.m_plab[D.Left()] - m_ev.m_plab[D.Right()]);
+        for (const Vec4D &k : D.GetPhotons()) res -= k;
+        ++nprint;
+        std::cerr<<std::setprecision(10)<<"@@@ PREPOST pair=("<<D.Left()<<","<<D.Right()
+                 <<") nphot="<<D.GetPhotons().size()<<" residual="<<res
+                 <<" |res|/M="<<(Vec3D(res).Abs()+std::abs(res[0]))/(m_ev.m_reallab[D.Left()]+m_ev.m_reallab[D.Right()]).Mass()
+                 <<std::endl;
+      } } }
   p_nlo->p_dipoles = p_dipoles.get();
   p_nlo->SetBorn(m_born);
   p_nlo->SetFSR(p_fsr.get());
@@ -947,7 +1038,16 @@ void YFS_Handler::GenerateWeight() {
       p_nlo && p_nlo->HasReal()) {
     Vec4D_Vector allphotons(m_ev.m_ISRPhotons);
     allphotons.insert(allphotons.end(), m_ev.m_FSRPhotons.begin(), m_ev.m_FSRPhotons.end());
-    wif = p_dipoles->RealIFWeight(allphotons);
+    // Same eikonal ratios the real correction subtracted with (see
+    // NLO_Base::m_wifterms); the event-dipole ratio only when the fixed-order
+    // side did not see every photon.
+    const std::vector<double> &wt(p_nlo->WIFTerms());
+    static const bool wifnlo(ATOOLS::Settings::GetMainSettings()["YFS"]
+                             ["IFI_REAL_FROM_NLO"].SetDefault(1).Get<int>() != 0);
+    if (wifnlo && wt.size() == allphotons.size() && !wt.empty()) {
+      wif = 1.; for (double t : wt) wif *= t;
+    } else
+      wif = p_dipoles->RealIFWeight(allphotons);
   }
   // The Born-level YFS weight: ISR x FSR crude (plus Coulomb/WW if on) times
   // the form factor, with NO NLO correction applied. This is what YFS.LO has
@@ -967,7 +1067,59 @@ void YFS_Handler::GenerateWeight() {
     CEEX one without - and whichever drives the weight is chosen after.
   */
   const double corr_eex (m_ev.m_real + (wif - 1.));
-  const double corr_ceex(m_ev.m_ceexfactor);      // 0 if CEEX produced nothing
+  double corr_ceex(m_ev.m_ceexfactor);            // 0 if CEEX produced nothing
+  /*
+    The IF part of the form factor, cut where CEEX needs it.
+
+    With IFI_Real off, IFIOmega() is sqrt(s)/2: the exponent holds the WHOLE
+    soft initial-final integral, because no explicit photon of the EEX/NLO
+    weights carries interference. CEEX's coherent partition sum does carry it,
+    for every generated photon above the generation cutoff, so for the CEEX
+    weight the region between that cutoff and sqrt(s)/2 was counted twice -
+    once in exp(Y_IF) and once in |sum_g s_g|^2. The symptom is an A_FB that
+    runs with log(IR_CUTOFF): e+e- -> mu mu at 0.7 GeV (CMD cuts) gave -3.4,
+    -4.9, -6.1, -7.0% at IR_CUTOFF 1e-4..1e-7 against KKMC's -0.08 +- 0.14%;
+    with the exponent cut at the generation cutoff it is +1.03/+1.06% at 1e-5
+    and 1e-7. So the CEEX column swaps exp(Y_IF(IFIOmega)) for
+    exp(Y_IF(omega_gen)); with IFI_Real on the two coincide and this is 1.
+    CEEX: IF_FORMFACTOR_CUT: 0 restores the old behaviour.
+  */
+  { static const bool ifcut(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                            ["IF_FORMFACTOR_CUT"].SetDefault(1).Get<int>() != 0);
+    if (ifcut && corr_ceex != 0. && m_ifisub == 1 && m_fullform >= 1 &&
+        m_tchannel == 0 && p_dipoles) {
+      const double wgen(0.5*sqrt(m_s)*m_isrcut);
+      const double dy(p_dipoles->FormFactorSumIF(wgen)
+                      - p_dipoles->FormFactorSumIF());
+      if (!IsBad(dy)) corr_ceex *= exp(dy);
+    } }
+  /*
+    CEEX_Virtual: external - the provider's virtual, composed onto the CEEX
+    column.
+
+    Until 2026-09-25 this value was read and never consumed: the CEEX column
+    ran with NO virtual while the nominal one carried the provider's, so with
+    NLO_Part: BVR the two columns differed by the whole O(alpha) virtual and
+    agreed only in Born+real runs. Now the CEEX factor rho_1/rho_crude, whose
+    rho_1 holds beta_0 = Born and the beta_1 terms, is multiplied by the same
+    (Born + V_sub)/Born the nominal weight adds: rho_1 (1 + v) = rho_0 (1 + v)
+    + beta_1 + O(alpha^2), which is beta_0^(1) + beta_1 to the order both
+    columns claim. The virtual is the IR-subtracted one (the YFS form-factor
+    piece stays in the exponent that multiplies both columns), and the
+    real-virtual and double-real pieces of NLO_Part are NOT composed: CEEX
+    here is O(alpha^1). The helicity dependence of the boxes is averaged over
+    - the documented trade of this mode (YFS_Base.H).
+
+    `ceex` (2 -> 2 only) keeps CEEX's own amplitude-level virtual, in which
+    case NLO_Base::CalculateVirtual hands that same number to the nominal
+    weight when no loop provider is named; `none` gives the old behaviour.
+  */
+  if (corr_ceex != 0. && m_ceexvirtsrc == ceexvirt::external && p_nlo &&
+      p_nlo->HasVirtual() && m_ev.m_nlo_current && m_born != 0.) {
+    const double vfac(1. + m_ev.m_nlo_virtual/m_born);
+    if (!IsBad(vfac)) corr_ceex *= vfac;
+    else ++m_ceexstats.m_bad;
+  }
   const bool   ceex_nom (m_ceex_weight && corr_ceex != 0.);
   m_ev.m_yfsweight *= ceex_nom ? corr_ceex : corr_eex;
   m_ev.m_yfsweight *= m_ev.m_formfactor*(1.-m_v);

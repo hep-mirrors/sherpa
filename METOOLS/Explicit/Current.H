@@ -186,6 +186,22 @@ namespace METOOLS {
     double m_p2prop = -1.0;
     inline void SetPropScale(const double &s) { m_p2prop = s; }
     inline double PropScale() const { return m_p2prop; }
+    /*!
+      A momentum SHIFT for the pole instead of a scalar: p^2 -> (p + d)^2 with
+      p this current's own all-outgoing momentum. This is what a CEEX
+      partition needs when the external legs do not balance: the photons the
+      partition counts as initial-state are added to every initial-side
+      current, the final-state ones to every final-side current, and each
+      s-channel line then sits at ITS partition invariant - in a one-photon
+      amplitude the initial- and final-attachment lines at two different ones,
+      which no single scalar can express. m_p2prop takes precedence if set.
+    */
+    ATOOLS::Vec4D m_pshift;
+    bool m_haveshift = false;
+    inline void SetPropShift(const ATOOLS::Vec4D &d)
+    { m_pshift = d; m_haveshift = (d[0]!=0.||d[1]!=0.||d[2]!=0.||d[3]!=0.); }
+    inline const ATOOLS::Vec4D &PropShift() const { return m_pshift; }
+    inline bool HavePropShift() const { return m_haveshift; }
 
     inline const ATOOLS::Vec4<ATOOLS::DDouble> &PH() const { return m_ph; }
 

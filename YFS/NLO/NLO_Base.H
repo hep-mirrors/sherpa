@@ -12,6 +12,7 @@
 #include "YFS/Main/Define_Dipoles.H"
 #include "ATOOLS/Math/Histogram_2D.H"
 #include <fstream>
+#include <sstream>
 #include <unordered_map>
 #include <memory>
 #include "ATOOLS/Math/Histogram.H"
@@ -83,6 +84,10 @@ public:
   ATOOLS::Momenta_Stretcher m_stretcher;
 
   double m_evts, m_recola_evts, m_ranTheta, m_ranPhi, m_real,m_ravg, m_rv, m_rvsub, m_eikeex, m_subloc;
+  // YFS: REAL_TRACE. Per-photon record of the Born+real assembly for the
+  // current event, printed by CalculateReal() when |1 + real/Born| exceeds
+  // the threshold. Filled by CalculateReal(k), so it sees every term.
+  std::ostringstream m_realtrace;
   // Per-nominal-call contributions of the hardest photon(s), captured
   // inline while CalculateReal/CalculateRealVirtual/CalculateRealReal sum
   // over the full photon multiplicity - no separate recomputation needed.
@@ -289,6 +294,61 @@ public:
   //! The photons are boosted in place. The fixed-multiplicity overloads below
   //! are wrappers around this.
   void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D_Vector &k);
+  /*
+    The (n+1)-body point for beta_1(k_j) when the event has other photons,
+    for photons radiated from the initial state (YFS: REAL_MAP). All three
+    keep k_j's direction and the beam directions in the lab, so the eikonal
+    of the point is the event's up to a scale, and boost the final state
+    rigidly; they differ in how the other photons are taken out. Each returns
+    false when it does not apply (a final-state photon among k, unphysical
+    kinematics), and MapMomenta then uses the rest-frame construction
+    (REAL_MAP: 0, the pre-2026-09-24 behaviour), see the comments in
+    NLO_Base.C for the measurements behind each.
+      1: beams reduced by the others' longitudinal momentum, photon as is.
+      2: beams and photon scaled by one x (KKMC's beta_1 convention). Default.
+      3: as 2, but with (final state + k_j)^2 kept as in the event.
+  */
+  bool MapMomentaBeamAxis(ATOOLS::Vec4D_Vector &p, const ATOOLS::Vec4D_Vector &k);
+  bool MapMomentaScaled(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D_Vector &k);
+  //! Final-state photons: Q fixed, the final legs recoil (YFS: REAL_FSR_MAP).
+  //! 1: every final leg rescaled in the common rest frame (one resonant pair).
+  bool MapMomentaFSR(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D_Vector &k);
+  //! 2 (default): only the legs of the photon's OWN dipole recoil, the other
+  //! pairs sit at their pre-emission momenta. Reduces to 1 for one pair.
+  bool MapMomentaFSRDipole(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D_Vector &k);
+  //! The event photon with momentum k (nullptr if none), matched by momentum
+  //! as PhotonIsFSR does; carries the dipole it was radiated from.
+  const YFS::Photon *FindPhoton(const ATOOLS::Vec4D &k) const;
+  //! The event's legs AFTER final-state emission (m_plab holds the legs before).
+  ATOOLS::Vec4D_Vector m_postlab;
+  /*!
+    Per photon of the last CalculateReal(): the ratio of the coherent eikonal
+    beta_1 subtracted to the crude it was divided by. YFS_Handler builds the
+    IFI_Real weight from THESE, so that the Born term and the subtraction
+    telescope to r flux/(S~ B) per photon; with the ratio taken from the
+    event dipoles instead, the two coherent eikonals (mapped point vs event
+    legs) differ at O(1) for hard final-state photons and the difference
+    survived as a heavy tail.
+  */
+  std::vector<double> m_wifterms;
+  inline const std::vector<double> &WIFTerms() const { return m_wifterms; }
+  inline void SetPostEmissionMomenta(const ATOOLS::Vec4D_Vector &p) { m_postlab = p; }
+  bool MapMomentaInvariant(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D_Vector &k);
+  bool PhotonIsFSR(const ATOOLS::Vec4D &k) const;
+  // Set by MapMomenta: true when one of the new reductions ran AND the event
+  // had other photons to remove, i.e. the mapped point is not the event.
+  // CalculateReal then divides beta_1 by the CRUDE eikonal of the mapped
+  // point (see there); at n = 1 it is false and the assembly is the legacy
+  // one, bit for bit.
+  bool m_map_reduced = false;
+  /*
+    Same construction with the Born reference passed in rather than read from
+    m_bornMomenta. CEEX needs this: MakeCEEX runs BEFORE CalculateNLO, so
+    NLO's member still holds the previous event and the rotation would be
+    taken against the wrong axis.
+  */
+  void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k,
+                  const ATOOLS::Vec4D_Vector &ref);
   void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k);
   void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k1, ATOOLS::Vec4D &k2);
   // Defined in NLO_Checks.C, along with the other *Sub checks and the

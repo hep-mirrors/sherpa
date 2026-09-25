@@ -227,6 +227,20 @@ bool Ceex_Base::ComixBornAmplitude(const Vec4D_Vector &p, Amplitude &A,
 }
 
 
+bool Ceex_Base::ComixBornShifted(const Vec4D_Vector &p, Amplitude &A,
+                                 const PropShifts &shifts)
+{
+  if (p_bornproc == NULL) return false;
+  std::vector<METOOLS::Spin_Amplitudes> amps;
+  if (!p_bornproc->BornSpinAmplitudesShifts(p, amps, NULL, shifts)) return false;
+  if (amps.empty()) return false;
+  const METOOLS::Spin_Amplitudes &sa(amps[0]);
+  const int nh(Amplitude::NHel());
+  if ((int)sa.size() < nh) return false;
+  for (int f = 0; f < nh; ++f) A.m_A[f] = sa[f];
+  return true;
+}
+
 void Ceex_Base::InfraredSubtractedME_0_0() {
   // This partition's Born, squared on its own and added to the INCOHERENT sum
   double rc(0.);
@@ -238,9 +252,71 @@ void Ceex_Base::InfraredSubtractedME_0_0() {
     what the partition sum means by B(X) and why no momentum configuration
     realises it.
   */
+  bool realpoint(false);
   if (m_comixborn && m_cxbalignok) {
     Amplitude C;
-    if (ComixBornAmplitude(m_pceex, C, NULL, m_sp, m_svarY)) {
+    /*
+      Two forms of beta_0(X_wp), both with the propagator at THIS partition's
+      X and both partition dependent:
+
+      BORN_AT_SPRIME: 0 - KKMC's. Physical spinors with the pole pinned to
+      m_sp (the decay line to m_svarY), a configuration no momenta realise,
+      times the pseudo-flux svarY/svarQ. The flux is what makes it the size of
+      a Born: pinning scales the propagator by svarQ/X^2 relative to the real
+      point while the spinors stay at their physical scale, and X^2/svarQ
+      undoes that.
+
+      BORN_AT_SPRIME: 1 - the Born at the REAL point whose invariant is X_wp^2:
+      beams back-to-back at X_wp, the radiating pair at X_wp minus the
+      spectators, directions taken from the event (BornLegsAt). The
+      propagators follow from the momenta and no flux is applied. This is the
+      object Comix's one-photon amplitude reduces to as its photon goes soft,
+      so beta_1 = M_1 - s beta_0 becomes a difference of like objects rather
+      than of a real-point amplitude and a pinned one.
+
+      An earlier version of this switch took ONE point per event - the
+      all-ISR reduction, m_plabmom - for every partition and kept the flux.
+      The (F,F) partition then carried s/s' on a Born already at s', and
+      mu mu came out at 6215 pb. That was the flux, not the alignment.
+    */
+    static const bool sprime(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                             ["BORN_AT_SPRIME"].Get<int>() != 0);
+    bool ok(false);
+    if (sprime) {
+      Vec4D_Vector pb;
+      ok = BornLegsAt(m_PXvec, pb)
+           && ComixBornAmplitude(pb, C, NULL, -1., -1.);
+      realpoint = ok;
+    }
+    /*
+      The pinned Born by momentum SHIFT rather than by scalar: the initial-state
+      photons of this partition added to the initial-side lines, the
+      final-state ones to the final-side lines. With every photon included the
+      two sides agree, (P - sum_I k)^2 = (q_c + q_d + sum_F k)^2 = X_wp^2, so
+      this is the same object as the scalar pin at (m_sp, m_svarY) - checked
+      below - and the form beta_1's M_1 reduces to, since the same shifts
+      with THIS photon left out are what M_1 is evaluated with.
+    */
+    if (!ok) {
+      PropShifts sh(StageShifts(-1));
+      AddExchangeLineShifts(-1, sh);     // space-like exchange lines
+      ok = ComixBornShifted(m_pceex, C, sh);
+      if (ok && m_checkxs && m_ffbar && m_nstages == 2) {
+        static int nchk(0);
+        if (nchk < 12) { ++nchk;
+          Amplitude Cp;
+          if (ComixBornAmplitude(m_pceex, Cp, NULL, m_sp, m_svarY)) {
+            double nd(0.), nn(0.);
+            for (int f = 0; f < Amplitude::NHel(); ++f) {
+              nd += std::norm(C.m_A[f] - Cp.m_A[f]); nn += std::norm(Cp.m_A[f]); }
+            std::cerr<<"@@@ SHIFTCHK nphot="<<m_allphotons.size()
+                     <<" sp="<<m_sp<<" sY="<<m_svarY
+                     <<" |shift-pin|/|pin|="<<(nn>0.? sqrt(nd/nn) : -1.)
+                     <<std::endl; } }
+      }
+    }
+    if (!ok) ok = ComixBornAmplitude(m_pceex, C, NULL, m_sp, m_svarY);
+    if (ok) {
       const int nh(Amplitude::NHel());
       const int fmaskx(Amplitude::NHel() - 1);
       for (int f = 0; f < nh; ++f)
@@ -248,18 +324,94 @@ void Ceex_Base::InfraredSubtractedME_0_0() {
                          /(m_e*m_e);
     }
   }
-  const Complex fac(m_e * m_e * m_cfac);
-  for (int j1 = 0; j1 <= 1; ++j1)
-    for (int j2 = 0; j2 <= 1; ++j2)
-      for (int j3 = 0; j3 <= 1; ++j3)
-        for (int j4 = 0; j4 <= 1; ++j4) {
-          const Complex a(fac * AmpBorn.m_A[Idx(j1,j2,j3,j4)]);
-          rc += std::real(a * conj(a));
-          m_AmpExpo0.m_A[Idx(j1,j2,j3,j4)] += a;
-          m_AmpBornVirt.m_A[Idx(j1,j2,j3,j4)] += a;
-          m_AmpBornReal.m_A[Idx(j1,j2,j3,j4)] += a;
-          m_AmpExpo1.m_A[Idx(j1,j2,j3,j4)] += a;
-        }
+  // the real-point Born carries its own scale: soft factors only, no flux.
+  // fac0 feeds rho_1 (and beta_1's subtraction), fac00 feeds rho_0; see the
+  // NO_PSEUDOFLUX modes in the partition loop.
+  static const int pfmode(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                          ["NO_PSEUDOFLUX"].Get<int>());
+  const Complex fac0(m_e * m_e * (realpoint ? 1. : (pfmode == 0 ? m_pflux : 1.)));
+  const Complex fac00(m_e * m_e * (realpoint ? 1. : (pfmode == 1 ? 1. : m_pflux)));
+  const Complex fac(fac0 * m_Sprod), facA0(fac00 * m_Sprod);
+  /*
+    Every helicity the container holds. This loop ran over the 16 entries of
+    a 2 -> 2 final state until 2026-09-24; for e+e- -> mu mu tau tau (64
+    entries) the other 48 never received a Born, and m_partborn0 stayed zero
+    there, so beta_1 for those helicities was M_1 with NOTHING subtracted -
+    infrared-unsafe, and the CEEX weight grew with the photon multiplicity.
+  */
+  const int nhel(Amplitude::NHel());
+  // With a collapsed photon the crude's soft product is not |m_Sprod|^2 but
+  // the incoherent one (m_crudeprod, see Ceex_Base.H). Without one the two
+  // are the same number and the original expression is kept bit for bit.
+  const double crudefac(std::norm(fac00) * m_crudeprod);
+  /*
+    The CRUDE's Born is the generator's: the Born at the partition's reduced
+    point (BornLegsAt(X_wp): beams back to back at X_wp along the
+    generator's axis, the pair at Y_wp), times s/X_wp^2. The coherent sum
+    and beta_1's subtraction keep the KKMC form above - physical spinors,
+    poles at X_wp - because that is what M_1 reduces to (Defect 3). For an
+    s-channel Born the two are the same number: the amplitude at physical
+    spinors with the pole at X is sqrt(s/X^2) times the one at the reduced
+    point (the spinor products scale, the pole is shared), and the
+    fixed-order weight divides its real by exactly S~ m_born/(1 - x) with
+    m_born the reduced-point Born - which is why CEEX = Born+real held
+    event by event at one photon for mu mu and nu nu. For a space-like
+    exchange line the two are NOT the same number: the numerators do not
+    scale with the pole, and pinning a t-channel pole under physical
+    numerators can drive it to zero. e+e- -> gamma gamma at the Z pole:
+    Born+real / CEEX at one photon had a median of 1.000 and a 1st-99th
+    percentile of 0.41-25 (up to 5e9), Bhabha CEEX/Born+real 0.90 with a
+    heavy tail, both with the physical-spinor crude. Measured: the Comix
+    Born at BornLegsAt is m_born to six digits at every x on gamma gamma
+    and on nu nu at x = 0.87 once the axis is the generator's
+    (REDUCED_AXIS). Measured with it (CEEX: CRUDE_BORN: 1): Z-pole mu mu
+    CEEX 1278.1 -> 1280.1 (+0.15%, within errors, as the argument says),
+    Bhabha 1376.9 -> 1374.8, four-fermion bit-identical (2 -> 2 only, since
+    LegsAt rebuilds one pair) - but gamma gamma still fails the one-photon
+    test at wide angle (Born+real/CEEX median 15 for |cos theta| < 0.9, all
+    at x > 0.9), so the crude is not what is wrong there and this is left
+    OFF (default 0) until that is understood: the validated s-channel
+    numbers stay bit for bit.
+  */
+  static const int crudeborn(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                             ["CRUDE_BORN"].SetDefault(0).Get<int>());
+  bool usered(crudeborn != 0 && m_flavs.size() == 4 && m_comixborn
+              && m_cxbalignok && !realpoint);
+  Amplitude Cred;
+  double fluxred(1.);
+  if (usered) {
+    Vec4D_Vector pb;
+    const double X2(m_PXvec.Abs2());
+    usered = X2 > 0. && BornLegsAt(m_PXvec, pb)
+             && ComixBornAmplitude(pb, Cred, NULL, -1., -1.);
+    if (usered) fluxred = m_s/X2;
+  }
+  /*
+    One power of each flux: the physical-spinor Born of a final-stage
+    partition is (q + K)^2/q^2 times the reduced-point one in the square
+    (the spinors scale, the pole is shared), so KKMC's (svarX/svarQ)^2 on
+    |beta_0|^2 is (svarX/svarQ) on B_red^2; the initial-stage factor
+    s/X_wp^2 is the same statement for the beams.
+  */
+  const double crudered((pfmode == 1 ? 1. : m_pflux) * fluxred
+                        * (m_crudefixed ? m_crudeprod : std::norm(m_Sprod)));
+  const int fmaskr(Amplitude::NHel() - 1);
+  for (int f = 0; f < nhel; ++f) {
+    const Complex a(fac * AmpBorn.m_A[f]);
+    const Complex a0(facA0 * AmpBorn.m_A[f]);
+    if (usered)
+      rc += crudered * std::norm(m_cxbalign.m_A[f]
+                                 * Cred.m_A[f ^ (m_comixflip & fmaskr)]);
+    else
+      rc += m_crudefixed ? crudefac * std::norm(AmpBorn.m_A[f])
+                         : std::real(a0 * conj(a0));
+    // what beta_1 subtracts, before the soft-factor product
+    m_partborn0.m_A[f] = fac0 * AmpBorn.m_A[f];
+    m_AmpExpo0.m_A[f] += a0;
+    m_AmpBornVirt.m_A[f] += a;
+    m_AmpBornReal.m_A[f] += a;
+    m_AmpExpo1.m_A[f] += a;
+  }
   m_rhocrud += rc / 4.;
   m_snapBorn = m_AmpExpo1;   // Born term only, before any correction
 
@@ -374,6 +526,24 @@ void Ceex_Base::BuildComixBornAlignment()
   m_cxrnorm = -1.;
   if (p_bornproc == NULL || m_pceex.size() < 4) return;
   if (!m_comixborn && !m_comixreal) return;
+  /*
+    Past 2 -> 2 there is no hand-coded Born to align to, and none is needed:
+    the Born, the one-photon amplitude and the eikonal (ComixPolarisation)
+    are all in Comix's convention, so any per-helicity factor is common to
+    every term and cancels in |A|^2, and any overall constant cancels in
+    rho_1/rho_0. Unit alignment, unit normalisation, no map derivation - the
+    fermion flip is applied to the Born and to M_1 alike and so drops out.
+  */
+  if (!m_ffbar) {
+    for (int f = 0; f < Amplitude::NHel(); ++f) m_cxbalign.m_A[f] = Complex(1., 0.);
+    if (!m_comixcalibrated) {
+      m_comixflip = m_comixphoflip ? Amplitude::NHel() : 0;
+      m_comixnorm = 1.; m_normexact = true; m_comixcalibrated = true;
+    }
+    m_cxrnorm = 1.;
+    m_cxbalignok = true;
+    return;
+  }
   /*
     The map has to exist before it can be used. DeriveComixMap was reached
     only from the COMIX_REAL paths, so with COMIX_BORN alone m_comixflip was
@@ -508,8 +678,25 @@ void Ceex_Base::BuildComixBornAlignment()
       mass-suppressed in the same slots; the four live helicities carry
       everything either way.
     */
-    m_cxbalign.m_A[f] = (std::abs(Cf) > 1e-10*nc && std::abs(Hf) > 1e-10*nhd)
-      ? Hf/Cf : Complex(0., 0.);
+    /*
+      A CONVENTION factor has unit modulus up to one overall normalisation:
+      the per-leg spinor phases differ between the two constructions, their
+      magnitudes do not. So the alignment is the norm ratio N = |e^2 H|/|C|
+      (1/sqrt(initial spin states) at 2 -> 2) times a phase, and the phase is
+      read off only where both Borns are live. In the helicity-FLIP slots the
+      Born is mass-suppressed on both sides and Hf/Cf is whatever the two
+      mass treatments happen to give - measured 5x on one event. That never
+      mattered for the Born, but the one-photon amplitude of a photon
+      collinear to a massive muon (0.1 degrees, seed 19) is LARGE in exactly
+      those slots, and multiplying it by that ratio gave |A1|^2 27x KKMC's
+      where the un-aligned Comix amplitude agreed to 1e-3. Modulus N
+      everywhere, phase from the live slots, unit phase elsewhere.
+    */
+    const double N(nc > 0. ? nhd/nc : 0.);
+    if (std::abs(Cf) > 1e-3*nc && std::abs(Hf) > 1e-3*nhd) {
+      const Complex r(Hf/Cf);
+      m_cxbalign.m_A[f] = N * r/std::abs(r);
+    } else m_cxbalign.m_A[f] = Complex(N, 0.);
   }
   m_cxbalignok = true;
 

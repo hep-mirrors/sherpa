@@ -7,6 +7,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "YFS/NLO/NLO_Base.H"
+#include <map>
 #include <cstdlib>
 #include <iostream>
 #include "YFS/NLO/Virtual.H"
@@ -284,6 +285,7 @@ double NLO_Base::PhotonEminNLO() const
 }
 
 double NLO_Base::CalculateReal() {
+  m_wifterms.clear();
   if (m_coll_real)
     return p_dipoles->CalculateEEX() * m_born;
   if (!m_realtool)
@@ -292,6 +294,8 @@ double NLO_Base::CalculateReal() {
   m_real_hard1 = 0.;
   m_real_hard2 = 0.;
   m_ifi_prod = 1.;
+  static const double trace_thr(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_TRACE"].Get<double>());
+  m_realtrace.str(""); m_realtrace.clear();
   for (YFS::Photon &g : m_photons) {
     const Vec4D k(g.K());
     { static const bool dg(ATOOLS::Settings::GetMainSettings()["YFS"]["PHOTON_DUMP"].Get<int>()!=0);
@@ -343,6 +347,15 @@ double NLO_Base::CalculateReal() {
   HardestBetas(m_photons, [](const YFS::Photon &g) { return g.beta10(); },
                m_real_hard1, m_real_hard2);
   if (m_ifireal && !IsBad(m_ifi_prod)) real += m_born*(m_ifi_prod - 1.);
+  if (trace_thr > 0. && m_born != 0. && std::abs(1. + real/m_born) > trace_thr) {
+    Vec4D Q;
+    for (size_t i(2); i < m_plab.size(); ++i) Q += m_plab[i];
+    std::cerr<<"@@@ RTRACE event nphot="<<m_photons.size()
+             <<" BRfactor="<<(1. + real/m_born)
+             <<" sqrt_s="<<sqrt(m_s)<<" sqrt_sp="<<Q.Mass()
+             <<" born="<<m_born<<" real="<<real<<"\n"
+             <<m_realtrace.str()<<"@@@ RTRACE end"<<std::endl;
+  }
   return real;
 }
 
@@ -385,8 +398,89 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
   else
     flux = p_dipoles->CalculateFlux(kk);
 
+  /*
+    Define_Dipoles::CalculateFlux forces fluxtype = initial whenever both ISR
+    and FSR are on (the WhichResonant() result above is never used), so a
+    FINAL-state photon received the initial-state flux (Q_X - k)^2/Q_X^2 =
+    1 - x, as if it had reduced the beam energy. It has not: the Born scale
+    s' is untouched by final-state emission, and the two-body phase space at
+    the reduced pair mass differs from the crude one only by the muon
+    velocity ratio. e+e- -> mu mu at 0.7 GeV (CMD): the real ME of every FSR
+    photon was scaled by 0.70-0.78 before the subtraction, the single-FSR-
+    photon events had Born+real/CEEX with median 0.75 and a 90th percentile
+    of 6.4 where the two must agree event by event, and the photon spectrum
+    grew a 2x bump against KKMC at E_gamma/sqrt(s) = 0.12-0.22.
+    Setting flux = 1 (YFS: REAL_FSR_FLUX: 1) made the single-FSR-photon
+    Born+real/CEEX WORSE (median 0.75 -> 1.67), so the 1 - x is carrying the
+    recoil Jacobian and stays; the switch is kept for the record.
+  */
+  { static const int fsrflux(ATOOLS::Settings::GetMainSettings()["YFS"]
+                             ["REAL_FSR_FLUX"].SetDefault(0).Get<int>());
+    if (fsrflux != 0 && PhotonIsFSR(kk)) {
+      if (fsrflux == 1) flux = 1.;          // no flux
+      else if (fsrflux == 2) flux *= flux;  // (m_ff^2/s')^2
+      /*
+        4: the flux of the photon's OWN pair, (Q_D - k)^2/Q_D^2 with Q_D the
+        pre-emission momentum of the dipole that radiated k. CalculateFlux
+        above takes (Q - k)^2/Q^2 with Q the WHOLE ISR-reduced final state,
+        which is the same number for a single resonant pair (Q_D = Q) but
+        not with two: the recoil Jacobian the FSR generator produced
+        (FSR::RescalePhotons, m_yy) is that of the pair in its own frame,
+        and a photon of x = 2E/sqrt(s) = 0.05 at 250 GeV has 1 - x = 0.95
+        against a pair-mass ratio of 0.69-0.94 depending on its direction
+        relative to the Z boost. See the numbers in the report for
+        e+e- -> mu mu tau tau (with REAL_FSR_MAP 2 the fixed-order/CEEX ratio
+        on single-FSR-photon events grows with x: 1.00, 1.07, 1.10, 1.10,
+        1.28, 1.47 for x in <0.01, 0.01-0.03, 0.03-0.06, 0.06-0.12,
+        0.12-0.3, >0.3).
+      */
+      else if (fsrflux == 4 && m_plab.size() == m_flavs.size()) {
+        const YFS::Photon *g(FindPhoton(kk));
+        if (g != nullptr && g->Dip() != nullptr) {
+          const int l(g->Dip()->Left()), r(g->Dip()->Right());
+          if (l >= 2 && r >= 2 && l < (int)m_plab.size() && r < (int)m_plab.size()) {
+            const Vec4D Qd(m_plab[l] + m_plab[r]);
+            const double q2(Qd.Abs2());
+            if (q2 > 0.) flux = (Qd - kk).Abs2()/q2;
+          } } }
+    } }
   double subloc = p_nlodipoles->CalculateRealSub(k);
   double subb   = p_dipoles->CalculateRealSubEEX(kk);
+  /*
+    Which eikonal beta_1 subtracts (YFS: REAL_SUB_EIK). 0: the coherent one
+    at the mapped, post-emission point (as before). 1: the event's crude,
+    S~_II + S~_FF on the pre-emission legs - the density the photon was
+    generated with, so the weight is r flux/(S~ B) exactly. 2: the coherent
+    eikonal on the pre-emission (Born) legs of the event, the legs the form
+    factor exponent is built on.
+  */
+  { static const int subeik(ATOOLS::Settings::GetMainSettings()["YFS"]
+                            ["REAL_SUB_EIK"].SetDefault(0).Get<int>());
+    if (subeik == 1) subloc = subb;
+    else if (subeik == 2) subloc = p_dipoles->CalculateRealSub(kk); }
+  /*
+    REAL_FSR_FLUX: 3 - the crude a FINAL-state photon is divided by carries
+    F = (q + k)^2/q^2 on its final-state part, q the post-emission pair, and
+    r carries no flux. This is the crude CEEX divides by (validated against
+    KKMC): on single-FSR-photon events K rho_crude(CEEX)/((S~_II + F S~_FF) B)
+    has median 0.96 where K rho_crude/(S~ B) has 1.15 and a tail to 2.1.
+  */
+  { static const int fsrflux(ATOOLS::Settings::GetMainSettings()["YFS"]
+                             ["REAL_FSR_FLUX"].SetDefault(0).Get<int>());
+    if (fsrflux == 3 && PhotonIsFSR(kk) && m_postlab.size() == m_plab.size()) {
+      Vec4D q; for (size_t i = 2; i < m_postlab.size(); ++i) q += m_postlab[i];
+      const double q2(q.Abs2());
+      if (q2 > 0.) {
+        const double F((q + kk).Abs2()/q2);
+        double sII(0.), sFF(0.);
+        if (p_dipoles->HasDipoleII()) {
+          YFS::Dipole &D(p_dipoles->GetDipoleII());
+          sII = D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1)); }
+        for (auto &D : p_dipoles->GetDipoleFF())
+          sFF += D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1));
+        if (sII + F*sFF > 0.) { subb = sII + F*sFF; flux = 1.; m_eikeex = subb; }
+      } } }
+  m_wifterms.push_back(subb != 0. ? subloc/subb : 1.);
   m_eikeex = subb;
   m_subloc = subloc;
 
@@ -430,15 +524,89 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
   }
 
   double tot;
+  /*
+    The CRUDE eikonal of the mapped point: S~_II + S~_FF, each dipole on the
+    momenta of the point, incoherently, like CalculateRealSubEEX does for the
+    event. Only used when the mapped point is not the event (m_map_reduced).
+
+    beta_1 at the reduced point carries the photon's collinear structure at
+    a different overall scale from the event (the 1/x^2 of the scaled photon,
+    electron-mass terms), so the bounded object is the residual
+    r flux - S~coh B divided by an eikonal OF THE POINT, and the crude sum is
+    the one to divide by: it is positive, and |J_II + J_FF|^2 <= 2 (|J_II|^2
+    + |J_FF|^2) so wherever residual/S~coh is bounded so is residual/crude.
+    Dividing by the coherent S~coh instead (the first version of this
+    branch) put the coherent ZEROS of the II-FF interference pattern into the
+    denominator: the full |M_1|^2 does not vanish there, its hard remainder
+    does not, and the ratio did not stay bounded. Measured on e+e- -> u ubar
+    at the Z pole, 100k events: YFS.BR 4904 +- 6.9% against 4481 +- 0.16%
+    with the legacy map, the heavy events all having S~coh(point) 20-60x
+    below the event's crude (a 5.8 GeV photon: 3.3e-6 against 1.2e-4, x =
+    0.93). nu nu has no FF current and was not affected (S~coh = crude).
+
+    Crude(point) ~ crude(event)/x^2 up to the bounded Doppler change of the
+    final-state angles, so residual/crude(point) is the event-normalised
+    beta_1/S~crude - and the n = 1 formula (r flux - subloc B)/subb, with
+    subb the event's crude, is the same object with x = 1.
+  */
+  double subb_loc(subb);
+  if (m_map_reduced) {
+    subb_loc = 0.;
+    if (p_nlodipoles->HasDipoleII()) {
+      YFS::Dipole &D(p_nlodipoles->GetDipoleII());
+      subb_loc += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+    }
+    for (auto &D : p_nlodipoles->GetDipoleFF())
+      subb_loc += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+    if (IsZero(subb_loc) || IsBad(subb_loc)) subb_loc = subb;
+  }
   if (m_submode == submode::local)
     tot = (r * flux - subloc * m_born / m_rescale_alpha) / subloc;
   else if (m_submode == submode::global)
-    tot = (r * flux - subloc * m_born / m_rescale_alpha) / subb;
+    tot = (r * flux - subloc * m_born / m_rescale_alpha) / subb_loc;
   else if (m_submode == submode::off)
     tot = (r * flux) / subb;
   else
     msg_Error() << METHOD << " unknown YFS subtraction mode " << m_submode << "\n";
 
+  { static const double tr(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_TRACE"].Get<double>());
+    if (tr > 0.) {
+      // The lab photon (kk), the mapped photon (k), the reduced beams of the
+      // (n+1)-body point, the real ME and the two eikonals it is compared to.
+      Vec4D Q;
+      for (size_t i(2); i < m_plab.size(); ++i) Q += m_plab[i];
+      double cmin(2.);
+      for (size_t i(0); i < 2; ++i) {
+        const double ct(Vec3D(m_plab[i]) * Vec3D(kk) / (Vec3D(m_plab[i]).Abs() * Vec3D(kk).Abs()));
+        cmin = std::min(cmin, 1. - std::fabs(ct));
+      }
+      const double S(subloc * m_born / m_rescale_alpha);
+      double sII(0.), sFF(0.);
+      if (p_dipoles->HasDipoleII()) {
+        YFS::Dipole &D(p_dipoles->GetDipoleII());
+        sII = D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1)); }
+      for (auto &D : p_dipoles->GetDipoleFF())
+        sFF += D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1));
+      m_realtrace<<std::setprecision(6)
+                 <<"  gam Elab="<<kk.E()<<" x="<<2.*kk.E()/sqrt(m_s)
+                 <<" SII="<<sII<<" SFF="<<sFF<<" fsr="<<(PhotonIsFSR(kk)?1:0)
+                 <<" 1-|cos|="<<cmin
+                 <<" Emap="<<k.E()
+                 <<" sqrt_sj="<<(p[0]+p[1]).Mass()
+                 <<" sqrt_sp="<<Q.Mass()
+                 <<" M_ff="<<(p[2]+p[3]).Mass()
+                 <<" r="<<r<<" flux="<<flux<<" rflux="<<r*flux
+                 <<" S~loc*B="<<S<<" S~loc="<<subloc<<" S~crude="<<subb
+                 <<" S~crude_pt="<<subb_loc<<" reduced="<<(m_map_reduced?1:0)
+                 <<" born="<<m_born
+                 <<" beta1/S~="<<tot<<" beta1/(S~B)="<<(m_born!=0.?tot/m_born:0.)
+                 <<" failcut="<<(p_real->FailCut()?1:0)
+                 <<"\n     klab="<<kk<<" kmap="<<k
+                 <<"\n     Pa="<<m_bornMomenta[0]<<" Pb="<<m_bornMomenta[1]
+                 <<" IIborn0="<<p_dipoles->GetDipoleII().GetBornMomenta(0)
+                 <<"\n     pa_j="<<p[0]<<" pb_j="<<p[1]<<" Qlab="<<Q
+                 <<"\n";
+    } }
   { static const bool ds(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_STAB"].Get<int>()!=0);
     if (ds) {
       const double S(subloc * m_born / m_rescale_alpha);
@@ -1304,7 +1472,577 @@ void NLO_Base::CheckMappingRecoil(const Vec4D_Vector &p, const Vec4D &ksum) {
                 << ")" << std::endl;
 }
 
+/*
+  The (n+1)-body point for beta_1(k_j) of FINAL-state photons (REAL_FSR_MAP: 1).
+
+  p[2..] are the final legs BEFORE final-state emission (m_reallab), so their
+  sum is the ISR-reduced total momentum Q, of mass sqrt(s'). The rest-frame
+  map below adds k on top and rebuilds the beams at sqrt((Q+k)^2), i.e. ABOVE
+  sqrt(s'): e+e- -> mu mu at 0.7 GeV gave sqrt(s_j) = 0.83-0.89 GeV for hard
+  wide-angle FSR photons, the real ME and flux were taken at that unphysical
+  point while the subtraction used S~ B at s', and the fixed-order photon
+  spectrum grew a heavy-weight bump above E_gamma ~ 0.12 GeV (independent of
+  the ME provider and of REAL_MAP, which touches ISR photons only).
+
+  Here Q is kept: in the Q rest frame the final legs keep their directions and
+  are rescaled by one factor xi so that they carry the mass sqrt((Q-K)^2),
+  then boosted to move with Q-K; the beams are rebuilt at sqrt(Q^2) = sqrt(s').
+  With a single FSR photon this is the YFS final-state recoil of the event.
+*/
+bool NLO_Base::MapMomentaFSR(Vec4D_Vector &p, Vec4D_Vector &k) {
+  if (k.empty() || p.size() < 4) return false;
+  for (const Vec4D &kj : k) if (!PhotonIsFSR(kj)) return false;
+  m_map_reduced = false;
+  /*
+    Start from the legs AFTER final-state emission, not before. With the
+    pre-emission legs the photon-lepton angle of the point is not the event's,
+    and the collinear structure of |M_1|^2 is off by large factors: on e+e- ->
+    mu mu at 0.7 GeV, single-FSR-photon events had r/rho_1(CEEX) spread over
+    0.003-0.5 where single-ISR-photon events give 0.01613 on every event. The
+    other FSR photons are absorbed into the pair below (their sum is added to
+    the target mass); with one FSR photon the point IS the event, as for CEEX.
+  */
+  Vec4D Kall;
+  for (const Vec4D &kj : m_FSRPhotons) Kall += kj;
+  if (m_postlab.size() == p.size()) {
+    for (size_t i = 2; i < p.size(); ++i) p[i] = m_postlab[i];
+  } else Kall = Vec4D();
+  Vec4D Q;
+  for (size_t i = 2; i < p.size(); ++i) Q += p[i];
+  Q += Kall;
+  const double sq(Q.Abs2());
+  if (!(sq > 0.)) return false;
+  Poincare boostLab(m_bornMomenta[0] + m_bornMomenta[1]);
+  Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
+  Poincare boostQ(Q);
+  for (size_t i = 0; i < p.size(); ++i) { pRot.RotateBack(p[i]); boostQ.Boost(p[i]); }
+  Vec4D K;
+  for (Vec4D &kj : k) { pRot.RotateBack(kj); boostQ.Boost(kj); K += kj; }
+  const double M(sqrt(sq));
+  const Vec4D Qp(Vec4D(M, 0., 0., 0.) - K);
+  const double Mp2(Qp.Abs2());
+  if (!(Mp2 > 0.)) return false;
+  const double Mp(sqrt(Mp2));
+  // Into the rest frame of the legs' own sum L, where their 3-momenta cancel
+  // and a common rescaling keeps them cancelling; the rescaled legs are then
+  // boosted onto Q - K. (Boosting into the Q - K frame instead left the
+  // absorbed photons' 3-momentum unbalanced whenever K != all FSR photons.)
+  Vec4D L;
+  for (size_t i = 2; i < p.size(); ++i) L += p[i];
+  if (!(L.Abs2() > 0.)) return false;
+  Poincare boostL(L), boostQp(Qp);
+  for (size_t i = 2; i < p.size(); ++i) boostL.Boost(p[i]);
+  // xi: sum_i sqrt(m_i^2 + xi^2 |p_i|^2) = Mp, by bisection (monotone in xi)
+  std::vector<double> m2, pp2;
+  double msum(0.);
+  for (size_t i = 2; i < p.size(); ++i) {
+    const double mi(m_flavs[i].Mass());
+    m2.push_back(mi*mi); pp2.push_back(Vec3D(p[i]).Sqr()); msum += mi;
+  }
+  if (msum >= Mp) return false;
+  auto etot = [&](double xi) { double e(0.);
+    for (size_t j = 0; j < m2.size(); ++j) e += sqrt(m2[j] + xi*xi*pp2[j]);
+    return e; };
+  double lo(0.), hi(1.);
+  while (etot(hi) < Mp) hi *= 2.;
+  for (int it = 0; it < 200; ++it) {
+    const double mid(0.5*(lo+hi));
+    (etot(mid) < Mp ? lo : hi) = mid;
+  }
+  const double xi(0.5*(lo+hi));
+  for (size_t i = 2; i < p.size(); ++i) {
+    const Vec3D v(xi*Vec3D(p[i]));
+    Vec4D f(sqrt(m2[i-2] + v.Sqr()), v);
+    boostQp.BoostBack(f);
+    p[i] = f;
+  }
+  const double sign_z = (m_bornMomenta[0][3] < 0 ? -1 : 1);
+  const double m1 = m_flavs[0].Mass(), m2b = m_flavs[1].Mass();
+  const double lamCM = 0.5 * sqrt(Lambda(sq, m1*m1, m2b*m2b) / sq);
+  p[0] = {sqrt(lamCM*lamCM + m1*m1), 0, 0,  sign_z * lamCM};
+  p[1] = {sqrt(lamCM*lamCM + m2b*m2b), 0, 0, -sign_z * lamCM};
+  Poincare pRot2(m_bornMomenta[0], Vec4D(0., 0., 0, 1.));
+  for (size_t i = 0; i < p.size(); ++i) { pRot2.Rotate(p[i]); boostLab.BoostBack(p[i]); }
+  for (Vec4D &kj : k) { pRot2.Rotate(kj); boostLab.BoostBack(kj); }
+  { Vec4D res(p[0] + p[1]);
+    for (size_t i = 2; i < p.size(); ++i) res -= p[i];
+    for (const Vec4D &kj : k) res -= kj;
+    if (Vec3D(res).Abs() > 1e-9 || std::abs(res[0]) > 1e-9) {
+      Vec4D post; for (size_t i = 2; i < m_postlab.size(); ++i) post += m_postlab[i];
+      Vec4D pre;  for (size_t i = 2; i < m_plab.size(); ++i)    pre  += m_plab[i];
+      Vec4D isr;  for (const Vec4D &kj : m_ISRPhotons) isr += kj;
+      std::cerr<<std::setprecision(10)<<"@@@ FSRMAP residual="<<res
+               <<" xi="<<xi<<" Mp="<<Mp<<" msum="<<msum
+               <<" nFSR="<<m_FSRPhotons.size()<<" nk="<<k.size()
+               <<"\n   Kall(lab)="<<Kall<<" post(lab)="<<post<<" pre(lab)="<<pre
+               <<" isr(lab)="<<isr<<" P="<<(m_bornMomenta[0]+m_bornMomenta[1])
+               <<"\n   post+Kall+isr-P="<<(post+Kall+isr-m_bornMomenta[0]-m_bornMomenta[1])
+               <<" pre+isr-P="<<(pre+isr-m_bornMomenta[0]-m_bornMomenta[1])<<std::endl;
+    } }
+  return true;
+}
+
+const YFS::Photon *NLO_Base::FindPhoton(const Vec4D &k) const {
+  for (const YFS::Photon &g : m_photons)
+    if (g.K() == k) return &g;
+  return nullptr;
+}
+
+bool NLO_Base::PhotonIsFSR(const Vec4D &k) const {
+  const YFS::Photon *g(FindPhoton(k));
+  return g != nullptr && g->IsFSR();
+}
+
+/*
+  The (n+1)-body point for beta_1(k_j) of FINAL-state photons when the final
+  state has MORE THAN ONE radiating dipole (REAL_FSR_MAP: 2, the default).
+
+  Each final-state photon is radiated by one resonant pair (its dipole,
+  YFS::Photon::Dip()): Dipole::GenerateEmissions samples it in that pair's
+  rest frame and YFS_Handler::CalculateFSR lets only that pair recoil, so in
+  the event every pair separately satisfies  Q_D(pre) = q_1' + q_2' + K_D.
+  MapMomentaFSR above absorbs the OTHER photons by rescaling ALL final legs
+  together: with two pairs the pair that did not radiate k_j is moved off its
+  pre-emission momentum and k_j's pair does not land on Q_D - k_j, so both
+  resonance propagators of |M_1|^2 are evaluated off the event's invariants
+  while the subtraction S~ B sits on the event's ones. On the Z pole a shift
+  of a fraction of Gamma_Z is a large factor, which is what the numbers show.
+  e+e- -> mu mu tau tau at 250 GeV (doc/examples/YFS/zpole/br_table/
+  250_eemumu, 8k events, mu-pair mass within 2 GeV of M_Z):
+      nfsr = 1: <BR>/<CEEX> = 0.987, median BR/CEEX = 1.06   (the event)
+      nfsr = 2: <BR>/<CEEX> = 0.21,  median 1.03 - the mean is a tail;
+      nfsr = 3: 0.17;   nfsr >= 4: 0.12;
+      a hard FSR photon (x > 0.05) with other FSR photons: median BR = -0.66,
+      <BR> = -3.5 against <CEEX> = 0.75.
+  In the Rivet Z1_mass overlay the Born+real dipped 25% at the mu-pair peak
+  where LO, EEX and CEEX agree in shape.
+
+  Here every pair other than k_j's is put back at its pre-emission momentum
+  (m_plab, its photons re-absorbed), and k_j's pair is rebuilt at
+  Q_D(pre) - k_j: its two legs keep the direction they have in the event in
+  their own rest frame (the post-emission legs of m_postlab boosted to rest,
+  which is the direction the generator drew), are given the momentum of a
+  two-body decay of mass sqrt((Q_D - k_j)^2), and are boosted onto Q_D - k_j.
+  Several selected photons (CalculateRealReal) are grouped by dipole and
+  absorbed by their own pair each. Legs in no radiating dipole are untouched.
+  When k_j is the only photon of its pair the pair is the event's, and with
+  one radiating pair in the process the whole construction is MapMomentaFSR.
+  The beams are rebuilt at sqrt(Q^2) = sqrt(s') exactly as there.
+*/
+bool NLO_Base::MapMomentaFSRDipole(Vec4D_Vector &p, Vec4D_Vector &k) {
+  if (k.empty() || p.size() < 4) return false;
+  if (m_postlab.size() != p.size() || m_plab.size() != p.size()) return false;
+  // The selected photons, grouped by the dipole that radiated them.
+  std::map<std::pair<int,int>, Vec4D> ksel;
+  for (const Vec4D &kj : k) {
+    const YFS::Photon *g(FindPhoton(kj));
+    if (g == nullptr || !g->IsFSR() || g->Dip() == nullptr) return false;
+    const int l(g->Dip()->Left()), r(g->Dip()->Right());
+    if (l < 2 || r < 2 || l >= (int)p.size() || r >= (int)p.size() || l == r)
+      return false;
+    ksel[std::make_pair(std::min(l,r), std::max(l,r))] += kj;
+  }
+  m_map_reduced = false;
+  // Every final leg at its pre-emission momentum: the pairs that did not
+  // radiate a selected photon have their own photons re-absorbed by this.
+  for (size_t i = 2; i < p.size(); ++i) p[i] = m_plab[i];
+  for (const auto &sel : ksel) {
+    const int l(sel.first.first), r(sel.first.second);
+    const Vec4D K(sel.second);
+    const Vec4D Qd(m_plab[l] + m_plab[r]);     // the pair before it radiated
+    const Vec4D Qp(Qd - K);                    // the pair with only K taken out
+    const double Mp2(Qp.Abs2());
+    if (!(Mp2 > 0.) || !(Qp[0] > 0.)) return false;
+    const double Mp(sqrt(Mp2));
+    const double m1(m_flavs[l].Mass()), m2(m_flavs[r].Mass());
+    if (m1 + m2 >= Mp) return false;
+    // The decay direction the event has: the post-emission legs in their
+    // own rest frame are back to back along it.
+    Vec4D q1(m_postlab[l]), q2(m_postlab[r]);
+    const Vec4D L(q1 + q2);
+    if (!(L.Abs2() > 0.) || !(L[0] > 0.)) return false;
+    Poincare boostL(L);
+    boostL.Boost(q1); boostL.Boost(q2);
+    Vec3D n(Vec3D(q1) - Vec3D(q2));
+    if (!(n.Abs() > 0.)) return false;
+    n = n/n.Abs();
+    const double pcm(0.5*sqrt(Lambda(Mp2, m1*m1, m2*m2)/Mp2));
+    Vec4D f1(sqrt(m1*m1 + pcm*pcm),  pcm*n);
+    Vec4D f2(sqrt(m2*m2 + pcm*pcm), -pcm*n);
+    Poincare boostQp(Qp);
+    boostQp.BoostBack(f1); boostQp.BoostBack(f2);
+    p[l] = f1; p[r] = f2;
+  }
+  // The beams at sqrt(Q^2), Q the pre-emission final state (= s'), in the
+  // same frame convention as MapMomentaFSR: into the Q rest frame, the
+  // beams along the Born axis there, and back.
+  Vec4D Q;
+  for (size_t i = 2; i < p.size(); ++i) Q += m_plab[i];
+  const double sq(Q.Abs2());
+  if (!(sq > 0.)) return false;
+  Poincare boostLab(m_bornMomenta[0] + m_bornMomenta[1]);
+  Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
+  Poincare boostQ(Q);
+  for (size_t i = 2; i < p.size(); ++i) { pRot.RotateBack(p[i]); boostQ.Boost(p[i]); }
+  for (Vec4D &kj : k) { pRot.RotateBack(kj); boostQ.Boost(kj); }
+  const double sign_z = (m_bornMomenta[0][3] < 0 ? -1 : 1);
+  const double mb1 = m_flavs[0].Mass(), mb2 = m_flavs[1].Mass();
+  const double lamCM = 0.5 * sqrt(Lambda(sq, mb1*mb1, mb2*mb2) / sq);
+  p[0] = {sqrt(lamCM*lamCM + mb1*mb1), 0, 0,  sign_z * lamCM};
+  p[1] = {sqrt(lamCM*lamCM + mb2*mb2), 0, 0, -sign_z * lamCM};
+  Poincare pRot2(m_bornMomenta[0], Vec4D(0., 0., 0, 1.));
+  for (size_t i = 0; i < p.size(); ++i) { pRot2.Rotate(p[i]); boostLab.BoostBack(p[i]); }
+  for (Vec4D &kj : k) { pRot2.Rotate(kj); boostLab.BoostBack(kj); }
+  { Vec4D res(p[0] + p[1]);
+    for (size_t i = 2; i < p.size(); ++i) res -= p[i];
+    for (const Vec4D &kj : k) res -= kj;
+    const double scale(Max(1., p[0][0]));
+    if (Vec3D(res).Abs() > 1e-9*scale || std::abs(res[0]) > 1e-9*scale) {
+      static long nprint(0);
+      if (++nprint <= 20)
+        std::cerr<<std::setprecision(10)<<"@@@ FSRMAPD residual="<<res
+                 <<" nk="<<k.size()<<" npairs="<<ksel.size()
+                 <<" nFSR="<<m_FSRPhotons.size()<<" P="<<(m_bornMomenta[0]+m_bornMomenta[1])
+                 <<" Q="<<Q<<std::endl;
+    } }
+  return true;
+}
+
+/*
+  The (n+1)-body point at which beta_1(k_j) is evaluated when the event has
+  OTHER photons, for a photon radiated from the initial state (REAL_MAP: 1).
+
+  What the point has to reproduce is the soft-photon radiation pattern of
+  the event: the weight is beta_1(k_j)/S~(k_j) with S~ the eikonal of the
+  EVENT, so |M_1|^2 at X_j must carry the same collinear structure for k_j
+  or the ratio is unbounded. The massless eikonal sum_i Q_i p_i/(p_i.k) is
+  invariant under a rescaling p_i -> x_i p_i of every leg and, for the beams,
+  under boosts along the beam axis (it is 4/k_perp^2), but NOT under a
+  rotation or a transverse boost of k relative to the axis.
+
+  The rest-frame construction below (REAL_MAP: 0) boosts final state + k_j
+  into their common rest frame and rebuilds the beams along the lab axis
+  THERE. With a hard spectator photon that frame moves at beta ~ 0.7 and the
+  aberrated k_j can land on the rebuilt beam axis: measured on a 250 GeV
+  radiative-return event, a 7.4 GeV photon at 34 degrees to the beams (lab
+  eikonal 4.3e-5) came out at 20 mrad (eikonal 1.1e-2), and a -21% real
+  correction became -52 times the Born. The tail of that ratio is 1/f, so
+  the cross-section error never shrank with statistics (2.5-3.5% at 100k for
+  250 GeV nu nu, mu mu, tau tau; per-event factors down to -2600).
+
+  Here instead:
+    - k_j and the beam DIRECTIONS stay as in the lab;
+    - the other photons are taken out of the beams through their
+      longitudinal projection, P~ = P - (E_K, (K.n) n), which is the
+      light-cone removal that leaves x_a P_a + x_b P_b on the axis;
+    - one common factor lambda fixes (lambda P~ - k_j)^2 = s', so the pair
+      invariant - the Z propagator - is exactly the event's and matches the
+      Born of the subtraction;
+    - the final state is boosted rigidly from Q_lab to Q' = P' - k_j, so its
+      internal invariants and masses are untouched.
+  The II eikonal is then preserved up to the electron-mass terms (whose
+  ratio lies in [x^4, 1]: the dead cone only shrinks the term), and at n = 1
+  there is nothing to remove, lambda = 1, and the point is the event itself,
+  so the one-photon stream is unchanged. What is given up is the angle of
+  k_j to the final-state fermions, which changes by the bounded Doppler
+  factor of the Q_lab -> Q' boost; for a photon radiated from the FINAL
+  state that is the singular structure, so those keep the rest-frame path.
+*/
+bool NLO_Base::MapMomentaBeamAxis(Vec4D_Vector &p, const Vec4D_Vector &k) {
+  if (k.empty() || m_bornMomenta.size() < 2 || p.size() < 3) return false;
+  for (const Vec4D &kj : k) if (PhotonIsFSR(kj)) return false;
+  const Vec4D P(m_bornMomenta[0] + m_bornMomenta[1]);
+  const Vec3D pa3(m_bornMomenta[0]);
+  if (!(pa3.Abs() > 0.)) return false;
+  const Vec3D n(pa3/pa3.Abs());
+  Vec4D Q, ksel;
+  for (size_t i(2); i < p.size(); ++i) Q += p[i];
+  for (const Vec4D &kj : k) ksel += kj;
+  const double sp(Q.Abs2());
+  if (!(sp > 0.)) return false;
+  // Everything the event radiated that is not among the selected photons:
+  // by conservation, so hidden or unlisted photons are removed as well.
+  const Vec4D K(P - Q - ksel);
+  const double Kn(Vec3D(K)*n);
+  const Vec4D Pt(P - Vec4D(K[0], Kn*n));
+  const double Pt2(Pt.Abs2());
+  if (!(Pt2 > 0.) || !(Pt[0] > 0.)) return false;
+  // lambda^2 Pt^2 - 2 lambda Pt.ksel - (sp - ksel^2) = 0, the positive root.
+  const double b(Pt*ksel), c(sp - ksel.Abs2());
+  const double disc(b*b + Pt2*c);
+  if (!(disc >= 0.)) return false;
+  const double lambda((b + sqrt(disc))/Pt2);
+  if (!(lambda > 0.) || IsBad(lambda)) return false;
+  const Vec4D Pp(lambda*Pt);
+  const Vec4D Qp(Pp - ksel);
+  if (!(Qp[0] > 0.) || !IsEqual(Qp.Abs2(), sp, 1e-8)) return false;
+  // On-shell beams back-to-back along +-n in the P' rest frame; P' has no
+  // transverse momentum, so that frame is a longitudinal boost away and the
+  // axis survives the boost back.
+  const double sj(Pp.Abs2());
+  const double m1(m_flavs[0].Mass()), m2(m_flavs[1].Mass());
+  if (sj <= sqr(m1 + m2)) return false;
+  const double lamCM(0.5*sqrt(Lambda(sj, m1*m1, m2*m2)/sj));
+  Vec4D pa(sqrt(lamCM*lamCM + m1*m1),  lamCM*n);
+  Vec4D pb(sqrt(lamCM*lamCM + m2*m2), -lamCM*n);
+  Poincare toPp(Pp);
+  toPp.BoostBack(pa); toPp.BoostBack(pb);
+  // The final state, rigidly, from its lab total Q to Q'.
+  Poincare fromQ(Q), toQp(Qp);
+  Vec4D_Vector q(p.begin() + 2, p.end());
+  Vec4D qsum;
+  for (Vec4D &qi : q) { fromQ.Boost(qi); toQp.BoostBack(qi); qsum += qi; }
+  Vec4D bal(pa + pb - qsum - ksel);
+  const double scale(Max(Pp[0], 1.));
+  for (int mu(0); mu < 4; ++mu)
+    if (dabs(bal[mu]) > 1e-7*scale) {
+      msg_Error() << METHOD << "(): momentum imbalance " << bal
+                  << " in the beam-axis reduction, using the rest-frame map."
+                  << std::endl;
+      return false;
+    }
+  p[0] = pa; p[1] = pb;
+  for (size_t i(2); i < p.size(); ++i) p[i] = q[i-2];
+  m_map_reduced = (K[0] > 1e-12*P[0]);
+  { static const bool dm(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_STAB"].Get<int>()!=0);
+    if (dm) std::cerr<<"@@@ MAPQ sqrt_sqq="<<sqrt(sj)
+                     <<" sqrt_s="<<sqrt(m_s)
+                     <<" sqrt_sborn="<<(m_bornMomenta[2]+m_bornMomenta[3]).Mass()
+                     <<" Eksum="<<ksel[0]<<" lambda="<<lambda<<" beamaxis=1"<<std::endl; }
+  return true;
+}
+
+/*
+  The KKMC convention for beta_1(k_j) in an n-photon event (REAL_MAP: 2).
+
+  KKMC's EEX beta_1 for an initial-state photon is S~(k) B(s') times
+  [(1-a)^2 + (1-b)^2]/2 - 1 with a = k.p_a/(p_a.p_b), b = k.p_b/(p_a.p_b)
+  taken with the FULL beams and B at the event's s': the other photons enter
+  only through s'. The beam-axis reduction above judges the photon against
+  beams already reduced by the others, a' = a/x_b, which for two hard photons
+  counts the energy loss twice. Leading-log check, two collinear ISR photons
+  with fractions x_1, x_2 of the beam, exact factor
+  (1+(1-x_1)^2)/2 * (1+(1-x_2/(1-x_1))^2)/2 symmetrised:
+      x_1 = x_2 = 0.44 : exact 0.34, KKMC 0.32, reduced beams 0.04
+      x_1 = 0.8, x_2 = 0.05 : exact 0.45, KKMC 0.47, reduced beams 0.29
+  so the KKMC convention is the better O(alpha) truncation (the remainder is
+  the genuine beta_2), and it is what YFS.EEX and CEEX effectively carry.
+  Measured, 250 GeV nu nu, 50k events, same sample: the beam-axis reduction
+  gives YFS.BR 2.838 +- 0.3%, this construction 3.166 +- 0.2%, CEEX (no
+  virtual) 3.272 +- 0.4%, EEX 3.513 (with its +7% virtual); the rest-frame
+  map gave 2.925 +- 10%. The remaining 3% to CEEX sits in the events where
+  two hard photons share the radiative return, where CEEX's coherent
+  amplitude-level sum carries an effective beta_2 that O(alpha) cannot.
+
+  A momentum-conserving point with the full-beam a, b and the pair at s' is
+  the n = 1 configuration {P_a, P_b, k_j, Q} scaled by one factor x:
+      x^2 (P - k_j)^2 = s'   ->   x = sqrt(s'/(P - K_sel)^2) <= 1,
+  a and b are scale invariant, the pair sits at s' by construction, and the
+  final state is boosted rigidly from Q_lab to Q' = x(P - k_j). The photon in
+  the point is x k_j, so the eikonal of the point is the event's over x^2 and
+  the SAME 1/x^2 sits in |M_1|^2: CalculateReal therefore takes the ratio
+  |M_1|^2 flux/(S~ B) at the point and multiplies the event's own eikonal
+  (m_map_reduced). At n = 1, x = 1 and nothing changes. What is not preserved
+  is (Q + k_j)^2, the invariant of the final-state emission diagrams of the
+  full real ME; for photons radiated from the final state that IS the
+  resonance, so those keep the rest-frame construction.
+*/
+bool NLO_Base::MapMomentaScaled(Vec4D_Vector &p, Vec4D_Vector &k) {
+  if (k.empty() || m_bornMomenta.size() < 2 || p.size() < 3) return false;
+  for (const Vec4D &kj : k) if (PhotonIsFSR(kj)) return false;
+  const Vec4D P(m_bornMomenta[0] + m_bornMomenta[1]);
+  const Vec3D pa3(m_bornMomenta[0]);
+  if (!(pa3.Abs() > 0.)) return false;
+  const Vec3D n(pa3/pa3.Abs());
+  Vec4D Q, ksel;
+  for (size_t i(2); i < p.size(); ++i) Q += p[i];
+  for (const Vec4D &kj : k) ksel += kj;
+  const double sp(Q.Abs2());
+  const Vec4D R(P - ksel);
+  const double R2(R.Abs2());
+  if (!(sp > 0.) || !(R2 > 0.) || !(R[0] > 0.)) return false;
+  const Vec4D K(P - Q - ksel);
+  // x <= 1 up to rounding: (P - K_sel)^2 = (Q + K_others)^2 >= Q^2.
+  const double x(Min(1., sqrt(sp/R2)));
+  if (!(x > 0.) || IsBad(x)) return false;
+  const double sj(x*x*P.Abs2());
+  const double m1(m_flavs[0].Mass()), m2(m_flavs[1].Mass());
+  if (sj <= sqr(m1 + m2)) return false;
+  // Beams x P_a, x P_b rebuilt on shell along +-n in the P rest frame, then
+  // returned to the lab (the identity for balanced beams).
+  const double lamCM(0.5*sqrt(Lambda(sj, m1*m1, m2*m2)/sj));
+  Vec4D pa(sqrt(lamCM*lamCM + m1*m1),  lamCM*n);
+  Vec4D pb(sqrt(lamCM*lamCM + m2*m2), -lamCM*n);
+  Poincare toP(P);
+  toP.BoostBack(pa); toP.BoostBack(pb);
+  const Vec4D Qp(pa + pb - x*ksel);
+  if (!(Qp[0] > 0.) || !(Qp.Abs2() > 0.)) return false;
+  Poincare fromQ(Q), toQp(Qp);
+  Vec4D_Vector q(p.begin() + 2, p.end());
+  Vec4D qsum;
+  for (Vec4D &qi : q) { fromQ.Boost(qi); toQp.BoostBack(qi); qsum += qi; }
+  Vec4D bal(pa + pb - qsum - x*ksel);
+  const double scale(Max(P[0], 1.));
+  for (int mu(0); mu < 4; ++mu)
+    if (dabs(bal[mu]) > 1e-7*scale) {
+      msg_Error() << METHOD << "(): momentum imbalance " << bal
+                  << " in the scaled reduction, using the rest-frame map."
+                  << std::endl;
+      return false;
+    }
+  p[0] = pa; p[1] = pb;
+  for (size_t i(2); i < p.size(); ++i) p[i] = q[i-2];
+  for (Vec4D &kj : k) kj = x*kj;
+  m_map_reduced = (K[0] > 1e-12*P[0]);
+  { static const bool dm(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_STAB"].Get<int>()!=0);
+    if (dm) std::cerr<<"@@@ MAPQ sqrt_sqq="<<sqrt(sj)
+                     <<" sqrt_s="<<sqrt(m_s)
+                     <<" sqrt_sborn="<<(m_bornMomenta[2]+m_bornMomenta[3]).Mass()
+                     <<" Eksum="<<ksel[0]<<" x="<<x<<" scaled=1"<<std::endl; }
+  return true;
+}
+
+/*
+  REAL_MAP: 3. The scaled construction keeps the photon's fractions a, b
+  relative to the full beams but moves (Q + k_j)^2, the invariant mass of
+  final state plus photon. For a charged final state the full real ME also
+  has the diagrams with the photon radiated from the final state, whose Z
+  propagator sits at exactly that invariant: with the Z-pole Born, moving it
+  by a few GeV changes |M_1|^2 by orders of magnitude. Measured: 250 GeV
+  mu mu with REAL_MAP: 2 kept the central value (BR 3.21, CEEX 3.22) but a
+  5% error from 466 events with |BR| > 10, and the Z-pole mu mu Born+real
+  moved by 0.5%.
+
+  Here both are kept - and the measurement is the reason this is NOT the
+  default: 250 GeV mu mu, 100k, REAL_MAP: 3 gives BR 4.98 +- 26% against
+  3.21 +- 4.8% and 2.82 +- 5.4% (two versions of the denominator, same
+  seeds) for REAL_MAP: 2 (CEEX 3.22) - the 5% is a heavy tail, not a
+  Gaussian error, and the central value moves with it. Keeping the invariant exactly
+  puts more ISR-labelled events onto the Z pole of their final-state
+  emission diagrams, where the full |M_1|^2 is shared between the I and F
+  labels in the ratio S~_II/S~_tot but divided by the ISR label's own
+  S~_tot B((mu mu)^2), which is orders of magnitude below the physics. The
+  label sum is exact (both labels together give the exact real once), so
+  this is variance, not bias; the cure is a multi-channel denominator
+  S~_II B_I + S~_FF B_F, which needs the Born at the other label's
+  kinematics and is not attempted here. At the Z pole modes 2 and 3 agree
+  per event to four digits. Unknowns: the beam energies x_a, x_b (directions fixed)
+  and one scale kappa for the photon. Conditions:
+      P'^2 = (Q + k_j)^2            (final-state-emission invariant),
+      (P' - kappa k_j)^2 = s'       (the pair at the event's s'),
+      log kappa = w log x_a + (1-w) log x_b,  w = (1 + cos theta_k)/2,
+  the last being the scaled convention for the beam the photon is collinear
+  with (kappa = x_a exactly along beam a: its fraction of that beam is the
+  event's) and a smooth interpolation in between. The photon's energy in the
+  (Q + k_j) rest frame is then the event's too, so the final-state emission
+  is as hard as it really was; only the angle between photon and fermions
+  changes, by the bounded Doppler factor of the Q_lab -> Q' boost. Solved by
+  iteration on kappa; the 2x2 system for P' along the axis is quadratic,
+  the root with the smaller longitudinal momentum is the one continuous
+  with P' = P at n = 1. When it has no real solution (a photon with more
+  transverse momentum than energy in the (Q + k_j) frame) the scaled
+  construction is used instead.
+*/
+bool NLO_Base::MapMomentaInvariant(Vec4D_Vector &p, Vec4D_Vector &k) {
+  if (k.empty() || m_bornMomenta.size() < 2 || p.size() < 3) return false;
+  for (const Vec4D &kj : k) if (PhotonIsFSR(kj)) return false;
+  const Vec4D P(m_bornMomenta[0] + m_bornMomenta[1]);
+  const Vec3D pa3(m_bornMomenta[0]);
+  if (!(pa3.Abs() > 0.)) return false;
+  const Vec3D n(pa3/pa3.Abs());
+  Vec4D Q, ksel;
+  for (size_t i(2); i < p.size(); ++i) Q += p[i];
+  for (const Vec4D &kj : k) ksel += kj;
+  const double sp(Q.Abs2());
+  const Vec4D R(Q + ksel);
+  const double sj(R.Abs2());
+  if (!(sp > 0.) || !(sj > sp) || !(R[0] > 0.)) return false;
+  const Vec4D K(P - R);
+  if (!(K[0] > 1e-12*P[0])) return MapMomentaScaled(p, k);   // n = 1: the event
+  const double Es(ksel[0]), ks(Vec3D(ksel)*n), D(Es*Es - ks*ks), ksel2(ksel.Abs2());
+  if (!(Es > 0.) || !(D > 0.)) return false;
+  const double ck(Vec3D(ksel).Abs() > 0. ? ks/Vec3D(ksel).Abs() : 0.);
+  const double w(0.5*(1. + ck));
+  const double Ea(m_bornMomenta[0][0]), Eb(m_bornMomenta[1][0]);
+  const double pza(Vec3D(m_bornMomenta[0])*n), pzb(Vec3D(m_bornMomenta[1])*n);
+  // E' = xa Ea + xb Eb, pz' = xa pza + xb pzb (pzb < 0 for balanced beams).
+  const double det(Ea*pzb - Eb*pza);
+  if (IsZero(det)) return false;
+  double kappa(sqrt(sp/(P - ksel).Abs2())), xa(1.), xb(1.), Ep(0.), pzp(0.);
+  bool ok(false);
+  for (int it(0); it < 50; ++it) {
+    const double C((sj + kappa*kappa*ksel2 - sp)/(2.*kappa));   // P'.ksel
+    const double disc(C*C - D*sj);
+    if (!(disc >= 0.)) break;
+    const double r1((C*ks + Es*sqrt(disc))/D), r2((C*ks - Es*sqrt(disc))/D);
+    pzp = dabs(r1) < dabs(r2) ? r1 : r2;
+    Ep  = (C + pzp*ks)/Es;
+    if (!(Ep > 0.) || !(Ep*Ep - pzp*pzp > 0.)) break;
+    // P' = xa P_a + xb P_b along the axis.
+    xa = (Ep*pzb - Eb*pzp)/det;
+    xb = (Ea*pzp - pza*Ep)/det;
+    if (!(xa > 0.) || !(xb > 0.)) break;
+    const double kn(exp(w*log(xa) + (1. - w)*log(xb)));
+    if (dabs(kn - kappa) < 1e-12*kn) { kappa = kn; ok = true; break; }
+    kappa = kn;
+  }
+  if (!ok || IsBad(kappa) || !(kappa > 0.)) return MapMomentaScaled(p, k);
+  const Vec4D Pp(Ep, pzp*n);
+  const double m1(m_flavs[0].Mass()), m2(m_flavs[1].Mass());
+  if (sj <= sqr(m1 + m2)) return MapMomentaScaled(p, k);
+  const double lamCM(0.5*sqrt(Lambda(sj, m1*m1, m2*m2)/sj));
+  Vec4D pa(sqrt(lamCM*lamCM + m1*m1),  lamCM*n);
+  Vec4D pb(sqrt(lamCM*lamCM + m2*m2), -lamCM*n);
+  Poincare toPp(Pp);
+  toPp.BoostBack(pa); toPp.BoostBack(pb);
+  const Vec4D Qp(pa + pb - kappa*ksel);
+  if (!(Qp[0] > 0.) || !IsEqual(Qp.Abs2(), sp, 1e-6)) return MapMomentaScaled(p, k);
+  Poincare fromQ(Q), toQp(Qp);
+  Vec4D_Vector q(p.begin() + 2, p.end());
+  Vec4D qsum;
+  for (Vec4D &qi : q) { fromQ.Boost(qi); toQp.BoostBack(qi); qsum += qi; }
+  Vec4D bal(pa + pb - qsum - kappa*ksel);
+  const double scale(Max(P[0], 1.));
+  for (int mu(0); mu < 4; ++mu)
+    if (dabs(bal[mu]) > 1e-7*scale) {
+      msg_Error() << METHOD << "(): momentum imbalance " << bal
+                  << ", using the scaled reduction." << std::endl;
+      return MapMomentaScaled(p, k);
+    }
+  p[0] = pa; p[1] = pb;
+  for (size_t i(2); i < p.size(); ++i) p[i] = q[i-2];
+  for (Vec4D &kj : k) kj = kappa*kj;
+  m_map_reduced = true;
+  { static const bool dm(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_STAB"].Get<int>()!=0);
+    if (dm) std::cerr<<"@@@ MAPQ sqrt_sqq="<<sqrt(sj)
+                     <<" sqrt_s="<<sqrt(m_s)
+                     <<" sqrt_sborn="<<(m_bornMomenta[2]+m_bornMomenta[3]).Mass()
+                     <<" Eksum="<<ksel[0]<<" kappa="<<kappa<<" xa="<<xa<<" xb="<<xb
+                     <<" invariant=1"<<std::endl; }
+  return true;
+}
+
 void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D_Vector &k) {
+  static const int mapmode(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_MAP"].Get<int>());
+  m_map_reduced = false;
+  if (mapmode == 1 && MapMomentaBeamAxis(p, k)) return;
+  if (mapmode == 2 && MapMomentaScaled(p, k)) return;
+  if (mapmode == 3 && MapMomentaInvariant(p, k)) return;
+  { static const int fsrmap(ATOOLS::Settings::GetMainSettings()["YFS"]
+                            ["REAL_FSR_MAP"].Get<int>());
+    if (fsrmap == 2 && MapMomentaFSRDipole(p, k)) return;
+    // 2 falls back to the common rescaling when the per-dipole construction
+    // does not apply (a photon without a dipole, a pair below threshold).
+    if (fsrmap >= 1 && MapMomentaFSR(p, k)) return; }
+  if (mapmode != 0) {
+    // Only initial-state photons are reduced by the new constructions; a
+    // final-state photon (or an early exit) comes here by design. Counted so
+    // that a solver that never converges cannot masquerade as the legacy map.
+    static long nfall(0);
+    if (++nfall == 1000 && msg_LevelIsDebugging())
+      msg_Debugging() << METHOD << "(): 1000 photons on the rest-frame map with REAL_MAP "
+                      << mapmode << std::endl;
+  }
   Vec4D Q;
   Vec4D QQ;
   Poincare boostLab(m_bornMomenta[0] + m_bornMomenta[1]);
@@ -1367,6 +2105,16 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k) {
   Vec4D_Vector ks{k};
   MapMomenta(p, ks);
   k = ks[0];
+}
+
+void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k,
+                          const Vec4D_Vector &ref) {
+  const Vec4D_Vector save(m_bornMomenta);
+  m_bornMomenta = ref;
+  Vec4D_Vector ks{k};
+  MapMomenta(p, ks);
+  k = ks[0];
+  m_bornMomenta = save;
 }
 
 void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D &k1, Vec4D &k2) {

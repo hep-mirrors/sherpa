@@ -331,6 +331,49 @@ namespace PHASIC {
      double *me2 = NULL, const double propscale = -1.0,
      const double decscale = -1.0, const size_t deccid = 0) { return false; }
 
+    /*!
+      The vector-shift form of the two above: initial-side s-channel lines get
+      dini added to their momentum, final-side ones dfin (ffmask names the
+      final fermion pair), before the pole is evaluated. External momenta
+      and spinors are left exactly as given. See COMIX::Amplitude::SetPropShift.
+    */
+    virtual ATOOLS::Weights_Map DifferentialWithPropShift
+    (const ATOOLS::Cluster_Amplitude &ampl,
+     ATOOLS::Variations_Mode varmode, int mode,
+     const ATOOLS::Vec4D &dini, const ATOOLS::Vec4D &dfin,
+     const size_t ffmask)
+    { return Differential(ampl, varmode, mode); }
+    virtual bool BornSpinAmplitudesShifted
+    (const ATOOLS::Vec4D_Vector &p,
+     std::vector<METOOLS::Spin_Amplitudes> &amps, double *me2,
+     const ATOOLS::Vec4D &dini, const ATOOLS::Vec4D &dfin,
+     const size_t ffmask) { return false; }
+    //! The general form: one (leg mask, photon sum) per radiating stage.
+    typedef std::vector<std::pair<size_t, ATOOLS::Vec4D> > Prop_Shifts;
+    /*!
+      An entry whose mask carries this bit is a LINE shift, not a stage: it
+      applies to the internal currents whose charged-leg content is exactly
+      the mask or its complement (the t-channel line of Bhabha, {1,3} or
+      {0,2}), which then take this shift INSTEAD of the stage rule. See
+      COMIX::Amplitude::SetPropShifts.
+    */
+    static const size_t s_propshiftline = ((size_t)1) << (8*sizeof(size_t) - 1);
+    /*
+      A LEG entry: mask = one external leg plus this flag, vector = the
+      difference between that leg's reduced and physical momentum in
+      Comix's all-outgoing sign convention. COMIX::Amplitude::SetPropShifts
+      sums them over the legs of every space-like exchange line.
+    */
+    static const size_t s_propshiftleg  = ((size_t)1) << (8*sizeof(size_t) - 2);
+    virtual ATOOLS::Weights_Map DifferentialWithPropShifts
+    (const ATOOLS::Cluster_Amplitude &ampl,
+     ATOOLS::Variations_Mode varmode, int mode, const Prop_Shifts &shifts)
+    { return Differential(ampl, varmode, mode); }
+    virtual bool BornSpinAmplitudesShifts
+    (const ATOOLS::Vec4D_Vector &p,
+     std::vector<METOOLS::Spin_Amplitudes> &amps, double *me2,
+     const Prop_Shifts &shifts) { return false; }
+
     virtual void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                                 std::vector<std::vector<Complex> >& cols);
 

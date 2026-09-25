@@ -207,8 +207,69 @@ namespace COMIX {
       Scoped_Prop_Scale(const Scoped_Prop_Scale &) = delete;
       Scoped_Prop_Scale &operator=(const Scoped_Prop_Scale &) = delete;
     };
+    /*!
+      The vector form: every internal current built from the whole initial
+      state (and no final fermion) has dini added to its momentum before the
+      pole is evaluated, every one built from both final fermions (ffmask,
+      and no initial leg) has dfin added. See Current::m_pshift.
+    */
+    class Scoped_Prop_Shift {
+    private:
+      Amplitude *p_amp;
+    public:
+      Scoped_Prop_Shift(Amplitude *const amp, const ATOOLS::Vec4D &dini,
+                        const ATOOLS::Vec4D &dfin, const size_t ffmask);
+      ~Scoped_Prop_Shift();
+      Scoped_Prop_Shift(const Scoped_Prop_Shift &) = delete;
+      Scoped_Prop_Shift &operator=(const Scoped_Prop_Shift &) = delete;
+    };
+    /*!
+      The general form: a list of STAGES, each a mask of external legs that
+      radiate coherently (the initial state; the decay products of one
+      resonance; ...) with the summed momentum of the photons the current
+      partition assigns to it. Every internal current whose legs contain a
+      stage entirely has that stage's photons added to its momentum before
+      the pole is evaluated; a current whose complement is the smaller side
+      also takes the photons of the stages it contains only partly (the
+      fermion line next to an emission is the external fermion plus the
+      photon, whatever the recursion built it from). Two stages, initial and
+      final, reproduce Scoped_Prop_Shift exactly.
+    */
+    typedef std::vector<std::pair<size_t, ATOOLS::Vec4D> > Prop_Shifts;
+    /*!
+      Switch ProjectWideMomenta off for the evaluations inside the scope.
+      CEEX hands Comix legs that do not balance by construction (the other
+      photons of the event are elsewhere in the partition sum), and the
+      projection would move them; every other evaluation in the run keeps
+      the projection, which is Comix's collinear-stability fix for the real
+      matrix elements the fixed-order side needs.
+    */
+    class Scoped_No_Projection {
+    private:
+      Amplitude *p_amp; bool m_old;
+    public:
+      Scoped_No_Projection(Amplitude *const amp):
+        p_amp(amp), m_old(amp ? amp->m_momproj : false)
+      { if (p_amp) p_amp->m_momproj = false; }
+      ~Scoped_No_Projection() { if (p_amp) p_amp->m_momproj = m_old; }
+      Scoped_No_Projection(const Scoped_No_Projection &) = delete;
+      Scoped_No_Projection &operator=(const Scoped_No_Projection &) = delete;
+    };
+    class Scoped_Prop_Shifts {
+    private:
+      Amplitude *p_amp;
+    public:
+      Scoped_Prop_Shifts(Amplitude *const amp, const Prop_Shifts &shifts);
+      ~Scoped_Prop_Shifts();
+      Scoped_Prop_Shifts(const Scoped_Prop_Shifts &) = delete;
+      Scoped_Prop_Shifts &operator=(const Scoped_Prop_Shifts &) = delete;
+    };
 
   private:
+
+    void SetPropShift(const ATOOLS::Vec4D &dini, const ATOOLS::Vec4D &dfin,
+                      const size_t ffmask);
+    void SetPropShifts(const Prop_Shifts &shifts);
 
     /*!
       Move the pole of every INTERNAL current's propagator to s, or back to

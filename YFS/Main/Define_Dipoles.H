@@ -158,6 +158,8 @@ namespace YFS {
       //! Lets the IFI rung be undone exactly as exp(-FormFactorSumIF())
       //! instead of costing a separate production run.
       double FormFactorSumIF();
+      //! The same sum with the soft cutoff at omega instead of IFIOmega().
+      double FormFactorSumIF(double omega);
       //! The decay-stage term of the WW pole expansion. Zero in the flat
       //! scheme.
       double FormFactorSumDecay();

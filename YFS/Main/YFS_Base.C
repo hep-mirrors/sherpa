@@ -123,6 +123,16 @@ void YFS_Base::RegisterDefaults(){
     reproducible from its card alone.
   */
   s["REAL_STAB"].SetDefault(0);        // @@@ RSTAB / @@@ MAPQ
+  s["REAL_TRACE"].SetDefault(0.0);     // @@@ RTRACE, per-photon Born+real terms of heavy events
+  // FSR photons at n >= 2 (n = 1 is the event on every setting >= 1):
+  //   2 = the photon's own dipole recoils, the other resonant pairs keep their
+  //       pre-emission momenta (default since 2026-09-25, see
+  //       NLO_Base::MapMomentaFSRDipole for the four-fermion numbers);
+  //   1 = Q fixed, ALL final legs rescaled together in their rest frame
+  //       (identical to 2 for a single resonant pair);
+  //   0 = rest-frame map (legacy, puts sqrt(s_j) above sqrt(s)).
+  s["REAL_FSR_MAP"].SetDefault(2);
+  s["REAL_MAP"].SetDefault(2);         // ISR photons at n>=2: 2 = scaled (KKMC convention), 3 = scaled + (final+k)^2 kept, 1 = beam-axis reduction, 0 = rest-frame (legacy)
   s["PHOTON_DUMP"].SetDefault(0);      // @@@ PHC, per-photon contributions
   s["BETA_RECURSION"].SetDefault(0);   // @@@ BETA2, hand vs recursive beta_2
   s["COMIX_AMPS"].SetDefault(0);       // @@@ CAMP, Comix helicity amplitudes
@@ -186,7 +196,15 @@ void YFS_Base::RegisterDefaults(){
   s["Fixed_Order"].SetDefault(fixed_order::full);
   s["SKIP_NEG_WEIGHTS"].SetDefault(false);
   s["NLO_FSR_PHOTONS"].SetDefault(true);
-  s["NLO_FSR_FROM_EVENT"].SetDefault(0);
+  // Default 1 since 2026-09-25: the fixed-order real for a final-state photon
+  // is evaluated on the event's post-emission legs (REAL_FSR_MAP), which are
+  // in the lab, and GetMEPhotons() is captured before Dipole::Boost(), in the
+  // pair frame. Mixing the two put |M_1|^2 at a point that was not the event:
+  // r/rho_1(CEEX) spread over 0.005-0.4 on single-FSR-photon events where the
+  // event-record photons give 0.01613 on every event. The photons hidden as
+  // unresolved are below the resolution threshold and carry no beta_1 worth
+  // the frame error; set 0 to correct them anyway (then REAL_FSR_MAP: 0).
+  s["NLO_FSR_FROM_EVENT"].SetDefault(1);
   s["MIN_PHOTON"].SetDefault<int>(-1);
   s["FB_Analysis"].SetDefault(false);
   s["FB_Analysis_KF"].SetDefault<int>(0);
@@ -315,8 +333,9 @@ std::istream &YFS::operator>>(std::istream &str, ceexvirt::code &sc)
   if      (tag=="ceex"     || tag=="CEEX"     || tag=="0") sc=ceexvirt::ceex;
   else if (tag=="external" || tag=="External" || tag=="1") sc=ceexvirt::external;
   else if (tag=="helicity" || tag=="Helicity" || tag=="2") sc=ceexvirt::helicity;
+  else if (tag=="none"     || tag=="None"     || tag=="3") sc=ceexvirt::none;
   else THROW(fatal_error, "Unknown YFS CEEX_Virtual '"+tag
-                          +"'; use ceex, external or helicity.");
+                          +"'; use ceex, external, helicity or none.");
   return str;
 }
 
@@ -326,6 +345,7 @@ std::ostream &YFS::operator<<(std::ostream &str, const ceexvirt::code &sc)
   case ceexvirt::ceex:     return str<<"ceex";
   case ceexvirt::external: return str<<"external";
   case ceexvirt::helicity: return str<<"helicity";
+  case ceexvirt::none:     return str<<"none";
   }
   return str<<"unknown";
 }

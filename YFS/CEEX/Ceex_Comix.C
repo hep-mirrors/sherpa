@@ -7,6 +7,7 @@
 */
 
 #include "YFS/CEEX/Ceex_Base.H"
+#include "YFS/NLO/NLO_Base.H"   // MapMomenta, for the reduced beta_1 kinematics
 #include "YFS/NLO/Real_Correction.H"
 
 #include "METOOLS/Main/Spin_Structure.H"
@@ -15,6 +16,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Phys/Flavour.H"
 
 #include <cstdlib>
@@ -58,7 +60,7 @@ bool Ceex_Base::FetchComixReal()
     do { if (m_cxrwhy.size() <= ng) m_cxrwhy.resize(ng+1);                    \
          if (m_cxrwhy[ng].empty()) {                                          \
            m_cxrwhy[ng] = (why);                                              \
-           msg_Info()<<"CEEX: COMIX_REAL declines "<<ng<<" photons: "          \
+           msg_Debugging()<<"CEEX: COMIX_REAL declines "<<ng<<" photons: "          \
                      <<(why)<<" (reported once)\n"; }                         \
          return false; } while (0)
 
@@ -179,7 +181,7 @@ bool Ceex_Base::FetchComixReal()
         amplitude, which is decisive there: 0.046 with the bit set against
         0.84 without, on 563 of 570 events.
 
-    Hence 26 = 11010b. Change it against the @@@ CEEXSOFTFLIP and @@@ CEEXFLIP
+    Hence 26 = 11010b. Change it against the CEEXSOFTFLIP and CEEXFLIP
     lines, not by reasoning about conventions.
   */
   /*
@@ -258,14 +260,9 @@ void Ceex_Base::ApplyComixReal()
                           ["COMIX_REAL_MULTIPHOTON"].Get<int>() != 0);
   if (m_allphotons.size() > 1 && !multi) {
     CountComixReal(m_allphotons.size(), false);
-    static bool warned(false);
-    if (!warned) {
-      warned = true;
-      msg_Info()<<"CEEX: COMIX_REAL is applied at one photon only. Above that"
-                <<" the exact n-photon amplitude is a different matching"
-                <<" scheme, not this one - see ApplyComixReal. Set CEEX:"
-                <<" COMIX_REAL_MULTIPHOTON to explore it anyway.\n";
-    }
+    // ApplyComixReal no longer substitutes anything (the one-photon
+    // substitution was removed with the flux fix); it is a CXREAL diagnostic
+    // at n = 1 only, so above one photon there is simply nothing to do.
     return;
   }
   if (!m_comixcalibrated) DeriveComixMap();
@@ -275,25 +272,39 @@ void Ceex_Base::ApplyComixReal()
   if (!got) return;
 
   static const bool cxchk(ATOOLS::Settings::GetMainSettings()["CEEX"]["COMIX_CHECK"].Get<int>() != 0);
-  const Amplitude hand1(m_AmpExpo1);   // Born + virtual + hand-coded real
-
-  const int nh(Amplitude::NHel());
-  for (int f = 0; f < nh; ++f) {
-          const Complex a0(m_AmpExpo0.m_A[f]);
-          const Complex bv(m_AmpBornVirt.m_A[f]);
-          // The virtual as the per-helicity multiplicative factor it is.
-          // Both sides of this ratio are hand-coded, so every spinor-phase
-          // convention cancels out of it; that is the whole point.
-          const Complex V(std::abs(a0) > 0. ? bv/a0 : Complex(1., 0.));
-          const Complex M1(m_comixM1.m_A[f]);
-          m_AmpExpo1.m_A[f]    = V*M1;
-          m_AmpBornReal.m_A[f] = M1;
-          // The real INCREMENT over the Born partition sum, for the SHPART
-          // diagnostics. Phase-sensitive by construction - it is the one
-          // place the two conventions are subtracted from one another - and
-          // it feeds nothing that is squared.
-          m_snapReal.m_A[f]    = M1 - a0;
+  const Amplitude hand1(m_AmpExpo1);   // the partition loop's A1
+  if (m_b1trace && m_allphotons.size() == 1) {
+    // the two routes to the same one-photon amplitude, side by side
+    Amplitude Mex;
+    Vec4D_Vector pp(m_pceex); pp.push_back(m_allphotons[0]);
+    const double rn(RealNorm());
+    double nf(0.), na(0.), nx(0.), nd(0.);
+    const bool okx(rn > 0. && ComixRealAt(pp, m_PhoHel[0], Mex, -1.));
+    for (int f(0); f < Amplitude::NHel(); ++f) {
+      nf += std::norm(m_comixM1.m_A[f]); na += std::norm(m_AmpExpo1.m_A[f]);
+      if (okx) { const Complex ex(m_cxbalign.m_A[f]*Mex.m_A[f]/rn);
+                 nx += std::norm(ex); nd += std::norm(ex - m_comixM1.m_A[f]); }
+    }
+    msg_Error()<<std::setprecision(8)<<"CXREAL |M1_fetch|="<<sqrt(nf)
+             <<" |A1_loop|="<<sqrt(na)<<" |align*Mex/rn|="<<sqrt(nx)
+             <<" |diff|/|fetch|="<<(nf>0.? sqrt(nd/nf) : -1.)
+             <<" rn="<<rn<<" m_comixnorm="<<m_comixnorm<<" m_cxrnorm="<<m_cxrnorm
+             <<" normexact="<<m_normexact<<" flip="<<m_comixflip
+             <<" hel="<<m_PhoHel[0]<<" drawnhel="<<m_comixdrawnhel<<std::endl;
   }
+  /*
+    This used to REPLACE m_AmpExpo1 by V*M1, V = AmpBornVirt/AmpExpo0, and
+    ran right before MakeRho. That was the one-photon matching before
+    ComixInfraredSubtracted_1_0 existed; now the partition loop's beta_1 IS
+    Comix's one-photon amplitude and A1 = M1 holds at one photon
+    algebraically, so the replacement had nothing to do - until
+    NO_PSEUDOFLUX: 2 put the flux into rho_0 but not rho_1, when V became
+    1/flux and the substitution silently divided every one-photon A1 by it
+    (seed-3 point: real/Born -0.586 -> -0.918). What remains is the
+    comparison below, now a closure check: the mean |M1_comix|^2/|A1|^2 it
+    reports must be 1.
+  */
+  const int nh(Amplitude::NHel());
 
   {
     // Norm-weighted, not worst-case: a worst case over 16 helicities is
@@ -348,15 +359,15 @@ void Ceex_Base::ApplyComixReal()
       if (mask == m_comixflip) m0metric = met;
       if (met < bestmetric) { bestmetric = met; bestmask = mask; }
     }
-    msg_Error()<<"@@@ CEEXFLIP inuse="<<m_comixflip<<" metric="<<m0metric
+    msg_Error()<<"CEEXFLIP inuse="<<m_comixflip<<" metric="<<m0metric
              <<" best="<<bestmask<<" bestmetric="<<bestmetric<<std::endl;
     const double ecm((m_momenta[0]+m_momenta[1]).Mass());
     const double x(ecm > 0. ? 2.*m_allphotons[0][0]/ecm : 0.);
-    msg_Error()<<"@@@ CEEXCMP nphot=1 x="<<x
+    msg_Error()<<"CEEXCMP nphot=1 x="<<x
              <<" sum_hand="<<sh<<" sum_comix="<<sc
              <<" ratio="<<(sc != 0. ? sh/sc : 0.)
              <<" worst_elem_reldiff="<<worst<<std::endl;
-    msg_Error()<<"@@@ CEEXSOFT x="<<x
+    msg_Error()<<"CEEXSOFT x="<<x
              <<" rel="<<(s0 > 0. ? sqrt(sdiff/s0) : -1.)
              <<" relabs="<<(s0 > 0. ? sqrt(sabsdiff/s0) : -1.)
              <<" handrel="<<(s0 > 0. ? sqrt(std::abs(sh-s0)/s0) : -1.)
@@ -369,7 +380,7 @@ void Ceex_Base::ApplyComixReal()
             for (int d = 0; d <= 1; ++d) {
               const Complex H(hand1.m_A[Idx(a,b,c,d)]);
               const Complex C(m_comixM1.m_A[Idx(a,b,c,d)]);
-              msg_Error()<<"@@@ CEEXHEL "<<a<<b<<c<<d
+              msg_Error()<<"CEEXHEL "<<a<<b<<c<<d
                        <<" absH="<<std::abs(H)<<" absC="<<std::abs(C)
                        <<" H=("<<H.real()<<","<<H.imag()<<")"
                        <<" C=("<<C.real()<<","<<C.imag()<<")"<<std::endl;
@@ -389,23 +400,23 @@ void Ceex_Base::CountComixReal(size_t ng, bool ok)
 void Ceex_Base::ReportComixReal() const
 {
   if (!m_comixreal) return;
-  msg_Info()<<"CEEX: COMIX_REAL supplied the real amplitude on "<<m_cxrn
+  msg_Debugging()<<"CEEX: COMIX_REAL supplied the real amplitude on "<<m_cxrn
             <<" events";
   if (m_cxrn > 0)
-    msg_Info()<<", mean |M1_comix|^2/|A1_hand|^2 = "<<(m_cxrnormsum/m_cxrn)
+    msg_Debugging()<<", mean |M1_comix|^2/|A1_hand|^2 = "<<(m_cxrnormsum/m_cxrn)
               <<", mean per-helicity magnitude mismatch "
               <<(m_cxrmetsum/m_cxrn);
   if (m_cxrfail)
-    msg_Info()<<"; "<<m_cxrfail<<" events fell back to the hand-coded real";
-  msg_Info()<<".\n";
+    msg_Debugging()<<"; "<<m_cxrfail<<" events fell back to the hand-coded real";
+  msg_Debugging()<<".\n";
   if (m_perphoton) {
-    msg_Info()<<"CEEX: COMIX_REAL_PER_PHOTON replaced the one-photon"
+    msg_Debugging()<<"CEEX: COMIX_REAL_PER_PHOTON replaced the one-photon"
               <<" amplitude on "<<m_cxppn<<" photons";
     if (m_cxppn > 0)
-      msg_Info()<<", mean |C-H|/|C,H| = "<<(m_cxppdev/m_cxppn);
+      msg_Debugging()<<", mean |C-H|/|C,H| = "<<(m_cxppdev/m_cxppn);
     if (m_cxppfail)
-      msg_Info()<<"; "<<m_cxppfail<<" photons kept the hand-coded amplitude";
-    msg_Info()<<".\n";
+      msg_Debugging()<<"; "<<m_cxppfail<<" photons kept the hand-coded amplitude";
+    msg_Debugging()<<".\n";
     return;
   }
   /*
@@ -421,12 +432,12 @@ void Ceex_Base::ReportComixReal() const
     const long t(n < m_cxrnbyn.size() ? m_cxrnbyn[n] : 0);
     const long f(n < m_cxrfailbyn.size() ? m_cxrfailbyn[n] : 0);
     if (!t && !f) continue;
-    msg_Info()<<"  "<<n<<" photon"<<(n>1?"s":"")<<": "<<t<<" taken, "
+    msg_Debugging()<<"  "<<n<<" photon"<<(n>1?"s":"")<<": "<<t<<" taken, "
               <<f<<" refused";
     if (t > 0 && n < m_cxrnormbyn.size())
-      msg_Info()<<", <|M_comix|^2/|A_hand|^2> = "<<(m_cxrnormbyn[n]/t)
+      msg_Debugging()<<", <|M_comix|^2/|A_hand|^2> = "<<(m_cxrnormbyn[n]/t)
                 <<", <per-helicity mismatch> = "<<(m_cxrmetbyn[n]/t);
-    msg_Info()<<"\n";
+    msg_Debugging()<<"\n";
   }
 }
 
@@ -561,11 +572,14 @@ void Ceex_Base::SoftProbe()
       if (s2 > 0. && lam2 > 0.) {
         Vec4D b3(q3), b4(q4);
         Poincare bq(Q2); bq.Boost(b3); bq.Boost(b4);
+        Poincare pRot(m_bornmomenta[0], Vec4D(0., 0., 0., 1.));
         const double lcm(0.5*sqrt(lam2/s2));
         const double sgn(m_bornmomenta[0][3] < 0 ? -1. : 1.);
         Vec4D B1(lcm*sqrt(1.+mm1*mm1/sqr(lcm)), 0., 0.,  sgn*lcm);
         Vec4D B2(lcm*sqrt(1.+mm2*mm2/sqr(lcm)), 0., 0., -sgn*lcm);
-        Poincare bq2(Q2); bq2.BoostBack(B1); bq2.BoostBack(B2);
+        Poincare bq2(Q2); 
+        pRot.RotateBack(B1); pRot.RotateBack(B2); 
+        bq2.BoostBack(B1); bq2.BoostBack(B2);
         Vec4D_Vector b2{B1, B2, q3, q4};
         Amplitude Bc;
         if (ComixBornAmplitude(b2, Bc)) {
@@ -596,14 +610,14 @@ void Ceex_Base::SoftProbe()
           const double ct(q3.PSpat() > 0. && k.PSpat() > 0.
                           ? (Vec3D(q3)*Vec3D(k))/(q3.PSpat()*k.PSpat()) : 0.);
           const double cb(k.PSpat() > 0. ? k[3]/k.PSpat() : 0.);
-          msg_Error()<<"@@@ CEEXSOFTPHASE lam="<<lam<<" nlive="<<nl2
+          msg_Error()<<"CEEXSOFTPHASE lam="<<lam<<" nlive="<<nl2
                    <<" |r|=["<<amin<<","<<amax<<"]"
                    <<" arg(r)=["<<phmin<<","<<phmax<<"]"
                    <<" hel="<<hg<<" cos_kf="<<ct<<" cos_kbeam="<<cb
                    <<" phi_k="<<atan2(k[2], k[1])
                    <<" sQ="<<s2<<std::endl;
         } else {
-          msg_Error()<<"@@@ CEEXSOFTPHASE lam="<<lam
+          msg_Error()<<"CEEXSOFTPHASE lam="<<lam
                    <<" Comix Born unavailable"<<std::endl;
         }
       }
@@ -630,7 +644,7 @@ void Ceex_Base::SoftProbe()
       if (mask == (m_comixflip ^ 16)) phometh = met;
       if (met < bmet) { bmet = met; bm = mask; }
     }
-    msg_Error()<<"@@@ CEEXSOFTFLIP lam="<<lam<<" inuse="<<m_comixflip
+    msg_Error()<<"CEEXSOFTFLIP lam="<<lam<<" inuse="<<m_comixflip
              <<" metric="<<inusemet<<" photonflipped="<<phometh
              <<" hel="<<hg
              <<" best="<<bm<<" bestmetric="<<bmet<<std::endl;
@@ -653,11 +667,11 @@ void Ceex_Base::SoftProbe()
                                           - mel*mel/(pk2*pk2) : 0.);
       double nb(0.);
       for (int f = 0; f < nh; ++f) nb += std::norm(B.m_A[f]);
-      msg_Error()<<"@@@ CEEXEIKFLAT lam="<<lam
+      msg_Error()<<"CEEXEIKFLAT lam="<<lam
                <<" x="<<(2.*k[0]/sqrt(m_s))
                <<" ratio="<<((Scl != 0. && nb > 0.) ? sc/(Scl*nb) : -1.)
                <<std::endl; }
-    msg_Error()<<"@@@ CEEXSOFTSCAN lam="<<lam
+    msg_Error()<<"CEEXSOFTSCAN lam="<<lam
              <<" x="<<2.*k[0]/sqrt(dabs((p1+p2).Abs2()))
              <<" R="<<(shd > 0. ? sc/shd : -1.)
              <<" sum_comix="<<sc<<" sum_eikborn="<<shd
@@ -803,7 +817,7 @@ void Ceex_Base::DeriveComixMap()
                  <<" are then not in the convention assumed here.\n";
   }
 
-  msg_Info()<<METHOD<<"(): Comix -> CEEX map derived from the Born:\n"
+  msg_Debugging()<<METHOD<<"(): Comix -> CEEX map derived from the Born:\n"
             <<"  flip mask   = "<<m_comixflip<<"  (fermion bits "<<c.mask
             <<", metric "<<c.met<<" against "<<c.next<<" for the runner-up"
             <<(m_comixphoflip ? "; photon bit set" : "; photon bit clear")<<")\n"
@@ -914,6 +928,92 @@ bool Ceex_Base::ComixRealAt(const Vec4D_Vector &pp, int hel, Amplitude &M1,
     M1.m_A[f] = RealNorm()
       * sa[FlatIndex((size_t)(f ^ (fl & fmaskx)), hgi, nlg)];
   return true;
+}
+
+bool Ceex_Base::ComixRealShifted(const Vec4D_Vector &pp, int hel,
+                                 Amplitude &M1, const PropShifts &shifts)
+{
+  YFS::Real_Correction *prov(RealProvider(1));
+  if (prov == NULL) return false;
+  const int nlg(Amplitude::s_nlegs);
+  if (pp.size() != m_flavs.size() + 1) return false;
+  const std::vector<METOOLS::Spin_Amplitudes> *amps
+    (prov->ComixAmplitudesShifts(pp, shifts));
+  if (amps == NULL || amps->empty()) return false;
+  const METOOLS::Spin_Amplitudes &sa((*amps)[0]);
+  if ((int)sa.size() != (1 << (nlg + 1))) return false;
+  const int fl(m_comixflip), fmaskx((1 << nlg) - 1), nh(Amplitude::NHel());
+  const int hgi((hel > 0 ? 0 : 1) ^ ((fl >> nlg) & 1));
+  for (int f = 0; f < nh; ++f)
+    M1.m_A[f] = RealNorm()
+      * sa[FlatIndex((size_t)(f ^ (fl & fmaskx)), hgi, nlg)];
+  return true;
+}
+
+Ceex_Base::PropShifts Ceex_Base::StageShifts(int iphot) const
+{
+  PropShifts sh;
+  if (m_stage.size() != m_allphotons.size()) return sh;
+  for (size_t g(0); g < m_stagelegs.size(); ++g) {
+    size_t mask(0);
+    for (size_t l(0); l < m_stagelegs[g].size(); ++l)
+      if (m_stagelegs[g][l].leg >= 0 && m_stagelegs[g][l].leg < (int)m_flavs.size())
+        mask |= ((size_t)1) << m_stagelegs[g][l].leg;
+    if (mask == 0) continue;
+    Vec4D K;
+    for (size_t i(0); i < m_allphotons.size(); ++i)
+      if ((int)i != iphot && m_stage[i] == (int)g) K += m_allphotons[i];
+    sh.push_back(std::make_pair(mask, K));
+  }
+  return sh;
+}
+
+/*
+  The reduced legs of this partition, for the space-like exchange lines.
+
+  Lines with one initial leg and part of the final state - Bhabha's
+  t-channel boson, the t/u-channel electrons of e+e- -> gamma gamma, a
+  t-channel neutrino - cannot be placed by a stage, and the stage rule left
+  them at the unreduced invariant in every partition while M_1 shifted them
+  (COMIX::Amplitude::SetPropShifts, class (b), has the measurements). They
+  are put at the partition's REDUCED invariant: the beams rebuilt back to
+  back at X_wp along the event's axis in X's frame, the pair at Y_wp along
+  its own direction (LegsAt) - the construction the crude Born momenta come
+  from, so that the crude and beta_0 carry the same t for the partition the
+  generator actually labelled, and exact in both collinear limits. The
+  spinors stay physical; only the pole moves. This passes, per Born leg,
+  theta_i (p~_i - p_i) with theta = -1 incoming, +1 outgoing (Comix's
+  all-outgoing current momenta); SetPropShifts detects the exchange lines
+  from their leg content and sums the entries over their legs, so no
+  process-specific mask is named here. iphot < 0: the Born
+  (BornLegsAt(m_PXvec)); iphot >= 0: M_1 of that photon (PartitionLegs). At
+  one photon PartitionLegs returns the physical legs and every entry is
+  zero, so the n = 1 amplitude is untouched. CEEX: TCHANNEL_SHIFT: 0
+  passes nothing.
+*/
+void Ceex_Base::AddExchangeLineShifts(int iphot, PropShifts &sh) const
+{
+  static const int on(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                      ["TCHANNEL_SHIFT"].Get<int>());
+  if (!on || m_pceex.size() < 4 || m_flavs.size() != m_pceex.size()) return;
+  Vec4D_Vector pb;
+  const bool ok(iphot < 0 ? BornLegsAt(m_PXvec, pb) : PartitionLegs(iphot, pb));
+  if (!ok || pb.size() != m_pceex.size()) return;
+  for (size_t i(0); i < m_pceex.size(); ++i) {
+    const Vec4D d((i < 2 ? -1. : 1.)*(pb[i] - m_pceex[i]));
+    sh.push_back(std::make_pair((((size_t)1) << i)
+                                | PHASIC::Process_Base::s_propshiftleg, d));
+  }
+}
+
+Vec4D Ceex_Base::PartitionShift(int iphot, bool reducing) const
+{
+  Vec4D d;
+  if (m_stage.size() != m_allphotons.size()) return d;
+  for (size_t i(0); i < m_allphotons.size(); ++i)
+    if ((int)i != iphot
+        && (m_stagereduces[m_stage[i]] != 0) == reducing) d += m_allphotons[i];
+  return d;
 }
 
 bool Ceex_Base::ComixOnePhotonAmplitude(const Vec4D &k, int hel,
@@ -1045,7 +1145,7 @@ void Ceex_Base::Beta1Closure()
   }
   if (nlive < 2 || std::abs(first) == 0.) return;
   const double xg(m_s > 0. ? 2.*m_allphotons[js][0]/sqrt(m_s) : -1.);
-  std::cerr<<"@@@ B1CLOSE xg="<<xg<<" nlive="<<nlive
+  msg_Error()<<"B1CLOSE xg="<<xg<<" nlive="<<nlive
            <<" hel_spread="<<worst
            <<" s_implied_over_Sceex="<<std::abs(first/sceex)
            <<" arg="<<std::arg(first/sceex)<<std::endl;
@@ -1094,9 +1194,548 @@ void Ceex_Base::SoftNormCheck(const Vec4D &k)
     ss += std::norm(sa);
   }
   if (st == 0.) return;
-  std::cerr<<"@@@ SOFTNORM xg="<<(m_s>0.?2.*k[0]/sqrt(m_s):-1.)
+  msg_Error()<<"SOFTNORM xg="<<(m_s>0.?2.*k[0]/sqrt(m_s):-1.)
            <<" sum_hel|s|^2="<<ss<<" Stilde="<<st
            <<" ratio="<<(ss/st)<<std::endl;
+}
+
+/*
+  The paper's own soft-limit test (hep-ph/0006359, the EEX discussion around
+  eq.(single-initial)): hold the spectators fixed, scale k_j -> 0, and
+
+      beta_1(k_j; X_wp) / ( s(k_j) beta_0(X_wp) )  ->  0
+
+  beta_1 is formed DIRECTLY from its definition, M_1 - s beta_0, not by the
+  lambda subtraction - the point is to test whether our M_1, s and beta_0 are
+  mutually consistent, i.e. whether they share one prescription. A ratio that
+  tends to a nonzero constant IS the mismatch, and its value measures it.
+
+  X_wp is recomputed at every lambda: for an ISR photon X = P - lambda k, which
+  is the "same extrapolation for beta_0 and beta_1" the paper requires. Holding
+  X fixed while scaling k would itself manufacture a mismatch.
+
+  beta_0 carries the pseudo-flux X^2/(p_c+p_d)^2, as eq.(305) defines it.
+*/
+void Ceex_Base::SoftLimitTest()
+{
+  /*
+    The soft theorem on the BEAM-REDUCED configuration - the one beta_1 is
+    actually evaluated on for a multi-photon event.
+
+    An earlier version of this test held the spectators fixed and boosted the
+    pair, and the theorem held: |M_1 - s B|/|s B| fell linearly in lambda. But
+    that is not the configuration ComixInfraredSubtracted_1_0 uses. There the
+    beams are reduced to S = (final legs) + k, so scaling k moves the beams
+    too, and the measured subtraction floors at 10-30% instead of vanishing.
+
+    So scan lambda here on exactly that construction, and report alongside it
+    the angle between the reduced beam and the physical one. The beams are
+    rebuilt back-to-back in S's rest frame about the axis found by boosting
+    p_a into that frame; once the spectator photons carry transverse momentum
+    that axis is rotated, and a rotation - unlike the rescaling that motivated
+    this construction - does NOT leave the eikonal invariant. If r tracks the
+    angle, that is the fault.
+  */
+  if (m_allphotons.empty() || !m_cxbalignok) return;
+  const int nh(Amplitude::NHel()), flip(m_comixflip & (nh-1));
+  const double rn(RealNorm());
+  if (!(rn > 0.)) return;
+  const Vec4D k0(m_allphotons[0]);
+  const int hel(m_PhoHel[0]);
+  std::string out;
+  for (int e(0); e <= 6; ++e) {
+    const double lam(pow(10., -(double)e));
+    const Vec4D k(lam*k0);
+    Vec4D_Vector pb;
+    if (!ReducedBeams(k, pb)) continue;
+    const Complex stot(TotalEikonal(pb, k, hel));
+    if (std::abs(stot) == 0.) continue;
+    Vec4D_Vector pp(pb);
+    pp.push_back(k);
+    Amplitude C, M1;
+    if (!ComixBornAmplitude(pb, C, NULL, -1., -1.)) continue;
+    if (!ComixRealAt(pp, hel, M1, -1.)) continue;
+    double nb(0.), ne(0.);
+    for (int f(0); f < nh; ++f) {
+      const Complex sb(stot*C.m_A[f ^ flip]);
+      nb += std::norm(M1.m_A[f]/rn - sb); ne += std::norm(sb);
+    }
+    if (!(ne > 0.)) continue;
+    const Vec3D a(pb[0]), b(m_pceex[0]);
+    const double ab(a.Abs()*b.Abs());
+    const double ang(ab > 0. ? acos(Min(1., Max(-1., (a*b)/ab))) : -1.);
+    out += " lam=" + ToString(lam) + " r=" + ToString(sqrt(nb/ne))
+         + " ang=" + ToString(ang);
+  }
+  if (!out.empty())
+    msg_Error()<<"SOFTLIM nphot="<<m_allphotons.size()<<out<<std::endl;
+}
+
+/*
+  A real phase-space point whose invariant is s' = X^2.
+
+  CEEX's beta_0(X_wp) has been the Born on the PHYSICAL spinors with only the
+  propagator pole moved to X - a configuration, as the comment in
+  InfraredSubtractedME_0_0 says, that no momenta realise. That is workable for
+  hand-written spinor algebra. It is not workable next to a Comix amplitude,
+  which necessarily lives at a real point: at one photon the two coincide, and
+  beyond one photon no placement of the beta_1 subtraction can match both. The
+  measurement either way was exact closure at n=1 with the multi-photon
+  cancellation broken, or the reverse.
+
+  So build the point instead. Beams back-to-back on shell with total X, the
+  radiating pair back-to-back with total X minus the spectator final legs, and
+  the spectators left alone. Directions are taken from the event, in X's frame,
+  so nothing is invented; only the scale moves. The propagator then follows
+  from the momenta rather than being pinned, which is the point.
+*/
+bool Ceex_Base::LegsAt(const Vec4D &X, const Vec4D &Y, Vec4D_Vector &pb) const
+{
+  pb = m_pceex;
+  const double X2(X.Abs2());
+  const double ma(m_flavs[0].Mass()), mb(m_flavs[1].Mass());
+  if (X2 <= sqr(ma + mb)) return false;
+  Poincare cmsX(X);
+  /*
+    The beam axis in X's frame. The generator builds its s' point with the
+    reduced beams back to back along the LAB z axis as the pure boost
+    Poincare(X) carries it (measured: the Comix Born at the generator's own
+    point, m_plabmom, is m_born to six digits at every x, and its transverse
+    momentum is parallel to X's). The direction of the boosted e- differs
+    from that by aberration once the photons carry transverse momentum - for
+    a 44 GeV photon at 147 degrees the two axes gave Borns 1400x apart on
+    e+e- -> gamma gamma, whose Born is 1/(1 - cos^2). An s-channel Born
+    hardly sees the axis; a space-like exchange line does, and the crude
+    the CEEX weight divides by is the generator's, so its axis is the one
+    to use. CEEX: REDUCED_AXIS: 0 keeps the boosted-beam axis.
+  */
+  static const int axis(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                        ["REDUCED_AXIS"].SetDefault(1).Get<int>());
+  Vec3D da(0., 0., 1.);
+  if (axis == 0) {
+    Vec4D ra(m_pceex[0]);
+    cmsX.Boost(ra);
+    const double rap(Vec3D(ra).Abs());
+    if (!(rap > 0.)) return false;
+    da = Vec3D(ra)/rap;
+  }
+  const double kala(sqr(X2 - ma*ma - mb*mb) - 4.*ma*ma*mb*mb);
+  if (kala <= 0.) return false;
+  const double pa(sqrt(kala)/(2.*sqrt(X2)));
+  Vec4D b1(sqrt(pa*pa + ma*ma), pa*da), b2(sqrt(pa*pa + mb*mb), -pa*da);
+  cmsX.BoostBack(b1); cmsX.BoostBack(b2);
+  pb[0] = b1; pb[1] = b2;
+  // the radiating pair balances Y, along the direction it has in Y's frame
+  const double Y2(Y.Abs2());
+  const double m3(m_flavs[m_if1].Mass()), m4(m_flavs[m_if2].Mass());
+  if (Y2 <= sqr(m3 + m4)) return false;
+  Poincare cmsY(Y);
+  Vec4D r3(m_pceex[m_if1]);
+  cmsY.Boost(r3);
+  const double r3p(Vec3D(r3).Abs());
+  if (!(r3p > 0.)) return false;
+  const Vec3D d3(Vec3D(r3)/r3p);
+  const double kalf(sqr(Y2 - m3*m3 - m4*m4) - 4.*m3*m3*m4*m4);
+  if (kalf <= 0.) return false;
+  const double pf(sqrt(kalf)/(2.*sqrt(Y2)));
+  Vec4D q3(sqrt(pf*pf + m3*m3), pf*d3), q4(sqrt(pf*pf + m4*m4), -pf*d3);
+  cmsY.BoostBack(q3); cmsY.BoostBack(q4);
+  pb[m_if1] = q3; pb[m_if2] = q4;
+  return true;
+}
+
+bool Ceex_Base::BornLegsAt(const Vec4D &X, Vec4D_Vector &pb) const
+{
+  Vec4D Y(X);
+  for (size_t i(2); i < m_pceex.size(); ++i)
+    if (i != m_if1 && i != m_if2) Y -= m_pceex[i];
+  return LegsAt(X, Y, pb);
+}
+
+/*
+  The legs to hand Comix for photon iphot in the CURRENT partition.
+
+  Where the other photons' momentum goes is fixed by the partition, not by a
+  kinematic preference: a photon the partition counts as initial-state came
+  out of the beams, one it counts as final-state went into the radiating
+  pair. Placing them so, the beams carry X_wp(others) and the final state
+  carries X_wp(others) - k, and the one-photon amplitude at that point has
+  its ISR-attachment propagator at (P' - k)^2 = X_wp with this photon counted
+  initial and its FSR-attachment propagator at P'^2 = X_wp with it counted
+  final - which is what the CEEX expansion asks of M_1^I and M_1^F in this
+  partition. Comix cannot separate the two attachments and does not need to.
+
+  At one photon there are no others and this is the physical point up to
+  round-off. The spectators (a Higgs, say) are never touched.
+*/
+bool Ceex_Base::PartitionLegs(int iphot, Vec4D_Vector &pb) const
+{
+  if (iphot < 0 || iphot >= (int)m_allphotons.size()
+      || m_stage.size() != m_allphotons.size()) return false;
+  Vec4D X(m_pceex[0] + m_pceex[1]);
+  for (size_t i(0); i < m_allphotons.size(); ++i)
+    if ((int)i != iphot && m_stagereduces[m_stage[i]]) X -= m_allphotons[i];
+  Vec4D Y(X - m_allphotons[iphot]);
+  for (size_t i(2); i < m_pceex.size(); ++i)
+    if (i != m_if1 && i != m_if2) Y -= m_pceex[i];
+  return LegsAt(X, Y, pb);
+}
+
+/*
+  The legs to hand Comix for photon k, when the event has other photons too.
+
+  Comix is a Berends-Giele recursion: it contracts currents on the momenta it
+  is given and never checks that they balance. Hand it the event's legs plus
+  ONE of n photons and it returns a number for a configuration missing the
+  other n-1 photons' momenta - not gauge invariant, not an amplitude. At one
+  photon the set happens to conserve, which is why a one-photon test looks
+  healthy while the same code is nonsense at twelve.
+
+  Where the missing momentum belongs is not a free choice. Taking it out of the
+  final pair (boost the pair to balance P-k) moves the pair's invariant up to
+  near sqrt(s), and at the Z pole that changes the Born by the width - the
+  measured result was 5e4 pb against 888. It belongs in the BEAMS, because
+  that is where it physically went: the spectator ISR photons reduced the
+  energy entering the hard process, which is what X_wp means.
+
+  So the final legs and the photon stay exactly as they are, and the beams are
+  rebuilt back-to-back on shell with invariant (sum of final legs + k)^2. Two
+  things then hold that nothing else gives:
+
+    - the pair is untouched, so beta_0 here is the same Born, at the same
+      spinors, that InfraredSubtractedME_0_0 adds to the partition sum;
+    - the eikonal is almost unchanged, because the leg current p/(p.k) is
+      invariant under p -> x p, and reducing a beam is a rescaling plus the
+      small rotation that the spectators' transverse momentum forces.
+
+  The earlier warning against "rebuilding the beams" was about rebuilding them
+  for the BORN, where an O(E_gamma) shift is the size of beta_1 itself. Here
+  the Born is left alone and only the legs radiating into it are reduced.
+
+  At one photon the final legs plus k already are P, so this returns the
+  physical beams and the n=1 stream is unchanged.
+*/
+bool Ceex_Base::ReducedBeams(const Vec4D &k, Vec4D_Vector &pb) const
+{
+  pb = m_pceex;
+  Vec4D S(k);
+  for (size_t i(2); i < m_pceex.size(); ++i) S += m_pceex[i];
+  const double S2(S.Abs2());
+  const double ma(m_flavs[0].Mass()), mb(m_flavs[1].Mass());
+  if (S2 <= sqr(ma + mb)) return false;
+  Poincare cms(S);
+  Vec4D pa(m_pceex[0]);
+  cms.Boost(pa);
+  const double pap(Vec3D(pa).Abs());
+  if (!(pap > 0.)) return false;
+  const Vec3D dir(Vec3D(pa)/pap);
+  const double kal(sqr(S2 - ma*ma - mb*mb) - 4.*ma*ma*mb*mb);
+  if (kal <= 0.) return false;
+  const double rs(sqrt(S2)), ps(sqrt(kal)/(2.*rs));
+  Vec4D pa2(sqrt(ps*ps + ma*ma), ps*dir), pb2(sqrt(ps*ps + mb*mb), -ps*dir);
+  cms.BoostBack(pa2); cms.BoostBack(pb2);
+  pb[0] = pa2; pb[1] = pb2;
+  return true;
+}
+
+/*
+  The total eikonal of a given leg configuration: sum over every external leg
+  of w * SfactorLeg, w = Q * theta. This is the same sum CalculateSfactors
+  checks its stage currents against (eq. 6.4), so on the physical legs it
+  returns sum_g m_Sfac[g][j] identically. It is recomputed on the REDUCED legs
+  here so that the subtraction below cancels against the amplitude Comix
+  actually evaluated, rather than against the one the partition loop tabulated.
+*/
+Complex Ceex_Base::TotalEikonal(const Vec4D_Vector &p, const Vec4D &k,
+                                int hel)
+{
+  Complex tot(0., 0.);
+  for (size_t l(0); l < m_flavs.size() && l < p.size(); ++l) {
+    const double w(m_flavs[l].Charge() * (l < 2 ? -1. : +1.));
+    if (w != 0.) tot += w * SfactorLeg(p[l], k, hel);
+  }
+  return tot;
+}
+
+Complex Ceex_Base::StageEikonal(int stage, const Vec4D_Vector &p,
+                                const Vec4D &k, int hel)
+{
+  Complex tot(0., 0.);
+  if (stage < 0 || stage >= (int)m_stagelegs.size()) return tot;
+  const std::vector<StageLeg> &L(m_stagelegs[stage]);
+  for (size_t l(0); l < L.size(); ++l) {
+    // external legs only: a reconstructed resonance has no entry in p
+    if (L[l].leg < 0 || L[l].leg >= (int)p.size()) continue;
+    if (L[l].w != 0.) tot += L[l].w * SfactorLeg(p[L[l].leg], k, hel);
+  }
+  return tot;
+}
+
+/*
+  beta_1 for one photon, from Comix, with the eikonal subtracted - and with no
+  partition decomposition of its own.
+
+  The YFS theorem gives the subtraction directly:
+
+      beta_1(k) = M_1(k) - s_tot(k) B,
+
+  where s_tot is the eikonal of EVERY leg and B the Born on the same legs. That
+  object vanishes as k -> 0 identically, needs no stage assignment, no
+  per-stage propagator scale, and no pseudo-flux.
+
+  The partition sum is not what beta_1 needs; it is what beta_0 needs. Summing
+  over wp resums the propagator shift - which X the resonance sees once some
+  photons are counted as initial-state - and that is a beta_0 statement. KKMC
+  splits beta_1 across the stages as well, which forces a pseudo-flux on beta_0
+  and a compensating (1-CKine) on the final-state beta_1 so the two cancel.
+  Both are artefacts of that split. Taking beta_1 from the amplitude, neither
+  is needed:
+
+      M_n  ~  sum_wp prod s^wp beta_0(X_wp)  +  sum_j prod_{i!=j} s_tot(k_i)
+                                                * beta_1(k_j).
+
+  Earlier attempts to keep the stage split are what produced the scan over
+  where to put the flux; every placement was wrong because the object being
+  patched should not exist.
+
+  beta_1 is therefore partition independent and is evaluated at Comix's own
+  propagator scales, not at m_sp. Only its weight, the eikonal product of the
+  OTHER photons, varies over partitions. Adding it on one designated stage of
+  photon j visits each assignment of the others exactly once:
+  sum_{wp: wp_j = 0} prod_{i!=j} s^{wp_i} = prod_{i!=j} s_tot(k_i).
+*/
+bool Ceex_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
+                                            int iphot)
+{
+  if (!m_cxbalignok || iphot < 0) return false;
+  if (iphot >= (int)m_stage.size() || (int)m_Sfac.size() != m_nstages
+      || iphot >= (int)m_Sfac[m_stage[iphot]].size()) return false;
+  /*
+    Below the eikonal threshold beta_1 vanishes and what is left of the
+    subtraction is the difference of two nearly equal large numbers. A
+    twelve-photon event is mostly such photons. Zero is both the honest answer
+    and the stable one.
+  */
+  /*
+    Only ONE partition may carry M_1, so that summing over partitions visits
+    each assignment of the other photons exactly once; the beta_0 subtraction,
+    by contrast, has to happen in EVERY partition, because that is where _0_0
+    put it. Hence a flag rather than an early return.
+
+    Which stage carries M_1 is arbitrary - it cancels - but it must be one that
+    exists for every photon. Index 0 is not that: the ordering comes from
+    BuildStages and need not put the initial state first, and for a neutral
+    final state (e+e- -> nu nu) index 0 is the non-radiating stage, so every
+    photon returned with no contribution and beta_1 silently vanished. Name the
+    stage by what it is.
+  */
+  /*
+    A collapsed (fixed-stage, x < SOFT_PARTITION_CUT) photon is never
+    enumerated, so it never visits the reducing stage: with the rule below
+    alone it received the beta_0 subtraction in every partition and M_1 in
+    none. That is infrared-unsafe whenever the photon is above BETA1_XCUT in
+    y = 2k.S/S^2 while below the collapse cut in x = 2E/sqrt(s) - which is
+    the rule after a hard ISR photon, S^2 << s. Measured at 250 GeV, mu mu:
+    a 0.07 GeV photon (x = 5.6e-4, y = 1.6e-3) next to a 111 GeV
+    radiative-return photon gave |beta_1| = 56 |A_0| in every helicity and a
+    CEEX weight 3163 times the crude; eight of the nine events above 20 were
+    of this kind and CEEX came out 3x Born+real with a 48% error.
+
+    For a fixed photon every partition visits each assignment of the OTHERS
+    exactly once, so M_1 is added in every partition, against the TOTAL
+    eikonal times the partition Born - the very product m_sactu put into
+    beta_0 for it. M_1's attachment lines sit at X_{j in I} and X_{j in F}
+    by the shifts; the collapsed Born is at X_fixed, an O(k) difference the
+    collapse already accepts.
+  */
+  const bool fixed(m_fixedstage.size() == m_stage.size()
+                   && m_fixedstage[iphot] != 0);
+  const bool addm1(fixed || m_stagereduces[m_stage[iphot]]);
+  const double rn(RealNorm());
+  if (!(rn > 0.)) return false;
+  /*
+    What M_1 is evaluated on. Writing out the O(alpha^1) CEEX expansion and
+    summing the two partitions that differ only in where THIS photon sits
+    gives, per assignment of the others,
+
+      prod_{i!=j} s_i^{wp_i} [ M_1^I(k_j; X_{j in I}) + M_1^F(k_j; X_{j in F})
+                              - s_I(k_j) beta_0(X_{j in I})
+                              - s_F(k_j) beta_0(X_{j in F}) ],
+
+    with M_1^{I,F} at the PHYSICAL spinors and the propagator at the
+    partition's X (KKMC, hep-ph/0006359). Comix reproduces exactly that from
+    the physical legs plus k_j when the initial-side lines carry the other
+    initial-state photons and the final-side lines the other final-state
+    ones (BETA1_LEGS: 0, ComixRealShifted): the line with the photon on the
+    initial state then sits at X_{j in I}, the one with it on the final state
+    at X_{j in F}, and the soft limit is s(physical legs) times the very
+    Born the partition loop added.
+
+    BETA1_LEGS: 1 keeps the earlier construction for comparison: a balanced
+    real point with the other initial-state photons taken out of the beams
+    and the other final-state ones absorbed by the pair (PartitionLegs). It
+    has the right propagators but the wrong spinors: for a radiative-return
+    photon at x = 0.85 the amplitude reduces to the eikonal times the Born
+    with UNREDUCED beam spinors to 4%, and to 2.6x the reduced-beam Born.
+    With that Born as beta_0 the nu nu cross section came out 7x the NLO.
+
+    Before either, the beams were reduced by EVERY other photon in every
+    partition - M_1 as if the others were all initial-state - while the
+    subtraction ran over both assignments. Measured on an n = 2 point with
+    two final-state photons at the Z pole: real/Born +2.26 against KKMC's
+    -0.17.
+  */
+  static const int legsmode(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                            ["BETA1_LEGS"].Get<int>());
+  const bool rebuild(legsmode != 0);
+  Vec4D_Vector pb;
+  Vec4D dI;
+  PropShifts shifts;
+  if (rebuild) { if (!PartitionLegs(iphot, pb)) return false; }
+  else {
+    pb = m_pceex;
+    shifts = StageShifts(iphot);
+    AddExchangeLineShifts(iphot, shifts); // space-like exchange lines
+    dI = PartitionShift(iphot, true);   // the initial stage's photons, for S
+  }
+  /*
+    Softness is measured against the system this photon is radiated from -
+    the beams less the other initial-state photons - not against the beams:
+    2k.S/S^2 is its energy in S's rest frame over half the invariant mass.
+    Below the cut beta_1 vanishes and the whole photon is skipped - no M_1,
+    no subtraction - which is what beta_1 = 0 means. S does not depend on
+    where THIS photon sits, so the two partitions that together make one
+    beta_1 term are cut together.
+  */
+  const Vec4D S(rebuild ? pb[0] + pb[1] : m_pceex[0] + m_pceex[1] - dI);
+  const double S2(S.Abs2());
+  const double y(S2 > 0. ? 2.*(k*S)/S2 : 0.);
+  static const double xcut(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                           ["BETA1_XCUT"].Get<double>());
+  if (!(y > xcut)) return true;
+  /*
+    M_1 is needed on one partition per assignment of the others - the one
+    with this photon on the reducing stage - and is evaluated only there.
+
+    The subtraction is this partition's Born times the SAME soft factors that
+    M_1 reduces to: the other photons' from the partition, and THIS photon's
+    stage eikonal on the legs Comix was handed (the physical ones in the
+    default mode). The Born is the one InfraredSubtractedME_0_0 added, taken
+    from where it left it: the (1 - n) cancellation between the n
+    subtractions and the one addition is exact only if they are the same
+    numbers.
+  */
+  Amplitude M1;
+  if (addm1) {
+    Vec4D_Vector pp(pb);
+    pp.push_back(k);
+    const bool ok(rebuild ? ComixRealAt(pp, hel, M1, -1.)
+                          : ComixRealShifted(pp, hel, M1, shifts));
+    if (!ok) return false;
+  }
+  // the other photons' eikonal product, as a product - never as sProd/s_j,
+  // which manufactures a divergence at the zeros of s_j
+  Complex w(1., 0.);
+  for (size_t i(0); i < m_allphotons.size(); ++i)
+    if ((int)i != iphot)
+      w *= (m_sactu.size() == m_allphotons.size() ? m_sactu[i] : m_Sfac[m_stage[i]][i]);
+  const Complex sj(fixed ? TotalEikonal(pb, k, hel)
+                         : StageEikonal(m_stage[iphot], pb, k, hel));
+  const int nh(Amplitude::NHel());
+  double nsub(0.), nm1(0.), nv(0.);
+  for (int f(0); f < nh; ++f) {
+    const Complex sub(w * sj * m_partborn0.m_A[f]);
+    Complex v(-sub);
+    if (addm1) {
+      const Complex m1(w * m_cxbalign.m_A[f] * M1.m_A[f]/rn);
+      v += m1;
+      nm1 += std::norm(m1);
+    }
+    nsub += std::norm(sub); nv += std::norm(v);
+    m_AmpExpo1.m_A[f]    += v;
+    m_AmpBornReal.m_A[f] += v;
+    if (iphot < (int)m_realphot.size()) m_realphot[iphot].m_A[f] += v;
+    m_snapReal.m_A[f]    += v;
+    m_beta10 += v;
+  }
+  if (m_b1trace) {
+    std::string st;
+    for (size_t i(0); i < m_stage.size(); ++i) st += ToString(m_stage[i]);
+    const Complex sp(m_Sfac[m_stage[iphot]][iphot]);
+    /*
+      Does Comix's M_1 reduce to the total eikonal times Comix's own Born on
+      the legs it was handed, with the same propagator treatment, and how does
+      that Born compare with the partition Born being subtracted?
+    */
+    auto born_here = [&](const Vec4D_Vector &legs, Amplitude &C) {
+      return rebuild ? ComixBornAmplitude(legs, C, NULL, -1., -1.)
+                     : ComixBornShifted(legs, C, shifts); };
+    auto real_here = [&](const Vec4D_Vector &legs, const Vec4D &kk,
+                         Amplitude &M) {
+      Vec4D_Vector pp(legs); pp.push_back(kk);
+      return rebuild ? ComixRealAt(pp, hel, M, -1.)
+                     : ComixRealShifted(pp, hel, M, shifts); };
+    const int flip(m_comixflip & (nh-1));
+    double rsoft(-1.), bratio(-1.);
+    { Amplitude Cc;
+      if (born_here(pb, Cc)) {
+        const Complex stot(TotalEikonal(pb, k, hel));
+        double nd(0.), ne(0.), nc(0.), nb(0.);
+        for (int f(0); f < nh; ++f) {
+          const Complex sb(stot*Cc.m_A[f ^ flip]);
+          if (addm1) { nd += std::norm(M1.m_A[f]/rn - sb); ne += std::norm(sb); }
+          nc += std::norm(m_cxbalign.m_A[f]*Cc.m_A[f ^ flip]);
+          nb += std::norm(m_partborn0.m_A[f]);
+        }
+        if (addm1 && ne > 0.) rsoft = sqrt(nd/ne);
+        if (nc > 0.) bratio = sqrt(nb/nc);
+      } }
+    /*
+      The lambda scan only means something on legs that balance: scaling k
+      alone leaves (1-lambda)k unaccounted for, which the shifts do not know
+      about, so in the default mode only lambda = 1 is reported.
+    */
+    if (addm1) {
+      std::string sc;
+      for (int e(0); e <= (rebuild ? 3 : 0); ++e) {
+        const double lam(pow(10., -(double)e));
+        const Vec4D kl(lam*k);
+        Vec4D_Vector pl(pb);
+        if (rebuild) {
+          Vec4D X(pb[0] + pb[1]), Y(X - kl);
+          for (size_t i(2); i < m_pceex.size(); ++i)
+            if (i != m_if1 && i != m_if2) Y -= m_pceex[i];
+          if (!LegsAt(X, Y, pl)) continue;
+        }
+        Amplitude Cl, Ml;
+        if (!born_here(pl, Cl) || !real_here(pl, kl, Ml)) continue;
+        const Complex stl(TotalEikonal(pl, kl, hel));
+        double nd(0.), ne(0.), nm(0.);
+        Complex ov(0., 0.);
+        for (int f(0); f < nh; ++f) {
+          const Complex sb(stl*Cl.m_A[f ^ flip]);
+          nd += std::norm(Ml.m_A[f]/rn - sb); ne += std::norm(sb);
+          nm += std::norm(Ml.m_A[f]/rn);
+          ov += (Ml.m_A[f]/rn) * std::conj(sb);
+        }
+        sc += " lam=" + ToString(lam) + " r=" + ToString(ne>0.? sqrt(nd/ne) : -1.)
+            + " phi=" + ToString(std::arg(ov))
+            + " |M1|=" + ToString(sqrt(nm)) + " |sC|=" + ToString(sqrt(ne));
+      }
+      std::cerr<<"B1LAM wp="<<st<<" j="<<iphot<<sc<<std::endl;
+    }
+    std::cerr<<std::setprecision(6)
+             <<"B1TRACE wp="<<st<<" j="<<iphot<<" addm1="<<addm1
+             <<" fixed="<<fixed<<" y="<<y<<" |w|="<<std::abs(w)
+             <<" |s_cfg|="<<std::abs(sj)<<" |s_phys|="<<std::abs(sp)
+             <<" s_cfg/s_phys="<<(std::abs(sp)>0.? sj/sp : Complex(0.,0.))
+             <<" |sub|="<<sqrt(nsub)<<" |M1|="<<sqrt(nm1)
+             <<" |beta1|="<<sqrt(nv)
+             <<" |beta1|/|sub|="<<(nsub>0.? sqrt(nv/nsub) : -1.)
+             <<" S2="<<S2<<" rsoft="<<rsoft<<" |B0wp|/|Ccfg|="<<bratio
+             <<std::endl;
+  }
+  return true;
 }
 
 bool Ceex_Base::ComixBeta1At(const Vec4D &k, int hel,
@@ -1110,15 +1749,46 @@ bool Ceex_Base::ComixBeta1At(const Vec4D &k, int hel,
     for (int f(0); f < Amplitude::NHel(); ++f) B1.m_A[f] = Complex(0., 0.);
     return true;
   }
-  const double lam(X_EIK/xg);
-  Vec4D_Vector pp(m_pceex), pps(m_pceex);
+  /*
+    The definition, directly:  beta_1(k) = M_1(k) - s(k) beta_0.
+
+    This used to be done as a lambda-subtraction, M_1(k) - lambda M_1(lambda k),
+    which uses s(lambda k) = s(k)/lambda to reach the same place without ever
+    writing s down. That detour existed because M_1 and s beta_0 did not agree
+    in the soft limit, so the relative normalisation between them could not be
+    trusted. The cause was a sign: SfactorLeg/Sfactor built the hel=-1 eikonal
+    from Sminus rather than conj(Splus), the opposite convention for epsilon_-
+    to the one Comix uses, and no |s|^2 or helicity-summed test can see it.
+
+    With that fixed the soft limit holds - scaling k -> lambda k on conserving
+    kinematics gives |M_1 - s beta_0|/|s beta_0| falling linearly in lambda
+    (0.62, 0.064, 0.0065, 0.0013) until the 1/lambda cancellation runs out of
+    double precision - so the subtraction can be done where it is defined.
+
+    That also removes the lambda-subtraction's own defect: it evaluated
+    M_1(lambda k) at m_pceex plus lambda k, a momentum set short by
+    (1-lambda)k. Comix contracts currents on whatever it is handed, so that
+    second term was neither gauge invariant nor an amplitude.
+
+    Indexing: M_1 is Comix-ordered, beta_0 is CEEX-ordered, and B1 is returned
+    Comix-ordered for the caller to map - hence the mask on beta_0 and the
+    RealNorm on the eikonal term rather than on M_1.
+  */
+  Amplitude B0, M1;
+  Vec4D_Vector pp(m_pceex);
   pp.push_back(k);
-  pps.push_back(lam*k);
-  Amplitude C, Cs;
-  if (!ComixRealAt(pp,  hel, C,  propscale)) return false;
-  if (!ComixRealAt(pps, hel, Cs, propscale)) return false;
-  for (int f(0); f < Amplitude::NHel(); ++f)
-    B1.m_A[f] = C.m_A[f] - lam*Cs.m_A[f];
+  if (!ComixBornAmplitude(m_pceex, B0, NULL, propscale)) return false;
+  if (!ComixRealAt(pp, hel, M1, propscale)) return false;
+  const double rn(RealNorm());
+  if (!(rn > 0.)) return false;
+  const Complex qratio(m_qe != 0. ? -m_qf/m_qe : 0., 0.);
+  const Complex sf(Sfactor(m_pceex[0], m_pceex[1], k, hel)
+                   + qratio*Sfactor(m_pceex[m_if1], m_pceex[m_if2], k, hel));
+  // the paper's pseudo-flux X^2/(p_c+p_d)^2; exactly 1 for a single ISR photon
+  const double pflux(propscale > 0. && m_svarQ > 0. ? propscale/m_svarQ : 1.);
+  const int nh(Amplitude::NHel()), msk(m_comixflip & (nh-1));
+  for (int f(0); f < nh; ++f)
+    B1.m_A[f] = M1.m_A[f] - rn*sf*pflux*B0.m_A[f ^ msk];
   return true;
 }
 
@@ -1384,7 +2054,7 @@ void Ceex_Base::BuildComixPhotonRatios()
         double nb(0.);
         for (int f = 0; f < nh; ++f)
           nb += std::norm(Bc.m_A[f ^ (m_comixflip & fmaskx)]);
-        msg_Error()<<"@@@ SOFTRAT Ek="<<m_allphotons[j][0]
+        msg_Error()<<"SOFTRAT Ek="<<m_allphotons[j][0]
                  <<" x="<<(2.*m_allphotons[j][0]/sqrt(m_s))
                  <<" |M1|^2/(S~|B|^2)="<<(sden>0.? snum/sden : -1.)
                  <<" eik_flat="<<((Scl != 0. && nb > 0.)
@@ -1406,11 +2076,11 @@ void Ceex_Base::BuildComixPhotonRatios()
           nsb  += std::norm(SB);
           ndir += std::norm(C.m_A[f] - SB);
         }
-        msg_Error()<<"@@@ BETA1DIR Ek="<<m_allphotons[j][0]
+        msg_Error()<<"BETA1DIR Ek="<<m_allphotons[j][0]
                  <<" |M1|="<<sqrt(nc)<<" |S*B|="<<sqrt(nsb)
                  <<" |M1|/|S*B|="<<(nsb>0.? sqrt(nc/nsb) : -1.)
                  <<" |M1-S*B|/|H|="<<(nh2>0.? sqrt(ndir/nh2) : -1.)<<std::endl;
-        msg_Error()<<"@@@ BETA1 Ek="<<m_allphotons[j][0]
+        msg_Error()<<"BETA1 Ek="<<m_allphotons[j][0]
                  <<" |M1_comix|="<<sqrt(nc)
                  <<" |Csub|="<<sqrt(ncs)
                  <<" |H_hand|="<<sqrt(nh2)
@@ -1429,16 +2099,7 @@ void Ceex_Base::BuildComixPhotonRatios()
 /*!
   The real-subtraction validation figure, for CEEX's beta_1.
 
-  Same construction as NLO_Base::CheckRealSub, which produced the equivalent
-  plots for the squared reals: scan the photon energy downward at fixed
-  direction and write |beta_1|/beta_0 against E_gamma. The physics content is
-  that the subtracted real must VANISH as the photon softens - the curve going
-  to zero is the statement that the infrared subtraction is right, and a curve
-  that flattens instead is a subtraction that has missed a term.
-
-  Two curves, on one normalisation so they overlay: CEEX's hand-coded beta_1
-  and the one built from Comix's amplitude as
-  beta_1 = M_1(k) - lambda M_1(lambda k).
+  Same construction as NLO_Base::CheckRealSub
 */
 void Ceex_Base::Beta1Scan()
 {
@@ -1487,7 +2148,7 @@ void Ceex_Base::Beta1Scan()
     of 2 between them, which is a property of the plot and not of the
     amplitudes.
   */
-  msg_Info()<<"CEEX: beta_1 scan Born check: |B_comix|/(2 e^2 |B_hand|) = "
+  msg_Debugging()<<"CEEX: beta_1 scan Born check: |B_comix|/(2 e^2 |B_hand|) = "
             <<(sqrt(nbc)/(2.*sqrt(nbh)))<<"  (e^2 |B_hand| = "<<sqrt(nbh)
             <<", |B_comix| = "<<sqrt(nbc)<<")\n";
   /*
@@ -1560,6 +2221,6 @@ void Ceex_Base::Beta1Scan()
     }
   }
   fc.close(); fh.close();
-  msg_Info()<<"CEEX: beta_1 scan written to CeexBeta1_{comix,hand}"<<tag
+  msg_Debugging()<<"CEEX: beta_1 scan written to CeexBeta1_{comix,hand}"<<tag
             <<".txt\n";
 }

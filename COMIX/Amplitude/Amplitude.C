@@ -1964,6 +1964,144 @@ Amplitude::Scoped_Prop_Scale::Scoped_Prop_Scale
 Amplitude::Scoped_Prop_Scale::~Scoped_Prop_Scale()
 { if (p_amp != NULL) p_amp->SetPropScale(-1.0, -1.0, 0); }
 
+Amplitude::Scoped_Prop_Shift::Scoped_Prop_Shift
+(Amplitude *const amp, const Vec4D &dini, const Vec4D &dfin,
+ const size_t ffmask): p_amp(amp)
+{ if (p_amp != NULL) p_amp->SetPropShift(dini, dfin, ffmask); }
+
+Amplitude::Scoped_Prop_Shift::~Scoped_Prop_Shift()
+{ if (p_amp != NULL) p_amp->SetPropShift(Vec4D(), Vec4D(), 0); }
+
+void Amplitude::SetPropShift(const Vec4D &dini, const Vec4D &dfin,
+                             const size_t ffmask)
+{
+  // the two-stage special case of SetPropShifts: initial state and the
+  // final fermion pair
+  Prop_Shifts st;
+  st.push_back(std::make_pair((size_t)((1ull<<m_nin)-1), dini));
+  if (ffmask) st.push_back(std::make_pair(ffmask, dfin));
+  SetPropShifts(st);
+}
+
+Amplitude::Scoped_Prop_Shifts::Scoped_Prop_Shifts
+(Amplitude *const amp, const Prop_Shifts &shifts): p_amp(amp)
+{ if (p_amp != NULL) p_amp->SetPropShifts(shifts); }
+
+Amplitude::Scoped_Prop_Shifts::~Scoped_Prop_Shifts()
+{ if (p_amp != NULL) p_amp->SetPropShifts(Prop_Shifts()); }
+
+void Amplitude::SetPropShifts(const Prop_Shifts &shifts)
+{
+  /*
+    Classify every internal current by its leg content and give it the
+    momentum shift the partition wants for its pole. The momenta are all
+    outgoing, so ADDING a stage's photons to a current that holds all of that
+    stage's legs puts its pole at the partition invariant: for the initial
+    state (P - sum_I k)^2, for a resonance's decay products
+    (q_1 + q_2 + sum_R k)^2. Berends-Giele builds a given line from whichever
+    side does not hold the root; the two descriptions agree on the invariant
+    once every photon is accounted for on one side or the other, which is
+    what the containment rule does.
+
+    (a) Time-like lines - a current holding both initial legs, or a whole
+        final stage, or neither initial leg: the stage rule. A stage only
+        PARTLY inside a current cannot be placed by the partition (an
+        initial-state photon came from a or from b) and the choice matters
+        only where the line is singular: the fermion propagator next to the
+        emission, which must be the external fermion plus the photon. That
+        is the current with the SMALLER complement, and it takes the whole
+        imbalance; measured, without it the 1/k pole of the emission off the
+        root-side leg is lost (soft-theorem residual 0.37 instead of 0.02).
+
+    (b) Space-like exchange lines - a current holding exactly ONE initial
+        leg together with a proper, non-empty subset of the Born final legs
+        and no whole final stage: Bhabha's t-channel boson {1,3}, the t- and
+        u-channel electrons {1,2}, {1,3} of e+e- -> gamma gamma, the
+        t-channel neutrino of W pair production. No stage can place these:
+        {1,3} and its complement {0,2} are the same size, so the stage rule
+        left the line at the unreduced (p_1 - p_3)^2 in every partition -
+        right when the photons come off the electron, wrong by 2 k.p_3 =
+        O(x s) when a hard photon comes off the positron (Z-pole Bhabha:
+        weights 20-700 over the crude, all with a positron-collinear hard
+        ISR photon) - while M_1's {1,3,gamma} took the whole initial-state
+        shift. Their pole goes to the partition's REDUCED invariant: the
+        caller passes, as LEG entries (PHASIC::Process_Base::s_propshiftleg),
+        the difference between each Born leg's reduced and physical momentum
+        (beams rebuilt back to back at X_wp, the radiating pair at Y_wp -
+        the construction the crude Born momenta come from), and the line's
+        shift is the sum over its Born legs. In M_1 the emitted photon is
+        not a Born leg and contributes nothing, so {1,3,gamma_j} takes the
+        same shift as {1,3}: with the reduced legs conserving momentum
+        together with k_j, -p~_1 + p~_3 + k_j is the reduced
+        positron-emission t. At one photon the reduced legs are the
+        physical ones and every leg entry is zero.
+
+        Two currents that also hold one initial leg are NOT exchange lines
+        and keep the stage rule: {a, gamma_j} (no Born final leg) and
+        {a, every final leg} (the other beam's emission line, momentum
+        p_b - k_j). Both are the collinear emission propagators, whose
+        virtuality is E_k E (theta^2 + m^2/E^2); a reduced-leg shift there
+        would tilt them by the other photons' transverse recoil and destroy
+        them - the same failure a momentum imbalance of 1e-7 GeV produced
+        before Ceex_Base::RepairMomentumBalance.
+
+    Stage entries are applied exactly as before, and a process without
+    exchange lines (every s-channel process) gets bit for bit the old
+    shifts whether or not leg entries are passed.
+  */
+  const size_t all((1ull<<m_n)-1);
+  const size_t lineflag(PHASIC::Process_Base::s_propshiftline);
+  const size_t legflag(PHASIC::Process_Base::s_propshiftleg);
+  const size_t inimask((1ull<<m_nin)-1);
+  bool any(false), anyleg(false);
+  size_t bornlegs(0);
+  std::vector<Vec4D> legd(m_n, Vec4D());
+  for (size_t g(0); g < shifts.size(); ++g) {
+    const Vec4D &d(shifts[g].second);
+    if (d[0]!=0.||d[1]!=0.||d[2]!=0.||d[3]!=0.) any = true;
+    if (shifts[g].first & legflag) {
+      const size_t m(shifts[g].first & all);
+      anyleg = true;
+      bornlegs |= m;
+      for (size_t i(0); i < m_n; ++i) if (m & (1ull<<i)) legd[i] += d;
+    }
+  }
+  const size_t bornfin(bornlegs & ~inimask);
+  auto apply = [&](METOOLS::Current *c) {
+    if (!any) { c->SetPropShift(Vec4D()); return; }
+    const size_t id(c->CId() & all);
+    if (anyleg) {
+      const size_t fin(id & bornfin);
+      const bool oneini(__builtin_popcountll(id & inimask) == 1);
+      bool wholestage(false);
+      for (size_t g(0); g < shifts.size() && !wholestage; ++g) {
+        if (shifts[g].first & (legflag | lineflag)) continue;
+        const size_t m(shifts[g].first & all & ~inimask);
+        if (m != 0 && (id & m) == m) wholestage = true;
+      }
+      if (oneini && fin != 0 && fin != bornfin && !wholestage) {
+        Vec4D sh;
+        for (size_t i(0); i < m_n; ++i) if (id & bornlegs & (1ull<<i)) sh += legd[i];
+        c->SetPropShift(sh);
+        return;
+      }
+    }
+    const bool smaller(__builtin_popcountll(all ^ id) < __builtin_popcountll(id));
+    Vec4D sh;
+    for (size_t g(0); g < shifts.size(); ++g) {
+      if (shifts[g].first & (lineflag | legflag)) continue;
+      const size_t m(shifts[g].first & all);
+      if (m == 0) continue;
+      if ((id & m) == m) sh += shifts[g].second;            // stage inside
+      else if ((id & m) != 0 && smaller) sh += shifts[g].second; // partly, root side
+    }
+    c->SetPropShift(sh);
+  };
+  for (size_t j(2);j<m_cur.size();++j)
+    for (size_t i(0);i<m_cur[j].size();++i) apply(m_cur[j][i]);
+  for (size_t i(0);i<m_scur.size();++i) apply(m_scur[i]);
+}
+
 void Amplitude::SetPropScale(const double &s, const double &sdec,
                              const size_t deccid)
 {

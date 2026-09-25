@@ -190,7 +190,15 @@ void CF<SType>::AddPropagator()
 {
   const CSpinorType hs;
   // add propagator for off-shell leg
-  SComplex prop(M_I/(SType(this->m_p2)-m_cmass2));
+  /*
+    With a propagator shift set (Current::m_pshift) the WHOLE momentum of
+    this line is (p + d): numerator and pole alike, as the two-leg momentum
+    KKMC's spinor chains carry when the external legs do not balance.
+  */
+  const bool sh(this->m_haveshift);
+  const ATOOLS::Vec4D ps(this->m_p + this->m_pshift);
+  SComplex prop(M_I/((sh ? SComplex(SType(ps.Abs2())) : SComplex(SType(this->m_p2)))
+                     -m_cmass2));
   // momentum-conservation floor left by Amplitude::ProjectWideMomenta -- only
   // printed when the denominator is small enough to be near that floor, so
   // this stays quiet outside the region under investigation.
@@ -207,10 +215,13 @@ void CF<SType>::AddPropagator()
   if (this->m_osd) prop=SComplex(M_I);
   const size_t r1(Spinor<SType>::R1()),r2(Spinor<SType>::R2()),
                r3(Spinor<SType>::R3());
-  const ATOOLS::DDouble hpp(this->m_ph[0]+this->m_ph[r3]);
-  const ATOOLS::DDouble hpm(this->m_ph[0]-this->m_ph[r3]);
+  const ATOOLS::DDouble hpp(sh ? ATOOLS::DDouble(ps[0]+ps[r3])
+                               : this->m_ph[0]+this->m_ph[r3]);
+  const ATOOLS::DDouble hpm(sh ? ATOOLS::DDouble(ps[0]-ps[r3])
+                               : this->m_ph[0]-this->m_ph[r3]);
   // braces, not parens: SComplex pp(SType(x)) parses as a function declaration
-  const SType tr1(this->m_ph[r1]), tr2(this->m_ph[r2]);
+  const SType tr1(sh ? SType(ps[r1]) : SType(this->m_ph[r1]));
+  const SType tr2(sh ? SType(ps[r2]) : SType(this->m_ph[r2]));
   SComplex pp{SType(hpp)}, pm{SType(hpm)};
   SComplex pt{tr1,tr2}, ptc{tr1,-tr2};
 #ifdef DEBUG__BG

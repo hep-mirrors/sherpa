@@ -87,6 +87,24 @@ namespace COMIX {
      std::vector<METOOLS::Spin_Amplitudes> &amps,
      double *me2 = NULL, const double propscale = -1.0,
      const double decscale = -1.0, const size_t deccid = 0) override;
+    ATOOLS::Weights_Map DifferentialWithPropShift
+    (const ATOOLS::Cluster_Amplitude &ampl,
+     ATOOLS::Variations_Mode varmode, int mode,
+     const ATOOLS::Vec4D &dini, const ATOOLS::Vec4D &dfin,
+     const size_t ffmask) override;
+    bool BornSpinAmplitudesShifted
+    (const ATOOLS::Vec4D_Vector &p,
+     std::vector<METOOLS::Spin_Amplitudes> &amps, double *me2,
+     const ATOOLS::Vec4D &dini, const ATOOLS::Vec4D &dfin,
+     const size_t ffmask) override;
+    ATOOLS::Weights_Map DifferentialWithPropShifts
+    (const ATOOLS::Cluster_Amplitude &ampl,
+     ATOOLS::Variations_Mode varmode, int mode,
+     const Prop_Shifts &shifts) override;
+    bool BornSpinAmplitudesShifts
+    (const ATOOLS::Vec4D_Vector &p,
+     std::vector<METOOLS::Spin_Amplitudes> &amps, double *me2,
+     const Prop_Shifts &shifts) override;
 
     double Partonic(const ATOOLS::Vec4D_Vector&,
                     ATOOLS::Variations_Mode varmode,

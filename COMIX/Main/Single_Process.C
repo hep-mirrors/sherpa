@@ -795,6 +795,7 @@ ATOOLS::Weights_Map COMIX::Single_Process::DifferentialWithPropScale
  int mode, const double propscale, const double decscale, const size_t deccid)
 {
   Amplitude *bg(p_map != NULL ? p_map->p_bg : p_bg);
+  Amplitude::Scoped_No_Projection noproj(bg);
   Amplitude::Scoped_Prop_Scale guard(bg, propscale, decscale, deccid);
   return Differential(ampl, varmode, mode);
 }
@@ -810,10 +811,75 @@ bool COMIX::Single_Process::BornSpinAmplitudes
   if (p.size() != Flavours().size()) return false;
   Amplitude *bg(p_map != NULL ? p_map->p_bg : p_bg);
   if (bg == NULL) return false;
+  Amplitude::Scoped_No_Projection noproj(bg);
   const Vec4D_Vector pold(bg->Momenta());
   if (!bg->SetMomenta(p)) { bg->SetMomenta(pold); return false; }
   // The guard owns the restore; the mutator is private to Amplitude.
   Amplitude::Scoped_Prop_Scale guard(bg, propscale, decscale, deccid);
+  const double s_lastxs(m_lastxs), s_dxs(m_dxs), s_w(m_w);
+  const double xs(Partonic(p, Variations_Mode::nominal_only, 0));
+  amps.clear();
+  std::vector<std::vector<Complex> > cols;
+  FillAmplitudes(amps, cols);
+  m_lastxs = s_lastxs; m_dxs = s_dxs; m_w = s_w;
+  bg->SetMomenta(pold);
+  if (me2) *me2 = xs;
+  return !amps.empty();
+}
+
+ATOOLS::Weights_Map COMIX::Single_Process::DifferentialWithPropShift
+(const ATOOLS::Cluster_Amplitude &ampl, ATOOLS::Variations_Mode varmode,
+ int mode, const Vec4D &dini, const Vec4D &dfin, const size_t ffmask)
+{
+  Amplitude *bg(p_map != NULL ? p_map->p_bg : p_bg);
+  Amplitude::Scoped_No_Projection noproj(bg);
+  Amplitude::Scoped_Prop_Shift guard(bg, dini, dfin, ffmask);
+  return Differential(ampl, varmode, mode);
+}
+
+ATOOLS::Weights_Map COMIX::Single_Process::DifferentialWithPropShifts
+(const ATOOLS::Cluster_Amplitude &ampl, ATOOLS::Variations_Mode varmode,
+ int mode, const Prop_Shifts &shifts)
+{
+  Amplitude *bg(p_map != NULL ? p_map->p_bg : p_bg);
+  Amplitude::Scoped_No_Projection noproj(bg);
+  Amplitude::Scoped_Prop_Shifts guard(bg, shifts);
+  return Differential(ampl, varmode, mode);
+}
+
+bool COMIX::Single_Process::BornSpinAmplitudesShifts
+(const Vec4D_Vector &p, std::vector<Spin_Amplitudes> &amps, double *me2,
+ const Prop_Shifts &shifts)
+{
+  if (p.size() != Flavours().size()) return false;
+  Amplitude *bg(p_map != NULL ? p_map->p_bg : p_bg);
+  if (bg == NULL) return false;
+  Amplitude::Scoped_No_Projection noproj(bg);
+  const Vec4D_Vector pold(bg->Momenta());
+  if (!bg->SetMomenta(p)) { bg->SetMomenta(pold); return false; }
+  Amplitude::Scoped_Prop_Shifts guard(bg, shifts);
+  const double s_lastxs(m_lastxs), s_dxs(m_dxs), s_w(m_w);
+  const double xs(Partonic(p, Variations_Mode::nominal_only, 0));
+  amps.clear();
+  std::vector<std::vector<Complex> > cols;
+  FillAmplitudes(amps, cols);
+  m_lastxs = s_lastxs; m_dxs = s_dxs; m_w = s_w;
+  bg->SetMomenta(pold);
+  if (me2) *me2 = xs;
+  return !amps.empty();
+}
+
+bool COMIX::Single_Process::BornSpinAmplitudesShifted
+(const Vec4D_Vector &p, std::vector<Spin_Amplitudes> &amps, double *me2,
+ const Vec4D &dini, const Vec4D &dfin, const size_t ffmask)
+{
+  if (p.size() != Flavours().size()) return false;
+  Amplitude *bg(p_map != NULL ? p_map->p_bg : p_bg);
+  if (bg == NULL) return false;
+  Amplitude::Scoped_No_Projection noproj(bg);
+  const Vec4D_Vector pold(bg->Momenta());
+  if (!bg->SetMomenta(p)) { bg->SetMomenta(pold); return false; }
+  Amplitude::Scoped_Prop_Shift guard(bg, dini, dfin, ffmask);
   const double s_lastxs(m_lastxs), s_dxs(m_dxs), s_w(m_w);
   const double xs(Partonic(p, Variations_Mode::nominal_only, 0));
   amps.clear();

@@ -102,18 +102,15 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
     (measured on H l+ l-: +101% unscoped against +0.29%). Until that exists,
     say so loudly rather than let the setting be forgotten.
   */
-  if (s["PARTITION_BORN_CHECK"].Get<int>() != 0 || m_comixborn || m_comixreal
-      || m_perphoton) {
-    Scoped_Settings comix{ ss["COMIX"] };
-    if (comix["MOMENTUM_PROJECTION"].SetDefault(true).Get<bool>()) {
-      comix["MOMENTUM_PROJECTION"].OverrideScalar<bool>(false);
-      msg_Info()<<METHOD<<"(): CEEX asks Comix for amplitudes at momenta that"
-                <<" do not conserve by construction, so COMIX:"
-                <<" MOMENTUM_PROJECTION has been turned off for this run."
-                <<" That is also Comix's collinear-stability fix, so weigh"
-                <<" what else in the run depends on it."<<std::endl;
-    }
-  }
+  /*
+    COMIX: MOMENTUM_PROJECTION used to be switched off GLOBALLY here, because
+    CEEX hands Comix legs that do not balance. That also removed Comix's
+    collinear-stability fix from every other evaluation in the run, and for
+    e+e- -> mu mu tau tau the fixed-order real came out with an 87% error
+    from outliers. The projection is now suspended only inside CEEX's own
+    calls (COMIX::Amplitude::Scoped_No_Projection on every CEEX entry point
+    of Single_Process), so the setting is left alone.
+  */
   string widthscheme = ss["WIDTH_SCHEME"].Get<string>();
   m_fixedwidth = (widthscheme == "Fixed" || widthscheme == "CMS");
   m_flavs = flavs;
@@ -138,7 +135,18 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
     meaningless".
   */
   static const int devmultileg(s["DEV_MULTILEG"].SetDefault(0).Get<int>());
-  if (flavs.size() != 4) {
+  /*
+    The 2 -> 2 special path (hand-coded Born, its Comix alignment and map,
+    CEEX's own virtual, the fermion-pair m_if1/m_if2) is a description of
+    e+e- -> f fbar. It used to be selected by the leg count alone, so
+    e+e- -> gamma gamma - four legs, no outgoing fermion - took m_if1/m_if2
+    as the BEAMS, calibrated the Comix map against a fermion-pair Born that
+    does not exist for it, failed ("Born calibration failed"), and dropped
+    every beta_1. The selection is the final state's structure, not its size.
+  */
+  m_ffbar = (flavs.size() == 4 && flavs[2].IsFermion()
+             && flavs[3] == flavs[2].Bar());
+  if (!m_ffbar) {
     /*
       The throw is about the BORN, so it applies only when the hand-coded Born
       is the one selected. That used to be unconditional, which was right while
@@ -171,11 +179,14 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
   { size_t n(0);
     for (size_t i(2); i < flavs.size() && n < 2; ++i)
       if (flavs[i].IsFermion()) { (n == 0 ? m_if1 : m_if2) = i; ++n; }
-    if (n < 2)
-      msg_Error()<<METHOD<<"(): no outgoing fermion pair found among "
-                 <<flavs.size()<<" legs; the electroweak couplings will be "
-                 <<"those of legs 2 and 3, which is almost certainly wrong."
-                 <<std::endl;
+    if (n < 2) {
+      // no fermion pair (gamma gamma): legs 2 and 3. Only the hand-coded
+      // 2 -> 2 couplings read these, and that path is not taken here.
+      m_if1 = 2; m_if2 = 3;
+      msg_Debugging()<<METHOD<<"(): no outgoing fermion pair among "
+                     <<flavs.size()<<" legs; m_if1/m_if2 = 2/3, general "
+                     <<"Comix branch."<<std::endl;
+    }
   }
 
   /*
@@ -186,9 +197,9 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
     while every other column of the same run was correct to a few percent.
     That is the failure this refuses.
   */
-  if (m_flavs.size() != 4 && m_useceex && m_ceexvirtsrc == ceexvirt::ceex)
+  if (!m_ffbar && m_useceex && m_ceexvirtsrc == ceexvirt::ceex)
     THROW(fatal_error,
-          "CEEX's own virtual is 2 -> 2 only, and this process has "
+          "CEEX's own virtual is e+e- -> f fbar only, and this process has "
           + ATOOLS::ToString(m_flavs.size()) + " legs. Set YFS: CEEX_Virtual:"
           " external to take the helicity-summed virtual from the loop"
           " provider instead (which needs V in NLO_Part).");
@@ -267,14 +278,6 @@ void Ceex_Base::RegisterDefaults()
   s["ONLYG"].SetDefault(0);
   s["CHECK_XS"].SetDefault(0);
   s["WEAK"].SetDefault(1);
-  // Take the O(alpha) real (beta_1) from Comix's helicity amplitudes instead
-  // of the hand-coded spinor algebra. Off by default.
-  /*
-    ON by default, same reasoning - but it applies at ONE photon only, so a
-    sample with multiphoton events mixes the Comix real with the hand-coded
-    beta_1 above one photon (see ApplyComixReal). COMIX_REAL: 0 selects the
-    hand-coded real throughout.
-  */
   s["COMIX_REAL"].SetDefault(1);
   /*
     Both of these used to be fitted numbers (26 and 0.5). They are now DERIVED
@@ -308,7 +311,68 @@ void Ceex_Base::RegisterDefaults()
   s["COMIX_REAL_PER_PHOTON"].SetDefault(0);
   s["BETA1_PARTITION_CHECK"].SetDefault(0);  // @@@ B1PART
   s["BETA1_CLOSURE"].SetDefault(0);          // @@@ B1CLOSE
+  s["CLOSURE_1PHOT"].SetDefault(0);          // @@@ CLOS1
+  s["BETA1_XCUT"].SetDefault(1e-3);          // beta_1 soft threshold
+  s["BETA1_TRACE"].SetDefault(0);            // @@@ B1TRACE on the dump event
+  /*
+    Heavy-event trace: > 0 runs the beta_1 trace on EVERY event into a buffer
+    that YFS_Handler prints only when rho_1/rho_crude exceeds this value,
+    together with the event's legs and photons (@@@ HEAVY). Costly (one extra
+    Born and M_1 per photon per partition); diagnostics only.
+  */
+  s["TRACE_FACTOR_ABOVE"].SetDefault(0.);
+  /*
+    x_gamma = 2E/sqrt(s) below which a photon is not enumerated in the
+    partition sum (see m_fixedstage). 0 enumerates every photon (KKMC).
+  */
+  s["SOFT_PARTITION_CUT"].SetDefault(1e-3);
+  /*
+    MOMENTUM_REPAIR (1): project the final legs and all photons onto exact
+    momentum conservation against the beams and onto their mass shells before
+    anything is evaluated on them; 0 = use the event's momenta as handed
+    over. See Ceex_Base::RepairMomentumBalance.
+  */
+  s["MOMENTUM_REPAIR"].SetDefault(1);
+  /*
+    Legs for beta_1's M_1: 0 = the physical legs with the s-channel
+    propagator momenta shifted by the other photons per side (KKMC's
+    construction, default); 1 = a rebuilt balanced point (PartitionLegs).
+    See ComixInfraredSubtracted_1_0.
+  */
+  s["BETA1_LEGS"].SetDefault(0);
+  /*
+    Space-like exchange lines (Bhabha's t-channel boson, the t/u-channel
+    electrons of e+e- -> gamma gamma, a t-channel neutrino: any current with
+    one initial leg and part of the final state, detected by leg content in
+    COMIX::Amplitude::SetPropShifts) of the partition Born and of M_1 at the
+    partition's REDUCED invariant rather than at the unreduced one Comix's
+    root-0 recursion leaves them at. 1 (default) on, 0 off. See
+    Ceex_Base::AddExchangeLineShifts.
+  */
+  s["TCHANNEL_SHIFT"].SetDefault(1);
+  /*
+    beta_0(X_wp) on the REAL phase-space point whose invariant is X_wp^2 -
+    beams at X_wp, radiating pair at X_wp minus the spectators, per partition
+    - with natural propagators and no pseudo-flux, instead of KKMC's physical
+    spinors with the pole pinned to m_sp times svarY/svarQ. See
+    InfraredSubtractedME_0_0 for the two forms and what the earlier,
+    single-point version of this switch got wrong.
+  */
+  s["BORN_AT_SPRIME"].SetDefault(0);
+  s["BETA1_BORNLEGS"].SetDefault(1);         // 1 = reduced, 0 = physical
+  /*
+    The pseudo-flux svarY/svarQ on beta_0: 0 = in rho_0 and rho_1 (KKMC's
+    beta_0 without KKMC's compensation), 1 = in neither, 2 = in rho_0 only.
+    KKMC's O(alpha^1) amplitude is flux-free (its (1-CKine) terms cancel the
+    flux per final-state photon up to 2k_i.k_j/Q^2) while its RhoExp0 keeps
+    it, so 2 is KKMC's own rho_1/rho_0: -0.16525 against KKMC's -0.16557 on
+    the seed-11 n=2 point, and the Z-pole cross section within 1.1% of
+    YFS.NLO (0: -2.8%, 1: +24%). Default 2.
+  */
+  s["NO_PSEUDOFLUX"].SetDefault(2);
   s["SOFT_NORM_CHECK"].SetDefault(0);        // @@@ SOFTNORM
+  s["SOFT_LIMIT_TEST"].SetDefault(0);        // @@@ SOFTLIM
+  s["BETA1_COMPARE"].SetDefault(0);          // @@@ B1CMP
   s["SFAC_CALIB"].SetDefault(0);             // @@@ SFACCAL
   // How many events the soft probe walks down the lambda ladder. Each rung
   // costs a Comix evaluation and perturbs the random sequence, so it is a
@@ -448,9 +512,15 @@ Complex Ceex_Base::CouplingZ(double  j, int mode) {
   }
   else msg_Error() << METHOD << "\n wrong mode\n";
 
-  if (zcpl == 0.) {
-    msg_Error() << "Z coupling is Zero!\n";
-  }
+  /*
+    A zero here is physics, not an error: for a neutrino pair v_f = a_f, so
+    the coupling (v_e + a_e)(v_f - a_f) of one helicity vanishes identically.
+    This layer is the hand-coded 2 -> 2 Born; with the Comix Born it only
+    feeds the 2 -> 2 alignment and diagnostics, and nothing at all beyond
+    2 -> 2 (unit alignment), so it is reported at debugging level only.
+  */
+  if (zcpl == 0.) msg_Debugging() << METHOD << ": Z coupling is zero (j=" << j
+                                  << ", mode=" << mode << ")\n";
   return zcpl;
 }
 
@@ -512,15 +582,10 @@ void Ceex_Base::MakeRho() {
   m_result0 = sum0 / 4.;
   m_result  = sum1 / 4.;
   double sumbv(0.), sumbr(0.);
-  for (int j1 = 0; j1 <= 1; ++j1)
-    for (int j2 = 0; j2 <= 1; ++j2)
-      for (int j3 = 0; j3 <= 1; ++j3)
-        for (int j4 = 0; j4 <= 1; ++j4) {
-          sumbv += std::real(m_AmpBornVirt.m_A[Idx(j1,j2,j3,j4)]
-                             * conj(m_AmpBornVirt.m_A[Idx(j1,j2,j3,j4)]));
-          sumbr += std::real(m_AmpBornReal.m_A[Idx(j1,j2,j3,j4)]
-                             * conj(m_AmpBornReal.m_A[Idx(j1,j2,j3,j4)]));
-        }
+  for (int f = 0; f < nh; ++f) {
+    sumbv += std::norm(m_AmpBornVirt.m_A[f]);
+    sumbr += std::norm(m_AmpBornReal.m_A[f]);
+  }
   m_resultbv = sumbv / 4.;
   m_resultbr = sumbr / 4.;
   m_rho0sum += m_result0;
@@ -545,12 +610,8 @@ double Ceex_Base::RealFactorPhoton(size_t j) const
 {
   if (j >= m_realphot.size() || m_result0 <= 0.) return 0.;
   double sum(0.);
-  for (int a = 0; a <= 1; ++a)
-    for (int b = 0; b <= 1; ++b)
-      for (int c = 0; c <= 1; ++c)
-        for (int d = 0; d <= 1; ++d) {
-          const Complex z(m_AmpExpo0.m_A[Idx(a,b,c,d)] + m_realphot[j].m_A[Idx(a,b,c,d)]);
-          sum += std::real(z * conj(z));
-        }
+  const int nh(Amplitude::NHel());
+  for (int f = 0; f < nh; ++f)
+    sum += std::norm(m_AmpExpo0.m_A[f] + m_realphot[j].m_A[f]);
   return sum/4./m_result0 - 1.;
 }

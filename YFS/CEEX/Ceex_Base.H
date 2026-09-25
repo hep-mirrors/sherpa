@@ -20,6 +20,9 @@ namespace METOOLS { class Spin_Amplitudes; }
 
 namespace YFS {
 
+  class NLO_Base;   // MapMomenta only; not owned
+
+
   class Real_Correction;
 
   typedef std::map<int,double> HelicityMap;
@@ -111,6 +114,10 @@ namespace YFS {
     inline size_t NPhot()  const { return m_allphotons.size(); }
     inline double SvarQ()  const { return m_svarQ; }
     inline double SvarY()  const { return m_svarY; }
+    //! Legs and photons of the current event (CEEX frame), for the
+    //! heavy-event trace; see CEEX: TRACE_FACTOR_ABOVE.
+    void PrintKinematics(std::ostream &o) const;
+    inline void SetLabMomenta(const ATOOLS::Vec4D_Vector &p) { m_plabmom = p; }
     inline size_t DecayCId() const
     { return (((size_t)1)<<m_if1) | (((size_t)1)<<m_if2); }
 
@@ -153,6 +160,14 @@ namespace YFS {
     { return m_hasvirtual && m_ceexvirtsrc == ceexvirt::ceex; }
 
     std::vector<YFS::Real_Correction*> m_realprov;
+    /*
+      Not owned. Only for MapMomenta: beta_1(k_j) belongs at the REDUCED
+      kinematics with the OTHER photons removed, and that construction - boost
+      to the Q frame, rebuild the beams - already exists there. Re-deriving it
+      here would repeat a mapping that has carried a sign bug before.
+    */
+    inline void SetNLO(YFS::NLO_Base *p) { p_nlo = p; }
+
     inline void SetRealProvider(size_t n, YFS::Real_Correction *p)
     { if (m_realprov.size() <= n) m_realprov.resize(n+1, NULL);
       m_realprov[n] = p; }
@@ -224,6 +239,7 @@ namespace YFS {
     std::vector<Amplitude> m_cxcsub;
     std::vector<char>      m_cxratiook;
     int m_perphoton = 0;
+    YFS::NLO_Base *p_nlo = nullptr;
     //! Per-PHOTON accounting, kept apart from the per-EVENT counters above:
     //! one run has as many of these as it has photons, not as it has events,
     //! and averaging the two together produces a number that is neither.
@@ -271,6 +287,31 @@ namespace YFS {
       same object the pseudo-flux numerator uses. At 2 -> 2 it equals svarX.
     */
     double    m_svarY = -1.;
+    ATOOLS::Vec4D m_PXvec;   //!< this partition's X, the momentum at s'
+    /*!
+      The generator's own phase-space point at s': the ISR-reduced beams from
+      YFS_Handler's m_plab together with the recoiled final legs. Not read by
+      the weight any more - beta_0 is built per partition at X_wp by
+      BornLegsAt, and this single per-event point is the all-ISR case of that
+      - but kept as the handler already supplies it.
+    */
+    ATOOLS::Vec4D_Vector m_plabmom;
+    /*!
+      Project the final legs and every photon onto exact momentum
+      conservation against the beams and onto their mass shells, before
+      anything is evaluated on them. See RepairMomentumBalance.
+    */
+    bool RepairMomentumBalance();
+    //! the conservation residual found before the repair (FRAME_PROBE)
+    double m_repairresid = -1.;
+    /*!
+      True when the final state is a fermion-antifermion pair of one flavour
+      (mu+ mu-, nu nubar, e+ e-, q qbar): the only case the hand-coded 2 -> 2
+      spinor structure, its Comix alignment and its virtual describe. Every
+      other process, four legs or not (gamma gamma included), takes the
+      general Comix branch.
+    */
+    bool m_ffbar = false;
     //! beta_1 partition spread, see CEEX: BETA1_PARTITION_CHECK
     double    m_b1min = 0., m_b1max = 0., m_b1sum = 0., m_b1sq = 0.;  int m_b1n = 0;
     double    m_cxrnorm = -1.;
@@ -298,7 +339,82 @@ namespace YFS {
       reproduce it. Returns false if it cannot handle this multiplicity.
     */
     void Beta1Closure();
+    void SoftLimitTest();
     void SoftNormCheck(const ATOOLS::Vec4D &k);
+    bool ReducedBeams(const ATOOLS::Vec4D &k,
+                      ATOOLS::Vec4D_Vector &pb) const;
+    bool BornLegsAt(const ATOOLS::Vec4D &X,
+                    ATOOLS::Vec4D_Vector &pb) const;
+    //! Beams back-to-back at X, the radiating pair at Y, spectators as they are
+    bool LegsAt(const ATOOLS::Vec4D &X, const ATOOLS::Vec4D &Y,
+                ATOOLS::Vec4D_Vector &pb) const;
+    /*!
+      The legs for photon iphot in the CURRENT partition: the other photons
+      on a reducing stage come out of the beams, the others on the final
+      stage go into the radiating pair, so that {legs + k} balances and the
+      two s-channel invariants M_1 sees are X_wp with this photon counted
+      initial and X_wp with it counted final.
+    */
+    bool PartitionLegs(int iphot, ATOOLS::Vec4D_Vector &pb) const;
+    Complex TotalEikonal(const ATOOLS::Vec4D_Vector &p,
+                         const ATOOLS::Vec4D &k, int hel);
+    /*!
+      The polarisation vector Comix's external current carries for an
+      OUTGOING photon k at the helicity ComixRealAt selects for CEEX's hel:
+      the conjugate of METOOLS' EP/EM built from ATOOLS spinors with the
+      gauge vector Amplitude::SetGauge(0) installs, (1,0,1,0). The eikonal
+      subtracted from a Comix amplitude has to be built from THIS vector, or
+      the two differ by an azimuth-dependent phase that no |s|^2 test sees.
+    */
+    ATOOLS::Vec4C ComixPolarisation(const ATOOLS::Vec4D &k, int hel) const;
+    //! The GPS (KKMC) form of the per-leg eikonal, kept for comparison only.
+    Complex SfactorLegGPS(const ATOOLS::Vec4D &p, const ATOOLS::Vec4D &k,
+                          int hel);
+    //! one stage's eikonal current for photon k, on the legs p (m_pceex order)
+    Complex StageEikonal(int stage, const ATOOLS::Vec4D_Vector &p,
+                         const ATOOLS::Vec4D &k, int hel);
+    bool ComixInfraredSubtracted_1_0(const ATOOLS::Vec4D &k, int hel,
+                                    int iphot);
+    /*!
+      Comix at the PHYSICAL legs with the s-channel propagator momenta shifted
+      per side (COMIX::Amplitude::SetPropShift): dini added to initial-side
+      lines, dfin to final-side ones. This is KKMC's construction - spinors at
+      the physical momenta, propagators at the partition's X - and it needs no
+      momentum rebuild, so the eikonal M_1 reduces to is the physical one.
+    */
+    typedef PHASIC::Process_Base::Prop_Shifts PropShifts;
+    bool ComixBornShifted(const ATOOLS::Vec4D_Vector &p, Amplitude &A,
+                          const PropShifts &shifts);
+    bool ComixRealShifted(const ATOOLS::Vec4D_Vector &pp, int hel,
+                          Amplitude &M1, const PropShifts &shifts);
+    /*!
+      One (leg mask, photon sum) per stage for the CURRENT partition, leaving
+      photon iphot out (all photons for iphot < 0). Handed to Comix so that
+      every internal line sits at its partition invariant.
+    */
+    PropShifts StageShifts(int iphot) const;
+    /*!
+      The partition's reduced legs as LEG entries of the shift list, from
+      which COMIX::Amplitude::SetPropShifts places every space-like exchange
+      line (one initial leg with part of the final state) at the partition's
+      reduced invariant. iphot < 0: the Born, BornLegsAt(m_PXvec);
+      iphot >= 0: M_1 of that photon, PartitionLegs. Detected by leg content,
+      no process is named. CEEX: TCHANNEL_SHIFT = 0 disables it.
+    */
+    void AddExchangeLineShifts(int iphot, PropShifts &sh) const;
+    /*!
+      The final-state radiating groups, as leg indices into m_flavs, set by
+      the handler from YFS's radiating dipoles (one per resonance pair).
+      Empty means one flat final stage. The initial state is always its own
+      stage, appended last (m_initstage) so the two-stage case keeps the old
+      ordering.
+    */
+    std::vector<std::vector<int> > m_groups;
+    int m_initstage = 1;
+    inline void SetStageGroups(const std::vector<std::vector<int> > &g) { m_groups = g; }
+    //! Sum of the photons other than iphot (all if iphot < 0) on the reducing
+    //! (initial) stages, or on the others, in THIS partition.
+    ATOOLS::Vec4D PartitionShift(int iphot, bool reducing) const;
     bool ComixBeta1At(const ATOOLS::Vec4D &k, int hel,
                       const double propscale, Amplitude &B1);
     bool ComixOnePhotonAmplitude(const ATOOLS::Vec4D &k, int hel,
@@ -334,6 +450,20 @@ namespace YFS {
     Amplitude  m_bornAmp, m_Amp1U, m_Amp1V;
     Amplitude  m_AmpExpo0, m_AmpExpo1;
     Amplitude  m_snapBorn, m_snapVirt, m_snapReal;
+    /*!
+      THIS partition's Born WITHOUT its soft-factor product: e^2 (flux)
+      beta_0(X_wp), the object InfraredSubtractedME_0_0 multiplied by
+      prod_i s_i^{wp_i} and added. beta_1 subtracts it once per photon, with
+      that photon's own stage eikonal taken on the legs M_1 was evaluated on
+      and the other photons' from the partition. Stored rather than
+      recomputed so that the addition and the subtractions are the same
+      numbers.
+    */
+    Amplitude  m_partborn0;
+    //! this partition's pseudo-flux svarY/svarQ (1 under NO_PSEUDOFLUX)
+    double     m_pflux = 1.;
+    //! print the beta_1 pieces per partition on the CHECK_XS dump event
+    bool       m_b1trace = false;
     Amplitude  m_AmpBornVirt;
     Amplitude  m_AmpBornReal;
 
@@ -346,6 +476,36 @@ namespace YFS {
     int                  m_nstages = 2;
     std::vector<int>     m_stage;
     std::vector<char>    m_stagereduces;
+    /*!
+      Photons below SOFT_PARTITION_CUT are not enumerated: their sum over
+      stages collapses to the TOTAL eikonal times beta_0 up to a propagator
+      shift of order k. They keep a fixed stage (the one with the largest
+      eikonal, so the X shift follows their natural emitter) and the
+      soft-factor product uses s_tot(k) for them (m_sactu). That takes the
+      cost from nstages^n to nstages^(n_hard).
+
+      A collapsed photon is NOT automatically below BETA1_XCUT: the cut here
+      is x = 2E/sqrt(s), beta_1's is y = 2k.S/S^2 against the system the
+      photon is radiated from, and after a hard ISR photon S^2 << s. Such a
+      photon still gets a beta_1 - M_1 added once per partition (it is never
+      enumerated, so every assignment of the others is visited exactly once)
+      against s_tot(k) beta_0(X_fixed), the same object m_sactu put into
+      beta_0. See ComixInfraredSubtracted_1_0.
+    */
+    std::vector<char>    m_fixedstage;
+    std::vector<Complex> m_sactu;
+    /*!
+      The crude's soft-factor product for this partition: |s^wp_j|^2 for an
+      enumerated photon and sum_g |s_g(k_j)|^2 for a collapsed one. The
+      generator labels every photon initial or final and produces it with
+      |S_I|^2 or |S_F|^2, so its label-blind density carries the INCOHERENT
+      sum per photon - never |s_I + s_F|^2, which (i) drops the soft-photon
+      initial-final interference from rho_1/rho_crude and (ii) vanishes at
+      the zeros of s_I + s_F while beta_1 does not. m_crudefixed says whether
+      any photon is collapsed (the product is then not |m_Sprod|^2).
+    */
+    double m_crudeprod = 1.;
+    bool   m_crudefixed = false;
     std::vector<std::vector<Complex> > m_Sfac;
     /*!
       One entry per leg of a stage: the index into m_pceex/m_bornmomenta and
@@ -465,6 +625,14 @@ namespace YFS {
     PHASIC::Process_Info m_pi;
     Complex    m_T, m_U, m_sW, m_cW, m_sin2tw, m_gcpl, m_propG, m_propZ, m_cfac;
     Complex m_cL, m_cR, m_prop, m_I_L, m_I_R, m_F_L, m_F_R, m_I, m_Soft;
+    /*!
+      Overall convention factor of the eikonal against Comix's M_1. Measured
+      on the soft limit with ComixPolarisation in place: M_1 -> -(s C)
+      exactly, the phase settling on -pi to 1e-6 as lambda -> 0 on every
+      photon and configuration tried, so the vertex-sign convention differs
+      from Comix's by a sign and nothing else.
+    */
+    Complex m_sfacphase = Complex(-1., 0.);
     Complex m_Tamp[2][2][2][2], m_Uamp[2][2][2][2],m_ampborn[2][2][2][2], m_Sc, m_Tc, m_Uc;
     Complex m_Sini[2][2], m_TC[2], m_UC[2], m_ampISR1,  m_ae, m_af, m_ve, m_vf, m_norm;
     //! Bhabha t-channel: gamma/Z exchanged between the (p1,p3) electron line
@@ -517,9 +685,6 @@ namespace YFS {
       Fact0 = sProd/Sactu is passed in rather than rebuilt - with a partition
       sum the caller is the only place that knows either.
     */
-    void InfraredSubtractedME_1_0(const Vec4D &k, int hel,
-                                  const Complex &sProd, const Complex &Sactu,
-                                  int slot=-1, int iphot=-1);
     /*!
       beta_1^0 for ONE photon attached to the FINAL state, KKMC's HfinPlus.
 
@@ -528,9 +693,6 @@ namespace YFS {
       photon sits on the final line; the sProd*(1-CKine)*Born term here is
       what compensates it, and it vanishes in the infrared as CKine -> 1.
     */
-    void InfraredSubtractedME_1_0_FSR(const Vec4D &k, int hel,
-                                      const Complex &sProd, const Complex &Sactu,
-                                      double CKine, int slot=-1, int iphot=-1);
     /*!
       Derive the emission stages from the process and check they are admissible.
 
@@ -682,6 +844,22 @@ namespace YFS {
     inline void SetISRFormFactor (double &form) {m_isrformfactor =form;}
     inline void SetProcessInfo(PHASIC::Process_Info  const &pi) {m_pi = pi;}
     inline bool CheckXs() {return m_checkxs;}
+    /*!
+      Diagnostics for the t-channel (Bhabha) investigation: the two physical
+      t-channel invariants of the CEEX legs and the polar cosine of the
+      hardest photon in the CEEX frame. (m_bornmomenta is NOT the event's
+      Born point - Phase_Space_Point regenerates the final state after the
+      ISR step - so nothing here compares against it.)
+    */
+    inline double T02() const
+    { return m_pceex.size() > 3 ? (m_pceex[0]-m_pceex[2]).Abs2() : 0.; }
+    inline double T13() const
+    { return m_pceex.size() > 3 ? (m_pceex[1]-m_pceex[3]).Abs2() : 0.; }
+    inline double HardestPhotonCosTheta() const
+    { double e(-1.), c(0.);
+      for (size_t j(0); j < m_allphotons.size(); ++j)
+        if (m_allphotons[j][0] > e) { e = m_allphotons[j][0]; c = m_allphotons[j].CosTheta(); }
+      return c; }
     double Xi(const Vec4D p, const Vec4D q);
   };
 }

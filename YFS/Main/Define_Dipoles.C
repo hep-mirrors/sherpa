@@ -510,6 +510,15 @@ double Define_Dipoles::FormFactorSumIF(){
 }
 
 
+double Define_Dipoles::FormFactorSumIF(double omega){
+  if(m_ifisub!=1) return 0.;
+  double form = 0;
+  for(auto &D: m_set.IF())
+    form += D.ChargeNorm()*p_yfsFormFact->IFForFac(D, omega);
+  return form;
+}
+
+
 double Define_Dipoles::IFIOmega() const {
   // Soft cutoff for the IF form factor. It must be ONE scale for all four
   // pairs, and it must be the boundary above which the interference is carried
@@ -838,7 +847,29 @@ double Define_Dipoles::CalculateRealSubEEX(const Vec4D &k) {
   for (auto &D : m_set.ByType(dipoletype::initial)) {
     sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
+  /*
+    The crude a final-state photon was generated with. Each RADIATING dipole
+    (the matching SelectRadiating flags with IsResonance) samples its own
+    photons from its own two-leg eikonal (FSR::Initialize takes the dipole's
+    legs, Dipole::GenerateEmissions runs one dipole at a time), so the density
+    of the union is S~_II + sum over the radiating pairs. The sum over ALL
+    charged pairs, which this took until 2026-09-25, is by charge
+    conservation the COHERENT final-state |J_FF|^2, i.e. it also carries the
+    interference between the pairs (mu-tau pairs in mu mu tau tau); that
+    interference is real physics but it is not in the generation density, so
+    dividing by it mis-normalises the one-photon weight r flux/(S~ B) by
+    S~_gen/S~_coh wherever the photon is at a wide angle to its own pair (in
+    the collinear limit the cross terms cancel pairwise, the other pair being
+    neutral). With one resonant pair the two sums are the same number.
+    YFS: REAL_CRUDE_RADIATING: 1 restricts the sum to the radiating pairs;
+    the interference then enters through the IFI_Real weight subloc/subb
+    (RealIFWeight), which is where the II-FF interference already sits.
+    Numbers: see the report / the comment in NLO_Base::MapMomentaFSRDipole.
+  */
+  static const int rad(ATOOLS::Settings::GetMainSettings()["YFS"]
+                       ["REAL_CRUDE_RADIATING"].SetDefault(0).Get<int>());
   for (auto &D : m_set.FF()) {
+    if (rad != 0 && !D.IsResonance()) continue;
     sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
   // for (auto &D : m_set.IF()) {

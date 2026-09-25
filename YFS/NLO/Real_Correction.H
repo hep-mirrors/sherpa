@@ -171,6 +171,15 @@ public:
   ComixAmplitudes(const ATOOLS::Vec4D_Vector &p,
                   const double propscale = -1.0,
                   const double decscale = -1.0, const size_t deccid = 0);
+  //! The same with the propagator momenta shifted per side; see
+  //! PHASIC::Process_Base::DifferentialWithPropShift.
+  const std::vector<METOOLS::Spin_Amplitudes> *
+  ComixAmplitudesShifted(const ATOOLS::Vec4D_Vector &p,
+                         const ATOOLS::Vec4D &dini, const ATOOLS::Vec4D &dfin,
+                         const size_t ffmask);
+  const std::vector<METOOLS::Spin_Amplitudes> *
+  ComixAmplitudesShifts(const ATOOLS::Vec4D_Vector &p,
+                        const PHASIC::Process_Base::Prop_Shifts &shifts);
 
   //! Nominal weight of the last ComixAmplitudes() evaluation. Its ratio to
   //! SumSquare() is the constant spin-average/flux/symmetry factor, so a

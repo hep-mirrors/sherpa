@@ -55,12 +55,17 @@ struct wwscheme {
     helicity  the provider's virtual resolved BY HELICITY, so amplitude-level
               matching survives at any multiplicity. Recola can supply this
               (get_amplitude_r1_rcl); not yet implemented.
+    none      no virtual in the CEEX column at all: Born + real only, whatever
+              NLO_Part says. This is what `external` silently was until
+              2026-09-25 (the value was read and never consumed), kept as a
+              named choice so Born+real comparisons stay reproducible.
 */
 struct ceexvirt {
   enum code {
     ceex     = 0,
     external = 1,
-    helicity = 2
+    helicity = 2,
+    none     = 3
   };
 };
 

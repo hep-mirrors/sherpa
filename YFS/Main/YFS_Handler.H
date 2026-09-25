@@ -63,6 +63,15 @@ namespace YFS {
         struct YFS_Event {
           // -- kinematics -----------------------------------------------
           Vec4D_Vector m_plab, m_reallab, m_bornMomenta;
+          /*!
+            The ISR-reduced beams BEFORE ToLab, so they are in the same frame
+            as m_plab[2..] (which stay in the incoming-pair rest frame). With
+            those final legs they are a phase-space point that balances and
+            whose invariant is s'. m_plab[0..1] are the same momenta boosted to
+            the lab, so {m_plab[0],m_plab[1],m_plab[2..]} is frame-mixed and
+            balances only for symmetric beams.
+          */
+          Vec4D_Vector m_sprimeBeams;
           ATOOLS::Poincare m_cmsboost;
           ATOOLS::Vec4D m_Wm, m_Wp;
           ATOOLS::ParticleMomMap m_inparticles, m_outparticles;

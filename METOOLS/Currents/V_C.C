@@ -247,7 +247,10 @@ void CV<SType>::AddPropagator()
   SComplex p2(SType(this->m_p2));
   // The pole may be moved off the current's own p^2; see Current::m_p2prop.
   const SComplex pp2(this->m_p2prop > 0.0
-                     ? SComplex(SType(this->m_p2prop)) : p2);
+                     ? SComplex(SType(this->m_p2prop))
+                     : this->m_haveshift
+                       ? SComplex(SType((this->m_p + this->m_pshift).Abs2()))
+                       : p2);
   SComplex prop(-M_I/(pp2-m_cmass2));
   if (this->m_osd) prop=SComplex(M_I);
 #ifdef DEBUG__BG

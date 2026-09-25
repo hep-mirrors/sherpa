@@ -409,6 +409,49 @@ Real_Correction::ComixAmplitudes(const ATOOLS::Vec4D_Vector &p,
   return &m_spinamps;
 }
 
+const std::vector<METOOLS::Spin_Amplitudes> *
+Real_Correction::ComixAmplitudesShifted(const ATOOLS::Vec4D_Vector &p,
+                                        const ATOOLS::Vec4D &dini,
+                                        const ATOOLS::Vec4D &dfin,
+                                        const size_t ffmask)
+{
+  if (p_proc == NULL) return NULL;
+  if (p.size() != p_proc->Flavours().size()) return NULL;
+  m_keepamps = true;
+  Cluster_Amplitude *ampl(CreateAmplitude(p));
+  const int rmode(128 + 2 + 1);
+  Weights_Map w(p_proc->DifferentialWithPropShift(
+                  *ampl, Variations_Mode::nominal_only, rmode,
+                  dini, dfin, ffmask));
+  m_lastcomix = w.Nominal();
+  m_spinamps.clear();
+  std::vector<std::vector<Complex> > cols;
+  p_proc->FillAmplitudes(m_spinamps, cols);
+  ampl->Delete();
+  if (m_spinamps.empty()) return NULL;
+  return &m_spinamps;
+}
+
+const std::vector<METOOLS::Spin_Amplitudes> *
+Real_Correction::ComixAmplitudesShifts(const ATOOLS::Vec4D_Vector &p,
+                                       const PHASIC::Process_Base::Prop_Shifts &shifts)
+{
+  if (p_proc == NULL) return NULL;
+  if (p.size() != p_proc->Flavours().size()) return NULL;
+  m_keepamps = true;
+  Cluster_Amplitude *ampl(CreateAmplitude(p));
+  const int rmode(128 + 2 + 1);
+  Weights_Map w(p_proc->DifferentialWithPropShifts(
+                  *ampl, Variations_Mode::nominal_only, rmode, shifts));
+  m_lastcomix = w.Nominal();
+  m_spinamps.clear();
+  std::vector<std::vector<Complex> > cols;
+  p_proc->FillAmplitudes(m_spinamps, cols);
+  ampl->Delete();
+  if (m_spinamps.empty()) return NULL;
+  return &m_spinamps;
+}
+
 Cluster_Amplitude *Real_Correction::CreateAmplitude(const ATOOLS::Vec4D_Vector &p) const
 {
   Cluster_Amplitude *ampl = Cluster_Amplitude::New();
