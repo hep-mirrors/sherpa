@@ -2,15 +2,41 @@
 
 #include "ATOOLS/Org/Option_Parser.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Message.H"
 
 // include the actual definition of command line options
 // NOTE: go to this header if you want to modify or add options
 #include "ATOOLS/Org/Command_Line_Options.H"
 
+#include <algorithm>
+#include <cctype>
 #include <numeric>
 #include <cstring>
 
 using namespace ATOOLS;
+
+namespace {
+
+  /// whether a string ends with one of the common YAML file name
+  /// extensions (ignoring case)
+  bool HasYamlFileExtension(const std::string& name)
+  {
+    for (const std::string& extension : {".yaml", ".yml"}) {
+      if (name.size() < extension.size())
+        continue;
+      const auto offset =
+        static_cast<std::string::difference_type>(name.size()
+                                                  - extension.size());
+      if (std::equal(extension.begin(), extension.end(), name.begin() + offset,
+                     [](char a, char b) {
+                       return a == std::tolower(static_cast<unsigned char>(b));
+                     }))
+        return true;
+    }
+    return false;
+  }
+
+}
 
 Command_Line_Interface::Command_Line_Interface(int argc, char* argv[])
   : Yaml_Reader{"command line"}
@@ -123,9 +149,30 @@ bool Command_Line_Interface::ParseNoneOptions(Option_Parser::Parser& parser)
 
     const auto equalpos = nonOption.find('=');
     const auto colonpos = nonOption.find(':');
-    if (equalpos == std::string::npos && colonpos == std::string::npos) {
-      // we treat noneOptions that do not contain a ':' or a '=' as config
-      // filenames
+    const auto hasyamlextension = HasYamlFileExtension(nonOption);
+    const auto lookslikesetting =
+      (equalpos != std::string::npos || colonpos != std::string::npos);
+
+    // we treat noneOptions that do not contain a ':' or a '=', and also those
+    // that do, but end with a YAML file extension, as config filenames
+    if (!lookslikesetting || hasyamlextension) {
+      // only warn if the ':' or '=' appears in the last path component, i.e.
+      // if the argument would otherwise have been read as a setting; for
+      // something like "scans/pt=30/Run.yaml" there is no ambiguity
+      const auto slashpos = nonOption.find_last_of('/');
+      const auto basename = (slashpos == std::string::npos)
+                                ? nonOption
+                                : nonOption.substr(slashpos + 1);
+      if (basename.find('=') != std::string::npos
+          || basename.find(':') != std::string::npos) {
+        // NOTE: we write to the error stream directly, because msg_Error is
+        // rate-limited per function, and we want to warn about each affected
+        // argument
+        ATOOLS::msg->Error()
+            << "WARNING: Interpreting the command line argument \""
+            << nonOption << "\" as a config file name, not as a setting,"
+            << " because it ends with a YAML file extension.\n";
+      }
       filenames.push_back(nonOption);
       continue;
     }
