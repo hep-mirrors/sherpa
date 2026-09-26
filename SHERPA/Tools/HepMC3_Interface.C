@@ -468,7 +468,7 @@ bool HepMC3_Interface::SubEvtList2ShortHepMC(EventInfo3 &evtinfo, std::shared_pt
       }
       beamparticles[j] = MakeGenParticle(rpa->gen.PBeam(j), flav, true);
       beamvertex->add_particle_in(beamparticles[j]);
-      double flip(sub->p_mom[i][0]<0.);
+      double flip(sub->p_mom[j][0]<0.);
       Vec4D momentum {flip ? -1.0 * sub->p_mom[j] : sub->p_mom[j]};
       HepMC::GenParticlePtr inpart =
           MakeGenParticle(momentum, sub->p_fl[j], true);
