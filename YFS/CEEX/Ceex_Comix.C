@@ -697,11 +697,22 @@ bool Ceex_Base::CalibrateComixMap(ComixCalib &c)
   const double sp_save(m_sp);
   m_sp = (bp[2] + bp[3]).Abs2();
   MakeProp();
+  /*
+    The t-channel propagators too, at the SAME point. Only MakeProp() was
+    reset here, so for Bhabha the hand-coded Born carried whatever t-channel
+    exchange was last set (or none, on the first call) while Comix's Born was
+    evaluated at bp with its full t-channel: the calibration then measured
+    N = 4.3 instead of 2, fell back to that number, and chose the helicity
+    flip mask by matching two different amplitudes. MakePropT returns early
+    for anything but Bhabha.
+  */
+  MakePropT(bp);
   BornAmplitude(bp, hand);
   double cxme2(0.);
   const bool ok(ComixBornAmplitude(bp, cx, &cxme2));
   m_sp = sp_save;
   MakeProp();
+  if (m_pceex.size() >= 4) MakePropT(m_pceex);
   if (!ok) return false;
 
   const int nh(Amplitude::NHel());
@@ -1004,6 +1015,38 @@ void Ceex_Base::AddExchangeLineShifts(int iphot, PropShifts &sh) const
     sh.push_back(std::make_pair((((size_t)1) << i)
                                 | PHASIC::Process_Base::s_propshiftleg, d));
   }
+}
+
+bool Ceex_Base::BornHasExchangeLine()
+{
+  std::map<const PHASIC::Process_Base*, int>::const_iterator
+    it(m_exchline.find(p_bornproc));
+  if (it != m_exchline.end()) return it->second != 0;
+  if (p_bornproc == NULL || m_pceex.size() < 4
+      || m_flavs.size() != m_pceex.size()) return false;
+  /*
+    Leg entries only reach currents with one initial leg and a proper subset
+    of the final legs; without such a current SetPropShifts sets every shift
+    to zero and the amplitude is bit for bit the unshifted one. The probe
+    shift is O(1e-3) of the beam energy, far above rounding where it acts.
+  */
+  Amplitude A0, A1;
+  PropShifts none, leg;
+  const double e(1e-3*m_pceex[0][0]);
+  for (size_t i(0); i < m_pceex.size(); ++i)
+    leg.push_back(std::make_pair((((size_t)1) << i)
+                                 | PHASIC::Process_Base::s_propshiftleg,
+                                 Vec4D(e, 0.3*e*(i+1), -0.2*e, 0.5*e)));
+  if (!ComixBornShifted(m_pceex, A0, none) || !ComixBornShifted(m_pceex, A1, leg))
+    return false;                          // not cached: try again next event
+  int has(0);
+  for (int f(0); f < Amplitude::NHel(); ++f)
+    if (A0.m_A[f] != A1.m_A[f]) { has = 1; break; }
+  m_exchline[p_bornproc] = has;
+  msg_Info()<<"CEEX: Born "<<(p_bornproc ? p_bornproc->Name() : std::string("?"))
+            <<(has ? " has" : " has no")<<" space-like exchange line"
+            <<(has ? "s" : "")<<"."<<std::endl;
+  return has != 0;
 }
 
 Vec4D Ceex_Base::PartitionShift(int iphot, bool reducing) const
@@ -1587,7 +1630,7 @@ bool Ceex_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
   */
   static const int legsmode(ATOOLS::Settings::GetMainSettings()["CEEX"]
                             ["BETA1_LEGS"].Get<int>());
-  const bool rebuild(legsmode != 0);
+  const bool rebuild(legsmode != 0 || m_redborn);
   Vec4D_Vector pb;
   Vec4D dI;
   PropShifts shifts;
@@ -1777,7 +1820,22 @@ bool Ceex_Base::ComixBeta1At(const Vec4D &k, int hel,
   Amplitude B0, M1;
   Vec4D_Vector pp(m_pceex);
   pp.push_back(k);
-  if (!ComixBornAmplitude(m_pceex, B0, NULL, propscale)) return false;
+  /*
+    The Born beta_1 subtracts must be the SAME object the partition sum adds
+    with the soft factor, or rho_1 is not |M_1|^2 at one photon. With
+    CEEX: BORN_AT_SPRIME: 1 the partition Born is the reduced-leg Born
+    (BornLegsAt), so it is subtracted here too; the pinned physical-spinor
+    Born was subtracted regardless, which broke the closure and gave
+    e+e- -> gamma gamma a CEEX column of 7e7 pb with that switch on.
+  */
+  { static const bool sprime(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                             ["BORN_AT_SPRIME"].Get<int>() != 0);
+    bool ok(false);
+    if (sprime || m_redborn) {
+      Vec4D_Vector pb;
+      ok = BornLegsAt(m_PXvec, pb) && ComixBornAmplitude(pb, B0, NULL, -1., -1.);
+    }
+    if (!ok && !ComixBornAmplitude(m_pceex, B0, NULL, propscale)) return false; }
   if (!ComixRealAt(pp, hel, M1, propscale)) return false;
   const double rn(RealNorm());
   if (!(rn > 0.)) return false;

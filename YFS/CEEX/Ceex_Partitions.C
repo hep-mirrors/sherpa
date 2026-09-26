@@ -583,6 +583,27 @@ void Ceex_Base::Calculate() {
     if (bs) Beta1Scan(); }
   BuildComixBornAlignment();
   BuildComixPhotonRatios();
+  // CEEX: TCHANNEL_REDUCED_BORN (-1 auto, see Ceex_Base::RegisterDefaults)
+  { static const int rb(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                        ["TCHANNEL_REDUCED_BORN"].Get<int>());
+    /*
+      Auto (-1) needs a single radiating stage as well as an exchange line.
+      ComixBeta1At subtracts ONE reduced Born, times the soft factors of all
+      stages, while the partition sum puts a different reduced Born (at that
+      partition's X) on each stage, so rho_1 = |M_1|^2 at one photon holds
+      only when there is one stage. e+e- -> gamma gamma has one; Bhabha has a
+      final-state stage too. Measured on Bhabha at the Z pole, Born+real,
+      2026-09-26: with 1, CEEX/YFS.NLO = 0.992 (one ISR photon), 1.055 (one
+      FSR photon), 1.145 (two or more), column +10.6%; with 0, 0.992, 0.997,
+      0.991, column +0.3%.
+    */
+    // Radiating stages only: a neutral final state still gets an EMPTY
+    // placeholder stage (BuildStages), so gamma gamma has m_nstages = 2.
+    int nrad(0);
+    for (size_t g(0); g < m_stagelegs.size(); ++g)
+      if (!m_stagelegs[g].empty()) ++nrad;
+    m_redborn = rb > 0 || (rb < 0 && m_comixborn && nrad == 1
+                           && BornHasExchangeLine()); }
 
   int last(0), nparts(0);
   
@@ -861,10 +882,17 @@ void Ceex_Base::Calculate() {
           nd += std::norm(m_AmpExpo1.m_A[f] - ex);
           ne += std::norm(ex);
         }
-        if (ne > 0.)
+        if (ne > 0.) {
+          double nb(0.), nr(0.), n1(0.), nbr(0.);
+          for (int f(0); f < Amplitude::NHel(); ++f) {
+            nb += std::norm(m_snapBorn.m_A[f]); nr += std::norm(m_snapReal.m_A[f]);
+            n1 += std::norm(m_AmpExpo1.m_A[f]);
+            nbr += std::norm(m_snapBorn.m_A[f] + m_snapReal.m_A[f]); }
           std::cerr<<"@@@ CLOS1 xg="
                    <<(m_s>0.?2.*m_allphotons[0][0]/sqrt(m_s):-1.)
-                   <<" rel="<<sqrt(nd/ne)<<std::endl;
+                   <<" rel="<<sqrt(nd/ne)
+                   <<" |Born|2="<<nb<<" |Real|2="<<nr<<" |Born+Real|2="<<nbr
+                   <<" |A1|2="<<n1<<" |Mex|2="<<ne<<" nparts="<<m_nparts<<std::endl; }
       }
     } }
   { static const bool b1chk(ATOOLS::Settings::GetMainSettings()["CEEX"]
@@ -961,18 +989,33 @@ void Ceex_Base::Calculate() {
     }
   }
  
+  /*
+    Partition-count sanity check: m_nstages^(photons ENUMERATED). Photons
+    below SOFT_PARTITION_CUT, and the softest ones above the
+    MAX_PARTITION_PHOTONS cap, sit on a fixed stage (m_fixedstage) and are
+    not enumerated, so the count is not 2^n. The earlier form of this check
+    predated both the collapse and general stages and fired on every run
+    with a soft photon (e.g. "2 partitions for 3 photons, expected 8").
+  */
   {
     const size_t n(m_allphotons.size());
-    const int want(!HasFSR() || n > maxphot ? 1
-                   : (n < 31 ? (1 << n) : nparts));
+    size_t nfree(0);
+    if (m_fixedstage.size() == n)
+      for (size_t j(0); j < n; ++j) if (!m_fixedstage[j]) ++nfree;
+    long want(1);
+    if (HasFSR() && m_nstages > 1) {
+      for (size_t j(0); j < nfree && want <= (1L << 40); ++j) want *= m_nstages;
+      if (want > (1L << 40)) want = nparts;       // overflow guard only
+    }
     if (nparts != want) {
       ++m_partbad;
       static bool warned(false);
       if (!warned) {
         warned = true;
         msg_Error()<<METHOD<<"(): partition counter enumerated "<<nparts
-                   <<" partitions for "<<n<<" photons, expected "<<want
-                   <<". Reported once."<<std::endl;
+                   <<" partitions for "<<n<<" photons ("<<nfree
+                   <<" enumerated over "<<m_nstages<<" stages), expected "
+                   <<want<<". Reported once."<<std::endl;
       }
     }
     ++m_partn;

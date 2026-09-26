@@ -359,6 +359,35 @@ void Ceex_Base::RegisterDefaults()
     single-point version of this switch got wrong.
   */
   s["BORN_AT_SPRIME"].SetDefault(0);
+  /*
+    Born processes with a space-like exchange line (a current holding one
+    initial leg and part of the final state: the t/u-channel electrons of
+    e+e- -> gamma gamma, Bhabha's t-channel boson, a t-channel neutrino).
+    For those the physical-spinor partition Born with only its poles moved
+    is not the reduced-point Born times a flux, as it is for an s-channel
+    Born: the numerators do not scale with the poles. So
+      1: beta_0 is the Born at the partition's REAL reduced point
+         (the BORN_AT_SPRIME form, BornLegsAt(X_wp)), the crude that Born
+         times s/X_wp^2 (the generator's density), and every photon's M_1
+         in beta_1 is evaluated on the balanced point with the other
+         photons taken out of the beams (the BETA1_LEGS: 1 form,
+         PartitionLegs) - genuine amplitudes throughout, so the soft
+         cancellations between beta_0 and beta_1 hold between like objects.
+      0: the physical-spinor forms, as for s-channel Borns.
+     -1 (default): 1 exactly when the Born has such a line, detected once
+         per Born process (Ceex_Base::BornHasExchangeLine), AND there is a
+         single radiating stage (no charged final state, e.g. gamma gamma).
+         Every s-channel process keeps the old numbers bit for bit. With a
+         final-state stage (Bhabha) the one-photon closure fails with 1:
+         +10.6% on the Bhabha CEEX column; see Ceex_Partitions.C.
+    Measured on e+e- -> gamma gamma at the Z pole (pT > 1 GeV, 20k events,
+    2026-09-26): with 0 the CEEX factor at one photon deviates from the exact
+    |M_1|^2/density by factors 0.04-1.7 at wide angle and the column is
+    6829 +- 68% pb from multi-photon events with weights up to 3e5 x the
+    crude; with 1 the one-photon factor equals the exact one to 1e-4 at every
+    x and the column is 158.4 +- 1.1% pb, largest single-event share 0.6%.
+  */
+  s["TCHANNEL_REDUCED_BORN"].SetDefault(-1);
   s["BETA1_BORNLEGS"].SetDefault(1);         // 1 = reduced, 0 = physical
   /*
     The pseudo-flux svarY/svarQ on beta_0: 0 = in rho_0 and rho_1 (KKMC's
@@ -572,15 +601,17 @@ void Ceex_Base::ZerAmplit() {
 
 
 void Ceex_Base::MakeRho() {
-  double sum0(0.), sum1(0.);
+  double sum0(0.), sum1(0.), sum01(0.);
   const int nh(Amplitude::NHel());
   for (int f = 0; f < nh; ++f) {
     sum0 += std::real(m_AmpExpo0.m_A[f] * conj(m_AmpExpo0.m_A[f]));
     sum1 += std::real(m_AmpExpo1.m_A[f] * conj(m_AmpExpo1.m_A[f]));
+    sum01 += std::real(conj(m_AmpExpo0.m_A[f]) * m_AmpExpo1.m_A[f]);
   }
   // Average over the four initial-state helicity configurations.
-  m_result0 = sum0 / 4.;
-  m_result  = sum1 / 4.;
+  m_result0  = sum0 / 4.;
+  m_result   = sum1 / 4.;
+  m_result01 = sum01 / 4.;
   double sumbv(0.), sumbr(0.);
   for (int f = 0; f < nh; ++f) {
     sumbv += std::norm(m_AmpBornVirt.m_A[f]);

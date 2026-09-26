@@ -403,6 +403,16 @@ namespace YFS {
     */
     void AddExchangeLineShifts(int iphot, PropShifts &sh) const;
     /*!
+      Does the Born have a space-like exchange line? Probed once per Born
+      process: a leg-only shift (which COMIX::Amplitude::SetPropShifts
+      applies to exchange lines and to nothing else) either changes the
+      Born or leaves it bit for bit. Decides CEEX: TCHANNEL_REDUCED_BORN -1.
+    */
+    bool BornHasExchangeLine();
+    std::map<const PHASIC::Process_Base*, int> m_exchline;
+    //! this event: reduced-point beta_0 and balanced-point M_1 (see above)
+    bool m_redborn = false;
+    /*!
       The final-state radiating groups, as leg indices into m_flavs, set by
       the handler from YFS's radiating dipoles (one per resonance pair).
       Empty means one flat final stage. The initial state is always its own
@@ -669,6 +679,10 @@ namespace YFS {
     */
     size_t m_if1 = 2, m_if2 = 3;
     double     m_result, m_result0, m_e;
+    // Re sum_h A_0(h)^* A_1(h) / 4: the Born-level coherent amplitude against
+    // the full O(alpha^1) one. What an external virtual multiplies (see
+    // YFS_Handler::GenerateWeight, CEEX_Virtual: external).
+    double     m_result01 = 0.;
     void RegisterDefaults();
     void Init(const Vec4D_Vector &p);
     virtual void Calculate();
@@ -811,6 +825,7 @@ namespace YFS {
     inline double GetResult()  {return m_result;}
     //! O(alpha^0) CEEX distribution, i.e. beta_0^0 only.
     inline double GetResult0() {return m_result0;}
+    inline double GetResult01() const {return m_result01;}
     //! KKMC's RhoCrud: the incoherent partition sum. See m_rhocrud.
     inline double GetRhoCrude() const { return m_rhocrud; }
     /*!

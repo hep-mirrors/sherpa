@@ -282,7 +282,7 @@ void Ceex_Base::InfraredSubtractedME_0_0() {
     static const bool sprime(ATOOLS::Settings::GetMainSettings()["CEEX"]
                              ["BORN_AT_SPRIME"].Get<int>() != 0);
     bool ok(false);
-    if (sprime) {
+    if (sprime || m_redborn) {         // m_redborn: CEEX: TCHANNEL_REDUCED_BORN
       Vec4D_Vector pb;
       ok = BornLegsAt(m_PXvec, pb)
            && ComixBornAmplitude(pb, C, NULL, -1., -1.);
@@ -372,9 +372,24 @@ void Ceex_Base::InfraredSubtractedME_0_0() {
     at x > 0.9), so the crude is not what is wrong there and this is left
     OFF (default 0) until that is understood: the validated s-channel
     numbers stay bit for bit.
+    [2026-09-26: that "Born+real" was itself wrong for gamma gamma - its
+    beta_1 was divided by 3 (YFS: REAL_BORN_PHOTON_SYM, NLO_Base.C). Against
+    the exact |M_1|^2/density this crude makes the one-photon CEEX factor
+    exact at every x; the huge multi-photon weights are the physical-spinor
+    beta_0, see CEEX: TCHANNEL_REDUCED_BORN, which supersedes this switch
+    for Borns with exchange lines.]
+    [2026-09-26: default 1. The physical-spinor crude equals the generator's
+    density S~ m_born only for collinear photons. For a hard wide-angle one
+    it does not: 250 GeV mu mu, one photon, rho_crude/(S~ m_born) flat at 463
+    collinear and 668 (+44%) at 1-|cos theta| = 0.1-0.3, so YFS.NLO/CEEX in
+    Z pT rose to 1.3-1.8 above 70 GeV. With 1: 0.99-1.01 in 55-100 GeV
+    (BVR), Z pole +0.05%, and against exact tree-level e+e- -> mu mu gamma
+    CEEX goes from 0.86/0.73/0.60 to 1.07/1.03/0.98 in Z pT 55-100 GeV.
+    Still 2 -> 2 only (the gate below); beyond that the crude should come
+    from the generator's m_born on the sampled partition.]
   */
   static const int crudeborn(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                             ["CRUDE_BORN"].SetDefault(0).Get<int>());
+                             ["CRUDE_BORN"].SetDefault(1).Get<int>());
   bool usered(crudeborn != 0 && m_flavs.size() == 4 && m_comixborn
               && m_cxbalignok && !realpoint);
   Amplitude Cred;
@@ -382,9 +397,57 @@ void Ceex_Base::InfraredSubtractedME_0_0() {
   if (usered) {
     Vec4D_Vector pb;
     const double X2(m_PXvec.Abs2());
-    usered = X2 > 0. && BornLegsAt(m_PXvec, pb)
-             && ComixBornAmplitude(pb, Cred, NULL, -1., -1.);
+    const bool legs(X2 > 0. && BornLegsAt(m_PXvec, pb));
+    usered = legs && ComixBornAmplitude(pb, Cred, NULL, -1., -1.);
     if (usered) fluxred = m_s/X2;
+    // CEEX: CRUDE_BORN_TRACE - did the reduced-point crude engage, and how
+    // does its Born compare with the generator's (m_born) and with the
+    // shifted physical-spinor Born (AmpBorn)?
+    static const int cbt(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                         ["CRUDE_BORN_TRACE"].SetDefault(0).Get<int>());
+    static long ncbt(0);
+    if (cbt && ncbt < cbt) { ++ncbt;
+      double nr(0.), ns(0.), nu(0.), nz(0.);
+      Amplitude U, Z;
+      const bool oku(ComixBornAmplitude(m_pceex, U, NULL, -1., -1.));
+      PropShifts zero;
+      const bool okz(ComixBornShifted(m_pceex, Z, zero));
+      for (int f = 0; f < nhel; ++f) { nr += std::norm(Cred.m_A[f]); ns += std::norm(AmpBorn.m_A[f]);
+        if (oku) nu += std::norm(U.m_A[f]); if (okz) nz += std::norm(Z.m_A[f]); }
+      std::cerr<<"@@@ CRUDEBORN engaged="<<(usered?1:0)<<" legs="<<(legs?1:0)
+               <<" nphot="<<m_allphotons.size()<<" x="<<(m_s>0.?1.-X2/m_s:-1.)
+               <<" |Cred|^2/4="<<nr/4.<<" |Ashift|^2/4="<<ns/4.
+               <<" |Aphys|^2/4="<<(oku?nu/4.:-1.)<<" |Azeroshift|^2/4="<<(okz?nz/4.:-1.)
+               <<" m_born="<<m_born<<" fluxred="<<fluxred<<std::endl;
+      // the shift list the partition Born was built with, and the per-leg
+      // reduced-minus-physical differences, in units of the beam energy
+      PropShifts shl(StageShifts(-1));
+      AddExchangeLineShifts(-1, shl);
+      const double Eb(m_pceex[0][0] > 0. ? m_pceex[0][0] : 1.);
+      std::cerr<<"@@@ CRUDEBORN-SHIFTS n="<<shl.size();
+      for (size_t j(0); j < shl.size(); ++j)
+        std::cerr<<" ["<<shl[j].first<<": |d|/E="<<Vec3D(shl[j].second).Abs()/Eb
+                 <<" d0/E="<<shl[j].second[0]/Eb<<"]";
+      std::cerr<<"  legs:";
+      for (size_t i(0); i < pb.size() && i < m_pceex.size(); ++i)
+        std::cerr<<" "<<i<<":"<<Vec3D(pb[i]-m_pceex[i]).Abs()/Eb;
+      std::cerr<<" if="<<m_if1<<","<<m_if2<<std::endl;
+      // Controlled test: one tiny artificial shift at a time, relative to
+      // the plain Born at the same (physical) legs.
+      const double tiny(1e-9*Eb);
+      auto probe = [&](const char *lab, size_t mask) {
+        PropShifts t; t.push_back(std::make_pair(mask, Vec4D(tiny, 0., 0., tiny)));
+        Amplitude T; double nt(0.);
+        if (!ComixBornShifted(m_pceex, T, t)) { std::cerr<<" ["<<lab<<": fail]"; return; }
+        for (int f = 0; f < nhel; ++f) nt += std::norm(T.m_A[f]);
+        std::cerr<<" ["<<lab<<": "<<(nu>0.? nt/nu : -1.)<<"]"; };
+      std::cerr<<"@@@ CRUDEBORN-PROBE ratio(|A_tinyshift|^2/|A_plain|^2):";
+      probe("stage{0,1}", 3);
+      probe("stage{2,3}", 12);
+      probe("leg0", ((size_t)1) | PHASIC::Process_Base::s_propshiftleg);
+      probe("leg2", ((size_t)4) | PHASIC::Process_Base::s_propshiftleg);
+      probe("{0,2}", 5);
+      std::cerr<<std::endl; }
   }
   /*
     One power of each flux: the physical-spinor Born of a final-stage
@@ -395,6 +458,24 @@ void Ceex_Base::InfraredSubtractedME_0_0() {
   */
   const double crudered((pfmode == 1 ? 1. : m_pflux) * fluxred
                         * (m_crudefixed ? m_crudeprod : std::norm(m_Sprod)));
+  /*
+    The crude the CEEX weight divides by is the generator's density, whose
+    initial-state Born carries the flux s/X_wp^2 relative to the Born at the
+    reduced point (the fixed-order weight divides its real by S~ B and
+    multiplies by X^2/s, the same statement). The shifted physical-spinor
+    Born carries that factor in its spinors; the reduced-leg Born of
+    BORN_AT_SPRIME does not, so it is put back on the crude here. Measured on
+    e+e- -> gamma gamma at one photon: with the reduced-leg Born and no
+    factor, rho_crude/(S~ m_born) is 496.1 at every x (flat, the generator's
+    Born to a constant) and FO/CEEX falls as X^2/s (0.27 at x > 0.6); with
+    the shifted Born rho_crude grows as 12800/238 at x > 0.6 where s/X^2 is
+    17 (the t-channel numerator), which is the gamma gamma collapse.
+  */
+  double fluxreal(1.);
+  if (realpoint) {
+    const double X2r(m_PXvec.Abs2());
+    if (X2r > 0. && m_s > 0.) fluxreal = m_s/X2r;
+  }
   const int fmaskr(Amplitude::NHel() - 1);
   for (int f = 0; f < nhel; ++f) {
     const Complex a(fac * AmpBorn.m_A[f]);
@@ -403,8 +484,8 @@ void Ceex_Base::InfraredSubtractedME_0_0() {
       rc += crudered * std::norm(m_cxbalign.m_A[f]
                                  * Cred.m_A[f ^ (m_comixflip & fmaskr)]);
     else
-      rc += m_crudefixed ? crudefac * std::norm(AmpBorn.m_A[f])
-                         : std::real(a0 * conj(a0));
+      rc += (m_crudefixed ? crudefac * std::norm(AmpBorn.m_A[f])
+                          : std::real(a0 * conj(a0))) * fluxreal;
     // what beta_1 subtracts, before the soft-factor product
     m_partborn0.m_A[f] = fac0 * AmpBorn.m_A[f];
     m_AmpExpo0.m_A[f] += a0;

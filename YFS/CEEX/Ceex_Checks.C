@@ -174,9 +174,9 @@ void Ceex_Base::ReportBornShape()
   }
   if (m_maxnphot > 0)
     msg_Out()<<"CEEX partition sum: highest photon multiplicity seen "
-             <<m_maxnphot<<" ("<<(1u<<Min(m_maxnphot,size_t(30)))
-             <<" partitions); 2^n enumeration wrong on "<<m_partbad
-             <<" of "<<m_partn<<" events"<<std::endl;
+             <<m_maxnphot<<" over "<<m_nstages<<" stages (soft photons "
+             <<"collapsed, not enumerated); partition count wrong on "
+             <<m_partbad<<" of "<<m_partn<<" events"<<std::endl;
   if (m_uvflipn > 0)
     msg_Out()<<"CEEX U/V helicity-flip vs eq.(222) at DISTINCT legs: worst "
              <<"relative deviation "<<m_uvflip<<" over "<<m_uvflipn
