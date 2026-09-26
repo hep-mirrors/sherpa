@@ -197,7 +197,7 @@ bool Ceex_Base::FetchComixReal()
   const size_t hgf(hg ^ gfl);
   const size_t nf(((size_t)1) << np);
   for (size_t f(0); f < nf; ++f)
-    m_comixM1.m_A[f] = RealNorm() * sa[(f ^ ffl) | (hgf << np)];
+    m_comixM1.m_A[f] = RealNorm() * ComixPhotonCoupling(ng) * sa[(f ^ ffl) | (hgf << np)];
   /*
     The raw table, kept so the flip scan can look at maps other than the one
     in force without a second Comix evaluation. It has one plane per photon
@@ -207,7 +207,7 @@ bool Ceex_Base::FetchComixReal()
   if (ng == 1)
     for (int h = 0; h <= 1; ++h)
       for (size_t f(0); f < nf; ++f)
-        m_comixraw[h].m_A[f] = RealNorm() * sa[f | ((size_t)h << np)];
+        m_comixraw[h].m_A[f] = RealNorm() * ComixPhotonCoupling(ng) * sa[f | ((size_t)h << np)];
   m_comixdrawnhel = (int)hg;
 
   m_havecomixreal = true;
@@ -537,7 +537,7 @@ void Ceex_Base::SoftProbe()
     double sc(0.), shd(0.), scall(0.);
     for (int f = 0; f < nh; ++f) {
       const Complex C(sa[FlatIndex((size_t)(f ^ (fl & fmaskx)), hgi, nlg)]);
-      sc  += std::norm(RealNorm()*C);
+      sc  += std::norm(RealNorm()*ComixPhotonCoupling()*C);
       shd += std::norm(soft*B.m_A[f]);
     }
     for (size_t i(0); i < sa.size(); ++i) scall += std::norm(sa[i]);
@@ -633,7 +633,7 @@ void Ceex_Base::SoftProbe()
       double num(0.), den(0.);
       const int hgm(((hg > 0 ? 0 : 1) ^ ((mask >> nlg) & 1)));
       for (int f = 0; f < nh; ++f) {
-        const double C(std::abs(RealNorm()*
+        const double C(std::abs(RealNorm()*ComixPhotonCoupling()*
                                 sa[FlatIndex((size_t)(f ^ (mask & fmaskx)),
                                              hgm, nlg)]));
         const double H(std::abs(soft*B.m_A[f]));
@@ -815,7 +815,12 @@ void Ceex_Base::DeriveComixMap()
   */
   double nspin(1.);
   for (size_t i(0); i < 2 && i < nl; ++i) nspin *= m_flavs[i].IntSpin() + 1.;
-  const double expected(nspin > 0. ? 1./sqrt(nspin) : 0.);
+  /*
+    With YFS: USE_MODEL_ALPHA 0 the hand-coded Born carries alpha(0) and
+    Comix's the model's, so N is sqrt(nspin) * alpha_model/alpha(0): 2.0774
+    in the G_mu scheme. m_rescale_alpha = alpha(0)/alpha_model (1 otherwise).
+  */
+  const double expected(nspin > 0. ? m_rescale_alpha/sqrt(nspin) : 0.);
   if (neednorm) {
     const bool agrees(expected > 0. && c.N > 0.
                       && std::abs(c.N*expected - 1.) < 1e-2);
@@ -936,7 +941,7 @@ bool Ceex_Base::ComixRealAt(const Vec4D_Vector &pp, int hel, Amplitude &M1,
   const int fl(m_comixflip), fmaskx((1 << nlg) - 1), nh(Amplitude::NHel());
   const int hgi((hel > 0 ? 0 : 1) ^ ((fl >> nlg) & 1));
   for (int f = 0; f < nh; ++f)
-    M1.m_A[f] = RealNorm()
+    M1.m_A[f] = RealNorm() * ComixPhotonCoupling()
       * sa[FlatIndex((size_t)(f ^ (fl & fmaskx)), hgi, nlg)];
   return true;
 }
@@ -956,7 +961,7 @@ bool Ceex_Base::ComixRealShifted(const Vec4D_Vector &pp, int hel,
   const int fl(m_comixflip), fmaskx((1 << nlg) - 1), nh(Amplitude::NHel());
   const int hgi((hel > 0 ? 0 : 1) ^ ((fl >> nlg) & 1));
   for (int f = 0; f < nh; ++f)
-    M1.m_A[f] = RealNorm()
+    M1.m_A[f] = RealNorm() * ComixPhotonCoupling()
       * sa[FlatIndex((size_t)(f ^ (fl & fmaskx)), hgi, nlg)];
   return true;
 }
@@ -1127,7 +1132,7 @@ bool Ceex_Base::ComixOnePhotonAmplitude(const Vec4D &k, int hel,
   const int fl(m_comixflip), fmaskx((1 << nlg) - 1), nh(Amplitude::NHel());
   const int hgi((hel > 0 ? 0 : 1) ^ ((fl >> nlg) & 1));
   for (int f = 0; f < nh; ++f)
-    M1.m_A[f] = RealNorm()
+    M1.m_A[f] = RealNorm() * ComixPhotonCoupling()
       * sa[FlatIndex((size_t)(f ^ (fl & fmaskx)), hgi, nlg)];
   kmap = kk;
   return true;

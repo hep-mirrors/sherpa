@@ -319,6 +319,17 @@ namespace YFS {
     //! Normalisation for Comix REAL amplitudes: exact constant, else per event
     inline double RealNorm() const
     { return (m_normexact || !(m_cxrnorm > 0.)) ? m_comixnorm : m_cxrnorm; }
+    /*
+      e(alpha_YFS)/e(alpha_model) for each photon of a Comix real amplitude.
+      Comix couples every photon with the model's alpha (1/131.9 in the G_mu
+      scheme); CEEX's soft factors carry m_e = sqrt(4 pi m_alpha), which is
+      alpha(0) under YFS: USE_MODEL_ALPHA 0. Without this factor the real
+      exceeds eikonal x Born by alpha_model/alpha(0) in the soft limit: Z-pole
+      mu mu, G_mu, CEEX/YFS.NLO = 1.031. YFS.NLO applies the same ratio
+      (m_rescale_alpha) to its real. Exactly 1 with USE_MODEL_ALPHA 1.
+    */
+    inline double ComixPhotonCoupling(size_t nphot = 1) const
+    { return std::pow(m_rescale_alpha, 0.5*(double)nphot); }
     bool ComixRealAt(const ATOOLS::Vec4D_Vector &pp, int hel, Amplitude &M1,
                      const double propscale = -1.0);
     /*
