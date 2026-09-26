@@ -218,6 +218,20 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
     }
   }
   sub = -m_alpha / (4 * M_PI * M_PI)*eik*eik;
+  /*
+    Identical photons in the Born (YFS: REAL_BORN_PHOTON_SYM). The eikonal is
+    returned UNDIVIDED: the n-extra-photon real matrix elements carry the
+    symmetry factor 1/(N+n)! against the Born's 1/N!, and NLO_Base multiplies
+    each of them by (N+n)!/N! (BornPhotonSym), so every subtraction here is
+    the plain soft factor. The old code divided this eikonal by N+1 instead,
+    which fixed the soft cancellation of beta_1 but left beta_1/(S~ B) a
+    factor N+1 too small everywhere else (e+e- -> gamma gamma: one-photon
+    factor 1 + (w - 1)/3), and carried the same inconsistency into RV, RR,
+    the n-photon recursion and RealIFWeight. 0 restores it.
+  */
+  static const int bornphsym(ATOOLS::Settings::GetMainSettings()["YFS"]
+                             ["REAL_BORN_PHOTON_SYM"].SetDefault(1).Get<int>());
+  if (bornphsym) return sub;
   return sub/(m_N_born_Gamma!=0?m_N_born_Gamma:1.0);
 }
 
@@ -898,12 +912,27 @@ void Define_Dipoles::CleanUp() {
 }
 
 double Define_Dipoles::CalculateFlux(const Vec4D &k){
-  if(!HasISR()) return 1;
   double sq, sx;
   double flux = 1;
   dipoletype::code fluxtype;
   Vec4D Q,QX;
   if(m_noflux==1) return 1;
+  /*
+    MODE: FSR. The Jacobian of the (n+1)-body point against the crude,
+    (Q - k)^2/Q^2 with Q the pre-emission final state, is the same whether
+    ISR is on or off; only its bookkeeping differs (with ISR on it is read
+    off the II dipole's reduced momenta below). Returning 1 here left the
+    single-FSR-photon Born+real weight 1/(1 - x) above CEEX in FSR-only mode
+    - median 1.02 for soft photons, 1.16 at x = 0.1-0.2, 1.93 at x > 0.4 -
+    where the two must agree event by event; multiplying by (1 - x) gave
+    1.00 at every x. Measured on e+e- -> mu mu at the Z pole, 2026-09-25.
+  */
+  if(!HasISR()){
+    for (size_t i(2); i < m_bornmomenta.size(); ++i) Q += m_bornmomenta[i];
+    sq = Q.Abs2();
+    if (sq <= 0.) return 1;
+    return (Q-k).Abs2()/sq;
+  }
   if(HasISR()&&HasFSR()){
     fluxtype = dipoletype::initial;
   }

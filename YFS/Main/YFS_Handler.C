@@ -99,6 +99,7 @@ YFS_Handler::~YFS_Handler()
 NLO_Base *YFS_Handler::EnsureNLO()
 {
   if (!p_nlo) p_nlo = std::make_unique<YFS::NLO_Base>();
+  if (m_ceexborn) p_nlo->SetBornProc(m_ceexborn);
   // A raw observer on purpose: callers (YFS_Process) only use the NLO layer,
   // they never take it over.
   return p_nlo.get();
@@ -246,6 +247,7 @@ void YFS_Handler::SetCeexProcs(PHASIC::Process_Base *born,
   m_ceexborn = born;
   m_ceexreal = real;
   if (p_ceex) { p_ceex->SetBornProc(born); p_ceex->SetRealProc(real); }
+  if (p_nlo)  p_nlo->SetBornProc(born);
 }
 
 bool YFS_Handler::MakeYFS(){
@@ -299,6 +301,7 @@ void YFS_Handler::MakeCEEX() {
       // same perturbative content the card asked for.
       p_ceex->SetHasVirtual(p_nlo->HasVirtual());
       p_ceex->SetNLO(p_nlo.get());
+      if (m_ceexborn) p_nlo->SetBornProc(m_ceexborn);
     }
     p_ceex->SetBorn(m_born);
     for(size_t i = 0; i < m_ev.m_plab.size(); ++i) vv.push_back(m_ev.m_bornMomenta[i]);
@@ -637,6 +640,7 @@ void YFS_Handler::CalculateBeta() {
   // never read is still a trap for the next person to add a weight here.
   m_ev.m_nlo_current = false;
   m_ev.m_nlo_real = m_ev.m_nlo_virtual = m_ev.m_nlo_rv = m_ev.m_nlo_rr = 0.;
+  m_ev.m_nlo_vxr = 0.;
   if(!m_rmode && !m_int_nlo) return;
   double realISR(0), realFSR(0);
   if (m_betaorder > 0) {
@@ -774,14 +778,47 @@ void YFS_Handler::CalculateBeta() {
         double ei(0.), ef(0.);
         for (const Vec4D &k : m_ev.m_ISRPhotons) ei = Max(ei, k[0]);
         for (const Vec4D &k : m_ev.m_FSRPhotons) ef = Max(ef, k[0]);
-        std::cerr<<"@@@ CEEXCMP ceex="<<m_ev.m_ceexfactor<<" br="<<m_ev.m_real
-                 <<" eex="<<m_ev.m_eex<<" nisr="<<m_ev.m_ISRPhotons.size()
-                 <<" nfsr="<<m_ev.m_FSRPhotons.size()
-                 <<" xisr="<<2.*ei/sqrt(m_s)<<" xfsr="<<2.*ef/sqrt(m_s)
-                 <<" mll="<<(p_ceex->SvarQ()>0.?sqrt(p_ceex->SvarQ()):-1.)
-                 <<" yfsw="<<m_ev.m_yfsweight
-                 <<" rho1="<<p_ceex->GetResult()<<" rho0="<<p_ceex->GetResult0()
-                 <<" rhocr="<<p_ceex->GetRhoCrude()<<" born="<<m_born<<std::endl;
+        std::ostringstream o;
+        o<<"@@@ CEEXCMP ceex="<<m_ev.m_ceexfactor<<" br="<<m_ev.m_real
+         <<" eex="<<m_ev.m_eex<<" nisr="<<m_ev.m_ISRPhotons.size()
+         <<" nfsr="<<m_ev.m_FSRPhotons.size()
+         <<" xisr="<<2.*ei/sqrt(m_s)<<" xfsr="<<2.*ef/sqrt(m_s)
+         <<" mll="<<(p_ceex->SvarQ()>0.?sqrt(p_ceex->SvarQ()):-1.)
+         <<" yfsw="<<m_ev.m_yfsweight
+         <<" rho1="<<p_ceex->GetResult()<<" rho0="<<p_ceex->GetResult0()
+         <<" rho01="<<p_ceex->GetResult01()
+         <<" rhocr="<<p_ceex->GetRhoCrude()<<" born="<<m_born<<"\n";
+        std::cerr<<o.str();
+      } }
+    /*
+      CEEX: REF_PROBE - every momentum of a one-photon event, for an
+      independent (offline) evaluation of |M_1|^2/density: the generator's
+      Born momenta, the event (m_plab), the s'-frame beams and the photon,
+      with the two correction factors, m_born and Comix's Born |M|^2 at
+      m_plab and at m_bornMomenta (to identify which point m_born is at).
+    */
+    { static const bool rp(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                           ["REF_PROBE"].SetDefault(0).Get<int>()!=0);
+      if (rp && haveceex && m_ev.m_ISRPhotons.size() + m_ev.m_FSRPhotons.size() == 1) {
+        std::ostringstream o;
+        o<<std::setprecision(15);
+        auto v4 = [&](const char *lab, const Vec4D &v) {
+          o<<" "<<lab<<"="<<v[0]<<","<<v[1]<<","<<v[2]<<","<<v[3]; };
+        o<<"@@@ REFP ceex="<<m_ev.m_ceexfactor<<" br="<<m_ev.m_real
+         <<" born="<<m_born<<" rho1="<<p_ceex->GetResult()
+         <<" rhocr="<<p_ceex->GetRhoCrude()
+         <<" me2plab="<<(p_nlo?p_nlo->BornME2At(m_ev.m_plab):-1.)
+         <<" me2born="<<(p_nlo?p_nlo->BornME2At(m_ev.m_bornMomenta):-1.);
+        for (size_t i(0); i < m_ev.m_bornMomenta.size(); ++i) {
+          std::string l("b"+ToString(i)); v4(l.c_str(), m_ev.m_bornMomenta[i]); }
+        for (size_t i(0); i < m_ev.m_plab.size(); ++i) {
+          std::string l("l"+ToString(i)); v4(l.c_str(), m_ev.m_plab[i]); }
+        for (size_t i(0); i < m_ev.m_sprimeBeams.size(); ++i) {
+          std::string l("s"+ToString(i)); v4(l.c_str(), m_ev.m_sprimeBeams[i]); }
+        for (const Vec4D &k : m_ev.m_ISRPhotons) v4("kI", k);
+        for (const Vec4D &k : m_ev.m_FSRPhotons) v4("kF", k);
+        o<<"\n";
+        std::cerr<<o.str();
       } }
   }
 
@@ -1015,11 +1052,36 @@ double YFS_Handler::CalculateNLO(){
   // CalculateRealMultiplicity returns 0 for any n without a provider, so a run
   // that leaves YFS: NLO_MAX_PHOTONS at its default of 2 pays nothing.
   m_ev.m_nlo_rn = 0.;
+  m_ev.m_nlo_vxr = 0.;
   for (size_t n(3); n <= p_nlo->MaxRealPhotons(); ++n) {
     InitNLO();
     m_ev.m_nlo_rn += p_nlo->CalculateRealMultiplicity(n);
   }
-  return m_ev.m_nlo_real + m_ev.m_nlo_virtual + m_ev.m_nlo_rv + m_ev.m_nlo_rr + m_ev.m_nlo_rn;
+  /*
+    YFS: VIRTUAL_COMBINE. Where the virtual v = V/B enters the squared-level
+    weight. 0: the sum 1 + v + sum_j delta_j, v times the sampled Born on
+    every event. 1 (default): the product (1 + v)(1 + sum_j delta_j), v times
+    the event's own real correction - the placement CEEX has, where the
+    virtual sits inside sum_h |A_1 + (v/2) A_0|^2. The two agree at O(alpha);
+    the product adds v * sum_j delta_j, nothing CEEX lacks.
+
+    Why (e+e- -> gamma gamma, Z pole, BVR, 2026-09-26): with the sum,
+    YFS.NLO/CEEX is 1.22 at hardest-ISR x 0.6-0.8 and 1.33 at x 0.8-1.
+    70-76% of that excess comes from events with rho_1/rho_crude < 0.01
+    (0.3-0.5% of CEEX): Borns on the generator's reduced-frame t-channel
+    pole, which the exact real empties but the sum still pays v * B.
+    Stands aside when a real-virtual is requested: that supplies the
+    v x real term itself.
+  */
+  { static const int vcomb(ATOOLS::Settings::GetMainSettings()["YFS"]
+                           ["VIRTUAL_COMBINE"].SetDefault(1).Get<int>());
+    if (vcomb == 1 && m_born != 0. && !p_nlo->HasRealVirtual()) {
+      const double vxr((m_ev.m_nlo_virtual/m_born)
+                       *(m_ev.m_nlo_real + m_ev.m_nlo_rr + m_ev.m_nlo_rn));
+      if (!IsBad(vxr)) m_ev.m_nlo_vxr = vxr;
+    } }
+  return m_ev.m_nlo_real + m_ev.m_nlo_virtual + m_ev.m_nlo_rv + m_ev.m_nlo_rr + m_ev.m_nlo_rn
+    + m_ev.m_nlo_vxr;
 }
 
 
@@ -1069,6 +1131,41 @@ void YFS_Handler::GenerateWeight() {
   const double corr_eex (m_ev.m_real + (wif - 1.));
   double corr_ceex(m_ev.m_ceexfactor);            // 0 if CEEX produced nothing
   /*
+    CEEX_Virtual: external - the provider's virtual in the CEEX column.
+
+    CEEX's own virtual and KKMC's O(alpha^1) put the IR-subtracted virtual
+    factor delta on the Born-level amplitude INSIDE the coherent sum:
+        rho = sum_h |A_0 (1 + delta) + (A_1 - A_0)|^2
+            = rho_1 + 2 Re(delta) Re<A_0, A_1> + |delta|^2 rho_0,
+    with A_0 the Born-level partition sum and A_1 the full O(alpha^1) one.
+    A squared-level provider gives v = V_sub/Born = 2 Re(delta) at O(alpha),
+    helicity-summed, so with delta = v/2 (common to helicities and partitions,
+    Im(delta) dropped) the column becomes
+        (rho_1 + v Re<A_0,A_1> + (v/2)^2 rho_0) / rho_crude.
+
+    Two simpler forms were tried and are wrong beyond O(alpha) by v * real:
+    multiplying rho_1/rho_crude by (1 + v) put e+e- -> mu mu at 250 GeV
+    (66-116 GeV, radiative return, real part of the factor about -0.3) 2.7%
+    below CEEX's own virtual and KKMC; adding v rho_0/rho_crude put it 6.2%
+    above. Re<A_0,A_1> lies between rho_0 and rho_1, where CEEX's own virtual
+    landed (1.009 of KKMC). On photon-free events the provider's v and CEEX's
+    own virtual agree to 0.34%.
+
+    RV and RR are NOT added: CEEX here is O(alpha^1). Applied before the IF
+    form-factor cut below, which multiplies the whole column. `ceex` (2 -> 2
+    only) keeps CEEX's own amplitude-level virtual; `none` leaves the column
+    at Born + real. Until 2026-09-25 `external` was read and never consumed.
+  */
+  if (corr_ceex != 0. && m_ceexvirtsrc == ceexvirt::external && p_ceex &&
+      p_nlo && p_nlo->HasVirtual() && m_ev.m_nlo_current && m_born != 0.) {
+    const double rcr(p_ceex->GetRhoCrude());
+    const double v(m_ev.m_nlo_virtual/m_born);
+    const double add(rcr > 0. ? (v*p_ceex->GetResult01()
+                                 + 0.25*v*v*p_ceex->GetResult0())/rcr : 0.);
+    if (!IsBad(add)) corr_ceex += add;
+    else ++m_ceexstats.m_bad;
+  }
+  /*
     The IF part of the form factor, cut where CEEX needs it.
 
     With IFI_Real off, IFIOmega() is sqrt(s)/2: the exponent holds the WHOLE
@@ -1093,34 +1190,52 @@ void YFS_Handler::GenerateWeight() {
                       - p_dipoles->FormFactorSumIF());
       if (!IsBad(dy)) corr_ceex *= exp(dy);
     } }
-  /*
-    CEEX_Virtual: external - the provider's virtual, composed onto the CEEX
-    column.
-
-    Until 2026-09-25 this value was read and never consumed: the CEEX column
-    ran with NO virtual while the nominal one carried the provider's, so with
-    NLO_Part: BVR the two columns differed by the whole O(alpha) virtual and
-    agreed only in Born+real runs. Now the CEEX factor rho_1/rho_crude, whose
-    rho_1 holds beta_0 = Born and the beta_1 terms, is multiplied by the same
-    (Born + V_sub)/Born the nominal weight adds: rho_1 (1 + v) = rho_0 (1 + v)
-    + beta_1 + O(alpha^2), which is beta_0^(1) + beta_1 to the order both
-    columns claim. The virtual is the IR-subtracted one (the YFS form-factor
-    piece stays in the exponent that multiplies both columns), and the
-    real-virtual and double-real pieces of NLO_Part are NOT composed: CEEX
-    here is O(alpha^1). The helicity dependence of the boxes is averaged over
-    - the documented trade of this mode (YFS_Base.H).
-
-    `ceex` (2 -> 2 only) keeps CEEX's own amplitude-level virtual, in which
-    case NLO_Base::CalculateVirtual hands that same number to the nominal
-    weight when no loop provider is named; `none` gives the old behaviour.
-  */
-  if (corr_ceex != 0. && m_ceexvirtsrc == ceexvirt::external && p_nlo &&
-      p_nlo->HasVirtual() && m_ev.m_nlo_current && m_born != 0.) {
-    const double vfac(1. + m_ev.m_nlo_virtual/m_born);
-    if (!IsBad(vfac)) corr_ceex *= vfac;
-    else ++m_ceexstats.m_bad;
-  }
   const bool   ceex_nom (m_ceex_weight && corr_ceex != 0.);
+  /*
+    The FINAL per-column factors, once the IFI real weight and the external
+    virtual are in. The CEEXCMP line in CalculateBeta() prints m_ev.m_real
+    before wif is known, which misled a comparison once: with IFI_Real on the
+    two columns differ by wif - 1 as well. Part of CEEX: WEIGHT_PROBE.
+  */
+  { static const bool wp(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                         ["WEIGHT_PROBE"].SetDefault(0).Get<int>()!=0);
+    if (wp && p_ceex) {
+      double ef(0.);
+      for (const Vec4D &k : m_ev.m_FSRPhotons) ef = Max(ef, k[0]);
+      /*
+        Angle of the hardest FSR photon to the nearest final-state lepton,
+        in units of the lepton's m/E (the collinear cone), and the two
+        eikonals the last photon's beta_1 was divided by (coherent at the
+        mapped point, crude on the event).
+      */
+      double thk(-1.);
+      { Vec4D kh; for (const Vec4D &k : m_ev.m_FSRPhotons) if (k[0] > kh[0]) kh = k;
+        if (kh[0] > 0.)
+          for (size_t i(2); i < m_ev.m_plab.size(); ++i) {
+            if (!m_flavs[i].IsChargedLepton()) continue;
+            const Vec4D &l(m_ev.m_plab[i]);
+            const double ct(Vec3D(l)*Vec3D(kh)/(Vec3D(l).Abs()*Vec3D(kh).Abs()));
+            const double th(acos(Max(-1., Min(1., ct)))), unit(l.Mass()/l[0]);
+            const double u(unit > 0. ? th/unit : th);
+            if (thk < 0. || u < thk) thk = u;
+          } }
+      // One write per line: with several MPI ranks on one stream, a line
+      // built from many << calls interleaves with other ranks' lines and
+      // parses as nonsense (crude weights of 1e71 were seen).
+      std::ostringstream o;
+      o<<"@@@ WPROBE eex="<<corr_eex<<" ceex="<<corr_ceex
+       <<" real="<<m_ev.m_real<<" wif="<<wif
+       <<" thk="<<thk
+       <<" sloc="<<(p_nlo?p_nlo->m_subloc:0.)
+       <<" scr="<<(p_nlo?p_nlo->m_eikeex:0.)
+       <<" ff="<<m_ev.m_formfactor<<" yfsw="<<m_ev.m_yfsweight
+       <<" nisr="<<m_ev.m_ISRPhotons.size()
+       <<" nfsr="<<m_ev.m_FSRPhotons.size()
+       <<" xfsr="<<2.*ef/sqrt(m_s)
+       <<" mll="<<(p_ceex->SvarQ()>0.?sqrt(p_ceex->SvarQ()):-1.)
+       <<"\n";
+      std::cerr<<o.str();
+    } }
   m_ev.m_yfsweight *= ceex_nom ? corr_ceex : corr_eex;
   m_ev.m_yfsweight *= m_ev.m_formfactor*(1.-m_v);
   // What the named CEEX column has to divide by to become a ratio.
@@ -1254,12 +1369,15 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
 
     // NLO: Real + Virtual
     if (p_nlo->HasNLO()) {
-      const double nlo_sum   = (m_born + m_ev.m_nlo_real + m_ev.m_nlo_virtual)/m_born;
+      // m_nlo_vxr: YFS: VIRTUAL_COMBINE 1 (zero otherwise), so the named
+      // column equals the nominal weight it is compared against
+      const double nlo_sum   = (m_born + m_ev.m_nlo_real + m_ev.m_nlo_virtual
+                                + m_ev.m_nlo_vxr)/m_born;
       const double real_sum  = (m_born + m_ev.m_nlo_real)/m_born;
       const double virt_sum  = (m_born + m_ev.m_nlo_virtual)/m_born;
       if (!IsZero(m_ev.m_real)) {
         emit("Real", ratio((m_ev.m_nlo_real)/m_born, m_ev.m_real));
-        emit("Virtual", ratio((m_ev.m_nlo_virtual)/m_born, m_ev.m_real));
+        emit("Virtual", ratio((m_ev.m_nlo_virtual + m_ev.m_nlo_vxr)/m_born, m_ev.m_real));
         emit("NLO", ratio(nlo_sum, m_ev.m_real));
         emit("BR", ratio(real_sum, m_ev.m_real));
         emit("BV", ratio(virt_sum, m_ev.m_real));
@@ -1287,8 +1405,10 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
 
     // NNLO: RealVirtual + RealReal
     if (p_nlo->HasNNLO()) {
-      const double nnlo_total = (m_born + m_ev.m_nlo_real + m_ev.m_nlo_virtual + m_ev.m_nlo_rv + m_ev.m_nlo_rr)/m_born;
-      const double RR_total = (m_born + m_ev.m_nlo_real + m_ev.m_nlo_virtual + m_ev.m_nlo_rr)/m_born;
+      const double nnlo_total = (m_born + m_ev.m_nlo_real + m_ev.m_nlo_virtual + m_ev.m_nlo_rv + m_ev.m_nlo_rr
+                                 + m_ev.m_nlo_vxr)/m_born;
+      const double RR_total = (m_born + m_ev.m_nlo_real + m_ev.m_nlo_virtual + m_ev.m_nlo_rr
+                               + m_ev.m_nlo_vxr)/m_born;
       const double RV_total = (m_born + m_ev.m_nlo_real + m_ev.m_nlo_virtual + m_ev.m_nlo_rv)/m_born;
       // No separate denominator: every column here is x/m_ev.m_real. NNLO used to be
       // make_ratio(nnlo_total, m_born + nnlo_total), which is

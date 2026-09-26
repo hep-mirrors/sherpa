@@ -107,6 +107,8 @@ namespace YFS {
           double m_nlo_real = 0., m_nlo_virtual = 0., m_nlo_rv = 0., m_nlo_rr = 0.;
           //! Sum of the fixed-order real corrections above the double real
           double m_nlo_rn = 0.;
+          //! YFS: VIRTUAL_COMBINE 1: v times the real correction, (V/B)(R+RR+RN)
+          double m_nlo_vxr = 0.;
           double m_nlo_real_hardest = 0., m_nlo_rv_hardest = 0.;
           double m_nlo_rr_2hardest = 0., m_nlo_real_2hardest = 0.;
           double m_nlo_rv_2hardest = 0.;

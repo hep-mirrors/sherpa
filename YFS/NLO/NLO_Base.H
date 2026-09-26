@@ -309,7 +309,44 @@ public:
       3: as 2, but with (final state + k_j)^2 kept as in the event.
   */
   bool MapMomentaBeamAxis(ATOOLS::Vec4D_Vector &p, const ATOOLS::Vec4D_Vector &k);
-  bool MapMomentaScaled(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D_Vector &k);
+  bool MapMomentaScaled(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D_Vector &k,
+                        bool anylabel = false);
+  /*
+    The Born process (Comix), for the Born at momenta other than the event's.
+    Needed by REAL_SUB_EIK 6: the crude a photon could have been generated
+    with carries the Born of EACH assignment, S~_II B(s' with the photon
+    removed) + S~_FF B(pre-emission pair), as CEEX's rho_crude does.
+  */
+  PHASIC::Process_Base *p_bornproc = nullptr;
+  double m_me2born = -1.;     // Comix |M_0|^2 at m_bornMomenta, cached per event
+  double BornME2At(const ATOOLS::Vec4D_Vector &p);
+  //! (N+n)!/N! for n extra photons over N photons in the Born; 1 without
+  //! Born photons or with YFS: REAL_BORN_PHOTON_SYM: 0.
+  double BornPhotonSym(size_t nextra) const;
+  bool   ReducedBornISR(const ATOOLS::Vec4D &k, double &bratio);
+  /*
+    The Born of the event with photon k moved to the other channel, relative
+    to the event's Born: sign = -1 takes k out of the Born beams (the ISR
+    alternative of an FSR-labelled photon, invariant (P - k)^2), sign = +1
+    puts it back into beams and pair (the FSR alternative of an
+    ISR-labelled photon, invariant (P + k)^2). s2ratio = new invariant / P^2.
+  */
+  bool   ReducedBornAlt(const ATOOLS::Vec4D &k, int sign, double &bratio,
+                        double &s2ratio);
+  /*
+    REAL_SUB_EIK 8. The Born at invariant R^2 relative to the Born of the
+    event, both built by the same construction from the event's PRE-FSR
+    final state Q_pre (NLO m_plab, the system m_born is evaluated at): beams
+    back to back along the lab axis in R's rest frame (the generator's
+    reduced-beam convention), final legs along their directions in Q_pre's
+    rest frame, rescaled to R^2. With R = Q_pre this is the event's Born
+    point (m_me2pre; checked against m_born by SUB8_TRACE).
+  */
+  double m_me2pre = -1.;
+  double m_sub8[4] = {-1., -1., -1., -1.};   // SUB8_TRACE scratch
+  bool   PreFSRBornRatio(const ATOOLS::Vec4D &R, double &bratio);
+  bool   PreFSRBornPoint(const ATOOLS::Vec4D &R, ATOOLS::Vec4D_Vector &p) const;
+  ATOOLS::Vec4D PreFSRSystem() const;
   //! Final-state photons: Q fixed, the final legs recoil (YFS: REAL_FSR_MAP).
   //! 1: every final leg rescaled in the common rest frame (one resonant pair).
   bool MapMomentaFSR(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D_Vector &k);
@@ -374,12 +411,14 @@ public:
   void RecordSubScatter(const ATOOLS::Vec4D &k, double residual,
                         const std::string &tag, double eik = 1.0);
   void RandomRotate(Vec4D &k);
-  inline void SetBorn(double b) { m_born = b;}
+  inline void SetBorn(double b) { m_born = b; m_me2born = -1.; m_me2pre = -1.; }
+  inline void SetBornProc(PHASIC::Process_Base *p) { p_bornproc = p; }
   inline void SetMomentum(Vec4D_Vector &p) { m_plab = p;}
   inline void SetFSR(YFS::FSR *p) {p_fsr = p;}
   inline bool HasVirtual() {return m_looptool;}
   inline bool HasReal() {return m_realtool;}
   inline bool HasRR() {return m_rrtool;}
+  inline bool HasRealVirtual() {return m_realvirt;}
   inline bool HasNLO()  {return m_realtool || m_looptool;}
   inline bool HasNNLO() {return m_rrtool   || m_realvirt;}
   Vec4D MostEnergeticPhoton() const;
