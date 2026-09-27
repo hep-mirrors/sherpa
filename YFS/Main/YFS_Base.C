@@ -43,7 +43,9 @@ void YFS_Base::RegisterDefaults(){
   m_s = sqr(rpa->gen.Ecms());
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   s["MODE"].ResetDefault().SetDefault(yfsmode::off);
-  s["BETA"].SetDefault(2);
+  // 2026-09-27: the validated paper settings are the defaults, so that a
+  // card needs only CEEX: 1 (see RegisterSettings for MODE)
+  s["BETA"].SetDefault(1);
   s["VMAX"].SetDefault(0);
   s["IR_CUTOFF"].ResetDefault().SetDefault(1e-6);
   s["DELTA"].SetDefault(1e-2);
@@ -97,7 +99,8 @@ void YFS_Base::RegisterDefaults(){
   s["CHECK_VIRT_BORN"].SetDefault(1);
   s["VIRTUAL_ONLY"].SetDefault(0);
   s["REAL_ONLY"].SetDefault(0);
-  s["USE_MODEL_ALPHA"].SetDefault(1);
+  // photon emission with alpha(0), the hard process in the model scheme
+  s["USE_MODEL_ALPHA"].SetDefault(0);
   s["KKMC_ANG"].SetDefault(0);
   s["WEIGHT_MODE"].SetDefault(wgt::full);
   s["HARD_MIN"].SetDefault(0.);
@@ -109,7 +112,7 @@ void YFS_Base::RegisterDefaults(){
     implicitly - CEEX's own when no loop provider exists - but now says so, and
     refuses rather than proceeding when that choice cannot be right.
   */
-  s["CEEX_Virtual"].SetDefault(ceexvirt::ceex);
+  s["CEEX_Virtual"].SetDefault(ceexvirt::automatic);
   s["Collinear_Real"].SetDefault(0);
   s["CLUSTERING_THRESHOLD"].SetDefault(10);
   s["TChannel"].SetDefault(0);
@@ -151,7 +154,7 @@ void YFS_Base::RegisterDefaults(){
   // Define_Dipoles::RealIFWeight() reweights every generated photon by the IF
   // radiation function and the form factor's cutoff drops to IFI_Omega, so the
   // two must be switched together - see Define_Dipoles::IFIOmega().
-  s["IFI_Real"].SetDefault(0);
+  s["IFI_Real"].SetDefault(1);
   // Soft cutoff shared by the IF form factor and the photon reweighting, in
   // GeV. Only read when IFI_Real is on.
   //
@@ -214,6 +217,11 @@ void YFS_Base::RegisterSettings(){
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   m_betaorder = s["BETA"].Get<int>();
   m_mode = s["MODE"].Get<yfsmode::code>();
+  // CEEX: 1 alone switches YFS on: ISRFSR here, narrowed to ISR in
+  // YFS_Handler::SetFlavours when no final-state particle is charged. An
+  // explicit MODE always wins, including MODE: off.
+  if (!s["MODE"].IsSetExplicitly() && m_mode == yfsmode::off &&
+      s["CEEX"].Get<int>() != 0) { m_mode = yfsmode::isrfsr; m_mode_from_ceex = true; }
   m_isrcut   = s["IR_CUTOFF"].Get<double>();
   m_isrcut = m_isrcut/sqrt(m_s); // dimensionless units
   m_vmax = s["VMAX"].Get<double>();
@@ -334,6 +342,7 @@ std::istream &YFS::operator>>(std::istream &str, ceexvirt::code &sc)
   else if (tag=="external" || tag=="External" || tag=="1") sc=ceexvirt::external;
   else if (tag=="helicity" || tag=="Helicity" || tag=="2") sc=ceexvirt::helicity;
   else if (tag=="none"     || tag=="None"     || tag=="3") sc=ceexvirt::none;
+  else if (tag=="auto"     || tag=="Auto"     || tag=="4") sc=ceexvirt::automatic;
   else THROW(fatal_error, "Unknown YFS CEEX_Virtual '"+tag
                           +"'; use ceex, external, helicity or none.");
   return str;
@@ -346,6 +355,7 @@ std::ostream &YFS::operator<<(std::ostream &str, const ceexvirt::code &sc)
   case ceexvirt::external: return str<<"external";
   case ceexvirt::helicity: return str<<"helicity";
   case ceexvirt::none:     return str<<"none";
+  case ceexvirt::automatic: return str<<"auto";
   }
   return str<<"unknown";
 }

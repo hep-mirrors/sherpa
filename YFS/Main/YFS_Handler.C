@@ -148,6 +148,13 @@ void YFS_Handler::SetFlavours(const ATOOLS::Flavour_Vector &flavs) {
   // whenever the flavours actually change; the early return keeps the
   // per-event calls cheap when they do not.
   if(m_setparticles && m_flavs == flavs) return;
+  // MODE implied by CEEX: 1 (YFS_Base::RegisterSettings): ISR alone when no
+  // final-state particle is charged (nu nu, gamma gamma, H nu nu), else ISRFSR
+  if (m_mode_from_ceex) {
+    bool charged(false);
+    for (size_t i(2); i < flavs.size(); ++i) if (flavs[i].Charge() != 0.) charged = true;
+    m_mode = charged ? yfsmode::isrfsr : yfsmode::isr;
+  }
   // Clearing the store frees the Particles; m_particles only observes them, so
   // it has to be emptied in step or it is left holding dangling pointers.
   // (The hand written version deleted through m_particles, which had to happen
@@ -327,6 +334,7 @@ void YFS_Handler::MakeCEEX() {
       for (size_t i = 2; i < m_ev.m_plab.size(); ++i) sp.push_back(m_ev.m_plab[i]);
       p_ceex->SetLabMomenta(sp);
     }
+    p_ceex->SetPreFSRMomenta(m_ev.m_reallab);
     p_ceex->SetISRPhotons(m_ev.m_ISRPhotons);
     if (HasFSR()) p_ceex->SetFSRPhotons(m_ev.m_FSRPhotons);
     p_ceex->SetBornMomenta(m_ev.m_bornMomenta);
@@ -684,6 +692,26 @@ void YFS_Handler::CalculateBeta() {
     if (heavy > 0.) cerrbuf = std::cerr.rdbuf(tracebuf.rdbuf());
     MakeCEEX();
     if (cerrbuf) std::cerr.rdbuf(cerrbuf);
+    /*
+      YFS: REAL_BORN_PHOTON_MULTICHANNEL, the CEEX half: rho_crude becomes the
+      sum of the crudes of every assignment of photons to Born pair and ISR
+      that the generator could have produced this final state with
+      (NLO_Base::BornPhotonChannelSum, all Born-pair choices). 1 applies it,
+      2 only computes it for WEIGHT_PROBE. G = 1 exactly without Born
+      photons or when no ISR photon passes the Born cuts.
+    */
+    m_bpmc_evtG = 1.; m_bpmc_evtn = 0;
+    { static const int bpmc(ATOOLS::Settings::GetMainSettings()["YFS"]
+                            ["REAL_BORN_PHOTON_MULTICHANNEL"].SetDefault(1).Get<int>());
+      if (bpmc && p_ceex && p_nlo && p_dipoles->HasDipoleII()
+          && !m_ev.m_ISRPhotons.empty()) {
+        InitNLO();
+        const std::vector<Vec4D> isr(m_ev.m_ISRPhotons.begin(), m_ev.m_ISRPhotons.end());
+        m_bpmc_evtG = p_nlo->BornPhotonChannelSum(m_ev.m_reallab, isr,
+                                                  p_dipoles->GetDipoleII(), -1,
+                                                  &m_bpmc_evtn);
+        if (bpmc == 1 && m_bpmc_evtG != 1.) p_ceex->ScaleRhoCrude(m_bpmc_evtG);
+      } }
     if (heavy > 0. && p_ceex) {
       const double r0(p_ceex->GetRhoCrude()), r1(p_ceex->GetResult());
       if (r0 > 0. && r1/r0 > heavy) {
@@ -787,7 +815,12 @@ void YFS_Handler::CalculateBeta() {
          <<" yfsw="<<m_ev.m_yfsweight
          <<" rho1="<<p_ceex->GetResult()<<" rho0="<<p_ceex->GetResult0()
          <<" rho01="<<p_ceex->GetResult01()
-         <<" rhocr="<<p_ceex->GetRhoCrude()<<" born="<<m_born<<"\n";
+         <<" rhocr="<<p_ceex->GetRhoCrude()<<" born="<<m_born
+         <<" G="<<m_bpmc_evtG<<" nalt="<<m_bpmc_evtn
+         <<" Gj="<<(p_nlo?p_nlo->m_bpmc_hardG:1.)
+         <<" Rj="<<(p_nlo?p_nlo->m_bpmc_hardR:0.)
+         <<" subj="<<(p_nlo?p_nlo->m_bpmc_hardsub:0.)
+         <<" xh="<<(p_nlo?2.*p_nlo->m_bpmc_hardx/sqrt(m_s):0.)<<"\n";
         std::cerr<<o.str();
       } }
     /*
@@ -971,6 +1004,7 @@ void YFS_Handler::CeexCompare() {
 
 void YFS_Handler::InitNLO(){
   p_nlo->Init(m_flavs,m_ev.m_reallab,m_ev.m_bornMomenta);
+  p_nlo->m_bpmc_vmax = m_vmax; p_nlo->m_bpmc_s = m_s;
   p_nlo->SetPostEmissionMomenta(m_ev.m_plab);
   /*
     YFS: REAL_STAB diagnostic. Per radiating final-state pair, the residual
@@ -1093,7 +1127,20 @@ void YFS_Handler::GenerateWeight() {
   else m_ev.m_yfsweight = m_isrWeight;
   if (m_coulomb) m_ev.m_yfsweight *= p_coulomb->GetWeight();
   if (m_formWW) m_ev.m_yfsweight *= m_ev.m_ww_formfact; //*exp(m_ev.m_coulSub);
+  // YFS: LO_PROBE - the LO factors before CalculateBeta, to see whether the
+  // NLO pieces modify them (w_lo is formed after it)
+  const double pre_yfsw(m_ev.m_yfsweight), pre_ff(m_ev.m_formfactor), pre_v(m_v),
+               pre_born(m_born);
   CalculateBeta();
+  { static const bool lp(ATOOLS::Settings::GetMainSettings()["YFS"]
+                         ["LO_PROBE"].SetDefault(0).Get<int>() != 0);
+    if (lp) {
+      std::ostringstream o;
+      o<<std::setprecision(12)<<"@@@ LOPRE yfsw="<<m_ev.m_yfsweight/pre_yfsw
+       <<" ff="<<m_ev.m_formfactor/pre_ff<<" omv="<<(1.-m_v)/(1.-pre_v)
+       <<" born="<<m_born/pre_born<<"\n";
+      std::cerr<<o.str();
+    } }
 
   double wif = 1.;
   if (m_ifireal && m_mode == yfsmode::isrfsr && m_nlotype == nlo_type::born &&
@@ -1115,7 +1162,43 @@ void YFS_Handler::GenerateWeight() {
   // the form factor, with NO NLO correction applied. This is what YFS.LO has
   // to reproduce -- built here directly rather than recovered downstream as
   // 1/m_ev.m_real, so the LO column cannot inherit anything m_ev.m_real does.
-  const double w_lo = m_ev.m_yfsweight * m_ev.m_formfactor * (1.-m_v);
+  double w_lo = m_ev.m_yfsweight * m_ev.m_formfactor * (1.-m_v);
+  /*
+    YFS.LO without IFI_Real. With IFI_Real on, the IF exponent stops at
+    IFIOmega() (the generation cutoff) and the interference above it is
+    restored only by wif, which the LO column does not carry. The LO weight is
+    then the "exponent lowered, nothing restoring it" configuration of
+    Define_Dipoles::IFIOmega(), whose A_FB runs with log(IR_CUTOFF): at the Z
+    pole it made dsigma/dcos(theta) of YFS.LO strongly forward-peaked. So LO
+    takes the IF form factor at sqrt(s)/2, the whole soft integral, which is
+    exactly the LO of an IFI_Real 0 run (the event generation does not depend
+    on IFI_Real). Same conditions as the CEEX IF cut below.
+    YFS: LO_WITHOUT_IFI: 0 restores the old column.
+  */
+  /*
+    YFS: LO_PROBE - the factors of the Born-level weight, per event, to compare
+    an NLO_Part B run against the YFS.LO stream of an NLO_Part BVR run.
+  */
+  { static const bool lp(ATOOLS::Settings::GetMainSettings()["YFS"]
+                         ["LO_PROBE"].SetDefault(0).Get<int>() != 0);
+    if (lp) {
+      std::ostringstream o;
+      o<<std::setprecision(10)<<"@@@ LOPROBE born="<<m_born
+       <<" isrw="<<m_isrWeight<<" fsrw="<<m_fsrWeight
+       <<" yfsw="<<m_ev.m_yfsweight<<" ff="<<m_ev.m_formfactor
+       <<" omv="<<(1.-m_v)<<" nlotype="<<(int)m_nlotype
+       <<" nisr="<<m_ev.m_ISRPhotons.size()<<" nfsr="<<m_ev.m_FSRPhotons.size()
+       <<" sp="<<m_ev.m_bornMomenta.size()<<"\n";
+      std::cerr<<o.str();
+    } }
+  { static const bool lonoifi(ATOOLS::Settings::GetMainSettings()["YFS"]
+                              ["LO_WITHOUT_IFI"].SetDefault(1).Get<int>() != 0);
+    if (lonoifi && m_ifireal && m_ifisub == 1 && m_fullform >= 1 &&
+        m_tchannel == 0 && p_dipoles) {
+      const double dy(p_dipoles->FormFactorSumIF(0.5*sqrt(m_s))
+                      - p_dipoles->FormFactorSumIF());
+      if (!IsBad(dy)) w_lo *= exp(dy);
+    } }
   /*
     IFI_Real is an EEX-only correction and must NOT reach the CEEX weight.
 
@@ -1156,12 +1239,108 @@ void YFS_Handler::GenerateWeight() {
     only) keeps CEEX's own amplitude-level virtual; `none` leaves the column
     at Born + real. Until 2026-09-25 `external` was read and never consumed.
   */
-  if (corr_ceex != 0. && m_ceexvirtsrc == ceexvirt::external && p_ceex &&
+  /*
+    CEEX: ORDER 2 keeps the O(alpha^1) column of the same event alongside
+    (named weight CEEX_O1), composed with the external virtual exactly as an
+    ORDER 1 run composes it, so ORDER2/ORDER1 is a same-event ratio.
+    GetResultVV() is |A_v|^2 with A_v the amplitude (v/2) multiplies: A_0
+    (= GetResult0(), bit for bit) unless ORDER2_VIRTUAL_ON_BETA1.
+  */
+  const bool ceexo2(p_ceex && p_ceex->Order() == 2);
+  double corr_ceex_o1(0.), corr_ceex_v0(0.), corr_ceex_v1(0.);
+  if (ceexo2 && corr_ceex != 0.) {
+    const double rcr(p_ceex->GetRhoCrude());
+    corr_ceex_o1 = rcr > 0. ? p_ceex->GetResult1()/rcr : 0.;
+    corr_ceex_v0 = corr_ceex_v1 = corr_ceex;
+  }
+  if (corr_ceex != 0. && (m_ceexvirtsrc == ceexvirt::external ||
+                          m_ceexvirtsrc == ceexvirt::automatic) && p_ceex &&
       p_nlo && p_nlo->HasVirtual() && m_ev.m_nlo_current && m_born != 0.) {
     const double rcr(p_ceex->GetRhoCrude());
     const double v(m_ev.m_nlo_virtual/m_born);
     const double add(rcr > 0. ? (v*p_ceex->GetResult01()
-                                 + 0.25*v*v*p_ceex->GetResult0())/rcr : 0.);
+                                 + 0.25*v*v*p_ceex->GetResultVV())/rcr : 0.);
+    if (!IsBad(add)) corr_ceex += add;
+    else ++m_ceexstats.m_bad;
+    if (ceexo2) {
+      const double add1(rcr > 0. ? (v*p_ceex->GetResult01Order1()
+                                    + 0.25*v*v*p_ceex->GetResult0())/rcr : 0.);
+      if (!IsBad(add1)) corr_ceex_o1 += add1;
+      const double a0(rcr > 0. ? (v*p_ceex->GetResult02()
+                                  + 0.25*v*v*p_ceex->GetResult0())/rcr : 0.);
+      const double a1(rcr > 0. ? (v*p_ceex->GetResult12()
+                                  + 0.25*v*v*p_ceex->GetResult1())/rcr : 0.);
+      if (!IsBad(a0)) corr_ceex_v0 += a0;
+      if (!IsBad(a1)) corr_ceex_v1 += a1;
+    }
+  }
+  /*
+    CEEX_Virtual: helicity (ACRAIC) - the same insertion with a complex,
+    helicity-resolved factor from the loop provider's helicity amplitudes
+    (Recola), delta^h in place of v/2:
+        rho_V = 1/4 sum_h |A_1^h + delta^h A_0^h|^2 ,
+    added as (rho_V - rho_1)/rho_crude. delta^h comes from the loop call of
+    this event (NLO_Base::BuildLoopHelicityFactors, Born point, one per
+    event, applied to every partition); its Born-weighted 2 Re is v by
+    construction. Helicities the provider cannot resolve, and whole events
+    without helicity amplitudes, keep v/2, i.e. external.
+    CEEX: VIRT_HEL_FORCE_HALF_V: 1 sets delta^h = v/2 everywhere: the
+    regression against external, through this code path.
+  */
+  // With CEEX: ORDER 2 the stored amplitudes are the O(alpha^2) ones; the
+  // helicity virtual is built and validated for ORDER 1 only.
+  if (p_ceex) for (double &c : p_ceex->m_lhcol) c = 0.;
+  if (corr_ceex != 0. && m_ceexvirtsrc == ceexvirt::helicity && p_ceex &&
+      p_nlo && p_nlo->HasVirtual() && m_ev.m_nlo_current && m_born != 0.) {
+    static const bool forcehalf(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                                ["VIRT_HEL_FORCE_HALF_V"].SetDefault(0).Get<int>() != 0);
+    const double rcr(p_ceex->GetRhoCrude());
+    const double v(m_ev.m_nlo_virtual/m_born);
+    std::vector<Complex> d;
+    bool ok(!forcehalf && p_nlo->m_lhelok &&
+            p_ceex->LoopHelicityToCeex(p_nlo->m_lhel, p_nlo->m_la0,
+                                       p_nlo->m_ldelta, p_nlo->m_lhelmom,
+                                       Complex(0.5*v, 0.), d));
+    if (!ok) d.assign(Amplitude::NHel(), Complex(0.5*v, 0.));
+    const double rho1(p_ceex->GetResult());
+    const double add(rcr > 0. ? (p_ceex->HelicityVirtualRho(d) - rho1)/rcr : 0.);
+    // the external form on the same event, and rho_V(v/2) against it
+    const double ext(v*p_ceex->GetResult01() + 0.25*v*v*p_ceex->GetResult0());
+    const std::vector<Complex> dh(Amplitude::NHel(), Complex(0.5*v, 0.));
+    const double reg(std::abs(p_ceex->HelicityVirtualRho(dh) - rho1 - ext)
+                     /Max(std::abs(rho1), 1e-300));
+    double split[3] = {0., 0., 0.};
+    if (ok && rcr > 0.) {
+      p_ceex->HelicityVirtualSplit(d, 0.5*v, split);
+      for (double &x : split) x /= rcr;
+    }
+    p_ceex->AccumulateLoopHelicity(ok, add, rcr > 0. ? ext/rcr : 0., reg, split);
+    // the factors in CEEX's index on the point dumped for the KKMC harness
+    // (CEEX: CHECK_XS), whose KKPART/KKAMP lines use the same j1j2j3j4 labels
+    if (p_ceex->JustDumped()) {
+      std::ostringstream o;
+      o<<std::setprecision(10)<<"@@@ VHELDUMP ok="<<ok<<" v="<<v<<"\n";
+      for (int f(0); f < Amplitude::NHel() && f < (int)d.size(); ++f) {
+        o<<"@@@ VHELDUMP ";
+        for (int l(0); l < Amplitude::s_nlegs; ++l) o<<((f>>l)&1);
+        o<<" delta="<<d[f].real()<<","<<d[f].imag()<<"\n";
+      }
+      std::cerr<<o.str();
+    }
+    /*
+      The same event for the extra named weights: CEEX_EXTV (external
+      virtual), CEEX_L/R and CEEX_EXTV_L/R (beam 1 fully left/right
+      polarised, beam 2 unpolarised; the unpolarised column is their mean).
+      Stored as absolute factors before the IF cut, which multiplies all.
+    */
+    if (rcr > 0. && !IsBad(add)) {
+      p_ceex->m_lhcol[0] = corr_ceex + add;
+      p_ceex->m_lhcol[1] = corr_ceex + ext/rcr;
+      p_ceex->m_lhcol[2] = p_ceex->HelicityVirtualRho(d,  -1., 0.)/rcr;
+      p_ceex->m_lhcol[3] = p_ceex->HelicityVirtualRho(d,  +1., 0.)/rcr;
+      p_ceex->m_lhcol[4] = p_ceex->HelicityVirtualRho(dh, -1., 0.)/rcr;
+      p_ceex->m_lhcol[5] = p_ceex->HelicityVirtualRho(dh, +1., 0.)/rcr;
+    }
     if (!IsBad(add)) corr_ceex += add;
     else ++m_ceexstats.m_bad;
   }
@@ -1188,7 +1367,8 @@ void YFS_Handler::GenerateWeight() {
       const double wgen(0.5*sqrt(m_s)*m_isrcut);
       const double dy(p_dipoles->FormFactorSumIF(wgen)
                       - p_dipoles->FormFactorSumIF());
-      if (!IsBad(dy)) corr_ceex *= exp(dy);
+      if (!IsBad(dy)) { corr_ceex *= exp(dy); corr_ceex_o1 *= exp(dy);
+                        corr_ceex_v0 *= exp(dy); corr_ceex_v1 *= exp(dy); }
     } }
   const bool   ceex_nom (m_ceex_weight && corr_ceex != 0.);
   /*
@@ -1232,8 +1412,10 @@ void YFS_Handler::GenerateWeight() {
        <<" nisr="<<m_ev.m_ISRPhotons.size()
        <<" nfsr="<<m_ev.m_FSRPhotons.size()
        <<" xfsr="<<2.*ef/sqrt(m_s)
-       <<" mll="<<(p_ceex->SvarQ()>0.?sqrt(p_ceex->SvarQ()):-1.)
-       <<"\n";
+       <<" mll="<<(p_ceex->SvarQ()>0.?sqrt(p_ceex->SvarQ()):-1.);
+      if (ceexo2) o<<" ceex1="<<corr_ceex_o1<<" ceexv0="<<corr_ceex_v0
+                    <<" ceexv1="<<corr_ceex_v1;
+      o<<"\n";
       std::cerr<<o.str();
     } }
   m_ev.m_yfsweight *= ceex_nom ? corr_ceex : corr_eex;
@@ -1241,10 +1423,22 @@ void YFS_Handler::GenerateWeight() {
   // What the named CEEX column has to divide by to become a ratio.
   m_ev.m_corr_nominal = ceex_nom ? corr_ceex : corr_eex;
   m_ev.m_corr_ceex    = corr_ceex;
+  m_ev.m_corr_ceex_o1 = corr_ceex_o1;
+  m_ev.m_corr_ceex_v0 = corr_ceex_v0;
+  m_ev.m_corr_ceex_v1 = corr_ceex_v1;
   CheckInvariants();
   // Captured before the IsBad/negative-weight clamps below, since the named
   // weights are ratios against the weight the event actually carries.
   const double w_full = m_ev.m_yfsweight;
+  { static const bool lp(ATOOLS::Settings::GetMainSettings()["YFS"]
+                         ["LO_PROBE"].SetDefault(0).Get<int>() != 0);
+    if (lp) {
+      std::ostringstream o;
+      o<<std::setprecision(10)<<"@@@ LOPROBE2 born="<<m_born<<" wlo="<<w_lo
+       <<" wfull="<<w_full<<" corr="<<(ceex_nom ? corr_ceex : corr_eex)
+       <<" real="<<m_ev.m_real<<"\n";
+      std::cerr<<o.str();
+    } }
   if(m_isr_debug) {
     Vec4D ele;
     for (int i = 2; i < m_flavs.size(); ++i)
@@ -1323,6 +1517,18 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
       names above: it is defined at Born level too, where none of those exist.
     */
     if (m_useceex) names.push_back("CEEX");
+    // CEEX_Virtual: helicity - the external-virtual CEEX column on the same
+    // events, and the beam-1-polarised columns, see GenerateWeight
+    if (m_useceex && m_ceexvirtsrc == ceexvirt::helicity)
+      for (const char *n : {"CEEX_EXTV","CEEX_L","CEEX_R","CEEX_EXTV_L","CEEX_EXTV_R"})
+        names.push_back(n);
+    // CEEX: ORDER 2 also carries the O(alpha^1) CEEX column of each event
+    if (m_useceex && ATOOLS::Settings::GetMainSettings()["CEEX"]["ORDER"]
+        .SetDefault(1).Get<int>() == 2) {
+      names.push_back("CEEX_O1");
+      names.push_back("CEEX_O2V0");
+      names.push_back("CEEX_O2V1");
+    }
     if (m_ladder_weights) {
       if (m_coulomb && p_coulomb) names.push_back("NoCoulomb");
       if (m_ifisub == 1 && m_fullform >= 1 && m_tchannel == 0 &&
@@ -1342,6 +1548,22 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
     // and deliberately not in the numerator.
     const double r(m_ev.m_corr_ceex/m_ev.m_corr_nominal);
     if (!IsBad(r)) wyfs["CEEX"] = r;
+    if (m_wnames.count("CEEX_EXTV") && p_ceex) {
+      const char *nm[5] = {"CEEX_EXTV","CEEX_L","CEEX_R","CEEX_EXTV_L","CEEX_EXTV_R"};
+      const double c0(p_ceex->m_lhcol[0]);
+      for (int i(0); i < 5; ++i) {
+        const double ri(c0 != 0. ? r*p_ceex->m_lhcol[i+1]/c0 : r);
+        if (!IsBad(ri)) wyfs[nm[i]] = ri;
+      }
+    }
+    if (m_wnames.count("CEEX_O1")) {
+      const double r1(m_ev.m_corr_ceex_o1/m_ev.m_corr_nominal);
+      if (!IsBad(r1)) wyfs["CEEX_O1"] = r1;
+      const double rv0(m_ev.m_corr_ceex_v0/m_ev.m_corr_nominal);
+      const double rv1(m_ev.m_corr_ceex_v1/m_ev.m_corr_nominal);
+      if (!IsBad(rv0)) wyfs["CEEX_O2V0"] = rv0;
+      if (!IsBad(rv1)) wyfs["CEEX_O2V1"] = rv1;
+    }
   }
   if (m_ev.m_nlo_current && m_nlotype != nlo_type::born && !IsZero(m_ev.m_real) &&
       (p_nlo->HasNLO() || p_nlo->HasNNLO())) {

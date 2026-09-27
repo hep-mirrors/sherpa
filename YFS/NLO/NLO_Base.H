@@ -95,6 +95,16 @@ public:
   // the two hardest photons (m_rr_hard2 is the single pair formed by them).
   // Used to report the matching truncated to 1 or 2 photons.
   double m_real_hard1, m_rv_hard1, m_rr_hard2;
+  /*
+    The single real's final per-photon conventions, left by the last
+    CalculateReal(k, raw) call: flux, subtraction eikonal and the denominator
+    (the crude) of tot = (r flux - subloc B/resc)/denominator. The double real
+    reads them so that its beta_2 subtraction uses exactly the beta_1 the
+    single real uses (REAL_SUB_EIK, REAL_FSR_FLUX, REAL_FSR_MAP included).
+  */
+  double m_lastflux = 1., m_lastsubloc = 0., m_lastdenom = 0.;
+  //! the same two before any REAL_SUB_EIK / REAL_FSR_FLUX modification
+  double m_lastsubloc0 = 0., m_lastdenom0 = 0.;
   double m_real_hard2, m_rv_hard2;
   // Product of the two per-photon crude eikonal factors S~(k1)*S~(k2) by which
   // the last CalculateRealReal(k1,k2) divided its result (line "tot = .../sub1/sub2").
@@ -206,6 +216,54 @@ public:
   //! NB not m_virt_sub - that name is already the Virtual_Sub SETTING on
   //! YFS_Base, and shadowing it here silently switched the subtraction off.
   double m_virt_raw = 0., m_virt_subval = 0.;
+  /*!
+    YFS: CEEX_Virtual: helicity. The IR-finite, complex virtual factor per
+    helicity configuration of the loop provider, at the Born point m_plab
+    where CalculateVirtual evaluated the loop:
+
+      delta^h = A1^h/A0^h - run/2 - alpha B_4
+
+    with A0, A1 the provider's (Recola's) tree and one-loop amplitudes at its
+    mu_IR (Delta_IR = 0), run = the uniform vacuum-polarisation correction
+    Virtual::Calc_V subtracts (run_corr/B), Re 2 alpha B_4 = the YFS virtual
+    subtraction YFS.NLO actually subtracted (sub/m_rescale_alpha, whose
+    lambda <-> mu_IR matches the loop's), and Im alpha B_4 fixed so that the
+    common imaginary part of delta is KKMC's IR-subtracted form factors (see
+    LoopHelicityIR). By construction the Born-weighted average of
+    2 Re delta^h is v = m_oneloop/m_born, the value CEEX_Virtual: external
+    uses; with delta^h = v/2 the helicity form IS external.
+
+    Labels are the provider's (physical helicity per leg); Ceex_Base maps
+    them to its own index (Ceex_Base::LoopHelicityToCeex).
+  */
+  bool m_lhelok = false;
+  std::vector<std::vector<int> > m_lhel;
+  std::vector<Complex> m_la0, m_ldelta;
+  ATOOLS::Vec4D_Vector m_lhelmom;
+  double m_lhelv = 0.;
+  //! run statistics of the per-event identity check and the fallbacks
+  long   m_lhel_n = 0, m_lhel_fail = 0, m_lhel_nfall = 0, m_lhel_ncfg = 0;
+  double m_lhel_res_max = 0., m_lhel_res_sum = 0., m_lhel_res_sq = 0.;
+  double m_lhel_clo_max = 0., m_lhel_ir_sum = 0., m_lhel_ir_sq = 0.;
+  double m_lhel_ir_max = 0.;
+  long   m_lhel_reshist[20] = {0};
+  void BuildLoopHelicityFactors(double virt, double sub);
+  /*!
+    The helicity-independent IR coefficient of the one-loop amplitude,
+      K = (alpha/2pi) sum_{i<j} (-Z_i Z_j) [CnuA(s_ij, m_i, m_j) - 1],
+    Z = theta Q (theta = +1 incoming, -1 outgoing), s_ij = (p_i +- p_j)^2
+    (+ for two legs on the same side). d(A1^h/A0^h)/d ln mu_IR^2 = K for
+    every h (verified against Recola 2.3.0 to 1e-7). imsh is the lambda-free
+    imaginary part of K ln(mu^2/lambda^2) + alpha B_4(lambda),
+      imsh = sum_{i<j} Im K_ij ln(mu_IR^2 e^c / |s_ij|),
+    c = CEEX: VIRT_HEL_IM_C (1/2 gives KKMC's Im F1 for a vertex pair).
+    False if a charged leg is massless.
+  */
+  bool LoopHelicityIR(const ATOOLS::Vec4D_Vector &p, double alpha, double mu2,
+                      Complex &K, double &imsh) const;
+  //! photon-mass YFS virtual subtraction (all dipoles), for the IR diagnostic
+  double VirtualSubPhotonMass();
+  void ReportLoopHelicity();
   /// whether a real-ME provider should be built at all (collinear approx replaces it)
   inline bool NeedsRealProvider() const { return !m_coll_real; }
   double CalculateVirtual();
@@ -323,6 +381,38 @@ public:
   //! (N+n)!/N! for n extra photons over N photons in the Born; 1 without
   //! Born photons or with YFS: REAL_BORN_PHOTON_SYM: 0.
   double BornPhotonSym(size_t nextra) const;
+  /*
+    Born-photon multichannel (YFS: REAL_BORN_PHOTON_MULTICHANNEL, NLO_Base.C).
+    With photons in the Born final state an initial-state photon that passes
+    the generation cuts is itself Born-eligible, and the same final state is
+    reached through every assignment of photons to "Born pair" and "ISR"
+    that passes them. BornPhotonChannelSum returns
+        G = sum_b h_b / h_gen ,   h = prod_{ISR photons} S~_II(k) B(Born pair) s/s'
+    over the assignments b that pass the Born selector and the generator's
+    v_max (h_gen, the generated assignment, included, so G >= 1 and G = 1
+    exactly when no other assignment passes). B is the Born |M|^2 at the
+    generator's reduced point of that pair: beams back to back along the lab
+    axis in the pair's rest frame (pure boost), the pair as in the event.
+      lab   : beams (unused) + the Born final legs in the lab, pre-FSR
+      isr   : the ISR photons of the event
+      jswap : >= 0 only the assignments that exchange ISR photon jswap with
+              one Born photon (the channels of that photon's one-photon real);
+              < 0 every choice of Born photons among Born and ISR photons.
+    nalt, if given, receives the number of other assignments that passed.
+  */
+  double BornPhotonChannelSum(const ATOOLS::Vec4D_Vector &lab,
+                              const std::vector<ATOOLS::Vec4D> &isr,
+                              YFS::Dipole &dII, int jswap,
+                              int *nalt = nullptr);
+  //! 1/G for the ISR photon k of this event (1 when the switch is off or k
+  //! is not an ISR photon of the event); used on the one-photon real.
+  double BornPhotonChannelWeight(const ATOOLS::Vec4D &k);
+  //! the generator's v_max and s for the channel check, set by YFS_Handler
+  double m_bpmc_vmax = 1., m_bpmc_s = -1.;
+  //! diagnostics of the last BornPhotonChannelWeight call (WEIGHT_PROBE)
+  double m_bpmc_lastG = 1.;  int m_bpmc_lastn = 0;
+  double m_bpmc_hardG = 1., m_bpmc_hardR = 0., m_bpmc_hardx = 0.,
+         m_bpmc_hardsub = 0.;
   bool   ReducedBornISR(const ATOOLS::Vec4D &k, double &bratio);
   /*
     The Born of the event with photon k moved to the other channel, relative

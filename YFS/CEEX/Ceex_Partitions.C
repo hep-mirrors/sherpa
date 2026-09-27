@@ -652,6 +652,9 @@ void Ceex_Base::Calculate() {
     PartitionStart(last);
   }
   if (m_allphotons.size() > m_maxnphot) m_maxnphot = m_allphotons.size();
+  // CEEX: ORDER 2 - which photons can form beta_2 pairs (after the collapse)
+  const bool dobeta2(m_order == 2 && PrepareBeta2());
+  if (dobeta2) ++m_b2events;
   for (;;) {
     ++nparts;
     Vec4D PX(m_pceex[0] + m_pceex[1]);
@@ -797,6 +800,7 @@ void Ceex_Base::Calculate() {
           }
         }
       } }
+    if (dobeta2) ResetBeta1Record();
     InfraredSubtractedME_0_0();
     // Only when a virtual was asked for and CEEX is its source; see
     // Ceex_Base::CeexOwnVirtual.
@@ -826,6 +830,33 @@ void Ceex_Base::Calculate() {
         }
       }
     }
+    /*
+      CEEX: ORDER 2 - beta_2 for every eligible pair, after the beta_1 loop
+      of the SAME partition, whose M_1 and eikonals it subtracts.
+    */
+    if (dobeta2)
+      for (size_t j(0); j < m_allphotons.size(); ++j)
+        for (size_t l(j + 1); l < m_allphotons.size(); ++l)
+          if (Beta2PairEligible((int)j, (int)l))
+            ComixInfraredSubtracted_2_0((int)j, (int)l);
+    { static const int kkflux(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                              ["KKMC_FLUX_EMULATION"].Get<int>());
+      if (kkflux && m_order == 2 && m_flavs.size() == 4) {
+        const Vec4D Q(m_pceex[m_if1] + m_pceex[m_if2]);
+        const double Q2(Q.Abs2());
+        double rall(0.), rsoft(0.);
+        for (size_t j(0); j < m_allphotons.size(); ++j)
+          for (size_t l(j + 1); l < m_allphotons.size(); ++l)
+            if (!m_stagereduces[m_stage[j]] && !m_stagereduces[m_stage[l]]) {
+              const double t(2.*(m_allphotons[j]*m_allphotons[l])/Q2);
+              rall += t;
+              if (!Beta2PairEligible((int)j, (int)l)) rsoft += t;
+            }
+        for (int f(0); f < Amplitude::NHel(); ++f) {
+          m_AmpFluxAll.m_A[f]  += m_Sprod*rall*m_partborn0.m_A[f];
+          m_AmpFluxSoft.m_A[f] += m_Sprod*rsoft*m_partborn0.m_A[f];
+        }
+      } }
 
     if (last == 1) break;
     PartitionPlus(last);
@@ -1027,6 +1058,14 @@ void Ceex_Base::Calculate() {
   ApplyComixReal();
 
   MakeRho();
+  if (m_order == 2) {
+    static const bool b2c(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                          ["BETA2_CLOSURE"].Get<int>() != 0);
+    static const bool b2s(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                          ["BETA2_SOFT_TEST"].Get<int>() != 0);
+    if (b2c) Beta2Closure();
+    if (b2s) Beta2SoftLimit();
+  }
   { static const bool bc(ATOOLS::Settings::GetMainSettings()["CEEX"]
                          ["BETA1_CLOSURE"].Get<int>() != 0);
     if (bc) Beta1Closure(); }
@@ -1045,7 +1084,14 @@ void Ceex_Base::Calculate() {
   static const size_t dumpn(ATOOLS::Settings::GetMainSettings()["CEEX"]["DUMP_NPHOT"].Get<int>());
   const double xgam(!m_allphotons.empty() && m_momenta.size() >= 2 ?
                     2.*m_allphotons[0][0]/(m_momenta[0]+m_momenta[1]).Mass() : 0.);
-  if (m_checkxs && !m_ceexdumped && m_allphotons.size() == dumpn &&
+  // DUMP_XMIN_EACH: every photon above this x (a multi-hard-photon point)
+  static const double dumpxeach(ATOOLS::Settings::GetMainSettings()["CEEX"]["DUMP_XMIN_EACH"].Get<double>());
+  bool dumpeach(true);
+  if (dumpxeach > 0. && m_momenta.size() >= 2)
+    for (size_t i(0); i < m_allphotons.size(); ++i)
+      if (!(2.*m_allphotons[i][0]/(m_momenta[0]+m_momenta[1]).Mass() > dumpxeach))
+        dumpeach = false;
+  if (m_checkxs && !m_ceexdumped && m_allphotons.size() == dumpn && dumpeach &&
       xgam > dumpxmin && m_momenta.size() >= 6 && m_result0 != 0.) {
     
     Vec4D bal(m_momenta[0] + m_momenta[1] - m_momenta[4] - m_momenta[5]);
@@ -1180,8 +1226,8 @@ void Ceex_Base::Calculate() {
           }
     msg_Out() << "=== Sherpa CEEX point written to ceex_point.dat ===\n"
               << "  rho0 (O(alpha^0)) = " << m_result0 << "\n"
-              << "  rho1 (O(alpha^1)) = " << m_result << "\n"
-              << "  rho1/rho0 - 1     = " << (m_result/m_result0 - 1.) << "\n"
+              << "  rho1 (O(alpha^1)) = " << m_result1 << "\n"
+              << "  rho1/rho0 - 1     = " << (m_result1/m_result0 - 1.) << "\n"
               << "  compare against the KKMC harness's\n"
               << "    (RhoExp1 - RhoExp0)/RhoExp0 on the same point.\n"
               << "  sqrt(s) of this point = "
@@ -1193,6 +1239,23 @@ void Ceex_Base::Calculate() {
               << "   <-- CEEX eq.(one-photon): B(X) with X = P-k_1\n"
               << "  photon x = 2E/sqrt(s) = " << xgam
               << ",  E_gamma = " << m_allphotons[0][0] << " GeV\n";
+    if (m_order == 2) {
+      /*
+        The tree-level O(alpha^2) partner of the KKMC harness's mode 5
+        (KKTREE2 line: rho1/rho0 and rho2/rho0 with no virtual anywhere). The
+        Sherpa side must be run without a CEEX-internal virtual
+        (YFS: CEEX_Virtual: external, which composes outside m_result).
+      */
+      std::cerr<<std::setprecision(12)<<"@@@ SHTREE2 nphot="<<m_allphotons.size()
+               <<" rho1/rho0="<<m_result1/m_result0
+               <<" rho2/rho0="<<m_result2/m_result0
+               <<" rho2/rho1="<<(m_result1 != 0. ? m_result2/m_result1 : 0.)
+               <<" ownvirt="<<(CeexOwnVirtual() ? 1 : 0)
+               <<" nisr="<<m_isrphotons.size();
+      for (size_t i(0); i < m_allphotons.size(); ++i)
+        std::cerr<<" x"<<i<<"="<<2.*m_allphotons[i][0]/(m_momenta[0]+m_momenta[1]).Mass();
+      std::cerr<<std::endl;
+    }
   }
 
   static const bool cxchk(ATOOLS::Settings::GetMainSettings()["CEEX"]["COMIX_CHECK"].Get<int>()!=0);

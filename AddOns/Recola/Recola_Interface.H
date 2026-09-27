@@ -92,6 +92,18 @@ namespace Recola {
                                     const ATOOLS::Flavour_Vector &flavs,
                                     bool with_nlo = true);
 
+    /*!
+      Helicity-resolved tree (a0) and one-loop (a1) amplitudes of process id,
+      read back after compute_process_rcl (no extra evaluation). One entry per
+      helicity configuration hel[c]. Recola's own squared results are
+        LO = f sum_c |a0|^2 ,  NLO = f sum_c 2 Re(a0^* a1)
+      with f the spin average times the symmetry factor. Colourless states
+      and a single q qbar pair only; false otherwise.
+    */
+    static bool HelicityAmplitudes(int id, std::vector<Complex> &a0,
+                                   std::vector<Complex> &a1,
+                                   std::vector<std::vector<int> > &hel);
+
     static std::string process2Recola(const ATOOLS::Flavour_Vector& fl);
     static std::string process2Recola(const PHASIC::Process_Info &pi)
     { return process2Recola(pi.ExtractFlavours()); }

@@ -2067,6 +2067,9 @@ void Amplitude::SetPropShifts(const Prop_Shifts &shifts)
     }
   }
   const size_t bornfin(bornlegs & ~inimask);
+  size_t phomask(0);
+  for (size_t i(0); i < m_n && i < m_fl.size(); ++i)
+    if (m_fl[i].Kfcode() == kf_photon) phomask |= (1ull<<i);
   auto apply = [&](METOOLS::Current *c) {
     if (!any) { c->SetPropShift(Vec4D()); return; }
     const size_t id(c->CId() & all);
@@ -2086,7 +2089,16 @@ void Amplitude::SetPropShifts(const Prop_Shifts &shifts)
         return;
       }
     }
-    const bool smaller(__builtin_popcountll(all ^ id) < __builtin_popcountll(id));
+    /*
+      Which side of a line holds the missing photons of a partly contained
+      stage. The emission propagator next to the root-side leg is built from
+      its complement, and must take the whole imbalance. With one explicit
+      photon that complement is always the smaller side.
+    */
+    bool smaller(__builtin_popcountll(all ^ id) < __builtin_popcountll(id));
+    if (!smaller && __builtin_popcountll(all ^ id) == __builtin_popcountll(id)
+        && (id & phomask) == 0 && __builtin_popcountll((all ^ id) & phomask) >= 2)
+      smaller = true;
     Vec4D sh;
     for (size_t g(0); g < shifts.size(); ++g) {
       if (shifts[g].first & (lineflag | legflag)) continue;

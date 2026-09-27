@@ -6,7 +6,8 @@ set(CEEX_SOURCES Ceex_Base.C
                  Ceex_Partitions.C
                  Ceex_Comix.C
                  Ceex_Checks.C
-                 Ceex_Beta2.C)
+                 Ceex_Beta2.C
+                 Ceex_LoopHelicity.C)
 
 set(CEEX_HEADERS Ceex_Base.H)
 

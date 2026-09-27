@@ -79,6 +79,25 @@ namespace PHASIC {
 
     inline std::string Name() { return m_name; }
 
+    /*!
+      Helicity-resolved tree and one-loop amplitudes of the last Calc(), for
+      providers that can return them (Recola: get_amplitude_r1_rcl after
+      compute_process_rcl, no extra evaluation). Used by YFS.
+
+      a0[c], a1[c] belong to the helicity configuration hel[c], one entry per
+      external leg in the process order, physical helicity: -1 left-handed,
+      +1 right-handed, 0 for a scalar or longitudinal state. Conventions are
+      the provider's own; only the ratio a1/a0 per configuration and the
+      labels are meant to be used by a caller. The sums reproduce the
+      provider's squared results up to the spin-average/symmetry factor:
+      sum_c |a0|^2 ~ Born, sum_c 2 Re(a0^* a1) ~ virtual (same factor).
+      Returns false if the provider cannot supply them.
+    */
+    virtual bool HelicityAmplitudes(std::vector<Complex> &a0,
+                                    std::vector<Complex> &a1,
+                                    std::vector<std::vector<int> > &hel)
+    { return false; }
+
     static Virtual_ME2_Base* GetME2(const PHASIC::Process_Info& pi);
     static Virtual_ME2_Base* GetME2(const std::string& tag,
                                     const PHASIC::Process_Info& pi);

@@ -85,7 +85,7 @@ namespace YFS {
   public:
 
     Ceex_Base(const Flavour_Vector &flavs);
-    virtual ~Ceex_Base() { ReportBornShape(); ReportComixReal(); }
+    virtual ~Ceex_Base() { ReportBornShape(); ReportComixReal(); ReportBeta2(); ReportLoopHelicity(); }
 
     Flavour_Vector m_flavs;
     /*!
@@ -118,6 +118,9 @@ namespace YFS {
     //! heavy-event trace; see CEEX: TRACE_FACTOR_ABOVE.
     void PrintKinematics(std::ostream &o) const;
     inline void SetLabMomenta(const ATOOLS::Vec4D_Vector &p) { m_plabmom = p; }
+    //! the event's final legs BEFORE final-state emission (YFS m_reallab),
+    //! where the generator's m_born sits; see GeneratorBornAt
+    inline void SetPreFSRMomenta(const ATOOLS::Vec4D_Vector &p) { m_prefsr = p; }
     inline size_t DecayCId() const
     { return (((size_t)1)<<m_if1) | (((size_t)1)<<m_if2); }
 
@@ -296,6 +299,16 @@ namespace YFS {
       - but kept as the handler already supplies it.
     */
     ATOOLS::Vec4D_Vector m_plabmom;
+    ATOOLS::Vec4D_Vector m_prefsr;
+    /*!
+      The generator's Born point at invariant R^2: the PRE-FSR final legs,
+      boosted to their own rest frame and rescaled together to invariant mass
+      sqrt(R^2), with the beams back to back along the lab axis as a pure
+      boost carries it. The same construction as NLO_Base::PreFSRBornPoint
+      (which CEEX cannot call: MakeCEEX runs before NLO's momenta are
+      refreshed). For any final state, where BornLegsAt rebuilds one pair.
+    */
+    bool GeneratorBornAt(const ATOOLS::Vec4D &R, ATOOLS::Vec4D_Vector &pb) const;
     /*!
       Project the final legs and every photon onto exact momentum
       conservation against the beams and onto their mass shells, before
@@ -737,10 +750,70 @@ namespace YFS {
     bool BuildStages();
     void PartitionStart(int &last);
     void PartitionPlus(int &last);
-    void InfraredSubtractedME_2_0();
-    Complex BetaDouble_2_0(Vec4D &k1, Vec4D &k2, int h1, int h2);
-    Complex BetaSingle_2_0(Vec4D &k1, Vec4D &k2, int h1, int h2);
-    Complex BetaRest_2_0(Vec4D &k1, Vec4D &k2, int h1, int h2);
+    /*!
+      O(alpha^2) tree-level double real, beta_2 (CEEX: ORDER: 2), built from
+      Comix's two-photon amplitude; see Ceex_Beta2.C. The beta_1 pass leaves,
+      per partition and photon, the aligned M_1 it added (if this partition
+      carries it), the stage eikonal it subtracted with, and whether beta_1
+      was active at all, so that beta_2 subtracts EXACTLY the beta_1 the
+      partition sum contains (the "(1-n) cancellation must use the same
+      numbers" rule, one order up).
+    */
+    int m_order = 1;
+    Amplitude m_AmpBeta2;     //!< the beta_2 increments alone (partition summed)
+    Amplitude m_AmpExpo2;     //!< m_AmpExpo1 + m_AmpBeta2, built in MakeRho
+    /*!
+      CEEX: KKMC_FLUX_EMULATION (diagnostic, 2 -> 2, no virtual): KKMC's
+      O(alpha^1) amplitude keeps sum_{i<j in F} 2 k_i.k_j/Q^2 sProd B per
+      partition (its beta_0 flux minus the (1-CKine) terms), and its O(alpha^2)
+      removes it only for pairs above vcut2. These hold the two residuals so
+      rho_1/rho_2 can be made KKMC-like for an event-level comparison.
+    */
+    Amplitude m_AmpFluxAll, m_AmpFluxSoft;
+    std::vector<Amplitude> m_b2M1;    //!< aligned M_1(k_j) of THIS partition
+    std::vector<char>      m_b2hasM1; //!< this partition carried M_1(k_j)
+    std::vector<char>      m_b2on;    //!< beta_1(k_j) active in this partition
+    std::vector<Complex>   m_b2sj;    //!< the eikonal beta_1(k_j) subtracted with
+    std::vector<char>      m_b2elig;  //!< photon may pair (enumerated, x cut)
+    bool m_b2ready = false;           //!< provider, process and Born checked
+    long m_b2pairs = 0, m_b2m2 = 0, m_b2fail = 0, m_b2events = 0;
+    //! per event: which photons may pair; false = no beta_2 this event
+    bool PrepareBeta2();
+    void ReportBeta2() const;
+    //! zero the per-partition beta_1 record (called at each partition start)
+    void ResetBeta1Record();
+    //! Comix M_2(k_j,k_l) in CEEX's alignment, photon j in the first photon slot
+    bool ComixReal2Shifted(const ATOOLS::Vec4D_Vector &pp, int hj, int hl,
+                           Amplitude &M2, const PropShifts &shifts,
+                           bool noshift = false);
+    //! StageShifts with both photons j and l left out
+    PropShifts StageShifts2(int j, int l) const;
+    //! PartitionLegs with both photons j and l left out (balanced with k_j+k_l)
+    bool PartitionLegs2(int j, int l, ATOOLS::Vec4D_Vector &pb) const;
+    void AddExchangeLineShifts2(int j, int l, PropShifts &sh) const;
+    //! Is the pair (j,l) eligible for beta_2 in this event (cut, enumeration)?
+    bool Beta2PairEligible(int j, int l) const;
+    //! eq. (95) of hep-ph/0006359 for one pair in the current partition
+    bool ComixInfraredSubtracted_2_0(int j, int l);
+    //! n = 2 closure: rho_2 against |M_2|^2 on the event (CEEX: BETA2_CLOSURE)
+    void Beta2Closure();
+    //! single and double soft limits of beta_2 (CEEX: BETA2_SOFT_TEST)
+    void Beta2SoftLimit();
+    double m_result1 = 0.;     //!< rho_1 = sum|A_1|^2/4, always
+    double m_result01o1 = 0.;  //!< Re<A_0,A_1>/4, always
+    double m_result2 = 0.;     //!< rho_2 = sum|A_2|^2/4 (0 unless ORDER 2)
+    double m_result12 = 0.;    //!< Re<A_1,A_2>/4
+    double m_result02 = 0.;    //!< Re<A_0,A_2>/4
+    double m_resultV = 0.;     //!< |A_v|^2/4: what an external v multiplies, squared
+    inline int Order() const { return m_order; }
+    inline double GetResult1() const { return m_result1; }
+    inline double GetResult01Order1() const { return m_result01o1; }
+    inline double GetResult2() const { return m_result2; }
+    inline double GetResult02() const { return m_result02; }
+    inline double GetResult12() const { return m_result12; }
+    //! the amplitude an external virtual (v/2) multiplies, |A_v|^2/4: A_0,
+    //! or A_1 under CEEX: ORDER2_VIRTUAL_ON_BETA1 (KKMC's (1+v/2) on beta_1)
+    inline double GetResultVV() const { return m_resultV; }
     //! Per-photon soft factors, both attachments, at the drawn helicity.
     void CalculateSfactors();
     void MakePhotonHel();
@@ -758,7 +831,6 @@ namespace YFS {
                    bool NegMass=0, double M1=-1., double M2=-1.);
     Complex VGamma(const Vec4D &p1, const Vec4D &p2, const Vec4D &k, int h2, int i, int j,
                    double M1=-1., double M2=-1.);
-    Complex bsigma(Vec4D k, Vec4D p, int hel);
     virtual inline bool ZOnly() {return m_onlyz;}
 
     Complex S(const Vec4D &p1, const Vec4D &p2, int h1, int h2);
@@ -837,8 +909,77 @@ namespace YFS {
     //! O(alpha^0) CEEX distribution, i.e. beta_0^0 only.
     inline double GetResult0() {return m_result0;}
     inline double GetResult01() const {return m_result01;}
+    /*!
+      YFS: CEEX_Virtual: helicity (Ceex_LoopHelicity.C).
+
+      LoopHelicityToCeex puts the loop provider's per-helicity virtual factors
+      delta (NLO_Base::m_ldelta, provider labels hel = physical helicity per
+      leg, tree amplitudes a0, at the Born point p) into CEEX's helicity index,
+      d[f]; entries the provider does not fill keep vhalf. The label map is
+      DERIVED, like DeriveComixMap: at the first VIRT_HEL_NCAL events the
+      normalised |a0|^2 pattern is matched against Comix's Born at p over all
+      leg-flip masks (CEEX: VIRT_HEL_MASK >= 0 overrides), and Comix's index
+      goes to CEEX's through the fermion bits of m_comixflip, as in
+      InfraredSubtractedME_0_0. Only the labels are needed: the ratio
+      A1/A0 cancels every phase convention.
+
+      HelicityVirtualRho(d) = 1/4 sum_f |A_1[f] + d[f] A_0[f]|^2 on this
+      event's coherent amplitudes (A_0 = m_AmpExpo0, the partition-summed
+      Born, so d[f] multiplies every partition's beta_0 alike). With
+      d[f] = v/2 it equals m_result + v m_result01 + v^2/4 m_result0, the
+      external form.
+    */
+    int    m_loopmask = -1, m_loopcal = 0;
+    double m_loopmet = -1., m_loopnext = -1., m_looprmin = 0., m_looprmax = 0.;
+    long   m_lh_n = 0, m_lh_fail = 0, m_lh_mapbad = 0;
+    double m_lh_sumhel = 0., m_lh_sumext = 0., m_lh_sumd = 0., m_lh_sumd2 = 0.;
+    double m_lh_regmax = 0., m_lh_dmax = 0.;
+    bool   LoopHelicityToCeex(const std::vector<std::vector<int> > &hel,
+                              const std::vector<Complex> &a0,
+                              const std::vector<Complex> &delta,
+                              const ATOOLS::Vec4D_Vector &p, Complex vhalf,
+                              std::vector<Complex> &d);
+    /*!
+      With P1, P2 != 0 the helicity sum is weighted by (1 + l1 P1)(1 + l2 P2),
+      l_i the PHYSICAL helicity of beam i in CEEX index f (through the derived
+      label map; for f fbar the CEEX labels are physical, KKMC's): the
+      longitudinally polarised rho for the unpolarised crude.
+    */
+    double HelicityVirtualRho(const std::vector<Complex> &d,
+                              double P1 = 0., double P2 = 0.) const;
+    //! physical helicity (+-1) of leg i in CEEX index f, 0 if unknown
+    int    PhysicalHelicity(int f, size_t i) const;
+    /*!
+      Per event, CEEX_Virtual: helicity: the CEEX correction factor (before
+      the IF form-factor cut) with the helicity virtual, m_lhcol[0], and the
+      variants the extra named weights report, relative to it:
+      [1] external virtual, [2]/[3] beam 1 fully left/right polarised,
+      [4]/[5] the same with the external virtual. Reset to 0 per event.
+    */
+    double m_lhcol[6] = {0., 0., 0., 0., 0., 0.};
+    //! run totals: the helicity and external additions to rho_1/rho_crude
+    //! and the in-code regression |rho_V(v/2) - external| / rho_1
+    void   AccumulateLoopHelicity(bool ok, double addhel, double addext,
+                                  double reg, const double split[3]);
+    /*!
+      rho_V(d) - rho_V(v/2) split, with D = d - v/2, into the part linear in
+      D, 1/4 sum 2 Re[(A_1 + v/2 A_0)^* D A_0], and the quadratic ones,
+      1/4 sum (Re D)^2 |A_0|^2 and 1/4 sum (Im D)^2 |A_0|^2.
+    */
+    void   HelicityVirtualSplit(const std::vector<Complex> &d, double vhalf,
+                                double split[3]) const;
+    double m_lh_split[3] = {0., 0., 0.};
+    void   ReportLoopHelicity();
     //! KKMC's RhoCrud: the incoherent partition sum. See m_rhocrud.
     inline double GetRhoCrude() const { return m_rhocrud; }
+    /*
+      YFS: REAL_BORN_PHOTON_MULTICHANNEL. With photons in the Born the same
+      final state is reached through several assignments of photons to Born
+      pair and ISR; the generator's density is the SUM of their crudes
+      (NLO_Base::BornPhotonChannelSum returns G = sum/generated). Applied by
+      YFS_Handler right after Calculate(), before anything reads the crude.
+    */
+    inline void ScaleRhoCrude(const double g) { m_rhocrud *= g; }
     /*!
       True on the ONE event whose momenta were written to ceex_point.dat.
       CEEX_Compare uses it to mark its line for that event, so the three

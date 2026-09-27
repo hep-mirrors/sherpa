@@ -33,6 +33,11 @@ namespace Recola {
 
     void Calc(const ATOOLS::Vec4D_Vector& momenta);
 
+    //! Per-helicity tree and loop amplitudes of the last Calc().
+    bool HelicityAmplitudes(std::vector<Complex> &a0,
+                            std::vector<Complex> &a1,
+                            std::vector<std::vector<int> > &hel);
+
     bool IsMappableTo(const PHASIC::Process_Info& pi);
     
   };

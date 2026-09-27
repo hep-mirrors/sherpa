@@ -390,14 +390,25 @@ void Ceex_Base::InfraredSubtractedME_0_0() {
   */
   static const int crudeborn(ATOOLS::Settings::GetMainSettings()["CEEX"]
                              ["CRUDE_BORN"].SetDefault(1).Get<int>());
-  bool usered(crudeborn != 0 && m_flavs.size() == 4 && m_comixborn
-              && m_cxbalignok && !realpoint);
+  /*
+    2 -> 2: the Born at BornLegsAt(X_wp), which rebuilds the one pair.
+    Beyond (2026-09-26): the generator's own point, GeneratorBornAt(X_wp),
+    from the PRE-FSR legs. Without it the crude was the physical-spinor Born
+    at the post-emission legs: e+e- -> mu mu nu nu at 250 GeV,
+    rho_crude/(S~ m_born) = 248 for soft photons and 0.3-27 for hard FSR ones
+    (a photon that puts mu nu gamma on the W while mu nu is off it), CEEX
+    3-8x YFS.NLO. The same failure is the Hll/4f hard-FSR flux problem.
+  */
+  bool usered(crudeborn != 0 && m_flavs.size() >= 4 && m_comixborn
+              && m_cxbalignok && !realpoint
+              && (m_flavs.size() == 4 || m_prefsr.size() == m_flavs.size()));
   Amplitude Cred;
   double fluxred(1.);
   if (usered) {
     Vec4D_Vector pb;
     const double X2(m_PXvec.Abs2());
-    const bool legs(X2 > 0. && BornLegsAt(m_PXvec, pb));
+    const bool legs(X2 > 0. && (m_flavs.size() == 4 ? BornLegsAt(m_PXvec, pb)
+                                                     : GeneratorBornAt(m_PXvec, pb)));
     usered = legs && ComixBornAmplitude(pb, Cred, NULL, -1., -1.);
     if (usered) fluxred = m_s/X2;
     // CEEX: CRUDE_BORN_TRACE - did the reduced-point crude engage, and how

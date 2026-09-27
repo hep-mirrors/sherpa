@@ -73,6 +73,16 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
   m_perphoton    = s["COMIX_REAL_PER_PHOTON"].Get<int>();
   m_comixborn    = s["COMIX_BORN"].Get<int>();
   m_vpon         = s["VIRT_PARTITION_CHECK"].Get<int>() != 0;
+  m_order        = s["ORDER"].Get<int>();
+  if (m_order != 1 && m_order != 2) {
+    msg_Error()<<METHOD<<"(): CEEX: ORDER = "<<m_order<<" is not 1 or 2; "
+               <<"using 1."<<std::endl;
+    m_order = 1;
+  }
+  if (m_order == 2)
+    msg_Info()<<"CEEX: ORDER 2 - tree-level double real beta_2 from Comix "
+              <<"two-photon amplitudes, pairs with x = 2E/sqrt(s) > "
+              <<s["BETA2_XCUT"].Get<double>()<<"."<<std::endl;
   /*
     Any path that asks Comix for the PARTITION Born hands it CEEX's own
     arguments: full-energy beam spinors with the physical pair, and the
@@ -277,7 +287,9 @@ void Ceex_Base::RegisterDefaults()
   s["ONLYZ"].SetDefault(0);
   s["ONLYG"].SetDefault(0);
   s["CHECK_XS"].SetDefault(0);
-  s["WEAK"].SetDefault(1);
+  // 0: tree-level couplings in CEEX's hand-coded Born; the weak virtual
+  // comes from the loop provider (CEEX_Virtual: auto/external)
+  s["WEAK"].SetDefault(0);
   s["COMIX_REAL"].SetDefault(1);
   /*
     Both of these used to be fitted numbers (26 and 0.5). They are now DERIVED
@@ -446,9 +458,41 @@ void Ceex_Base::RegisterDefaults()
   s["PIN_PHOTON_HEL"].SetDefault(0);   // pin photon helicity (+1/-1) for sums
   s["DUMP_XMIN"].SetDefault(0.0);      // min x_gamma for the point dump
   s["DUMP_NPHOT"].SetDefault(1);       // photon multiplicity to dump at
+  s["DUMP_XMIN_EACH"].SetDefault(0.0); // min x_gamma of EVERY dumped photon
   s["COMIX_CHECK"].SetDefault(0);      // @@@ CEEXCX, hand-coded vs Comix
   s["GOLDEN"].SetDefault(0);           // @@@ CEEXGOLD, regression stream
   s["WEIGHT_PROBE"].SetDefault(0);     // @@@ CEEXWT, what makes a heavy event
+  /*
+    The perturbative order of the CEEX amplitude. 1 (default): beta_0 +
+    beta_1, today's weight bit for bit. 2: adds the tree-level double real
+    beta_2 (hep-ph/0006359 eq. 95, KKMC's GPS_HiiPlus/HffPlus/HifPlus) built
+    from Comix's two-photon amplitude per partition, Ceex_Beta2.C. It needs
+    the two-photon real provider (YFS: NLO_Part containing W, which builds
+    the e+e- -> X + 2 photons process); without it beta_2 is zero and says
+    so once. Neither the real-virtual nor the two-loop virtual is included.
+  */
+  s["ORDER"].SetDefault(1);
+  /*
+    beta_2 only for pairs with BOTH photons above x = 2E/sqrt(s) in the CEEX
+    frame (the beam CMS). KKMC's vcut2 = xpar(42) = 0.05 is the same variable
+    (E/E_beam). Below the cut beta_2 = 0, the honest value, as for
+    BETA1_XCUT. Only photons ENUMERATED in the partition sum can pair, so
+    the effective cut is max(BETA2_XCUT, SOFT_PARTITION_CUT).
+  */
+  s["BETA2_XCUT"].SetDefault(0.05);
+  /*
+    External virtual at ORDER 2: 0 (default) keeps the O(alpha^1) composition
+    sum_h |A_2 + (v/2) A_0|^2; 1 puts (1+v/2) on beta_0 AND beta_1,
+    sum_h |A_2 + (v/2) A_1|^2, which is KKMC's O(alpha^2) structure
+    ((1+d_I)(1+d_F) on r in HiniPlus/HfinPlus). The difference is the
+    O(alpha^2) real-virtual v x beta_1 interference; see
+    NOTES-ceex-order2-2026-09-26.md. Ignored at ORDER 1.
+  */
+  s["ORDER2_VIRTUAL_ON_BETA1"].SetDefault(0);
+  s["BETA2_CLOSURE"].SetDefault(0);    // @@@ B2CLOS, n = 2 closure
+  s["BETA2_SOFT_TEST"].SetDefault(0);  // @@@ B2SOFT, soft limits (N events)
+  s["BETA2_TRACE"].SetDefault(0);      // @@@ B2TRACE, per pair and partition
+  s["KKMC_FLUX_EMULATION"].SetDefault(0); // diagnostic, see Ceex_Base.H
 }
 
 
@@ -595,6 +639,10 @@ void Ceex_Base::ZerAmplit() {
     m_snapBorn.m_A[f]    = Complex(0., 0.);
     m_snapVirt.m_A[f]    = Complex(0., 0.);
     m_snapReal.m_A[f]    = Complex(0., 0.);
+    m_AmpBeta2.m_A[f]    = Complex(0., 0.);
+    m_AmpFluxAll.m_A[f]  = Complex(0., 0.);
+    m_AmpFluxSoft.m_A[f] = Complex(0., 0.);
+    m_AmpExpo2.m_A[f]    = Complex(0., 0.);
   }
 }
 
@@ -612,6 +660,85 @@ void Ceex_Base::MakeRho() {
   m_result0  = sum0 / 4.;
   m_result   = sum1 / 4.;
   m_result01 = sum01 / 4.;
+  m_result1    = m_result;
+  m_result01o1 = m_result01;
+  m_resultV    = m_result0;
+  /*
+    YFS: ME_PROBE - one-photon events: rho_1 (the coherent assembly), the
+    map-independent sum_f |M_1|^2 of the Comix table for the drawn photon
+    helicity (m_comixM1, the mapped copy, is a permutation of that plane) and
+    the crude, next to the photon's x and the event's yfs photon count; the
+    fixed-order side prints r/(S~ B) for the same photon (@@@ SUB8).
+  */
+  { static const bool mp(ATOOLS::Settings::GetMainSettings()["YFS"]
+                         ["ME_PROBE"].SetDefault(0).Get<int>() != 0);
+    if (mp && NPhot() == 1) {
+      double m1(0.);
+      for (int f = 0; f < nh; ++f) m1 += std::norm(m_comixM1.m_A[f]);
+      std::ostringstream o;
+      o<<std::setprecision(10)<<"@@@ CEEXMP x="<<std::setprecision(6)
+       <<2.*m_allphotons[0][0]/sqrt(m_s)<<std::setprecision(10)
+       <<" rho1="<<m_result<<" rho0="<<m_result0<<" M1sq="<<m1/4.
+       <<" rhocr="<<m_rhocrud;
+      // the crude's final-stage pieces for this photon: |s_F|^2 on the
+      // physical legs, the pseudo-flux (q+k)^2/q^2 of the F assignment, and
+      // |s_F|^2 on the pre-emission legs (the generator's)
+      for (int g(0); g < m_nstages && g < (int)m_Sfac.size(); ++g) {
+        if (g == m_initstage || m_Sfac[g].empty()) continue;
+        Vec4D q; Complex spre(0., 0.);
+        bool ok(m_prefsr.size() == m_flavs.size());
+        for (size_t l(0); l < m_stagelegs[g].size(); ++l) {
+          const int lg(m_stagelegs[g][l].leg);
+          if (lg < (int)m_pceex.size()) q += m_pceex[lg];
+          if (ok && lg < (int)m_prefsr.size())
+            spre += m_stagelegs[g][l].w * SfactorLeg(m_prefsr[lg], m_allphotons[0], m_PhoHel[0]);
+          else ok = false;
+        }
+        const double q2(q.Abs2()), pf(q2 > 0. ? (q + m_allphotons[0]).Abs2()/q2 : 0.);
+        o<<" g="<<g<<" sFpost2="<<std::norm(m_Sfac[g][0])<<" pflux="<<pf
+         <<" sFpre2="<<(ok ? std::norm(spre) : -1.);
+      }
+      if (m_initstage < (int)m_Sfac.size() && !m_Sfac[m_initstage].empty())
+        o<<" sI2="<<std::norm(m_Sfac[m_initstage][0]);
+      o<<"\n";
+      std::cerr<<o.str();
+    } }
+  /*
+    ORDER 2: A_2 = A_1 + the beta_2 sum, and the weight (m_result) becomes
+    rho_2. m_result01/m_resultV are what an external virtual composes with
+    (YFS_Handler): v Re<A_v, A_2> + (v/2)^2 |A_v|^2 with A_v = A_0, or A_1
+    under ORDER2_VIRTUAL_ON_BETA1. At ORDER 1 none of this runs and every
+    number above is the one it always was.
+  */
+  if (m_order == 2) {
+    static const bool vb1(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                          ["ORDER2_VIRTUAL_ON_BETA1"].Get<int>() != 0);
+    double s2(0.), s12(0.), s02(0.);
+    for (int f = 0; f < nh; ++f) {
+      m_AmpExpo2.m_A[f] = m_AmpExpo1.m_A[f] + m_AmpBeta2.m_A[f];
+      s2  += std::norm(m_AmpExpo2.m_A[f]);
+      s12 += std::real(conj(m_AmpExpo1.m_A[f]) * m_AmpExpo2.m_A[f]);
+      s02 += std::real(conj(m_AmpExpo0.m_A[f]) * m_AmpExpo2.m_A[f]);
+    }
+    m_result2  = s2 / 4.;
+    static const int kkflux(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                            ["KKMC_FLUX_EMULATION"].Get<int>());
+    if (kkflux) {
+      // diagnostic: rho_1 and rho_2 as KKMC builds them (see Ceex_Base.H)
+      double k1(0.), k2(0.);
+      for (int f = 0; f < nh; ++f) {
+        k1 += std::norm(m_AmpExpo1.m_A[f] + m_AmpFluxAll.m_A[f]);
+        k2 += std::norm(m_AmpExpo2.m_A[f] + m_AmpFluxSoft.m_A[f]);
+      }
+      m_result1 = k1 / 4.;
+      m_result2 = k2 / 4.;
+    }
+    m_result12 = s12 / 4.;
+    m_result02 = s02 / 4.;
+    m_result   = m_result2;
+    m_result01 = vb1 ? m_result12 : m_result02;
+    m_resultV  = vb1 ? m_result1 : m_result0;
+  }
   double sumbv(0.), sumbr(0.);
   for (int f = 0; f < nh; ++f) {
     sumbv += std::norm(m_AmpBornVirt.m_A[f]);

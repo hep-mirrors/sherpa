@@ -53,19 +53,29 @@ struct wwscheme {
               is exactly the coherence CEEX exists to keep, so this is a
               deliberate trade and not a free one.
     helicity  the provider's virtual resolved BY HELICITY, so amplitude-level
-              matching survives at any multiplicity. Recola can supply this
-              (get_amplitude_r1_rcl); not yet implemented.
+              matching survives at any multiplicity (ACRAIC). Needs
+              Loop_Generator: Recola (get_amplitude_r1_rcl, no extra loop
+              call); delta^h = A1^h/A0^h - alpha B_4 per helicity at the Born
+              point, sum_h |A_1 + delta^h A_0|^2 in the CEEX weight. Falls
+              back to v/2 (= external) where the provider cannot resolve a
+              helicity. YFS/NLO/NLO_LoopHelicity.C, Ceex_LoopHelicity.C.
     none      no virtual in the CEEX column at all: Born + real only, whatever
               NLO_Part says. This is what `external` silently was until
               2026-09-25 (the value was read and never consumed), kept as a
               named choice so Born+real comparisons stay reproducible.
+*/
+/*
+    auto      (default) external when a loop provider supplies the virtual
+              (NLO_Part with V and a Loop_Generator), no virtual otherwise;
+              CEEX's own 2 -> 2 virtual only when asked for with ceex.
 */
 struct ceexvirt {
   enum code {
     ceex     = 0,
     external = 1,
     helicity = 2,
-    none     = 3
+    none     = 3,
+    automatic = 4
   };
 };
 
@@ -258,6 +268,9 @@ public:
   Vec4D m_beam1, m_beam2;
 
   ceexvirt::code m_ceexvirtsrc = ceexvirt::ceex;
+  //! MODE was not set and CEEX: 1 implied it; YFS_Handler::SetFlavours
+  //! then picks ISRFSR or, without charged final-state particles, ISR
+  bool m_mode_from_ceex = false;
   submode::code m_submode;
   yfsmode::code m_mode;
   fixed_order::code m_fixedOrder;

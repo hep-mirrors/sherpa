@@ -112,6 +112,30 @@ bool Ceex_Base::FetchComixReal()
 
   const std::vector<METOOLS::Spin_Amplitudes> *amps
     (prov->ComixAmplitudes(p));
+  /*
+    YFS: ME_PROBE - the momenta CEEX hands Comix for its one-photon M_1: the
+    photon-lepton angle in units of that lepton's m/E, the lepton energy,
+    the balance, and sum |A|^2 over both photon planes (map-free).
+  */
+  { static const bool mp(ATOOLS::Settings::GetMainSettings()["YFS"]
+                         ["ME_PROBE"].SetDefault(0).Get<int>() != 0);
+    if (mp && ng == 1 && amps && !amps->empty()) {
+      const Vec4D &g(p.back());
+      double best(1e99), el(0.);
+      for (size_t i(2); i < nl && i < m_flavs.size(); ++i) {
+        if (!m_flavs[i].IsChargedLepton()) continue;
+        const double ct(Vec3D(p[i])*Vec3D(g)/(Vec3D(p[i]).Abs()*Vec3D(g).Abs()));
+        const double th(acos(Max(-1., Min(1., ct)))/(m_flavs[i].Mass()/p[i][0]));
+        if (th < best) { best = th; el = p[i][0]; }
+      }
+      double all(0.);
+      for (size_t j(0); j < (*amps)[0].size(); ++j) all += std::norm((*amps)[0][j]);
+      std::ostringstream o;
+      o<<std::setprecision(6)<<"@@@ CEEXPP x="<<2.*g[0]/sqrt(m_s)
+       <<std::setprecision(10)<<" th_pp="<<best<<" El_pp="<<el
+       <<" bal="<<worst<<" sumA2="<<all<<" g="<<g<<"\n";
+      std::cerr<<o.str();
+    } }
   if (amps == NULL || amps->empty())
     { ++m_cxrfail; CXR_REFUSE("Comix returned no amplitudes (KeepAmplitudes?)"); }
   if (amps->size() > 1) {
@@ -1392,6 +1416,42 @@ bool Ceex_Base::LegsAt(const Vec4D &X, const Vec4D &Y, Vec4D_Vector &pb) const
   return true;
 }
 
+bool Ceex_Base::GeneratorBornAt(const Vec4D &R, Vec4D_Vector &pb) const
+{
+  const size_t nl(m_flavs.size());
+  if (nl < 4 || m_prefsr.size() != nl) return false;
+  Vec4D Q;
+  for (size_t i(2); i < nl; ++i) Q += m_prefsr[i];
+  const double s2(R.Abs2());
+  const double m1(m_flavs[0].Mass()), m2(m_flavs[1].Mass());
+  if (!(s2 > sqr(m1 + m2)) || !(Q.Abs2() > 0.) || !(Q[0] > 0.)) return false;
+  Poincare toQ(Q);
+  std::vector<Vec3D> q; std::vector<double> mm2; double msum(0.);
+  for (size_t i(2); i < nl; ++i) {
+    Vec4D qi(m_prefsr[i]); toQ.Boost(qi); q.push_back(Vec3D(qi));
+    mm2.push_back(sqr(m_flavs[i].Mass())); msum += m_flavs[i].Mass();
+  }
+  const double M(sqrt(s2));
+  if (msum >= M) return false;
+  auto etot = [&](double xi) { double e(0.);
+    for (size_t j(0); j < q.size(); ++j) e += sqrt(mm2[j] + xi*xi*q[j].Sqr());
+    return e; };
+  double lo(0.), hi(1.);
+  while (etot(hi) < M && hi < 1e6) hi *= 2.;
+  for (int it(0); it < 200; ++it) { const double mid(0.5*(lo+hi)); (etot(mid) < M ? lo : hi) = mid; }
+  const double xi(0.5*(lo+hi));
+  pb.assign(nl, Vec4D());
+  const double sgn(m_bornmomenta.size() > 0 && m_bornmomenta[0][3] < 0. ? -1. : 1.);
+  const double lam(0.5*sqrt(Max(0., sqr(s2 - m1*m1 - m2*m2) - 4.*m1*m1*m2*m2)/s2));
+  pb[0] = Vec4D(sqrt(lam*lam + m1*m1), 0., 0.,  sgn*lam);
+  pb[1] = Vec4D(sqrt(lam*lam + m2*m2), 0., 0., -sgn*lam);
+  for (size_t i(2); i < nl; ++i) {
+    const Vec3D v(xi*q[i-2]);
+    pb[i] = Vec4D(sqrt(mm2[i-2] + v.Sqr()), v);
+  }
+  return true;
+}
+
 bool Ceex_Base::BornLegsAt(const Vec4D &X, Vec4D_Vector &pb) const
 {
   Vec4D Y(X);
@@ -1660,7 +1720,7 @@ bool Ceex_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
   const double y(S2 > 0. ? 2.*(k*S)/S2 : 0.);
   static const double xcut(ATOOLS::Settings::GetMainSettings()["CEEX"]
                            ["BETA1_XCUT"].Get<double>());
-  if (!(y > xcut)) return true;
+  if (!(y > xcut)) return true;     // m_b2on[iphot] stays 0: beta_1 = 0 here
   /*
     M_1 is needed on one partition per assignment of the others - the one
     with this photon on the reducing stage - and is evaluated only there.
@@ -1690,6 +1750,20 @@ bool Ceex_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
   const Complex sj(fixed ? TotalEikonal(pb, k, hel)
                          : StageEikonal(m_stage[iphot], pb, k, hel));
   const int nh(Amplitude::NHel());
+  /*
+    CEEX: ORDER 2 - record exactly what this partition's beta_1 of this
+    photon is, for beta_2's subtraction (Ceex_Beta2.C): the aligned M_1 if
+    carried here, and the eikonal subtracted with. Stores only; the O(alpha)
+    arithmetic below is untouched.
+  */
+  if (m_order == 2 && iphot < (int)m_b2on.size()) {
+    m_b2on[iphot] = 1;
+    m_b2sj[iphot] = sj;
+    m_b2hasM1[iphot] = addm1 ? 1 : 0;
+    if (addm1)
+      for (int f(0); f < nh; ++f)
+        m_b2M1[iphot].m_A[f] = m_cxbalign.m_A[f] * M1.m_A[f]/rn;
+  }
   double nsub(0.), nm1(0.), nv(0.);
   for (int f(0); f < nh; ++f) {
     const Complex sub(w * sj * m_partborn0.m_A[f]);

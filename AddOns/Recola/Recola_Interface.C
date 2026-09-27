@@ -75,8 +75,100 @@ namespace Recola {
   {
     ::get_polarized_squared_amplitude_r1_rcl(npr, pow, order, hel, &A2h);
   }
+  inline Complex get_amplitude_rcl(int npr, int pow, const char* order,
+                                   int colour[], int hel[])
+  {
+    dcomplex a;
+    a.dr = a.di = 0.;
+    ::get_amplitude_r1_rcl(npr, pow, order, colour, hel, &a);
+    return Complex(a.dr, a.di);
+  }
 }
 #endif
+
+bool Recola::Recola_Interface::HelicityAmplitudes(int id, std::vector<Complex> &a0,
+                                                  std::vector<Complex> &a1,
+                                                  std::vector<std::vector<int> > &hel)
+{
+  a0.clear(); a1.clear(); hel.clear();
+#ifndef USING__RECOLA2
+  return false;
+#else
+  if (s_procmap.find(id) == s_procmap.end()) return false;
+  const PHASIC::Process_Info &pi(s_procmap[id]);
+  const ATOOLS::Flavour_Vector flavs(pi.ExtractFlavours());
+  const size_t n(flavs.size());
+  if (n < 3) return false;
+  const int boqcd(pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0]);
+  const int voqcd(pi.m_maxcpl[0]);
+
+  { static bool warned(false);
+    if (!warned) {
+      warned = true;
+      bool photon(false);
+      for (size_t l(0); l < n; ++l) if (flavs[l].IsPhoton()) photon = true;
+      if (photon && Flavour(kf_h0).Width() != 0.)
+        msg_Error()<<METHOD<<"(): external photon with a non-zero Higgs width;"
+                   <<" Recola 2.3.0 returns NaN loop amplitudes there. Set"
+                   <<" PARTICLE_DATA: 25: Width: 0.\n";
+      Settings& s = Settings::GetMainSettings();
+      if (s["EW_SCHEME"].Get<ew_scheme::code>() == 1 &&
+          (Flavour(kf_u).Mass() == 0. || Flavour(kf_d).Mass() == 0. ||
+           Flavour(kf_s).Mass() == 0.))
+        msg_Error()<<METHOD<<"(): alpha(0) scheme with massless light quarks;"
+                   <<" the Recola loop then depends on mu_IR through the"
+                   <<" photon vacuum polarisation.\n";
+    } }
+  // Per-leg helicity lists, as in EvaluatePolarised.
+  std::vector<std::vector<int> > hels(n);
+  for (size_t l(0); l < n; ++l) {
+    const ATOOLS::Flavour &fl(flavs[l]);
+    if (fl.IsFermion())                      hels[l] = {-1, +1};
+    else if (fl.IsVector() && fl.Mass()==0.) hels[l] = {-1, +1};
+    else if (fl.IsVector())                  hels[l] = {-1, 0, +1};
+    else if (fl.IsScalar())                  hels[l] = {0};
+    else return false;
+  }
+  /*
+    Colour: zero for colourless legs, incoming quarks and outgoing
+    antiquarks; an outgoing quark or incoming antiquark points (1-based) to
+    its partner. Only a single colour flow is supported: with two quark lines
+    EW loops mix the flows and a per-helicity ratio needs a colour index too.
+  */
+  std::vector<int> col(n, 0);
+  int nq(0), qsrc(-1), qsnk(-1);
+  for (size_t l(0); l < n; ++l) {
+    const ATOOLS::Flavour &fl(flavs[l]);
+    if (fl.IsGluon()) return false;
+    if (!fl.IsQuark()) continue;
+    ++nq;
+    const bool in(l < 2);
+    // outgoing quark or incoming antiquark: colour source
+    if ((!in && !fl.IsAnti()) || (in && fl.IsAnti())) qsrc = l;
+    else qsnk = l;
+  }
+  if (nq != 0 && nq != 2) return false;
+  if (nq == 2) {
+    if (qsrc < 0 || qsnk < 0) return false;
+    col[qsrc] = qsnk + 1;
+  }
+  size_t ncfg(1);
+  for (size_t l(0); l < n; ++l) ncfg *= hels[l].size();
+  if (ncfg > s_pol_maxcfg) return false;
+  a0.reserve(ncfg); a1.reserve(ncfg); hel.reserve(ncfg);
+  std::vector<int> h(n, 0);
+  for (size_t c(0); c < ncfg; ++c) {
+    size_t r(c);
+    for (size_t l(0); l < n; ++l) {
+      h[l] = hels[l][r % hels[l].size()]; r /= hels[l].size();
+    }
+    const Complex A0(get_amplitude_rcl(id, boqcd, "LO",  &col[0], &h[0]));
+    const Complex A1(get_amplitude_rcl(id, voqcd, "NLO", &col[0], &h[0]));
+    a0.push_back(A0); a1.push_back(A1); hel.push_back(h);
+  }
+  return true;
+#endif
+}
 
 void Recola::Recola_Interface::SetAlphas(double alphas, double scale, int nflavour)
 {

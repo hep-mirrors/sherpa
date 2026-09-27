@@ -137,6 +137,12 @@ namespace YFS {
           //! The O(alpha) correction actually applied, and CEEX's, for the
           //! named-weight ratio. Set in GenerateWeight once IFI_Real is known.
           double m_corr_nominal = 1., m_corr_ceex = 0.;
+          //! CEEX: ORDER 2 only - the O(alpha^1) CEEX correction of the
+          //! same event (named weight CEEX_O1), composed exactly as ORDER 1
+          double m_corr_ceex_o1 = 0.;
+          //! ORDER 2, both external-virtual compositions: (v/2) on A_0
+          //! (CEEX_O2V0) and on A_1, KKMC's (1+v/2) on beta_1 (CEEX_O2V1)
+          double m_corr_ceex_v0 = 0., m_corr_ceex_v1 = 0.;
         };
         YFS_Event m_ev;
 
@@ -245,6 +251,8 @@ namespace YFS {
         };
         Ceex_Stats m_ceexstats;
         PHASIC::Process_Base *m_ceexborn = nullptr, *m_ceexreal = nullptr;
+        //! YFS: REAL_BORN_PHOTON_MULTICHANNEL: this event's G (CEEX crude)
+        double m_bpmc_evtG = 1.;  int m_bpmc_evtn = 0;
 
     public:
 

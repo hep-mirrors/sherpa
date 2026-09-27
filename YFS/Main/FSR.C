@@ -149,61 +149,67 @@ void FSR::CalculateBetaBar() {
   }
 }
 
+// 1 - |p|/E without the cancellation of 1 - beta (see ISR.C).
+static double FSROneMinusBeta(const Vec4D &p)
+{
+  const double E(p[0]), P(Vec3D(p).Abs()), m2(Max(0., p.Abs2()));
+  return (E > 0. && E + P > 0.) ? m2/(E*(E + P)) : 1. - P/E;
+}
+
 void FSR::GenerateAngles() {
-// Generation of theta for two massive particles
-  double del1, del2;
+  static const double floorfrac(ATOOLS::Settings::GetMainSettings()["YFS"]
+                                ["FSR_DEADCONE_FLOOR"].SetDefault(1e-3).Get<double>());
+  double del1, del2, omc(0.), opc(0.);
   double am2 = sqr((m_mass[0]+m_mass[1])) / m_dip_sp;
   double weight = 1;
   if (m_kkmcAngles!=1) {
-    double P = log((1.+m_beta1)/(1.-m_beta1))
-                /(log((1.+m_beta1)/(1.-m_beta1))+log((1.+m_beta2)/(1.-m_beta2)));
+    const double omb1(FSROneMinusBeta(m_dipole[0])), omb2(FSROneMinusBeta(m_dipole[1]));
+    const double L1(log((1.+m_beta1)/omb1)), L2(log((1.+m_beta2)/omb2));
+    const double P(L1/(L1+L2));
     while (true) {
       if (ran->Get() < P) {
-        double rnd = ran->Get();
-        double a   = 1./m_beta1*log((1.+m_beta1)/(1.-m_beta1));;
-        m_c        = 1./m_beta1*(1.-(1.+m_beta1)*exp(-a*m_beta1*rnd));
+        del1 = (1.+m_beta1)*exp(-L1*ran->Get());
+        omc  = Max(0., (del1 - omb1)/m_beta1);
+        opc  = 2. - omc;
+        del2 = omb2 + m_beta2*opc;
       }
       else {
-        double rnd = ran->Get();
-        double a   = 1./m_beta2*log((1.+m_beta2)/(1.-m_beta2));
-        m_c        = 1./m_beta2*((1.-m_beta2)*exp(a*m_beta2*rnd)-1.);
+        del2 = omb2*exp(L2*ran->Get());
+        opc  = Max(0., (del2 - omb2)/m_beta2);
+        omc  = 2. - opc;
+        del1 = omb1 + m_beta1*omc;
       }
-      weight = 1.-((1.-m_beta1*m_beta1)/((1.-m_beta1*m_c)*(1.-m_beta1*m_c))
-                        +(1.-m_beta2*m_beta2)/((1.+m_beta2*m_c)*(1.+m_beta2*m_c)))
-                       /(2.*(1.+m_beta1*m_beta2)/((1.-m_beta1*m_c)*(1.+m_beta2*m_c)));
+      if (omc < floorfrac*omb1 || opc < floorfrac*omb2) continue;
+      m_c = (omc < opc) ? 1. - omc : opc - 1.;
+      weight = 1.-(omb1*(1.+m_beta1)/(del1*del1) + omb2*(1.+m_beta2)/(del2*del2))
+                  /(2.*(1.+m_beta1*m_beta2)/(del1*del2));
       if (ran->Get() < weight || m_kkmcAngles!=2) break;
     }
     m_MassWls.push_back(m_kkmcAngles!=2?1:weight);
-    m_theta = acos(m_c);
-    m_st = sin(m_theta);
-    m_phi = 2.*M_PI * ran->Get();
-    del1 = 1-m_beta1*m_c;
-    del2 = 1+m_beta2*m_c;
   }
   else {
     double beta  = sqrt(1. - am2);
-    double eps  = am2 / (1. + beta);
-    double rn = ran->Get();                    // 1-beta
-    del1 = (2. - eps) * pow((eps / (2 - eps)), rn); // 1-beta*costhg
-    del2 = 2. - del1;  // 1+beta*costhg
-    // calculation of sin and cos theta from internal variables
-    double costhg = (del2 - del1) / (2.*beta);         // exact
-    double sinthg = sqrt(del1 * del2 - am2 * costhg * costhg); // exact
-    // symmetrization
-    if (ran->Get() < 0.5) {
-      double a = del1;
-      del1 = del2;
-      del2 = a;
-      costhg = -costhg;
+    double eps  = am2 / (1. + beta);           // 1-beta
+    while (true) {
+      double rn = ran->Get();
+      del1 = (2. - eps) * pow((eps / (2 - eps)), rn); // 1-beta*costhg
+      del2 = 2. - del1;  // 1+beta*costhg
+      omc = Max(0., (del1 - eps)/beta);
+      opc = Max(0., (del2 - eps)/beta);
+      // symmetrization
+      if (ran->Get() < 0.5) { std::swap(del1, del2); std::swap(omc, opc); }
+      if (omc < floorfrac*eps || opc < floorfrac*eps) continue;
+      break;
     }
-    m_theta = acos(costhg);
-    m_phi = 2.*M_PI * ran->Get();
-    m_c = costhg;
-    m_st = sinthg;
-    del1 = 1 - m_beta1 * m_c;
-    del2 = 1 + m_beta2 * m_c;
+    m_c = (omc < opc) ? 1. - omc : opc - 1.;
+    // as before: the per-leg dels of the dipole's own velocities
+    del1 = FSROneMinusBeta(m_dipole[0]) + m_beta1*omc;
+    del2 = FSROneMinusBeta(m_dipole[1]) + m_beta2*opc;
     m_MassWls.push_back(1.0);
   }
+  m_st    = sqrt(omc*opc);
+  m_theta = atan2(m_st, m_c);
+  m_phi   = 2.*M_PI * ran->Get();
   m_cos.push_back(m_c);
   m_sin.push_back(m_st);
   // Must match the density that actually generated costhg/sinthg above (the

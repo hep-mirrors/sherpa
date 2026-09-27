@@ -3,6 +3,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 #include <iostream>
 
@@ -80,59 +81,68 @@ void ISR::NPhotons() {
 
 
 
+/*
+  1 - |p|/E of a massive beam without the cancellation of 1 - beta.
+*/
+static double OneMinusBeta(const Vec4D &p)
+{
+  const double E(p[0]), P(Vec3D(p).Abs()), m2(Max(0., p.Abs2()));
+  return (E > 0. && E + P > 0.) ? m2/(E*(E + P)) : 1. - P/E;
+}
+
 void ISR::GenerateAngles()
 {
-  // Generation of theta for two massive particles
+  static const double floorfrac(ATOOLS::Settings::GetMainSettings()["YFS"]
+                                ["ISR_DEADCONE_FLOOR"].SetDefault(1e-3).Get<double>());
   double weight = 1;
+  double omc(0.), opc(0.), del1(0.), del2(0.);
   if (m_kkmcAngles != 1) {
-    double P = log((1.+m_b1)/(1.-m_b1))
-                /(log((1.+m_b1)/(1.-m_b1))+log((1.+m_b2)/(1.-m_b2)));
+    const double omb1(OneMinusBeta(m_beam1)), omb2(OneMinusBeta(m_beam2));
+    const double L1(log((1.+m_b1)/omb1)), L2(log((1.+m_b2)/omb2));
+    const double P(L1/(L1+L2));
     while (true) {
       if (ran->Get() < P) {
-        double rnd = ran->Get();
-        double a   = 1./m_b1*log((1.+m_b1)/(1.-m_b1));
-        m_c        = 1./m_b1*(1.-(1.+m_b1)*exp(-a*m_b1*rnd));
+        del1 = (1.+m_b1)*exp(-L1*ran->Get());          // 1 - b1 cos, exact
+        omc  = Max(0., (del1 - omb1)/m_b1);
+        opc  = 2. - omc;
+        del2 = omb2 + m_b2*opc;
       }
       else {
-        double rnd = ran->Get();
-        double a   = 1./m_b2*log((1.+m_b2)/(1.-m_b2));
-        m_c        = 1./m_b2*((1.-m_b2)*exp(a*m_b2*rnd)-1.);
+        del2 = omb2*exp(L2*ran->Get());                // 1 + b2 cos, exact
+        opc  = Max(0., (del2 - omb2)/m_b2);
+        omc  = 2. - opc;
+        del1 = omb1 + m_b1*omc;
       }
-      weight = 1.-((1.-m_b1*m_b1)/((1.-m_b1*m_c)*(1.-m_b1*m_c))
-                        +(1.-m_b2*m_b2)/((1.+m_b2*m_c)*(1.+m_b2*m_c)))
-                       /(2.*(1.+m_b1*m_b2)/((1.-m_b1*m_c)*(1.+m_b2*m_c)));
-        if (ran->Get() < weight || m_kkmcAngles!=2) break;
-      }
+      if (omc < floorfrac*omb1 || opc < floorfrac*omb2) continue;
+      m_c = (omc < opc) ? 1. - omc : opc - 1.;
+      weight = 1.-(omb1*(1.+m_b1)/(del1*del1) + omb2*(1.+m_b2)/(del2*del2))
+                  /(2.*(1.+m_b1*m_b2)/(del1*del2));
+      if (ran->Get() < weight || m_kkmcAngles!=2) break;
+    }
     if(m_kkmcAngles==2) m_angleWeight *= weight;
-    m_theta = acos(m_c);
-    m_sin = sin(m_theta);
-    m_phi = 2.*M_PI * ran->Get();
-    m_del1.push_back(1-m_b1*m_c);
-    m_del2.push_back(1+m_b2*m_c);
-    m_cos.push_back(m_c);
   }
   else {
     m_beta  = sqrt(1. - m_am2);
-    double eps  = m_am2 / (1. + m_beta);
-    double rn = ran->Get();
-    double del1 = (2. - eps) * pow((eps / (2 - eps)), rn); // 1-beta*cos
-    double del2 = 2. - del1;  // 1+beta*cos
-    double costhg = (del2 - del1) / (2.*m_beta);
-    // symmetrization
-    if (ran->Get() < 0.5) {
-      double a = del1;
-      del1 = del2;
-      del2 = a;
-      costhg = -costhg;
+    const double eps(m_am2 / (1. + m_beta));           // 1 - beta
+    while (true) {
+      const double rn = ran->Get();
+      del1 = (2. - eps) * pow((eps / (2 - eps)), rn);  // 1 - beta cos
+      del2 = 2. - del1;                                 // 1 + beta cos
+      omc = Max(0., (del1 - eps)/m_beta);
+      opc = Max(0., (del2 - eps)/m_beta);
+      // symmetrization
+      if (ran->Get() < 0.5) { std::swap(del1, del2); std::swap(omc, opc); }
+      if (omc < floorfrac*eps || opc < floorfrac*eps) continue;
+      break;
     }
-    m_theta = acos(costhg);
-    m_phi = 2.*M_PI * ran->Get();
-    m_c = costhg;
-    m_sin = sin(m_theta);
-    m_del1.push_back(del1);
-    m_del2.push_back(del2);
-    m_cos.push_back(m_c);
+    m_c = (omc < opc) ? 1. - omc : opc - 1.;
   }
+  m_sin   = sqrt(omc*opc);
+  m_theta = atan2(m_sin, m_c);
+  m_phi   = 2.*M_PI * ran->Get();
+  m_del1.push_back(del1);
+  m_del2.push_back(del2);
+  m_cos.push_back(m_c);
   if(abs(m_c)>1){
       msg_Error()<<"Photon angel out of bounds with cos(theta) = "<<m_c<<std::endl;
   }
@@ -152,14 +162,14 @@ void ISR::GeneratePhotonMomentum() {
     GenerateAngles();
     m_w = m_v;
     m_photon = {m_w,
-                m_w * sin(m_theta) * cos(m_phi) ,
-                m_w * sin(m_theta) * sin(m_phi) ,
-                m_w * cos(m_theta)
+                m_w * m_sin * cos(m_phi) ,
+                m_w * m_sin * sin(m_phi) ,
+                m_w * m_c
                };
     m_photonSum += m_photon;
     m_photons.push_back(m_photon);
-    double del1 = 1. - m_b1 * m_c;
-    double del2 = 1. + m_b2 * m_c;
+    double del1 = m_del1.back();   // exact, see GenerateAngles
+    double del2 = m_del2.back();
     m_f = Eikonal(m_photon,m_beam1,m_beam2);
     m_fbar = EikonalMassless(m_photon,m_beam1,m_beam2);
     m_massW = m_f / m_fbar;
@@ -168,13 +178,12 @@ void ISR::GeneratePhotonMomentum() {
     for (int i = 1; i < m_n; i++) {
       GenerateAngles();
       m_w  = m_isrcut * pow(m_v / m_isrcut, ran->Get());
-      del1 = 1. - m_b1 * m_c;
-      del2 = 1. + m_b2 * m_c;
-      // m_phi = 2.*M_PI * ran->Get();
+      del1 = m_del1.back();
+      del2 = m_del2.back();
       m_photon = { m_w,
-                  m_w * sin(m_theta) * cos(m_phi) ,
-                  m_w * sin(m_theta) * sin(m_phi) ,
-                  m_w * cos(m_theta)
+                  m_w * m_sin * cos(m_phi) ,
+                  m_w * m_sin * sin(m_phi) ,
+                  m_w * m_c
                  };
       m_photonSum += m_photon;
       m_photons.push_back(m_photon);

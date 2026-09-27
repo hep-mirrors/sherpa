@@ -105,6 +105,13 @@ void Recola::Recola_Virtual::Calc(const Vec4D_Vector& momenta) {
 }
 
 
+bool Recola::Recola_Virtual::HelicityAmplitudes(std::vector<Complex> &a0,
+                                                std::vector<Complex> &a1,
+                                                std::vector<std::vector<int> > &hel)
+{
+  return Recola_Interface::HelicityAmplitudes(m_recola_id, a0, a1, hel);
+}
+
 bool Recola::Recola_Virtual::IsMappableTo(const PHASIC::Process_Info& pi){
   return false;
 }
