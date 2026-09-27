@@ -500,6 +500,7 @@ int Sudakov::Generate(Parton *split,Parton *spect,
         info.y = y;
         info.z = z;
         info.flspec = Selected()->Lorentz()->FlSpec();
+        info.beam = Selected()->Lorentz()->GetBeam();
         p_split->SudakovReweightingInfos().push_back(info);
       }
     }
