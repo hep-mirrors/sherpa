@@ -238,6 +238,8 @@ void FSR::NPhotons() {
   if (m_nbar < 0 ) {
     msg_Error() << METHOD << "Warning: FSR photon average is less than 0" << std::endl;
   }
+  // a NaN or infinite mean never satisfies the break below
+  if (IsBad(m_nbar)) THROW(fatal_error, "FSR photon average is "+ToString(m_nbar));
   while (true) {
     N += 1;
     sum += log(ran->Get());

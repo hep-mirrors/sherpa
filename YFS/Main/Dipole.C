@@ -421,11 +421,25 @@ void Dipole::BoostToQFM(bool boostback) {
 }
 
 
+// 1 - beta of a leg from its energy and on-shell mass, m^2/(E(E+P)): no
+// cancellation, and never <= 0. 1 - |p|/E is ~1e-11 for an electron at LEP2
+// energies, so rounding in the momentum can give |p| >= E, a NaN or infinite
+// form factor, and an endless Poisson loop in FSR::NPhotons (seen in
+// e+e- -> e- veb mu+ vmu at 161 GeV, 2026-09-27).
+static double OneMinusBeta(const Vec4D &p, double m)
+{
+  const double E(p.E()), m2(m*m);
+  const double P(sqrt(Max(0., E*E - m2)));
+  return m2/(E*(E + P));
+}
+
 void Dipole::CalculateGamma(){
-  m_b1 = (Vec3D(m_bornmomenta[0]).Abs() / m_bornmomenta[0].E());
-  m_b2 = (Vec3D(m_bornmomenta[1]).Abs() / m_bornmomenta[1].E());
+  const double omb1(OneMinusBeta(m_bornmomenta[0], m_masses[0]));
+  const double omb2(OneMinusBeta(m_bornmomenta[1], m_masses[1]));
+  m_b1 = 1. - omb1;
+  m_b2 = 1. - omb2;
   double logarg = (1+m_b1)*(1+m_b2);
-  logarg /= (1-m_b1)*(1-m_b2);
+  logarg /= omb1*omb2;
   m_gamma  = (1.+m_b1*m_b2)/(m_b1+m_b2)*(log(logarg)-2);
   m_gammap = (1.+m_b1*m_b2)/(m_b1+m_b2)*(log(logarg));
 

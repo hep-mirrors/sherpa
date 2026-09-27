@@ -241,8 +241,22 @@ void YFS_Handler::CreatMomentumMap() {
 }
 
 void YFS_Handler::InitializeCEEX(const ATOOLS::Flavour_Vector &fl) {
-  if (p_ceex) return;
-  p_ceex = std::make_unique<Ceex_Base>(fl);
+  /*
+    One CEEX object per flavour set. This returned as soon as ANY p_ceex
+    existed, so with several processes in one card every process after the
+    first ran CEEX with the first one's flavours, stages and helicity maps
+    (YFS_Process::MakeActive re-points the flavours and providers of the
+    shared handler, but CEEX kept its own). Now the current object is parked
+    under its key and the one for fl is taken out, or created.
+  */
+  std::string key;
+  for (const Flavour &f : fl) key += ATOOLS::ToString((long)f) + ",";
+  if (p_ceex && key == m_ceexkey) return;
+  if (p_ceex) m_ceexstore[m_ceexkey] = std::move(p_ceex);
+  auto it(m_ceexstore.find(key));
+  if (it != m_ceexstore.end()) { p_ceex = std::move(it->second); m_ceexstore.erase(it); }
+  else p_ceex = std::make_unique<Ceex_Base>(fl);
+  m_ceexkey = key;
   p_ceex->SetBornMomenta(m_ev.m_bornMomenta);
   p_ceex->SetBornProc(m_ceexborn);
   p_ceex->SetRealProc(m_ceexreal);

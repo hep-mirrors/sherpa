@@ -206,6 +206,12 @@ namespace YFS {
         std::unique_ptr<YFS::YFS_Form_Factor> p_yfsFormFact;
         std::unique_ptr<YFS::Define_Dipoles> p_dipoles;
         std::unique_ptr<YFS::Ceex_Base> p_ceex;
+        //! One Ceex_Base per process (flavour set): the handler is shared by
+        //! every process of the card, and a CEEX object holds process-specific
+        //! state (stages, Comix/loop helicity maps, calibration). p_ceex is
+        //! the current process's; the others wait here (InitializeCEEX).
+        std::map<std::string, std::unique_ptr<YFS::Ceex_Base> > m_ceexstore;
+        std::string m_ceexkey;
         //! Bookkeeping for the CEEX-vs-EEX comparison at end of run.
         //! CEEX's O(alpha) factor for the current event; 0 = CEEX produced none.
         //! The O(alpha) correction actually applied, and CEEX's, for the
