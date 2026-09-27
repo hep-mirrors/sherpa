@@ -387,6 +387,7 @@ bool Sudakov::Generate(Parton * split)
         info.y = m_y;
         info.z = m_z;
         info.flspec = Selected()->Lorentz()->FlSpec();
+        info.beam = Selected()->Lorentz()->GetBeam();
         p_split->SudakovReweightingInfos().push_back(info);
       }
     }
