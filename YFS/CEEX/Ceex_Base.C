@@ -661,6 +661,12 @@ void Ceex_Base::MakeRho() {
   m_result   = sum1 / 4.;
   m_result01 = sum01 / 4.;
   m_result1    = m_result;
+  if (!m_ifi_coherent) {   // CEEX: IFI 0, the incoherent partition sum
+    m_result0  = m_inc00 / 4.;
+    m_result   = m_inc11 / 4.;
+    m_result01 = m_inc01 / 4.;
+    m_result1  = m_result;
+  }
   m_result01o1 = m_result01;
   m_resultV    = m_result0;
   /*

@@ -540,6 +540,17 @@ namespace YFS {
     */
     double m_crudeprod = 1.;
     bool   m_crudefixed = false;
+    /*!
+      CEEX: IFI (default 1). 0 sums the photon-to-stage partitions
+      INCOHERENTLY: rho_0, rho_1 and <A_0,A_1> become sum_p of each
+      partition's own |A_p|^2 (KKMC KeyINT = 0), which removes the
+      initial-final interference from the CEEX column; the crude is
+      incoherent anyway. ORDER 1; collapsed soft photons stay coherent inside
+      their partition. For the size of the interference in A_FB, together
+      with YFS: IFI_Real 0 and IFI_Sub 0 on the other side.
+    */
+    bool   m_ifi_coherent = true;
+    double m_inc00 = 0., m_inc11 = 0., m_inc01 = 0.;
     std::vector<std::vector<Complex> > m_Sfac;
     /*!
       One entry per leg of a stage: the index into m_pceex/m_bornmomenta and

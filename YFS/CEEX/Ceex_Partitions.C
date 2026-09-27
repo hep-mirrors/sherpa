@@ -397,6 +397,10 @@ void Ceex_Base::Calculate() {
 
   m_justdumped = false;
   m_rhocrud = 0.0;
+  { static const bool coh(Settings::GetMainSettings()["CEEX"]["IFI"]
+                          .SetDefault(1).Get<int>() != 0);
+    m_ifi_coherent = coh || m_order == 2; }
+  m_inc00 = m_inc11 = m_inc01 = 0.;
   m_b1n = 0; m_b1min = m_b1max = m_b1sum = m_b1sq = 0.;  // beta_1 spread, per event
   m_beta10 = 0.0;
   m_beta01 = 0.0;
@@ -655,8 +659,10 @@ void Ceex_Base::Calculate() {
   // CEEX: ORDER 2 - which photons can form beta_2 pairs (after the collapse)
   const bool dobeta2(m_order == 2 && PrepareBeta2());
   if (dobeta2) ++m_b2events;
+  Amplitude snap0, snap1;
   for (;;) {
     ++nparts;
+    if (!m_ifi_coherent) { snap0 = m_AmpExpo0; snap1 = m_AmpExpo1; }
     Vec4D PX(m_pceex[0] + m_pceex[1]);
     Complex sProd(1., 0.);
     double crudeprod(1.);
@@ -858,6 +864,13 @@ void Ceex_Base::Calculate() {
         }
       } }
 
+    if (!m_ifi_coherent)   // this partition's own contribution, squared
+      for (int f(0); f < Amplitude::NHel(); ++f) {
+        const Complex d0(m_AmpExpo0.m_A[f] - snap0.m_A[f]);
+        const Complex d1(m_AmpExpo1.m_A[f] - snap1.m_A[f]);
+        m_inc00 += std::norm(d0); m_inc11 += std::norm(d1);
+        m_inc01 += std::real(std::conj(d0)*d1);
+      }
     if (last == 1) break;
     PartitionPlus(last);
     if (last == 2) break;
