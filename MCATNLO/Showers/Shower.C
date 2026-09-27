@@ -386,6 +386,8 @@ double Shower::Reweight(QCD_Variation_Params* varparams,
       // insert new PDF
       const Flavour swappedflspec {info.sf->Lorentz()->FlSpec()};
       info.sf->Lorentz()->SetFlSpec(info.flspec);
+      const int swappedbeam {info.sf->Lorentz()->GetBeam()};
+      info.sf->Lorentz()->SetBeam(info.beam);
       PDF::PDF_Base** swappedpdf {info.sf->PDF()};
       PDF::PDF_Base* pdf[] = {varparams->p_pdf1, varparams->p_pdf2};
       info.sf->SetPDF(pdf);
@@ -413,6 +415,7 @@ double Shower::Reweight(QCD_Variation_Params* varparams,
       info.sf->SetPDF(swappedpdf);
       info.sf->Lorentz()->SetLastJ(lastJ);
       info.sf->Lorentz()->SetFlSpec(swappedflspec);
+      info.sf->Lorentz()->SetBeam(swappedbeam);
       // validate and apply
       if (newJ == 0.0) {
         varparams->IncrementOrInitialiseWarningCounter(

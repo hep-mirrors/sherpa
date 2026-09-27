@@ -30,6 +30,7 @@ namespace MCATNLO {
     Splitting_Function_Base* sf;
     double x, y, z;
     ATOOLS::Flavour flspec;
+    int beam;
   };
   typedef std::vector<Sudakov_Reweighting_Info> Sudakov_Reweighting_Infos;
 
