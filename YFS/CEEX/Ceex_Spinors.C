@@ -323,6 +323,13 @@ Complex Ceex_Base::SfactorLeg(const Vec4D &p, const Vec4D &k, int hel) {
   return m_sfacphase * m_e * pe / (p * k);
 }
 
+Complex Ceex_Base::SfactorLeg(const Vec4D &pnum, const Vec4D &ppole,
+                              const Vec4D &k, int hel) {
+  const Vec4C e(ComixPolarisation(k, hel));
+  const Complex pe(pnum[0]*e[0] - pnum[1]*e[1] - pnum[2]*e[2] - pnum[3]*e[3]);
+  return m_sfacphase * m_e * pe / (ppole * k);
+}
+
 
 Complex Ceex_Base::Sfactor(const Vec4D &p1, const Vec4D &p2, const Vec4D &k, int hel) {
   return SfactorLeg(p1, k, hel) - SfactorLeg(p2, k, hel);

@@ -115,6 +115,12 @@ void YFS_Base::RegisterDefaults(){
   s["CEEX_Virtual"].SetDefault(ceexvirt::automatic);
   s["Collinear_Real"].SetDefault(0);
   s["CLUSTERING_THRESHOLD"].SetDefault(10);
+  // End-of-run counts of why CalculateFSR returned false or set a zero
+  // weight, per dipole and failure kind (YFS_Handler::CountFSRFailure).
+  s["FSR_FAILURE_STATS"].SetDefault(0);
+  // Pole scheme: subtract the decay dipoles' virtual B from the loop
+  // (Define_Dipoles::DecayVirtualSubtraction). 0 (default) off, unvalidated.
+  s["WW_DECAY_VIRTUAL_SUB"].SetDefault(0);
   s["TChannel"].SetDefault(0);
   s["NLO_Weight_Breakdown"].SetDefault(0);
   s["Ladder_Weights"].SetDefault(0);

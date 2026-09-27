@@ -994,16 +994,14 @@ Ceex_Base::PropShifts Ceex_Base::StageShifts(int iphot) const
 {
   PropShifts sh;
   if (m_stage.size() != m_allphotons.size()) return sh;
+  // one entry per stage: (the stage's Comix mask, its photons of this
+  // partition). A W decay stage's mask is the W's daughters, so its photons
+  // reach that W's line and nothing else; the production stage keeps the
+  // initial-leg mask (StageShiftMask).
   for (size_t g(0); g < m_stagelegs.size(); ++g) {
-    size_t mask(0);
-    for (size_t l(0); l < m_stagelegs[g].size(); ++l)
-      if (m_stagelegs[g][l].leg >= 0 && m_stagelegs[g][l].leg < (int)m_flavs.size())
-        mask |= ((size_t)1) << m_stagelegs[g][l].leg;
+    const size_t mask(StageShiftMask((int)g));
     if (mask == 0) continue;
-    Vec4D K;
-    for (size_t i(0); i < m_allphotons.size(); ++i)
-      if ((int)i != iphot && m_stage[i] == (int)g) K += m_allphotons[i];
-    sh.push_back(std::make_pair(mask, K));
+    sh.push_back(std::make_pair(mask, StagePhotonSum((int)g, iphot)));
   }
   return sh;
 }
@@ -1031,11 +1029,28 @@ Ceex_Base::PropShifts Ceex_Base::StageShifts(int iphot) const
   zero, so the n = 1 amplitude is untouched. CEEX: TCHANNEL_SHIFT: 0
   passes nothing.
 */
+/*
+  CEEX: TCHANNEL_SHIFT. The reduced legs come from LegsAt, a 2 -> 2
+  construction: beams at X, "the radiating pair" m_if1/m_if2 at Y. Beyond
+  2 -> 2 that pair is just the first two final fermions - the two neutrinos
+  of e+e- -> nu_mu nubar_e mu+ e- - and the shift tilts the reduced beams and
+  drags the single-W t-channel gamma* towards t = 0: YFS.CEEX 0.443 pb +-75%
+  with it, 0.0404 +-1.9% without, YFS.NLO 0.0435 +-4.7% (161 GeV,
+  2026-09-27, NOTES-w-stages-2026-09-27.md 1.3). So the default (-1) keeps it
+  for 2 -> 2, where it is validated (Bhabha, gamma gamma), and drops it above.
+*/
+bool Ceex_Base::ExchangeLineShiftsOn() const
+{
+  static const int mode(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                        ["TCHANNEL_SHIFT"].Get<int>());
+  if (mode >= 0) return mode != 0;
+  return m_flavs.size() == 4;
+}
+
 void Ceex_Base::AddExchangeLineShifts(int iphot, PropShifts &sh) const
 {
-  static const int on(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                      ["TCHANNEL_SHIFT"].Get<int>());
-  if (!on || m_pceex.size() < 4 || m_flavs.size() != m_pceex.size()) return;
+  if (!ExchangeLineShiftsOn() || m_pceex.size() < 4
+      || m_flavs.size() != m_pceex.size()) return;
   Vec4D_Vector pb;
   const bool ok(iphot < 0 ? BornLegsAt(m_PXvec, pb) : PartitionLegs(iphot, pb));
   if (!ok || pb.size() != m_pceex.size()) return;
@@ -1566,17 +1581,11 @@ Complex Ceex_Base::TotalEikonal(const Vec4D_Vector &p, const Vec4D &k,
 }
 
 Complex Ceex_Base::StageEikonal(int stage, const Vec4D_Vector &p,
-                                const Vec4D &k, int hel)
+                                const Vec4D &k, int hel, int iphot)
 {
-  Complex tot(0., 0.);
-  if (stage < 0 || stage >= (int)m_stagelegs.size()) return tot;
-  const std::vector<StageLeg> &L(m_stagelegs[stage]);
-  for (size_t l(0); l < L.size(); ++l) {
-    // external legs only: a reconstructed resonance has no entry in p
-    if (L[l].leg < 0 || L[l].leg >= (int)p.size()) continue;
-    if (L[l].w != 0.) tot += L[l].w * SfactorLeg(p[L[l].leg], k, hel);
-  }
-  return tot;
+  // every leg of the stage, a reconstructed resonance included: its
+  // momentum is built from its daughters in p (StageLegMomentum)
+  return StageCurrent(stage, iphot, k, hel, p);
 }
 
 /*
@@ -1715,7 +1724,20 @@ bool Ceex_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
     where THIS photon sits, so the two partitions that together make one
     beta_1 term are cut together.
   */
-  const Vec4D S(rebuild ? pb[0] + pb[1] : m_pceex[0] + m_pceex[1] - dI);
+  Vec4D S(rebuild ? pb[0] + pb[1] : m_pceex[0] + m_pceex[1] - dI);
+  /*
+    A photon on a W DECAY stage is radiated from that W, not from the
+    beams: its softness is 2k.P_W/P_W^2 with P_W the W as produced
+    (daughters + the partition's other decay photons + this one). Only
+    with W stages; the ISR/FSR case keeps S, where X = Q + K_F anyway.
+  */
+  if (WStagesActive() && !rebuild && m_stage[iphot] != m_initstage
+      && !fixed) {
+    const int g(m_stage[iphot]);
+    for (size_t l(0); l < m_stagelegs[g].size(); ++l)
+      if (IsResonanceLeg(m_stagelegs[g][l].leg))
+        S = StageSystemMomentum(g) + StagePhotonSum(g, -1);
+  }
   const double S2(S.Abs2());
   const double y(S2 > 0. ? 2.*(k*S)/S2 : 0.);
   static const double xcut(ATOOLS::Settings::GetMainSettings()["CEEX"]
@@ -1748,7 +1770,7 @@ bool Ceex_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
     if ((int)i != iphot)
       w *= (m_sactu.size() == m_allphotons.size() ? m_sactu[i] : m_Sfac[m_stage[i]][i]);
   const Complex sj(fixed ? TotalEikonal(pb, k, hel)
-                         : StageEikonal(m_stage[iphot], pb, k, hel));
+                         : StageEikonal(m_stage[iphot], pb, k, hel, iphot));
   const int nh(Amplitude::NHel());
   /*
     CEEX: ORDER 2 - record exactly what this partition's beta_1 of this

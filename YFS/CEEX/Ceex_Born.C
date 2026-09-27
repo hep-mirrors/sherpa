@@ -282,7 +282,8 @@ void Ceex_Base::InfraredSubtractedME_0_0() {
     static const bool sprime(ATOOLS::Settings::GetMainSettings()["CEEX"]
                              ["BORN_AT_SPRIME"].Get<int>() != 0);
     bool ok(false);
-    if (sprime || m_redborn) {         // m_redborn: CEEX: TCHANNEL_REDUCED_BORN
+    // BornLegsAt is a 2 -> 2 reduction (one pair at Y): not with W stages
+    if ((sprime || m_redborn) && !WStagesActive()) {   // m_redborn: CEEX: TCHANNEL_REDUCED_BORN
       Vec4D_Vector pb;
       ok = BornLegsAt(m_PXvec, pb)
            && ComixBornAmplitude(pb, C, NULL, -1., -1.);

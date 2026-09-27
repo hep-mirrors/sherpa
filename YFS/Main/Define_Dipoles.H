@@ -176,6 +176,22 @@ namespace YFS {
       long m_recoil_tried = 0, m_recoil_massfail = 0;
       //! Whether the pole expansion is live for the current event.
       inline bool PoleActive() const { return m_pole_active; }
+      //! The W's and their daughters' positions, as BuildPole found them.
+      inline const DipoleSet::WWLegs &WW() const { return m_set.WW(); }
+      //! The decay-stage dipoles (W, charged daughter) of the pole expansion.
+      inline YFS::DipoleView DecayDipoles() { return m_set.Decay(); }
+      /*!
+        Once per run: the closed-form decay exponent (YFS_Form_Factor::
+        BVR_decay, what FormFactorSumDecay exponentiates) against the same
+        dipole's virtual plus real B from the dim-reg machinery in the W rest
+        frame - the pieces the O(alpha) subtraction uses. They must agree, or
+        the expansion of exp(Y) and the subtracted V and R are not the same
+        object at O(alpha).
+      */
+      void CheckDecayFormFactor(YFS::Dipole &D);
+      bool m_decaycheckdone = false;
+      //! YFS: WW_DECAY_VIRTUAL_SUB, see the definition
+      bool DecayVirtualSubtraction() const;
       //! Carry the production-stage recoil from the W's down to the four
       //! fermions. Must be called after the W-pair dipole has radiated and
       //! instead of writing its new momenta straight into the event, since the

@@ -2720,9 +2720,70 @@ bool NLO_Base::PhotonIsFSR(const Vec4D &k) const {
   one radiating pair in the process the whole construction is MapMomentaFSR.
   The beams are rebuilt at sqrt(Q^2) = sqrt(s') exactly as there.
 */
+/*
+  The pole scheme's (n+1)-body point for photons the W-PAIR dipole radiated.
+  Such a photon's dipole names the two charged leptons (Left/Right are the
+  lepton positions, DipoleSet::BuildPole), but the pair that recoiled is the
+  W's, so the flat map above this would rebuild the lepton pair, the wrong
+  pre-emission point by the W recoil. Here: the W pair before the selected
+  photons, Qp = W- + W+ + K, the two W's back to back in Qp's frame along
+  their post-emission direction with their (preserved) masses, and each W's
+  daughters carried from the post-emission W to the rebuilt one - the
+  inverse of Define_Dipoles::ApplyPoleRecoil. Photons from any other dipole
+  (none exist in the pole scheme) fall back to the flat map.
+*/
+bool NLO_Base::MapMomentaFSRPole(Vec4D_Vector &p, Vec4D_Vector &k) {
+  if (p_dipoles == nullptr || !p_dipoles->PoleActive()) return false;
+  const YFS::DipoleSet::WWLegs &w(p_dipoles->WW());
+  if (!w.ok || w.lm >= p.size() || w.lp >= p.size() || w.nm >= p.size()
+      || w.np >= p.size()) return false;
+  Vec4D K;
+  for (const Vec4D &kj : k) {
+    const YFS::Photon *g(FindPhoton(kj));
+    if (g == nullptr || !g->IsFSR() || g->Dip() == nullptr) return false;
+    if (!g->Dip()->GetFlav(0).IsVector()) return false;   // not the W pair
+    K += kj;
+  }
+  m_map_reduced = false;
+  for (size_t i = 2; i < p.size(); ++i) p[i] = m_plab[i];
+  const std::size_t dau[2][2] = {{w.lm, w.nm}, {w.lp, w.np}};
+  Vec4D wpost[2], wpre[2];
+  for (int i(0); i < 2; ++i) wpost[i] = m_postlab[dau[i][0]] + m_postlab[dau[i][1]];
+  const Vec4D Qp(wpost[0] + wpost[1] + K);
+  const double Mp2(Qp.Abs2());
+  if (!(Mp2 > 0.) || !(Qp[0] > 0.)) return false;
+  const double m1(wpost[0].Mass()), m2(wpost[1].Mass());
+  if (!(m1 > 0.) || !(m2 > 0.) || m1 + m2 >= sqrt(Mp2)) return false;
+  // the W direction: the post-emission W's in their own rest frame
+  Vec4D q1(wpost[0]), q2(wpost[1]);
+  const Vec4D L(q1 + q2);
+  if (!(L.Abs2() > 0.) || !(L[0] > 0.)) return false;
+  Poincare boostL(L);
+  boostL.Boost(q1); boostL.Boost(q2);
+  Vec3D n(Vec3D(q1) - Vec3D(q2));
+  if (!(n.Abs() > 0.)) return false;
+  n = n/n.Abs();
+  const double pcm(0.5*sqrt(Lambda(Mp2, m1*m1, m2*m2)/Mp2));
+  wpre[0] = Vec4D(sqrt(m1*m1 + pcm*pcm),  pcm*n);
+  wpre[1] = Vec4D(sqrt(m2*m2 + pcm*pcm), -pcm*n);
+  Poincare boostQp(Qp);
+  boostQp.BoostBack(wpre[0]); boostQp.BoostBack(wpre[1]);
+  for (int i(0); i < 2; ++i) {
+    Poincare toRest(wpost[i]), fromPre(wpre[i]);
+    for (int j(0); j < 2; ++j) {
+      Vec4D q(m_postlab[dau[i][j]]);
+      toRest.Boost(q);
+      fromPre.BoostBack(q);
+      p[dau[i][j]] = q;
+    }
+  }
+  return RebuildBeamsAtPreFSR(p, k, "FSRMAPP");
+}
+
 bool NLO_Base::MapMomentaFSRDipole(Vec4D_Vector &p, Vec4D_Vector &k) {
   if (k.empty() || p.size() < 4) return false;
   if (m_postlab.size() != p.size() || m_plab.size() != p.size()) return false;
+  if (p_dipoles && p_dipoles->PoleActive()) return MapMomentaFSRPole(p, k);
   // The selected photons, grouped by the dipole that radiated them.
   std::map<std::pair<int,int>, Vec4D> ksel;
   for (const Vec4D &kj : k) {
@@ -2764,9 +2825,14 @@ bool NLO_Base::MapMomentaFSRDipole(Vec4D_Vector &p, Vec4D_Vector &k) {
     boostQp.BoostBack(f1); boostQp.BoostBack(f2);
     p[l] = f1; p[r] = f2;
   }
-  // The beams at sqrt(Q^2), Q the pre-emission final state (= s'), in the
-  // same frame convention as MapMomentaFSR: into the Q rest frame, the
-  // beams along the Born axis there, and back.
+  return RebuildBeamsAtPreFSR(p, k, "FSRMAPD");
+}
+
+// The beams at sqrt(Q^2), Q the pre-emission final state (= s'), in the
+// same frame convention as MapMomentaFSR: into the Q rest frame, the beams
+// along the Born axis there, and back. Shared by the flat and the pole map.
+bool NLO_Base::RebuildBeamsAtPreFSR(Vec4D_Vector &p, Vec4D_Vector &k,
+                                    const char *tag) {
   Vec4D Q;
   for (size_t i = 2; i < p.size(); ++i) Q += m_plab[i];
   const double sq(Q.Abs2());
@@ -2791,8 +2857,8 @@ bool NLO_Base::MapMomentaFSRDipole(Vec4D_Vector &p, Vec4D_Vector &k) {
     if (Vec3D(res).Abs() > 1e-9*scale || std::abs(res[0]) > 1e-9*scale) {
       static long nprint(0);
       if (++nprint <= 20)
-        std::cerr<<std::setprecision(10)<<"@@@ FSRMAPD residual="<<res
-                 <<" nk="<<k.size()<<" npairs="<<ksel.size()
+        std::cerr<<std::setprecision(10)<<"@@@ "<<tag<<" residual="<<res
+                 <<" nk="<<k.size()
                  <<" nFSR="<<m_FSRPhotons.size()<<" P="<<(m_bornMomenta[0]+m_bornMomenta[1])
                  <<" Q="<<Q<<std::endl;
     } }

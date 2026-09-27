@@ -394,9 +394,11 @@ namespace YFS {
     //! The GPS (KKMC) form of the per-leg eikonal, kept for comparison only.
     Complex SfactorLegGPS(const ATOOLS::Vec4D &p, const ATOOLS::Vec4D &k,
                           int hel);
-    //! one stage's eikonal current for photon k, on the legs p (m_pceex order)
+    //! one stage's eikonal current for photon k, on the legs p (m_pceex
+    //! order); iphot names the photon so that a resonance leg's pole momentum
+    //! leaves it out (StageLegMomentum)
     Complex StageEikonal(int stage, const ATOOLS::Vec4D_Vector &p,
-                         const ATOOLS::Vec4D &k, int hel);
+                         const ATOOLS::Vec4D &k, int hel, int iphot = -1);
     bool ComixInfraredSubtracted_1_0(const ATOOLS::Vec4D &k, int hel,
                                     int iphot);
     /*!
@@ -426,6 +428,8 @@ namespace YFS {
       no process is named. CEEX: TCHANNEL_SHIFT = 0 disables it.
     */
     void AddExchangeLineShifts(int iphot, PropShifts &sh) const;
+    //! CEEX: TCHANNEL_SHIFT: 1 on, 0 off, -1 (default) on for 2 -> 2 only
+    bool ExchangeLineShiftsOn() const;
     /*!
       Does the Born have a space-like exchange line? Probed once per Born
       process: a leg-only shift (which COMIX::Amplitude::SetPropShifts
@@ -445,7 +449,88 @@ namespace YFS {
     */
     std::vector<std::vector<int> > m_groups;
     int m_initstage = 1;
-    inline void SetStageGroups(const std::vector<std::vector<int> > &g) { m_groups = g; }
+    inline void SetStageGroups(const std::vector<std::vector<int> > &g)
+    { m_groups = g; m_wgroups.clear(); }
+    /*!
+      A final-state radiating group that may carry a reconstructed
+      resonance: the charged external legs that radiate in this stage, and
+      - for the decay stage of a W - the W itself as an INCOMING leg, named
+      by its daughters (external legs, neutral ones included) and its
+      flavour. The W is not in the event's flavour vector; BuildStages
+      appends its momentum to m_stagemom and puts it, outgoing, into the
+      production (initial) stage as well. See NOTES-w-stages-2026-09-27.md
+      section 4.1 and CEEX: W_STAGES.
+    */
+    struct StageGroup {
+      std::vector<int> externalLegs;
+      std::vector<int> resonanceDaughters;
+      ATOOLS::Flavour  resonance = ATOOLS::Flavour(kf_none);
+      bool HasResonance() const { return !resonanceDaughters.empty(); }
+    };
+    std::vector<StageGroup> m_wgroups;
+    inline void SetStageGroups(const std::vector<StageGroup> &g)
+    { m_wgroups = g; m_groups.clear(); }
+    /*!
+      One reconstructed resonance, the object a StageLeg beyond the external
+      legs names. It is a leg of two stages: outgoing (+Q) in the production
+      stage, incoming (-Q) in its own decay stage. Its momentum in a
+      partition is the sum of its daughters plus the photons the partition
+      assigns to its decay stage - the W as it was produced.
+    */
+    struct Resonance {
+      ATOOLS::Flavour  flav;
+      std::vector<int> daughters;       //!< external legs, e.g. {2,4}
+      int              stagemomIndex;   //!< its entry in m_stagemom
+      int              decayStage = -1; //!< the stage it is incoming in
+    };
+    std::vector<Resonance> m_resonances;
+    //! CEEX: W_STAGES (0 off, 1 on, -1 auto: on inside the pole window)
+    int  m_wstages = 0;
+    //! CEEX: W_EIKONAL (0 fixed: W at its daughters; 1 partition: pole at
+    //! daughters + this partition's decay photons)
+    int  m_weikonal = 0;
+    inline bool WStagesRequested() const { return m_wstages != 0; }
+    inline int  WStagesMode() const { return m_wstages; }
+    //! true once BuildStages has put a resonance into the stage table
+    inline bool WStagesActive() const { return !m_resonances.empty(); }
+    bool IsResonanceLeg(int leg) const;
+    const Resonance &ResonanceOf(int leg) const;
+    //! the external legs a stage covers, a resonance replaced by its daughters
+    std::vector<int> StageExternalLegs(int stage) const;
+    /*!
+      The Comix mask of a stage's shift entry (StageShifts): the initial legs
+      for the production stage, the external legs plus the resonance
+      daughters for a final stage. The production stage's photons are NOT
+      added to the W daughters' lines: by momentum conservation that leaves
+      the s-channel line at P - K_P, and a final-leg mask for the production
+      stage would also reach the W lines through SetPropShifts's "partly
+      contained, root side" rule (NOTES-w-stages-2026-09-27.md 4.4).
+    */
+    size_t StageShiftMask(int stage) const;
+    //! momentum of the system a final stage radiates from: the resonance's
+    //! daughters for a decay stage, the stage's external legs otherwise
+    ATOOLS::Vec4D StageSystemMomentum(int stage) const;
+    //! photons this partition assigns to stage g, leaving iphot and lphot out
+    ATOOLS::Vec4D StagePhotonSum(int stage, int iphot, int lphot = -1) const;
+    /*!
+      The momentum a stage leg's eikonal uses for photon iphot: numerator
+      and pole. External legs: the same momentum twice. A resonance: the
+      daughters in the numerator (the momentum Comix's vertex carries, its
+      currents being built from the physical legs), and in the pole the
+      daughters plus the decay-stage photons of this partition other than
+      iphot under W_EIKONAL 1 - the momentum Comix's shifted propagator
+      carries. Under W_EIKONAL 0 both are the daughters.
+    */
+    struct LegMomentum { ATOOLS::Vec4D num, pole; };
+    struct StageLeg;   // defined below with m_stagelegs
+    LegMomentum StageLegMomentum(const StageLeg &l, int iphot,
+                                 const ATOOLS::Vec4D_Vector &p) const;
+    //! recompute m_Sfac for the stages that hold a resonance, for the
+    //! CURRENT partition (W_EIKONAL 1); no-op otherwise
+    void RecomputeResonanceSfactors();
+    //! the eikonal of a whole stage for photon iphot on legs p
+    Complex StageCurrent(int stage, int iphot, const ATOOLS::Vec4D &k, int hel,
+                         const ATOOLS::Vec4D_Vector &p);
     //! Sum of the photons other than iphot (all if iphot < 0) on the reducing
     //! (initial) stages, or on the others, in THIS partition.
     ATOOLS::Vec4D PartitionShift(int iphot, bool reducing) const;
@@ -758,9 +843,57 @@ namespace YFS {
     static inline int Idx(int h0, int h1, int h2, int h3)
     { return Amplitude::Idx(h0, h1, h2, h3); }
     Complex SfactorLeg(const ATOOLS::Vec4D &p, const ATOOLS::Vec4D &k, int hel);
+    //! the per-leg eikonal with the numerator and the pole momentum apart:
+    //! e (pnum.eps)/(ppole.k), the form a shifted Comix propagator reduces to
+    Complex SfactorLeg(const ATOOLS::Vec4D &pnum, const ATOOLS::Vec4D &ppole,
+                       const ATOOLS::Vec4D &k, int hel);
     bool BuildStages();
     void PartitionStart(int &last);
     void PartitionPlus(int &last);
+    //! PartitionStart with the softest photons collapsed above
+    //! CEEX: MAX_PARTITION_PHOTONS
+    void PartitionStartCollapsed(int &last);
+    /*!
+      The crude built on the GENERATOR's stages (CEEX: CRUDE_FROM_GENERATOR):
+      the flat radiating-dipole groups YFS produced the photons with, handed
+      over by the handler whatever CEEX's own stages are. The weight
+      rho/rho_crude is an importance-sampling ratio, so rho_crude has to be
+      the generator's density; the per-partition crude InfraredSubtractedME_0_0
+      accumulates is that density only while CEEX's stages ARE the
+      generator's dipoles, which with W stages they are not. Same expression
+      as there (the generator's Born at its own point times s/X^2 and the
+      pseudo-flux, times the incoherent soft-factor product), enumerated
+      over the generator's partitions. Returns < 0 when it cannot be built
+      (no Comix Born, no pre-FSR legs), and the per-partition crude stays.
+    */
+    double CrudeFromGenerator();
+    std::vector<std::vector<int> > m_crudegroups;
+    inline void SetCrudeStageGroups(const std::vector<std::vector<int> > &g)
+    { m_crudegroups = g; }
+    //! CEEX: CRUDE_FROM_GENERATOR: 0 off, 1 use it, 2 compute and print,
+    //! -1 (default) use it when W stages are active
+    //! both (@@@ CRUDEGEN) without using it
+    int m_crudegen = 0;
+    /*!
+      Saves the stage tables (legs, momenta, resonances, soft factors,
+      partition state) on construction and restores them on destruction, so
+      that a second stage decomposition can be built and enumerated in
+      between without the numerator's tables being touched.
+    */
+    struct StageTableSwap {
+      Ceex_Base &c;
+      std::vector<std::vector<StageLeg> > legs;
+      std::vector<ATOOLS::Vec4D> mom;
+      std::vector<Resonance> res;
+      std::vector<std::vector<Complex> > sfac;
+      std::vector<int> stage;
+      std::vector<char> fixed, reduces;
+      std::vector<StageGroup> wgroups;
+      std::vector<std::vector<int> > groups;
+      int initstage, nstages;
+      StageTableSwap(Ceex_Base &cb);
+      ~StageTableSwap();
+    };
     /*!
       O(alpha^2) tree-level double real, beta_2 (CEEX: ORDER: 2), built from
       Comix's two-photon amplitude; see Ceex_Beta2.C. The beta_1 pass leaves,

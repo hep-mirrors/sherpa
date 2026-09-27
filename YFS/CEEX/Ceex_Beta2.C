@@ -187,15 +187,9 @@ Ceex_Base::PropShifts Ceex_Base::StageShifts2(int j, int l) const
   PropShifts sh;
   if (m_stage.size() != m_allphotons.size()) return sh;
   for (size_t g(0); g < m_stagelegs.size(); ++g) {
-    size_t mask(0);
-    for (size_t k(0); k < m_stagelegs[g].size(); ++k)
-      if (m_stagelegs[g][k].leg >= 0 && m_stagelegs[g][k].leg < (int)m_flavs.size())
-        mask |= ((size_t)1) << m_stagelegs[g][k].leg;
+    const size_t mask(StageShiftMask((int)g));   // as StageShifts
     if (mask == 0) continue;
-    Vec4D K;
-    for (size_t i(0); i < m_allphotons.size(); ++i)
-      if ((int)i != j && (int)i != l && m_stage[i] == (int)g) K += m_allphotons[i];
-    sh.push_back(std::make_pair(mask, K));
+    sh.push_back(std::make_pair(mask, StagePhotonSum((int)g, j, l)));
   }
   return sh;
 }
@@ -218,9 +212,8 @@ bool Ceex_Base::PartitionLegs2(int j, int l, Vec4D_Vector &pb) const
 
 void Ceex_Base::AddExchangeLineShifts2(int j, int l, PropShifts &sh) const
 {
-  static const int on(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                      ["TCHANNEL_SHIFT"].Get<int>());
-  if (!on || m_pceex.size() < 4 || m_flavs.size() != m_pceex.size()) return;
+  if (!ExchangeLineShiftsOn() || m_pceex.size() < 4
+      || m_flavs.size() != m_pceex.size()) return;
   Vec4D_Vector pb;
   if (!PartitionLegs2(j, l, pb) || pb.size() != m_pceex.size()) return;
   for (size_t i(0); i < m_pceex.size(); ++i) {
@@ -429,8 +422,8 @@ void Ceex_Base::Beta2SoftLimit()
           const bool d0(m_stagereduces[w0] != 0), d1(m_stagereduces[w1] != 0);
           Amplitude C, M10, M11, M2;
           ok = ComixBornShifted(pl, C, StageShifts(-1));
-          const Complex s0(StageEikonal(w0, pl, k0, m_PhoHel[0]));
-          const Complex s1(StageEikonal(w1, pl, k1, m_PhoHel[1]));
+          const Complex s0(StageEikonal(w0, pl, k0, m_PhoHel[0], 0));
+          const Complex s1(StageEikonal(w1, pl, k1, m_PhoHel[1], 1));
           if (ok && d0) { Vec4D_Vector pp(pl); pp.push_back(k0);
             ok = ComixRealShifted(pp, m_PhoHel[0], M10, StageShifts(0)); }
           if (ok && d1) { Vec4D_Vector pp(pl); pp.push_back(k1);

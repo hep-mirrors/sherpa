@@ -72,6 +72,9 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
   m_comixphoflip = s["COMIX_REAL_PHOTON_FLIP"].Get<int>();
   m_perphoton    = s["COMIX_REAL_PER_PHOTON"].Get<int>();
   m_comixborn    = s["COMIX_BORN"].Get<int>();
+  m_wstages      = s["W_STAGES"].Get<int>();
+  m_weikonal     = s["W_EIKONAL"].Get<int>();
+  m_crudegen     = s["CRUDE_FROM_GENERATOR"].Get<int>();
   m_vpon         = s["VIRT_PARTITION_CHECK"].Get<int>() != 0;
   m_order        = s["ORDER"].Get<int>();
   if (m_order != 1 && m_order != 2) {
@@ -358,10 +361,56 @@ void Ceex_Base::RegisterDefaults()
     one initial leg and part of the final state, detected by leg content in
     COMIX::Amplitude::SetPropShifts) of the partition Born and of M_1 at the
     partition's REDUCED invariant rather than at the unreduced one Comix's
-    root-0 recursion leaves them at. 1 (default) on, 0 off. See
-    Ceex_Base::AddExchangeLineShifts.
+    root-0 recursion leaves them at. 1 on, 0 off, -1 (default) on for 2 -> 2
+    only (ExchangeLineShiftsOn). See Ceex_Base::AddExchangeLineShifts.
   */
-  s["TCHANNEL_SHIFT"].SetDefault(1);
+  s["TCHANNEL_SHIFT"].SetDefault(-1);
+  /*
+    W stages for e+e- -> W+W- -> 4f (NOTES-w-stages-2026-09-27.md). The
+    charged final legs of a WW-type final state are split into two DECAY
+    stages, one per W, each with the W as an incoming leg and its charged
+    daughter as the outgoing one, and the W's join the beams as outgoing legs
+    of the production stage. Each stage is charge neutral; a photon on a
+    decay stage shifts only that W's propagator (COMIX::Amplitude::
+    SetPropShifts with the W's daughter mask), a photon on the production
+    stage the s-channel line. Without it the two charged leptons of such a
+    state form one flat stage whose photons shift BOTH W lines at once
+    (SetPropShifts's "partly contained, root side" rule), which dragged an
+    off-shell W onto its pole: cc_em_mup at 161 GeV, CEEX factors up to
+    4777 with TCHANNEL_SHIFT off, rho_0/rho_crude 267 against the 2^n bound.
+      0: off, every process as before, bit for bit.
+      1 (default since 2026-09-28): on whenever DipoleSet::FindWW recognises
+        the final state; a process without W's is unchanged bit for bit.
+        cc_mum_taup CEEX/NLO 0.989 -> 1.000 +- 0.02, cc_em_mup 0.93 -> 0.975
+        +- 0.04 (with CRUDE_FROM_GENERATOR), NOTES-w-stages-2026-09-27.md 8.2.
+     -1: on when in addition both W's are within YFS: CLUSTERING_THRESHOLD
+         widths of the pole (the pole scheme's own window).
+    Needs the handler to hand over the W groups (YFS_Handler::CEEXStageGroups).
+  */
+  s["W_STAGES"].SetDefault(1);
+  /*
+    The W momentum a decay- or production-stage eikonal uses (see
+    StageLegMomentum). 0: the W at its daughters, a per-event quantity, so
+    the soft-factor table is computed once; the soft limit of Comix's M_1
+    is then missed by O(K_decay/M_W) on the W term when other hard photons
+    sit on that decay stage. 1: the pole momentum follows the partition
+    (daughters + that partition's other decay photons), which is what
+    Comix's shifted propagator carries; the resonance stages' soft factors
+    are recomputed per partition. Cost negligible against the Comix calls.
+  */
+  s["W_EIKONAL"].SetDefault(0);
+  /*
+    The crude the CEEX weight divides by, built on the GENERATOR's stages
+    (the flat radiating-dipole groups) rather than on CEEX's own; see
+    Ceex_Base::CrudeFromGenerator. With CEEX's stages equal to the
+    generator's dipoles - every process without W stages - it is the same
+    number as the per-partition crude, which is the gate it has to pass
+    (mode 2 prints both per event as @@@ CRUDEGEN). 0 off, 1 use it,
+    2 compare only, -1 (default) use it exactly when W stages are active -
+    the case where CEEX's stages and the generator's dipoles differ - and
+    leave every other process untouched.
+  */
+  s["CRUDE_FROM_GENERATOR"].SetDefault(-1);
   /*
     beta_0(X_wp) on the REAL phase-space point whose invariant is X_wp^2 -
     beams at X_wp, radiating pair at X_wp minus the spectators, per partition

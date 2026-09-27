@@ -63,6 +63,8 @@ namespace YFS {
       double Eikonal(const Vec4D &k);
       double EikonalInterferance(const Vec4D &k);
       inline double GetWeight() {return m_fsrWeight;}
+      //! MakeFSR rejection code: 1 ok, 2 photon energy > 1, 3 pair below threshold, 4 rescale
+      inline double Cut() const { return m_cut; }
       inline double GetSQ() {return m_sQ;}
       inline Vec4D GetPhotonSum() {return m_photonSum; }
       inline Vec4D_Vector GetPhotons() {return m_photons; }

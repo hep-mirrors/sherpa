@@ -443,6 +443,11 @@ public:
   //! 2 (default): only the legs of the photon's OWN dipole recoil, the other
   //! pairs sit at their pre-emission momenta. Reduces to 1 for one pair.
   bool MapMomentaFSRDipole(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D_Vector &k);
+  //! the same point for photons the pole scheme's W-pair dipole radiated
+  bool MapMomentaFSRPole(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D_Vector &k);
+  //! the beams of an FSR-mapped point, at the pre-emission final state's s'
+  bool RebuildBeamsAtPreFSR(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D_Vector &k,
+                            const char *tag);
   //! The event photon with momentum k (nullptr if none), matched by momentum
   //! as PhotonIsFSR does; carries the dipole it was radiated from.
   const YFS::Photon *FindPhoton(const ATOOLS::Vec4D &k) const;

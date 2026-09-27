@@ -9,6 +9,7 @@
 #include "YFS/Main/Debug.H"
 #include "YFS/Main/Photon.H"
 #include "YFS/Main/Emission.H"
+#include <map>
 #include "YFS/NLO/NLO_Base.H"
 // #include "BEAM/Main/Beam_Base.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
@@ -256,6 +257,17 @@ namespace YFS {
           void AddOverEex(double ratio) { m_oesum += ratio; ++m_oen; }
         };
         Ceex_Stats m_ceexstats;
+        /*!
+          YFS: FSR_FAILURE_STATS - why CalculateFSR returned false or set a
+          zero weight, per dipole and failure kind, reported at the end of
+          the run. A trial that fails here is a zero-weight event, so a high
+          failure rate lowers every column; the pole scheme's factor-5
+          deficit on cc_em_mup (NOTES-w-stages-2026-09-27.md 1.4) is what
+          this was added to find.
+        */
+        std::map<std::string, long> m_fsrfail;
+        long m_fsrtrials = 0;
+        void CountFSRFailure(const std::string &what);
         PHASIC::Process_Base *m_ceexborn = nullptr, *m_ceexreal = nullptr;
         //! YFS: REAL_BORN_PHOTON_MULTICHANNEL: this event's G (CEEX crude)
         double m_bpmc_evtG = 1.;  int m_bpmc_evtn = 0;
@@ -376,6 +388,8 @@ namespace YFS {
         void Reset();
         void AddFormFactor();
         void MakeWWVecs(ATOOLS::Vec4D_Vector p);
+        //! hand CEEX its W decay groups (CEEX: W_STAGES); false = flat groups
+        bool SetCEEXWStageGroups();
         void CalculateCoulomb();
         void CalculateWWForm();
         void YFSDebug(double W);

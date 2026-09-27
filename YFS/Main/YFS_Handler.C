@@ -44,6 +44,12 @@ YFS_Handler::~YFS_Handler()
                <<"    virtual  "<<cs.m_vsum/cs.m_cmp_n<<" / "<<cs.m_vworst<<"\n"
                <<"    real     "<<cs.m_rsum/cs.m_cmp_n<<" / "<<cs.m_rworst<<"\n"
                <<"    total    "<<cs.m_tsum/cs.m_cmp_n<<" / "<<cs.m_tworst<<std::endl;
+    if (!m_fsrfail.empty()) {
+      msg_Out()<<"YFS FSR failure statistics (YFS: FSR_FAILURE_STATS), "
+               <<m_fsrtrials<<" CalculateFSR trials:\n";
+      for (const auto &f : m_fsrfail)
+        msg_Out()<<"    "<<f.second<<"  "<<f.first<<"\n";
+    }
     if (cs.m_oen > 0)
       msg_Out()<<"YFS: CEEX supplied the O(alpha) weight on "
                <<cs.m_oen<<" events; mean (CEEX factor)/(EEX factor) = "
@@ -289,15 +295,17 @@ bool YFS_Handler::MakeYFS(ATOOLS::Vec4D_Vector &p)
   if (m_mode == yfsmode::fsr) m_sp = m_s;
   m_v = 1. - m_sp / m_s;
   if ( m_v > m_vmax ) {
+    CountFSRFailure("MakeYFS: v > vmax");
     m_ev.m_yfsweight = 0.0;
     return false;
   }
   p_isr->SetV(m_v);
   if (m_v <= m_deltacut && m_mode!=yfsmode::fsr) { // correction weight included in Generate photon
+    CountFSRFailure("MakeYFS: v <= deltacut");
     Reset();
     return false;
   }
-  if (!CalculateISR()) return 0;
+  if (!CalculateISR()) { CountFSRFailure("CalculateISR false"); return 0; }
   m_ev.m_FSRPhotons.clear();
   CalculateWWForm();
   CalculateCoulomb();
@@ -362,10 +370,44 @@ void YFS_Handler::MakeCEEX() {
     { std::vector<std::vector<int> > groups;
       for (auto &D : p_dipoles->GetDipoleFF())
         if (D.IsResonance()) groups.push_back({D.Left(), D.Right()});
-      p_ceex->SetStageGroups(groups); }
+      // the generator's own stages, for the crude (CEEX: CRUDE_FROM_GENERATOR)
+      p_ceex->SetCrudeStageGroups(groups);
+      if (!SetCEEXWStageGroups()) p_ceex->SetStageGroups(groups); }
     p_ceex->Calculate();
   }
 
+}
+
+/*
+  CEEX's W stages for a W+W- -> 4f final state (CEEX: W_STAGES, see
+  NOTES-w-stages-2026-09-27.md): one decay group per W, holding the W as the
+  incoming leg and its charged daughter, from the same pairing the pole
+  scheme uses (DipoleSet::FindWW: each charged lepton with the neutrino of
+  its own generation). CEEX puts the W's, outgoing, into the production
+  stage itself. Independent of YFS: WW_Scheme - the generator's dipoles are
+  whatever they are, the crude has to be theirs (section 4.8 of the notes).
+  Returns false when W stages are off or the state is not W+W- -> 4f, and
+  the flat radiating-dipole groups are handed over as before.
+*/
+bool YFS_Handler::SetCEEXWStageGroups() {
+  if (!p_ceex || !p_ceex->WStagesRequested()) return false;
+  const DipoleSet::WWLegs w(DipoleSet::FindWW(m_flavs, m_ev.m_plab));
+  if (!w.ok) return false;
+  if (p_ceex->WStagesMode() < 0) {
+    // auto: the pole scheme's own window, both W's near the pole
+    const double MW(Flavour(kf_Wplus).Mass()), GW(Flavour(kf_Wplus).Width());
+    if (GW > 0. && (fabs(w.wm.Mass() - MW)/GW > m_resonace_max
+                    || fabs(w.wp.Mass() - MW)/GW > m_resonace_max)) return false;
+  }
+  std::vector<Ceex_Base::StageGroup> groups(2);
+  groups[0].externalLegs       = {(int)w.lp};
+  groups[0].resonanceDaughters = {(int)w.lp, (int)w.np};
+  groups[0].resonance          = Flavour(kf_Wplus);
+  groups[1].externalLegs       = {(int)w.lm};
+  groups[1].resonanceDaughters = {(int)w.lm, (int)w.nm};
+  groups[1].resonance          = Flavour(kf_Wplus).Bar();
+  p_ceex->SetStageGroups(groups);
+  return true;
 }
 
 void YFS_Handler::CalculateWWForm() {
@@ -514,25 +556,32 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     p_dipoles->MakeDipolesPole(m_flavs, polemom, polemom);
   }
   YFS::DipoleView ffdip(p_dipoles->GetDipoleFF());
+  ++m_fsrtrials;
   for (auto Dip = ffdip.begin(); Dip != ffdip.end(); ++Dip) {
     if(!Dip->IsResonance()) continue;
     const YFS::EmissionResult res(
         Dip->GenerateEmissions(p_isr.get(), p_fsr.get(), m_born, m_v, m_ev.m_fsrphotonsforME));
+    const std::string dname(Dip->GetFlav(0).IDName()+","+Dip->GetFlav(1).IDName());
     switch (res.fail) {
     case YFS::EmissionResult::Failure::initialize:
+      CountFSRFailure("initialize ("+dname+")");
       Reset();
       return false;
     case YFS::EmissionResult::Failure::makefsr:
+      CountFSRFailure("makefsr cut "+ToString((int)p_fsr->Cut())+" ("+dname+")");
       Reset();
       if (m_fsr_debug) p_debug->FillHist(m_ev.m_plab, p_isr.get(), p_fsr.get());
       return false;
     case YFS::EmissionResult::Failure::masswgt:
+      CountFSRFailure("mass weight ("+dname+")");
       m_fsrWeight = 0;
       if (m_fsr_debug) p_debug->FillHist(m_ev.m_plab, p_isr.get(), p_fsr.get());
       return false;
     case YFS::EmissionResult::Failure::formfactor:
+      CountFSRFailure("form factor ("+dname+")");
       return false;
     case YFS::EmissionResult::Failure::none:
+      if (res.weight == 0.) CountFSRFailure("zero weight ("+dname+")");
       break;
     }
     m_ev.m_photonSumFSR = res.photon_sum;
@@ -546,6 +595,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
       // momentum in the muon's slot. Carry the recoil down to the four
       // fermions instead.
       if (!p_dipoles->ApplyPoleRecoil(m_ev.m_plab)) {
+        CountFSRFailure("pole recoil");
         Reset();
         return false;
       }
@@ -597,6 +647,7 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     int totk = m_ev.m_ISRPhotons.size();
     if(m_nlo_fsr_photons) totk += m_ev.m_FSRPhotons.size();
     if(totk != 1) {
+      CountFSRFailure("NLO photon count");
       if(totk > 1)
         msg_Error()<<"Wrong photon multiplicity at Fixed Order: "<<totk<<std::endl;
       return false;
@@ -607,9 +658,16 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   //   return false;
   // }
   // CheckMasses();
+  CountFSRFailure("CalculateFSR completed");
   return true;
 }
 
+
+void YFS_Handler::CountFSRFailure(const std::string &what) {
+  static const bool on(ATOOLS::Settings::GetMainSettings()["YFS"]
+                       ["FSR_FAILURE_STATS"].SetDefault(0).Get<int>() != 0);
+  if (on) ++m_fsrfail[what];
+}
 
 void YFS_Handler::MakeWWVecs(ATOOLS::Vec4D_Vector p) {
   m_ev.m_Wm *= 0;
@@ -1450,7 +1508,8 @@ void YFS_Handler::GenerateWeight() {
       std::ostringstream o;
       o<<std::setprecision(10)<<"@@@ LOPROBE2 born="<<m_born<<" wlo="<<w_lo
        <<" wfull="<<w_full<<" corr="<<(ceex_nom ? corr_ceex : corr_eex)
-       <<" real="<<m_ev.m_real<<"\n";
+       <<" real="<<m_ev.m_real<<" trial="<<rpa->gen.NumberOfTrials()
+       <<" nisr="<<m_ev.m_ISRPhotons.size()<<" nfsr="<<m_ev.m_FSRPhotons.size()<<"\n";
       std::cerr<<o.str();
     } }
   if(m_isr_debug) {

@@ -113,7 +113,16 @@ bool Define_Dipoles::ApplyPoleRecoil(ATOOLS::Vec4D_Vector &plab) {
 
   // BuildPole adds the pair as (W-, W+), so leg 0 carries w.lm/w.nm and leg 1
   // carries w.lp/w.np.
-  const Vec4D oldw[2] = {D.GetMomenta(0),    D.GetMomenta(1)};
+  //
+  // The PRE-emission W's are m_oldmomenta (the legs as constructed, never
+  // written again). GetMomenta() is not that: FSR::MakeFSR writes the
+  // post-emission legs into m_momenta and Dipole::Boost copies them to
+  // m_newmomenta, so old == new, the boost below was the identity, the
+  // daughters never moved, and every trial with a production photon failed
+  // the signal blob's momentum check and was regenerated with its trials
+  // kept: cc_em_mup at 161 GeV, 347 of 497 trials, YFS.LO and YFS.NLO a
+  // factor 5-8 below the flat scheme (NOTES-w-stages-2026-09-27.md 10.1).
+  const Vec4D oldw[2] = {D.GetOldMomenta(0), D.GetOldMomenta(1)};
   const Vec4D neww[2] = {D.GetNewMomenta(0), D.GetNewMomenta(1)};
   const std::size_t dau[2][2] = {{w.lm, w.nm}, {w.lp, w.np}};
 
@@ -263,7 +272,32 @@ double Define_Dipoles::CalculateVirtualSub() {
     // for IFI terms.
     sub += D.ChargeNorm()*p_yfsFormFact->BVirtGeneral(D, sqrt(m_s) / 2.);
   }
+  // The pole expansion's decay stage: its exponent (FormFactorSumDecay) is
+  // in the YFS weight, so its virtual B has to be subtracted from the loop
+  // like every other dipole's. Empty outside the pole scheme.
+  if (DecayVirtualSubtraction())
+    for (auto &D : m_set.Decay())
+      sub += D.ChargeNorm()*p_yfsFormFact->BVirtGeneral(D, sqrt(m_s) / 2.);
   return sub;
+}
+
+/*
+  YFS: WW_DECAY_VIRTUAL_SUB (default 0). Whether the pole expansion's decay
+  dipoles enter the virtual subtraction. They should: the exponent carries
+  FormFactorSumDecay, so the loop's decay-stage collinear logs have to be
+  subtracted with a B of the same object. But the once-per-run
+  CheckDecayFormFactor shows the closed-form exponent (BVR_decay, +0.040
+  for W- -> e- at 86 GeV) and the dim-reg virtual + real B of the same
+  dipole (-0.167, with a 1/eps pole left in the sum) are NOT the same
+  object, so subtracting the machinery's B against the closed-form exponent
+  is no better founded than subtracting nothing: cc_em_mup at 161 GeV,
+  YFS.NLO = 0.0490 (flat 0.0441) without, 0.0345 with. Off until the decay
+  stage's B and B-tilde are derived consistently (NOTES-w-stages 10.3).
+*/
+bool Define_Dipoles::DecayVirtualSubtraction() const {
+  static const bool on(ATOOLS::Settings::GetMainSettings()["YFS"]
+                       ["WW_DECAY_VIRTUAL_SUB"].Get<int>() != 0);
+  return on;
 }
 
 double Define_Dipoles::CalculateVirtualSubEps() {
@@ -286,6 +320,23 @@ double Define_Dipoles::CalculateVirtualSubEps() {
       msg_Error()<<"YFS subtraction is Nan For dipole:"<<D<<std::endl;
       // THROW(fatal_error, "YFS Subtraction fails");
     }
+  }
+  /*
+    The pole expansion's decay stage (W incoming, charged daughter outgoing).
+    Its exponent FormFactorSumDecay is in the YFS weight, so its virtual B
+    must be subtracted from the loop like the production dipoles' - without
+    it the decay-stage collinear logs log(M_W/m_l) sit in exp(Y) AND in the
+    provider's virtual: cc_em_mup at 161 GeV, YFS.Virtual 3.4x the flat
+    scheme's, YFS.NLO +17% (NOTES-w-stages-2026-09-27.md 10.2). BVV_full_eps
+    is a Lorentz invariant of p1.p2 and the masses, so the lab-frame legs of
+    the decay dipole are fine. Empty outside the pole scheme, so every other
+    run is untouched.
+  */
+  for (auto &D : m_set.Decay()) {
+    CheckDecayFormFactor(D);
+    if(!DecayVirtualSubtraction() || D.IsFinite()) continue;
+    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
+    if(IsBad(sub.Finite())) msg_Error()<<"YFS subtraction is Nan For dipole:"<<D<<std::endl;
   }
   m_virtSub=sub;
   return sub.Finite();
@@ -311,6 +362,10 @@ double Define_Dipoles::CalculateVVSubEps() {
       msg_Error()<<"YFS subtraction is Nan For dipole:"<<D<<std::endl;
       // THROW(fatal_error, "YFS Subtraction fails");
     }
+  }
+  for (auto &D : m_set.Decay()) {   // as CalculateVirtualSubEps
+    if(!DecayVirtualSubtraction() || D.IsFinite()) continue;
+    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
   }
   m_vvSub=0.5*sub*sub;
   return (0.5*sub*sub).Finite();
@@ -407,6 +462,31 @@ double Define_Dipoles::CoulombSubtraction(YFS::Dipole &D){
   return m_alpha*M_PI/(2.*beta);
 }
 
+
+void Define_Dipoles::CheckDecayFormFactor(YFS::Dipole &D) {
+  if (m_decaycheckdone || m_dim_reg != 1) return;
+  m_decaycheckdone = true;
+  // the dipole's legs in the W rest frame, where Kmax = (M^2 - m_l^2)/2M is
+  // defined; the virtual is frame independent, the real B-tilde is not
+  const double M(D.GetMass(0)), ml(D.GetMass(1));
+  if (M <= ml) return;
+  const double ks((M*M - ml*ml)/(2.*M));
+  Vec4D_Vector legs{D.GetBornMomenta(0), D.GetBornMomenta(1)};
+  Poincare toW(legs[0]);
+  for (Vec4D &p : legs) toW.Boost(p);
+  YFS::Dipole Dw(D.GetFlavors(), legs, legs, D.Type(), m_alpha);
+  Dw.SetMass(0, M); Dw.SetMass(1, ml);
+  const DivArrD bv(p_yfsFormFact->BVV_full_eps(Dw, ks, 3));
+  const DivArrD br(p_yfsFormFact->BVR_full_eps(Dw, ks, 0));
+  const double ymach(D.ChargeNorm()*(bv + br).Finite());
+  const double yclosed(fabs(D.m_QiQj)*p_yfsFormFact->BVR_decay(M, ml, ks));
+  msg_Info()<<"YFS pole scheme, decay-stage exponent check ("<<D.GetFlav(0)
+            <<" -> "<<D.GetFlav(1)<<", M = "<<M<<" GeV): closed form Y = "
+            <<yclosed<<", dim-reg virtual + real B = "<<ymach
+            <<" (1/eps pole of the sum "<<(bv + br).GetIR()
+            <<"); the two must agree for the O(alpha) subtraction to match "
+            <<"the exponent."<<std::endl;
+}
 
 double Define_Dipoles::FormFactorSumDecay(){
   double form = 0;
