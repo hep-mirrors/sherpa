@@ -943,6 +943,20 @@ All possible settings of :option:`TIMING_STATISTICS` are:
 :samp:`{5}`
       All collected information about the computational steps for each subprocess are printed.
 
+For all :option:`TIMING_STATISTICS` > 0 a further table compares, for the same
+:ref:`Max_Epsilon` values, the effective events per day for the selection of
+subprocesses of :ref:`SELECTION_WEIGHT_MODE` with a time-optimal selection,
+which selects each subprocess proportional to
+``|sigma|/sqrt(t*eff*alpha)``, where ``t`` is its measured time per trial and
+``eff`` its number of accepted events per trial. This selection minimises the
+uncertainty of the total cross section per computing time; the table shows how
+much computing time it would save.  It assumes that the time per trial of a
+subprocess does not depend on how often it is selected, and it needs events of
+every relevant subprocess in the timing run.  The time-optimal selection is not
+available for the event generation itself yet. Setting
+:option:`TIMING_STATISTICS_MIN_UNC_PER_DAY: 1` uses it in the other tables as
+well.
+
 
 .. _MPI parallelization:
 

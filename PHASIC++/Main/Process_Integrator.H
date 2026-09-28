@@ -65,7 +65,7 @@ namespace PHASIC {
     // other modes SelectionWeight() rescales it, see SelectionAlphaPower().
     double m_selweight_xs = 0.;
     double m_timing_statistics_large_weight_fraction, m_external_selectionweight, m_ovwth;
-    int m_timing_statistics;
+    int m_timing_statistics, m_timing_statistics_min_unc_per_day;
 
     long unsigned int m_n, m_itmin, m_itmax;
 
