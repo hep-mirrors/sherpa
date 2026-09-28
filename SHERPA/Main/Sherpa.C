@@ -463,14 +463,24 @@ bool Sherpa::SummarizeRun()
     double sum_kish = 0;
     for (auto const& [key, val] : chosen_alpha_map) {
       std::string sub_name = key;
-      double curr_xsec = dabs(xsec_map[sub_name])/chosen_efficiency_map[sub_name]/alpha_power(chosen_alpha_map[sub_name]);
-      sum_p_unw += chosen_efficiency_map[sub_name]*sudakov_efficiency[sub_name]*curr_xsec;
+      // Accepted events of the subprocess. For (partially) unweighted events they
+      // follow from its selection weight, eff*|sigma|/(eff*alpha^p). For weighted
+      // events the selection weight is that of the weighted sample including the
+      // points that fail the cuts, which are not generated, so the generated events
+      // of this run are taken; a subprocess without any does not contribute.
+      double nacc;
+      if (generation_mode==0) {
+        nacc = number_map["n_gen_"+sub_name];
+        if (nacc==0.) continue;
+      } else {
+        double curr_xsec = dabs(xsec_map[sub_name])/chosen_efficiency_map[sub_name]/alpha_power(chosen_alpha_map[sub_name]);
+        nacc = chosen_efficiency_map[sub_name]*curr_xsec;
+      }
+      sum_p_unw += nacc*sudakov_efficiency[sub_name];
       sum_p_eff_sign += xsec_map[sub_name]*sudakov_efficiency[sub_name];
-      sum_kish += kish_term(xsec_map[sub_name],chosen_alpha_map[sub_name],chosen_efficiency_map[sub_name]*curr_xsec)*sudakov_efficiency[sub_name];
+      sum_kish += kish_term(xsec_map[sub_name],chosen_alpha_map[sub_name],nacc)*sudakov_efficiency[sub_name];
     }
     double chosen_effevperev = pow(sum_p_eff_sign,2)/(sum_p_unw*sum_kish);
-    //todo: for weighted events (generation_mode==0) the chosen efficiency and alpha
-    //  are those of the unweighting, not of the weighted sample
     msg_Info()<<"with "<< chosen_effevperev << " Neff/evt           "<<std::endl;
     p_eventhandler->Finish();
 

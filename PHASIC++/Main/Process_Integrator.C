@@ -251,16 +251,32 @@ std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) 
       // (sum sigma)^2/(sum |sigma|/sqrt(alpha))^2.
       double proci_selw = dabs(proci_xsec)/SelectionAlphaPower(proci_effevperev,m_swmode)/proci_effi;
       double proci_nacc = proci_effi*proci_selw;
+      double proci_kish = proci_nacc*SelectionKishPower(proci_effevperev,m_swmode);
+      if (!unweighted) {
+        // Weighted events (proci_effi=1): the selection weight |<w>_all|/alpha_all^p
+        // uses the dilution of all trial points, alpha_all = eps_cut*alpha, including
+        // those that fail the cuts, which are not generated. The generated events
+        // are then N_i = eps_cut*|<w>_all|/(eps_cut*alpha)^p, which differs from
+        // the |<w>_all|/alpha^p above by eps_cut^(1-p), i.e. between subprocesses
+        // with different cut efficiencies.
+        const double proci_epscut = (*p_proc)[i]->Integrator()->CutEfficiency();
+        proci_nacc = proci_epscut*dabs(proci_xsec)
+                     /SelectionAlphaPower(proci_epscut*proci_effevperev,m_swmode);
+        proci_selw = proci_nacc;
+        proci_kish = sqr(proci_xsec)/(proci_effevperev*proci_nacc);
+      }
       sum_xsec += proci_xsec;
       sum_xsec_abs += dabs(proci_xsec);
       sum_selw += proci_selw;
       sum_effi += proci_nacc;
-      sum_kish += proci_nacc*SelectionKishPower(proci_effevperev,m_swmode);
+      sum_kish += proci_kish;
       //could also take information from whisto, but want to be more correct by not relying on bin width approximation
     }
     if (sum_selw!=0) {
       totaleffiandeffevperev[0] = sum_effi/sum_selw;
-      if (m_swmode==0)
+      // The closed form for p=1/2 needs N_i ~ |sigma_i|/sqrt(alpha_i), which does
+      // not hold for weighted events, see above.
+      if (m_swmode==0 && unweighted)
         totaleffiandeffevperev[1] = pow(sum_xsec_abs/sum_effi,2)*pow(sum_xsec/sum_xsec_abs,2);
       else
         totaleffiandeffevperev[1] = sum_effi*sum_kish!=0. ? sqr(sum_xsec)/(sum_effi*sum_kish) : 0.;
@@ -1013,6 +1029,14 @@ void Process_Integrator::SetUpEnhance(const int omode)
     //should rely on m_weightmax here -> to be compatible with partially unweighting the m_effi etc needs to be set
     SetMax(m_weightmax);
     SetFullUnweightingStats(m_max);
+  }
+  // Weighted events are not unweighted: the generated events of this subprocess are
+  // its cut-passing points with their weights, so that the efficiency is 1 and the
+  // statistical dilution is that of the weights, see Sherpa::SummarizeRun().
+  if (ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"))==0) {
+    const std::vector<double> weighted(TotalEffiAndEffEvPerEv(0));
+    rpa->gen.SetChosenEfficiencyMap(p_proc->ResultsName(), weighted[0]);
+    rpa->gen.SetChosenAlphaMap(p_proc->ResultsName(), weighted[1]);
   }
 }
 
