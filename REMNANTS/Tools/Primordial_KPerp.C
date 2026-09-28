@@ -5,7 +5,14 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include <algorithm>
+
+
+#ifdef USING__TMDLIB
+#include "tmdlib/TMDlib.h"
+using namespace TMDlib;
+#endif
 
 using namespace REMNANTS;
 using namespace ATOOLS;

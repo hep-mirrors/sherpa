@@ -11,9 +11,13 @@
 
 #include "LHAPDF/LHAPDF.h"
 
+#ifdef USING__TMDLIB
 #include "tmdlib/TMDlib.h"
-
 using namespace TMDlib;
+
+#endif
+
+
 
 /*class Singleton {
   private:
@@ -261,7 +265,7 @@ void LHAPDF_CPP_Interface::CalculateSpec(const double& x,const double& Q2) {
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-
+#ifdef USING__TMDLIB
 TMD test;
 
 double testTMDlib() {
@@ -294,13 +298,15 @@ double xmin = test.TMDgetXmin();
 
 return xmin;
 }
-
+#endif
 //----------------------------------------------------------------------------------------------------------------
 
 double LHAPDF_CPP_Interface::GetXPDF(const ATOOLS::Flavour& infl) {
+#ifdef USING__TMDLIB
   std::cout<<"ola STILL in GetXPDF: TMDlib test will start now"<<std::endl;
   double ola =testTMDlib();
   std::cout<<"ola BACK in GetXPDF: the end of tmdlib test. xmin="<<ola<<std::endl;
+  #endif
   return GetXPDF(infl.Kfcode(), infl.IsAnti());
 }
 

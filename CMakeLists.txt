@@ -65,9 +65,10 @@ option(SHERPA_ENABLE_THREADING               "Enables building with threading." 
 option(SHERPA_ENABLE_TESTING                 "Enables testing." OFF)
 option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interfaces." OFF)
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
-option(SHERPA_ENABLE_GSL                  "Enables installation of GSL." ON)
-option(SHERPA_ENABLE_TMDLIB                  "Enables installation of TMDlib." ON)
-
+option(SHERPA_ENABLE_GSL                  "Enables usage of GSL." ON)
+option(SHERPA_ENABLE_TMDLIB                  "Enables usage of TMDlib." ON)
+option(SHERPA_ENABLE_INSTALL_GSL                  "Enables installation of GSL." ON)
+option(SHERPA_ENABLE_INSTALL_TMDLIB                  "Enables installation of TMDlib." OFF)
 
 ########################################################################
 ### allow the user to be sloppy and use HEPMC3_DIR instead of the correct
@@ -435,8 +436,38 @@ if (SHERPA_ENABLE_LHAPDF)
                      ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/LHAPDF/lhapdf.conf
                      ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/LHAPDF/pdfsets.index
     )
+    #------------ new block needed for TMDlib
+    ExternalProject_Add_Step(downloadedlhapdf lhapdf_tmdlib_compat
+  COMMAND ${CMAKE_COMMAND} -E make_directory
+          ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+
+  COMMAND ${CMAKE_COMMAND} -E create_symlink
+          SHERPA-MC${VERSIONING}/libLHAPDF${CMAKE_SHARED_LIBRARY_SUFFIX}
+          ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libLHAPDF${CMAKE_SHARED_LIBRARY_SUFFIX}
+
+  DEPENDEES install
+  ALWAYS 1
+)
+    
+    
+    
+    
+    #--------- end of the new block needed for tmdlib
     unset(LHAPDF_ROOT)
     set(LHAPDF_DIR ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX})
+    
+    # again, piece for TMDlib
+    
+    ExternalProject_Add_Step(downloadedlhapdf fix_staged_lhapdf_config
+  COMMAND sed -i
+          "s|^prefix=.*|prefix=${LHAPDF_DIR}|"
+          ${LHAPDF_DIR}/bin/lhapdf-config
+  DEPENDEES install
+  ALWAYS 1
+)
+    
+    # end of the new TMDlib-related piece
+    
     set(LHAPDF_PATH ${CMAKE_INSTALL_PREFIX})
     set(LHAPDF_DATA_PATH ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/LHAPDF/)
     set(LHAPDF_VERSION 6.5.3)
@@ -477,134 +508,209 @@ message(STATUS "SHERPA: LHAPDF_VERSION=${LHAPDF_VERSION} LHAPDF_LIBRARIES=${LHAP
 
 
 
-#-----------------------------   below gsl
-#---------------------------------------------------------------- 
+
 #------------------------------------------------------------------
+# GSL
+# ----------------------------------------------------------------
 
-if (SHERPA_ENABLE_GSL)
+if(SHERPA_ENABLE_GSL)
+
+  if(NOT SHERPA_ENABLE_INSTALL_GSL)
+
+    # Use an externally installed GSL.
+    #
+    # An explicit installation can be selected with:
+    #   -DGSL_ROOT_DIR=/path/to/gsl
+    #
+    # Otherwise CMake's FindGSL will use its normal discovery mechanism.
+
+    if(GSL_ROOT_DIR)
+
+      set(GSL_CONFIG_EXECUTABLE
+        "${GSL_ROOT_DIR}/bin/gsl-config"
+        CACHE FILEPATH "Path to gsl-config" FORCE
+      )
+
+      set(GSL_INCLUDE_DIR
+        "${GSL_ROOT_DIR}/include"
+        CACHE PATH "GSL include directory" FORCE
+      )
+
+      find_library(GSL_LIBRARY
+        NAMES gsl
+        PATHS "${GSL_ROOT_DIR}/lib" "${GSL_ROOT_DIR}/lib64"
+        NO_DEFAULT_PATH
+      )
+
+      find_library(GSL_CBLAS_LIBRARY
+        NAMES gslcblas
+        PATHS "${GSL_ROOT_DIR}/lib" "${GSL_ROOT_DIR}/lib64"
+        NO_DEFAULT_PATH
+      )
+
+    endif()
+
+    find_package(GSL 2.6)
+
+    if(NOT GSL_FOUND)
+      message(FATAL_ERROR
+        "SHERPA: GSL not found! Terminating!\n"
+        "To use an installed GSL, specify "
+        "-DGSL_ROOT_DIR=/installation/path/to/gsl "
+        "or use -DSHERPA_ENABLE_INSTALL_GSL=ON "
+        "to download and compile GSL."
+      )
+    endif()
+
+    # TMDlib uses gsl-config during its configure step.
+    find_program(GSL_CONFIG_EXECUTABLE
+      NAMES gsl-config
+      HINTS ${GSL_ROOT_DIR}/bin
+    )
+
+    if(NOT GSL_CONFIG_EXECUTABLE)
+      message(FATAL_ERROR
+        "SHERPA: gsl-config not found for external GSL."
+      )
+    endif()
+
+    get_filename_component(
+      GSL_CONFIG_DIR
+      "${GSL_CONFIG_EXECUTABLE}"
+      DIRECTORY
+    )
+
+  else()
+
+    # Build and install GSL internally.
+
+
     message(STATUS "SHERPA: GSL will be downloaded and compiled")
+
     include(ExternalProject)
-    include(FetchContent)
-    set(GSLDESTDIR ${PROJECT_BINARY_DIR}/EXTERNALINSTALL/gsl)
+
+    set(GSLDESTDIR
+      ${PROJECT_BINARY_DIR}/EXTERNALINSTALL/gsl
+    )
+
     ExternalProject_Add(downloadedgsl
-      URL https://ftpmirror.gnu.org/gnu/gsl/gsl-2.6.tar.gz
+      URL https://ftp.gnu.org/gnu/gsl/gsl-2.6.tar.gz
       UPDATE_COMMAND ""
-
-      BUILD_IN_SOURCE     1
+      BUILD_IN_SOURCE 1
       PREFIX ${PROJECT_BINARY_DIR}/EXTERNALSRC
 
-     CONFIGURE_COMMAND ./configure  --prefix=${CMAKE_INSTALL_PREFIX} --libdir=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} -datadir=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/aclocal
+      CONFIGURE_COMMAND
+        ./configure
+        --prefix=${CMAKE_INSTALL_PREFIX}
+        --libdir=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}
+        --datadir=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/aclocal
 
-      BUILD_COMMAND make -j 8
-      INSTALL_COMMAND make install DESTDIR=${GSLDESTDIR}
+      BUILD_COMMAND
+        make -j 8
+
+      INSTALL_COMMAND
+        make install DESTDIR=${GSLDESTDIR}
     )
-    unset(GSL_ROOT)
-    set(GSL_DIR ${GSLDESTDIR}/${CMAKE_INSTALL_PREFIX})
-    set(GSL_PATH ${CMAKE_INSTALL_PREFIX})
-    set(GSL_DATA_PATH ${GSLDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/aclocal/)
+
+    # gsl-config is generated for the final installation prefix, but TMDlib
+    # needs to use GSL from the ExternalProject staging area during the build.
+    ExternalProject_Add_Step(downloadedgsl fix_staged_gsl_config
+      COMMAND sed -i
+        "s|${CMAKE_INSTALL_PREFIX}|${GSLDESTDIR}${CMAKE_INSTALL_PREFIX}|g"
+        ${GSLDESTDIR}${CMAKE_INSTALL_PREFIX}/bin/gsl-config
+      DEPENDEES install
+      ALWAYS 1
+    )
+
+    set(GSL_DIR
+      ${GSLDESTDIR}/${CMAKE_INSTALL_PREFIX}
+    )
+
+    set(GSL_CONFIG_DIR
+      ${GSL_DIR}/bin
+    )
+
+    set(GSL_ROOT_DIR
+      ${CMAKE_INSTALL_PREFIX}
+    )
+
+    set(GSL_PATH
+      ${CMAKE_INSTALL_PREFIX}
+    )
+
+    set(GSL_DATA_PATH
+      ${GSLDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/aclocal/
+    )
+
     set(GSL_VERSION 2.6)
-    set(GSL_LIBRARIES ${GSLDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/libgsl${CMAKE_SHARED_LIBRARY_SUFFIX})
-    set(GSL_LIBRARY_DIR ${GSLDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING})
-    set(GSL_INCLUDE_DIRS ${GSL_DIR}/include)
-    add_library(GSL::GSL UNKNOWN IMPORTED)
-    set_target_properties(GSL::GSL PROPERTIES
-          IMPORTED_LOCATION "${GSL_LIBRARIES}"
-          INTERFACE_INCLUDE_DIRECTORIES "${GSL_INCLUDE_DIRS}"
-      )
-   file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/aclocal)
 
-    install(DIRECTORY ${GSL_LIBRARY_DIR}/ DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs FILES_MATCHING PATTERN "*")
-    install(DIRECTORY ${GSL_INCLUDE_DIRS}/gsl DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
-    install(DIRECTORY ${GSL_DIR}/share/SHERPA-MC${VERSIONING}/aclocal/  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/aclocal COMPONENT libs)
-    add_dependencies(GSL::GSL PRIVATE downloadedgsl)
-
-
-
-
-endif()
-
-# below test to include TMDlib
-#--------------------------------------------------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-if (SHERPA_ENABLE_TMDLIB)
-    message(STATUS "SHERPA: TMDlib will be downloaded and compiled")
-#
-    file(MAKE_DIRECTORY ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/lib)
-   file(COPY ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/libLHAPDF.a
-        DESTINATION ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/lib/libLHAPDF.a)
-   file(COPY ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/libLHAPDF.la
-        DESTINATION ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/lib/libLHAPDF.la)
-   file(COPY ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/libLHAPDF.so
-        DESTINATION ${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/lib/libLHAPDF.so)
-#
-    include(ExternalProject)
-    include(FetchContent)
-    set(TMDLIBDESTDIR ${PROJECT_BINARY_DIR}/EXTERNALINSTALL/tmdlib)
-    ExternalProject_Add(downloadedtmdlib
-      URL https://tmdlib.hepforge.org/downloads/?f=tmdlib-2.2.11.tar.gz
-      UPDATE_COMMAND ""
-      BUILD_IN_SOURCE     1
-      PREFIX ${PROJECT_BINARY_DIR}/EXTERNALSRC
-      CONFIGURE_COMMAND ./configure  --prefix=${CMAKE_INSTALL_PREFIX} --libdir=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} --datadir=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/ --with-lhapdf=${LHAPDFDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/
-#
-      BUILD_COMMAND make -j 8
-      INSTALL_COMMAND make install DESTDIR=${TMDLIBDESTDIR}
-      BUILD_BYPRODUCTS
-                     ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/libTMDlib${CMAKE_SHARED_LIBRARY_SUFFIX}
-                     ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/tmdlib/config_tmdplotter.ini
-                     ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/tmdlib/tmdpdfsets.index
+    set(GSL_LIBRARY_DIR
+      ${GSLDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}
     )
-    unset(TMDLIB_ROOT)
-    set(TMDLIB_DIR ${TMDLIBDESTDIR}/${CMAKE_INSTALL_PREFIX})
-    set(TMDLIB_PATH ${CMAKE_INSTALL_PREFIX})
-    set(TMDLIB_DATA_PATH ${TMDLIBDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}/tmdlib/)
-    set(TMDLIB_VERSION 2.2.11)
-    set(TMDLIB_LIBRARIES ${TMDLIBDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}/libTMDlib${CMAKE_SHARED_LIBRARY_SUFFIX})
-    set(TMDLIB_LIBRARY_DIR ${TMDLIBDESTDIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING})
-#
-#
-#
-list(APPEND TMDLIB_INCLUDE_DIRS "${TMDLIB_DIR}/include")
-list(APPEND TMDLIB_INCLUDE_DIRS "${TMDLIB_DIR}/include/tmdlib")
-list(APPEND TMDLIB_INCLUDE_DIRS "${TMDLIB_DIR}/include/apfel")
-list(APPEND TMDLIB_INCLUDE_DIRS "${TMDLIB_DIR}/include/tmdlib/yaml-cpp")
-list(APPEND TMDLIB_INCLUDE_DIRS "${TMDLIB_DIR}/include/tmdlib/yaml-cpp/node")
-list(APPEND TMDLIB_INCLUDE_DIRS "${TMDLIB_DIR}/include/tmdlib/yaml-cpp/node/detail")
-list(APPEND TMDLIB_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/EXTERNALSRC/src/downloadedtmdlib/src/yaml-cpp-yaml-cpp-0.6.0/src")
-list(APPEND TMDLIB_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/EXTERNALSRC/src/downloadedtmdlib/src/yaml-cpp-yaml-cpp-0.6.0/include")
-list(APPEND TMDLIB_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/EXTERNALSRC/src/downloadedtmdlib/src/yaml-cpp-yaml-cpp-0.6.0/include/yaml-cpp/")
-list(APPEND TMDLIB_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/EXTERNALSRC/src/downloadedtmdlib/src/yaml-cpp-yaml-cpp-0.6.0/include/yaml-cpp/node")
-list(APPEND TMDLIB_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/EXTERNALSRC/src/downloadedtmdlib/src/yaml-cpp-yaml-cpp-0.6.0/include/yaml-cpp/node/detail")
-list(APPEND TMDLIB_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/EXTERNALSRC/src/downloadedtmdlib/apfelxx")
-list(APPEND TMDLIB_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/EXTERNALSRC/src/downloadedtmdlib/apfelxx/inc")
-list(APPEND TMDLIB_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/EXTERNALSRC/src/downloadedtmdlib/apfelxx/inc/apfel")
-list(APPEND TMDLIB_INCLUDE_DIRS "${PROJECT_BINARY_DIR}/EXTERNALSRC/src/downloadedtmdlib/src")
-#
-    message(TMDLIB_LIBRARY_DIR="${TMDLIB_LIBRARY_DIR}")
-    message(TMDLIB_INCLUDE_DIRS="${TMDLIB_INCLUDE_DIRS}")
-    message("olalalal")
-#
-    add_library(TMD::TMD UNKNOWN IMPORTED)
-    set_target_properties(TMD::TMD PROPERTIES
-          IMPORTED_LOCATION "${TMDLIB_LIBRARIES}"
-          INTERFACE_INCLUDE_DIRECTORIES "${TMDLIB_INCLUDE_DIRS}"
-      )
-#
-    file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/tmdlib)
-    install(DIRECTORY ${TMDLIB_LIBRARY_DIR}/ DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING} COMPONENT libs FILES_MATCHING PATTERN "*")
-    install(DIRECTORY ${TMDLIB_DIR}/include/tmdlib DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING} COMPONENT devel)
-    install(DIRECTORY ${TMDLIB_DIR}/include/tmdlib/yaml-cpp DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/tmdlib COMPONENT devel)
-    install(DIRECTORY ${TMDLIB_DIR}/include/tmdlib/yaml-cpp/node DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/tmdlib/yaml-cpp COMPONENT devel)
-   install(DIRECTORY ${TMDLIB_DIR}/include/tmdlib/yaml-cpp/node/detail DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}/tmdlib/yaml-cpp/node COMPONENT devel)
-    install(DIRECTORY ${TMDLIB_DIR}/include/apfel DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING} COMPONENT devel)
-    install(DIRECTORY ${TMDLIB_DIR}/share/SHERPA-MC${VERSIONING}/tmdlib/  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/tmdlib COMPONENT devel)
-    install(DIRECTORY ${TMDLIB_DIR}/include/tmdlib/yaml-cpp DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING} COMPONENT libs)
-#
-    add_dependencies(TMD::TMD PRIVATE downloadedtmdlib)
+
+    set(GSL_INCLUDE_DIRS
+      ${GSL_DIR}/include
+    )
+
+    file(MAKE_DIRECTORY
+      "${GSL_INCLUDE_DIRS}"
+    )
+
+    set(GSL_LIBRARY
+      ${GSL_LIBRARY_DIR}/libgsl${CMAKE_SHARED_LIBRARY_SUFFIX}
+    )
+
+    set(GSL_CBLAS_LIBRARY
+      ${GSL_LIBRARY_DIR}/libgslcblas${CMAKE_SHARED_LIBRARY_SUFFIX}
+    )
+
+    add_library(GSL::gsl UNKNOWN IMPORTED)
+
+    set_target_properties(GSL::gsl PROPERTIES
+      IMPORTED_LOCATION
+        "${GSL_LIBRARY}"
+      INTERFACE_INCLUDE_DIRECTORIES
+        "${GSL_INCLUDE_DIRS}"
+    )
+
+    target_link_libraries(GSL::gsl INTERFACE
+      "${GSL_CBLAS_LIBRARY}"
+    )
+
+    add_dependencies(
+      GSL::gsl
+      downloadedgsl
+    )
+
+    file(MAKE_DIRECTORY
+      ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/aclocal
+    )
+
+    install(
+      DIRECTORY ${GSL_LIBRARY_DIR}/
+      DESTINATION
+        ${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}
+      COMPONENT libs
+      FILES_MATCHING
+      PATTERN "*"
+    )
+
+    install(
+      DIRECTORY ${GSL_INCLUDE_DIRS}/gsl
+      DESTINATION
+        ${CMAKE_INSTALL_INCLUDEDIR}/SHERPA-MC${VERSIONING}
+      COMPONENT libs
+    )
+
+    install(
+      DIRECTORY
+        ${GSL_DIR}/share/SHERPA-MC${VERSIONING}/aclocal/
+      DESTINATION
+        ${CMAKE_INSTALL_DATADIR}/aclocal
+      COMPONENT libs
+    )
+
+  endif()
 
 endif()
 
@@ -612,6 +718,180 @@ endif()
 
 
 
+    
+
+    
+    
+    
+    
+
+
+
+  
+
+   
+  
+
+ 
+# TMDlib
+# ----------------------------------------------------------------
+
+if(SHERPA_ENABLE_TMDLIB)
+
+  if(NOT SHERPA_ENABLE_INSTALL_TMDLIB)
+
+    # ------------------------------------------------------------
+    # Use an externally installed TMDlib
+    #
+    # The installation can be specified with:
+    #
+    #   -DTMDlib_ROOT_DIR=/path/to/tmdlib
+    #
+    # FindTMDlib.cmake handles the actual discovery.
+    # ------------------------------------------------------------
+
+    find_package(TMDlib 2.2.10)
+
+    if(NOT TMDlib_FOUND)
+      message(FATAL_ERROR
+        "SHERPA: TMDlib not found! Terminating!\n"
+        "To use an installed TMDlib, specify "
+        "-DTMDlib_ROOT_DIR=/installation/path/to/tmdlib "
+        "or use -DSHERPA_ENABLE_INSTALL_TMDLIB=ON "
+        "to download and compile TMDlib."
+      )
+    endif()
+
+ 
+    
+
+   
+   
+      else()
+
+    # ------------------------------------------------------------
+    # Build and install TMDlib internally
+    # ------------------------------------------------------------
+
+    message(STATUS
+      "SHERPA: TMDlib will be downloaded and compiled"
+    )
+
+    include(ExternalProject)
+
+    set(TMDLIBDESTDIR
+      ${PROJECT_BINARY_DIR}/EXTERNALINSTALL/tmdlib
+    )
+
+set(TMDLIB_DEPENDS)
+
+if(SHERPA_ENABLE_INSTALL_LHAPDF)
+  list(APPEND TMDLIB_DEPENDS downloadedlhapdf)
+endif()
+
+if(SHERPA_ENABLE_INSTALL_GSL)
+  list(APPEND TMDLIB_DEPENDS downloadedgsl)
+endif()
+
+    ExternalProject_Add(downloadedtmdlib
+      URL https://tmdlib.hepforge.org/downloads/?f=tmdlib-2.2.15.tar.gz
+      UPDATE_COMMAND ""
+      BUILD_IN_SOURCE 1
+      PREFIX ${PROJECT_BINARY_DIR}/EXTERNALSRC
+
+      PATCH_COMMAND
+        ${CMAKE_COMMAND}
+        -DTMDLIB_STYLE_FILE=<SOURCE_DIR>/manual/mystyle-new.sty
+        -DTMDLIB_SOURCE_DIR=<SOURCE_DIR>
+        -P ${PROJECT_SOURCE_DIR}/cmake/Modules/PatchTMDlib.cmake
+
+      CONFIGURE_COMMAND
+        ${CMAKE_COMMAND} -E env
+        "PATH=${GSL_CONFIG_DIR}:$ENV{PATH}"
+        ./configure
+        --prefix=${CMAKE_INSTALL_PREFIX}
+        --libdir=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}
+        --datadir=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/SHERPA-MC${VERSIONING}
+        --with-lhapdf=${LHAPDF_DIR}
+
+      BUILD_COMMAND
+        make -j 8
+
+      INSTALL_COMMAND
+        make install DESTDIR=${TMDLIBDESTDIR}
+
+      DEPENDS
+        ${TMDLIB_DEPENDS}
+    )
+
+    set(TMDLIB_DIR
+      ${TMDLIBDESTDIR}${CMAKE_INSTALL_PREFIX}
+    )
+
+    set(TMDLIB_ROOT_DIR
+      ${CMAKE_INSTALL_PREFIX}
+    )
+
+    set(TMDLIB_PATH
+      ${CMAKE_INSTALL_PREFIX}
+    )
+
+    set(TMDLIB_VERSION
+      2.2.15
+    )
+
+    set(TMDLIB_INCLUDE_DIRS
+      ${TMDLIB_DIR}/include
+    )
+
+    file(MAKE_DIRECTORY
+      ${TMDLIB_INCLUDE_DIRS}
+    )
+
+    set(TMDLIB_LIBRARY_DIR
+      ${TMDLIBDESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}
+    )
+
+    set(TMDLIB_LIBRARY
+      ${TMDLIB_LIBRARY_DIR}/libTMDlib${CMAKE_SHARED_LIBRARY_SUFFIX}
+    )
+
+    set(TMDLIB_APFELXX_LIBRARY
+      ${TMDLIB_LIBRARY_DIR}/libapfelxx${CMAKE_SHARED_LIBRARY_SUFFIX}
+    )
+
+    add_library(TMDlib::tmdlib UNKNOWN IMPORTED)
+
+    set_target_properties(TMDlib::tmdlib PROPERTIES
+      IMPORTED_LOCATION
+        "${TMDLIB_LIBRARY}"
+      INTERFACE_INCLUDE_DIRECTORIES
+        "${TMDLIB_INCLUDE_DIRS}"
+    )
+
+    target_link_libraries(TMDlib::tmdlib INTERFACE
+      "${TMDLIB_APFELXX_LIBRARY}"
+      LHAPDF::LHAPDF
+      GSL::gsl
+    )
+
+    add_dependencies(
+      TMDlib::tmdlib
+      downloadedtmdlib
+    )
+install(DIRECTORY
+  ${TMDLIB_LIBRARY_DIR}/
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/SHERPA-MC${VERSIONING}
+  COMPONENT libs
+  FILES_MATCHING
+    PATTERN "libTMDlib.so*"
+    PATTERN "libapfelxx.so*"
+)
+  endif()
+
+endif()
+
+#--------------------------------------------------------------------
 
 #--------------------------------------------------------------------
 #--- above TMDlib
@@ -1065,6 +1345,8 @@ $<IF:$<BOOL:${SHERPA_ENABLE_GZIP}>,#define USING__GZIP \"1\",/* #undef USING__GZ
 $<IF:$<BOOL:${SHERPA_ENABLE_LHAPDF}>,#define USING__LHAPDF \"1\",/* #undef USING__LHAPDF */>\n\n\
 /* LHAPDF PATH */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_LHAPDF}>,#define LHAPDF_PATH \"${LHAPDF_PATH}\",/* #undef LHAPDF_PATH */>\n\n\
+/* using TMDlib */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_TMDLIB}>,#define USING__TMDLIB \"1\",/* #undef USING__TMDLIB */>\n\n\
 /* using ROOT */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_ROOT}>,#define USING__ROOT \"1\",/* #undef USING__ROOT */>\n\n\
 /* using Rivet */\n\
