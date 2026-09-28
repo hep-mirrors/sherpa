@@ -234,7 +234,13 @@ bool Sherpa::GenerateOneEvent(bool reset)
     }
   }
 
-  if (m_evt_starttime<0.0) m_evt_starttime=rpa->gen.Timer().RealTime();
+  if (m_evt_starttime<0.0) {
+    m_evt_starttime=rpa->gen.Timer().RealTime();
+    // the timing statistics describe the event generation only, the points of
+    // the integration are not recorded
+    rpa->gen.SetTimingActive
+      (Settings::GetMainSettings()["TIMING_STATISTICS"].SetDefault(0).Get<int>()>0);
+  }
 
   if (reset) p_eventhandler->Reset();
   rpa->gen.SetIsGen(false);
@@ -261,14 +267,25 @@ bool Sherpa::GenerateOneEvent(bool reset)
       msg_Debugging()<<"  No Signal_Process Blob found, increasing m_trials by 1\n";
     }
     else {
-      m_trials+=(*blobs->FindFirst(btp::Signal_Process))["Trials"]->Get<double>();
-      std::string sub_name = rpa->gen.GetIsGenSubName();
-      std::chrono::high_resolution_clock::time_point end3 = std::chrono::high_resolution_clock::now();
-      double finetime = std::chrono::duration_cast<std::chrono::nanoseconds>(end3-rpa->gen.GetIsGenTime()).count()/1000000000.;
+      Blob *signal(blobs->FindFirst(btp::Signal_Process));
+      m_trials+=(*signal)["Trials"]->Get<double>();
+      const std::string &sub_name(rpa->gen.GetIsGenSubName());
+      // kept events per subprocess, needed for the Neff/evt of every run, and
+      // of those the repetitions of a hard event for its overweight (unweighted
+      // events, see Signal_Processes::Treat())
       rpa->gen.SetNumberMap("n_kept_"+sub_name, rpa->gen.NumberMap("n_kept_"+sub_name)+1);
-      rpa->gen.SetTimeMap("sum_overhead_after_kept_" +sub_name, rpa->gen.TimeMap("sum_overhead_after_kept_" +sub_name)+finetime);
-      rpa->gen.SetTimeMap("sum2_overhead_after_kept_"+sub_name, rpa->gen.TimeMap("sum2_overhead_after_kept_"+sub_name)+finetime*finetime);
-      rpa->gen.SetNumberMap("n_overhead_after_kept_" +sub_name, rpa->gen.NumberMap("n_overhead_after_kept_" +sub_name)+1);
+      if ((*signal)["Overweight_Copy"])
+        rpa->gen.SetNumberMap("n_keptcopy_"+sub_name, rpa->gen.NumberMap("n_keptcopy_"+sub_name)+1);
+      if (rpa->gen.TimingActive()) {
+        std::chrono::high_resolution_clock::time_point end3 = std::chrono::high_resolution_clock::now();
+        double finetime = std::chrono::duration_cast<std::chrono::nanoseconds>(end3-rpa->gen.GetIsGenTime()).count()/1000000000.;
+        rpa->gen.SetTimeMap("sum_overhead_after_kept_" +sub_name, rpa->gen.TimeMap("sum_overhead_after_kept_" +sub_name)+finetime);
+        rpa->gen.SetTimeMap("sum2_overhead_after_kept_"+sub_name, rpa->gen.TimeMap("sum2_overhead_after_kept_"+sub_name)+finetime*finetime);
+        rpa->gen.SetNumberMap("n_overhead_after_kept_" +sub_name, rpa->gen.NumberMap("n_overhead_after_kept_" +sub_name)+1);
+        // The next repetition of this hard event for its overweight starts here,
+        // its time after acceptance must not contain that of this event.
+        rpa->gen.SetIsGenTime(end3);
+      }
     }
 
     if (msg_LevelIsEvents()) {
@@ -376,24 +393,26 @@ bool Sherpa::SummarizeRun()
               <<" evts/day ";
     //calculate sum_map etc.
     std::map<std::string, double>  time_map = rpa->gen.TimeMapAll();
-    std::map<std::string, int>     number_map = rpa->gen.NumberMapAll();
+    std::map<std::string, long int> number_map = rpa->gen.NumberMapAll();
+    std::map<std::string, double>  xsec_map = rpa->gen.XsecMap();
+    // All subprocesses, including those without a trial in the event generation,
+    // which have no entries in time_map and number_map.
+    std::vector<std::string> subprocesses;
+    for (auto const& [key, val] : xsec_map) subprocesses.push_back(key);
     std::vector<std::string> num_types = {"total", "trial", "PS", "ME", "gen", "overw", "maxoverw", "kept"};//
     std::map<std::string, double>  sum_map;
     std::map<std::string, double>  sum_mult_map;//defined as double to simplify following divisions
     for (const std::string& num_type : num_types) {
       sum_map[num_type] = 0;
     }
-    for (auto const& [key, val] : time_map) {
-      if (key.rfind("sum_PS_", 0) == 0) {
-        std::string sub_name = key.substr(7);
-        for (const std::string& num_type : num_types) {
-          sum_map[num_type] += number_map["n_"+num_type+"_"+sub_name];
-          std::string mult=sub_name.substr(0,4);
-          if (sum_mult_map.find(mult+"_"+num_type) == sum_mult_map.end()) {
-            sum_mult_map[mult+"_"+num_type] = 0;
-          }
-          sum_mult_map[mult+"_"+num_type] += number_map["n_"+num_type+"_"+sub_name];
+    for (const std::string& sub_name : subprocesses) {
+      for (const std::string& num_type : num_types) {
+        sum_map[num_type] += number_map["n_"+num_type+"_"+sub_name];
+        std::string mult=sub_name.substr(0,4);
+        if (sum_mult_map.find(mult+"_"+num_type) == sum_mult_map.end()) {
+          sum_mult_map[mult+"_"+num_type] = 0;
         }
+        sum_mult_map[mult+"_"+num_type] += number_map["n_"+num_type+"_"+sub_name];
       }
     }
     
@@ -407,12 +426,10 @@ bool Sherpa::SummarizeRun()
     std::map<std::string, double> sudakov_efficiency_up_corr;
     std::map<std::string, double> sudakov_efficiency_down_corr;
     double average_sudakov = sum_map["kept"]/sum_map["gen"];
-    for (auto const& [key, val] : time_map) {
-      if (key.rfind("sum_PS_", 0) == 0) {
-	std::string sub_name = key.substr(7);
+    for (const std::string& sub_name : subprocesses) {
 	if (number_map["n_kept_"+sub_name]>0) {//take sub specific
 	  sudakov_efficiency[sub_name] = number_map["n_kept_"+sub_name]*1.0/number_map["n_gen_"+sub_name];
-	  double d_sud = sqrt(number_map["n_kept_"+sub_name]*max(1, number_map["n_gen_"+sub_name]-number_map["n_kept_"+sub_name])*1.0/pow(number_map["n_gen_"+sub_name],3));
+	  double d_sud = sqrt(number_map["n_kept_"+sub_name]*1.0*max(1L, number_map["n_gen_"+sub_name]-number_map["n_kept_"+sub_name])/pow(number_map["n_gen_"+sub_name],3));
 	  sudakov_efficiency_up[sub_name] = sudakov_efficiency[sub_name]+d_sud;
 	  sudakov_efficiency_down[sub_name] = sudakov_efficiency[sub_name]-d_sud;
 	  sudakov_efficiency_up_corr[sub_name] = sudakov_efficiency[sub_name];
@@ -434,7 +451,6 @@ bool Sherpa::SummarizeRun()
 	//msg_Info() << sub_name << ": sudakov_efficiency[sub_name]: " << sudakov_efficiency[sub_name] << std::endl;
 	double this_sepsum = time_map["sum_overhead_after_"+sub_name]+time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_total_"+sub_name];
 	sepsum += this_sepsum;
-      }
     }
     Settings& s = Settings::GetMainSettings();
     double timing_statistics_large_weight_fraction=s["TIMING_STATISTICS_LARGE_WEIGHT_FRACTION"].SetDefault(0.001).Get<double>();
@@ -457,7 +473,6 @@ bool Sherpa::SummarizeRun()
     //calculate chosen effevperev (needs sudakov_efficiency)
     std::map<std::string, double> chosen_alpha_map = rpa->gen.AlphaMap();
     std::map<std::string, double> chosen_efficiency_map = rpa->gen.EfficiencyMap();
-    std::map<std::string, double> xsec_map = rpa->gen.XsecMap();
     double sum_p_unw = 0;
     double sum_p_eff_sign = 0;
     double sum_kish = 0;
@@ -483,10 +498,9 @@ bool Sherpa::SummarizeRun()
     for (const std::string& sum_type : sum_types) {
       total[sum_type] = 0;
     }
-    for (auto const& [key, val] : time_map) {
-      if (key.rfind("sum_PS_", 0) == 0) {
-        std::string sub_name = key.substr(7);
-        if (timing_statistics>4) {
+    for (const std::string& sub_name : subprocesses) {
+        // subprocesses without a trial in the event generation have no timing
+        if (timing_statistics>4 && number_map["n_trial_"+sub_name]>0) {
 	  msg_Info() << std::endl;
 	  for (const std::string& num_type : num_types) {
 	    msg_Info()<<sub_name<<" : "<< "n_"<<num_type<<": "<<number_map["n_"+num_type+"_"+sub_name]<<std::endl;
@@ -520,7 +534,6 @@ bool Sherpa::SummarizeRun()
           msg_Info()<< sub_name << " : "<<"overhead_after time: "<<w<<" s"<<std::endl;
         }
         total["overhead_after"] += w;
-      }
     }
     if (timing_statistics>4) {
       for (const std::string& num_type : num_types) {
@@ -560,7 +573,11 @@ bool Sherpa::SummarizeRun()
     std::vector<std::map<std::string, double>> mean_manual_events_time(epsilon_values.size()+1);
     int optimal_manual_i = 0;
     double optimal_manual_sum_t_trial = 0;
+    // Sum of |xsec| of all subprocesses, for the shares in the tables below. Taken
+    // from xsec_map and not accumulated in the scan, whose maps stay empty for
+    // Max_Epsilon=0 (GetMaxEps() is not called then).
     double plain_xsec_sum = 0;
+    for (auto const& [key, val] : xsec_map) plain_xsec_sum += dabs(val);
     for(int i=0; i < epsilon_values.size()+1; i++){
       double sum_t_trial = 0;
       double sum_p_unw = 0;
@@ -579,11 +596,14 @@ bool Sherpa::SummarizeRun()
 	std::string sub_name = key;
 	//std::cout << sub_name << std::endl;
 	//need to weight with sampling probability. Why not sudakov? - bacause happens afterwards - but still more events needed for optimal eff events? no
-	double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/alpha_power(alpha_manual_map[sub_name][i]);
-	if (i==0) plain_xsec_sum += dabs(xsec_map[sub_name]);//todo: this seems to be not called for max_epsilon=0.0
-	if (alpha_manual_map[sub_name][i]==-1) {
-	  msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to eps=" << exp(log(10)*epsilon_values[i]) << std::endl;
+	// Skip a subprocess without a valid value for this epsilon (-1: not set), which
+	// would turn the sums into NaN or, for SELECTION_WEIGHT_MODE 1 and 2, into
+	// finite but wrong numbers.
+	if (!(efficiency_manual_map[sub_name][i]>0.) || !(alpha_manual_map[sub_name][i]>0.)) {
+	  msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to eps=" << exp(log(10)*epsilon_values[i]) << ", skipped." << std::endl;
+	  continue;
 	}
+	double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/alpha_power(alpha_manual_map[sub_name][i]);
 	double tges  = (time_map["sum_total_"+sub_name])/number_map["n_total_"+sub_name]; //in s
 	if (number_map["n_total_"+sub_name]==0) {
 	  tges = 0; //critical, because underestimate - need to make sure that enough events generated...unc estimate hard, because 0 is 0
@@ -631,6 +651,14 @@ bool Sherpa::SummarizeRun()
       }
     }
     //for weighted: take care of potentially non-optimal selection weight
+    // Every selected trial that passes the cuts is an event. With the cut efficiency
+    // eps of the subprocess, a trial takes the time of a trial of this run plus eps
+    // times the time after acceptance, as in the scans above, and yields eps events.
+    // The selection weight per trial is |sigma|/alpha_all^p with alpha_all =
+    // eps*alpha the dilution of all trial points, see
+    // Process_Integrator::SelectionWeight(). With the pilot run, the time after
+    // acceptance contains the re-run with variations, so that the nominal matrix
+    // element of an accepted event is counted twice.
     int i = epsilon_values.size()+1;
     double sum_t_trial = 0;
     sum_p_unw = 0;
@@ -640,7 +668,11 @@ bool Sherpa::SummarizeRun()
     for (auto const& [key, val] : alpha_manual_map) {
       std::string sub_name = key;
       //std::cout << sub_name << std::endl;
-      double selw = efficiency_manual_map[sub_name][i];//used as selw - also set like this in integrator
+      const double eps = efficiency_manual_map[sub_name][i];
+      const double alpha = alpha_manual_map[sub_name][i];
+      if (!(eps>0.) || !(alpha>0.)) continue;
+      const double selw = dabs(xsec_map[sub_name])/alpha_power(eps*alpha);
+      const double nacc = eps*selw;
       double tges  = (time_map["sum_total_"+sub_name])/number_map["n_total_"+sub_name]; //in s
       if (number_map["n_total_"+sub_name]==0) {
 	tges = 0; //critical, because underestimate - need to make sure that enough events generated...unc estimate hard, because 0 is 0
@@ -649,19 +681,17 @@ bool Sherpa::SummarizeRun()
       if (number_map["n_gen_"+sub_name]==0) {
 	overhead_after = 0;
       }
-      overhead_after = max(overhead_after, tges);//if no gen, then at least time without full systematics
-      //there is no pilot run -> no tges needed
-      sum_t_trial += (overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim)*selw;
-      sum_p_unw += sudakov_efficiency[sub_name]*selw;
+      sum_t_trial += (tges+eps*(overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim))*selw;
+      sum_p_unw += sudakov_efficiency[sub_name]*nacc;
 
       sum_xsec += xsec_map[sub_name]*sudakov_efficiency[sub_name];
-      sum_effiselw += sudakov_efficiency[sub_name]*selw;
+      sum_effiselw += sudakov_efficiency[sub_name]*nacc;
       //std::cout << " alpha_manual_map[sub_name][i]:" << alpha_manual_map[sub_name][i] << std::endl;
       //std::cout << " sudakov_efficiency[sub_name]:" << sudakov_efficiency[sub_name] << std::endl;
       //std::cout << " selw:" << selw << std::endl;
       //std::cout << " xsec_map[sub_name]:" << xsec_map[sub_name] << std::endl;
       //std::cout << " sum_complex+:" << pow(xsec_map[sub_name]*sudakov_efficiency[sub_name],2)/(alpha_manual_map[sub_name][i]*sudakov_efficiency[sub_name]*selw) << std::endl;
-      sum_complex += pow(xsec_map[sub_name],2)*sudakov_efficiency[sub_name]/(alpha_manual_map[sub_name][i]*selw);
+      sum_complex += pow(xsec_map[sub_name],2)*sudakov_efficiency[sub_name]/(alpha*nacc);
       //std::cout << " sum_complex:" << sum_complex << std::endl;
     }
     mean_manual_alpha[i] = pow(sum_xsec,2)/(sum_effiselw*sum_complex);//von Zettel
@@ -685,10 +715,12 @@ bool Sherpa::SummarizeRun()
 	std::string sub_name = key;
 	//msg_Info() << sub_name << std::endl;
 	//need to weight with sampling probability. Why not sudakov? - bacause happens afterwards - but still more events needed for optimal eff events? no
-	double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/alpha_power(alpha_manual_map[sub_name][i]);
-	if (alpha_manual_fraction_map[sub_name][i]==-1) {
-	  msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to eps=" << exp(log(10)*epsilon_values[i]) << std::endl;
+	if (!(efficiency_manual_map[sub_name][i]>0.) || !(alpha_manual_map[sub_name][i]>0.) ||
+	    !(alpha_manual_fraction_map[sub_name][i]>0.)) {
+	  msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to eps=" << exp(log(10)*epsilon_values[i]) << ", skipped." << std::endl;
+	  continue;
 	}
+	double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/alpha_power(alpha_manual_map[sub_name][i]);
 	double tges  = (time_map["sum_total_"+sub_name])/number_map["n_total_"+sub_name]; //in s
 	if (number_map["n_total_"+sub_name]==0) {
 	  tges = 0; //critical, because underestimate - need to make sure that enough events generated...unc estimate hard, because 0 is 0
@@ -742,10 +774,11 @@ bool Sherpa::SummarizeRun()
 	double opt_kish = 0;
 	for(int i=0; i < epsilon_values.size(); i++){
 	  //msg_Info() << "   " << i << std::endl;
-	  double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_fscan_map[sub_name][fi][i]/alpha_power(alpha_manual_fscan_map[sub_name][fi][i]);
-	  if (alpha_manual_fscan_map[sub_name][fi][i]==-1) {
-	    msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to fraction=" << exp(log(10)*fraction_values[i]) << std::endl;
+	  if (!(efficiency_manual_fscan_map[sub_name][fi][i]>0.) || !(alpha_manual_fscan_map[sub_name][fi][i]>0.)) {
+	    msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for fraction=" << exp(log(10)*fraction_values[fi]) << " and eps=" << exp(log(10)*epsilon_values[i]) << ", skipped." << std::endl;
+	    continue;
 	  }
+	  double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_fscan_map[sub_name][fi][i]/alpha_power(alpha_manual_fscan_map[sub_name][fi][i]);
 	  double tges  = (time_map["sum_total_"+sub_name])/number_map["n_total_"+sub_name]; //in s
 	  if (number_map["n_total_"+sub_name]==0) {
 	    tges = 0; //critical, because underestimate - need to make sure that enough events generated...unc estimate hard, because 0 is 0
@@ -794,9 +827,7 @@ bool Sherpa::SummarizeRun()
       std::cout << "├────────────────────────────────┼────────────────┼─────────────────────────────────────────────────────────┤" << std::endl;
       const auto default_precision{std::cout.precision()};
       std::cout << std::setprecision(3);
-      for (auto const& [key, val] : time_map) {
-        if (key.rfind("sum_PS_", 0) != 0) continue;
-        std::string sub_name = key.substr(7);
+      for (const std::string& sub_name : subprocesses) {
         std::cout<<"│  "<< std::left<<std::setw(9) << xsec_map[sub_name]<<" ";
         std::cout<<" "<< std::left<<std::setw(9) << chosen_efficiency_map[sub_name]<<"";
         std::cout<<" "<< std::left<<std::setw(8) << chosen_alpha_map[sub_name]<<" ";
@@ -815,9 +846,7 @@ bool Sherpa::SummarizeRun()
       std::cout << "│    time contribution    │                │                                                         │" << std::endl;
       std::cout << "│ PS   ME   ov.h.  shower │ time |xsec*enh|│ subprocess                                              │" << std::endl;
       std::cout << "├─────────────────────────┼────────────────┼─────────────────────────────────────────────────────────┤" << std::endl;
-      for (auto const& [key, val] : time_map) {
-        if (key.rfind("sum_PS_", 0) != 0) continue;
-        std::string sub_name = key.substr(7);
+      for (const std::string& sub_name : subprocesses) {
         if (number_map["n_total_"+sub_name]>0) {
           double t_ME = time_map["sum_ME_"+sub_name]/number_map["n_total_"+sub_name];
           double t_PS = time_map["sum_PS_"+sub_name]/number_map["n_total_"+sub_name];
@@ -914,8 +943,8 @@ bool Sherpa::SummarizeRun()
     {
       struct Sub_Point { double xsec, eff, alpha, t_trial, sud; };
       auto trial_time = [&](const std::string &sub_name, const double eff) {
-        const int ntot = number_map["n_total_"+sub_name];
-        const int ngen = number_map["n_gen_"+sub_name];
+        const long int ntot = number_map["n_total_"+sub_name];
+        const long int ngen = number_map["n_gen_"+sub_name];
         const double tges = ntot>0 ? time_map["sum_total_"+sub_name]/ntot : 0.;
         const double tafter = ngen>0 ? (time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_overhead_after_"+sub_name])/ngen : 0.;
         return tges+eff*(tafter+sudakov_efficiency[sub_name]*timing_statistics_det_sim);
@@ -986,28 +1015,30 @@ bool Sherpa::SummarizeRun()
       }
     }
 
+    // Average over the subprocesses with a weight histogram, i.e. those for which
+    // GetMaxEps() ran; for Max_Epsilon=0 there are none and no statement is made.
     std::map<std::string, int> whistofill_map = rpa->gen.FillsMap();
     double average_whistofill = 0;
-    double xsecsum = 0;
-    for (auto const& [key, val] : time_map) {
-      std::string sub_name = key.substr(7);
-      average_whistofill += dabs(xsec_map[sub_name])*whistofill_map[sub_name];
-      xsecsum += dabs(xsec_map[sub_name]);
+    double fills_xsecsum = 0;
+    for (auto const& [sub_name, fills] : whistofill_map) {
+      average_whistofill += dabs(xsec_map[sub_name])*fills;
+      fills_xsecsum += dabs(xsec_map[sub_name]);
     }
-    average_whistofill = average_whistofill/xsecsum;
-    if (average_whistofill<pow(10,5)) {
-      std::cout << "Warning: There are on average only "<< average_whistofill << " events generated in the integration phase per process. For a reliable prediction of the impact of Max_Epslion choises more than 1e6 are recommended. Please increase PSI: MAX_OPT during integration." << std::endl;
-    } else if (average_whistofill<pow(10,6)) {
-      std::cout << "Info: There are on average only "<< average_whistofill << " events generated in the integration phase per process. For a reliable prediction of the impact of Max_Epslion choises more than 1e6 are recommended. One could increase PSI: MAX_OPT during integration." << std::endl;
+    if (fills_xsecsum>0.) {
+      average_whistofill = average_whistofill/fills_xsecsum;
+      if (average_whistofill<pow(10,5)) {
+        std::cout << "Warning: There are on average only "<< average_whistofill << " events generated in the integration phase per process. For a reliable prediction of the impact of Max_Epslion choises more than 1e6 are recommended. Please increase PSI: MAX_OPT during integration." << std::endl;
+      } else if (average_whistofill<pow(10,6)) {
+        std::cout << "Info: There are on average only "<< average_whistofill << " events generated in the integration phase per process. For a reliable prediction of the impact of Max_Epslion choises more than 1e6 are recommended. One could increase PSI: MAX_OPT during integration." << std::endl;
+      }
     }
 
+    // capped cross section relative to the total |xsec| of all subprocesses
     std::map<std::string, double> chosen_capped_fraction_map = rpa->gen.CappedFractionMap();
     double capfraction = 0;
-    for (auto const& [key, val] : time_map) {
-      std::string sub_name = key.substr(7);
-      capfraction += dabs(xsec_map[sub_name])*chosen_capped_fraction_map[sub_name];
-    }
-    capfraction = capfraction/xsecsum*100;
+    for (auto const& [sub_name, fraction] : chosen_capped_fraction_map)
+      capfraction += dabs(xsec_map[sub_name])*fraction;
+    capfraction = plain_xsec_sum>0. ? capfraction/plain_xsec_sum*100 : 0.;
     if (capfraction>0.01) {
       std::cout << "Warning: OVERWEIGHT_THRESHOLD is set to: " << m_ovwth << " which results in a loss of total cross section due to max weight capping of: " << std::round(capfraction*100)/100 << "%. Please consider chosing a smaller Max_Epsilon or a larger OVERWEIGHT_THRESHOLD." << std::endl;
     }
@@ -1019,31 +1050,31 @@ bool Sherpa::SummarizeRun()
   return true;
 }
 
-void Sherpa::printEffi(std::string sub_name, std::string name, std::string num_type, std::string denom_type, std::map<std::string, int> &number_map)
+void Sherpa::printEffi(std::string sub_name, std::string name, std::string num_type, std::string denom_type, std::map<std::string, long int> &number_map)
 {
-  int n_num = number_map["n_"+num_type+"_"+sub_name];
-  int n_denom = number_map["n_"+denom_type+"_"+sub_name];
+  long int n_num = number_map["n_"+num_type+"_"+sub_name];
+  long int n_denom = number_map["n_"+denom_type+"_"+sub_name];
   double unc = GetEffiUnc(n_num, n_denom);
   msg_Info()<< sub_name << " : "<< name << " efficiency: "<<n_num/(double)n_denom<<" +-"<< unc <<std::endl;
 }
 
-double Sherpa::GetEffiUnc(int n_num, int n_denom)
+double Sherpa::GetEffiUnc(long int n_num, long int n_denom)
 {
   //from gaussion error propagation with n_denom=n_num+rest
-  return sqrt(n_num*(n_denom-n_num)/pow(n_denom,3));
+  return sqrt(double(n_num)*(n_denom-n_num)/pow(n_denom,3));
 }
 
-void Sherpa::printTime(std::string sub_name, std::string time_type, std::map<std::string, double> &time_map, std::map<std::string, int> &number_map)
+void Sherpa::printTime(std::string sub_name, std::string time_type, std::map<std::string, double> &time_map, std::map<std::string, long int> &number_map)
 {
   double w = time_map["sum_"+time_type+"_"+sub_name];
   double w2 = time_map["sum2_"+time_type+"_"+sub_name];
-  int n = number_map["n_"+time_type+"_"+sub_name];
+  long int n = number_map["n_"+time_type+"_"+sub_name];
   double unc = GetUnc(w, w2, n);
   msg_Info()<< sub_name << " : "<<"Avg time per "<< time_type << " weight: "<<w/(double)n*1000<<" ms +-"<< unc*1000. <<" ms"<<std::endl;
 }
 
 
-double Sherpa::GetUnc(double w, double w2,int n)
+double Sherpa::GetUnc(double w, double w2, long int n)
 {
   return sqrt((w2-pow(w,2)/((double)n))/((double)n*((double)n-1.0)));
 }

@@ -56,6 +56,16 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist)
         if (!FillBlob(bloblist,blob))
           THROW(fatal_error,"Internal error");
         (*blob)["Trials"]->Set(0.0);
+        // A repetition of the last hard event for its overweight (unweighted
+        // events only, see FillBlob()): marked, so that the kept repetitions and
+        // their time after acceptance are booked separately, and counted per
+        // subprocess.
+        blob->AddData("Overweight_Copy",new Blob_Data<int>(1));
+        const std::string &sub_name(rpa->gen.GetIsGenSubName());
+        rpa->gen.SetNumberMap("n_copy_"+sub_name,rpa->gen.NumberMap("n_copy_"+sub_name)+1);
+        // its time after acceptance is booked like that of an accepted event,
+        // as rejected if it is vetoed, see Phase_Space_Handler::Differential()
+        if (rpa->gen.TimingActive()) rpa->gen.SetIsGen(true);
         m_overweight=Max(overweight,0.0);
         return Return_Value::Success;
       }

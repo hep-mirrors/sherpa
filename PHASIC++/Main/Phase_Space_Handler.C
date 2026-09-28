@@ -84,8 +84,13 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   m_cmode  = mode;
   p_active = process;
   m_wgtmap = 0.0;
+  // The timing statistics are only recorded for TIMING_STATISTICS>0 and
+  // describe the event generation, the points of the integration are not
+  // recorded. The name of the subprocess is needed for the Neff/evt printout
+  // of every run, see Sherpa::SummarizeRun().
+  const bool timing(rpa->gen.TimingActive());
   //check if last gen event got handled - if not, then store time until now as shower time for that subprocess
-  if (rpa->gen.GetIsGen()) {
+  if (timing && rpa->gen.GetIsGen()) {
     rpa->gen.SetIsGen(false);
     std::string sub_name_loc = rpa->gen.GetIsGenSubName();
     double finetimeGen = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-rpa->gen.GetIsGenTime()).count()/1000000000.;
@@ -93,9 +98,10 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
     rpa->gen.SetTimeMap("sum_overhead_after_"+sub_name_loc, rpa->gen.TimeMap("sum_overhead_after_"+sub_name_loc)+finetimeGen);
     rpa->gen.SetTimeMap("sum2_overhead_after_"+sub_name_loc, rpa->gen.TimeMap("sum2_overhead_after_"+sub_name_loc)+finetimeGen*finetimeGen);
   }
-  std::string sub_name = process->Process()->Name();
+  const std::string &sub_name(process->Process()->Name());
   rpa->gen.SetIsGenSubName(sub_name);
-  rpa->gen.SetNumberMap("n_trial_"+sub_name, rpa->gen.NumberMap("n_trial_"+sub_name)+1);
+  if (timing)
+    rpa->gen.SetNumberMap("n_trial_"+sub_name, rpa->gen.NumberMap("n_trial_"+sub_name)+1);
   // check for failure to generate a meaningful phase space point
   if (p_point == nullptr && !process->Process()->GeneratePoint())
     return 0.0;
@@ -127,13 +133,16 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
         scales.clear();
         process->Process()->ScaleSetter(true)->SetFixedScale(scales);
         m_psweight=(p_point->LKF()/rpa->Picobarn())/result;
-        std::chrono::high_resolution_clock::time_point begin2 = std::chrono::high_resolution_clock::now();
+        std::chrono::high_resolution_clock::time_point begin2;
+        if (timing) begin2 = std::chrono::high_resolution_clock::now();
         m_wgtmap=CalculateME(varmode);
-        std::chrono::high_resolution_clock::time_point end2 = std::chrono::high_resolution_clock::now();
-        rpa->gen.SetNumberMap("n_ME_"+sub_name, rpa->gen.NumberMap("n_ME_"+sub_name)+1);
-        double finetime2 = std::chrono::duration_cast<std::chrono::nanoseconds>(end2-begin2).count()/1000000000.;
-        rpa->gen.SetTimeMap("sum_ME_"+sub_name, rpa->gen.TimeMap("sum_ME_"+sub_name)+finetime2);
-        rpa->gen.SetTimeMap("sum2_ME_"+sub_name, rpa->gen.TimeMap("sum2_ME_"+sub_name)+finetime2*finetime2);
+        if (timing) {
+          std::chrono::high_resolution_clock::time_point end2 = std::chrono::high_resolution_clock::now();
+          rpa->gen.SetNumberMap("n_ME_"+sub_name, rpa->gen.NumberMap("n_ME_"+sub_name)+1);
+          double finetime2 = std::chrono::duration_cast<std::chrono::nanoseconds>(end2-begin2).count()/1000000000.;
+          rpa->gen.SetTimeMap("sum_ME_"+sub_name, rpa->gen.TimeMap("sum_ME_"+sub_name)+finetime2);
+          rpa->gen.SetTimeMap("sum2_ME_"+sub_name, rpa->gen.TimeMap("sum2_ME_"+sub_name)+finetime2*finetime2);
+        }
         m_wgtmap*=m_psweight;
         m_enhanceweight=1.;
         p_lab      = process->Momenta();
@@ -142,13 +151,16 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
       }
       else if (process->Process()->EventReader()->Compute()==2) {
         m_psweight=p_point->LKF()/rpa->Picobarn();
-        std::chrono::high_resolution_clock::time_point begin2 = std::chrono::high_resolution_clock::now();
+        std::chrono::high_resolution_clock::time_point begin2;
+        if (timing) begin2 = std::chrono::high_resolution_clock::now();
         m_wgtmap=CalculateME(varmode);
-        std::chrono::high_resolution_clock::time_point end2 = std::chrono::high_resolution_clock::now();
-        rpa->gen.SetNumberMap("n_ME_"+sub_name, rpa->gen.NumberMap("n_ME_"+sub_name)+1);
-        double finetime2 = std::chrono::duration_cast<std::chrono::nanoseconds>(end2-begin2).count()/1000000000.;
-        rpa->gen.SetTimeMap("sum_ME_"+sub_name, rpa->gen.TimeMap("sum_ME_"+sub_name)+finetime2);
-        rpa->gen.SetTimeMap("sum2_ME_"+sub_name, rpa->gen.TimeMap("sum2_ME_"+sub_name)+finetime2*finetime2);
+        if (timing) {
+          std::chrono::high_resolution_clock::time_point end2 = std::chrono::high_resolution_clock::now();
+          rpa->gen.SetNumberMap("n_ME_"+sub_name, rpa->gen.NumberMap("n_ME_"+sub_name)+1);
+          double finetime2 = std::chrono::duration_cast<std::chrono::nanoseconds>(end2-begin2).count()/1000000000.;
+          rpa->gen.SetTimeMap("sum_ME_"+sub_name, rpa->gen.TimeMap("sum_ME_"+sub_name)+finetime2);
+          rpa->gen.SetTimeMap("sum2_ME_"+sub_name, rpa->gen.TimeMap("sum2_ME_"+sub_name)+finetime2*finetime2);
+        }
         m_wgtmap*=m_psweight;
         m_enhanceweight=1.;
         p_lab      = process->Momenta();
@@ -165,22 +177,24 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
       }
     }
     else {
-      std::chrono::high_resolution_clock::time_point begin1 = std::chrono::high_resolution_clock::now();
+      std::chrono::high_resolution_clock::time_point begin1, end1, end2;
+      if (timing) begin1 = std::chrono::high_resolution_clock::now();
       m_psweight = CalculatePS();
-      std::chrono::high_resolution_clock::time_point end1 = std::chrono::high_resolution_clock::now();
-      std::chrono::high_resolution_clock::time_point begin2 = std::chrono::high_resolution_clock::now();
+      if (timing) end1 = std::chrono::high_resolution_clock::now();
       m_wgtmap   = CalculateME(varmode);
-      std::chrono::high_resolution_clock::time_point end2 = std::chrono::high_resolution_clock::now();
+      if (timing) end2 = std::chrono::high_resolution_clock::now();
       p_active->Process()->SetLastXS(m_wgtmap.Nominal()*m_pspoint.ISSymmetryFactor());
 
-      rpa->gen.SetNumberMap("n_PS_"+sub_name, rpa->gen.NumberMap("n_PS_"+sub_name)+1);
-      double finetime1 = std::chrono::duration_cast<std::chrono::nanoseconds>(end1-begin1).count()/1000000000.;
-      rpa->gen.SetTimeMap("sum_PS_"+sub_name, rpa->gen.TimeMap("sum_PS_"+sub_name)+finetime1);
-      rpa->gen.SetTimeMap("sum2_PS_"+sub_name, rpa->gen.TimeMap("sum2_PS_"+sub_name)+finetime1*finetime1);
-      rpa->gen.SetNumberMap("n_ME_"+sub_name, rpa->gen.NumberMap("n_ME_"+sub_name)+1);
-      double finetime2 = std::chrono::duration_cast<std::chrono::nanoseconds>(end2-begin2).count()/1000000000.;
-      rpa->gen.SetTimeMap("sum_ME_"+sub_name, rpa->gen.TimeMap("sum_ME_"+sub_name)+finetime2);
-      rpa->gen.SetTimeMap("sum2_ME_"+sub_name, rpa->gen.TimeMap("sum2_ME_"+sub_name)+finetime2*finetime2);
+      if (timing) {
+        rpa->gen.SetNumberMap("n_PS_"+sub_name, rpa->gen.NumberMap("n_PS_"+sub_name)+1);
+        double finetime1 = std::chrono::duration_cast<std::chrono::nanoseconds>(end1-begin1).count()/1000000000.;
+        rpa->gen.SetTimeMap("sum_PS_"+sub_name, rpa->gen.TimeMap("sum_PS_"+sub_name)+finetime1);
+        rpa->gen.SetTimeMap("sum2_PS_"+sub_name, rpa->gen.TimeMap("sum2_PS_"+sub_name)+finetime1*finetime1);
+        rpa->gen.SetNumberMap("n_ME_"+sub_name, rpa->gen.NumberMap("n_ME_"+sub_name)+1);
+        double finetime2 = std::chrono::duration_cast<std::chrono::nanoseconds>(end2-end1).count()/1000000000.;
+        rpa->gen.SetTimeMap("sum_ME_"+sub_name, rpa->gen.TimeMap("sum_ME_"+sub_name)+finetime2);
+        rpa->gen.SetTimeMap("sum2_ME_"+sub_name, rpa->gen.TimeMap("sum2_ME_"+sub_name)+finetime2*finetime2);
+      }
       m_wgtmap  *= m_psweight;
       m_wgtmap  *= (m_enhanceweight = m_psenhance.Factor(p_process->TotalXS()));
       m_wgtmap  *= (m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor());

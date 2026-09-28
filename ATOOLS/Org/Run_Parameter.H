@@ -30,7 +30,10 @@ namespace ATOOLS {
       //std::string         m_runtime;
       long int            m_nevents, m_ngenevents, m_ntrials;
       std::map<std::string, double> m_time_map;
-      std::map<std::string, int> m_number_map;
+      std::map<std::string, long int> m_number_map;
+      // the timing statistics are recorded from the start of the event
+      // generation on, see Sherpa::GenerateOneEvent()
+      bool m_timingactive = false;
       bool m_isgen = false;
       std::string m_isgen_sub_name;
       std::chrono::high_resolution_clock::time_point m_isgentime;
@@ -65,13 +68,14 @@ namespace ATOOLS {
       inline long   NumberOfEvents()                      { return m_nevents; }
       inline long   NumberOfGeneratedEvents()             { return m_ngenevents; }
       inline long   NumberOfTrials()                      { return m_ntrials; }
+      inline bool   TimingActive()                        { return m_timingactive; }
       inline bool   GetIsGen()                            { return m_isgen; }
-      inline std::string   GetIsGenSubName()              { return m_isgen_sub_name; }
+      inline const std::string &GetIsGenSubName()        { return m_isgen_sub_name; }
       inline std::chrono::high_resolution_clock::time_point GetIsGenTime() { return m_isgentime; }
-      inline double TimeMap(std::string name)             { return m_time_map[name]; }
+      inline double TimeMap(const std::string &name)           { return m_time_map[name]; }
       inline std::map<std::string, double> TimeMapAll()   { return m_time_map; }
-      inline int NumberMap(std::string name)             { return m_number_map[name]; }
-      inline std::map<std::string, int> NumberMapAll()   { return m_number_map; }
+      inline long int NumberMap(const std::string &name)      { return m_number_map[name]; }
+      inline std::map<std::string, long int> NumberMapAll() { return m_number_map; }
       inline std::map<std::string, double> AlphaMap()   { return m_chosen_alpha_map; }
       inline std::map<std::string, double> EfficiencyMap()   { return m_chosen_efficiency_map; }
       inline std::map<std::string, double> CappedFractionMap()   { return m_chosen_capped_fraction_map; }
@@ -110,8 +114,8 @@ namespace ATOOLS {
       bool CheckTime(const double limit=0.);
       inline void   SetNumberOfGeneratedEvents(const long gen) { m_ngenevents=gen; }
       inline void   SetNumberOfTrials(const long trials) { m_ntrials=trials; }
-      inline void   SetTimeMap(std::string name, const double time) { m_time_map[name]=time; }
-      inline void   SetNumberMap(std::string name, const int time) { m_number_map[name]=time; }
+      inline void   SetTimeMap(const std::string &name, const double time) { m_time_map[name]=time; }
+      inline void   SetNumberMap(const std::string &name, const long int n) { m_number_map[name]=n; }
       inline void   SetChosenAlphaMap(std::string name, const double vec) { m_chosen_alpha_map[name]=vec; }
       inline void   SetChosenEfficiencyMap(std::string name, const double vec) { m_chosen_efficiency_map[name]=vec; }
       inline void   SetChosenCappedFractionMap(std::string name, const double vec) { m_chosen_capped_fraction_map[name]=vec; }
@@ -123,8 +127,9 @@ namespace ATOOLS {
       inline void   SetEfficiencyManualFScanMap(std::string name, const std::vector<std::vector<double>> vec) { m_efficiency_manual_fscan_map[name]=vec; }
       inline void   SetXsecMap(std::string name, const double xsec) { m_xsec_map[name]=xsec; }
       inline void   SetFillsMap(std::string name, const int fills) { m_fills_map[name]=fills; }
+      inline void   SetTimingActive(bool active) { m_timingactive=active; }
       inline void   SetIsGen(bool isgen) { m_isgen=isgen; }
-      inline void   SetIsGenSubName(std::string isgentext) { m_isgen_sub_name=isgentext; }
+      inline void   SetIsGenSubName(const std::string &isgentext) { m_isgen_sub_name=isgentext; }
       inline void   SetIsGenTime(std::chrono::high_resolution_clock::time_point isgentime) { m_isgentime=isgentime; }
       inline const std::string &UserName() { return m_username; }
       inline const std::string &HostName() { return m_hostname; }
