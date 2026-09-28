@@ -463,6 +463,10 @@ bool Sherpa::SummarizeRun()
     double sum_kish = 0;
     for (auto const& [key, val] : chosen_alpha_map) {
       std::string sub_name = key;
+      // A subprocess without accepted events, e.g. without any point that passed
+      // the cuts, has efficiency and alpha 0 (weighted events: -1) and contributes
+      // nothing to the sample; its values would give 0/0 below.
+      if (!(chosen_efficiency_map[sub_name]>0.) || !(chosen_alpha_map[sub_name]>0.)) continue;
       // Accepted events of the subprocess. For (partially) unweighted events they
       // follow from its selection weight, eff*|sigma|/(eff*alpha^p). For weighted
       // events the selection weight is that of the weighted sample including the
