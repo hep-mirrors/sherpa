@@ -1112,6 +1112,7 @@ void Ceex_Base::Calculate() {
       } }
     if (dobeta2) ResetBeta1Record();
     InfraredSubtractedME_0_0();
+    m_b1terms.clear();        // CEEX: TCHANNEL_MULTIPHOTON 2: this partition's
     // Only when a virtual was asked for and CEEX is its source; see
     // Ceex_Base::CeexOwnVirtual.
     if (CeexOwnVirtual()) InfraredSubtractedME_0_1();
@@ -1140,6 +1141,9 @@ void Ceex_Base::Calculate() {
         }
       }
     }
+    // CEEX: TCHANNEL_MULTIPHOTON 2: the factorised remainder of the beta_1
+    // terms just added (empty, so a no-op, in every other mode)
+    AddFactorisedRemainder();
     /*
       CEEX: ORDER 2 - beta_2 for every eligible pair, after the beta_1 loop
       of the SAME partition, whose M_1 and eikonals it subtracts.

@@ -441,6 +441,34 @@ namespace YFS {
     //! this event: reduced-point beta_0 and balanced-point M_1 (see above)
     bool m_redborn = false;
     /*!
+      CEEX: TCHANNEL_MULTIPHOTON (0 off, 1 point, 2 point + factorised),
+      the multi-photon companion of the reduced t-channel Born. Active only
+      with m_redborn and two or more photons; see Ceex_Base::RegisterDefaults.
+    */
+    int TchannelMultiphotonMode() const;
+    bool TchannelMultiphotonActive() const
+    { return m_redborn && m_allphotons.size() >= 2
+             && TchannelMultiphotonMode() > 0; }
+    /*!
+      The one-photon point for photon iphot (TCHANNEL_MULTIPHOTON >= 1): the
+      event with only this photon, scaled by one factor x so that the final
+      state keeps its invariant (YFS.NLO's REAL_MAP 2 point), then carried
+      by the inverse of the generator's pure boost so that its soft limit is
+      exactly BornLegsAt(Q), the legs beta_0 is evaluated on. legs gets the
+      Born legs, kpt the photon.
+    */
+    bool OnePhotonScaledLegs(int iphot, ATOOLS::Vec4D_Vector &legs,
+                             ATOOLS::Vec4D &kpt) const;
+    /*!
+      TCHANNEL_MULTIPHOTON 2: this partition's beta_1 terms (the v_j that
+      ComixInfraredSubtracted_1_0 added), for AddFactorisedRemainder.
+    */
+    std::vector<Amplitude> m_b1terms;
+    //! the factorised higher-order remainder of this partition's beta_1 sum
+    void AddFactorisedRemainder();
+    //! photons whose one-photon point could not be built (HEAD legs used)
+    long m_tmpfail = 0;
+    /*!
       The final-state radiating groups, as leg indices into m_flavs, set by
       the handler from YFS's radiating dipoles (one per resonance pair).
       Empty means one flat final stage. The initial state is always its own

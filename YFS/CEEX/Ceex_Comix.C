@@ -1,11 +1,3 @@
-/*!
-  \file Ceex_Comix.C
-
-  The O(alpha) REAL correction taken from Comix instead of from hand-coded
-  spinor products.
-
-*/
-
 #include "YFS/CEEX/Ceex_Base.H"
 #include "YFS/NLO/NLO_Base.H"   // MapMomenta, for the reduced beta_1 kinematics
 #include "YFS/NLO/Real_Correction.H"
@@ -1504,6 +1496,156 @@ bool Ceex_Base::PartitionLegs(int iphot, Vec4D_Vector &pb) const
   return LegsAt(X, Y, pb);
 }
 
+int Ceex_Base::TchannelMultiphotonMode() const
+{
+  static const int mode(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                        ["TCHANNEL_MULTIPHOTON"].Get<int>());
+  return mode;
+}
+
+/*
+  The one-photon point of photon iphot, for CEEX: TCHANNEL_MULTIPHOTON.
+
+  Why PartitionLegs is not enough once a second photon is present
+  (e+e- -> gamma gamma at the Z pole, 2026-09-28, NOTES-aa-multiisr-
+  2026-09-28.md). PartitionLegs takes the OTHER photons out of the beams
+  and rebuilds the beams along z in the frame of X_j = P - K_others. For a
+  soft companion of a hard wide-angle ISR photon that frame carries the
+  hard photon's pT (beta_T ~ 0.5), so the rebuilt beams are tilted against
+  the physical ones: the companion's eikonal on those legs was 1e-5 to 18
+  times its physical one, with arbitrary phase, and the subtraction
+  w s_cfg B_0 was set against the Born term s_phys B_0. In events whose
+  generator Born sits on the t-channel pole of the reduced frame (m_born
+  1e3-1e7) that mismatch is the whole of |A_1|: rho_1/rho_0 = 25-340.
+
+  Here instead, as YFS.NLO's REAL_MAP 2 (NLO_Base::MapMomentaScaled): the
+  event with this photon alone, {P_a, P_b, k_j, final state}, scaled by one
+  x = sqrt(Q^2/(P - k_j)^2) so that the final state keeps its invariant Q^2.
+  The beams keep their directions, so the photon keeps its angle to them and
+  the eikonal at the point is the physical one over x; the final legs keep
+  their configuration in the generator's Born frame (the rest frame of Q
+  under the pure boost) and are carried to Q' = x(P - k_j).
+
+  That point lives in the P rest frame, where its soft limit is the
+  generator's Born frame itself. Carrying it back by the inverse of the
+  generator's boost (Poincare(Q)) makes its soft limit BornLegsAt(Q)
+  exactly - beams along z in Q's frame, the physical final legs - so M_1
+  there reduces to s x B_0 with B_0's own spinor phases, which an
+  amplitude-level subtraction needs. The weight is Lorentz invariant; only
+  the little-group phases follow the frame, and the photon's cancels in the
+  ratio M_1/s the caller takes.
+*/
+bool Ceex_Base::OnePhotonScaledLegs(int iphot, Vec4D_Vector &legs,
+                                    Vec4D &kpt) const
+{
+  if (iphot < 0 || iphot >= (int)m_allphotons.size()
+      || m_pceex.size() != m_flavs.size() || m_pceex.size() < 4) return false;
+  const Vec4D P(m_pceex[0] + m_pceex[1]);
+  Vec4D Q;
+  for (size_t i(2); i < m_pceex.size(); ++i) Q += m_pceex[i];
+  const Vec4D R(P - m_allphotons[iphot]);
+  const double P2(P.Abs2()), Q2(Q.Abs2()), R2(R.Abs2());
+  if (!(P2 > 0.) || !(Q2 > 0.) || !(R2 > 0.) || !(Q[0] > 0.)) return false;
+  const double x(Min(1., sqrt(Q2/R2)));
+  const double ma(m_flavs[0].Mass()), mb(m_flavs[1].Mass());
+  const double sx(x*x*P2);
+  const double kal(sqr(sx - ma*ma - mb*mb) - 4.*ma*ma*mb*mb);
+  if (!(sx > sqr(ma + mb)) || !(kal > 0.)) return false;
+  // in the P rest frame: beams back to back along z at x sqrt(P^2), the
+  // photon scaled by x, the final state carried from Q to Q' = x(P - k)
+  Poincare toP(P), toQ(Q);
+  Vec4D k(m_allphotons[iphot]);
+  toP.Boost(k);
+  k *= x;
+  // leg 0 along +z, as LegsAt's reduced axis (REDUCED_AXIS 1) puts it
+  const double pz(sqrt(kal)/(2.*sqrt(sx)));
+  const Vec4D pa(sqrt(pz*pz + ma*ma), 0., 0.,  pz);
+  const Vec4D pb(sqrt(pz*pz + mb*mb), 0., 0., -pz);
+  const Vec4D Qp(pa + pb - k);
+  if (!(Qp[0] > 0.) || !(Qp.Abs2() > 0.)) return false;
+  Poincare toQp(Qp);
+  legs = m_pceex;
+  legs[0] = pa; legs[1] = pb;
+  for (size_t i(2); i < m_pceex.size(); ++i) {
+    Vec4D q(m_pceex[i]);
+    toQ.Boost(q);           // the generator's Born frame
+    toQp.BoostBack(q);      // to Q' in the P rest frame
+    legs[i] = q;
+  }
+  // back by the generator's boost: the soft limit is BornLegsAt(Q)
+  for (Vec4D &l : legs) toQ.BoostBack(l);
+  toQ.BoostBack(k);
+  kpt = k;
+  Vec4D bal(legs[0] + legs[1] - kpt);
+  for (size_t i(2); i < legs.size(); ++i) bal -= legs[i];
+  const double scale(Max(legs[0][0] + legs[1][0], 1.));
+  for (int mu(0); mu < 4; ++mu)
+    if (dabs(bal[mu]) > 1e-10*scale) return false;
+  return true;
+}
+
+/*
+  CEEX: TCHANNEL_MULTIPHOTON 2 - the factorised form of this partition's
+  beta_1 sum.
+
+  At O(alpha^1) the partition carries a + sum_j v_j, a the Born term
+  (m_Sprod x beta_0) and v_j = a-units x (R_j - B_0), R_j = M_1(k_j)/s_j at
+  photon j's point. When B_0 is the generator's Born near a pole of its
+  reduced frame - e+e- -> gamma gamma, m_born 1e3-1e7 - no companion point
+  can hold R_j at B_0: the pole is narrower than the tilt any balanced
+  point gives a soft photon (YFS.NLO's own companions have
+  B_point/m_born 1e-2..1e-5 there). Each companion then adds about -a and
+  the sum is (1 - n_companions) a instead of the hard photon's small R_h.
+  YFS.NLO meets the same thing with its REAL_COMBINE product.
+
+  The amplitude-level analogue, without dividing by a helicity amplitude
+  that may vanish: split each R_j into its component along the Born
+  helicity vector a and the rest,
+      c_j = <a|a + v_j>/<a|a>,   r_j = v_j - (c_j - 1) a,
+  and combine
+      T = a prod_j c_j + sum_j r_j prod_{l != j} c_l.
+  To first order in the v_j this is a + sum_j v_j, so the O(alpha^1)
+  content is unchanged and the difference is a factorised beta_2 and
+  higher (beta_1 beta_1 / beta_0 along the Born direction). With one
+  photon T = a + v exactly. The difference T - a - sum_j v_j is added.
+*/
+void Ceex_Base::AddFactorisedRemainder()
+{
+  const size_t nt(m_b1terms.size());
+  if (nt < 2) return;
+  const int nh(Amplitude::NHel());
+  std::vector<Complex> a(nh);
+  double na(0.);
+  for (int f(0); f < nh; ++f) {
+    a[f] = m_Sprod * m_partborn0.m_A[f];
+    na += std::norm(a[f]);
+  }
+  if (!(na > 0.) || IsBad(na)) return;
+  std::vector<Complex> c(nt, Complex(1., 0.));
+  for (size_t j(0); j < nt; ++j) {
+    Complex proj(0., 0.);
+    for (int f(0); f < nh; ++f) proj += std::conj(a[f]) * m_b1terms[j].m_A[f];
+    c[j] += proj/na;
+  }
+  auto product_without = [&](size_t skip) {
+    Complex p(1., 0.);
+    for (size_t l(0); l < nt; ++l) if (l != skip) p *= c[l];
+    return p; };
+  const Complex call(product_without(nt));
+  for (int f(0); f < nh; ++f) {
+    Complex additive(a[f]), factorised(a[f] * call);
+    for (size_t j(0); j < nt; ++j) {
+      const Complex vj(m_b1terms[j].m_A[f]);
+      additive += vj;
+      factorised += (vj - (c[j] - 1.) * a[f]) * product_without(j);
+    }
+    const Complex d(factorised - additive);
+    if (IsBad(std::abs(d))) continue;
+    m_AmpExpo1.m_A[f]    += d;
+    m_AmpBornReal.m_A[f] += d;
+  }
+}
+
 /*
   The legs to hand Comix for photon k, when the event has other photons too.
 
@@ -1755,10 +1897,37 @@ bool Ceex_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
     subtractions and the one addition is exact only if they are the same
     numbers.
   */
+  /*
+    CEEX: TCHANNEL_MULTIPHOTON >= 1 (reduced t-channel Born, n >= 2): M_1
+    at the photon's one-photon point (OnePhotonScaledLegs) instead of
+    PartitionLegs, taken as the ratio R_j = M_1/s_j(point) times the
+    PHYSICAL eikonal m_sactu[j] the Born term carries, so that the
+    subtraction below is exactly s_phys B_0 and the (1 - n) cancellation
+    against InfraredSubtractedME_0_0 no longer depends on how far the point's
+    beams are tilted. rescale = s_phys/s_j(point) carries that; 1 otherwise.
+    The softness cut above is left on PartitionLegs' S.
+  */
+  Vec4D km(k);
+  bool onept(false);
+  if (addm1 && rebuild && TchannelMultiphotonActive()
+      && m_sactu.size() == m_allphotons.size()) {
+    Vec4D_Vector po;
+    Vec4D ko;
+    if (OnePhotonScaledLegs(iphot, po, ko)) { pb = po; km = ko; onept = true; }
+    else {
+      ++m_tmpfail;
+      long d(1);
+      while (d*10 <= m_tmpfail) d *= 10;
+      if (m_tmpfail == d)
+        msg_Error()<<METHOD<<"(): CEEX: TCHANNEL_MULTIPHOTON: no one-photon "
+                   <<"point for "<<m_tmpfail<<" photon(s) so far; those keep "
+                   <<"PartitionLegs."<<std::endl;
+    }
+  }
   Amplitude M1;
   if (addm1) {
     Vec4D_Vector pp(pb);
-    pp.push_back(k);
+    pp.push_back(km);
     const bool ok(rebuild ? ComixRealAt(pp, hel, M1, -1.)
                           : ComixRealShifted(pp, hel, M1, shifts));
     if (!ok) return false;
@@ -1769,8 +1938,14 @@ bool Ceex_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
   for (size_t i(0); i < m_allphotons.size(); ++i)
     if ((int)i != iphot)
       w *= (m_sactu.size() == m_allphotons.size() ? m_sactu[i] : m_Sfac[m_stage[i]][i]);
-  const Complex sj(fixed ? TotalEikonal(pb, k, hel)
-                         : StageEikonal(m_stage[iphot], pb, k, hel, iphot));
+  Complex sj(fixed ? TotalEikonal(pb, km, hel)
+                   : StageEikonal(m_stage[iphot], pb, km, hel, iphot));
+  Complex rescale(1., 0.);
+  if (onept) {
+    if (!(std::abs(sj) > 0.)) return true;   // no eikonal at the point
+    rescale = m_sactu[iphot]/sj;
+    sj = m_sactu[iphot];
+  }
   const int nh(Amplitude::NHel());
   /*
     CEEX: ORDER 2 - record exactly what this partition's beta_1 of this
@@ -1784,14 +1959,17 @@ bool Ceex_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
     m_b2hasM1[iphot] = addm1 ? 1 : 0;
     if (addm1)
       for (int f(0); f < nh; ++f)
-        m_b2M1[iphot].m_A[f] = m_cxbalign.m_A[f] * M1.m_A[f]/rn;
+        m_b2M1[iphot].m_A[f] = rescale * m_cxbalign.m_A[f] * M1.m_A[f]/rn;
   }
   double nsub(0.), nm1(0.), nv(0.);
+  // TCHANNEL_MULTIPHOTON 2: this photon's term, for AddFactorisedRemainder
+  const bool keepterm(onept && TchannelMultiphotonMode() >= 2);
+  if (keepterm) m_b1terms.push_back(Amplitude());
   for (int f(0); f < nh; ++f) {
     const Complex sub(w * sj * m_partborn0.m_A[f]);
     Complex v(-sub);
     if (addm1) {
-      const Complex m1(w * m_cxbalign.m_A[f] * M1.m_A[f]/rn);
+      const Complex m1(rescale * w * m_cxbalign.m_A[f] * M1.m_A[f]/rn);
       v += m1;
       nm1 += std::norm(m1);
     }
@@ -1801,6 +1979,7 @@ bool Ceex_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
     if (iphot < (int)m_realphot.size()) m_realphot[iphot].m_A[f] += v;
     m_snapReal.m_A[f]    += v;
     m_beta10 += v;
+    if (keepterm) m_b1terms.back().m_A[f] = v;
   }
   if (m_b1trace) {
     std::string st;
@@ -1823,7 +2002,7 @@ bool Ceex_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
     double rsoft(-1.), bratio(-1.);
     { Amplitude Cc;
       if (born_here(pb, Cc)) {
-        const Complex stot(TotalEikonal(pb, k, hel));
+        const Complex stot(TotalEikonal(pb, km, hel));
         double nd(0.), ne(0.), nc(0.), nb(0.);
         for (int f(0); f < nh; ++f) {
           const Complex sb(stot*Cc.m_A[f ^ flip]);
@@ -1843,7 +2022,7 @@ bool Ceex_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
       std::string sc;
       for (int e(0); e <= (rebuild ? 3 : 0); ++e) {
         const double lam(pow(10., -(double)e));
-        const Vec4D kl(lam*k);
+        const Vec4D kl(lam*km);
         Vec4D_Vector pl(pb);
         if (rebuild) {
           Vec4D X(pb[0] + pb[1]), Y(X - kl);
@@ -1870,6 +2049,7 @@ bool Ceex_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
     }
     std::cerr<<std::setprecision(6)
              <<"B1TRACE wp="<<st<<" j="<<iphot<<" addm1="<<addm1
+             <<" onept="<<onept<<" rescale="<<rescale
              <<" fixed="<<fixed<<" y="<<y<<" |w|="<<std::abs(w)
              <<" |s_cfg|="<<std::abs(sj)<<" |s_phys|="<<std::abs(sp)
              <<" s_cfg/s_phys="<<(std::abs(sp)>0.? sj/sp : Complex(0.,0.))

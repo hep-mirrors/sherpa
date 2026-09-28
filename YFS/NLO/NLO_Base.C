@@ -454,6 +454,96 @@ static int Sub8Part() {
   return p;
 }
 
+/*
+  YFS: SUB8_FSR_LEGS 2 - the FSR generator's own density for a final-state
+  photon, the FF part of REAL_SUB_EIK 8's denominator.
+
+  FSR::F puts the mass weight m_f/f-bar on every photon, and m_f is the
+  eikonal of the POST-emission pair (KKMC's KarFin dist1; measured to 2e-5
+  per photon with YFS: FSR_DENSITY_GATE, NOTES-deadcone-crude-2026-09-28.md).
+  On top of the eikonals the generator's pair rescaling (FSR::RescalePhotons)
+  gives the dipole ONE flux factor, F_D = (q' + K_D)^2/q'^2 = 1/m_yy, q' the
+  post-emission pair and K_D all its photons - what CEEX's rho_crude carries
+  as m_pflux. The density of the n photons of a dipole is therefore
+  prod_i S~(q'; k_i) x F_D, and the per-photon denominators of the product
+  prod_j (1 + delta_j) (REAL_COMBINE 1) have to multiply to that. Each photon
+  gets S~(q'; k_j) F_D^(y_j/sum_i y_i), y = 2 k.Q_D/Q_D^2, Q_D = q' + K_D the
+  pre-emission pair: the dipole's whole flux for a single photon (the
+  one-photon identity with CEEX), essentially the whole flux for a hard photon
+  with soft companions, 1 for a soft one, and exactly F_D over all of them.
+*/
+static double DipoleFluxShare(const Vec4D &k, const Vec4D &qpost,
+                              const Vec4D_Vector &photons)
+{
+  Vec4D K;
+  bool own(false);
+  for (const Vec4D &g : photons) { K += g; if (g == k) own = true; }
+  const Vec4D Q(qpost + K);
+  const double q2(qpost.Abs2()), Q2(Q.Abs2());
+  if (!(q2 > 0.) || !(Q2 > 0.)) return 1.;
+  if (!own) return (Q + k).Abs2()/Q2;   // an alternative dipole: k added to it
+  const double F(Q2/q2);
+  double ysum(0.);
+  for (const Vec4D &g : photons) ysum += 2.*(g*Q)/Q2;
+  const double yk(2.*(k*Q)/Q2);
+  return ysum > 0. ? pow(F, yk/ysum) : F;
+}
+
+/*
+  The FF part of the generator density for photon k: every FF dipole's
+  eikonal on its post-emission legs times its flux share (DipoleFluxShare).
+  False (and the caller keeps the generation-leg eikonal) under the pole
+  scheme, where the radiating pair is the W pair and not the dipole's legs.
+*/
+static bool GeneratorFSRDensity(const Vec4D &k, YFS::Define_Dipoles &dips,
+                                const Vec4D_Vector &postlab, double &sff)
+{
+  if (dips.PoleActive()) return false;
+  double s(0.);
+  for (auto &D : dips.GetDipoleFF()) {
+    const int l(D.Left()), r(D.Right());
+    if (l < 2 || r < 2 || l >= (int)postlab.size() || r >= (int)postlab.size())
+      return false;
+    s += D.Eikonal(k, postlab[l], postlab[r])
+         * DipoleFluxShare(k, postlab[l] + postlab[r], D.GetPhotons());
+  }
+  if (!(s > 0.) || IsBad(s)) return false;
+  sff = s;
+  return true;
+}
+
+/*
+  YFS: SUB8_FSR_LEGS 3 - the same density, but for the emission the
+  (n+1)-body point describes rather than the event. REAL_FSR_MAP 2 evaluates
+  |M_1(k_j)|^2 with the radiating pair rebuilt at Q_D - k_j (the other photons
+  of the pair re-absorbed, the legs along the event's decay axis); the
+  single-emission density of that point is S~(point legs; k_j) times the
+  point's own flux Q_D^2/(Q_D - k_j)^2. For one photon the point is the event
+  and this is GeneratorFSRDensity. With companions the two differ where the
+  companions' recoil moves the lepton by a fraction of its dead cone: there
+  only the point's eikonal has the collinear structure of the point's
+  |M_1(k_j)|^2. kpt is the photon at the point, pt the point's momenta.
+*/
+static bool PointFSRDensity(const Vec4D &kpt, YFS::Define_Dipoles &dips,
+                            const Vec4D_Vector &pt, double &sff)
+{
+  if (dips.PoleActive()) return false;
+  double s(0.);
+  for (auto &D : dips.GetDipoleFF()) {
+    const int l(D.Left()), r(D.Right());
+    if (l < 2 || r < 2 || l >= (int)pt.size() || r >= (int)pt.size()) return false;
+    // (q + k)^2/q^2: for the radiating pair q = Q_D - k_j, the point's own
+    // flux; for any other pair k added to it (an alternative channel)
+    const Vec4D q(pt[l] + pt[r]);
+    const double q2(q.Abs2());
+    if (!(q2 > 0.)) return false;
+    s += D.Eikonal(kpt, pt[l], pt[r]) * (q + kpt).Abs2()/q2;
+  }
+  if (!(s > 0.) || IsBad(s)) return false;
+  sff = s;
+  return true;
+}
+
 double NLO_Base::CalculateReal(Vec4D k, bool raw) {
   double norm = 2. * pow(2 * M_PI, 3);
   Vec4D_Vector p(m_plab), pi(m_bornMomenta), pf(m_bornMomenta);
@@ -771,7 +861,39 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
       */
       static const int fsrlegs(ATOOLS::Settings::GetMainSettings()["YFS"]
                                ["SUB8_FSR_LEGS"].SetDefault(0).Get<int>());
-      if (fsrlegs == 1 && m_postlab.size() == m_plab.size()) {
+      /*
+        2 and 3 (NOTES-deadcone-crude-2026-09-28.md): the FSR channel density
+        the generator really has, post-emission eikonal times pair flux,
+        so that the one-photon weight is r/(g B), the density CEEX divides by
+        (hard half of SUB8_FSRSUB 4: g (1 + S_IF/crude), on the new g).
+        Unlike 1, the SOFT half keeps the generation-leg scale (gsoft below):
+        it is the point's coherent current, the soft limit of r, and must not
+        be rescaled by a post/pre eikonal ratio, which leaves soft photons
+        next to a lepton kicked by a companion with O(1) brackets (1 doubled
+        YFS.NLO's error at the Z pole).
+        2: the EVENT's density, GeneratorFSRDensity - S~ on the event's
+           post-emission legs times the dipole's flux F_D shared among its
+           photons. Right at one photon; with companions it describes a
+           different emission from the one |M_1|^2 is evaluated for (the
+           REAL_FSR_MAP 2 point re-absorbs the companions, which moves the
+           lepton by more than its dead cone for electrons): Z-pole e e,
+           YFS.NLO fiducial error x4, CEEX/NLO 1.034 at s'/s 0.85-0.93.
+        3 (recommended): the POINT's density, PointFSRDensity - S~ on the
+           legs of the (n+1)-body point times its own single-emission flux.
+           Identical to 2 at one photon; with companions it is the density
+           of the emission the point describes, and it reduces to the old
+           generation-leg crude where the companions dominate the recoil.
+      */
+      double sFFgen(0.);
+      for (auto &D : p_dipoles->GetDipoleFF())
+        sFFgen += D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1));
+      if (fsrlegs == 2) {
+        if (!GeneratorFSRDensity(kk, *p_dipoles, m_postlab, sFF)) sFF = sFFgen;
+      }
+      else if (fsrlegs == 3) {
+        if (!PointFSRDensity(k, *p_dipoles, pp, sFF)) sFF = sFFgen;
+      }
+      else if (fsrlegs == 1 && m_postlab.size() == m_plab.size()) {
         for (auto &D : p_dipoles->GetDipoleFF()) {
           const int l(D.Left()), r(D.Right());
           if (l >= 2 && r >= 2 && l < (int)m_postlab.size() && r < (int)m_postlab.size()) {
@@ -783,15 +905,16 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
           else sFF += D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1));
         }
       }
-      else
-      for (auto &D : p_dipoles->GetDipoleFF())
-        sFF += D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1));
+      else sFF = sFFgen;
       const double ifg(p_dipoles->CalculateRealSubIF(kk));
       const Vec4D Q(PreFSRSystem()), R(Q - kk);
       const double s2(Q.Abs2() > 0. ? R.Abs2()/Q.Abs2() : 0.);
       double bI(0.);
       if (!(s2 > 0.) || !PreFSRBornRatio(R, bI)) bI = 0.;   // no ISR channel
-      const double g(sFF + (s2 > 0. ? sII*bI/s2 : 0.));
+      const double isrchannel(s2 > 0. ? sII*bI/s2 : 0.);
+      const double g(sFF + isrchannel);
+      // the scale of the soft (point) subtraction: see SUB8_FSR_LEGS 2, 3
+      const double gsoft(fsrlegs >= 2 ? sFFgen + isrchannel : g);
       /*
         Which subtraction (YFS: SUB8_FSRSUB):
         0: mode 5's, on the generation (pre-FSR) legs, scaled with g. The
@@ -817,7 +940,7 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
       if (g > 0. && !IsBad(g) && subb > 0.) {
         const double cru(subb);
         const double sgen(g*(1. + (IsBad(ifg) ? 0. : ifg/cru)));
-        if (fsub == 1) subloc *= g/cru;
+        if (fsub == 1) subloc *= gsoft/cru;
         else if (fsub == 4) {
           /*
             4: the point's coherent subtraction for soft photons, mode 5's
@@ -827,7 +950,7 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
                                  ["SUB8_Y0"].SetDefault(0.01).Get<double>());
           const double q2(Q.Abs2()), y(q2 > 0. ? 2.*(kk*Q)/q2 : 1.);
           const double w(1./(1. + sqr(y/y0)));
-          subloc = w*subloc*g/cru + (1. - w)*sgen;
+          subloc = w*subloc*gsoft/cru + (1. - w)*sgen;
         }
         else subloc = sgen;
         subb   = g;

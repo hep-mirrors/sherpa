@@ -449,6 +449,29 @@ void Ceex_Base::RegisterDefaults()
     x and the column is 158.4 +- 1.1% pb, largest single-event share 0.6%.
   */
   s["TCHANNEL_REDUCED_BORN"].SetDefault(-1);
+  /*
+    CEEX: TCHANNEL_MULTIPHOTON - beta_1 beyond one photon when beta_0 is the
+    reduced t-channel Born (TCHANNEL_REDUCED_BORN active: gamma gamma).
+    Nothing changes at one photon, nor for any process without the reduced
+    Born (every s-channel Born, Bhabha).
+      0 (default): HEAD - M_1 on PartitionLegs, subtraction with the
+        eikonal on those legs.
+      1: M_1 at the photon's one-photon point (OnePhotonScaledLegs, YFS.NLO's
+        REAL_MAP 2 point carried into the generator's frame), as the ratio
+        M_1/s(point) times the physical eikonal, so the subtraction is
+        exactly the Born term's s_phys B_0.
+      2: 1, and the partition's beta_1 terms combined in factorised form
+        along the Born helicity vector (AddFactorisedRemainder): identical
+        at O(alpha^1), with the factorised beta_2 and higher added.
+    Why (e+e- -> gamma gamma, Z pole, 2026-09-28): with a hard wide-angle ISR
+    photon and soft companions, PartitionLegs tilts the companions' beams
+    by the hard photon's pT - their eikonal there was 1e-5..18 times the
+    physical one - and in events whose generator Born sits on the reduced
+    frame's t-channel pole (m_born 1e3-1e7) that left |A_1| 5-18 times
+    |A_0| where the exact ME is 1e-4 of it: ACRAIC 1.65 x YFS.NLO in the
+    photon-tagged region. NOTES-aa-multiisr-2026-09-28.md.
+  */
+  s["TCHANNEL_MULTIPHOTON"].SetDefault(0);
   s["BETA1_BORNLEGS"].SetDefault(1);         // 1 = reduced, 0 = physical
   /*
     The pseudo-flux svarY/svarQ on beta_0: 0 = in rho_0 and rho_1 (KKMC's
