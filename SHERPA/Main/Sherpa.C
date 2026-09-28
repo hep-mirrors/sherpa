@@ -452,6 +452,44 @@ bool Sherpa::SummarizeRun()
 	double this_sepsum = time_map["sum_overhead_after_"+sub_name]+time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_total_"+sub_name];
 	sepsum += this_sepsum;
     }
+    // For unweighted events a hard event with an overweight is repeated with unit
+    // weight, see Signal_Processes::Treat(), so that sudakov_efficiency counts the
+    // kept events including these repetitions per accepted hard event. The cross
+    // section and the statistical dilution alpha refer to the hard events, each
+    // counted once with its overweight, i.e. to the kept events without the
+    // repetitions. For other event types both are the same.
+    std::map<std::string, double> sudakov_efficiency_hard;
+    double sum_keptcopy = 0;
+    for (const std::string& sub_name : subprocesses)
+      sum_keptcopy += number_map["n_keptcopy_"+sub_name];
+    const double hard_fraction_all = sum_map["kept"]>0 ? 1.-sum_keptcopy/sum_map["kept"] : 1.;
+    for (const std::string& sub_name : subprocesses) {
+      const double nkept(number_map["n_kept_"+sub_name]);
+      const double hard_fraction = nkept>0 ? 1.-number_map["n_keptcopy_"+sub_name]/nkept : hard_fraction_all;
+      sudakov_efficiency_hard[sub_name] = sudakov_efficiency[sub_name]*hard_fraction;
+    }
+    // The tables below scan Max_Epsilon, for which the number of repetitions per
+    // accepted event differs from that of this run. They therefore take the kept
+    // events and the time after acceptance per generated event (accepted event or
+    // repetition), and the generated events per accepted one of the scanned
+    // epsilon from the weight histogram, see Process_Integrator::GetMaxEps(). A
+    // repetition is assumed to take as long (apart from the re-run of the pilot
+    // run, see time_after_acceptance below) and to be vetoed as often as the
+    // accepted event, whose hard process it shares, so that the kept events per
+    // generated event also give the kept hard events per accepted one.
+    std::map<std::string, double> gen_per_acc_run;
+    std::map<std::string, double> sudakov_gen, sudakov_gen_up, sudakov_gen_down;
+    std::map<std::string, double> sudakov_gen_up_corr, sudakov_gen_down_corr;
+    for (const std::string& sub_name : subprocesses) {
+      const double ngen(number_map["n_gen_"+sub_name]);
+      const double c(ngen>0 ? (ngen+number_map["n_copy_"+sub_name])/ngen : 1.);
+      gen_per_acc_run[sub_name] = c;
+      sudakov_gen[sub_name] = sudakov_efficiency[sub_name]/c;
+      sudakov_gen_up[sub_name] = sudakov_efficiency_up[sub_name]/c;
+      sudakov_gen_down[sub_name] = sudakov_efficiency_down[sub_name]/c;
+      sudakov_gen_up_corr[sub_name] = sudakov_efficiency_up_corr[sub_name]/c;
+      sudakov_gen_down_corr[sub_name] = sudakov_efficiency_down_corr[sub_name]/c;
+    }
     Settings& s = Settings::GetMainSettings();
     double timing_statistics_large_weight_fraction=s["TIMING_STATISTICS_LARGE_WEIGHT_FRACTION"].SetDefault(0.001).Get<double>();
     double timing_statistics_det_sim=s["TIMING_STATISTICS_DET_SIM_IN_S"].SetDefault(0.0).Get<double>();
@@ -478,6 +516,10 @@ bool Sherpa::SummarizeRun()
     double sum_kish = 0;
     for (auto const& [key, val] : chosen_alpha_map) {
       std::string sub_name = key;
+      // A subprocess without accepted events, e.g. without any point that passed
+      // the cuts, has efficiency and alpha 0 (weighted events: -1) and contributes
+      // nothing to the sample; its values would give 0/0 below.
+      if (!(chosen_efficiency_map[sub_name]>0.) || !(chosen_alpha_map[sub_name]>0.)) continue;
       // Accepted events of the subprocess. For (partially) unweighted events they
       // follow from its selection weight, eff*|sigma|/(eff*alpha^p). For weighted
       // events the selection weight is that of the weighted sample including the
@@ -491,9 +533,11 @@ bool Sherpa::SummarizeRun()
         double curr_xsec = dabs(xsec_map[sub_name])/chosen_efficiency_map[sub_name]/alpha_power(chosen_alpha_map[sub_name]);
         nacc = chosen_efficiency_map[sub_name]*curr_xsec;
       }
+      // generated events including the repetitions, effective events of the
+      // hard events
       sum_p_unw += nacc*sudakov_efficiency[sub_name];
-      sum_p_eff_sign += xsec_map[sub_name]*sudakov_efficiency[sub_name];
-      sum_kish += kish_term(xsec_map[sub_name],chosen_alpha_map[sub_name],nacc)*sudakov_efficiency[sub_name];
+      sum_p_eff_sign += xsec_map[sub_name]*sudakov_efficiency_hard[sub_name];
+      sum_kish += kish_term(xsec_map[sub_name],chosen_alpha_map[sub_name],nacc)*sudakov_efficiency_hard[sub_name];
     }
     double chosen_effevperev = pow(sum_p_eff_sign,2)/(sum_p_unw*sum_kish);
     msg_Info()<<"with "<< chosen_effevperev << " Neff/evt           "<<std::endl;
@@ -503,7 +547,7 @@ bool Sherpa::SummarizeRun()
     double m_ovwth = s["OVERWEIGHT_THRESHOLD"].SetDefault(1e12).Get<double>();
 
     //loop over subprocesses
-    std::vector<std::string> sum_types = {"total", "PS", "ME", "overhead", "overhead_after_kept", "overhead_after"};//
+    std::vector<std::string> sum_types = {"total", "PS", "ME", "overhead", "overhead_after_kept", "overhead_after", "rerun", "pass"};//
     std::map<std::string, double> total;
     for (const std::string& sum_type : sum_types) {
       total[sum_type] = 0;
@@ -544,6 +588,10 @@ bool Sherpa::SummarizeRun()
           msg_Info()<< sub_name << " : "<<"overhead_after time: "<<w<<" s"<<std::endl;
         }
         total["overhead_after"] += w;
+        // contained in overhead_after_kept and overhead_after
+        total["rerun"] += time_map["sum_rerun_"+sub_name];
+        // contained in total
+        total["pass"] += time_map["sum_pass_"+sub_name];
     }
     if (timing_statistics>4) {
       for (const std::string& num_type : num_types) {
@@ -575,9 +623,11 @@ bool Sherpa::SummarizeRun()
     std::map<std::string, std::vector<double>> alpha_manual_map = rpa->gen.AlphaManualMapAll();
     std::map<std::string, std::vector<double>> wmax_manual_map = rpa->gen.WmaxManualMapAll();
     std::map<std::string, std::vector<double>> efficiency_manual_map = rpa->gen.EfficiencyManualMapAll();
-    std::vector<double> mean_manual_alpha(epsilon_values.size()+2, -1);
-    std::vector<double> mean_manual_events(epsilon_values.size()+2, -1);
-    std::vector<double> mean_manual_eff_events(epsilon_values.size()+2, -1);
+    // rows: the scanned Max_Epsilon values, full unweighting (size), weighted
+    // (size+1) and partially unweighted with Max_Epsilon=1 (size+2)
+    std::vector<double> mean_manual_alpha(epsilon_values.size()+3, -1);
+    std::vector<double> mean_manual_events(epsilon_values.size()+3, -1);
+    std::vector<double> mean_manual_eff_events(epsilon_values.size()+3, -1);
     std::vector<double> mean_manual_events_up(epsilon_values.size()+1, -1);
     std::vector<double> mean_manual_events_down(epsilon_values.size()+1, -1);
     std::vector<std::map<std::string, double>> mean_manual_events_time(epsilon_values.size()+1);
@@ -588,6 +638,41 @@ bool Sherpa::SummarizeRun()
     // Max_Epsilon=0 (GetMaxEps() is not called then).
     double plain_xsec_sum = 0;
     for (auto const& [key, val] : xsec_map) plain_xsec_sum += dabs(val);
+    // Time per trial of a subprocess and per generated event after acceptance
+    // (shower etc.), measured in this run. A subprocess without trials or without
+    // accepted events gets 0, which underestimates its time; see the warning on
+    // untimed subprocesses below.
+    auto time_per_trial = [&](const std::string &sub_name) {
+      const long int ntot = number_map["n_total_"+sub_name];
+      return ntot>0 ? time_map["sum_total_"+sub_name]/ntot : 0.;
+    };
+    // Time after acceptance per accepted event with gen generated events (the
+    // accepted one and its repetitions), including the detector simulation of the
+    // kept ones. The re-run of the pilot run (see
+    // Matrix_Element_Handler::GenerateOneTrialEvent()) is contained in the time
+    // after acceptance, but occurs once per accepted event and not for the
+    // repetitions, so it is taken out of the time per generated event.
+    auto time_after_acceptance = [&](const std::string &sub_name, const double gen) {
+      const long int nacc = number_map["n_gen_"+sub_name];
+      const long int ngen = nacc+number_map["n_copy_"+sub_name];
+      if (ngen==0) return 0.;
+      const double rerun = time_map["sum_rerun_"+sub_name];
+      const double after = (time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_overhead_after_"+sub_name]-rerun)/ngen;
+      return rerun/nacc+gen*(after+sudakov_gen[sub_name]*timing_statistics_det_sim);
+    };
+    // Generated events per accepted one for the scanned epsilon i, see above;
+    // repetitions only for unweighted events.
+    std::map<std::string, std::vector<double>> genperacc_manual_map = rpa->gen.GenPerAccManualMapAll();
+    auto gen_per_acc = [&](const std::string &sub_name, const size_t i) {
+      if (generation_mode!=1) return 1.;
+      const std::vector<double> &c(genperacc_manual_map[sub_name]);
+      return (i<c.size() && c[i]>0.) ? c[i] : 1.;
+    };
+    // time per trial including the time after acceptance of the eff accepted
+    // events per trial with gen generated events per accepted one
+    auto trial_time = [&](const std::string &sub_name, const double eff, const double gen) {
+      return time_per_trial(sub_name)+eff*time_after_acceptance(sub_name,gen);
+    };
     for(int i=0; i < epsilon_values.size()+1; i++){
       double sum_t_trial = 0;
       double sum_p_unw = 0;
@@ -614,27 +699,23 @@ bool Sherpa::SummarizeRun()
 	  continue;
 	}
 	double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/alpha_power(alpha_manual_map[sub_name][i]);
-	double tges  = (time_map["sum_total_"+sub_name])/number_map["n_total_"+sub_name]; //in s
-	if (number_map["n_total_"+sub_name]==0) {
-	  tges = 0; //critical, because underestimate - need to make sure that enough events generated...unc estimate hard, because 0 is 0
-	}
-	double overhead_after = (time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_overhead_after_"+sub_name])/number_map["n_gen_"+sub_name];
-	if (number_map["n_gen_"+sub_name]==0) {
-	  overhead_after = 0;
-	}
-	double t_trial = tges+efficiency_manual_map[sub_name][i]*(overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim);
+	// generated events per accepted one for this epsilon
+	const double gen = gen_per_acc(sub_name,i);
+	double overhead_after = time_after_acceptance(sub_name,gen);
+	double t_trial = trial_time(sub_name,efficiency_manual_map[sub_name][i],gen);
 	if (m_min_tot_unc_per_day) curr_xsec = t_trial?dabs(xsec_map[sub_name])/sqrt(t_trial*efficiency_manual_map[sub_name][i]*alpha_manual_map[sub_name][i]):0;///(sudakov_efficiency[sub_name]?sudakov_efficiency[sub_name]:average_sudakov)
 	sum_t_trial += t_trial*curr_xsec;
-	sum_p_unw += efficiency_manual_map[sub_name][i]*sudakov_efficiency[sub_name]*curr_xsec;
-	sum_p_eff_sign += xsec_map[sub_name]*sudakov_efficiency[sub_name];
-	sum_kish += kish_term(xsec_map[sub_name],alpha_manual_map[sub_name][i],efficiency_manual_map[sub_name][i]*curr_xsec)*sudakov_efficiency[sub_name];
+	// kept events including the repetitions, effective events of the hard events
+	sum_p_unw += efficiency_manual_map[sub_name][i]*gen*sudakov_gen[sub_name]*curr_xsec;
+	sum_p_eff_sign += xsec_map[sub_name]*sudakov_gen[sub_name];
+	sum_kish += kish_term(xsec_map[sub_name],alpha_manual_map[sub_name][i],efficiency_manual_map[sub_name][i]*curr_xsec)*sudakov_gen[sub_name];
 
 	//100% correlated for very few kept events
-	sum_p_unw_up_corr += efficiency_manual_map[sub_name][i]*sudakov_efficiency_up_corr[sub_name]*curr_xsec;
-	sum_p_unw_down_corr += efficiency_manual_map[sub_name][i]*sudakov_efficiency_down_corr[sub_name]*curr_xsec;
+	sum_p_unw_up_corr += efficiency_manual_map[sub_name][i]*gen*sudakov_gen_up_corr[sub_name]*curr_xsec;
+	sum_p_unw_down_corr += efficiency_manual_map[sub_name][i]*gen*sudakov_gen_down_corr[sub_name]*curr_xsec;
 	//0% correlated for a lot kept events - could even make 2 sudakov uncertainties for this ...
-	sum_p_unw_up += pow(efficiency_manual_map[sub_name][i]*(sudakov_efficiency_up[sub_name]-sudakov_efficiency[sub_name])*curr_xsec,2);
-	sum_p_unw_down += pow(efficiency_manual_map[sub_name][i]*(sudakov_efficiency[sub_name]-sudakov_efficiency_down[sub_name])*curr_xsec,2);
+	sum_p_unw_up += pow(efficiency_manual_map[sub_name][i]*gen*(sudakov_gen_up[sub_name]-sudakov_gen[sub_name])*curr_xsec,2);
+	sum_p_unw_down += pow(efficiency_manual_map[sub_name][i]*gen*(sudakov_gen[sub_name]-sudakov_gen_down[sub_name])*curr_xsec,2);
 
 	//split by evegen step
 	if (number_map["n_total_"+sub_name]>0) {
@@ -642,7 +723,7 @@ bool Sherpa::SummarizeRun()
 	  sum_t_PS += time_map["sum_PS_"+sub_name]/number_map["n_total_"+sub_name]*curr_xsec;
 	  sum_t_ov_during += (time_map["sum_total_"+sub_name]-time_map["sum_ME_"+sub_name]-time_map["sum_PS_"+sub_name])/number_map["n_total_"+sub_name]*curr_xsec;
 	}
-	sum_t_ov_after += (overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim)*efficiency_manual_map[sub_name][i]*curr_xsec;
+	sum_t_ov_after += overhead_after*efficiency_manual_map[sub_name][i]*curr_xsec;
       }
       mean_manual_alpha[i] = pow(sum_p_eff_sign,2)/(sum_p_unw*sum_kish);
       mean_manual_events[i] = 60*60*24/(sum_t_trial/sum_p_unw);
@@ -666,11 +747,22 @@ bool Sherpa::SummarizeRun()
     // times the time after acceptance, as in the scans above, and yields eps events.
     // The selection weight per trial is |sigma|/alpha_all^p with alpha_all =
     // eps*alpha the dilution of all trial points, see
-    // Process_Integrator::SelectionWeight(). With the pilot run, the time after
-    // acceptance contains the re-run with variations, so that the nominal matrix
-    // element of an accepted event is counted twice.
+    // Process_Integrator::SelectionWeight(). Weighted events have no pilot run: a
+    // trial that passes the cuts is calculated once, with the variations. With the
+    // pilot run, this is the re-run, which the time after acceptance contains, so
+    // that the pilot trial that passed the cuts (sum_pass) is taken out.
+    // Partially unweighted events with Max_Epsilon=1 are the same sample, every
+    // trial that passes the cuts is accepted, but with the pilot run: their time
+    // per trial is that of this run (trial_time), which includes it.
+    auto weighted_trial_time = [&](const std::string &sub_name, const double eps) {
+      const long int npass = number_map["n_pass_"+sub_name];
+      const double pilot = (number_map["n_rerun_"+sub_name]>0 && npass>0) ?
+        time_map["sum_pass_"+sub_name]/npass : 0.;
+      return time_per_trial(sub_name)+eps*(time_after_acceptance(sub_name,1.)-pilot);
+    };
     int i = epsilon_values.size()+1;
     double sum_t_trial = 0;
+    double sum_t_trial_pilot = 0;
     sum_p_unw = 0;
     double sum_xsec = 0;
     double sum_complex = 0;
@@ -683,30 +775,27 @@ bool Sherpa::SummarizeRun()
       if (!(eps>0.) || !(alpha>0.)) continue;
       const double selw = dabs(xsec_map[sub_name])/alpha_power(eps*alpha);
       const double nacc = eps*selw;
-      double tges  = (time_map["sum_total_"+sub_name])/number_map["n_total_"+sub_name]; //in s
-      if (number_map["n_total_"+sub_name]==0) {
-	tges = 0; //critical, because underestimate - need to make sure that enough events generated...unc estimate hard, because 0 is 0
-      }
-      double overhead_after = (time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_overhead_after_"+sub_name])/number_map["n_gen_"+sub_name];
-      if (number_map["n_gen_"+sub_name]==0) {
-	overhead_after = 0;
-      }
-      sum_t_trial += (tges+eps*(overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim))*selw;
-      sum_p_unw += sudakov_efficiency[sub_name]*nacc;
+      // weighted events are not repeated for an overweight
+      sum_t_trial += weighted_trial_time(sub_name,eps)*selw;
+      sum_t_trial_pilot += trial_time(sub_name,eps,1.)*selw;
+      sum_p_unw += sudakov_gen[sub_name]*nacc;
 
-      sum_xsec += xsec_map[sub_name]*sudakov_efficiency[sub_name];
-      sum_effiselw += sudakov_efficiency[sub_name]*nacc;
+      sum_xsec += xsec_map[sub_name]*sudakov_gen[sub_name];
+      sum_effiselw += sudakov_gen[sub_name]*nacc;
       //std::cout << " alpha_manual_map[sub_name][i]:" << alpha_manual_map[sub_name][i] << std::endl;
       //std::cout << " sudakov_efficiency[sub_name]:" << sudakov_efficiency[sub_name] << std::endl;
       //std::cout << " selw:" << selw << std::endl;
       //std::cout << " xsec_map[sub_name]:" << xsec_map[sub_name] << std::endl;
       //std::cout << " sum_complex+:" << pow(xsec_map[sub_name]*sudakov_efficiency[sub_name],2)/(alpha_manual_map[sub_name][i]*sudakov_efficiency[sub_name]*selw) << std::endl;
-      sum_complex += pow(xsec_map[sub_name],2)*sudakov_efficiency[sub_name]/(alpha*nacc);
+      sum_complex += pow(xsec_map[sub_name],2)*sudakov_gen[sub_name]/(alpha*nacc);
       //std::cout << " sum_complex:" << sum_complex << std::endl;
     }
     mean_manual_alpha[i] = pow(sum_xsec,2)/(sum_effiselw*sum_complex);//von Zettel
     mean_manual_events[i] = 60*60*24/(sum_t_trial/sum_p_unw);
     mean_manual_eff_events[i] = mean_manual_events[i]*mean_manual_alpha[i];
+    mean_manual_alpha[i+1] = mean_manual_alpha[i];
+    mean_manual_events[i+1] = 60*60*24/(sum_t_trial_pilot/sum_p_unw);
+    mean_manual_eff_events[i+1] = mean_manual_events[i+1]*mean_manual_alpha[i+1];
 
     //same as above, but for fraction 0.001
     //epsilon_max scan manual definition
@@ -731,21 +820,14 @@ bool Sherpa::SummarizeRun()
 	  continue;
 	}
 	double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/alpha_power(alpha_manual_map[sub_name][i]);
-	double tges  = (time_map["sum_total_"+sub_name])/number_map["n_total_"+sub_name]; //in s
-	if (number_map["n_total_"+sub_name]==0) {
-	  tges = 0; //critical, because underestimate - need to make sure that enough events generated...unc estimate hard, because 0 is 0
-	}
-	double overhead_after = (time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_overhead_after_"+sub_name])/number_map["n_gen_"+sub_name];
-	if (number_map["n_gen_"+sub_name]==0) {
-	  overhead_after = 0;
-	}
-	double t_trial = tges+efficiency_manual_map[sub_name][i]*(overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim);
+	const double gen = gen_per_acc(sub_name,i);
+	double t_trial = trial_time(sub_name,efficiency_manual_map[sub_name][i],gen);
 	if (m_min_tot_unc_per_day) curr_xsec = t_trial?dabs(xsec_map[sub_name])/sqrt(t_trial*efficiency_manual_map[sub_name][i]*alpha_manual_map[sub_name][i]):0;///(sudakov_efficiency[sub_name]?sudakov_efficiency[sub_name]:average_sudakov)
         sum_t_trial += t_trial*curr_xsec;
-        sum_p_unw += efficiency_manual_map[sub_name][i]*sudakov_efficiency[sub_name]*curr_xsec;
-        sum_p_eff_sign += xsec_map[sub_name]*sudakov_efficiency[sub_name];
+        sum_p_unw += efficiency_manual_map[sub_name][i]*gen*sudakov_gen[sub_name]*curr_xsec;
+        sum_p_eff_sign += xsec_map[sub_name]*sudakov_gen[sub_name];
 	//sum_complex += pow(xsec_map[sub_name]*sudakov_efficiency[sub_name],2)/(alpha_manual_fraction_map[sub_name][i]*dabs(xsec_map[sub_name])/alpha_manual_map[sub_name][i]*sudakov_efficiency[sub_name]);
-	sum_complex += pow(xsec_map[sub_name],2)*sudakov_efficiency[sub_name]/(alpha_manual_fraction_map[sub_name][i]*efficiency_manual_map[sub_name][i]*curr_xsec);
+	sum_complex += pow(xsec_map[sub_name],2)*sudakov_gen[sub_name]/(alpha_manual_fraction_map[sub_name][i]*efficiency_manual_map[sub_name][i]*curr_xsec);
 	//sum_complex += dabs(xsec_map[sub_name])*sudakov_efficiency[sub_name]/(alpha_manual_fraction_map[sub_name][i]/alpha_manual_map[sub_name][i]);
       }
       mean_manual_fraction_alpha[i] = pow(sum_p_eff_sign,2)/(sum_p_unw*sum_complex);
@@ -789,26 +871,20 @@ bool Sherpa::SummarizeRun()
 	    continue;
 	  }
 	  double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_fscan_map[sub_name][fi][i]/alpha_power(alpha_manual_fscan_map[sub_name][fi][i]);
-	  double tges  = (time_map["sum_total_"+sub_name])/number_map["n_total_"+sub_name]; //in s
-	  if (number_map["n_total_"+sub_name]==0) {
-	    tges = 0; //critical, because underestimate - need to make sure that enough events generated...unc estimate hard, because 0 is 0
-	  }
-	  double overhead_after = (time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_overhead_after_"+sub_name])/number_map["n_gen_"+sub_name];
-	  if (number_map["n_gen_"+sub_name]==0) {
-	    overhead_after = 0;
-	  }
-	  double t_trial = tges+efficiency_manual_fscan_map[sub_name][fi][i]*(overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim);
+	  // the maximum, and so the repetitions, depend on epsilon only
+	  const double gen = gen_per_acc(sub_name,i);
+	  double t_trial = trial_time(sub_name,efficiency_manual_fscan_map[sub_name][fi][i],gen);
 	  if (m_min_tot_unc_per_day) curr_xsec = t_trial?dabs(xsec_map[sub_name])/sqrt(t_trial*efficiency_manual_fscan_map[sub_name][fi][i]*alpha_manual_fscan_map[sub_name][fi][i]):0;///(sudakov_efficiency[sub_name]?sudakov_efficiency[sub_name]:average_sudakov)
 	  double this_t_trial = t_trial*curr_xsec;
-	  double this_p_unw = efficiency_manual_fscan_map[sub_name][fi][i]*sudakov_efficiency[sub_name]*curr_xsec;
-	  double this_p_eff = dabs(xsec_map[sub_name])*sudakov_efficiency[sub_name];
-	  double this_p_eff_sign = xsec_map[sub_name]*sudakov_efficiency[sub_name];
+	  double this_p_unw = efficiency_manual_fscan_map[sub_name][fi][i]*gen*sudakov_gen[sub_name]*curr_xsec;
+	  double this_p_eff = dabs(xsec_map[sub_name])*sudakov_gen[sub_name];
+	  double this_p_eff_sign = xsec_map[sub_name]*sudakov_gen[sub_name];
 	  if (opt_p_eff==-1 or opt_t_trial/opt_p_eff/(this_t_trial/this_p_eff)>1.0001 or (opt_t_trial/opt_p_eff/(this_t_trial/this_p_eff)>0.9999 and opt_p_eff/opt_p_unw/(this_p_eff/this_p_unw)<1)) {
 	    opt_t_trial = this_t_trial;
 	    opt_p_unw = this_p_unw;
 	    opt_p_eff = this_p_eff;
 	    opt_p_eff_sign = this_p_eff_sign;
-	    opt_kish = kish_term(xsec_map[sub_name],alpha_manual_fscan_map[sub_name][fi][i],efficiency_manual_fscan_map[sub_name][fi][i]*curr_xsec)*sudakov_efficiency[sub_name];
+	    opt_kish = kish_term(xsec_map[sub_name],alpha_manual_fscan_map[sub_name][fi][i],efficiency_manual_fscan_map[sub_name][fi][i]*curr_xsec)*sudakov_gen[sub_name];
 	  }
 	}
 	sum_t_trial += opt_t_trial;
@@ -929,6 +1005,14 @@ bool Sherpa::SummarizeRun()
         std::cout <<std::setw(15)<< mean_manual_fraction_eff_events[i] << "     " <<std::left<<std::setw(11) << 1./mean_manual_fraction_alpha[i] << " │" << std::endl;
       }
     }
+    // For partially unweighted events this is the row 1e0, for weighted ones (no
+    // pilot run measured) the row weighted. For unweighted ones the row 1e0
+    // contains the repetitions of overweight events.
+    if (generation_mode==1) {
+      std::cout << "│ 1.0 (p.unw.)" <<std::left<< "   " <<std::setw(12)<< mean_manual_events[epsilon_values.size()+2] << " │ ";
+      std::cout <<std::setw(15)<< mean_manual_eff_events[epsilon_values.size()+2] << "     " <<std::left<<std::setw(11) << 1./mean_manual_alpha[epsilon_values.size()+2] << " │ ";
+      std::cout << "-                   -          " << " │" << std::endl;
+    }
     std::cout << "│ weighted   " <<std::left<< "    " <<std::setw(12)<< mean_manual_events[epsilon_values.size()+1] << " │ ";
     std::cout <<std::setw(15)<< mean_manual_eff_events[epsilon_values.size()+1] << "     " <<std::left<<std::setw(11) << 1./mean_manual_alpha[epsilon_values.size()+1] << " │ ";
     std::cout << "-                   -          " << " │" << std::endl;
@@ -951,14 +1035,9 @@ bool Sherpa::SummarizeRun()
     //efficiency), and assume that the time per trial of a subprocess does not
     //depend on how often it is selected.
     {
-      struct Sub_Point { double xsec, eff, alpha, t_trial, sud; };
-      auto trial_time = [&](const std::string &sub_name, const double eff) {
-        const long int ntot = number_map["n_total_"+sub_name];
-        const long int ngen = number_map["n_gen_"+sub_name];
-        const double tges = ntot>0 ? time_map["sum_total_"+sub_name]/ntot : 0.;
-        const double tafter = ngen>0 ? (time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_overhead_after_"+sub_name])/ngen : 0.;
-        return tges+eff*(tafter+sudakov_efficiency[sub_name]*timing_statistics_det_sim);
-      };
+      // sud: kept events per accepted one, sud_hard: the same without the
+      // repetitions for an overweight, for the epsilon of the row (see sudakov_gen)
+      struct Sub_Point { double xsec, eff, alpha, t_trial, sud, sud_hard; };
       auto eff_events_per_day = [&](const std::vector<Sub_Point> &subs, const bool timeopt) {
         double sum_t(0.), sum_n(0.), sum_sign(0.), sum_k(0.);
         for (const Sub_Point &sp : subs) {
@@ -967,8 +1046,8 @@ bool Sherpa::SummarizeRun()
             dabs(sp.xsec)/sp.eff/alpha_power(sp.alpha);
           sum_t += sp.t_trial*curr;
           sum_n += sp.eff*sp.sud*curr;
-          sum_sign += sp.xsec*sp.sud;
-          sum_k += kish_term(sp.xsec,sp.alpha,sp.eff*curr)*sp.sud;
+          sum_sign += sp.xsec*sp.sud_hard;
+          sum_k += kish_term(sp.xsec,sp.alpha,sp.eff*curr)*sp.sud_hard;
         }
         if (!(sum_t>0.) || !(sum_n>0.) || !(sum_k>0.)) return 0.;
         return 60*60*24*sum_n/sum_t*sum_sign*sum_sign/(sum_n*sum_k);
@@ -988,7 +1067,9 @@ bool Sherpa::SummarizeRun()
           const double eff(efficiency_manual_map[key][i]), alpha(alpha_manual_map[key][i]);
           // no value for this epsilon (see the warnings above)
           if (!(eff>0.) || !(alpha>0.)) continue;
-          subs.push_back({xsec_map[key],eff,alpha,trial_time(key,eff),sudakov_efficiency[key]});
+          const double gen(gen_per_acc(key,i));
+          subs.push_back({xsec_map[key],eff,alpha,trial_time(key,eff,gen),gen*sudakov_gen[key],
+                          sudakov_gen[key]});
         }
         neff_sw[i] = eff_events_per_day(subs,false);
         neff_time[i] = eff_events_per_day(subs,true);

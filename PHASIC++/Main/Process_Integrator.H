@@ -64,6 +64,11 @@ namespace PHASIC {
     // For full unweighting w_sel = w_max. This is SELECTION_WEIGHT_MODE 0; for the
     // other modes SelectionWeight() rescales it, see SelectionAlphaPower().
     double m_selweight_xs = 0.;
+    // Generated events per accepted one: for unweighted events, a hard event with
+    // the overweight w/max>1 is repeated min(w/max,OVERWEIGHT_THRESHOLD) times on
+    // average (see SHERPA::Signal_Processes::Treat()), otherwise 1. Set together
+    // with m_effi by GetMaxEps() and SetFullUnweightingStats().
+    double m_genperacc = 1.;
     double m_timing_statistics_large_weight_fraction, m_external_selectionweight, m_ovwth;
     int m_timing_statistics, m_timing_statistics_min_unc_per_day;
 
@@ -229,6 +234,7 @@ namespace PHASIC {
 
     inline double Efficiency() const { return m_effi; }
     inline double EffEvPerEv() const { return m_effevperev; }
+    inline double GeneratedPerAccepted() const { return m_genperacc; }
 
     inline void SetBeam(BEAM::Beam_Spectra_Handler *const beam) 
     { p_beamhandler=beam; }

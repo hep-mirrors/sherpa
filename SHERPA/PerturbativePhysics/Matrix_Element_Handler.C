@@ -280,14 +280,21 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
   // the subprocess of the last phase-space point, set in
   // Phase_Space_Handler::Differential() (the re-run below sets the same)
   const std::string &sub_name(rpa->gen.GetIsGenSubName());
-  auto book_trial = [&](const std::chrono::high_resolution_clock::time_point &end1) {
+  // pass: the trial gave a weight (it passed the cuts), i.e. it would be an event
+  // for weighted events, see Sherpa::SummarizeRun()
+  auto book_trial = [&](const std::chrono::high_resolution_clock::time_point &end1, const bool pass) {
     double finetime1 = std::chrono::duration_cast<std::chrono::nanoseconds>(end1-begin1).count()/1000000000.;
     rpa->gen.SetTimeMap("sum_total_" +sub_name, rpa->gen.TimeMap("sum_total_" +sub_name)+finetime1);
     rpa->gen.SetTimeMap("sum2_total_"+sub_name, rpa->gen.TimeMap("sum2_total_"+sub_name)+finetime1*finetime1);
     rpa->gen.SetNumberMap("n_total_" +sub_name, rpa->gen.NumberMap("n_total_" +sub_name)+1);
+    if (pass) {
+      rpa->gen.SetTimeMap("sum_pass_" +sub_name, rpa->gen.TimeMap("sum_pass_" +sub_name)+finetime1);
+      rpa->gen.SetTimeMap("sum2_pass_"+sub_name, rpa->gen.TimeMap("sum2_pass_"+sub_name)+finetime1*finetime1);
+      rpa->gen.SetNumberMap("n_pass_" +sub_name, rpa->gen.NumberMap("n_pass_" +sub_name)+1);
+    }
   };
   if (info==NULL) {
-    if (timing) book_trial(std::chrono::high_resolution_clock::now());
+    if (timing) book_trial(std::chrono::high_resolution_clock::now(),false);
     return trial_event_generation_result::zero;
   }
   m_evtinfo=*info;
@@ -306,7 +313,7 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
     const auto maxwt  = p_proc->Integrator()->Max();
     const auto disc   = maxwt * ran->Get();
     if (abswgt < disc) {
-      if (timing) book_trial(std::chrono::high_resolution_clock::now());
+      if (timing) book_trial(std::chrono::high_resolution_clock::now(),true);
       return trial_event_generation_result::zero;
     }
     // accepted events per subprocess, needed for the Neff/evt of every run
@@ -333,6 +340,8 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
     if (hasvars && m_pilotrunenabled) {
       // re-run with same rng state and include the calculation of variations
       // this time
+      std::chrono::high_resolution_clock::time_point rerunbegin;
+      if (timing) rerunbegin = std::chrono::high_resolution_clock::now();
       ran->RestoreStatus(1);
       proc->ResetEvent();
       // The re-run is not a trial of its own, its time is contained in the time
@@ -340,6 +349,15 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
       rpa->gen.SetTimingActive(false);
       info=proc->OneEvent(m_eventmode, Variations_Mode::all);
       rpa->gen.SetTimingActive(timing);
+      // It is also booked on its own: it occurs once per accepted event, but not
+      // for the repetitions of an overweight event (unweighted events), see
+      // Sherpa::SummarizeRun().
+      if (timing) {
+        double finetime = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-rerunbegin).count()/1000000000.;
+        rpa->gen.SetTimeMap("sum_rerun_" +sub_name, rpa->gen.TimeMap("sum_rerun_" +sub_name)+finetime);
+        rpa->gen.SetTimeMap("sum2_rerun_"+sub_name, rpa->gen.TimeMap("sum2_rerun_"+sub_name)+finetime*finetime);
+        rpa->gen.SetNumberMap("n_rerun_" +sub_name, rpa->gen.NumberMap("n_rerun_" +sub_name)+1);
+      }
       assert(info);
       if (!IsEqual(m_evtinfo.m_weightsmap.Nominal(),
                    info->m_weightsmap.Nominal(), 1e-6) &&
@@ -378,7 +396,7 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
     p_proc->GetSubevtList()->MultMEwgt(wf);
   }
   if (p_proc->GetMEwgtinfo()) (*p_proc->GetMEwgtinfo())*=wf;
-  if (timing) book_trial(accepttime);
+  if (timing) book_trial(accepttime,true);
   return trial_event_generation_result::non_zero;
 }
 

@@ -44,6 +44,9 @@ namespace ATOOLS {
       std::map<std::string, double> m_xsec_map;
       std::map<std::string, int> m_fills_map;
       std::map<std::string, std::vector<double>> m_wmax_manual_map;
+      // generated events per accepted one for unweighted events, whose hard
+      // events with an overweight are repeated, per scanned Max_Epsilon
+      std::map<std::string, std::vector<double>> m_genperacc_manual_map;
       std::map<std::string, std::vector<double>> m_alpha_manual_map;
       std::map<std::string, std::vector<double>> m_alpha_manual_fraction_map;
       std::map<std::string, std::vector<std::vector<double>>> m_alpha_manual_fscan_map;
@@ -80,6 +83,7 @@ namespace ATOOLS {
       inline std::map<std::string, double> EfficiencyMap()   { return m_chosen_efficiency_map; }
       inline std::map<std::string, double> CappedFractionMap()   { return m_chosen_capped_fraction_map; }
       inline std::map<std::string, std::vector<double>> WmaxManualMapAll()   { return m_wmax_manual_map; }
+      inline std::map<std::string, std::vector<double>> GenPerAccManualMapAll()   { return m_genperacc_manual_map; }
       inline std::map<std::string, std::vector<double>> AlphaManualMapAll()   { return m_alpha_manual_map; }
       inline std::map<std::string, std::vector<double>> AlphaManualFractionMapAll()   { return m_alpha_manual_fraction_map; }
       inline std::map<std::string, std::vector<std::vector<double>>> AlphaManualFScanMapAll()   { return m_alpha_manual_fscan_map; }
@@ -120,6 +124,7 @@ namespace ATOOLS {
       inline void   SetChosenEfficiencyMap(std::string name, const double vec) { m_chosen_efficiency_map[name]=vec; }
       inline void   SetChosenCappedFractionMap(std::string name, const double vec) { m_chosen_capped_fraction_map[name]=vec; }
       inline void   SetWmaxManualMap(std::string name, const std::vector<double> vec) { m_wmax_manual_map[name]=vec; }
+      inline void   SetGenPerAccManualMap(std::string name, const std::vector<double> vec) { m_genperacc_manual_map[name]=vec; }
       inline void   SetAlphaManualMap(std::string name, const std::vector<double> vec) { m_alpha_manual_map[name]=vec; }
       inline void   SetAlphaManualFractionMap(std::string name, const std::vector<double> vec) { m_alpha_manual_fraction_map[name]=vec; }
       inline void   SetAlphaManualFScanMap(std::string name, const std::vector<std::vector<double>> vec) { m_alpha_manual_fscan_map[name]=vec; }

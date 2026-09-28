@@ -943,6 +943,32 @@ All possible settings of :option:`TIMING_STATISTICS` are:
 :samp:`{5}`
       All collected information about the computational steps for each subprocess are printed.
 
+For :option:`EVENT_GENERATION_MODE: Unweighted`, a hard event with an overweight
+``w/max > 1`` is repeated about ``w/max`` times with unit weight, and every
+repetition is showered, hadronised and counted as an event. The effective
+events count every hard event once, with its overweight, as for
+:option:`PartiallyUnweighted` events, whereas the events and the computing time
+include the repetitions. The number of repetitions depends on
+:ref:`Max_Epsilon`: for every scanned value it is taken from the weight
+histogram of the integration, while the time after acceptance and the fraction
+of kept events are measured per event (including repetitions) in the timing run.
+A repetition is assumed to take as long and to be vetoed as often as the event it
+repeats, except for the re-run of the matrix element with all variations after
+the acceptance of an event, which is measured separately and taken once per
+accepted event.
+
+The rows `1.0 (p.unw.)` and `weighted` are predicted from the same run and
+describe the same sample, in which every trial that passes the cuts is an event.
+Partially unweighted events with :ref:`Max_Epsilon` 1 calculate the matrix
+element of such a trial twice, nominally and in the re-run with all variations.
+The row `1.0 (p.unw.)` is shown only for :option:`EVENT_GENERATION_MODE:
+Unweighted`, where the row `1e0` contains the repetitions; otherwise it equals the
+row `1e0`. Weighted events have no such re-run: an event is calculated once, with all
+variations, which takes about as long as the re-run, so the time of its first
+calculation is not counted again. With a parton shower between the trials, a
+trial of weighted events can take longer than the re-run (caches), so that the
+row `weighted` can be optimistic in this case.
+
 For all :option:`TIMING_STATISTICS` > 0 a further table compares, for the same
 :ref:`Max_Epsilon` values, the effective events per day for the selection of
 subprocesses of :ref:`SELECTION_WEIGHT_MODE` with a time-optimal selection,
