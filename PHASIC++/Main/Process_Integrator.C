@@ -768,8 +768,9 @@ double Process_Integrator::GetMaxEps(double epsilon)
     //efficiency_manual_list[epsilon_max_values.size()]=m_ssumenhabs/m_sncut/m_max;
     //alpha_manual_list[epsilon_max_values.size()]=pow(m_ssumenh/m_ssumenhabs,2);//alpha_sign
     wmax_manual_list[epsilon_max_values.size()]=m_weightmax;
-    //weighted with selw
-    efficiency_manual_list[epsilon_max_values.size()+1]=SelectionWeight(0);
+    //weighted: every point that passes the cuts is an event, so that the efficiency
+    //is the cut efficiency, as in the entries above, and alpha that of the weights
+    efficiency_manual_list[epsilon_max_values.size()+1]=double(whisto_fills)/p_whisto->Fills();
     std::vector<double> weighted_effiandeffevperev = TotalEffiAndEffEvPerEv(0);
     alpha_manual_list[epsilon_max_values.size()+1]=weighted_effiandeffevperev[1];
     //alpha_manual_list[epsilon_max_values.size()+1]=alpha_manual_list[0];//from weighted from whisto

@@ -560,7 +560,11 @@ bool Sherpa::SummarizeRun()
     std::vector<std::map<std::string, double>> mean_manual_events_time(epsilon_values.size()+1);
     int optimal_manual_i = 0;
     double optimal_manual_sum_t_trial = 0;
+    // Sum of |xsec| of all subprocesses, for the shares in the tables below. Taken
+    // from xsec_map and not accumulated in the scan, whose maps stay empty for
+    // Max_Epsilon=0 (GetMaxEps() is not called then).
     double plain_xsec_sum = 0;
+    for (auto const& [key, val] : xsec_map) plain_xsec_sum += dabs(val);
     for(int i=0; i < epsilon_values.size()+1; i++){
       double sum_t_trial = 0;
       double sum_p_unw = 0;
@@ -579,11 +583,14 @@ bool Sherpa::SummarizeRun()
 	std::string sub_name = key;
 	//std::cout << sub_name << std::endl;
 	//need to weight with sampling probability. Why not sudakov? - bacause happens afterwards - but still more events needed for optimal eff events? no
-	double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/alpha_power(alpha_manual_map[sub_name][i]);
-	if (i==0) plain_xsec_sum += dabs(xsec_map[sub_name]);//todo: this seems to be not called for max_epsilon=0.0
-	if (alpha_manual_map[sub_name][i]==-1) {
-	  msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to eps=" << exp(log(10)*epsilon_values[i]) << std::endl;
+	// Skip a subprocess without a valid value for this epsilon (-1: not set), which
+	// would turn the sums into NaN or, for SELECTION_WEIGHT_MODE 1 and 2, into
+	// finite but wrong numbers.
+	if (!(efficiency_manual_map[sub_name][i]>0.) || !(alpha_manual_map[sub_name][i]>0.)) {
+	  msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to eps=" << exp(log(10)*epsilon_values[i]) << ", skipped." << std::endl;
+	  continue;
 	}
+	double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/alpha_power(alpha_manual_map[sub_name][i]);
 	double tges  = (time_map["sum_total_"+sub_name])/number_map["n_total_"+sub_name]; //in s
 	if (number_map["n_total_"+sub_name]==0) {
 	  tges = 0; //critical, because underestimate - need to make sure that enough events generated...unc estimate hard, because 0 is 0
@@ -631,6 +638,14 @@ bool Sherpa::SummarizeRun()
       }
     }
     //for weighted: take care of potentially non-optimal selection weight
+    // Every selected trial that passes the cuts is an event. With the cut efficiency
+    // eps of the subprocess, a trial takes the time of a trial of this run plus eps
+    // times the time after acceptance, as in the scans above, and yields eps events.
+    // The selection weight per trial is |sigma|/alpha_all^p with alpha_all =
+    // eps*alpha the dilution of all trial points, see
+    // Process_Integrator::SelectionWeight(). With the pilot run, the time after
+    // acceptance contains the re-run with variations, so that the nominal matrix
+    // element of an accepted event is counted twice.
     int i = epsilon_values.size()+1;
     double sum_t_trial = 0;
     sum_p_unw = 0;
@@ -640,7 +655,11 @@ bool Sherpa::SummarizeRun()
     for (auto const& [key, val] : alpha_manual_map) {
       std::string sub_name = key;
       //std::cout << sub_name << std::endl;
-      double selw = efficiency_manual_map[sub_name][i];//used as selw - also set like this in integrator
+      const double eps = efficiency_manual_map[sub_name][i];
+      const double alpha = alpha_manual_map[sub_name][i];
+      if (!(eps>0.) || !(alpha>0.)) continue;
+      const double selw = dabs(xsec_map[sub_name])/alpha_power(eps*alpha);
+      const double nacc = eps*selw;
       double tges  = (time_map["sum_total_"+sub_name])/number_map["n_total_"+sub_name]; //in s
       if (number_map["n_total_"+sub_name]==0) {
 	tges = 0; //critical, because underestimate - need to make sure that enough events generated...unc estimate hard, because 0 is 0
@@ -649,19 +668,17 @@ bool Sherpa::SummarizeRun()
       if (number_map["n_gen_"+sub_name]==0) {
 	overhead_after = 0;
       }
-      overhead_after = max(overhead_after, tges);//if no gen, then at least time without full systematics
-      //there is no pilot run -> no tges needed
-      sum_t_trial += (overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim)*selw;
-      sum_p_unw += sudakov_efficiency[sub_name]*selw;
+      sum_t_trial += (tges+eps*(overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim))*selw;
+      sum_p_unw += sudakov_efficiency[sub_name]*nacc;
 
       sum_xsec += xsec_map[sub_name]*sudakov_efficiency[sub_name];
-      sum_effiselw += sudakov_efficiency[sub_name]*selw;
+      sum_effiselw += sudakov_efficiency[sub_name]*nacc;
       //std::cout << " alpha_manual_map[sub_name][i]:" << alpha_manual_map[sub_name][i] << std::endl;
       //std::cout << " sudakov_efficiency[sub_name]:" << sudakov_efficiency[sub_name] << std::endl;
       //std::cout << " selw:" << selw << std::endl;
       //std::cout << " xsec_map[sub_name]:" << xsec_map[sub_name] << std::endl;
       //std::cout << " sum_complex+:" << pow(xsec_map[sub_name]*sudakov_efficiency[sub_name],2)/(alpha_manual_map[sub_name][i]*sudakov_efficiency[sub_name]*selw) << std::endl;
-      sum_complex += pow(xsec_map[sub_name],2)*sudakov_efficiency[sub_name]/(alpha_manual_map[sub_name][i]*selw);
+      sum_complex += pow(xsec_map[sub_name],2)*sudakov_efficiency[sub_name]/(alpha*nacc);
       //std::cout << " sum_complex:" << sum_complex << std::endl;
     }
     mean_manual_alpha[i] = pow(sum_xsec,2)/(sum_effiselw*sum_complex);//von Zettel
@@ -685,10 +702,12 @@ bool Sherpa::SummarizeRun()
 	std::string sub_name = key;
 	//msg_Info() << sub_name << std::endl;
 	//need to weight with sampling probability. Why not sudakov? - bacause happens afterwards - but still more events needed for optimal eff events? no
-	double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/alpha_power(alpha_manual_map[sub_name][i]);
-	if (alpha_manual_fraction_map[sub_name][i]==-1) {
-	  msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to eps=" << exp(log(10)*epsilon_values[i]) << std::endl;
+	if (!(efficiency_manual_map[sub_name][i]>0.) || !(alpha_manual_map[sub_name][i]>0.) ||
+	    !(alpha_manual_fraction_map[sub_name][i]>0.)) {
+	  msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to eps=" << exp(log(10)*epsilon_values[i]) << ", skipped." << std::endl;
+	  continue;
 	}
+	double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_map[sub_name][i]/alpha_power(alpha_manual_map[sub_name][i]);
 	double tges  = (time_map["sum_total_"+sub_name])/number_map["n_total_"+sub_name]; //in s
 	if (number_map["n_total_"+sub_name]==0) {
 	  tges = 0; //critical, because underestimate - need to make sure that enough events generated...unc estimate hard, because 0 is 0
@@ -742,10 +761,11 @@ bool Sherpa::SummarizeRun()
 	double opt_kish = 0;
 	for(int i=0; i < epsilon_values.size(); i++){
 	  //msg_Info() << "   " << i << std::endl;
-	  double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_fscan_map[sub_name][fi][i]/alpha_power(alpha_manual_fscan_map[sub_name][fi][i]);
-	  if (alpha_manual_fscan_map[sub_name][fi][i]==-1) {
-	    msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for i=" << i << " corresponding to fraction=" << exp(log(10)*fraction_values[i]) << std::endl;
+	  if (!(efficiency_manual_fscan_map[sub_name][fi][i]>0.) || !(alpha_manual_fscan_map[sub_name][fi][i]>0.)) {
+	    msg_Info() << "WARNING: for " << sub_name << " there is no alpha value for fraction=" << exp(log(10)*fraction_values[fi]) << " and eps=" << exp(log(10)*epsilon_values[i]) << ", skipped." << std::endl;
+	    continue;
 	  }
+	  double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_fscan_map[sub_name][fi][i]/alpha_power(alpha_manual_fscan_map[sub_name][fi][i]);
 	  double tges  = (time_map["sum_total_"+sub_name])/number_map["n_total_"+sub_name]; //in s
 	  if (number_map["n_total_"+sub_name]==0) {
 	    tges = 0; //critical, because underestimate - need to make sure that enough events generated...unc estimate hard, because 0 is 0
