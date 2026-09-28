@@ -58,6 +58,7 @@ bool Process_Integrator::Initialize
   p_yfshandler=yfshandler;
   m_timing_statistics_large_weight_fraction=s["TIMING_STATISTICS_LARGE_WEIGHT_FRACTION"].SetDefault(0.001).Get<double>();
   m_timing_statistics=s["TIMING_STATISTICS"].SetDefault(0).Get<int>();
+  m_timing_statistics_min_unc_per_day=s["TIMING_STATISTICS_MIN_UNC_PER_DAY"].SetDefault(0).Get<int>();
   if (m_timing_statistics) {
     m_ovwth = s["OVERWEIGHT_THRESHOLD"].SetDefault(1e12).Get<double>();
   }

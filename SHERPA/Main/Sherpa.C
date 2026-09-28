@@ -32,6 +32,7 @@
 #include "ATOOLS/Phys/KF_Table.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "PDF/Main/PDF_Base.H"
+#include <algorithm>
 #include <cstring>
 
 using namespace SHERPA;
@@ -405,6 +406,7 @@ bool Sherpa::SummarizeRun()
     //correlated between subprocesses
     std::map<std::string, double> sudakov_efficiency_up_corr;
     std::map<std::string, double> sudakov_efficiency_down_corr;
+    double average_sudakov = sum_map["kept"]/sum_map["gen"];
     for (auto const& [key, val] : time_map) {
       if (key.rfind("sum_PS_", 0) == 0) {
 	std::string sub_name = key.substr(7);
@@ -449,6 +451,8 @@ bool Sherpa::SummarizeRun()
     auto kish_term = [](const double xsec, const double alpha, const double nacc) {
       return (alpha>0. && nacc>0.) ? xsec*xsec/(alpha*nacc) : 0.;
     };
+    int m_min_tot_unc_per_day=s["TIMING_STATISTICS_MIN_UNC_PER_DAY"].SetDefault(0).Get<int>();//min tot unc per computing time
+    //only for the prediction tables below: the sampling itself follows SELECTION_WEIGHT_MODE
     int generation_mode=ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"));
     //calculate chosen effevperev (needs sudakov_efficiency)
     std::map<std::string, double> chosen_alpha_map = rpa->gen.AlphaMap();
@@ -588,7 +592,9 @@ bool Sherpa::SummarizeRun()
 	if (number_map["n_gen_"+sub_name]==0) {
 	  overhead_after = 0;
 	}
-	sum_t_trial += (tges+efficiency_manual_map[sub_name][i]*(overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim))*curr_xsec;
+	double t_trial = tges+efficiency_manual_map[sub_name][i]*(overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim);
+	if (m_min_tot_unc_per_day) curr_xsec = t_trial?dabs(xsec_map[sub_name])/sqrt(t_trial*efficiency_manual_map[sub_name][i]*alpha_manual_map[sub_name][i]):0;///(sudakov_efficiency[sub_name]?sudakov_efficiency[sub_name]:average_sudakov)
+	sum_t_trial += t_trial*curr_xsec;
 	sum_p_unw += efficiency_manual_map[sub_name][i]*sudakov_efficiency[sub_name]*curr_xsec;
 	sum_p_eff_sign += xsec_map[sub_name]*sudakov_efficiency[sub_name];
 	sum_kish += kish_term(xsec_map[sub_name],alpha_manual_map[sub_name][i],efficiency_manual_map[sub_name][i]*curr_xsec)*sudakov_efficiency[sub_name];
@@ -691,7 +697,9 @@ bool Sherpa::SummarizeRun()
 	if (number_map["n_gen_"+sub_name]==0) {
 	  overhead_after = 0;
 	}
-        sum_t_trial += (tges+efficiency_manual_map[sub_name][i]*(overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim))*curr_xsec;
+	double t_trial = tges+efficiency_manual_map[sub_name][i]*(overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim);
+	if (m_min_tot_unc_per_day) curr_xsec = t_trial?dabs(xsec_map[sub_name])/sqrt(t_trial*efficiency_manual_map[sub_name][i]*alpha_manual_map[sub_name][i]):0;///(sudakov_efficiency[sub_name]?sudakov_efficiency[sub_name]:average_sudakov)
+        sum_t_trial += t_trial*curr_xsec;
         sum_p_unw += efficiency_manual_map[sub_name][i]*sudakov_efficiency[sub_name]*curr_xsec;
         sum_p_eff_sign += xsec_map[sub_name]*sudakov_efficiency[sub_name];
 	//sum_complex += pow(xsec_map[sub_name]*sudakov_efficiency[sub_name],2)/(alpha_manual_fraction_map[sub_name][i]*dabs(xsec_map[sub_name])/alpha_manual_map[sub_name][i]*sudakov_efficiency[sub_name]);
@@ -732,7 +740,7 @@ bool Sherpa::SummarizeRun()
 	double opt_p_eff = -1;
 	double opt_p_eff_sign = 0;
 	double opt_kish = 0;
-	for(int i=0; i < epsilon_values.size(); i++){	
+	for(int i=0; i < epsilon_values.size(); i++){
 	  //msg_Info() << "   " << i << std::endl;
 	  double curr_xsec = dabs(xsec_map[sub_name])/efficiency_manual_fscan_map[sub_name][fi][i]/alpha_power(alpha_manual_fscan_map[sub_name][fi][i]);
 	  if (alpha_manual_fscan_map[sub_name][fi][i]==-1) {
@@ -746,7 +754,9 @@ bool Sherpa::SummarizeRun()
 	  if (number_map["n_gen_"+sub_name]==0) {
 	    overhead_after = 0;
 	  }
-	  double this_t_trial = (tges+efficiency_manual_fscan_map[sub_name][fi][i]*(overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim))*curr_xsec;
+	  double t_trial = tges+efficiency_manual_fscan_map[sub_name][fi][i]*(overhead_after+sudakov_efficiency[sub_name]*timing_statistics_det_sim);
+	  if (m_min_tot_unc_per_day) curr_xsec = t_trial?dabs(xsec_map[sub_name])/sqrt(t_trial*efficiency_manual_fscan_map[sub_name][fi][i]*alpha_manual_fscan_map[sub_name][fi][i]):0;///(sudakov_efficiency[sub_name]?sudakov_efficiency[sub_name]:average_sudakov)
+	  double this_t_trial = t_trial*curr_xsec;
 	  double this_p_unw = efficiency_manual_fscan_map[sub_name][fi][i]*sudakov_efficiency[sub_name]*curr_xsec;
 	  double this_p_eff = dabs(xsec_map[sub_name])*sudakov_efficiency[sub_name];
 	  double this_p_eff_sign = xsec_map[sub_name]*sudakov_efficiency[sub_name];
@@ -891,6 +901,89 @@ bool Sherpa::SummarizeRun()
       std::cout << "With assumed detector simulation time of "<< timing_statistics_det_sim<<" s per kept event." << std::endl;
     } else {
       std::cout << "Note: No detector simulation time was considered for the above table(s). Use TIMING_STATISTICS_DET_SIM_IN_S to set it." << std::endl;
+    }
+
+    //time saving potential: compare the allocation of SELECTION_WEIGHT_MODE with
+    //the time-optimal one of TIMING_STATISTICS_MIN_UNC_PER_DAY, which selects
+    //subprocess i with |sigma_i|/sqrt(t_i*eff_i*alpha_i) (t_i: time per trial,
+    //eff_i: accepted events per trial) and thereby minimises the total
+    //cross-section uncertainty per computing time. Both use the timing measured
+    //in this run and the efficiencies of the epsilon scan (including the cut
+    //efficiency), and assume that the time per trial of a subprocess does not
+    //depend on how often it is selected.
+    {
+      struct Sub_Point { double xsec, eff, alpha, t_trial, sud; };
+      auto trial_time = [&](const std::string &sub_name, const double eff) {
+        const int ntot = number_map["n_total_"+sub_name];
+        const int ngen = number_map["n_gen_"+sub_name];
+        const double tges = ntot>0 ? time_map["sum_total_"+sub_name]/ntot : 0.;
+        const double tafter = ngen>0 ? (time_map["sum_overhead_after_kept_"+sub_name]+time_map["sum_overhead_after_"+sub_name])/ngen : 0.;
+        return tges+eff*(tafter+sudakov_efficiency[sub_name]*timing_statistics_det_sim);
+      };
+      auto eff_events_per_day = [&](const std::vector<Sub_Point> &subs, const bool timeopt) {
+        double sum_t(0.), sum_n(0.), sum_sign(0.), sum_k(0.);
+        for (const Sub_Point &sp : subs) {
+          const double curr = timeopt ?
+            (sp.t_trial>0. ? dabs(sp.xsec)/sqrt(sp.t_trial*sp.eff*sp.alpha) : 0.) :
+            dabs(sp.xsec)/sp.eff/alpha_power(sp.alpha);
+          sum_t += sp.t_trial*curr;
+          sum_n += sp.eff*sp.sud*curr;
+          sum_sign += sp.xsec*sp.sud;
+          sum_k += kish_term(sp.xsec,sp.alpha,sp.eff*curr)*sp.sud;
+        }
+        if (!(sum_t>0.) || !(sum_n>0.) || !(sum_k>0.)) return 0.;
+        return 60*60*24*sum_n/sum_t*sum_sign*sum_sign/(sum_n*sum_k);
+      };
+      // subprocesses without trials or without generated events have no or an
+      // incomplete time per trial, which biases the time-optimal allocation
+      std::vector<std::string> untimed;
+      for (auto const& [key, val] : alpha_manual_map)
+        if (number_map["n_total_"+key]==0 || number_map["n_gen_"+key]==0)
+          untimed.push_back(key);
+      // rows: the scanned Max_Epsilon values and full unweighting (i=size)
+      const size_t nrows(epsilon_values.size()+1);
+      std::vector<double> neff_sw(nrows,0.), neff_time(nrows,0.);
+      for (size_t i(0);i<nrows;++i) {
+        std::vector<Sub_Point> subs;
+        for (auto const& [key, val] : alpha_manual_map) {
+          const double eff(efficiency_manual_map[key][i]), alpha(alpha_manual_map[key][i]);
+          // no value for this epsilon (see the warnings above)
+          if (!(eff>0.) || !(alpha>0.)) continue;
+          subs.push_back({xsec_map[key],eff,alpha,trial_time(key,eff),sudakov_efficiency[key]});
+        }
+        neff_sw[i] = eff_events_per_day(subs,false);
+        neff_time[i] = eff_events_per_day(subs,true);
+      }
+      const size_t best_sw = std::max_element(neff_sw.begin(),neff_sw.end())-neff_sw.begin();
+      const size_t best_time = std::max_element(neff_time.begin(),neff_time.end())-neff_time.begin();
+      auto row_name = [&](const size_t i) {
+        return i<epsilon_values.size() ? "1e"+ToString(epsilon_values[i]) : std::string("0.0 (unw.)");
+      };
+      // columns: 24 + 17 + 8 characters after "│ Max_Epsilon │ "
+      std::cout << std::setprecision(4) << std::left;
+      std::cout << "┌─────────────┬──────────────────────────────────────────────────┐" << std::endl;
+      std::cout << "│             │ " << std::setw(49) << "eff. events/day, selection of subprocesses" << "│" << std::endl;
+      std::cout << "│ Max_Epsilon │ " << std::setw(24) << "SELECTION_WEIGHT_MODE "+ToString(swmode)
+                << std::setw(17) << "time-optimal" << std::setw(8) << "ratio" << "│" << std::endl;
+      std::cout << "├─────────────┼──────────────────────────────────────────────────┤" << std::endl;
+      for (size_t i(0);i<nrows;++i) {
+        std::cout << "│ " << std::setw(11) << row_name(i) << " │ ";
+        std::cout << std::setw(19) << neff_sw[i] << (i==best_sw ? "<--  " : "     ");
+        std::cout << std::setw(13) << neff_time[i] << (i==best_time ? "<-- " : "    ");
+        std::cout << std::setw(8) << (neff_sw[i]>0. ? neff_time[i]/neff_sw[i] : 0.) << "│" << std::endl;
+      }
+      std::cout << "└─────────────┴──────────────────────────────────────────────────┘" << std::endl;
+      if (neff_sw[best_sw]>0. && neff_time[best_time]>0.)
+        std::cout << "Time saving potential of the time-optimal selection (both at their optimal"
+                  << " Max_Epsilon): " << (1.-neff_sw[best_sw]/neff_time[best_time])*100.
+                  << "% less computing time for the same number of effective events." << std::endl;
+      std::cout << std::setprecision(default_precision) << std::right;
+      if (!untimed.empty()) {
+        std::cout << "Warning: " << untimed.size() << " subprocess(es) have no trials or no generated"
+                  << " events in this run, so their time per trial is missing or incomplete and the"
+                  << " time-optimal allocation above is biased. Generate more events." << std::endl;
+        for (const std::string &name : untimed) msg_Tracking() << "  " << name << std::endl;
+      }
     }
 
     std::map<std::string, int> whistofill_map = rpa->gen.FillsMap();
