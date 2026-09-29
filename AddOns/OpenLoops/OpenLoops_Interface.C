@@ -59,6 +59,7 @@ bool OpenLoops_Interface::s_ass_func = false;
 int  OpenLoops_Interface::s_ass_ew = 0;
 std::map<std::string, std::string> OpenLoops_Interface::s_evgen_params;
 photon_scheme OpenLoops_Interface::s_photon_scheme = photon_scheme::Default;
+photon_scheme OpenLoops_Interface::s_rv_photon_scheme = photon_scheme::Default;
 
 // private static member definitions
 std::map<int,std::string> OpenLoops_Interface::s_procmap;
@@ -83,6 +84,7 @@ void OpenLoops_Interface::RegisterDefaults() const
   s["OL_EXIT_ON_ERROR"].SetDefault(true);
   s["OL_IGNORE_MODEL"].SetDefault(false);
   s["OL_PHOTON_SCHEME"].SetDefault(photon_scheme::Default);
+  s["OL_RV_PHOTON_SCHEME"].SetDefault(photon_scheme::Default);
 
   // find OL installation prefix with several overwrite options
   char *var=NULL;
@@ -132,6 +134,7 @@ bool OpenLoops_Interface::Initialize(MODEL::Model_Base* const model,
   s_vmode = s["OL_VMODE"].Get<int>();
   msg_Tracking()<<METHOD<<"(): Set V-mode to "<<s_vmode<<endl;
   s_photon_scheme = s["OL_PHOTON_SCHEME"].Get<photon_scheme>();
+  s_rv_photon_scheme = s["OL_RV_PHOTON_SCHEME"].Get<photon_scheme>();
 
   // check for existance of separate access to associated contribs
   void *assfunc(s_loader->GetLibraryFunction("SherpaOpenLoops",
@@ -308,6 +311,21 @@ int OpenLoops_Interface::RegisterProcess(const ATOOLS::Flavour_Vector& isflavs,
   for (auto fl : fsflavs)
     fi.m_ps.push_back(PHASIC::Subprocess_Info(fl));
   return RegisterProcess(ii,fi,amptype);
+}
+
+int OpenLoops_Interface::RegisterRealVirtualProcess(const Subprocess_Info& is,
+                                                    const Subprocess_Info& fs,
+                                                    int amptype)
+{
+  if (s_rv_photon_scheme == photon_scheme::Default)
+    return RegisterProcess(is, fs, amptype);
+  const photon_scheme save(s_photon_scheme);
+  s_photon_scheme = s_rv_photon_scheme;
+  const int id(RegisterProcess(is, fs, amptype));
+  s_photon_scheme = save;
+  msg_Info()<<"OpenLoops: real-virtual "<<PHASIC::Process_Base::GenerateName(is,fs)
+            <<" registered with "<<s_rv_photon_scheme<<" photons (id "<<id<<")"<<std::endl;
+  return id;
 }
 
 int OpenLoops_Interface::RegisterProcess(const Subprocess_Info& is,

@@ -63,6 +63,9 @@ namespace OpenLoops {
     static int         s_ass_ew;
     static std::map<std::string, std::string> s_evgen_params;
     static photon_scheme s_photon_scheme;
+    //! OL_RV_PHOTON_SCHEME: photon scheme for real-virtual (nlo_type::rvirt)
+    //! registrations only; Default keeps OL_PHOTON_SCHEME
+    static photon_scheme s_rv_photon_scheme;
 
     void RegisterDefaults() const;
     int TranslatedEWRenormalisationScheme() const;
@@ -78,6 +81,9 @@ namespace OpenLoops {
 
     static void SwitchMode(const int mode);
 
+    static int RegisterRealVirtualProcess(const PHASIC::Subprocess_Info& is,
+                                          const PHASIC::Subprocess_Info& fs,
+                                          int amptype);
     static int RegisterProcess(const PHASIC::Subprocess_Info& is,
                                const PHASIC::Subprocess_Info& fs,
                                int amptype);

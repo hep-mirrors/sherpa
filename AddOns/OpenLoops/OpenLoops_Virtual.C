@@ -137,7 +137,9 @@ operator()(const PHASIC::Process_Info &pi) const
   OpenLoops_Interface::SetParameter
     ("coupling_ew_1", (int) pi.m_fi.m_nlocpl[1]);
 
-  int id = OpenLoops_Interface::RegisterProcess(pi.m_ii, pi.m_fi, 11);
+  int id = (pi.m_fi.m_nlotype==nlo_type::rvirt
+            ? OpenLoops_Interface::RegisterRealVirtualProcess(pi.m_ii, pi.m_fi, 11)
+            : OpenLoops_Interface::RegisterProcess(pi.m_ii, pi.m_fi, 11));
   if (id>0) {
     Flavour_Vector flavs = pi.ExtractFlavours();
     return new OpenLoops_Virtual(pi, flavs, id);
