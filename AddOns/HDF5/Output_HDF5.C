@@ -19,6 +19,8 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 
+#include <algorithm>
+
 #include <highfive/H5DataSet.hpp>
 #include <highfive/H5DataSpace.hpp>
 #include <highfive/H5File.hpp>
@@ -44,6 +46,7 @@ namespace SHERPA {
     size_t m_nneprops, m_nnpprops;
     Matrix_Element_Handler *p_me;
     Variations *p_vars;
+    std::vector<std::pair<Variations_Type,size_t> > m_wvars;
     bool m_hasnlo;
 
   public:
@@ -61,7 +64,6 @@ namespace SHERPA {
 
       m_ncache=std::min(m_ncache,(int)rpa->gen.NumberOfEvents());
       p_me=args.p_init->GetMatrixElementHandler();
-      p_vars=args.p_init->GetVariations();
 
 #if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
       MPI_Info info;
@@ -246,6 +248,8 @@ namespace SHERPA {
     
     void Header() override
     {
+      // the variations are only initialised after the outputs are constructed
+      p_vars=s_variations;
       auto xfer_props = DataTransferProps{};
 #if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
       xfer_props.add(UseCollectiveIO{});
@@ -342,10 +346,16 @@ namespace SHERPA {
       if (m_unweight) max.front()=DataSpace::UNLIMITED;
       std::vector<std::string> wnames(1,"NOMINAL");
       if (p_vars) {
-	const Variations::Parameters_Vector *params
-	  (p_vars->GetParametersVector());
-	for (size_t i(0);i<params->size();++i)
-	  wnames.push_back((*params)[i]->Name());
+	// use the same order as FillVariations, and skip duplicate names, as
+	// is done for the HepMC3 output
+	for (const auto type : p_vars->ManagedVariationTypes())
+	  for (size_t i(0);i<p_vars->Size(type);++i) {
+	    const std::string name(p_vars->GetVariationNameAt(i,type));
+	    if (std::find(wnames.begin(),wnames.end(),name)!=wnames.end())
+	      continue;
+	    wnames.push_back(name);
+	    m_wvars.push_back({type,i});
+	  }
       }
       m_nweights=wnames.size();
       // LHEF event information
@@ -542,12 +552,20 @@ namespace SHERPA {
       m_ecache.push_back(std::vector<double>(m_neprops,-1));
       m_ecache.back().push_back(weight*wratio);
       if (p_vars) {
-	Weights_Map& wgtmap((*sp)["WeightsMap"]->Get<Weights_Map>());
-	std::map<std::string, double> wgts;
-	wgtmap.FillVariations(wgts);
-        for (const auto &pair : wgts) {
-          m_ecache.back().push_back(pair.second * wratio);
-        }
+	// fill the variations in the order of the weight names written in
+	// Initialize()
+	const Weights_Map& wgtmap((*sp)["WeightsMap"]->Get<Weights_Map>());
+	for (const auto& var : m_wvars) {
+	  const auto it(wgtmap.find(var.first));
+	  // fall back to the nominal if the weight was not varied
+	  if (it==wgtmap.end() || var.second+1>=it->second.Size()) {
+	    m_ecache.back().push_back(wgtmap.Nominal()*wratio);
+	    continue;
+	  }
+	  m_ecache.back().push_back
+	    (it->second.Variation(var.second)
+	     *wgtmap.NominalIgnoringVariationType(var.first)*wratio);
+	}
       }
       m_ecache.back()[0]=0;
       if (proc) {
