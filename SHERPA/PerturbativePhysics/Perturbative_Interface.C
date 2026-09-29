@@ -326,6 +326,8 @@ int Perturbative_Interface::PerformShowers()
     m_weightsmap["Sudakov"] = csh->WeightsMap()["Sudakov"];
     m_weightsmap["QCUT"]    = csh->WeightsMap()["QCUT"];
     m_weightsmap["All"]     = csh->WeightsMap()["Sudakov"];
+    m_weightsmap["Main"]    = Weights {Variations_Type::qcd,
+                                       csh->WeightsMap()["Sudakov"].Nominal()};
     auto wgtmap = (*p_hard)["WeightsMap"]->Get<Weights_Map>();
     wgtmap *= m_weightsmap;
     p_hard->AddData("WeightsMap",new Blob_Data<Weights_Map>(wgtmap));
