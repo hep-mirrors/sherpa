@@ -7,11 +7,25 @@
 
 #include <vector>
 #include <string>
+#include <limits>
 
 namespace PHASIC {
 
   struct Event_Reader_Key {
     std::vector<std::string> m_files;
+    // Process metadata propagated from Process_Base so readers can derive
+    // backend-specific identifiers (e.g. Pepper's process spec) when the
+    // user does not pass them explicitly via `Event_Files: <type>[<args>]`,
+    // or, equivalently, `Event_Source: <type>[<args>]`.
+    std::vector<long int> m_flavours;
+    std::size_t m_nin {0};
+    // Resolved, multiplicity-specific `Max_N_Quarks` of the process, i.e.
+    // the upper limit on the total number of quarks it may contain,
+    // counting the initial and the final state alike. Readers that steer a
+    // backend generating its own flavour channels (e.g. Pepper) have to
+    // forward this, or the backend would include channels that Sherpa
+    // itself excludes. A value of at least nin + nout means "no limit".
+    std::size_t m_nmaxq {std::numeric_limits<std::size_t>::max()};
   };// end of struct Event_Reader_Key
 
   class Event_Reader {
@@ -21,22 +35,42 @@ namespace PHASIC {
     ATOOLS::NLO_subevt        *p_sub;
 
     std::vector<std::string> m_files;
+    std::vector<long int> m_flavours;
+    std::size_t m_nin;
+    std::size_t m_nmaxq;
 
     double m_totalxs, m_unitwgt;
     int    m_compute;
-    
+
   public:
-    
+
     typedef ATOOLS::Getter_Function
     <Event_Reader,Event_Reader_Key> Getter_Function;
-    
+
   public:
 
     inline Event_Reader(const Event_Reader_Key &key):
-      m_files(key.m_files), m_compute(1), p_ampl(NULL), p_sub(NULL) {}
+      m_files(key.m_files), m_flavours(key.m_flavours), m_nin(key.m_nin),
+      m_nmaxq(key.m_nmaxq),
+      m_compute(1), p_ampl(NULL), p_sub(NULL) {}
     virtual ~Event_Reader() = default;
 
     virtual void PrintStatistics(std::ostream&) {};
+
+    // Hook for readers that need a one-shot warm-up phase before the
+    // first event can be read. Called by Sherpa's cross-section
+    // calculation step (i.e. Matrix_Element_Handler::CalculateTotalXSecs)
+    // in place of running its own integration. Readers are expected to
+    // make this idempotent so that recursive calls from composite
+    // processes (e.g. MC@NLO) only trigger the underlying warm-up once.
+    virtual void WarmUp() {}
+
+    // Optional teardown hook. Sherpa calls this during shutdown before so
+    // readers that own background workers or library resources (e.g. Pepper)
+    // can drain in-flight work and release them while their backing libraries
+    // (e.g. MPI, Kokkos) are still alive. Must be idempotent: composite
+    // processes (e.g. MC@NLO) may forward the call from several places.
+    virtual void Finalize() {}
 
     virtual ATOOLS::Cluster_Amplitude *ReadEvent() = 0;
     virtual void StepBackward() = 0;

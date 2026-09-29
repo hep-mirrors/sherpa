@@ -134,6 +134,16 @@ bool Process_Group::IsGroup() const
   return true;
 }
 
+void Process_Group::FinalizeEventReader()
+{
+  // Children may still hold borrowed copies of our p_read from the
+  // last event (see OneEvent). Clear those first, then let the base
+  // class delete the reader we own.
+  for (size_t i(0); i < m_procs.size(); ++i)
+    m_procs[i]->FinalizeEventReader();
+  Process_Base::FinalizeEventReader();
+}
+
 void Process_Group::Add(Process_Base *const proc,const int mode)
 {
   if (proc==NULL) return;
@@ -229,6 +239,7 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
   p_int->SetTotal(0);
   exh->AddTerminatorObject(p_int);
   if (p_read) {
+    p_read->WarmUp();
     p_int->SetMax(p_read->UnitWeight()/rpa->Picobarn());
     return true;
   }

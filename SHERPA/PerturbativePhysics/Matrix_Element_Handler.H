@@ -177,6 +177,11 @@ namespace SHERPA {
     bool CalculateTotalXSecs();
     bool GenerateOneEvent();
 
+    // Drains and releases all attached event readers. Sherpa calls this during
+    // shutdown, so that readers can clean up while their backing libraries
+    // (e.g., MPI, Kokkos) are still alive.
+    void FinalizeEventReaders();
+
     // inline functions
     inline PHASIC::Process_Base *Process() const { return p_proc; }
 

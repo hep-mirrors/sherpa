@@ -100,6 +100,12 @@ namespace PHASIC {
 
     Color_Matrix m_cols;
     Event_Reader *p_read;
+    // True iff this process allocated p_read (in SetupEventReader) and
+    // is therefore responsible for finalising and deleting it. Borrowed
+    // pointers attached via SetEventReader() leave this false, so the
+    // recursive FinalizeEventReader walk deletes each reader exactly
+    // once at the canonical owner.
+    bool m_owns_reader;
 
     static int s_usefmm;
 
@@ -135,6 +141,12 @@ namespace PHASIC {
     Color_Matrix ColorMatrix(const ATOOLS::Flavour_Vector &fls) const;
 
     bool SetupEventReader(const std::string &fnames);
+    // Idempotent shutdown for the attached event reader. Default impl
+    // calls Finalize() and deletes the reader iff this process owns it
+    // (see m_owns_reader); composite processes override to recurse into
+    // their children first so that any borrowed p_read copies are
+    // cleared before the owner deletes.
+    virtual void FinalizeEventReader();
     bool IsZeroEvent();
 
     virtual void ConstructColorMatrix();

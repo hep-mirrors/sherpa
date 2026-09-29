@@ -16,22 +16,33 @@ Clustered_Calculator::Clustered_Calculator(Process_Base* _proc)
 {
   DEBUG_FUNC(proc->Name());
 
-  Scoped_Settings ewsudsettings{
+  Scoped_Settings s{
     Settings::GetMainSettings()["EWSUD"] };
-  m_resdist =
-    ewsudsettings["CLUSTERING_THRESHOLD"].SetDefault(10.0).Get<double>();
-  m_disabled =
-    ewsudsettings["CLUSTERING_DISABLED"].SetDefault(false).Get<bool>();
+  m_resdist = s["CLUSTERING_THRESHOLD"].SetDefault(10.0).Get<double>();
+  m_disabled = s["CLUSTERING_DISABLED"].SetDefault(false).Get<bool>();
   if(Settings::GetMainSettings()["EWSUDAKOV_CLUSTERING_DISABLED"].IsSetExplicitly()){
     THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD: CLUSTERING_DISABLED");
   }
   auto ampl = Amplitudes::CreateAmplitude(proc);
   const Flavour_Vector& flavs = ampl->Flavs();
 
+  double thr_read = s["THRESHOLD"].SetDefault(1.).Get<double>();
+  for (auto thr : s["THRESHOLDS"].SetDefault({thr_read}).GetVector<double>())
+    m_thresholds.push_back(thr);
+  std::sort(m_thresholds.begin(),m_thresholds.end());
+  m_threshold = m_thresholds[0];
+  if(s["THRESHOLD"].IsSetExplicitly() && s["THRESHOLDS"].IsSetExplicitly()){
+    THROW(fatal_error, "EWSUD:THRESHOLD and EWSUD:THRESHOLDS cannot be used concurrently. Please choose one option.");
+  }
+  if(Settings::GetMainSettings()["EWSUDAKOV_THRESHOLD"].IsSetExplicitly()){
+    THROW(fatal_error, "Avoid Using old syntax, prefer the new EWSUD:EWSUDAKOV_THRESHOLD");
+  }
+  msg_Tracking()<<METHOD<<"(): Initialised thresholds "
+                        <<m_thresholds<<std::endl;
+
   // Add calculator for the unclustered base process and capture its Comix
   // interface, which we will use to build clustered processes
-  auto base_calculator =
-    std::unique_ptr<Calculator>(new Calculator{proc});
+  auto base_calculator = std::make_shared<Calculator>(proc,m_threshold);
   calculators.emplace(
       std::make_pair(flavs, std::move(base_calculator)));
   p_comixinterface = &calculators.begin()->second->GetComixInterface();
@@ -99,8 +110,7 @@ void Clustered_Calculator::AddCalculator(const Cluster_Amplitude_UP& ampl, size_
   }
 
   // add calculator
-  auto calculator = std::unique_ptr<Calculator>(
-      new Calculator{clustered_proc});
+  auto calculator = std::make_shared<Calculator>(clustered_proc,m_threshold);
   calculators.emplace(
       std::make_pair(flavs, std::move(calculator)));
 }
@@ -217,7 +227,9 @@ Clustered_Calculator::CorrectionsMap(Vec4D_Vector mom)
   }
 
   assert(calculators.find(flavs) != calculators.end());
-  EWSudakov_Log_Corrections_Map CorrectionsMaps {calculators[flavs]->CorrectionsMap(mom)};
+  p_calc = calculators[flavs];
+  EWSudakov_Log_Corrections_Map CorrectionsMaps {p_calc->CorrectionsMap(mom)};
   CorrectionsMaps[EWSudakov_Log_Type::lI] = ClusteredIOperator;
+  p_lastcalc = p_calc;
   return CorrectionsMaps;
 }

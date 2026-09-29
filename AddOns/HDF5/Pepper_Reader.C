@@ -1,0 +1,1233 @@
+#include "ATOOLS/Org/CXXFLAGS.H"
+
+#include <algorithm>
+#include <atomic>
+#include <chrono>
+#include <cmath>
+#include <condition_variable>
+#include <deque>
+#include <functional>
+#include <future>
+#include <iostream>
+#include <limits>
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <regex>
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <vector>
+#include <unistd.h>
+
+#include <hdf5.h>
+#include <highfive/H5File.hpp>
+#include <highfive/H5DataSet.hpp>
+
+#include "AddOns/HDF5/LHEH5.H"
+#include "AddOns/HDF5/LHEH5_Reader_Base.H"
+
+#include "ATOOLS/Org/Message.H"
+
+using namespace HighFive;
+
+namespace LHEH5 {
+
+  // Enables the HDF5 core (in-memory) virtual file driver on a
+  // FileAccessProps. backing_store=0 means nothing is written to disk.
+  struct CoreFileAccess {
+    size_t increment;
+    hbool_t backing_store;
+    void apply(hid_t fapl) const {
+      if (H5Pset_fapl_core(fapl, increment, backing_store) < 0)
+        throw std::runtime_error("H5Pset_fapl_core failed");
+    }
+  };
+
+}// end of namespace LHEH5
+
+#include "PHASIC++/Main/Event_Reader.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Settings.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "PDF/Main/PDF_Base.H"
+#include "MODEL/Main/Model_Base.H"
+#include "MODEL/Main/Running_AlphaQED.H"
+
+#include <pepper/pepper.h>
+
+using namespace PHASIC;
+using namespace ATOOLS;
+
+namespace LHEH5 {
+
+  // Parameters of a Sherpa "Mass" selector entry,
+  // i.e. `[Mass, kf1, kf2, min, max]`.
+  struct Mass_Selector_Params {
+    int kf1;
+    int kf2;
+    double min;
+    double max;
+  };
+
+  // Scan the SELECTORS list in the Sherpa main settings and return the
+  // parameters of every entry shaped like `[Mass, kf1, kf2, min, max]`.
+  // Other selector kinds are ignored here; Pepper only consumes a subset.
+  std::vector<Mass_Selector_Params> ReadMassSelectorParams()
+  {
+    std::vector<Mass_Selector_Params> result;
+    auto items = Settings::GetMainSettings()["SELECTORS"].GetItems();
+    for (auto& item : items) {
+      if (!item.IsList()) continue;
+      const auto parameters
+          = item.SetDefault<std::string>({}).GetVector<std::string>();
+      if (parameters.size() != 5) continue;
+      if (parameters[0] != "Mass") continue;
+      Mass_Selector_Params p;
+      p.kf1 = item.Interprete<int>(parameters[1]);
+      p.kf2 = item.Interprete<int>(parameters[2]);
+      p.min = item.Interprete<double>(parameters[3]);
+      p.max = item.Interprete<double>(parameters[4]);
+      // Pepper only implements lepton pair mass cuts.
+      if (!Flavour{p.kf1}.IsLepton() || !Flavour{p.kf2}.IsLepton()) {
+        continue;
+      }
+      result.push_back(p);
+    }
+    return result;
+  }
+
+  // Serial FIFO worker shared across all Pepper_Reader instances.
+  // Pepper drives a single backend (CPU or GPU); running fills from
+  // sibling readers concurrently would multiply GPU memory pressure
+  // and re-enter Pepper, which is not safe. A single worker thread
+  // processes submitted jobs one at a time, so each reader sees its
+  // own future complete, but only one fill is ever in flight.
+  class Fill_Worker {
+  public:
+    Fill_Worker() : m_thread([this] { Run(); }) {}
+    ~Fill_Worker()
+    {
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_stop = true;
+      }
+      m_cv.notify_all();
+      m_thread.join();
+    }
+
+    Fill_Worker(const Fill_Worker&) = delete;
+    Fill_Worker& operator=(const Fill_Worker&) = delete;
+
+    std::future<size_t> Submit(std::function<size_t()> job)
+    {
+      auto task = std::make_shared<std::packaged_task<size_t()>>(
+          std::move(job));
+      auto fut = task->get_future();
+      {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_queue.push_back([task]() { (*task)(); });
+      }
+      m_cv.notify_one();
+      return fut;
+    }
+
+  private:
+    void Run()
+    {
+      while (true) {
+        std::function<void()> job;
+        {
+          std::unique_lock<std::mutex> lock(m_mutex);
+          m_cv.wait(lock, [this] { return m_stop || !m_queue.empty(); });
+          if (m_stop && m_queue.empty()) return;
+          job = std::move(m_queue.front());
+          m_queue.pop_front();
+        }
+        job();
+      }
+    }
+
+    std::mutex m_mutex;
+    std::condition_variable m_cv;
+    std::deque<std::function<void()>> m_queue;
+    bool m_stop {false};
+    std::thread m_thread;
+  };
+
+  // Translate Sherpa's EW input scheme into the equivalent Pepper
+  // configuration and forward the relevant numeric parameters. Sherpa
+  // exposes many schemes; Pepper only implements `Gmu` and
+  // `alphamZsW`, and `UserDefined`, so other choices are rejected here rather
+  // than silently mismatching the rest of the run.
+  void SyncEWScheme(Pepper::Initialization_settings& settings)
+  {
+    const auto sherpa_scheme = ToType<MODEL::ew_scheme::code>(
+        rpa->gen.Variable("EW_SCHEME"));
+    Settings& sherpa_settings {Settings::GetMainSettings()};
+    const Complex csin2thetaW {
+        MODEL::s_model->ComplexConstant("csin2_thetaW")};
+    const double alpha_em {MODEL::aqed->Default()};
+    switch (sherpa_scheme) {
+      case MODEL::ew_scheme::UserDefined: {
+        // All EW parameters given explicitly by the user on the Sherpa
+        // side. Pepper's `none` scheme also consumes alpha_em and
+        // sin^2(theta_W) verbatim from settings, with no further
+        // derivation, so the two are equivalent as long as we propagate
+        // both values (handled unconditionally below).
+        settings.set_ew_scheme("none");
+        break;
+      }
+      case MODEL::ew_scheme::Gmu: {
+        settings.set_ew_scheme("gmu");
+        // Pepper's "gmu" always derives sin^2(theta_W) from the complex
+        // W/Z masses, so it is equivalent to Sherpa's CMS width scheme.
+        // The Gmu_cms_alpha_qed_convention only selects the alpha_QED
+        // formula:
+        //   - "abs"     matches GMU_CMS_AQED_CONVENTION=0,
+        //   - "sherpa2" matches GMU_CMS_AQED_CONVENTION=4 (real-mass
+        //     formula sqrt(2) GF / pi * MW^2 * (1 - (MW/MZ)^2)).
+        // WIDTH_SCHEME=Fixed cannot be mapped exactly: Sherpa keeps
+        // sin^2(theta_W) real there, while Pepper unconditionally uses
+        // the complex-mass relation, so the propagated EW parameters
+        // would silently disagree.
+        const std::string width_scheme {
+            sherpa_settings["WIDTH_SCHEME"].Get<std::string>()};
+        if (width_scheme != "CMS") {
+          THROW(not_implemented,
+                "Pepper's Gmu scheme requires WIDTH_SCHEME=CMS; got "
+                + width_scheme + ".");
+        }
+        const size_t conv {
+            sherpa_settings["GMU_CMS_AQED_CONVENTION"].Get<size_t>()};
+        switch (conv) {
+          case 0:
+            settings.set_gmu_cms_alpha_qed_convention("abs");
+            break;
+          case 4:
+            settings.set_gmu_cms_alpha_qed_convention("sherpa2");
+            break;
+          default:
+            THROW(not_implemented,
+                  "Pepper supports GMU_CMS_AQED_CONVENTION=0 (abs) and 4 "
+                  "(sherpa2); got " + ToString(conv) + ".");
+        }
+        settings.set_GF(sherpa_settings["GF"].Get<double>());
+        break;
+      }
+      case MODEL::ew_scheme::alphamZsW: {
+        settings.set_ew_scheme("alphamZsW");
+        break;
+      }
+      default:
+        THROW(not_implemented,
+              "Pepper supports only EW_SCHEME=UserDefined (0), Gmu (3), "
+              "or alphamZsW (4); got " + ToString(sherpa_scheme) + ".");
+    }
+    settings.set_alpha_em(alpha_em);
+    settings.set_sin2_theta_w(csin2thetaW.real());
+  }
+
+  // Push the heavy-particle pole masses and decay widths that Pepper
+  // consumes (top, EW gauge bosons, Higgs, b, c, tau) from Sherpa's
+  // particle data table into Pepper's initialization settings, so that
+  // the two sides agree on the parameter point without the user having
+  // to mirror every value in the Pepper run card. File-based Pepper
+  // settings still win.
+  void SyncParticleProperties(Pepper::Initialization_settings& settings)
+  {
+    static constexpr int kfs[] = {kf_t, kf_Z, kf_Wplus};
+    for (const int kf : kfs) {
+      const ATOOLS::Flavour fl{static_cast<long int>(kf)};
+      settings.set_particle_mass(kf, fl.Mass());
+      settings.set_particle_width(kf, fl.Width());
+    }
+  }
+
+  // Try to map Sherpa's SCALES string onto one of Pepper's hard-coded
+  // μ² scale setters. Pepper only ships a handful (m_Z^2, m_W^2,
+  // m_t^2, H_Tp^2, H_Tp^2/2, H_T^2/2, H_TM^2/2), so we recognise the
+  // two simplest Sherpa forms: VAR{sqr(<mass>)}{sqr(<mass>)} for the
+  // fixed-mass cases, and VAR{H_X[/2]}{H_X[/2]} for the H_T-style
+  // ones where the divisor matches Pepper's hard-coded /2. Sherpa's
+  // H_T scales can be normalised with other factors (e.g. /4); those
+  // fall through to the warning case below. Returns the Pepper spec
+  // string on success, or an empty string when no clean match was
+  // found.
+  std::string MapSherpaScalesToPepperSpec(const std::string& sherpa_scales)
+  {
+    // Sherpa's bare-named core scale setters. "Default" replicates
+    // Sherpa's Default_Core_Scale on the Pepper side, currently only
+    // implemented for hh collisions.
+    static const std::regex default_pattern{R"(^\s*Default\s*$)"};
+    if (std::regex_match(sherpa_scales, default_pattern))
+      return "Sherpa_default_hh";
+
+    // Accept either VAR{X} or VAR{X}{X}: Pepper carries a single μ²,
+    // so a one-arg form is unambiguous, and a two-arg form is only
+    // synced when μ_F and μ_R agree (otherwise we'd silently collapse
+    // a genuine factorisation/renormalisation split).
+    static const std::regex var_pattern{
+      R"(^\s*VAR\s*\{\s*([^{}]*?)\s*\}(?:\s*\{\s*([^{}]*?)\s*\})?)"};
+    std::smatch m;
+    if (!std::regex_search(sherpa_scales, m, var_pattern)) return {};
+    const std::string arg{m[1].str()};
+    if (m[2].matched && arg != m[2].str()) return {};
+
+    // Fixed mass squared: sqr(N). Compare against the Sherpa pole
+    // masses for the bosons/top that Pepper hard-codes.
+    static const std::regex sqr_pattern{
+      R"(^sqr\(\s*([0-9.eE+-]+)\s*\)$)"};
+    std::smatch sm;
+    if (std::regex_match(arg, sm, sqr_pattern)) {
+      const double mu2 = std::stod(sm[1].str());
+      auto close = [&](double mass) {
+        return std::abs(mu2 - mass) < 1e-2 * mass;
+      };
+      if (close(ATOOLS::Flavour(kf_Z).Mass()))     return "m_Z^2";
+      if (close(ATOOLS::Flavour(kf_Wplus).Mass())) return "m_W^2";
+      if (close(ATOOLS::Flavour(kf_t).Mass()))     return "m_t^2";
+      return {};
+    }
+
+    // Dynamic H_T-like scales: VAR{H_X[/2]}. Pepper offers H_Tp^2,
+    // H_Tp^2/2, H_T^2/2 and H_TM^2/2 — no half-less variants of H_T
+    // or H_TM.
+    static const std::regex ht_pattern{
+      R"(^(H_Tp2|H_T2|H_TM2)\s*(/\s*2)?$)"};
+    std::smatch hm;
+    if (std::regex_match(arg, hm, ht_pattern)) {
+      const std::string var{hm[1].str()};
+      const bool halved{hm[2].matched};
+      if (var == "H_Tp2") return halved ? "H_Tp^2/2" : "H_Tp^2";
+      if (var == "H_T2"  && halved) return "H_T^2/2";
+      if (var == "H_TM2" && halved) return "H_TM^2/2";
+      return {};
+    }
+
+    return {};
+  }
+
+  // Resolve the SCALES string that actually drives the (unclustered)
+  // hard process. With SCALES: METS, the shower decides emission
+  // scales but the core process — which is all Pepper sees — uses
+  // CORE_SCALE instead. Honour an inline `METS[C:VAR{...}]` override
+  // first, then fall back to the global MEPS.CORE_SCALE setting.
+  std::string ResolveSherpaCoreScale(const std::string& sherpa_scales)
+  {
+    static const std::regex mets_prefix{R"(^\s*METS\b)"};
+    if (!std::regex_search(sherpa_scales, mets_prefix)) return sherpa_scales;
+    static const std::regex inline_c{
+      R"(\[[^\]]*\bC\s*:\s*([^\s,\]]+))"};
+    std::smatch m;
+    if (std::regex_search(sherpa_scales, m, inline_c)) return m[1].str();
+    return ATOOLS::Settings::GetMainSettings()["MEPS"]["CORE_SCALE"]
+      .GetScalarWithOtherDefault<std::string>("Default");
+  }
+
+  // Align Pepper's μ² scale setter with Sherpa's SCALES setting when
+  // we can recognise it; otherwise warn. Pepper's scale choice does
+  // not change physics, since Sherpa reweights each event to its own
+  // scale on the fly, but a large mismatch reduces Pepper's
+  // unweighting efficiency.
+  void SyncScaleSetter(Pepper::Initialization_settings& settings)
+  {
+    const std::string sherpa_scales{
+      ATOOLS::Settings::GetMainSettings()["SCALES"].Get<std::string>()};
+    const std::string effective{ResolveSherpaCoreScale(sherpa_scales)};
+    const std::string pepper_spec{MapSherpaScalesToPepperSpec(effective)};
+    if (!pepper_spec.empty()) {
+      settings.set_scale_setter(pepper_spec);
+      msg_Info() << "Pepper_Interface: scale setter synced to '"
+                 << pepper_spec << "' (from SCALES=\""
+                 << sherpa_scales << "\"";
+      if (effective != sherpa_scales)
+        msg_Info() << ", core scale \"" << effective << "\"";
+      msg_Info() << ").\n";
+      return;
+    }
+    msg_Info() << om::brown << om::bold << "WARNING" << om::reset
+               << ": Could not map Sherpa SCALES=\"" << sherpa_scales << "\"";
+    if (effective != sherpa_scales)
+      msg_Info() << " (core scale \"" << effective << "\")";
+    msg_Info() << " onto one of Pepper's hard-coded scale setters "
+                  "(m_Z^2, m_W^2, m_t^2, H_Tp^2, H_Tp^2/2, H_T^2/2, H_TM^2/2, "
+		  "Sherpa_default_hh). This does NOT affect physics, "
+                  "since Sherpa reweights each event to its own scale, "
+                  "but Pepper's unweighting efficiency may be reduced. "
+                  "Please contact the Pepper authors if you need a "
+                  "closer match for your setup.\n";
+  }
+
+  // Find a CKKW merging-scale value somewhere in the PROCESSES tree.
+  // CKKW is a per-process setting in Sherpa, but every merged process in
+  // the same sample must share the same merging scale, so the first
+  // non-empty value we encounter is representative. Returns nullopt if
+  // no process has CKKW set, i.e. merging is off.
+  std::optional<double> ReadCkkwMergingScale()
+  {
+    Settings& s {Settings::GetMainSettings()};
+    for (auto& proc : s["PROCESSES"].GetItems()) {
+      if (!proc.IsMap()) continue;
+      const auto keys = proc.GetKeys();
+      if (keys.size() != 1) continue;
+      auto procsettings = proc[keys[0]];
+      const std::string ckkw {procsettings["CKKW"]
+                                  .SetDefault<std::string>("")
+                                  .Get<std::string>()};
+      if (ckkw.empty()) continue;
+      try {
+        return std::stod(ckkw);
+      } catch (const std::exception&) {
+        THROW(invalid_input,
+              "Pepper_Reader: only a numeric CKKW value can be propagated "
+              "to Pepper, got \"" + ckkw + "\".");
+      }
+    }
+    return std::nullopt;
+  }
+
+  struct FastjetKtParams { double R; double y; };
+
+  // Parse a JET_CRITERION string of the form FASTJET[A:kt,R:<R>,y:<y>].
+  // Returns nullopt if the string is not a FASTJET criterion (e.g. the
+  // default shower-driven one); throws if it is FASTJET but uses an
+  // algorithm or arguments we cannot propagate to Pepper. Pepper hard-
+  // codes kt clustering in (η,φ) space, so anything other than A:kt
+  // would silently disagree with the host-side jet definition.
+  std::optional<FastjetKtParams>
+  ParseFastjetKtJetCriterion(const std::string& crit)
+  {
+    static const std::regex fastjet_pattern{
+      R"(^\s*FASTJET\s*\[\s*([^\]]*?)\s*\]\s*$)"};
+    std::smatch m;
+    if (!std::regex_match(crit, m, fastjet_pattern)) return std::nullopt;
+
+    auto strip = [](std::string& s) {
+      const auto first = s.find_first_not_of(" \t");
+      if (first == std::string::npos) { s.clear(); return; }
+      s.erase(0, first);
+      s.erase(s.find_last_not_of(" \t") + 1);
+    };
+
+    bool has_kt {false};
+    std::optional<double> R, y;
+    std::stringstream ss {m[1].str()};
+    std::string token;
+    while (std::getline(ss, token, ',')) {
+      strip(token);
+      if (token.empty()) continue;
+      const auto colon = token.find(':');
+      if (colon == std::string::npos)
+        THROW(invalid_input,
+              "Pepper_Reader: cannot parse JET_CRITERION token \""
+              + token + "\".");
+      std::string key {token.substr(0, colon)};
+      std::string val {token.substr(colon + 1)};
+      strip(key); strip(val);
+      if (key == "A") {
+        if (val != "kt")
+          THROW(not_implemented,
+                "Pepper_Reader: JET_CRITERION algorithm \"" + val
+                + "\" is not supported; only A:kt can be propagated to "
+                "Pepper.");
+        has_kt = true;
+      }
+      else if (key == "R") {
+        R = std::stod(val);
+      }
+      else if (key == "y" || key == "Y") {
+        y = std::stod(val);
+      }
+      else {
+        THROW(not_implemented,
+              "Pepper_Reader: unsupported JET_CRITERION argument \""
+              + key + "\"; only A, R, and y can be propagated to Pepper.");
+      }
+    }
+    if (!has_kt || !R || !y)
+      THROW(invalid_input,
+            "Pepper_Reader: JET_CRITERION must specify A:kt, R:<R>, and "
+            "y:<y> to be propagated to Pepper.");
+    return FastjetKtParams{*R, *y};
+  }
+
+  // A set of jet cuts in the form Pepper can apply them: a minimum
+  // transverse momentum and a maximum rapidity for every QCD parton,
+  // plus a minimum distance in (y, phi) between any two of them.
+  // `y_max` is unset when the Sherpa side does not restrict the jet
+  // rapidity at all.
+  struct Jet_Cut_Params {
+    double pt_min;
+    double dr_min;
+    std::optional<double> y_max;
+  };
+
+  // Fold `params` into the loosest set of cuts encountered so far.
+  // Pepper's cuts must be a superset of Sherpa's: Sherpa re-applies its
+  // own selectors to every event Pepper hands over (see
+  // Phase_Space_Handler::Differential), so cutting harder than Sherpa
+  // does silently removes phase space, while cutting softer only costs
+  // unweighting efficiency. Hence the smallest pT and dR and the
+  // largest rapidity reach over all sources win.
+  void LoosenJetCuts(std::optional<Jet_Cut_Params>& cuts,
+                     const Jet_Cut_Params& params)
+  {
+    if (!cuts) {
+      cuts = params;
+      return;
+    }
+    cuts->pt_min = std::min(cuts->pt_min, params.pt_min);
+    cuts->dr_min = std::min(cuts->dr_min, params.dr_min);
+    if (!cuts->y_max || !params.y_max)
+      cuts->y_max = std::nullopt;
+    else
+      cuts->y_max = std::max(*cuts->y_max, *params.y_max);
+  }
+
+  // Every selector entry the run card can carry: the global SELECTORS
+  // list, plus the process-local `Selectors` lists that Sherpa uses in
+  // place of the global ones for the processes defining them (see
+  // Matrix_Element_Handler::ReadProcessSettings). Pepper's cuts are
+  // global, so we have to consider all of them.
+  std::vector<Scoped_Settings> CollectSelectorSettings()
+  {
+    Settings& s {Settings::GetMainSettings()};
+    std::vector<Scoped_Settings> items {s["SELECTORS"].GetItems()};
+    for (auto& proc : s["PROCESSES"].GetItems()) {
+      if (!proc.IsMap()) continue;
+      const auto keys = proc.GetKeys();
+      if (keys.size() != 1) continue;
+      for (auto& item : proc[keys[0]]["Selectors"].GetItems())
+        items.push_back(item);
+    }
+    return items;
+  }
+
+  // Translate one selector entry into the Pepper jet cuts it implies,
+  // or nullopt when the entry is not a jet finder that regularises the
+  // QCD final state.
+  //
+  // Sherpa's jet finders ask for at least N jets above a pT (and/or ET)
+  // threshold within a (pseudo-)rapidity range, clustered with radius
+  // R. At the parton level -- the only level Pepper sees -- that is the
+  // familiar approximation of N well-separated partons: each above the
+  // threshold, inside the rapidity range, and pairwise farther apart
+  // than R, which is exactly the set of cuts Pepper knows. This is what
+  // regularises jets that are part of the core process already, e.g.
+  // for jj+jets, where the merging criterion is switched off for the
+  // core process (`LO: true` in Matrix_Element_Handler).
+  //
+  // Entries with `N: 0` are switched off, and entries without a pT/ET
+  // threshold do not regularise anything; neither constrains Pepper.
+  // Selectors that only ever remove phase space on top of a jet finder
+  // (e.g. FastjetVeto) are ignored: leaving them out keeps Pepper on
+  // the safe, looser side. Anything else that regularises the QCD
+  // final state in a way we do not recognise here (e.g. Jet_Selector)
+  // leaves Pepper on its own cut defaults.
+  std::optional<Jet_Cut_Params> ReadJetFinderParams(Scoped_Settings item)
+  {
+    if (!item.IsMap()) return std::nullopt;
+    const auto keys = item.GetKeys();
+    if (keys.size() != 1) return std::nullopt;
+    const std::string& name {keys.front()};
+    // FastjetSelector shares its jet definition and thresholds with
+    // FastjetFinder (both derive from Fastjet_Selector_Base) and adds
+    // an expression on top, so it demands at least the same N jets.
+    const bool is_fastjet {name == "FastjetFinder"
+                           || name == "FastjetSelector"};
+    if (!is_fastjet && name != "NJetFinder") return std::nullopt;
+    auto s = item[name];
+    // The defaults below mirror those of the selectors themselves (see
+    // Fastjet_Selector_Base and the NJetFinder getter); Sherpa refuses
+    // to have one setting declared with two different defaults.
+    const int n {
+        s["N"].SetDefault("None").UseZeroReplacements().Get<int>()};
+    if (n < 1) return std::nullopt;
+    const double ptmin {
+        s["PTMin"].SetDefault("None").UseZeroReplacements().Get<double>()};
+    const double etmin {
+        s["ETMin"].SetDefault("None").UseZeroReplacements().Get<double>()};
+    // A jet has to clear both thresholds, and for the massless partons
+    // Pepper generates ET and pT coincide, so the harder one wins.
+    const double pt_min {std::max(ptmin, etmin)};
+    if (pt_min <= 0.0) return std::nullopt;
+    const double dr_min {is_fastjet ? s["DR"].SetDefault(0.4).Get<double>()
+                                    : s["R"].SetDefault(0.4).Get<double>()};
+    const double etamax {s["EtaMax"].SetDefault("None")
+                             .UseMaxDoubleReplacements()
+                             .Get<double>()};
+    const double ymax {s["YMax"].SetDefault("None")
+                           .UseMaxDoubleReplacements()
+                           .Get<double>()};
+    // Massless partons again: eta and y agree, so the tighter of the
+    // two limits is what the selector effectively imposes. Both default
+    // to the largest representable double, i.e. "no limit".
+    const double y_max {std::min(etamax, ymax)};
+    Jet_Cut_Params params {pt_min, dr_min, std::nullopt};
+    if (y_max < 0.5 * std::numeric_limits<double>::max())
+      params.y_max = y_max;
+    return params;
+  }
+
+  // The rapidity of a massless parton with pT >= pt_min is bounded by
+  // cosh(y) <= sqrt(s) / (2 pt_min), so this value cuts nothing at all.
+  // We use it whenever Sherpa leaves the jet rapidity unrestricted,
+  // because Pepper always applies a finite y_max (6 by default), which
+  // would otherwise cut into phase space that Sherpa keeps.
+  double KinematicYMax(double pt_min)
+  {
+    if (pt_min <= 0.0) return 0.0;
+    const double ratio {rpa->gen.Ecms() / (2.0 * pt_min)};
+    return ratio > 1.0 ? std::acosh(ratio) : 0.0;
+  }
+
+  // Align Pepper's jet cuts with whatever regularises the QCD final
+  // state on the Sherpa side. Two sources can contribute:
+  //
+  //  - the CKKW merging scale, together with the FastJet kt criterion
+  //    defining when an emission counts as a jet. Pepper only
+  //    implements kt clustering in (y, phi), so we require
+  //    JET_CRITERION: FASTJET[A:kt,R:<R>,y:<y>] and refuse to proceed
+  //    otherwise -- the default JET_CRITERION (the shower generator)
+  //    has no Pepper-side counterpart and would silently disagree.
+  //
+  //  - jet-finder selectors (FastjetFinder / NJetFinder), which are
+  //    what regularises jets that the core process contains already,
+  //    e.g. for jj+jets.
+  //
+  // A sample can use either or both -- jj+jets needs both, V+jets only
+  // the merging scale -- so we take the loosest cuts implied by all of
+  // them (see LoosenJetCuts). With none of them present (e.g. a plain
+  // Drell-Yan run without jets), Pepper keeps its own defaults.
+  void SyncJetCuts(Pepper::Initialization_settings& settings)
+  {
+    std::optional<Jet_Cut_Params> cuts;
+    std::vector<std::string> sources;
+
+    const auto ckkw = ReadCkkwMergingScale();
+    if (ckkw) {
+      Settings& sherpa_settings {Settings::GetMainSettings()};
+      const std::string crit {
+          sherpa_settings["JET_CRITERION"].Get<std::string>()};
+      const auto kt = ParseFastjetKtJetCriterion(crit);
+      if (!kt)
+        THROW(not_implemented,
+              "Pepper_Reader: multi-jet merging is on (CKKW="
+              + ToString(*ckkw) + "), but JET_CRITERION=\"" + crit
+              + "\" cannot be propagated to Pepper. Set JET_CRITERION: "
+              "FASTJET[A:kt,R:<R>,y:<y>] in the run card so the Sherpa "
+              "and Pepper jet definitions agree.");
+      LoosenJetCuts(cuts, Jet_Cut_Params{*ckkw, kt->R, kt->y});
+      sources.push_back("CKKW=" + ToString(*ckkw));
+    }
+
+    for (auto& item : CollectSelectorSettings()) {
+      const auto params = ReadJetFinderParams(item);
+      if (!params) continue;
+      LoosenJetCuts(cuts, *params);
+      sources.push_back(item.GetKeys().front() + "(pT_min="
+                        + ToString(params->pt_min) + ")");
+    }
+
+    if (!cuts) return;
+
+    // Pepper cuts on the rapidity of every parton, so an unrestricted
+    // Sherpa side has to be translated into the kinematic limit rather
+    // than into Pepper's much tighter default.
+    const double y_max {cuts->y_max ? *cuts->y_max
+                                    : KinematicYMax(cuts->pt_min)};
+    settings.set_pt_min(cuts->pt_min);
+    settings.set_dR_min(cuts->dr_min);
+    settings.set_y_max(y_max);
+    msg_Info() << "Pepper_Interface: jet cuts synced from ";
+    for (size_t i {0}; i < sources.size(); ++i)
+      msg_Info() << (i ? ", " : "") << sources[i];
+    msg_Info() << " (pT_min=" << cuts->pt_min
+               << ", dR_min=" << cuts->dr_min
+               << ", y_max=" << y_max
+               << (cuts->y_max ? "" : " [kinematic limit, no rapidity cut "
+                                      "on the Sherpa side]")
+               << ").\n";
+  }
+
+  // Map a signed Sherpa/PDG KF code onto the particle-name string that
+  // Pepper's process-spec parser expects (see Pepper's
+  // `string_from_particle`). Sherpa's Flavour::IDName disagrees with
+  // Pepper on a handful of names (e.g. "G" vs "g", "W+" vs "W"), so we
+  // do the conversion off the numeric code instead.
+  std::string KfcodeToPepperName(long int kf)
+  {
+    const long int akf = std::abs(kf);
+    if (akf == kf_gluon) return "g";
+    if (akf == kf_Z)     return "Z";
+    if (akf == kf_Wplus) return (kf > 0) ? "W" : "W-";
+    std::string base;
+    bool has_charge = false; // charged leptons get explicit +/- in Pepper
+    switch (akf) {
+      case kf_d:     base = "d";    break;
+      case kf_u:     base = "u";    break;
+      case kf_s:     base = "s";    break;
+      case kf_c:     base = "c";    break;
+      case kf_b:     base = "b";    break;
+      case kf_t:     base = "t";    break;
+      case kf_e:     base = "e";    has_charge = true; break;
+      case kf_mu:    base = "mu";   has_charge = true; break;
+      case kf_tau:   base = "tau";  has_charge = true; break;
+      // Pepper's `particle_from_string` accepts the two-character
+      // "v<flavour>" forms but errors on the longer "vmu"/"vtau" forms
+      // that `string_from_particle` happens to emit, so we use the
+      // round-tripping forms here.
+      case kf_nue:   base = "ve";   break;
+      case kf_numu:  base = "vm";   break;
+      case kf_nutau: base = "vt";   break;
+      default:
+        THROW(not_implemented,
+              "Cannot translate KF code " + ToString(kf)
+              + " to a Pepper particle name.");
+    }
+    if (kf >= 0) {
+      if (has_charge) base += "-";
+      return base;
+    }
+    return has_charge ? base + "+" : base + "b";
+  }
+
+  // Build the Pepper process-spec string from the signed KF codes that
+  // Process_Base forwards via Event_Reader_Key.
+  //
+  // Two cases:
+  //  - Sherpa's "jet" container (kf=93) on both initial-state lines is
+  //    Pepper's "pp" beam: we emit a compound name like "ppee", "ppev",
+  //    "pptt", "ppjj", ..., which Pepper resolves to a process-data file
+  //    that already sums over the partonic channels. Outgoing kf=93s are
+  //    counted and turn into trailing 'j' characters.
+  //  - Otherwise we fall back to a partonic-channel spec like
+  //    "u ub -> Z g" assembled via `KfcodeToPepperName`.
+  std::string BuildPepperProcessSpec(const std::vector<long int>& flavours,
+                                     std::size_t nin)
+  {
+    if (flavours.size() < nin + 1 || nin == 0)
+      THROW(invalid_input,
+            "Pepper_Reader: cannot build a process spec from "
+            + ToString(flavours.size()) + " flavours with "
+            + ToString(nin) + " incoming.");
+
+    if (nin == 2 && flavours[0] == kf_jet && flavours[1] == kf_jet) {
+      std::size_t n_out_jets = 0;
+      std::vector<long int> rest;
+      for (std::size_t i = nin; i < flavours.size(); ++i) {
+        if (flavours[i] == kf_jet) ++n_out_jets;
+        else rest.push_back(flavours[i]);
+      }
+      std::sort(rest.begin(), rest.end());
+      std::string token;
+      if (rest.empty()) {
+        token = "";
+      } else if (rest == std::vector<long int>{-11, 11}) {
+        token = "ee";
+      } else if (rest == std::vector<long int>{-12, 12}) {
+        token = "vv";
+      } else if (rest == std::vector<long int>{-12, 11}) {
+        token = "wm";
+      } else if (rest == std::vector<long int>{-11, 12}) {
+        token = "wp";
+      } else if (rest == std::vector<long int>{-6, 6}) {
+        token = "tt";
+      } else {
+        std::string outgoing;
+        for (auto kf : rest) {
+          if (!outgoing.empty()) outgoing += ' ';
+          outgoing += ToString(kf);
+        }
+        THROW(not_implemented,
+              "Cannot map Sherpa final-state flavours {" + outgoing
+              + "} (alongside kf_jet=93 incoming) onto a Pepper compound "
+              "process name. Supported compound finals are: (empty), "
+              "e+ e-, ve veb, e ve, t tb.");
+      }
+      std::string spec {"pp" + token};
+      spec.append(n_out_jets, 'j');
+      return spec;
+    }
+
+    std::string spec;
+    for (std::size_t i = 0; i < flavours.size(); ++i) {
+      if (i > 0) spec += ' ';
+      if (i == nin) spec += "-> ";
+      spec += KfcodeToPepperName(flavours[i]);
+    }
+    return spec;
+  }
+
+  // Owns the once-per-process Pepper library bring-up and teardown.
+  // A static weak_ptr deduplicates instances across Pepper_Reader
+  // siblings (one per jet multiplicity); finalize fires when the
+  // last reader holding a shared_ptr is destroyed, i.e. during
+  // Sherpa's normal shutdown rather than at static-destructor time.
+  class Pepper_Interface {
+  public:
+    Pepper_Interface()
+    {
+      // We do not currently plumb Sherpa's argc/argv through to
+      // Pepper; a dummy pair is sufficient since MPI/Kokkos init
+      // do not need them once Pepper's MPI bring-up is disabled.
+      static int s_argc = 0;
+      static char *s_argv[] = {nullptr};
+      Pepper::Initialization_settings settings(s_argc, s_argv);
+      settings.disable_mpi_initialization();
+
+      // Pepper's public API defaults to summing over colors and helicities.
+      // This is the least surprising default, but here we want to optimize
+      // performance, and therefore pick helicity sampling.
+      settings.set_helicity_treatment(Pepper::Helicity_treatment::sampled);
+
+      // Keep Pepper's beam energy in lockstep with Sherpa's so the two
+      // sides do not silently disagree on √s. Sherpa's Run_Parameter is
+      // populated during framework initialisation, which precedes
+      // Matrix_Element_Handler::InitializeProcesses (where readers are
+      // constructed), so rpa->gen.Ecms() is available here.
+      settings.set_e_cms(rpa->gen.Ecms());
+
+      // Pin Pepper's LHAPDF choice to whatever Sherpa initialised for
+      // the hard process (beam 0); the second beam uses the same set
+      // in all configurations Pepper supports.
+      if (auto* pdf = rpa->gen.PDF(0))
+        settings.set_pdf(pdf->Set(), pdf->Member());
+
+      // Mirror Sherpa's EW input scheme and the corresponding numeric
+      // parameters. Pepper only implements `Gmu`, `alphamZsW`, and
+      // `UserDefined`, so any other Sherpa scheme is a hard error.
+      SyncEWScheme(settings);
+
+      // Forward Sherpa's heavy-particle masses and widths so Pepper
+      // evaluates matrix elements at the same parameter point.
+      SyncParticleProperties(settings);
+
+      // Best-effort alignment of Pepper's μ² scale setter with
+      // Sherpa's SCALES choice; mismatches are warned about, not
+      // fatal, because they only affect Pepper unweighting efficiency.
+      SyncScaleSetter(settings);
+
+      // Forward the cuts that regularise the QCD final state on the
+      // Sherpa side: the CKKW merging scale together with the FastJet
+      // kt criterion, and any jet-finder selector (which is what
+      // regularises jets contained in the core process already).
+      SyncJetCuts(settings);
+
+      // Translate Sherpa "Mass" selectors into Pepper's lepton-pair
+      // invariant-mass cut. Pepper exposes a single (m2_min, m2_max)
+      // pair, so when multiple Mass selectors are present we narrow to
+      // their intersection.
+      const auto mass_selectors = ReadMassSelectorParams();
+      double m2_min = 0.0;
+      double m2_max = std::numeric_limits<double>::infinity();
+      for (const auto& p : mass_selectors) {
+        m2_min = std::max(m2_min, p.min * p.min);
+        m2_max = std::min(m2_max, p.max * p.max);
+        msg_Debugging() << "Pepper_Interface: Mass selector "
+                        << "[kf1=" << p.kf1 << ",kf2=" << p.kf2
+                        << ",min=" << p.min << ",max=" << p.max << "]\n";
+      }
+      if (!mass_selectors.empty()) {
+        settings.set_ll_m2_min(m2_min);
+        settings.set_ll_m2_max(m2_max);
+      }
+
+      Pepper::initialize(settings);
+    }
+
+    // The worker is destroyed (and joined) before Pepper::finalize()
+    // runs, so no in-flight fill outlives Pepper itself.
+    ~Pepper_Interface() { m_fill_worker.reset(); Pepper::finalize(); }
+
+    Pepper_Interface(const Pepper_Interface &) = delete;
+    Pepper_Interface &operator=(const Pepper_Interface &) = delete;
+
+    Fill_Worker &fill_worker() { return *m_fill_worker; }
+
+    static std::shared_ptr<Pepper_Interface> Acquire()
+    {
+      static std::mutex s_mutex;
+      static std::weak_ptr<Pepper_Interface> s_instance;
+      std::lock_guard<std::mutex> lock(s_mutex);
+      if (auto existing = s_instance.lock()) return existing;
+      auto fresh = std::make_shared<Pepper_Interface>();
+      s_instance = fresh;
+      return fresh;
+    }
+
+  private:
+    std::unique_ptr<Fill_Worker> m_fill_worker {
+      std::make_unique<Fill_Worker>()};
+  };
+
+  // Reads parton-level events from HDF5 databases that live entirely
+  // in RAM and are filled by the Pepper library. A double-buffered
+  // current/next pair lets consumption and refill overlap: events are
+  // drawn from "current", while "next" is filled ahead of time so it is
+  // ready to take over once "current" is depleted.
+  class Pepper_Reader: public LHEH5_Reader_Base {
+  private:
+
+    std::shared_ptr<Pepper_Interface> p_pepper;
+    std::unique_ptr<Pepper::Process> p_process;
+    // Pepper process specification used to construct p_process; kept around
+    // so we can refer to it in user-facing messages (e.g. during warm-up).
+    std::string m_process_spec;
+
+    // The HDF5 file is intentionally NOT held as a member. HDF5's VOL
+    // wrapper context is thread-local, so an in-memory file opened on
+    // the worker thread (inside PerformFill) cannot be safely closed on
+    // the main thread. LHEFile::ReadHeader/ReadEvents copy everything
+    // into RAM vectors, so the file can be closed inside PerformFill on
+    // the same thread that opened it.
+    std::unique_ptr<LHEFile> p_current, p_next;
+
+    size_t m_iblock, m_ncurrent;
+    // Running total of events consumed in buffers that have already
+    // been rotated out by Advance(). Combined with m_ievt this gives
+    // the lifetime number of events served by the reader, which is
+    // what PrintStatistics reports at end-of-run.
+    size_t m_total_consumed {0};
+    bool m_finished;
+    bool m_warmed_up;
+    bool m_finalized {false};
+
+    // When true, refilling the next buffer runs on a worker thread so
+    // Sherpa can consume events from the current buffer while Pepper
+    // populates the next one (especially helpful with a GPU back-end).
+    // Invariant: while m_pending_fill is valid, the main thread must not
+    // touch p_next; only one worker is ever in flight, so Pepper is
+    // never re-entered concurrently.
+    bool m_async_fill;
+    std::future<size_t> m_pending_fill;
+    size_t m_last_fill_result {0};
+
+    std::unique_ptr<File> CreateInMemoryFile(const std::string &tag)
+    {
+      auto fapl = FileAccessProps::Empty();
+      fapl.add(CoreFileAccess{1u << 20, /*backing_store=*/0});
+      return std::make_unique<File>(
+          tag, File::Truncate | File::Create | File::ReadWrite, fapl);
+    }
+
+    // HDF5 keys files by their string name in a global registry, even
+    // for the in-memory core driver. Two simultaneously-live files with
+    // the same name would collide both within one reader (current and
+    // next buffers overlap during Advance) and across sibling readers
+    // (one per jet multiplicity). A process-wide atomic counter gives
+    // every buffer a unique name.
+    std::string NextBufferName()
+    {
+      static std::atomic<std::uint64_t> s_counter {0};
+      return "pepper_buffer_" + std::to_string(s_counter.fetch_add(1));
+    }
+
+    // Ask Pepper to populate the next in-memory database with up to
+    // m_ncache events. Returning 0 signals Pepper exhaustion; the
+    // reader stops once the current buffer is drained. This routine
+    // is the unit of work scheduled by LaunchFill() and may run on a
+    // worker thread when PEPPER_ASYNC_FILL is enabled.
+    //
+    // The HighFive::File is a local: HDF5's VOL wrapper context is
+    // thread-local, so the file MUST be closed on the same thread that
+    // opened it. LHEFile::ReadHeader/ReadEvents copy everything into
+    // RAM vectors, so the file is no longer needed once those return.
+    size_t PerformFill()
+    {
+      auto next_file = CreateInMemoryFile(NextBufferName());
+      const size_t n_filled = p_process->fill_lheh5_buffer(*next_file, m_ncache);
+      if (n_filled == 0) {
+        p_next.reset();
+        return 0;
+      }
+      p_next = std::make_unique<LHEFile>();
+      p_next->ReadHeader(*next_file);
+      p_next->ReadEvents(*next_file, 0, n_filled);
+      return n_filled;
+    }
+
+    // Kick off a fill of the next buffer. With async fill enabled, the
+    // work is submitted to the shared Fill_Worker — a single FIFO thread
+    // serving every Pepper_Reader instance — so that sibling readers do
+    // not stack concurrent Pepper invocations onto the (often GPU)
+    // backend. The result becomes visible via WaitForFill(); otherwise
+    // it runs inline and m_last_fill_result is updated directly.
+    // Precondition: no fill is currently in flight for this reader.
+    void LaunchFill()
+    {
+      if (m_async_fill) {
+        m_pending_fill = p_pepper->fill_worker().Submit(
+            [this]() { return PerformFill(); });
+      } else {
+        m_last_fill_result = PerformFill();
+      }
+    }
+
+    // Block until the most recently launched fill has completed and
+    // return the number of events written. Safe to call when no fill
+    // is in flight: it then just returns the cached previous result.
+    size_t WaitForFill()
+    {
+      if (m_pending_fill.valid())
+        m_last_fill_result = m_pending_fill.get();
+      return m_last_fill_result;
+    }
+
+    void Advance()
+    {
+      // Make sure the next buffer is completely filled before swapping;
+      // this is the invariant that keeps consumers from racing the
+      // producer thread.
+      const size_t filled = WaitForFill();
+      // Accumulate consumption of the buffer we are about to discard
+      // (zero on the very first Advance from WarmUp).
+      m_total_consumed += m_ievt;
+      p_current = std::move(p_next);
+      m_ievt = 0;
+      m_ncurrent = p_current ? p_current->NEvents() : 0;
+      ++m_iblock;
+      if (m_ncurrent > 0) {
+        m_totalxs = p_current->TotalXS();
+        m_unitwgt = p_current->UnitWeight();
+        if (p_current->Version()[0]==2 &&
+            p_current->Version()[1]==0 &&
+            p_current->Version()[2]==0) m_unitwgt*=rpa->Picobarn();
+      }
+      if (filled == 0) m_finished = true;
+      else LaunchFill();
+    }
+
+  protected:
+
+    const LHEFile &CurrentFile() const override { return *p_current; }
+    size_t NEventsInBuffer() const override { return m_ncurrent; }
+
+    // Promote the pre-filled next buffer, waiting for an in-flight async
+    // fill first. Pepper is exhausted only once it has handed us an empty
+    // buffer and the MPI barrier agrees no rank has anything left.
+    bool NextBuffer() override
+    {
+      // p_next is owned by the worker thread until the fill completes;
+      // drain before inspecting it from the consumer side.
+      WaitForFill();
+      if (!p_next || p_next->NEvents() == 0) {
+        if (Communicate() < 0 || (!p_next && m_finished))
+          return false;
+      }
+      Advance();  // resets m_ievt
+      return m_ncurrent != 0;
+    }
+
+    std::string ExhaustionMessage() const override
+    {
+      return "Pepper has no more events to provide.";
+    }
+
+  public:
+
+    Pepper_Reader(const Event_Reader_Key &key):
+      LHEH5_Reader_Base(key, "PEPPER_CACHE_SIZE", "Pepper"),
+      p_pepper(Pepper_Interface::Acquire()),
+      m_iblock(0), m_ncurrent(0), m_finished(false), m_warmed_up(false)
+    {
+      Settings& s {Settings::GetMainSettings()};
+      m_async_fill = s["PEPPER_ASYNC_FILL"].SetDefault(false).Get<bool>();
+
+      // The process specification is always derived from the surrounding
+      // Sherpa process (forwarded as KF codes in `m_flavours` by
+      // Process_Base). The bracketed argument of `Event_Source:
+      // Pepper[<cache_size>]`, if present, overrides PEPPER_CACHE_SIZE
+      // for this reader only — useful in CKKW-merged setups where the
+      // optimal cache size is smaller for larger jet multiplicities,
+      // (otherwise, the single helper thread will be blocked unnecessarily
+      // long by large-multiplicity fills).
+      m_process_spec = BuildPepperProcessSpec(m_flavours, m_nin);
+      if (!m_files.empty()) {
+        const std::string& arg {m_files.front()};
+        try {
+          size_t consumed {0};
+          const long long parsed {std::stoll(arg, &consumed)};
+          if (consumed != arg.size() || parsed <= 0)
+            throw std::invalid_argument {"not a positive integer"};
+          m_ncache = static_cast<size_t>(parsed);
+        }
+        catch (const std::exception& e) {
+          THROW(invalid_input,
+                "Event_Source: Pepper[" + arg + "] is not a valid cache size."
+                " Expected a positive integer (events per buffer).");
+        }
+        msg_Info() << "Pepper_Interface: cache size for process \""
+                   << m_process_spec << "\" set to " << m_ncache
+                   << " events (overriding PEPPER_CACHE_SIZE).\n";
+      }
+      // Sherpa's `Max_N_Quarks` is a per-multiplicity limit on the total
+      // number of quarks in the process, counting the initial and the final
+      // state alike (see Process_Group::CheckFlavours). Pepper applies the
+      // same restriction, but counts quark pairs, so halve the value; an odd
+      // limit of 2n+1 quarks admits the same channels as 2n does, since
+      // quarks only ever appear in pairs here. Only forward a limit that
+      // actually restricts something -- Sherpa's default (99) exceeds any
+      // real multiplicity, and passing it on would needlessly override
+      // Pepper's own `[main] n_max_quark_pairs` setting.
+      if (m_nmaxq < m_flavours.size()) {
+        const int n_max_quark_pairs {static_cast<int>(m_nmaxq / 2)};
+        msg_Info() << "Pepper_Interface: quark-pair limit for process \""
+                   << m_process_spec << "\" set to " << n_max_quark_pairs
+                   << " (from Max_N_Quarks: " << m_nmaxq << ").\n";
+        p_process = std::make_unique<Pepper::Process>(m_process_spec,
+                                                     n_max_quark_pairs);
+      }
+      else {
+        p_process = std::make_unique<Pepper::Process>(m_process_spec);
+      }
+
+      // The pipeline is primed lazily in WarmUp(), so that Pepper's
+      // integration-grid optimisation and weight-maximum determination
+      // run from the same hook that Sherpa uses for its own warm-up,
+      // i.e. Matrix_Element_Handler::CalculateTotalXSecs.
+    }
+
+    ~Pepper_Reader()
+    {
+      // Drain any in-flight worker before our members go out of scope, since
+      // the worker captures `this` and touches p_process / the next-buffer
+      // state. Normally Sherpa has already done this via Finalize(); this is a
+      // fallback for potential shutdown paths that bypass it.
+      Finalize();
+    }
+
+    // Drain the async fill worker and release every Pepper-backed
+    // resource while Pepper / Kokkos / MPI are still alive. Called from
+    // Sherpa's shutdown path before any of those libraries finalise,
+    // and also as a fallback from the destructor. Idempotent.
+    void Finalize() override
+    {
+      if (m_finalized) return;
+      m_finalized = true;
+      if (m_pending_fill.valid()) m_pending_fill.wait();
+      p_current.reset();
+      p_next.reset();
+      p_process.reset();
+      // Releasing the last shared_ptr triggers ~Pepper_Interface, which
+      // joins the fill worker and calls Pepper::finalize(); we want that
+      // to happen here, not from an atexit handler after Kokkos is gone.
+      p_pepper.reset();
+    }
+
+    // Drive Pepper's integration-grid optimisation and unit-weight
+    // determination. Called once per process from Sherpa's cross-section
+    // calculation step. Pepper performs its optimisation phases lazily
+    // inside fill_lheh5_buffer on first use, so priming the double-buffered
+    // pipeline here implicitly drives warm-up. Cached Pepper results are
+    // reused on subsequent runs (Pepper handles its own cache).
+    void WarmUp() override
+    {
+      if (m_warmed_up) return;
+      m_warmed_up = true;
+      // Pepper's `main.init_only` finishes process setup (incl. writing
+      // the resolved runcard) and refuses to generate events. There is
+      // no useful continuation on the Sherpa side, so exit cleanly with
+      // a message pointing the user at the inspectable artifact.
+      if (p_process->init_only()) {
+        THROW(normal_exit,
+              "Pepper's main.init_only is set: process setup is complete"
+              " and the resolved runcard has been written to Pepper's"
+              " per-process cache directory. Stopping before event"
+              " generation.");
+      }
+      // First fill is always the warm-up; we block until it completes so the
+      // optimisation phase finishes before Sherpa proceeds. With async fill
+      // enabled we must still route the job through the shared Fill_Worker
+      // FIFO — HDF5 is not thread-safe by default, and running this fill on
+      // the main thread can race with a sibling reader's worker-side fill
+      // already in flight (from a prior reader's Advance()). Submit and
+      // immediately wait so we serialize via the FIFO while preserving the
+      // synchronous semantics. Advance() then promotes the buffer and kicks
+      // off the first overlapped refill (async, if enabled).
+      // We time this initial synchronous fill explicitly as it is not part of
+      // Sherpa's event-generation time accounting. Reporting it lets users
+      // add it back when comparing total run times across backends. We also
+      // announce the start, because the warm-up can take a long time at high
+      // multiplicities and silent waits leave users guessing.
+      msg_Info() << "Pepper_Interface: running initial synchronous fill for"
+                    " process \"" << m_process_spec << "\""
+                    " (Pepper optimisation + first unweighted events); this"
+                    " may take a while at high multiplicities ...\n";
+      const auto t_start = std::chrono::steady_clock::now();
+      auto report_timing = [this, t_start]() {
+	const auto t_end = std::chrono::steady_clock::now();
+	const double t_warmup_s = std::chrono::duration<double>(
+				      t_end - t_start).count();
+	msg_Info() << "Pepper_Interface: initial synchronous fill for"
+		      " process \"" << m_process_spec << "\" took "
+		   << t_warmup_s << " s.\n";
+      };
+      LaunchFill();
+      WaitForFill();
+      if (m_async_fill) {
+	report_timing();
+      }
+      if (m_last_fill_result == 0)
+        m_finished = true;
+      else
+        Advance();
+      if (!m_async_fill) {
+	report_timing();
+      }
+    }
+
+    void PrintStatistics(std::ostream& o) override
+    {
+      const size_t total_consumed = m_total_consumed + m_ievt;
+      o << "    Pepper: " << total_consumed << " events read"
+        << " (current in-memory buffer #" << m_iblock << ": " << m_ievt
+        << " of " << m_ncurrent;
+      if (m_ncurrent > 0)
+        o << ", " << m_ievt * 1000 / m_ncurrent / 10.0 << " %";
+      o << ")";
+      if (mpi->MySize() > 1) o << " on rank 0";
+      o << '\n';
+    }
+
+    // Pepper feeds events independently on every rank, so there is
+    // no shared file pointer to synchronize. The barrier is the right
+    // moment to retry a refill if a previous attempt came up empty.
+    // We must not race an in-flight async fill, so first drain any
+    // pending future before inspecting p_next.
+    void MPISync() override
+    {
+      WaitForFill();
+      if (m_finished && !p_next) {
+        // Retry at the barrier: block until the fill completes. With async
+        // fill enabled we still route through the worker (see WarmUp's
+        // comment) — running this on the main thread can race with a sibling
+        // reader's worker-side fill, and HDF5 is not thread-safe.
+        LaunchFill();
+        WaitForFill();
+        if (m_last_fill_result > 0) m_finished = false;
+      }
+    }
+
+  };// end of class Pepper_Reader
+
+}// end of namespace LHEH5
+
+using namespace LHEH5;
+
+DECLARE_GETTER(Pepper_Reader,"Pepper",Event_Reader,Event_Reader_Key);
+
+Event_Reader *ATOOLS::Getter<Event_Reader,Event_Reader_Key,Pepper_Reader>::
+operator()(const Event_Reader_Key &args) const
+{
+  return new Pepper_Reader(args);
+}
+
+void ATOOLS::Getter<Event_Reader,Event_Reader_Key,Pepper_Reader>::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"Pepper reader (in-memory HDF5)";
+}

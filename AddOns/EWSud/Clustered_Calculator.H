@@ -4,6 +4,9 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "AddOns/EWSud/Calculator.H"
 
+#include <memory>
+#include <vector>
+
 namespace EWSud {
 
   class Clustered_Calculator {
@@ -15,6 +18,13 @@ namespace EWSud {
     EWSudakov_Log_Corrections_Map CorrectionsMap(ATOOLS::Vec4D_Vector);
     const std::set<EWSudakov_Log_Type>& ActiveLogTypes() const
     { return calculators.begin()->second->ActiveLogTypes(); }
+
+    inline size_t NThresholds() const         { return m_thresholds.size(); }
+    inline double Threshold(size_t i=0) const { return m_thresholds[i]; }
+    inline const std::vector<double>& Thresholds() const { return m_thresholds; }
+
+    bool IsInHighEnergyLimit(const double& thr)
+    { return p_lastcalc->IsInHighEnergyLimit(thr); }
 
   private:
 
@@ -31,12 +41,16 @@ namespace EWSud {
     // eenunu -> ZZ/WW), such that we allow for the possibility of having
     // several calculators; the first calculator will always be the "base"
     // calculator, i.e. the one for the completely unclustered process
-    std::map<ATOOLS::Flavour_Vector, std::unique_ptr<Calculator>> calculators;
+    std::map<ATOOLS::Flavour_Vector, std::shared_ptr<Calculator>> calculators;
+    std::shared_ptr<Calculator> p_calc, p_lastcalc;
 
     PHASIC::Process_Base* proc;
 
     /// the default COMIX interface used to create clustered processes
     Comix_Interface* p_comixinterface;
+
+    double              m_threshold;
+    std::vector<double> m_thresholds;
 
     double m_resdist;
     bool m_disabled;

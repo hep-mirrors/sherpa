@@ -42,7 +42,7 @@ Process_Base::Process_Base():
   m_mcmode(0), m_cmode(0),
   m_lookup(false), m_use_biweight(true),
   m_hasinternalscale(false), m_internalscale(sqr(rpa->gen.Ecms())),
-  p_apmap(NULL), p_read(NULL)
+  p_apmap(NULL), p_read(NULL), m_owns_reader(false)
 {
   if (s_usefmm<0)
     s_usefmm =
@@ -51,10 +51,22 @@ Process_Base::Process_Base():
 
 Process_Base::~Process_Base()
 {
+  FinalizeEventReader();
   if (p_kfactor) delete p_kfactor;
   if (p_scale) delete p_scale;
   delete p_selector;
   delete p_int;
+}
+
+void Process_Base::FinalizeEventReader()
+{
+  if (p_read==NULL) return;
+  if (m_owns_reader) {
+    p_read->Finalize();
+    delete p_read;
+    m_owns_reader=false;
+  }
+  p_read=NULL;
 }
 
 Process_Base *Process_Base::Selected()
@@ -318,31 +330,42 @@ bool Process_Base::SetupEventReader(const std::string &fnames)
 {
   size_t pos(fnames.find('['));
   std::string type(fnames.substr(0,pos));
-  std::string args(fnames.substr(pos+1,fnames.length()-pos-2));
   Event_Reader_Key key;
-  while (args.length()) {
-    pos=args.find(',');
-    std::string tag(args.substr(0,pos));
-    size_t bpos(tag.find('[')), epos(tag.find(']'));
-    size_t mpos (tag.find('-',bpos));
-    if (bpos!=std::string::npos && epos!=std::string::npos &&
-	mpos>bpos+1 && mpos<epos-1) {
-      size_t start(ToType<int>(tag.substr(bpos+1,mpos-bpos-1)));
-      size_t stop(ToType<int>(tag.substr(mpos+1,epos-mpos-1)));
-      std::string left(tag.substr(0,bpos));
-      std::string right(tag.substr(epos+1,tag.length()-epos-1));
-      for (size_t i(start);i<=stop;++i)
-	key.m_files.push_back(left+ToString(i)+right);
+  // Always forward process metadata so readers that can derive their own
+  // input identifiers (e.g. Pepper, which builds a process spec from
+  // flavours) can do so when the user has not passed an explicit `[...]`.
+  key.m_nin = m_nin;
+  key.m_nmaxq = m_pinfo.m_nmaxq;
+  key.m_flavours.reserve(m_flavs.size());
+  for (const auto &fl : m_flavs)
+    key.m_flavours.push_back(static_cast<long int>(fl));
+  if (pos!=std::string::npos) {
+    std::string args(fnames.substr(pos+1,fnames.length()-pos-2));
+    while (args.length()) {
+      pos=args.find(',');
+      std::string tag(args.substr(0,pos));
+      size_t bpos(tag.find('[')), epos(tag.find(']'));
+      size_t mpos (tag.find('-',bpos));
+      if (bpos!=std::string::npos && epos!=std::string::npos &&
+	  mpos>bpos+1 && mpos<epos-1) {
+        size_t start(ToType<int>(tag.substr(bpos+1,mpos-bpos-1)));
+        size_t stop(ToType<int>(tag.substr(mpos+1,epos-mpos-1)));
+        std::string left(tag.substr(0,bpos));
+        std::string right(tag.substr(epos+1,tag.length()-epos-1));
+        for (size_t i(start);i<=stop;++i)
+          key.m_files.push_back(left+ToString(i)+right);
+      }
+      else {
+        key.m_files.push_back(tag);
+      }
+      args.erase(0,pos!=std::string::npos?pos+1:args.length());
     }
-    else {
-      key.m_files.push_back(tag);
-    }
-    args.erase(0,pos!=std::string::npos?pos+1:args.length());
+    if (key.m_files.empty()) return false;
   }
-  if (key.m_files.empty()) return false;
   p_read = Getter_Function<Event_Reader,Event_Reader_Key>::GetObject(type,key);
   if (p_read==NULL && s_loader->LoadLibrary("Sherpa"+type+"Reader"))
     p_read = Getter_Function<Event_Reader,Event_Reader_Key>::GetObject(type,key);
+  if (p_read!=NULL) m_owns_reader=true;
   return p_read!=NULL;
 }
 

@@ -9,6 +9,8 @@
 
 #include "PHASIC++/Process/Process_Base.H"
 
+#include <vector>
+
 namespace EWSud {
 
   using Coeff_Map_Key = std::pair<EWSudakov_Log_Type, Leg_Index_Set>;
@@ -23,7 +25,7 @@ namespace EWSud {
 
   public:
 
-    Calculator(PHASIC::Process_Base*);
+    Calculator(PHASIC::Process_Base*, double);
     ~Calculator();
     EWSudakov_Log_Corrections_Map
     CorrectionsMap(const ATOOLS::Vec4D_Vector& mom);
@@ -36,9 +38,11 @@ namespace EWSud {
       return m_comixinterface;
     }
 
+    bool IsInHighEnergyLimit(const double&);
+
   private:
     HighEnergySchemes m_helimitscheme;
-    bool IsInHighEnergyLimit();
+
     void ClearSpinAmplitudes();
     void FillBaseSpinAmplitudes();
 

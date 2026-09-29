@@ -766,20 +766,40 @@ each sub-sample (e.g. 2-jet vs. 3-jet).
 
 .. _Parton-level event files:
 
-Parton-level event files
-========================
+Parton-level events from external sources
+=========================================
 
 Instead of generating parton-level events internally,
-Sherpa can instead read them from event files.
-These can come from a separate parton-level Sherpa run,
-using ``EVENT_OUTPUT: "HDF5[events]"`` (see :ref:`HDF5`),
-or from an external parton-level event generator,
-such as Pepper :cite:`Bothmann:2023gew`.
-Using pre-generated parton-level event files
-can speed up event generation significantly,
+Sherpa can also obtain them from an external source.
+This source can be a set of pre-generated event files,
+produced for example
+by the parton-level event generator Pepper :cite:`Bothmann:2023gew`,
+or even by a separate parton-level Sherpa run
+using ``EVENT_OUTPUT: "HDF5[events]"`` (see :ref:`HDF5`).
+Alternatively, the source can be an in-memory stream supplied at run time
+transparently by an external parton-level event generator library;
+the only option currently for this is Pepper,
+for this use case interfaced as an external library.
+Either route can speed up event generation significantly,
 because the parton-level part of the pipeline is typically
-the most expensive one, in particular when generating unweighted events,
+the most expensive one, in particular when generating unweighted events
 and/or at high jet multiplicities :cite:`Bothmann:2022thx`.
+
+The two corresponding settings,
+:ref:`Event_Files` and :ref:`Event_Source`,
+are aliases that select the same underlying reader machinery
+and accept the same ``<Type>[<args>]`` syntax.
+The split exists only for documentation clarity:
+use ``Event_Files`` when the parton-level events live in files on disk,
+and ``Event_Source`` when they are produced on-the-fly
+by an external library hooked into the current run.
+
+.. note::
+
+   ``PRINT_MPI_XS: true`` cannot currently be used
+   when using parton-level events from external sources.
+   Use ``PRINT_MPI_XS: false`` in MPI configurations
+   when using :ref:`Event_Files` or :ref:`Event_Source`.
 
 .. contents::
    :local:
@@ -803,3 +823,175 @@ from two input files:
    - 93 93 -> 11 -11 93{1}:
        2->3:
          Event_Files: HDF5[events.j1.1.hdf5,events.j1.2.hdf5]
+
+.. _Event_Source:
+
+Event_Source
+------------
+
+Use ``Event_Source`` to draw parton-level events
+from an external generator hooked into the current run
+rather than from files on disk.
+The only supported source so far is ``Pepper`` :cite:`Bothmann:2023gew`,
+which Sherpa drives through an in-memory pipeline:
+Pepper fills a buffer of unweighted parton-level events,
+Sherpa consumes them, and the next buffer is refilled in the background
+while events are being read.
+This in particular allows to offload the bottleneck of parton-level
+event generation to accelerators such as GPU via Pepper,
+which can be compiled for various such back-ends.
+Sherpa must be configured against an installation of Pepper
+that exposes the public C++ interface
+(``-DSHERPA_ENABLE_HDF5=ON`` and a Pepper build discoverable via ``CMAKE_PREFIX_PATH``).
+
+The general syntax is
+
+.. code-block:: yaml
+
+   Event_Source: Pepper
+
+Sherpa derives the Pepper process specification
+from the flavours of the current process
+and forwards it to Pepper automatically.
+Two cases are distinguished:
+
+- If both initial-state flavours
+  are Sherpa's "jet" container (``93``, i.e. proton beams),
+  Sherpa emits one of Pepper's compound process names
+  (``ppjj``, ``ppee``, ``ppev``, ``ppvv``, ``pptt``, ...),
+  with one trailing ``j`` appended for each outgoing jet (``93``).
+  For example, ``93 93 -> 11 -11 93 93`` becomes ``ppeejj``.
+  Compound names map to Pepper's bundled process-data files
+  that already sum over the contributing partonic channels.
+
+- Otherwise, Sherpa emits a partonic-channel specification
+  such as ``u ub -> e- e+ g``,
+  built directly from the signed PDG codes of ``m_flavs``.
+
+If the derived final state cannot be mapped onto one of Pepper's
+supported compound names,
+Sherpa aborts with a descriptive error.
+Contact the Pepper authors if you are interested
+in running not-yet supported processes through Pepper.
+
+The bracketed form ``Event_Source: Pepper[<cache_size>]`` is reserved
+for overriding the in-memory buffer size for this process only:
+``<cache_size>`` must be a positive integer giving the number of events
+kept per buffer, and takes precedence over the top-level
+:option:`PEPPER_CACHE_SIZE` (see below) for this process.
+This is particularly useful in multi-jet merging setups, where the
+optimal cache size is smaller for larger jet multiplicities.
+(Otherwise, long-running fills can block the FIFO fill queue
+unnecessarily long, reducing overall throughput.
+Fill times are reported at the beginning of the event generation;
+a rule of thumb for setting ``<cache_size>``,
+or the global :option:`PEPPER_CACHE_SIZE`,
+is to keep those fill times at a few seconds each).
+
+For a Drell-Yan + 1 jet sample backed by Pepper,
+the run card simply reads:
+
+.. code-block:: yaml
+
+   - 93 93 -> 11 -11 93{1}:
+       2->3:
+         Event_Source: Pepper
+
+Sherpa keeps the two sides in sync automatically:
+the beam energy, the PDF set and member,
+the EW input scheme and its parameters,
+the heavy-particle pole masses and widths,
+and the lepton-pair invariant-mass cuts implied by
+:option:`SELECTOR` ``Mass`` entries
+are all forwarded to Pepper at startup.
+:ref:`Max_N_Quarks` is forwarded per process,
+so that a limit set for one jet multiplicity
+applies to that multiplicity alone,
+just as it does on the Sherpa side.
+Pepper counts quark pairs rather than quarks,
+so the value is halved on the way;
+if Pepper's own ``main.n_max_quark_pairs`` is stricter,
+that setting still wins.
+Sherpa's ``SCALES`` choice is also best-effort aligned
+with Pepper's hard-coded :math:`\mu^2` setters
+(see Pepper's ``main.mu2``);
+mismatches do not change physics
+(Sherpa reweights every event to its own scale),
+but reduce the overall unweighting efficiency.
+
+The cuts that regularise the QCD final state
+are forwarded as well, so that Pepper generates
+the same jet phase space that Sherpa asks for.
+Two sources are taken into account:
+
+- the CKKW merging scale of a multi-jet merged setup,
+  together with the jet criterion that defines
+  when an emission counts as a jet.
+  Pepper only implements :math:`k_T` clustering in :math:`(y,\phi)`,
+  so a merged run has to set
+  ``JET_CRITERION: FASTJET[A:kt,R:<R>,y:<y>]``;
+  Sherpa aborts otherwise
+  rather than let the two jet definitions disagree silently.
+
+- the jet-finder selectors :option:`FastjetFinder`,
+  :option:`NJetFinder` and :option:`FastjetSelector`,
+  i.e. what regularises jets
+  that are part of the core process already,
+  as for :math:`jj`\ +jets, where the merging criterion
+  does not act on the core process.
+  Their ``PTMin``/``ETMin``, ``DR``/``R``
+  and ``YMax``/``EtaMax`` settings translate into
+  Pepper's per-parton :math:`p_T`, :math:`\Delta R`
+  and rapidity cuts.
+
+A sample can be regularised by either or both of them,
+in which case the loosest of the implied cuts is passed on:
+Sherpa applies its own selectors to every event Pepper hands over,
+so cutting harder than Sherpa on the Pepper side
+would silently remove phase space,
+while cutting softer only costs unweighting efficiency.
+For the same reason, a run card that does not restrict
+the jet rapidity at all is translated into the kinematic limit
+rather than into Pepper's much tighter default.
+If neither source is present (e.g. a jetless Drell-Yan run),
+Pepper's own cut settings are left untouched.
+
+.. note::
+
+   The loosest-wins rule can cost unweighting efficiency
+   when asymmetric jet cuts are used,
+   as is common in dijet setups to increase efficiency
+   (e.g. one :option:`FastjetFinder` asking for one jet above 20 GeV
+   and a second one asking for two jets above 10 GeV).
+   Pepper applies a single :math:`p_T` threshold to every parton,
+   so it receives the softer of the two (10 GeV here)
+   and generates configurations that Sherpa's selectors
+   subsequently reject.
+   The physics is unaffected -- it is the tighter,
+   phase-space-cutting choice that would be wrong --
+   but a noticeable fraction of the generated events can be lost.
+   If this matters for your setup,
+   please contact the Pepper authors
+   with a feature request for asymmetric jet cuts.
+
+The following additional top-level settings tune the Pepper backend
+shared by all processes that use `Event_Source: Pepper`:
+
+:option:`PEPPER_CACHE_SIZE`
+   Number of events kept in each in-memory buffer.
+   Pepper fills one buffer of this size at a time,
+   so larger values amortise the per-batch overhead
+   at the cost of higher memory use.
+   This is a global default; it can be overridden per process
+   (e.g. per multiplicity in a multi-jet merging setup) by passing
+   the desired cache size as ``Event_Source: Pepper[<cache_size>]``.
+   Default: ``10000``.
+
+:option:`PEPPER_ASYNC_FILL`
+   If ``true``, the next buffer is filled on a worker thread
+   while Sherpa consumes events from the current buffer.
+   This can hide Pepper's fill latency,
+   in particular when Pepper runs on a GPU.
+   At most one fill is ever in flight per reader,
+   so Pepper itself is never re-entered concurrently.
+   Default: ``false``.
