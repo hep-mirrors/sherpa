@@ -503,14 +503,16 @@ namespace SHERPA {
       }
       rank+=m_offset;
       m_offset+=sumcache;
-      m_dss["events"].select({rank,0},{ncache,m_ecache.front().size()}).write(m_ecache, xfer_props);
+      // use the fixed column counts rather than reading them off the caches,
+      // which can be empty on this rank while others still have data
+      m_dss["events"].select({rank,0},{ncache,m_neprops+m_nweights}).write(m_ecache, xfer_props);
       m_ecache.clear();
-      m_dss["particles"].select({rank*m_nmax,0},{ncache*m_nmax,m_pcache.front().size()}).write(m_pcache,xfer_props);
+      m_dss["particles"].select({rank*m_nmax,0},{ncache*m_nmax,m_npprops}).write(m_pcache,xfer_props);
       m_pcache.clear();
       if (m_hasnlo) {
-	m_dss["ctevents"].select({rank,0},{ncache,m_necache.front().size()}).write(m_necache,xfer_props);
+	m_dss["ctevents"].select({rank,0},{ncache,m_nneprops}).write(m_necache,xfer_props);
 	m_necache.clear();
-	m_dss["ctparticles"].select({rank*m_nmax,0},{ncache*m_nmax,m_npcache.front().size()}).write(m_npcache,xfer_props);
+	m_dss["ctparticles"].select({rank*m_nmax,0},{ncache*m_nmax,m_nnpprops}).write(m_npcache,xfer_props);
 	m_npcache.clear();
       }
     }

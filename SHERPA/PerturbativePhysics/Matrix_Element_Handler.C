@@ -274,6 +274,8 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
   const auto sw = p_proc->Integrator()->SelectionWeight(m_eventmode) / m_sum;
   double enhance = p_proc->Integrator()->PSHandler()->EnhanceWeight();
   double wf(rpa->Picobarn()/sw/enhance);
+  // maximum of the selected process, normalised like a weighted event
+  const auto normmax = p_proc->Integrator()->Max() * wf;
   if (m_eventmode!=0) {
     const auto abswgt = std::abs(m_evtinfo.m_weightsmap.Nominal());
     const auto maxwt  = p_proc->Integrator()->Max();
@@ -321,6 +323,7 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
 
   // trial event is accepted, apply weight factor
   m_evtinfo.m_weightsmap*=wf;
+  m_evtinfo.m_max=normmax;
   if (p_proc->GetSubevtList()) {
     (*p_proc->GetSubevtList())*=wf;
     p_proc->GetSubevtList()->MultMEwgt(wf);
