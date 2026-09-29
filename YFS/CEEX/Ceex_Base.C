@@ -558,9 +558,32 @@ void Ceex_Base::RegisterDefaults()
     sum_h |A_2 + (v/2) A_1|^2, which is KKMC's O(alpha^2) structure
     ((1+d_I)(1+d_F) on r in HiniPlus/HfinPlus). The difference is the
     O(alpha^2) real-virtual v x beta_1 interference; see
-    NOTES-ceex-order2-2026-09-26.md. Ignored at ORDER 1.
+    NOTES-ceex-order2-2026-09-26.md. Ignored at ORDER 1 (CEEX: REAL_VIRTUAL
+    1 is the same composition at ORDER 1).
   */
   s["ORDER2_VIRTUAL_ON_BETA1"].SetDefault(0);
+  /*
+    CEEX: REAL_VIRTUAL (default 0) - the O(alpha^2) real-virtual on the
+    one-photon residuals, so that ACRAIC carries what YFS.NLO carries with
+    YFS: VIRTUAL_COMBINE 1 and YFS: RV_MODE 1 (NOTES-yfsnlo-realvirtual-
+    2026-09-28.md, ACRAIC section). External/auto virtual only.
+    0: unchanged, sum_h |A_1 + (v/2) A_0|^2 (at ORDER 2 as
+       ORDER2_VIRTUAL_ON_BETA1 says).
+    1: the factorisable part, sum_h |(1 + v/2) A_1|^2 (A_2 at ORDER 2): v/2
+       on every beta_1 as well as on beta_0 - ORDER2_VIRTUAL_ON_BETA1 1, now
+       also at ORDER 1. KKMC CEEX2's (1+d_I)(1+d_F) on beta_1, and YFS.NLO's
+       (1 + v) x real.
+    2: 1 plus the non-factorisable remainder: photon j's M_1 (in every
+       partition that carries it) gets (v_{n+1,j} - v_B)/2 on top, the
+       helicity-averaged loop over tree of the (n+1)-body point minus the
+       Born's, both IR subtracted on their own legs. The numbers are YFS.NLO's
+       (NLO_Base, YFS: RV_MODE 1: same loop call, photons matched by lab
+       momentum), so ACRAIC needs no loop call of its own; it needs NLO_Part
+       with E and YFS: RV_MODE 1. In |A|^2 this adds sum_j dv_j Re<A_1, M_1j>
+       (RealVirtualRemainderRho), at one photon dv |M_1|^2 = YFS.NLO's
+       rho dv on the same event.
+  */
+  s["REAL_VIRTUAL"].SetDefault(0);
   s["BETA2_CLOSURE"].SetDefault(0);    // @@@ B2CLOS, n = 2 closure
   s["BETA2_SOFT_TEST"].SetDefault(0);  // @@@ B2SOFT, soft limits (N events)
   s["BETA2_TRACE"].SetDefault(0);      // @@@ B2TRACE, per pair and partition
@@ -788,9 +811,15 @@ void Ceex_Base::MakeRho() {
     under ORDER2_VIRTUAL_ON_BETA1. At ORDER 1 none of this runs and every
     number above is the one it always was.
   */
+  // CEEX: REAL_VIRTUAL >= 1 at ORDER 1: v/2 on A_1 as a whole
+  if (m_order == 1 && RealVirtualMode() >= 1) {
+    m_result01 = m_result1;
+    m_resultV  = m_result1;
+  }
   if (m_order == 2) {
     static const bool vb1(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                          ["ORDER2_VIRTUAL_ON_BETA1"].Get<int>() != 0);
+                          ["ORDER2_VIRTUAL_ON_BETA1"].Get<int>() != 0
+                          || RealVirtualMode() >= 1);
     double s2(0.), s12(0.), s02(0.);
     for (int f = 0; f < nh; ++f) {
       m_AmpExpo2.m_A[f] = m_AmpExpo1.m_A[f] + m_AmpBeta2.m_A[f];
@@ -840,6 +869,36 @@ void Ceex_Base::Reset() {
 
 double Ceex_Base::Xi(const Vec4D p, const Vec4D q) {
   return sqrt((m_zeta * p) / (q * m_zeta));
+}
+
+int Ceex_Base::RealVirtualMode()
+{
+  static const int m(ATOOLS::Settings::GetMainSettings()["CEEX"]["REAL_VIRTUAL"]
+                     .SetDefault(0).Get<int>());
+  return m;
+}
+
+bool Ceex_Base::PhotonHasM1(size_t j) const
+{
+  if (j >= m_realphotM1.size()) return false;
+  for (int f = 0; f < Amplitude::NHel(); ++f)
+    if (std::norm(m_realphotM1[j].m_A[f]) > 0.) return true;
+  return false;
+}
+
+double Ceex_Base::RealVirtualRemainderRho(const std::vector<double> &dv) const
+{
+  const Amplitude &A(m_order == 2 ? m_AmpExpo2 : m_AmpExpo1);
+  double sum(0.);
+  const int nh(Amplitude::NHel());
+  for (size_t j(0); j < dv.size() && j < m_realphotM1.size(); ++j) {
+    if (dv[j] == 0.) continue;
+    double re(0.);
+    for (int f = 0; f < nh; ++f)
+      re += std::real(conj(A.m_A[f]) * m_realphotM1[j].m_A[f]);
+    sum += dv[j]*re;
+  }
+  return sum/4.;
 }
 
 double Ceex_Base::RealFactorPhoton(size_t j) const

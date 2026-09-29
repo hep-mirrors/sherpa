@@ -1,6 +1,7 @@
 set(YFSNLO_SOURCES NLO_Base.C
                  NLO_LoopHelicity.C
                  NLO_Checks.C
+                 Photon_Counterterm.C
                  ME_Compare.C
                  Real_Correction.C
                  RealVirtual.C
@@ -9,6 +10,7 @@ set(YFSNLO_SOURCES NLO_Base.C
 
 set(YFSNLO_HEADERS  NLO_Base.H
                  ME_Compare.H
+                 Photon_Counterterm.H
                  Real_Correction.H
                  RealVirtual.H
                  Virtual.H

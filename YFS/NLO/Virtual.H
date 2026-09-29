@@ -20,9 +20,15 @@ namespace YFS{
         ~Virtual();
         double Calc(const ATOOLS::Vec4D_Vector momenta, double b);    
         std::unique_ptr<PHASIC::Virtual_ME2_Base> p_loop_me;
+        //! peval (optional): the frame the loop is evaluated in (NLO cuts
+        //! and the running-alpha scale still use p). See YFS:
+        //! VIRTUAL_CANONICAL_FRAME in NLO_Base::CalculateVirtual.
         double Calc_V(const ATOOLS::Vec4D_Vector& p,
                     const double B,
-                    const double mur);
+                    const double mur,
+                    const ATOOLS::Vec4D_Vector *peval = nullptr);
+        double CalcInFrame(const ATOOLS::Vec4D_Vector &momenta,
+                           const ATOOLS::Vec4D_Vector &peval, double b);
         MODEL::Coupling_Map m_cpls;
         double m_factor;
         //! Not owned; set by SetProc, may be null.

@@ -38,6 +38,10 @@ YFS_Handler::YFS_Handler()
 YFS_Handler::~YFS_Handler()
 {
   if(Mode()!=YFS::yfsmode::off){
+    if (m_acrv_n > 0)
+      msg_Out()<<"CEEX: REAL_VIRTUAL 2 on "<<m_acrv_n<<" events (this rank): NLO RV photons "
+               <<"without a CEEX match "<<m_acrv_nomatch<<", matched but without M_1 "
+               <<m_acrv_nom1<<std::endl;
     const Ceex_Stats &cs(m_ceexstats);
     if (cs.m_cmp_n > 0)
       msg_Out()<<"YFS CEEX_Compare over "<<cs.m_cmp_n<<" points, CEEX vs the "
@@ -1217,6 +1221,54 @@ void YFS_Handler::InitNLO(){
   }
 }
 
+/*
+  CEEX: REAL_VIRTUAL 2. The CEEX photon list (m_ev.m_ISRPhotons +
+  m_ev.m_FSRPhotons, AllPhotonsLab) and YFS.NLO's (m_ISRPhotons +
+  m_me_photons) are built independently, so each CEEX photon takes the dv of
+  the NLO photon with the same lab momentum (to 1e-6 of its energy); photons
+  without a match or below RV_SOFT_CUT keep dv = 0 (their remainder -> 0 in
+  the soft limit anyway), and are counted. YFS: RV_PROBE 1 prints per event
+  "@@@ ACRV": ACRAIC's addition over rho_crude next to YFS.NLO's rv/B.
+*/
+double YFS_Handler::CeexRealVirtualRemainder()
+{
+  if (!p_ceex || !p_nlo || !p_nlo->RVRemainder()) return 0.;
+  const Vec4D_Vector &cph(p_ceex->AllPhotonsLab());
+  const std::vector<std::pair<Vec4D,double> > &nd(p_nlo->m_rvdv);
+  std::vector<double> dv(cph.size(), 0.);
+  int nmatch(0);
+  for (size_t b(0); b < nd.size(); ++b) {
+    long a(-1); double best(1e30);
+    for (size_t c(0); c < cph.size(); ++c) {
+      const Vec4D d(cph[c] - nd[b].first);
+      const double m(Max(Max(dabs(d[0]),dabs(d[1])),Max(dabs(d[2]),dabs(d[3]))));
+      if (m < best) { best = m; a = (long)c; }
+    }
+    if (a < 0 || !(best < 1e-6*Max(nd[b].first.E(), 1e-30))) { ++m_acrv_nomatch; continue; }
+    if (!p_ceex->PhotonHasM1(a)) { ++m_acrv_nom1; continue; }
+    dv[a] = nd[b].second;
+    ++nmatch;
+  }
+  ++m_acrv_n;
+  const double r(p_ceex->RealVirtualRemainderRho(dv));
+  static const bool probe(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_PROBE"]
+                          .SetDefault(0).Get<int>() != 0);
+  if (probe) {
+    const double rcr(p_ceex->GetRhoCrude());
+    std::ostringstream o;
+    o<<std::setprecision(10)<<"@@@ ACRV nph="<<cph.size()<<" nnlo="<<nd.size()
+     <<" matched="<<nmatch<<" acrv="<<(rcr > 0. ? r/rcr : 0.)
+     <<" nlorv="<<(m_born != 0. ? m_ev.m_nlo_rv/m_born : 0.)
+     <<" rho1/rcr="<<(rcr > 0. ? p_ceex->GetResult()/rcr : 0.)
+     <<" nloreal="<<(m_born != 0. ? 1. + m_ev.m_nlo_real/m_born : 0.)
+     <<" dv="<<(nd.size() == 1 ? nd[0].second : 0.)
+     <<" x="<<(nd.size() == 1 ? 2.*nd[0].first.E()/sqrt(m_s) : 0.)
+     <<" nisr="<<m_ev.m_ISRPhotons.size()<<"\n";
+    std::cerr<<o.str();
+  }
+  return r;
+}
+
 double YFS_Handler::CalculateNLO(){
 // CheckMomentumConservation();
   InitNLO();
@@ -1267,12 +1319,15 @@ double YFS_Handler::CalculateNLO(){
     70-76% of that excess comes from events with rho_1/rho_crude < 0.01
     (0.3-0.5% of CEEX): Borns on the generator's reduced-frame t-channel
     pole, which the exact real empties but the sum still pays v * B.
-    Stands aside when a real-virtual is requested: that supplies the
-    v x real term itself.
+    Stands aside when a real-virtual is requested: the legacy RV (YFS:
+    RV_MODE 0) supplies the v x real term itself. The RV_MODE 1 remainder
+    does not - it is defined as the real-virtual beyond (1 + v) x real - so
+    there the term is kept, whatever VIRTUAL_COMBINE says.
   */
   { static const int vcomb(ATOOLS::Settings::GetMainSettings()["YFS"]
                            ["VIRTUAL_COMBINE"].SetDefault(1).Get<int>());
-    if (vcomb == 1 && m_born != 0. && !p_nlo->HasRealVirtual()) {
+    const bool addvxr((vcomb == 1 && !p_nlo->HasRealVirtual()) || p_nlo->RVRemainder());
+    if (addvxr && m_born != 0.) {
       const double vxr((m_ev.m_nlo_virtual/m_born)
                        *(m_ev.m_nlo_real + m_ev.m_nlo_rr + m_ev.m_nlo_rn));
       if (!IsBad(vxr)) m_ev.m_nlo_vxr = vxr;
@@ -1425,6 +1480,12 @@ void YFS_Handler::GenerateWeight() {
                                  + 0.25*v*v*p_ceex->GetResultVV())/rcr : 0.);
     if (!IsBad(add)) corr_ceex += add;
     else ++m_ceexstats.m_bad;
+    // CEEX: REAL_VIRTUAL 2 - the non-factorisable real-virtual, YFS.NLO's
+    // per-photon v_{n+1} - v_B on each photon's M_1 (Ceex_Base.C)
+    if (YFS::Ceex_Base::RealVirtualMode() == 2 && rcr > 0.) {
+      const double arv(CeexRealVirtualRemainder()/rcr);
+      if (!IsBad(arv)) corr_ceex += arv;
+    }
     if (ceexo2) {
       const double add1(rcr > 0. ? (v*p_ceex->GetResult01Order1()
                                     + 0.25*v*v*p_ceex->GetResult0())/rcr : 0.);

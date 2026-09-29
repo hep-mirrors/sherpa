@@ -1972,6 +1972,7 @@ bool Ceex_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
       const Complex m1(rescale * w * m_cxbalign.m_A[f] * M1.m_A[f]/rn);
       v += m1;
       nm1 += std::norm(m1);
+      if (iphot < (int)m_realphotM1.size()) m_realphotM1[iphot].m_A[f] += m1;
     }
     nsub += std::norm(sub); nv += std::norm(v);
     m_AmpExpo1.m_A[f]    += v;

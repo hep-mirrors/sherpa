@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "YFS/NLO/NLO_Base.H"
@@ -16,6 +17,8 @@
 #include <iostream>
 #include "YFS/NLO/Virtual.H"
 #include "YFS/NLO/VirtualVirtual.H"
+#include "YFS/NLO/Photon_Counterterm.H"
+#include "MODEL/Main/Model_Base.H"
 #include <cmath>
 #include <algorithm>
 #include <utility>
@@ -28,6 +31,101 @@ using namespace YFS;
 using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
+
+/*
+  YFS: RV_MODE - how the squared-level real-virtual (NLO_Part with E) is built.
+
+  0 (default): the legacy RV, CalculateRealVirtual(Vec4D): per photon
+    [r_RV flux - (B~ rtree flux + S~ B v)/kappa]/S~_crude, the whole
+    beta_1^(2) - beta_1^(1) = R v_{n+1} - S~ B v, with its own point, crude,
+    flux and coupling, and with E present REAL_COMBINE's product and
+    VIRTUAL_COMBINE switched off. IR unsafe: the (n+1) loop runs at
+    mu = 1 GeV against the Born's mu^2 = s, and the full-EW finite part is
+    mu dependent beyond its IR pole (+0.4% G_mu, +0.8% alpha(0) per event
+    whose photons are all soft).
+
+  1: the remainder. With v = V_sub/B of the event, v_{n+1} the same object at
+    photon j's (n+1)-body point and rho_j = R_j/(crude_j B) the photon's
+    exact-over-crude ratio, the exact one-photon O(alpha^2) weight
+      beta_0 (1 + v) + [R (1 + v_{n+1}) - S B (1 + v)]/crude
+    is identically
+      (1 + v)(1 + delta) + rho (v_{n+1} - v),
+    delta = (R - S B)/(crude B) the real's bracket.
+*/
+static int RVMode() {
+  static const int m(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_MODE"]
+                     .SetDefault(0).Get<int>());
+  return m;
+}
+
+/*
+  YFS: RV_PROBE (diagnostic, default 0): one line per real-virtual photon on
+  std::cerr, "@@@ RVPROBE", with the loop over the tree lt = V_fin/T of the
+  last loop call, the YFS dim-reg subtraction on the event's Born legs (the
+  dipoles CalculateRealVirtual builds, Born momenta m_plab) and on the
+  (n+1)-body point's own charged legs, the Born's v = V_sub/B, and the
+  one-loop pole coefficients of each. dv_ev and dv_pt are v_{n+1} - v with
+  the two subtractions: the object that must vanish in the soft limit.
+*/
+// YFS: RV_LOOP_FRAME, documented at RVLoopPoint
+static int RVLoopFrame() {
+  static const int m(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_LOOP_FRAME"]
+                     .SetDefault(1).Get<int>());
+  return m;
+}
+
+static bool RVProbeOn() {
+  static const bool on(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_PROBE"]
+                       .SetDefault(0).Get<int>() != 0);
+  return on;
+}
+
+bool NLO_Base::RVRemainder() const { return m_realvirt && RVMode() == 1; }
+
+/*
+  The frame the one-loop provider is called in (RV_MODE 1 always, the Born's
+  virtual with YFS: VIRTUAL_CANONICAL_FRAME). OpenLoops' one-loop amplitudes
+  are not Lorentz invariant to better than ~1% when a leg is almost, but not
+  exactly, on a coordinate axis - measured with pyol at Sherpa's own points
+
+  So: boost to the rest frame of the two beams, put the beams exactly back to
+  back on the z axis, then turn the whole point by
+  a fixed generic rotation, so that no leg lies near a coordinate axis. The
+  squared amplitudes are invariant, so nothing else changes.
+*/
+static Vec4D_Vector BeamRestFrameOnZ(const Vec4D_Vector &p)
+{
+  Vec4D_Vector q(p);
+  if (q.size() < 2) return q;
+  Poincare cms(q[0] + q[1]);
+  for (Vec4D &v : q) cms.Boost(v);
+  if (sqr(q[0][1]) + sqr(q[0][2]) > 0. || q[0][3] < 0.) {
+    const Poincare rot(q[0], Vec4D(0., 0., 0., 1.));
+    Vec4D a(q[0]), b(q[0]);
+    rot.Rotate(a);
+    rot.RotateBack(b);
+    const bool fwd(sqr(a[1]) + sqr(a[2]) <= sqr(b[1]) + sqr(b[2]));
+    for (Vec4D &v : q) { if (fwd) rot.Rotate(v); else rot.RotateBack(v); }
+  }
+  q[0] = Vec4D(q[0][0], 0., 0.,  Vec3D(q[0]).Abs());
+  q[1] = Vec4D(q[1][0], 0., 0., -Vec3D(q[1]).Abs());
+  return q;
+}
+
+static Vec4D_Vector CanonicalBeamFrame(const Vec4D_Vector &p)
+{
+  Vec4D_Vector q(BeamRestFrameOnZ(p));
+  // fixed generic rotation (z-y-z Euler angles 0.3, 0.7, 1.1)
+  static const double ca(cos(0.3)), sa(sin(0.3)), cb(cos(0.7)), sb(sin(0.7)),
+                      cc(cos(1.1)), sc(sin(1.1));
+  for (Vec4D &v : q) {
+    double x(v[1]), y(v[2]), z(v[3]);
+    double x1(ca*x - sa*y), y1(sa*x + ca*y);
+    double x2(cb*x1 + sb*z), z2(-sb*x1 + cb*z);
+    v = Vec4D(v[0], cc*x2 - sc*y1, sc*x2 + cc*y1, z2);
+  }
+  return q;
+}
 
 double massmin = 2220;
 double rcount = 1;
@@ -133,6 +231,21 @@ NLO_Base::~NLO_Base() {
 #endif
   msg_Out()<<"Total soft RV skipped: "<<m_softRV<<std::endl;
   msg_Out()<<"Total unstable-ME RV skipped (RV_ME_MAX_RATIO): "<<m_rvUnstable<<std::endl;
+  if (RVMode() == 1 && m_realvirt) {
+#ifdef USING__MPI
+    if (mpi->Size() > 1) {
+      int rb[2] = {m_rvPoleFail, m_rvNoVirt};
+      mpi->Allreduce(rb, 2, MPI_INT, MPI_SUM);
+      m_rvPoleFail = rb[0];
+      m_rvNoVirt = rb[1];
+    }
+#endif
+    msg_Out()<<"RV_MODE 1: pole mismatches > 1e-6: "<<m_rvPoleFail
+             <<", photons without a Born virtual: "<<m_rvNoVirt<<std::endl;
+    msg_Out()<<"RV_MODE 1 (this rank): loop frame "<<RVLoopFrame()
+             <<", two-frame checks "<<m_rvLoopChecked<<", dropped as unstable "
+             <<m_rvLoopUnstable<<std::endl;
+  }
   msg_Out()<<"Total soft RR pairs skipped: "<<m_softRR<<std::endl;
   if (m_rv_cancel_hist) {
 #ifdef USING__MPI
@@ -193,6 +306,7 @@ void NLO_Base::Init(Flavour_Vector &flavs, Vec4D_Vector &plab,
 
 double NLO_Base::CalculateVirtual() {
   m_lhelok = false;
+  m_vborn_ok = false;
   if (CeexSuppliesVirtual())
     return (m_ceexvirt - 1.) * m_born;
   if (m_eex_virt) {
@@ -206,8 +320,19 @@ double NLO_Base::CalculateVirtual() {
   double sub;
   p_dipoles->p_yfsFormFact->p_virt = p_virt->p_loop_me.get();
   CheckMassReg();
-  if (!HasISR())
-    virt = p_virt->Calc(m_plab, m_born);
+  /*
+    YFS: VIRTUAL_CANONICAL_FRAME (default 0): evaluate the Born's one-loop
+    in the rest frame of the beams with the beams exactly on the z axis
+    (CanonicalBeamFrame, which documents why). The event's Born point after
+    ISR has two beams with the same tiny p_T, and there OpenLoops' 2 -> 2
+    virtual is off by up to 8% of itself (Z-pole mu mu, full EW, alpha(0):
+    0.085 against 0.091 in every rotated frame). Not for CEEX_Virtual:
+    helicity, whose helicity labels are the lab's.
+  */
+  static const bool vcanon(ATOOLS::Settings::GetMainSettings()["YFS"]
+                           ["VIRTUAL_CANONICAL_FRAME"].SetDefault(0).Get<int>() != 0);
+  if (vcanon && !(m_useceex && m_ceexvirtsrc == ceexvirt::helicity))
+    virt = p_virt->CalcInFrame(m_plab, CanonicalBeamFrame(m_plab), m_born);
   else
     virt = p_virt->Calc(m_plab, m_born);
   if (m_check_virt_born) {
@@ -282,6 +407,11 @@ double NLO_Base::CalculateVirtual() {
                       << "Sherpa V eps^{-1}  = " << yfspole << std::endl;
     }
   }
+  // v of this event for the RV_MODE 1 remainder v_{n+1} - v
+  if (m_born != 0. && !IsBad(m_oneloop)) {
+    m_vborn = m_oneloop/m_born;
+    m_vborn_ok = true;
+  }
   return m_oneloop;
 }
 
@@ -339,8 +469,12 @@ double NLO_Base::CalculateReal() {
   static const double trace_thr(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_TRACE"].Get<double>());
   m_realtrace.str(""); m_realtrace.clear();
   double prodw(1.);
+  m_rvinfo.clear();
   for (YFS::Photon &g : m_photons) {
     const Vec4D k(g.K());
+    // RV_MODE 1: one entry per photon, filled below if the real is evaluated
+    if (RVMode() == 1) m_rvinfo.push_back(RVPointInfo());
+    m_lastrvinfo = RVPointInfo();
     { static const bool dg(ATOOLS::Settings::GetMainSettings()["YFS"]["PHOTON_DUMP"].Get<int>()!=0);
       if (dg) {
         ATOOLS::Vec4D tot; double eph(0.0);
@@ -378,6 +512,7 @@ double NLO_Base::CalculateReal() {
     } else {
       contrib = CalculateReal(k);
     }
+    if (RVMode() == 1) m_rvinfo.back() = m_lastrvinfo;
     real += contrib;
     // YFS: REAL_COMBINE 1: this photon's factor, its bracket plus the IF
     // interference ratio m_ifi_prod picked up for it (1 without IFI_Real)
@@ -404,35 +539,14 @@ double NLO_Base::CalculateReal() {
     ratio - 1. 1: the product prod_j (1 + delta_j), which agrees with the sum
     at O(alpha) (identical with one photon) and adds the factorised
     beta_2 ~ beta_1 beta_1/beta_0 at O(alpha^2).
-
-    Why it matters (e+e- -> gamma gamma, 2026-09-26): events whose Born sits
-    near a t-channel pole of the generator's reduced frame (Born photon within
-    1 - cos ~ 1e-6 of the reduced beam axis in the rest frame of the pair,
-    median over the negative events, against 0.28 elsewhere) have
-    r << S~ m_born for EVERY photon that moves the configuration off the pole:
-    the hard photon's bracket is -1, correctly, and each companion adds either
-    its ordinary -x or, when its recoil tilts the scaled point off the pole,
-    another -1. The sum is then 1 - 1 - ... < 0 while the product (and CEEX,
-    an amplitude squared) is >= 0. On 2599 multi-photon events: FO < 0 on
-    120 with the sum, 0 with the product; sum of factors 2096.8 (sum),
-    2116.7 (product), 2122.8 (CEEX); per-event median CEEX/FO 1.0000 either
-    way. Not applied when a real-virtual or double-real is requested: those
-    supply beta_2 themselves.
-    -1: 1 exactly when the Born has a space-like exchange line (t/u-channel:
-    gamma gamma, Bhabha), 0 otherwise.
-    1 (default since 2026-09-26) for every Born. At 250 GeV mu mu nearly every
-    event in 66-116 GeV has a radiative-return photon with delta ~ -0.5, and
-    the hard-FSR delta and the IFI ratio must multiply (1 + delta), not add
-    to it: with the sum, nominal/CEEX was 0.931 (0.79-0.95 per bin); with the
-    product and VIRTUAL_COMBINE 1, 1.00-1.03. The Z pole moves < 1%. The
-    "+9% away from KKMC" that once kept the sum for s-channel Borns was
-    measured against an EEX O(alpha^2) reference without IFI, with the sum
-    virtual (NOTES-mumu-250-2026-09-26.md).
   */
   { static const int comb(ATOOLS::Settings::GetMainSettings()["YFS"]
                           ["REAL_COMBINE"].SetDefault(1).Get<int>());
     const bool useprod(comb == 1 || (comb < 0 && BornHasExchangeLine(p_bornproc, m_plab)));
-    if (useprod && m_born != 0. && !IsBad(prodw) && !m_rrtool && !m_realvirt)
+    // RV_MODE 1's real-virtual is a remainder on top of this product (it
+    // supplies neither beta_2 nor v x real), so the product stays on with it
+    if (useprod && m_born != 0. && !IsBad(prodw) && !m_rrtool
+        && (!m_realvirt || RVMode() == 1))
       real = m_born*(prodw - 1.); }
   if (trace_thr > 0. && m_born != 0. && std::abs(1. + real/m_born) > trace_thr) {
     Vec4D Q;
@@ -454,24 +568,6 @@ static int Sub8Part() {
   return p;
 }
 
-/*
-  YFS: SUB8_FSR_LEGS 2 - the FSR generator's own density for a final-state
-  photon, the FF part of REAL_SUB_EIK 8's denominator.
-
-  FSR::F puts the mass weight m_f/f-bar on every photon, and m_f is the
-  eikonal of the POST-emission pair (KKMC's KarFin dist1; measured to 2e-5
-  per photon with YFS: FSR_DENSITY_GATE, NOTES-deadcone-crude-2026-09-28.md).
-  On top of the eikonals the generator's pair rescaling (FSR::RescalePhotons)
-  gives the dipole ONE flux factor, F_D = (q' + K_D)^2/q'^2 = 1/m_yy, q' the
-  post-emission pair and K_D all its photons - what CEEX's rho_crude carries
-  as m_pflux. The density of the n photons of a dipole is therefore
-  prod_i S~(q'; k_i) x F_D, and the per-photon denominators of the product
-  prod_j (1 + delta_j) (REAL_COMBINE 1) have to multiply to that. Each photon
-  gets S~(q'; k_j) F_D^(y_j/sum_i y_i), y = 2 k.Q_D/Q_D^2, Q_D = q' + K_D the
-  pre-emission pair: the dipole's whole flux for a single photon (the
-  one-photon identity with CEEX), essentially the whole flux for a hard photon
-  with soft companions, 1 for a soft one, and exactly F_D over all of them.
-*/
 static double DipoleFluxShare(const Vec4D &k, const Vec4D &qpost,
                               const Vec4D_Vector &photons)
 {
@@ -1412,7 +1508,352 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
   }
 
   msg_Debugging() << METHOD << " returning tot=" << tot << "\n";
+  if (RVMode() == 1 && m_born != 0. && m_lastdenom != 0.) {
+    // RV_MODE 1: the point and the photon's exact-over-crude ratio, in the
+    // same units and coupling as tot (REAL_ALPHA0's kappa included)
+    static const int a0(ATOOLS::Settings::GetMainSettings()["YFS"]
+                        ["REAL_ALPHA0"].SetDefault(1).Get<int>());
+    m_lastrvinfo.ok = true;
+    m_lastrvinfo.p = p;
+    m_lastrvinfo.rho = (a0 ? m_rescale_alpha : 1.)*r*flux/(m_lastdenom*m_born);
+  }
   return tot;
+}
+
+/*
+  RV_MODE 1: v_{n+1} at the (n+1)-body point p (photon last), in the units of
+  v = V_sub/B: the provider's loop over its own tree at the Born virtual's
+  mu, minus the Born virtual's subtraction function on the point's charged
+  legs. The subtraction is built after the loop call, so that a dim-reg
+  B~ reads this call's IR scale. Poles: the loop's 1/eps coefficient and the
+  subtraction's must cancel on these legs; failures beyond 1e-6 relative are
+  counted (m_rvPoleFail) and reported at the end.
+*/
+/*
+  YFS: RV_LOOP_FRAME - the frame RV_MODE 1 hands the (n+1)-point loop to
+  OpenLoops in.
+  0: the lab, the real's point as it is (the legacy RV's frame). Beams on z
+     up to the rounding of the rotate-back (|p_T|/E ~ 1e-33): the
+     hp_mode 1 offset of 0.54% on e+e- -> mu mu gamma, and photons within
+     ~3e-6 rad of a beam lose precision on the axis.
+  1 (default): CanonicalBeamFrame, the beams' rest frame turned by a fixed
+     generic rotation. 
+  2: the beams' rest frame with the beams exactly on z, then tilted by
+     1e-3 ra
+  3: the beams' rest frame with the beams exactly on z (no tilt): stable for
+     every nu nu gamma point seen
+  No single frame is right everywhere for photons deep in the electron's dead
+  cone; YFS: RV_LOOP_CHECK 1 compares two (see RealVirtualFactor).
+*/
+
+static Vec4D_Vector TiltedBeamFrame(const Vec4D_Vector &p)
+{
+  Vec4D_Vector q(BeamRestFrameOnZ(p));
+  static const double c(cos(1e-3)), s(sin(1e-3));
+  for (Vec4D &v : q) v = Vec4D(v[0], c*v[1] + s*v[3], v[2], -s*v[1] + c*v[3]);
+  return q;
+}
+
+static Vec4D_Vector RVLoopPoint(const Vec4D_Vector &p, int frame)
+{
+  switch (frame) {
+  case 0: return p;
+  case 2: return TiltedBeamFrame(p);
+  case 3: return BeamRestFrameOnZ(p);
+  default: return CanonicalBeamFrame(p);
+  }
+}
+
+/*
+  YFS: RV_LOOP_CHECK (default 0). 1: for a photon within RV_LOOP_CHECK_ANGLE
+  (default 1e-4 rad, ~10 m_e/E at the Z pole) of a beam, evaluate V_fin/T a
+  second time, in frame 2 if RV_LOOP_FRAME is 3 and in frame 3 otherwise,
+  and drop the photon's real-virtual (counted, reported at the end) when the
+  two differ by more than RV_LOOP_CHECK_TOL (default 1e-3). The remainder of
+  such photons is O(1e-3 .. 1e-2) of |M_1|^2 at most; OpenLoops' value there
+  can be O(1e4) in one frame.
+*/
+static bool RVLoopCheckNeeded(const Vec4D_Vector &p)
+{
+  static const int on(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_LOOP_CHECK"]
+                      .SetDefault(0).Get<int>());
+  static const double amax(ATOOLS::Settings::GetMainSettings()["YFS"]
+                           ["RV_LOOP_CHECK_ANGLE"].SetDefault(1e-4).Get<double>());
+  if (!on || p.size() < 3) return false;
+  const Vec4D &k(p.back());
+  for (size_t i(0); i < 2; ++i) {
+    const double c(Vec3D(p[i])*Vec3D(k)/(Vec3D(p[i]).Abs()*Vec3D(k).Abs()));
+    if (acos(Max(-1., Min(1., c))) < amax) return true;
+  }
+  return false;
+}
+
+bool NLO_Base::RealVirtualFactor(const Vec4D_Vector &pin, double &v1) {
+  if (pin.size() != m_flavs.size() + 1) return false;
+  const Vec4D_Vector p(RVLoopPoint(pin, RVLoopFrame()));
+  double mur2(sqr(rpa->gen.Ecms()));
+  if (m_looptool && p_virt->p_loop_me->IRscale() > 0.)
+    mur2 = sqr(p_virt->p_loop_me->IRscale());
+  double lt(0.);
+  if (RVLoopCheckNeeded(pin)) {
+    static const double tol(ATOOLS::Settings::GetMainSettings()["YFS"]
+                            ["RV_LOOP_CHECK_TOL"].SetDefault(1e-3).Get<double>());
+    double lt2(0.);
+    const Vec4D_Vector q(RVLoopPoint(pin, RVLoopFrame() == 3 ? 2 : 3));
+    if (!p_realvirt->LoopOverTree(pin, q, mur2, lt2)) return false;
+    ++m_rvLoopChecked;
+    if (!p_realvirt->LoopOverTree(pin, p, mur2, lt)) return false;
+    if (!(std::abs(lt - lt2) <= tol)) { ++m_rvLoopUnstable; return false; }
+  }
+  else if (!p_realvirt->LoopOverTree(pin, p, mur2, lt)) return false;
+  Vec4D_Vector pp(p);
+  pp.pop_back();
+  p_nlodipoles->MakeDipolesII(m_flavs, pp, pp);
+  p_nlodipoles->MakeDipoles(m_flavs, pp, pp);
+  p_nlodipoles->MakeDipolesIF(m_flavs, pp, pp);
+  p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me.get();
+  const double sub(p_nlodipoles->CalculateVirtualSub());
+  if (IsBad(sub)) return false;
+  v1 = lt - sub/m_rescale_alpha;
+  const double e1l(p_realvirt->p_loop_me->ME_E1()*p_realvirt->m_factor);
+  const double e1s(p_nlodipoles->Get_E1()/m_rescale_alpha);
+  if (m_dim_reg && std::abs(e1l + e1s) > 1e-6*std::max(std::abs(e1l), 1e-3))
+    ++m_rvPoleFail;
+  if (RVProbeOn()) {
+    std::ostringstream o;
+    o<<std::setprecision(10)<<"@@@ RVREM lt="<<lt<<" sub="<<sub/m_rescale_alpha
+     <<" v1="<<v1<<" E1loop="<<e1l<<" E1sub="<<e1s<<" mu="<<sqrt(mur2);
+    // YFS: RV_PROBE 2: also the evaluated (canonical-frame) point and the
+    // event's Born point, at full precision, for the pyol referee
+    static const int lvl(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_PROBE"].Get<int>());
+    if (lvl >= 2) {
+      o<<std::setprecision(17)<<" PC=";
+      for (const Vec4D &q : p) o<<q<<" ";
+      o<<" PB=";
+      for (const Vec4D &q : CanonicalBeamFrame(m_plab)) o<<q<<" ";
+      o<<std::setprecision(10);
+    }
+    o<<"\n";   // one record per line (it ran into the next record before)
+    std::cerr<<o.str();
+  }
+  return !IsBad(v1);
+}
+
+/*
+  RV_MODE 1: the Born's v with the subtraction on the Born point's OWN legs,
+  v_B = V_fin(m_plab)/B - B~(m_plab legs)/kappa, from the loop CalculateVirtual
+  already evaluated. The event's v (m_vborn) subtracts B~
+  on the legs the YFS form factor is built on: the II dipole and the initial
+  legs of the IF dipoles at the FULL beams (YFS_Handler::MakeYFS), while the
+  loop is at m_plab, whose beams are reduced by the ISR photons. For a
+  one-photon event the (n+1)-body point's legs are those event legs, and
+  v_{n+1} - v would be exact given that convention; but with a hard ISR
+  companion the point of a soft photon sits at the reduced beams, and
+  v_{n+1} - v -> B~(reduced legs) - B~(full-beam legs) != 0 as the photon
+  goes soft: 1e-4 .. 6e-3 per soft photon, i.e. RV_SOFT_CUT dependence.
+  v_{n+1} - v_B -> 0 for every photon (both IR subtracted on their own legs:
+  the object the standalone referee olref.py computes), and differs from the
+  exact one-photon identity only by rho (v - v_B), the Born virtual's own
+  leg convention.
+*/
+bool NLO_Base::BornVirtualOnOwnLegs(double &vb) {
+  if (!m_looptool || m_born == 0.) return false;
+  p_nlodipoles->MakeDipolesII(m_flavs, m_plab, m_plab);
+  p_nlodipoles->MakeDipoles(m_flavs, m_plab, m_plab);
+  p_nlodipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
+  p_nlodipoles->p_yfsFormFact->p_virt = p_virt->p_loop_me.get();
+  const double sub(p_nlodipoles->CalculateVirtualSub());
+  vb = m_virt_raw/m_born - sub/m_rescale_alpha;
+  return !IsBad(vb);
+}
+
+/*
+  An (n+1)-body point with a soft photon of energy fraction x added to the
+  Born point born: in the beams' rest frame the final state is shrunk in its
+  own rest frame to the invariant mass (P - k)^2 (3-momenta scaled, masses
+  kept) and boosted onto P - k; the beams are unchanged; photon last.
+*/
+static bool SoftPhotonPoint(const Vec4D_Vector &born, const double x,
+                            Vec4D_Vector &pt)
+{
+  if (born.size() < 4) return false;
+  const Vec4D_Vector q(BeamRestFrameOnZ(born));
+  const Vec4D P(q[0] + q[1]);
+  const double rs(P.Mass());
+  const Vec3D n(Vec3D(0.36, 0.48, 0.8)/Vec3D(0.36, 0.48, 0.8).Abs());
+  const double e(0.5*x*rs);
+  const Vec4D k(e, e*n);
+  const Vec4D Qp(P - k);
+  const double Mp(Qp.Mass());
+  // final state in its own rest frame (q is in P's rest frame already)
+  Vec4D Qf;
+  for (size_t i(2); i < q.size(); ++i) Qf += q[i];
+  Poincare restf(Qf);
+  Vec4D_Vector f;
+  std::vector<double> m2;
+  for (size_t i(2); i < q.size(); ++i) {
+    Vec4D v(q[i]);
+    restf.Boost(v);
+    f.push_back(v);
+    m2.push_back(Max(0., v.Abs2()));
+  }
+  double xi(1.);
+  for (int it(0); it < 50; ++it) {
+    double E(0.), dE(0.);
+    for (size_t i(0); i < f.size(); ++i) {
+      const double p2(Vec3D(f[i]).Sqr()), ei(sqrt(xi*xi*p2 + m2[i]));
+      E += ei;
+      dE += xi*p2/ei;
+    }
+    if (dE <= 0.) return false;
+    const double step((E - Mp)/dE);
+    xi -= step;
+    if (std::abs(step) < 1e-15) break;
+  }
+  pt.assign(q.begin(), q.begin() + 2);
+  Poincare toq(Qp);
+  for (size_t i(0); i < f.size(); ++i) {
+    const Vec3D p3(xi*Vec3D(f[i]));
+    Vec4D v(sqrt(p3.Sqr() + m2[i]), p3);
+    toq.BoostBack(v);
+    pt.push_back(v);
+  }
+  pt.push_back(k);
+  return true;
+}
+
+/*
+  YFS: RV_PHOTON_CT (default 0) - the emitted photon's charge renormalisation
+  in the real-virtual. With REAL_ALPHA0 1 the real couples the photon with
+  alpha(0), but the loop provider renormalises it in the input scheme; in a
+  G_mu card (OpenLoops, Z pole) v_{n+1} - v -> -0.0075 as the photon goes
+  soft. The counterterm c is added to every v_{n+1} (one external photon).
+  0: none (right for an alpha(0) card, c = 0 there).
+  1: calibrated, once per run: c = -(v_{n+1} - v_B) at points with a photon
+     of x = 1e-4 and 2e-4 added to the first event's Born (SoftPhotonPoint),
+     extrapolated linearly to x = 0. It forces the soft limit to 0 by
+     construction, so a soft-limit test is then no test, and it is taken at
+     one point of one process.
+  2: analytic (AnalyticPhotonCounterterm, Photon_Counterterm.C): the on-shell
+     photon's counterterm 2 Re[dZe(alpha(0)) - dZe(scheme)] alpha/(4 pi) from
+     the model's masses and widths, as OpenLoops computes it for its pdg 2002
+     photon with Sherpa's settings (ew_scheme 2, EW_REN_SCHEME, CMS):
+     0 for alpha(0), 1 - alpha(0)/alpha for alpha(M_Z), Delta r with the
+     light-fermion Delta alpha replaced by 1 - alpha(0)/alpha for G_mu
+     (Z pole: 0.0075211 against 0.0075209 from 1). Independent of the
+     kinematics, so the soft limit stays a test.
+  OpenLoops' own on-shell photon (OL_RV_PHOTON_SCHEME On_shell, pdg 2002)
+  gives the same constant at every point (pyol: 0.00752 at FSR x = 0.1,
+  0.01 and ISR x = 0.01), but once a 2002 process has been evaluated
+  OpenLoops multiplies every later tree with a photon by alpha(0)/alpha, the
+  Real_Generator's real included (-8% on sigma_fid); 1 and 2 keep the 22
+  registration.
+*/
+static int PhotonCTMode() {
+  static const int m(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_PHOTON_CT"]
+                     .SetDefault(0).Get<int>());
+  return m;
+}
+
+double NLO_Base::AnalyticPhotonCounterterm() const {
+  YFS::Photon_CT_Input in;
+  in.MZ = Flavour(kf_Z).Mass();      in.WZ = Flavour(kf_Z).Width();
+  in.MW = Flavour(kf_Wplus).Mass();  in.WW = Flavour(kf_Wplus).Width();
+  in.MH = Flavour(kf_h0).Mass();     in.WH = Flavour(kf_h0).Width();
+  in.MT = Flavour(kf_t).Mass();      in.WT = Flavour(kf_t).Width();
+  in.me = Flavour(kf_e).Mass();      in.mmu = Flavour(kf_mu).Mass();
+  in.mtau = Flavour(kf_tau).Mass();  in.mb = Flavour(kf_b).Mass();
+  in.alpha0 = MODEL::aqed->AqedThomson();
+  in.alpha_in = MODEL::s_model->ScalarConstant("alpha_QED");
+  in.cms = true;
+  for (kf_code q : {kf_d, kf_u, kf_s, kf_c})
+    if (Flavour(q).Mass() > 0.)
+      msg_Error()<<METHOD<<"(): massive light quark "<<Flavour(q)
+                 <<"; the counterterm assumes massless u, d, s, c as in OpenLoops."<<std::endl;
+  YFS::photon_ct_scheme sch(YFS::photon_ct_scheme::alpha0);
+  switch (ToType<MODEL::ew_scheme::code>(rpa->gen.Variable("EW_REN_SCHEME"))) {
+  case MODEL::ew_scheme::alpha0:  sch = YFS::photon_ct_scheme::alpha0;  break;
+  case MODEL::ew_scheme::Gmu:     sch = YFS::photon_ct_scheme::Gmu;     break;
+  case MODEL::ew_scheme::alphamZ: sch = YFS::photon_ct_scheme::alphamZ; break;
+  default:
+    msg_Error()<<METHOD<<"(): EW_REN_SCHEME not alpha0, Gmu or alphamZ; "
+               <<"no photon counterterm."<<std::endl;
+    return 0.;
+  }
+  std::string log;
+  const double c(YFS::OnShellPhotonCounterterm(in, sch, log));
+  msg_Info()<<"YFS: RV_PHOTON_CT 2: "<<log<<std::endl;
+  return c;
+}
+
+void NLO_Base::CalibratePhotonCounterterm() {
+  m_rvct_done = true;
+  m_rvct = 0.;
+  if (PhotonCTMode() == 2) { m_rvct = AnalyticPhotonCounterterm(); return; }
+  if (PhotonCTMode() != 1) return;
+  // two soft points, x0 and 2 x0, extrapolated linearly to x = 0
+  const double x0(1e-4);
+  double dv[2];
+  for (int i(0); i < 2; ++i) {
+    Vec4D_Vector pt;
+    double v1(0.);
+    if (!SoftPhotonPoint(m_plab, (i + 1)*x0, pt) || !RealVirtualFactor(pt, v1)) {
+      msg_Error()<<METHOD<<"(): calibration point failed, no photon counterterm."
+                 <<std::endl;
+      return;
+    }
+    dv[i] = v1 - m_vborn_own;
+  }
+  m_rvct = -(2.*dv[0] - dv[1]);
+  msg_Info()<<"YFS: RV_PHOTON_CT: external-photon counterterm c = "<<m_rvct
+            <<" (v_{n+1} - v_B at x = "<<x0<<", "<<2.*x0<<": "<<dv[0]<<", "
+            <<dv[1]<<")"<<std::endl;
+}
+
+/*
+  RV_MODE 1: photon i's non-factorisable real-virtual, B rho_i (v_{n+1} - v),
+  on the point and with the ratio CalculateReal() left in m_rvinfo[i].
+*/
+double NLO_Base::CalculateRealVirtualRemainder(size_t i, const Vec4D &k) {
+  if (!m_realvirt || i >= m_rvinfo.size() || !m_rvinfo[i].ok) return 0.;
+  if (m_rv_soft_cut > 0. && k.E() < m_rv_soft_cut * sqrt(m_s)) {
+    m_softRV++;
+    return 0.;
+  }
+  if (!m_vborn_own_ok) { ++m_rvNoVirt; return 0.; }
+  const RVPointInfo &info(m_rvinfo[i]);
+  double v1(0.);
+  if (!RealVirtualFactor(info.p, v1)) {
+    if (p_realvirt->FailCut()) m_failcut = true;
+    m_zeroRV++;
+    if (RVProbeOn()) std::cerr<<"@@@ RVREM failed x="<<2.*k.E()/sqrt(m_s)<<"\n";
+    return 0.;
+  }
+  const double dv(v1 + m_rvct - m_vborn_own);
+  const double contrib(m_born*info.rho*dv);
+  if (!IsBad(dv)) m_rvdv.push_back(std::make_pair(k, dv));
+  if (RVProbeOn()) {
+    std::ostringstream o;
+    // the photon's record, on its own line after the loop call's @@@ RVREM
+    o<<std::setprecision(10)<<"@@@ RVPH x="<<2.*k.E()/sqrt(m_s)
+     <<" xpt="<<2.*info.p.back().E()/sqrt(m_s)
+     <<" fsr="<<(PhotonIsFSR(k)?1:0)<<" nph="<<m_photons.size()
+     <<" v="<<m_vborn_own<<" vev="<<m_vborn<<" dv="<<dv<<" rho="<<info.rho
+     <<" rv/B="<<contrib/m_born<<"\n";
+    if (std::abs(dv) > 3e-3 && 2.*info.p.back().E()/sqrt(m_s) < 2e-3) {
+      o<<"   p=";
+      for (const Vec4D &q : info.p) o<<q<<" ";
+      o<<"\n   plab=";
+      for (const Vec4D &q : m_plab) o<<q<<" ";
+      o<<"\n   photons=";
+      for (const YFS::Photon &g : m_photons) o<<g.K()<<(g.IsFSR()?"F ":"I ");
+      o<<"\n";
+    }
+    std::cerr<<o.str();
+  }
+  if (IsBad(contrib)) { m_zeroRV++; return 0.; }
+  m_nonZeroRV++;
+  return contrib;
 }
 
 double NLO_Base::CalculateRealVirtual() {
@@ -1420,6 +1861,29 @@ double NLO_Base::CalculateRealVirtual() {
     return 0;
   m_rv_hard1 = 0.;
   m_rv_hard2 = 0.;
+  if (RVMode() == 1) {
+    double rv(0.);
+    m_rvdv.clear();
+    m_vborn_own_ok = m_vborn_ok && BornVirtualOnOwnLegs(m_vborn_own);
+    if (m_vborn_own_ok && !m_rvct_done) CalibratePhotonCounterterm();
+    for (size_t i(0); i < m_photons.size(); ++i) {
+      YFS::Photon &g(m_photons[i]);
+      const double contrib(CalculateRealVirtualRemainder(i, g.K()));
+      rv += contrib;
+      g.m_beta11 = contrib;
+    }
+    HardestBetas(m_photons, [](const YFS::Photon &g) { return g.beta11(); },
+                 m_rv_hard1, m_rv_hard2);
+    if (RVProbeOn() && m_born != 0.) {
+      double xmax(0.);
+      for (const YFS::Photon &g : m_photons) xmax = Max(xmax, 2.*g.E()/sqrt(m_s));
+      std::ostringstream o;
+      o<<std::setprecision(10)<<"@@@ RVEV xmax="<<xmax<<" nph="<<m_photons.size()
+       <<" v="<<m_vborn<<" rv/B="<<rv/m_born<<"\n";
+      std::cerr<<o.str();
+    }
+    return rv;
+  }
   if (m_rv_hard_photon==2) {
     Vec4D k = FixedTestPhoton();
     if (m_check_rv) CheckRealVirtualSub(k);
@@ -1483,6 +1947,10 @@ double NLO_Base::CalculateRealVirtual(Vec4D k) {
   p_nlodipoles->MakeDipoles(m_flavs, pp, m_plab);
   p_nlodipoles->MakeDipolesIF(m_flavs, pp, m_plab);
   p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me.get();
+  // the dim-reg B~ reads the loop ME's IR scale, which is 0 until the first
+  // loop call: without this the first RV of every rank was NaN (and the run's
+  // total weight inf); afterwards the scale is the same every call
+  if (!(p_realvirt->p_loop_me->IRscale() > 0.)) p_realvirt->Calc(p, m_born);
   double subloc = p_nlodipoles->CalculateRealVirtualSubEps(k);
   yfspole = p_nlodipoles->Get_E1();
   // Eikonal factor S(k) at the reduced kinematics.
@@ -1535,6 +2003,7 @@ double NLO_Base::CalculateRealVirtual(Vec4D k) {
     tot = d1 / subb;
   else if (m_submode == submode::off)
     tot = (r * flux) / subb;
+  if (RVProbeOn()) ProbeRealVirtual(kk, p, r, rtree, subloc, eikloc, flux, subb, tot);
   const double rvmax = ATOOLS::Max(fabs(m_rv), fabs(m_rvsub));
   const double C = (rvmax > 0.) ? fabs(d1) / rvmax : 0.;
   if (m_rv_cancel_hist) {
@@ -1638,6 +2107,45 @@ double NLO_Base::CalculateRealVirtual(Vec4D k) {
   if (IsZero(tot)) m_zeroRV++;
   else m_nonZeroRV++;
   return tot;
+}
+
+void NLO_Base::ProbeRealVirtual(const Vec4D &kk, const Vec4D_Vector &p,
+                                double r, double rtree, double subloc,
+                                double eikloc, double flux, double subb,
+                                double tot) {
+  PHASIC::Virtual_ME2_Base *lme(p_realvirt->p_loop_me.get());
+  const double lt(lme->ME_Finite()*p_realvirt->m_factor);
+  const double e1lt(lme->ME_E1()*p_realvirt->m_factor);
+  const double kap(m_rescale_alpha);
+  const double e1ev(p_nlodipoles->Get_E1());
+  // the same subtraction on the (n+1)-body point's own legs
+  Vec4D_Vector pp(p);
+  pp.pop_back();
+  p_nlodipoles->MakeDipolesII(m_flavs, pp, pp);
+  p_nlodipoles->MakeDipoles(m_flavs, pp, pp);
+  p_nlodipoles->MakeDipolesIF(m_flavs, pp, pp);
+  const double subpp(p_nlodipoles->CalculateRealVirtualSubEps(p.back()));
+  const double e1pp(p_nlodipoles->Get_E1());
+  const double v(m_born != 0. ? m_oneloop/m_born : 0.);
+  std::ostringstream o;
+  o<<std::setprecision(10)<<"@@@ RVPROBE x="<<2.*kk.E()/sqrt(m_s)
+   <<" fsr="<<(PhotonIsFSR(kk)?1:0)<<" nph="<<m_photons.size()
+   <<" lt="<<lt<<" Trv/rtree="<<(rtree != 0. ? r/(lt*rtree) : 0.)
+   <<" sub_ev="<<subloc/kap<<" sub_pt="<<subpp/kap
+   <<" v="<<v<<" subB="<<(m_born != 0. ? m_virt_subval/m_born : 0.)
+   <<" vraw="<<(m_born != 0. ? m_virt_raw/m_born : 0.)
+   <<" dv_ev="<<lt - subloc/kap - v<<" dv_pt="<<lt - subpp/kap - v
+   <<" eikB/rtree="<<(rtree != 0. ? eikloc*m_born/(kap*rtree) : 0.)
+   <<" flux="<<flux<<" subb="<<subb<<" tot/B="<<(m_born != 0. ? tot/m_born : 0.)
+   <<" E1lt="<<e1lt<<" E1ev="<<e1ev/kap<<" E1pt="<<e1pp/kap
+   <<" irs="<<lme->IRscale()<<" kap="<<kap
+   <<" Tloop="<<lme->ME_Born()<<" rtree="<<rtree*2.*pow(2.*M_PI,3)
+   <<"\n   p=";
+  for (const Vec4D &q : p) o<<q<<" ";
+  o<<"\n   plab=";
+  for (const Vec4D &q : m_plab) o<<q<<" ";
+  o<<"\n";
+  std::cerr<<o.str();
 }
 
 double NLO_Base::CalculateRealReal() {

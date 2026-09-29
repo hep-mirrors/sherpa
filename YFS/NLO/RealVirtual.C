@@ -92,3 +92,21 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector &p, const double B,
   }
   return V;
 }
+
+bool RealVirtual::LoopOverTree(const ATOOLS::Vec4D_Vector &p,
+                               const ATOOLS::Vec4D_Vector &peval,
+                               const double mur2, double &lt) {
+  m_failcut = false;
+  if (m_nlocuts && p_rvproc != nullptr && !p_rvproc->Trigger(p)) {
+    m_failcut = true;
+    return false;
+  }
+  // mu as the Born virtual: the full-EW finite part is mu dependent beyond
+  // its IR pole (charge renormalisation with massless light quarks), which
+  // cancels in v_{n+1} - v only at a common scale
+  p_loop_me->SetRenScale(mur2);
+  p_loop_me->Calc(peval);
+  if (p_loop_me->Mode() != 0 || p_loop_me->ME_Born() == 0.) return false;
+  lt = m_factor * p_loop_me->ME_Finite();
+  return !ATOOLS::IsBad(lt);
+}

@@ -380,6 +380,11 @@ namespace YFS {
 
         double Eikonal(Vec4D k);
         double CalculateNLO();
+        //! CEEX: REAL_VIRTUAL 2 - sum_j dv_j Re<A_1, M_1j>/4 with dv_j from
+        //! YFS.NLO's RV (NLO_Base::m_rvdv), matched to CEEX photons by lab
+        //! momentum; 0 without YFS: RV_MODE 1
+        double CeexRealVirtualRemainder();
+        long m_acrv_n = 0, m_acrv_nomatch = 0, m_acrv_nom1 = 0;
         bool CalculateFSR();
         bool CalculateISR();
         bool CalculateFSR(Vec4D_Vector &k);

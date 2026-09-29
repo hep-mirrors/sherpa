@@ -45,9 +45,15 @@ double Virtual::Calc(const ATOOLS::Vec4D_Vector momenta, const double born){
 
 
 
+double Virtual::CalcInFrame(const ATOOLS::Vec4D_Vector &momenta,
+                            const ATOOLS::Vec4D_Vector &peval, double born){
+  return Calc_V(momenta,born,sqr(rpa->gen.Ecms()),&peval);
+}
+
 double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
            const double B,
-           const double mur)
+           const double mur,
+           const ATOOLS::Vec4D_Vector *peval)
   {
     // Renormalisation scale as specified by SCALES in the runcard, for an
     // arbitrary (momentum-dependent) expression. The Born process's scale setter
@@ -73,7 +79,7 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
      double dalpha = ((*aqed)(scale) - aqed->AqedThomson());
      run_corr = 4.*dalpha*B;
     }
-    p_loop_me->Calc(p,B);
+    p_loop_me->Calc(peval ? *peval : p,B);
     switch(p_loop_me->Mode())
       {
       case 0:

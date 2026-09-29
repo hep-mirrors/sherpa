@@ -343,6 +343,49 @@ public:
   double CalculateRealMultiplicity(size_t n);
   double CalculateRealVirtual();
   double CalculateRealVirtual(Vec4D k);
+  /*
+    YFS: RV_MODE 1 (NLO_Base.C, CalculateRealVirtualRemainder): the real-
+    virtual as the non-factorisable remainder on top of the real, evaluated
+    on the real's own (n+1)-body point with the real's own density, flux and
+    coupling. CalculateReal(k) leaves the point and the photon's exact-over-
+    crude ratio in m_lastrvinfo; CalculateReal() stores one per photon of
+    m_photons in m_rvinfo (only when RV_MODE is on).
+  */
+  struct RVPointInfo {
+    bool ok = false;
+    ATOOLS::Vec4D_Vector p;   //!< the (n+1)-body point, photon last
+    double rho = 0.;          //!< kappa r flux/(den B): the photon's exact/crude
+  };
+  std::vector<RVPointInfo> m_rvinfo;
+  RVPointInfo m_lastrvinfo;
+  //! v = V_sub/B of this event (CalculateVirtual's return over the Born)
+  bool m_vborn_ok = false;
+  double m_vborn = 0.;
+  int m_rvPoleFail = 0, m_rvNoVirt = 0;
+  long m_rvLoopChecked = 0, m_rvLoopUnstable = 0;
+  //! v with the subtraction on the Born point's own legs (RV_MODE 1)
+  bool m_vborn_own_ok = false;
+  double m_vborn_own = 0.;
+  bool BornVirtualOnOwnLegs(double &vb);
+  //! RV_PHOTON_CT: the external photon's alpha(0) counterterm on v_{n+1}
+  bool m_rvct_done = false;
+  double m_rvct = 0.;
+  void CalibratePhotonCounterterm();
+  //! RV_PHOTON_CT 2: the counterterm from the model's parameters
+  //! (Photon_Counterterm.C), per external photon
+  double AnalyticPhotonCounterterm() const;
+  //! RV_MODE 1 with a real-virtual provider (YFS_Handler keeps v x real)
+  bool RVRemainder() const;
+  //! RV_MODE 1: (lab photon, v_{n+1} - v_B) for every photon whose RV was
+  //! evaluated this event - read by CEEX: REAL_VIRTUAL 2
+  std::vector<std::pair<ATOOLS::Vec4D, double> > m_rvdv;
+  double CalculateRealVirtualRemainder(size_t i, const Vec4D &k);
+  //! v_{n+1} = V_fin/T - B~(point legs) at the (n+1)-body point p (photon
+  //! last): the IR-subtracted one-loop over the tree, loop coupling units.
+  bool RealVirtualFactor(const ATOOLS::Vec4D_Vector &p, double &v1);
+  void ProbeRealVirtual(const Vec4D &kk, const ATOOLS::Vec4D_Vector &p,
+                        double r, double rtree, double subloc, double eikloc,
+                        double flux, double subb, double tot);
   double CalculateVV();
   //! Assert that the mapped hard system balances the total photon momentum.
   //! Multiplicity-agnostic: pass the summed photon momentum.

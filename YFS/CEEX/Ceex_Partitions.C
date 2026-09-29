@@ -864,6 +864,7 @@ void Ceex_Base::Calculate() {
   m_spincache.resize(1 + 4*m_allphotons.size());
   m_spinvalid.assign(m_spincache.size(), 0);
   m_realphot.assign(m_allphotons.size(), Amplitude());
+  m_realphotM1.assign(RealVirtualMode() == 2 ? m_allphotons.size() : 0, Amplitude());
   /*
     Trace the beta_1 pieces on the event the CHECK_XS dump will write - the
     same gate the dump uses, evaluated before the partition loop so the loop

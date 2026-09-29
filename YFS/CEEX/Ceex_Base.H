@@ -615,6 +615,10 @@ namespace YFS {
     Amplitude  m_AmpBornReal;
 
     std::vector<Amplitude> m_realphot;
+    //! CEEX: REAL_VIRTUAL 2 - photon j's M_1 terms only (no subtraction),
+    //! summed over the partitions that carry them, aligned and weighted as
+    //! they enter m_AmpExpo1
+    std::vector<Amplitude> m_realphotM1;
     Vec4D_Vector m_allphotons_lab;
     double     m_resultbv = 0., m_resultbr = 0.;
     double     m_rhocrud = 0.;
@@ -986,6 +990,18 @@ namespace YFS {
     //! the amplitude an external virtual (v/2) multiplies, |A_v|^2/4: A_0,
     //! or A_1 under CEEX: ORDER2_VIRTUAL_ON_BETA1 (KKMC's (1+v/2) on beta_1)
     inline double GetResultVV() const { return m_resultV; }
+    //! CEEX: REAL_VIRTUAL (Ceex_Base.C, RealVirtualMode)
+    static int RealVirtualMode();
+    /*!
+      CEEX: REAL_VIRTUAL 2: the non-factorisable real-virtual on top of the
+      (1 + v/2) A_1 placement, sum_j dv_j Re<A, M_1j>/4, A = A_1 (A_2 at
+      ORDER 2), dv_j = v_{n+1,j} - v_B of photon j (index of m_allphotons;
+      0 where unknown). That is |A + sum_j (dv_j/2) M_1j|^2/4 - |A|^2/4 at
+      O(alpha^2).
+    */
+    double RealVirtualRemainderRho(const std::vector<double> &dv) const;
+    //! true when photon j carried an M_1 term in some partition
+    bool PhotonHasM1(size_t j) const;
     //! Per-photon soft factors, both attachments, at the drawn helicity.
     void CalculateSfactors();
     void MakePhotonHel();

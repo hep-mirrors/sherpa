@@ -24,6 +24,18 @@ namespace YFS{
         double Calc_V(const ATOOLS::Vec4D_Vector& p,
                     const double B,
                     const double mur);
+        /*!
+          YFS: RV_MODE 1. The provider's IR-finite one-loop over its own tree,
+          lt = (alpha/2pi) V_fin/T, at the (n+1)-body point p with the loop's
+          renormalisation scale set to mur2 (the Born virtual's). False when
+          the point fails the NLO cuts, the tree vanishes, or the provider does
+          not return a tree-normalised finite part (Mode() != 0).
+        */
+        //! p: the point in the lab (NLO cuts), peval: the same point in the
+        //! frame the loop is evaluated in.
+        bool LoopOverTree(const ATOOLS::Vec4D_Vector &p,
+                          const ATOOLS::Vec4D_Vector &peval, const double mur2,
+                          double &lt);
         MODEL::Coupling_Map m_cpls;
         //! Not owned; set by SetProc, may be null.
         PHASIC::Process_Base *p_rvproc = nullptr;
