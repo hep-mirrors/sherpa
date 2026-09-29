@@ -380,8 +380,6 @@ namespace SHERPA {
       m_dss["events"]=p_file->createDataSet<double>
 	("events",DataSpace(min,max),props);
       m_ecache.reserve(m_ncache);
-      for (size_t i(0);i<m_ecache.size();++i)
-	m_ecache[i].reserve(m_neprops+m_nweights);
       m_dss["events"].createAttribute<std::string>
 	("events",DataSpace::From(enames)).write(enames);
       if (m_hasnlo) {
@@ -405,8 +403,6 @@ namespace SHERPA {
 	m_dss["ctevents"]=p_file->createDataSet<double>
 	  ("ctevents",DataSpace(min,max),props);
 	m_necache.reserve(m_ncache);
-	for (size_t i(0);i<m_necache.size();++i)
-	  m_necache[i].reserve(m_nneprops);
 	m_dss["ctevents"].createAttribute<std::string>
 	  ("ctevents",DataSpace::From(nenames)).write(nenames);
       }
@@ -436,8 +432,6 @@ namespace SHERPA {
       m_dss["particles"]=p_file->createDataSet<double>
 	("particles",DataSpace(min,max),props);
       m_pcache.reserve(m_ncache*nup);
-      for (size_t i(0);i<m_pcache.size();++i)
-	m_pcache[i].reserve(m_npprops);
       m_dss["particles"].createAttribute<std::string>
 	("properties",DataSpace::From(pnames)).write(pnames);
       if (m_hasnlo) {
@@ -456,8 +450,6 @@ namespace SHERPA {
 	m_dss["ctparticles"]=p_file->createDataSet<double>
 	  ("ctparticles",DataSpace(min,max),props);
 	m_npcache.reserve(m_ncache*nup);
-	for (size_t i(0);i<m_npcache.size();++i)
-	  m_npcache[i].reserve(m_nnpprops);
 	m_dss["ctparticles"].createAttribute<std::string>
 	  ("properties",DataSpace::From(npnames)).write(npnames);
       }
