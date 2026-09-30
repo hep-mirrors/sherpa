@@ -66,7 +66,7 @@ option(SHERPA_ENABLE_TESTING                 "Enables testing." OFF)
 option(SHERPA_ENABLE_UFO                     "Enables installation of UFO interfaces." OFF)
 option(SHERPA_ENABLE_VERSIONING              "Enables versioned installation." OFF)
 option(SHERPA_ENABLE_GSL                  "Enables usage of GSL." ON)
-option(SHERPA_ENABLE_TMDLIB                  "Enables usage of TMDlib." ON)
+option(SHERPA_ENABLE_TMDLIB                  "Enables usage of TMDlib." OFF)
 option(SHERPA_ENABLE_INSTALL_GSL                  "Enables installation of GSL." ON)
 option(SHERPA_ENABLE_INSTALL_TMDLIB                  "Enables installation of TMDlib." OFF)
 
@@ -94,6 +94,15 @@ foreach (en IN LISTS alldirenables)
      message(STATUS "SHERPA: Set SHERPA_ENABLE_${ENUP}=ON as ${en}_DIR is given")
   endif()
 endforeach()
+
+# TMDlib uses TMDlib_ROOT_DIR rather than TMDlib_DIR.
+if(TMDlib_ROOT_DIR)
+  set(SHERPA_ENABLE_TMDLIB ON CACHE BOOL "" FORCE)
+  message(STATUS
+    "SHERPA: Set SHERPA_ENABLE_TMDLIB=ON as TMDlib_ROOT_DIR is given")
+endif()
+
+
 ###########################Options handeling############################
 set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS DOXYGEN
  EWSUD EXAMPLES GOSAM GSL GZIP HEPMC3 HEPMC3_ROOT
