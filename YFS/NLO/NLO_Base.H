@@ -588,6 +588,9 @@ public:
   inline bool HasVirtual() {return m_looptool;}
   inline bool HasReal() {return m_realtool;}
   inline bool HasRR() {return m_rrtool;}
+  //! An exact double-virtual provider (p_vv); without one YFS_Handler
+  //! estimates the VV from the EEX series (VV_EEX, NNLO_VV*).
+  inline bool HasVV() {return m_vvtool;}
   inline bool HasRealVirtual() {return m_realvirt;}
   inline bool HasNLO()  {return m_realtool || m_looptool;}
   inline bool HasNNLO() {return m_rrtool   || m_realvirt;}

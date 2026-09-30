@@ -104,6 +104,12 @@ void NLO_Base::BookHistograms() {
     m_histograms2d["REAL_RATIO"] =
         std::make_unique<Histogram_2D>(0, 0, 15, 16, 0, sqrt(m_s) / 2., 200);
     m_histograms2d["Real_Flux"] = std::make_unique<Histogram_2D>(0, 0, 1.1, 50, 80, 100, 100);
+    // FillRealHistograms fills REAL too. It was booked only under CHECK_POLES,
+    // so with ISR_DEBUG / FSR_DEBUG alone the first real photon dereferenced
+    // the null entry operator[] had just created (segfault at event 1).
+    // Same binning as the CHECK_POLES booking in the NLO_Base constructor.
+    m_histograms2d["REAL"] =
+        std::make_unique<Histogram_2D>(0, 0, sqrt(m_s) / 2., 200, 0, 2 * M_PI, 20);
     m_histograms1d["k_E"] = std::make_unique<Histogram>(0, 0, sqrt(m_s) / 2, sqrt(m_s) / 2);
     m_histograms1d["k_pt"] = std::make_unique<Histogram>(0, 0, sqrt(m_s) / 2, sqrt(m_s) / 2);
     m_histograms1d["dip_mass"] = std::make_unique<Histogram>(0, 0, sqrt(m_s), sqrt(m_s));

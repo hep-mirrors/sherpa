@@ -209,7 +209,11 @@ public:
   // binned by log10 cancellation ratio and by photon energy fraction) so a
   // single production run yields RV_total(cut) and the cut can be validated.
   int  m_rv_cancel_hist;
-  int  m_check_mass_reg, m_check_poles, m_check_real, m_check_rr, m_check_rv, m_rv_hard_photon;
+  int  m_check_mass_reg, m_check_poles, m_check_real, m_check_rv, m_rv_hard_photon;
+  //! YFS: CHECK_REAL_REAL - dump the double real's momenta and ME
+  //! (Real_Correction with two photons). Read in RegisterSettings; it was
+  //! registered but never read, so the dump ran on uninitialised memory.
+  int  m_check_rr = 0;
   int m_rmode, m_qedmode, m_kkmcAngles, m_mingammaN;
   bool m_virt_sub;
   // m_no_born_setting is the card value (YFS: No_Born), a global override.
@@ -260,7 +264,17 @@ public:
     Card default true (YFS_Base::RegisterDefaults).
   */
   bool m_nlo_fsr_from_event = false;
-  bool m_isrinital, m_realtool, m_realvirt, m_useceex, m_coll_real, m_rrtool, m_vvtool, m_dim_reg;
+  bool m_isrinital, m_realtool, m_useceex, m_coll_real, m_dim_reg;
+  /*
+    Which NNLO tools exist. Only NLO_Base assigns these (from its p_realvirt,
+    p_realreal and p_vv); every other YFS_Base - YFS_Handler, Real_Correction,
+    RealVirtual, ... - is a separate object that never does, and used to read
+    whatever the heap held. YFS_Handler's m_vvtool gated the VV_EEX/NNLO_VV*
+    columns on that garbage (a bool whose low bit was set turned them off:
+    NNLO_VV 767 pb in one run, the nominal 1413 pb in the next). Ask p_nlo
+    (NLO_Base::HasVV and friends) instead of reading these outside NLO_Base.
+  */
+  bool m_realvirt = false, m_rrtool = false, m_vvtool = false;
   bool m_skipNegWeights;
   bool m_nlo_fsr_photons;
   bool m_fb_analysis;

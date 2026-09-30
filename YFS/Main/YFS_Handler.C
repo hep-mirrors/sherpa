@@ -1951,7 +1951,9 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
         //
         // The nominal "NNLO" weight is deliberately left VV-free so it keeps
         // meaning what it meant before; NNLO_VV is the one including the estimate.
-        if (!m_vvtool) {
+        // p_nlo's flag: the handler's own m_vvtool is a YFS_Base member that
+        // nothing on the handler side ever sets (see YFS_Base.H)
+        if (!p_nlo->HasVV()) {
           const double vv = p_dipoles->CalculateEEXVirtual(2)
                           - p_dipoles->CalculateEEXVirtual(1);
           if (!IsBad(vv)) {

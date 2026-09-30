@@ -285,6 +285,7 @@ void YFS_Base::RegisterSettings(){
   m_check_mass_reg = s["CHECK_MASS_REG"].Get<int>();
   m_check_poles = s["CHECK_POLES"].Get<int>();
   m_check_real = s["CHECK_REAL"].Get<int>();
+  m_check_rr = s["CHECK_REAL_REAL"].Get<int>();
   m_check_rv = s["CHECK_RV"].Get<int>();
   m_rv_hard_photon = s["RV_Hard_Photon"].Get<int>();
   m_ceex_compare = s["CEEX_Compare"].Get<int>();
