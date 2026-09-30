@@ -1,4 +1,6 @@
+#include <sstream>
 #include "YFS/Main/Define_Dipoles.H"
+#include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
@@ -298,6 +300,70 @@ bool Define_Dipoles::DecayVirtualSubtraction() const {
   static const bool on(ATOOLS::Settings::GetMainSettings()["YFS"]
                        ["WW_DECAY_VIRTUAL_SUB"].Get<int>() != 0);
   return on;
+}
+
+/*
+  YFS: RV_MODE 1 with RR_MODE 1 (NLO_Base::CalculateRealVirtualRemainder):
+  sum over the same dipoles and charge factors as CalculateVirtualSub of the
+  real-soft integral B-tilde(K) (YFS_Form_Factor::BVR_full, mode 0), with the
+  photon mass of the subtraction's regularisation: m_photonMass, or with
+  Dim_Reg the finite-part convention of BVV_full_eps, lambda^2 = 4 pi mu^2
+  / eps_scheme, so that B(virtual, finite) + B-tilde is the lambda-free Y.
+*/
+double Define_Dipoles::RealSoftSum(double K) {
+  if (m_tchannel >= 2) return std::numeric_limits<double>::quiet_NaN();
+  auto one = [&](YFS::Dipole &D) {
+    Vec4D p1, p2;
+    D.LegsBeforeRadiation(p1, p2);
+    double lam(m_photonMass);
+    if (m_dim_reg == 1) {
+      PHASIC::Virtual_ME2_Base *v(p_yfsFormFact->p_virt);
+      if (v == nullptr) return std::numeric_limits<double>::quiet_NaN();
+      const double eps(v->Eps_Scheme_Factor({p1, p2}));
+      lam = sqrt(4.*M_PI*sqr(v->IRscale())/eps);
+    }
+    return p_yfsFormFact->BVR_full(p1*p2, p1.E(), p2.E(), D.GetMass(0), D.GetMass(1),
+                                   K, lam, 0); };
+  double sum(0.);
+  for (auto &D : m_set.ByType(dipoletype::initial)) sum += D.ChargeNorm()*one(D);
+  for (auto &D : m_set.FF()) {
+    if (m_dim_reg == 1 && D.IsFinite()) continue;
+    if (m_mode == yfsmode::fsr) sum += -D.m_QiQj*one(D);
+    else sum += D.ChargeNorm()*one(D);
+  }
+  for (auto &D : m_set.IF()) {
+    if (m_dim_reg == 1 && D.IsFinite()) continue;
+    sum += D.ChargeNorm()*one(D);
+  }
+  return sum;
+}
+
+std::string Define_Dipoles::RealSoftSumReport(double K, const Vec4D_Vector &dirs) {
+  std::ostringstream o;
+  auto one = [&](YFS::Dipole &D, double KK) {
+    Vec4D p1, p2;
+    D.LegsBeforeRadiation(p1, p2);
+    double lam(m_photonMass);
+    if (m_dim_reg == 1 && p_yfsFormFact->p_virt) {
+      const double eps(p_yfsFormFact->p_virt->Eps_Scheme_Factor({p1, p2}));
+      lam = sqrt(4.*M_PI*sqr(p_yfsFormFact->p_virt->IRscale())/eps);
+    }
+    return p_yfsFormFact->BVR_full(p1*p2, p1.E(), p2.E(), D.GetMass(0), D.GetMass(1), KK, lam, 0); };
+  auto rep = [&](YFS::Dipole &D, const char *name) {
+    const double h(0.5);
+    const double d((one(D, K*exp(h)) - one(D, K*exp(-h)))/(2.*h));
+    // angular integral of this dipole's eikonal at |k| = K, charge factor ChargeNorm
+    double I(0.);
+    for (const Vec4D &q : dirs) I += D.Eikonal(q, D.GetMomenta(0), D.GetMomenta(1));
+    I *= 4.*M_PI/dirs.size();
+    o<<" "<<name<<(D.IsFinite()?"(fin)":"")<<":cn="<<D.ChargeNorm()<<",dB="<<D.ChargeNorm()*d
+     <<",I="<<I<<",r="<<(I != 0. ? D.ChargeNorm()*d/I : 0.);
+    Vec4D a, b; D.LegsBeforeRadiation(a, b);
+    o<<",dleg="<<(a - D.GetMomenta(0)).PSpat() + (b - D.GetMomenta(1)).PSpat(); };
+  for (auto &D : m_set.ByType(dipoletype::initial)) rep(D, "II");
+  for (auto &D : m_set.FF()) rep(D, D.IsResonance() ? "FFres" : "FF");
+  for (auto &D : m_set.IF()) rep(D, "IF");
+  return o.str();
 }
 
 double Define_Dipoles::CalculateVirtualSubEps() {

@@ -308,13 +308,30 @@ bool FSR::MakeFSR() {
       return false;
     }
     RescalePhotons();
-    if (!(m_photonSum.E() < sqrt(m_dip_sp))) {
-      msg_Debugging()<<METHOD<<"(): photon sum "<<m_photonSum.E()
-                     <<" GeV exceeds the dipole mass "<<sqrt(m_dip_sp)
-                     <<" GeV; rescale factor was "<<m_xfact<<"\n";
-      RejectEvent();
-      m_cut = 4;
-      return false;
+    /*
+      Energy conservation, checked in the dipole (X = Q + K) frame. After
+      RescalePhotons() the photons are in GeV in the Q frame (the pair after
+      emission), where the photon energy is NOT bounded by sqrt(s_X): with
+      s_X = s_Q + 2 sqrt(s_Q) E_K^Q + K^2 it grows like s_X/(2 sqrt(s_Q)) as
+      s_Q -> 0. The old test E_K^Q < sqrt(s_X) therefore rejected every
+      m_ff < (sqrt(2)-1) sqrt(s_X) - 104 GeV at 250 GeV - removing the hard
+      collinear FSR in both YFS.NLO and CEEX (KKMC FSR-only ratio 0.02-0.2
+      below that mass, 2026-09-30, NOTES-kkmc250-mumu-dR-2026-09-30.md). In
+      the X frame E_K^X = K.X/sqrt(s_X) = (E_K^Q sqrt(s_Q) + K^2)/sqrt(s_X) is
+      below sqrt(s_X) for any physical point, so this only catches the
+      divergent rescale (m_xfact -> inf) it was introduced for (418eb2c6c).
+    */
+    {
+      const double rsX(sqrt(m_dip_sp)), rsQ(sqrt(m_dip_sp*m_yy));
+      const double EKX((m_photonSum[0]*rsQ + m_photonSum.Abs2())/rsX);
+      if (IsBad(EKX) || !(EKX < rsX)) {
+        msg_Debugging()<<METHOD<<"(): photon sum "<<EKX
+                       <<" GeV in the dipole frame exceeds the dipole mass "<<rsX
+                       <<" GeV; rescale factor was "<<m_xfact<<"\n";
+        RejectEvent();
+        m_cut = 4;
+        return false;
+      }
     }
     m_sQ = m_dip_sp * m_yy;
     m_sX = m_sQ*(1.+m_photonSum[0]+0.25*m_photonSum*m_photonSum);

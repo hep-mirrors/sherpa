@@ -379,7 +379,39 @@ public:
   //! RV_MODE 1: (lab photon, v_{n+1} - v_B) for every photon whose RV was
   //! evaluated this event - read by CEEX: REAL_VIRTUAL 2
   std::vector<std::pair<ATOOLS::Vec4D, double> > m_rvdv;
+  //! the last RealVirtualFactor's loop over tree, before its subtraction
+  double m_rvLastLt = 0.;
+  //! each photon's factor in REAL_COMBINE's product (1 if not evaluated)
+  std::vector<double> m_prodfac;
+
   double CalculateRealVirtualRemainder(size_t i, const Vec4D &k);
+  /*
+    YFS: RR_MODE 1 (NLO_Base.C, RealRealRemainder): the double real as the
+    exact two-photon remainder beyond REAL_COMBINE's product. CalculateReal()
+    keeps each photon's product factor, flux and density.
+  */
+  struct RRPhotonInfo {
+    bool ok = false;
+    double delta = 0.;   //!< the single-real bracket beta_1/(crude B), as in the product
+    double flux = 1.;    //!< the single real's flux on r
+    double denom = 0.;   //!< the single real's density (crude)
+    double rho = 0.;     //!< the single real's exact over crude, kappa r flux/(denom B)
+    ATOOLS::Vec4D_Vector pt;  //!< the single real's (n+1)-body point, photon last
+    double subloc = 0.;  //!< the single real's subtraction over its density
+    double factor = 1.;  //!< this photon's factor in REAL_COMBINE's product
+  };
+  std::vector<RRPhotonInfo> m_rrphot;
+  RRPhotonInfo m_lastrrinfo;
+  double RealRealRemainder(size_t i, size_t j);
+  //! RR_MODE 1, two-photon events: rho_ij, the exact two-photon weight the
+  //! product plus RR must equal (read by YFS_Handler's RR_PROBE identity line)
+  double m_rrExactPair = 0.;
+  //! the event's v = V/B - B(generation legs), as VIRTUAL_COMBINE uses it
+  double VBornEvent() const { return m_vborn; }
+  //! the pair's (n+2)-body point from the event, the other photons reduced
+  bool EventPairPoint(size_t i, size_t j, ATOOLS::Vec4D_Vector &P);
+  //! the incoherent crude S~_II + sum S~_FF of photon k on the legs of pt
+  double CrudeOnLegs(const ATOOLS::Vec4D_Vector &pt, const Vec4D &k);
   //! v_{n+1} = V_fin/T - B~(point legs) at the (n+1)-body point p (photon
   //! last): the IR-subtracted one-loop over the tree, loop coupling units.
   bool RealVirtualFactor(const ATOOLS::Vec4D_Vector &p, double &v1);

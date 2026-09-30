@@ -137,7 +137,7 @@ namespace YFS {
           double m_ceexfactor = 0.;
           //! The O(alpha) correction actually applied, and CEEX's, for the
           //! named-weight ratio. Set in GenerateWeight once IFI_Real is known.
-          double m_corr_nominal = 1., m_corr_ceex = 0.;
+          double m_corr_nominal = 1., m_corr_ceex = 0., m_corr_eex = 1.;
           //! CEEX: ORDER 2 only - the O(alpha^1) CEEX correction of the
           //! same event (named weight CEEX_O1), composed exactly as ORDER 1
           double m_corr_ceex_o1 = 0.;

@@ -106,7 +106,14 @@ void YFS_Base::RegisterDefaults(){
   s["HARD_MIN"].SetDefault(0.);
   s["PHOTON_MASS"].SetDefault(0.1);
   s["CEEX"].SetDefault(0);
-  s["CEEX_WEIGHT"].SetDefault(0);
+  /*
+    Which O(alpha) correction the event carries as its NOMINAL weight.
+    -1 (default): follow CEEX - with CEEX on, ACRAIC (the amplitude-level CEEX
+    weight) is the nominal and YFS.NLO (squared level) becomes the named
+    column YFS.NLO_EW; with CEEX off, YFS.NLO as before. 1 / 0 force either.
+    Every other named column keeps its absolute weight either way.
+  */
+  s["CEEX_WEIGHT"].SetDefault(-1);
   /*
     Where CEEX's virtual comes from. The default reproduces what the code did
     implicitly - CEEX's own when no loop provider exists - but now says so, and
@@ -281,6 +288,7 @@ void YFS_Base::RegisterSettings(){
   m_photonMass = s["PHOTON_MASS"].Get<double>();
   m_useceex = s["CEEX"].Get<int>();
   m_ceex_weight = s["CEEX_WEIGHT"].Get<int>();
+  if (m_ceex_weight < 0) m_ceex_weight = (m_useceex != 0);
   m_ceexvirtsrc = s["CEEX_Virtual"].Get<ceexvirt::code>();
   m_coll_real = s["Collinear_Real"].Get<bool>();
   m_resonace_max = s["CLUSTERING_THRESHOLD"].Get<double>();

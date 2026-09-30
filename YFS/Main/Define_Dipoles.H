@@ -133,6 +133,12 @@ namespace YFS {
       double CalculateRealSubIF(const Vec4D &k);
       double CalculateRealSubEEX(const Vec4D &k);
       double CalculateVirtualSub();
+      //! The real-soft B-tilde of the dipoles CalculateVirtualSub sums, photon
+      //! energies below K in the frame of the legs, in the IR regularisation
+      //! of that subtraction (dim-reg finite part: lambda^2 = 4 pi mu^2/eps).
+      double RealSoftSum(double K);
+      //! diagnostic for RealSoftSum: per dipole type and IR-finite flag
+      std::string RealSoftSumReport(double K, const Vec4D_Vector &dirs);
       double CalculateVirtualSubEps();
       double CalculateVVSubEps();
       double CalculateRealVirtualSubEps(const Vec4D &k);

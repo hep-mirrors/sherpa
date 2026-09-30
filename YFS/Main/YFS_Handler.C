@@ -1332,6 +1332,28 @@ double YFS_Handler::CalculateNLO(){
                        *(m_ev.m_nlo_real + m_ev.m_nlo_rr + m_ev.m_nlo_rn));
       if (!IsBad(vxr)) m_ev.m_nlo_vxr = vxr;
     } }
+  /*
+    YFS: RR_PROBE (>= 1): the exactness identities of RR_MODE 1 / RV_MODE 1,
+    from the SUMS the weight is built from. Two-photon events: the real part
+    1 + (real + rr)/B against the exact two-photon weight rho_12 ("@@@ RRID").
+    One-photon events: the event's v (virtual/B, what multiplies the real)
+    against the v the RV remainder subtracts ("@@@ RVID").
+  */
+  { static const int rrprobe(ATOOLS::Settings::GetMainSettings()["YFS"]["RR_PROBE"]
+                             .SetDefault(0).Get<int>());
+    if (rrprobe && m_born != 0.) {
+      std::ostringstream o;
+      o<<std::setprecision(16);
+      if (p_nlo->m_photons.size() == 2 && !IsBad(p_nlo->m_rrExactPair)) {
+        const double tot(1. + (m_ev.m_nlo_real + m_ev.m_nlo_rr + m_ev.m_nlo_rn)/m_born);
+        o<<"@@@ RRID tot="<<tot<<" exact="<<p_nlo->m_rrExactPair
+         <<" rel="<<tot/p_nlo->m_rrExactPair - 1.<<"\n";
+      }
+      if (p_nlo->m_photons.size() == 1)
+        o<<"@@@ RVID vevent="<<m_ev.m_nlo_virtual/m_born<<" vrv="<<p_nlo->VBornEvent()
+         <<" rel="<<(m_ev.m_nlo_virtual/m_born - p_nlo->VBornEvent())<<"\n";
+      std::cerr<<o.str();
+    } }
   return m_ev.m_nlo_real + m_ev.m_nlo_virtual + m_ev.m_nlo_rv + m_ev.m_nlo_rr + m_ev.m_nlo_rn
     + m_ev.m_nlo_vxr;
 }
@@ -1647,6 +1669,7 @@ void YFS_Handler::GenerateWeight() {
   // What the named CEEX column has to divide by to become a ratio.
   m_ev.m_corr_nominal = ceex_nom ? corr_ceex : corr_eex;
   m_ev.m_corr_ceex    = corr_ceex;
+  m_ev.m_corr_eex     = corr_eex;
   m_ev.m_corr_ceex_o1 = corr_ceex_o1;
   m_ev.m_corr_ceex_v0 = corr_ceex_v0;
   m_ev.m_corr_ceex_v1 = corr_ceex_v1;
@@ -1742,6 +1765,9 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
       names above: it is defined at Born level too, where none of those exist.
     */
     if (m_useceex) names.push_back("CEEX");
+    // CEEX nominal (YFS: CEEX_WEIGHT, default with CEEX on): the squared-level
+    // YFS.NLO weight the event would otherwise carry, as a named column
+    if (m_useceex && m_ceex_weight) names.push_back("NLO_EW");
     // CEEX_Virtual: helicity - the external-virtual CEEX column on the same
     // events, and the beam-1-polarised columns, see GenerateWeight
     if (m_useceex && m_ceexvirtsrc == ceexvirt::helicity)
@@ -1790,11 +1816,25 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
       if (!IsBad(rv1)) wyfs["CEEX_O2V1"] = rv1;
     }
   }
+  if (m_wnames.count("NLO_EW") && !IsZero(m_ev.m_corr_nominal)) {
+    const double r(m_ev.m_corr_eex/m_ev.m_corr_nominal);
+    if (!IsBad(r)) wyfs["NLO_EW"] = r;
+  }
   if (m_ev.m_nlo_current && m_nlotype != nlo_type::born && !IsZero(m_ev.m_real) &&
       (p_nlo->HasNLO() || p_nlo->HasNNLO())) {
     auto ratio = [this](double term, double denom) -> double {
       return term / denom;
     };
+    /*
+      The YFS.NLO breakdown columns are factors x against m_real, the
+      squared-level correction. They were written as x/m_real because the
+      nominal WAS that correction; with CEEX as the nominal the event carries
+      corr_ceex instead, so the denominator is rescaled by corr_nominal/corr_eex
+      and every column keeps exactly the absolute weight it had (identical to
+      m_real when YFS.NLO is the nominal).
+    */
+    const double nomden(IsZero(m_ev.m_corr_eex) ? m_ev.m_real
+                        : m_ev.m_real*(m_ev.m_corr_nominal/m_ev.m_corr_eex));
 
     // Values only. Writing through operator[] CREATES a column, which is how
     // YFS.EEX kept appearing at BETA:0 after it was dropped from the
@@ -1823,30 +1863,30 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
       const double real_sum  = (m_born + m_ev.m_nlo_real)/m_born;
       const double virt_sum  = (m_born + m_ev.m_nlo_virtual)/m_born;
       if (!IsZero(m_ev.m_real)) {
-        emit("Real", ratio((m_ev.m_nlo_real)/m_born, m_ev.m_real));
-        emit("Virtual", ratio((m_ev.m_nlo_virtual + m_ev.m_nlo_vxr)/m_born, m_ev.m_real));
-        emit("NLO", ratio(nlo_sum, m_ev.m_real));
-        emit("BR", ratio(real_sum, m_ev.m_real));
-        emit("BV", ratio(virt_sum, m_ev.m_real));
+        emit("Real", ratio((m_ev.m_nlo_real)/m_born, nomden));
+        emit("Virtual", ratio((m_ev.m_nlo_virtual + m_ev.m_nlo_vxr)/m_born, nomden));
+        emit("NLO", ratio(nlo_sum, nomden));
+        emit("BR", ratio(real_sum, nomden));
+        emit("BV", ratio(virt_sum, nomden));
         // LO = (Born-level YFS weight) / (full weight), so that
         // nominal * YFS.LO == w_lo identically. Algebraically 1/m_ev.m_real, but
         // built from the two weights themselves.
         if (!IsZero(w_full)) emit("LO", w_lo/w_full);
-        emit("EEX", ratio(m_ev.m_eex, m_ev.m_real));
+        emit("EEX", ratio(m_ev.m_eex, nomden));
         // Matching truncated to a fixed real-photon multiplicity, to see the
         // result "as if" only the 1 or 2 hardest photons were used in the
         // matching (full "NLO" above keeps all generated photons). Real is
         // summed over the 1 / 2 hardest photons; Virtual is always full.
         const double nlo_1g = (m_born + m_ev.m_nlo_real_hardest  + m_ev.m_nlo_virtual)/m_born;
         const double nlo_2g = (m_born + m_ev.m_nlo_real_2hardest + m_ev.m_nlo_virtual)/m_born;
-        emit("NLO_1g", ratio(nlo_1g, m_ev.m_real));
-        emit("NLO_2g", ratio(nlo_2g, m_ev.m_real));
+        emit("NLO_1g", ratio(nlo_1g, nomden));
+        emit("NLO_2g", ratio(nlo_2g, nomden));
         // Fixed-order comparison point: 1-photon NLO correction with the
         // resummed exp(form) form factor undone in favour of its 1+form
         // fixed-order truncation - matches a plain (non-YFS-resummed) NLO EW
         // calculation, which only ever has at most one real photon.
         if (have_fixed_order_ff)
-          emit("NLO_FixedOrder", ratio(nlo_1g, m_ev.m_real) * ff_fixedorder_ratio);
+          emit("NLO_FixedOrder", ratio(nlo_1g, nomden) * ff_fixedorder_ratio);
       }
     }
 
@@ -1862,11 +1902,11 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
       // (m_born + nnlo_total)/(m_born + nnlo_total) -- identically 1, whatever
       // the physics did. It also added a dimensionful m_born to a ratio.
       if (!IsZero(m_ev.m_real)) {
-        emit("RealVirtual", ratio((m_ev.m_nlo_rv)/m_born, m_ev.m_real));
-        emit("RealReal", ratio((m_ev.m_nlo_rr)/m_born, m_ev.m_real));
-        emit("NLO+RR", ratio(RR_total, m_ev.m_real));
-        emit("NLO+RV", ratio(RV_total, m_ev.m_real));
-        emit("NNLO", ratio(nnlo_total, m_ev.m_real));
+        emit("RealVirtual", ratio((m_ev.m_nlo_rv)/m_born, nomden));
+        emit("RealReal", ratio((m_ev.m_nlo_rr)/m_born, nomden));
+        emit("NLO+RR", ratio(RR_total, nomden));
+        emit("NLO+RV", ratio(RV_total, nomden));
+        emit("NNLO", ratio(nnlo_total, nomden));
         // Matching truncated to a fixed real-photon multiplicity, the NNLO
         // analogue of NLO_1g/NLO_2g. 1 photon: Real + RealVirtual on the
         // single hardest, RealReal = 0 (a pair needs two photons). 2 photons:
@@ -1877,13 +1917,13 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
         const double nnlo_2g =
             (m_born + m_ev.m_nlo_real_2hardest + m_ev.m_nlo_virtual + m_ev.m_nlo_rv_2hardest +
              m_ev.m_nlo_rr_2hardest)/m_born;
-        emit("NNLO_1g", ratio(nnlo_1g, m_ev.m_real));
-        emit("NNLO_2g", ratio(nnlo_2g, m_ev.m_real));
+        emit("NNLO_1g", ratio(nnlo_1g, nomden));
+        emit("NNLO_2g", ratio(nnlo_2g, nomden));
         // Fixed-order NNLO comparison: the 2-photon truncation (fixed-order
         // NNLO EW allows up to two real photons) with the resummed form factor
         // undone to its 1+form truncation.
         if (have_fixed_order_ff)
-          emit("NNLO_FixedOrder", ratio(nnlo_2g, m_ev.m_real) * ff_fixedorder_ratio);
+          emit("NNLO_FixedOrder", ratio(nnlo_2g, nomden) * ff_fixedorder_ratio);
 
         // ---- approximate double-virtual (VV) ----
         // The NNLO weights above are RV + RR only: there is no exact
@@ -1929,10 +1969,10 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
             // cross section while RR alone is ~5% and the NLO->NNLO shift ~7.8%,
             // so this is NOT the dominant NNLO uncertainty.
             const double d = m_vv_approx_unc;
-            emit("VV_EEX", ratio(vv, m_ev.m_real));
-            emit("NNLO_VV", ratio(nnlo_total + vv, m_ev.m_real));
-            emit("NNLO_VV_up", ratio(nnlo_total + (1.+d)*vv, m_ev.m_real));
-            emit("NNLO_VV_down", ratio(nnlo_total + (1.-d)*vv, m_ev.m_real));
+            emit("VV_EEX", ratio(vv, nomden));
+            emit("NNLO_VV", ratio(nnlo_total + vv, nomden));
+            emit("NNLO_VV_up", ratio(nnlo_total + (1.+d)*vv, nomden));
+            emit("NNLO_VV_down", ratio(nnlo_total + (1.-d)*vv, nomden));
           } else {
             msg_Error() << METHOD << ": EEX double-virtual estimate is "
                         << vv << ", skipping the VV weights\n";
