@@ -600,6 +600,55 @@ public:
   // be fed to it so both sides evaluate at exactly the same point.
   void CEEXComparePoint();
   bool m_ceex_done;
+
+private:
+  /*
+    The terms of CalculateReal(k) for one photon, filled stage by stage by
+    the helpers below (NLO_Real.C), in the order CalculateReal calls them.
+  */
+  struct RealTerms {
+    ATOOLS::Vec4D kk;           //!< the event's photon
+    ATOOLS::Vec4D k;            //!< the photon at the (n+1)-body point
+    ATOOLS::Vec4D_Vector p;     //!< the (n+1)-body point, photon last
+    ATOOLS::Vec4D_Vector pp;    //!< the point's Born legs
+    double r = 0.;              //!< the real, in the Born's normalisation
+    double r_nomc = 0.;         //!< r before the Born-photon multichannel share
+    double flux = 0.;           //!< the flux r is multiplied by
+    double subloc = 0.;         //!< the eikonal beta_1 subtracts
+    double subb = 0.;           //!< the event's density (crude)
+    double flux0 = 0., subloc0 = 0., subb0 = 0.;   //!< the three before REAL_SUB_EIK
+    double subb_loc = 0.;       //!< the density at the point (Sub_Mode global)
+    double denom0 = 0.;         //!< subb_loc without REAL_SUB_EIK
+    double sub8_bF = -1., sub8_f = -1., sub8_scale = 1.;   //!< SUB8_TRACE only
+    double tot;                 //!< beta_1/S~; an unknown Sub_Mode leaves it unset
+  };
+  void   MapRealPoint(RealTerms &rt);
+  void   RealME(RealTerms &rt);
+  void   RealFlux(RealTerms &rt);
+  void   RealSubtraction(RealTerms &rt);
+  void   SubEikPostEmissionFSR(RealTerms &rt);
+  void   SubEikCoherentBornFSR(RealTerms &rt);
+  void   SubEikAssignmentBornFSR(RealTerms &rt);
+  void   SubEikMultichannelFSR(RealTerms &rt);
+  void   SubEikPreFSRMultichannelFSR(RealTerms &rt);
+  double Sub8FSRChannelDensity(const RealTerms &rt, sub8fsrlegs::code fsrlegs,
+                               double sFFgen);
+  void   FluxOnFSRCrude(RealTerms &rt);
+  void   FillPointHistograms(const RealTerms &rt, const std::string &suffix);
+  bool   RealMEUsable(const RealTerms &rt);
+  void   PointDenominator(RealTerms &rt);
+  void   MultichannelISRPhoton(RealTerms &rt);
+  void   PreFSRMultichannelISRPhoton(RealTerms &rt);
+  void   Sub8Trace(const RealTerms &rt);
+  void   AssembleBeta1(RealTerms &rt);
+  void   RecordHardestPhoton(const RealTerms &rt);
+  void   RealTrace(const RealTerms &rt);
+  void   RealStabilityProbe(const RealTerms &rt);
+  void   IFIRealRatio(const RealTerms &rt);
+  void   ReportBadReal(const RealTerms &rt);
+  void   FillRealHistograms(const RealTerms &rt);
+  void   TrackRealAverage(double tot);
+  void   StoreRealPointInfo(const RealTerms &rt);
 };
 
 

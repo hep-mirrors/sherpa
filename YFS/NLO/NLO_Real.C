@@ -274,25 +274,189 @@ static bool PointFSRDensity(const Vec4D &kpt, YFS::Define_Dipoles &dips,
   return true;
 }
 
+/*
+  YFS: ME_PROBE: the photon-lepton angle of g in q, in units of that
+  lepton's m/E, minimised over the charged leptons; el receives the energy
+  of the lepton that minimises it.
+*/
+static double DeadConeAngle(const Vec4D_Vector &q, const Vec4D &g,
+                            const Flavour_Vector &flavs, double &el)
+{
+  double best(1e99); el = 0.;
+  for (size_t i(2); i < q.size() && i < flavs.size(); ++i) {
+    if (!flavs[i].IsChargedLepton()) continue;
+    const double ct(Vec3D(q[i])*Vec3D(g)/(Vec3D(q[i]).Abs()*Vec3D(g).Abs()));
+    const double th(acos(Max(-1., Min(1., ct)))/(flavs[i].Mass()/q[i][0]));
+    if (th < best) { best = th; el = q[i][0]; }
+  }
+  return best;
+}
+
+// S~_II of photon k on the generation legs, the event's pre-emission (Born)
+// momenta; 0 without an initial-state dipole
+static double GenerationEikonalII(YFS::Define_Dipoles &dips, const Vec4D &k)
+{
+  if (!dips.HasDipoleII()) return 0.;
+  YFS::Dipole &D(dips.GetDipoleII());
+  return D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
+}
+
+// sum of S~_FF of photon k on the generation legs
+static double GenerationEikonalFF(YFS::Define_Dipoles &dips, const Vec4D &k)
+{
+  double s(0.);
+  for (auto &D : dips.GetDipoleFF())
+    s += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
+  return s;
+}
+
+// sum of S~_FF of photon k on the legs the dipoles were last built on (for
+// the NLO dipoles: the (n+1)-body point's)
+static double PointEikonalFF(YFS::Define_Dipoles &dips, const Vec4D &k)
+{
+  double s(0.);
+  for (auto &D : dips.GetDipoleFF())
+    s += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+  return s;
+}
+
+// the incoherent crude S~_II + sum S~_FF on the same legs
+static double PointCrude(YFS::Define_Dipoles &dips, const Vec4D &k)
+{
+  double s(0.);
+  if (dips.HasDipoleII()) {
+    YFS::Dipole &D(dips.GetDipoleII());
+    s += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+  }
+  for (auto &D : dips.GetDipoleFF())
+    s += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
+  return s;
+}
+
+/*
+  beta_1(k)/S~ for one photon k of the event,
+      tot = (r flux - subloc B/kappa)/density,
+  r the real |M_1|^2 at the (n+1)-body point built for k, subloc the
+  eikonal it is subtracted with, the density the one the photon was
+  generated with (YFS: REAL_SUB_EIK picks both, REAL_FSR_FLUX and Flux_Mode
+  the flux, Sub_Mode which eikonal divides). raw returns the numerator only
+  (RawBeta). The helpers fill the RealTerms in this order.
+*/
 double NLO_Base::CalculateReal(Vec4D k, bool raw) {
-  double norm = 2. * pow(2 * M_PI, 3);
-  Vec4D_Vector p(m_plab), pi(m_bornMomenta), pf(m_bornMomenta);
-  dipoletype::code fluxtype;
-  Vec4D kk = k;
+  RealTerms rt;
+  rt.kk = k;
+  rt.k = k;
   m_evts += 1;
 
   msg_Debugging() << METHOD << " raw=" << raw
                   << " k=" << k << " E=" << k.E() << " pt=" << k.PPerp() << "\n";
 
+  MapRealPoint(rt);
+  RealME(rt);
+  RealFlux(rt);
+  RealSubtraction(rt);
+
+  if (!CheckMomentumConservation(rt.p)) {
+    msg_Debugging() << METHOD << " momentum conservation failed"
+                    << " k.E=" << rt.k.E() << " dip_mass=" << (rt.p[2]+rt.p[3]).Mass() << "\n";
+    msg_Error() << "Momentum Conservation fails in " << METHOD << "\n";
+    if (m_isr_debug || m_fsr_debug) FillPointHistograms(rt, "");
+    return 0;
+  }
+  if ((rt.p[2] + rt.p[3]).Mass() < massmin)
+    massmin = (rt.p[2] + rt.p[3]).Mass();
+  if (m_isr_debug || m_fsr_debug) FillPointHistograms(rt, "_pass");
+  if (!RealMEUsable(rt)) return 0;
+
+  PointDenominator(rt);
+  if (RealSubEik() == realsubeik::multichannel && !PhotonIsFSR(rt.kk))
+    MultichannelISRPhoton(rt);
+  if (RealSubEik() == realsubeik::multichannel_prefsr && !PhotonIsFSR(rt.kk)
+      && p_bornproc != nullptr && Sub8Part() != 1)
+    PreFSRMultichannelISRPhoton(rt);
+  Sub8Trace(rt);
+  AssembleBeta1(rt);
+
+  /*
+    YFS: REAL_ALPHA0 (default true since 2026-09-27). The real above is Comix's, with
+    the model's alpha on every photon (1/131.9 under G_mu), and the
+    subtraction is raised to match it (/m_rescale_alpha), while beta_0 and
+    the eikonals carry alpha(0) (USE_MODEL_ALPHA 0). beta_1 is then the hard
+    remainder at alpha_model: where the generated channel's S~ B exceeds
+    the exact real by far (a Born near its t-channel pole), the one-photon
+    factor tends to 1 - alpha_model/alpha(0) = -0.0387, not to 0. CEEX
+    rescales its Comix reals to alpha(0) (Ceex_Base::ComixPhotonCoupling).
+    true does the same here: beta_1 -> m_rescale_alpha beta_1, the whole real
+    correction at alpha(0), as in CEEX. Measured with the same seed, 100k
+    events, 0 -> 1: Z-pole mu mu fiducial CEEX/YFS.NLO 1.0056 -> 1.0044,
+    m_ff at 60 GeV 1.111 -> 1.079; Bhabha 1.0071 -> 1.0046 and 1.035 ->
+    1.007; YFS.NLO rises (its real correction is negative there). false
+    restores the alpha_model remainder. No change with USE_MODEL_ALPHA true.
+  */
+  if (RealAlpha0()) rt.tot *= m_rescale_alpha;
+
+  RecordHardestPhoton(rt);
+  RealTrace(rt);
+  RealStabilityProbe(rt);
+  IFIRealRatio(rt);
+
+  msg_Debugging() << METHOD << " submode=" << m_submode
+                  << " r*flux=" << rt.r*rt.flux
+                  << " sub=" << rt.subloc * m_born / m_rescale_alpha
+                  << " tot=" << rt.tot << "\n";
+  if (m_isr_debug)
+    m_histograms2d["Real_Flux"]->Insert(
+        rt.flux, sqrt(p_dipoles->GetDipoleII().Sprime()));
+
+  if (m_no_subtraction) {
+    msg_Debugging() << METHOD << " no_subtraction: returning r/subloc=" << rt.r/rt.subloc << "\n";
+    return rt.r / rt.subloc;
+  }
+  if (IsBad(rt.tot)) ReportBadReal(rt);
+  if (m_isr_debug || m_fsr_debug) FillRealHistograms(rt);
+  TrackRealAverage(rt.tot);
+
+  if (raw) {
+    double rawval = rt.r * rt.flux - rt.subloc * m_born / m_rescale_alpha;
+    msg_Debugging() << METHOD << " raw: returning " << rawval << "\n";
+    return rawval;
+  }
+
+  msg_Debugging() << METHOD << " returning tot=" << rt.tot << "\n";
+  StoreRealPointInfo(rt);
+  return rt.tot;
+}
+
+/*
+  The (n+1)-body point for photon k: the NLO dipoles on the event, the
+  point from MapMomenta (which moves the photon, rt.k, and sets
+  m_map_reduced), the photon appended.
+*/
+void NLO_Base::MapRealPoint(RealTerms &rt)
+{
   p_nlodipoles->MakeDipolesII(m_flavs, m_plab, m_plab);
   p_nlodipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
   p_nlodipoles->MakeDipoles(m_flavs, m_plab, m_plab);
-  fluxtype = p_nlodipoles->WhichResonant(k);
+  const dipoletype::code fluxtype(p_nlodipoles->WhichResonant(rt.k));
 
   msg_Debugging() << METHOD << " fluxtype=" << fluxtype << "\n";
-  MapMomenta(p, k);
+  rt.p = m_plab;
+  MapMomenta(rt.p, rt.k);
 
-  p.push_back(k);
+  rt.p.push_back(rt.k);
+}
+
+/*
+  The real matrix element at the point: masses restored (CheckMasses), the
+  NLO dipoles rebuilt on the point's Born legs, r = |M_1|^2 in the
+  normalisation of the Born, with the Born-photon symmetry factor and the
+  Born-photon multichannel share.
+*/
+void NLO_Base::RealME(RealTerms &rt)
+{
+  const double norm = 2. * pow(2 * M_PI, 3);
+  Vec4D_Vector &p(rt.p);
+  const Vec4D &k(rt.k), &kk(rt.kk);
   /*
     YFS: ME_PROBE - for one final-state photon, the photon-lepton angle in
     units of that lepton's m/E and the lepton energy, in the event (post-
@@ -302,34 +466,25 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
   */
   static const bool meprobe(ATOOLS::Settings::GetMainSettings()["YFS"]
                             ["ME_PROBE"].SetDefault(0).Get<int>() != 0);
-  auto dcangle = [&](const Vec4D_Vector &q, const Vec4D &g, double &el) {
-    double best(1e99); el = 0.;
-    for (size_t i(2); i < q.size() && i < m_flavs.size(); ++i) {
-      if (!m_flavs[i].IsChargedLepton()) continue;
-      const double ct(Vec3D(q[i])*Vec3D(g)/(Vec3D(q[i]).Abs()*Vec3D(g).Abs()));
-      const double th(acos(Max(-1., Min(1., ct)))/(m_flavs[i].Mass()/q[i][0]));
-      if (th < best) { best = th; el = q[i][0]; }
-    }
-    return best; };
   double pe_ev(0.), pe_pre(0.), th_ev(-1.), th_pre(-1.);
   const bool probe_this(meprobe && PhotonIsFSR(kk) && m_photons.size() == 1);
   if (probe_this) {
-    th_ev  = dcangle(m_postlab, kk, pe_ev);
-    th_pre = dcangle(p, k, pe_pre);
+    th_ev  = DeadConeAngle(m_postlab, kk, m_flavs, pe_ev);
+    th_pre = DeadConeAngle(p, k, m_flavs, pe_pre);
   }
   const Vec4D_Vector p_before(p);
   CheckMasses(p, 1);
 
-  Vec4D_Vector pp = p;
-  pp.pop_back();
-  p_nlodipoles->MakeDipolesII(m_flavs, pp, m_plab);
-  p_nlodipoles->MakeDipolesIF(m_flavs, pp, m_plab);
-  p_nlodipoles->MakeDipoles(m_flavs, pp, m_plab);
+  rt.pp = p;
+  rt.pp.pop_back();
+  p_nlodipoles->MakeDipolesII(m_flavs, rt.pp, m_plab);
+  p_nlodipoles->MakeDipolesIF(m_flavs, rt.pp, m_plab);
+  p_nlodipoles->MakeDipoles(m_flavs, rt.pp, m_plab);
 
   double r = p_real->Calc_R(p) / norm;
   if (probe_this) {
     double pe_post(0.);
-    const double th_post(dcangle(p, p.back(), pe_post));
+    const double th_post(DeadConeAngle(p, p.back(), m_flavs, pe_post));
     double dmax(0.);
     for (size_t i(0); i < p.size(); ++i)
       dmax = Max(dmax, (p[i] - p_before[i]).PSpat() + std::abs((p[i] - p_before[i])[0]));
@@ -368,12 +523,21 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
     own beta_0 and its own subtraction, so the soft bracket (where no other
     channel is open and the factor is exactly 1) is unchanged.
   */
-  const double r_nomc(r);
+  rt.r_nomc = r;
   r *= BornPhotonChannelWeight(kk);
+  rt.r = r;
   m_real = r;
   if (p_real->FailCut()) m_failcut = true;
+}
 
-  double flux;
+/*
+  The flux r is multiplied by: YFS: Flux_Mode, then REAL_FSR_FLUX for a
+  final-state photon.
+*/
+void NLO_Base::RealFlux(RealTerms &rt)
+{
+  const Vec4D &k(rt.k), &kk(rt.kk);
+  double &flux(rt.flux);
   if (m_flux_mode == fluxmode::mapped)
     flux = p_nlodipoles->CalculateFlux(k);
   else if (m_flux_mode == fluxmode::average)
@@ -383,7 +547,7 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
 
   /*
     Define_Dipoles::CalculateFlux forces fluxtype = initial whenever both ISR
-    and FSR are on (the WhichResonant() result above is never used), so a
+    and FSR are on (the WhichResonant() result in MapRealPoint is never used), so a
     FINAL-state photon received the initial-state flux (Q_X - k)^2/Q_X^2 =
     1 - x, as if it had reduced the beam energy. It has not: the Born scale
     s' is untouched by final-state emission, and the two-body phase space at
@@ -401,39 +565,50 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
 
     YFS: REAL_FSR_FLUX: see RealFSRFlux() in NLO_Base_Internal.H.
   */
-  { const realfsrflux::code fsrflux(RealFSRFlux());
-    if (fsrflux != realfsrflux::event_flux && PhotonIsFSR(kk)) {
-      if (fsrflux == realfsrflux::no_flux) flux = 1.;
-      else if (fsrflux == realfsrflux::flux_squared) flux *= flux;  // (m_ff^2/s')^2
-      /*
-        own_dipole: the flux of the photon's OWN pair, (Q_D - k)^2/Q_D^2 with Q_D the
-        pre-emission momentum of the dipole that radiated k. CalculateFlux
-        above takes (Q - k)^2/Q^2 with Q the WHOLE ISR-reduced final state,
-        which is the same number for a single resonant pair (Q_D = Q) but
-        not with two: the recoil Jacobian the FSR generator produced
-        (FSR::RescalePhotons, m_yy) is that of the pair in its own frame,
-        and a photon of x = 2E/sqrt(s) = 0.05 at 250 GeV has 1 - x = 0.95
-        against a pair-mass ratio of 0.69-0.94 depending on its direction
-        relative to the Z boost. See the numbers in the report for
-        e+e- -> mu mu tau tau (with REAL_FSR_MAP 2 the fixed-order/CEEX ratio
-        on single-FSR-photon events grows with x: 1.00, 1.07, 1.10, 1.10,
-        1.28, 1.47 for x in <0.01, 0.01-0.03, 0.03-0.06, 0.06-0.12,
-        0.12-0.3, >0.3).
-      */
-      else if (fsrflux == realfsrflux::own_dipole && m_plab.size() == m_flavs.size()) {
-        const YFS::Photon *g(FindPhoton(kk));
-        if (g != nullptr && g->Dip() != nullptr) {
-          const int l(g->Dip()->Left()), r(g->Dip()->Right());
-          if (l >= 2 && r >= 2 && l < (int)m_plab.size() && r < (int)m_plab.size()) {
-            const Vec4D Qd(m_plab[l] + m_plab[r]);
-            const double q2(Qd.Abs2());
-            if (q2 > 0.) flux = (Qd - kk).Abs2()/q2;
-          } } }
-    } }
+  const realfsrflux::code fsrflux(RealFSRFlux());
+  if (fsrflux != realfsrflux::event_flux && PhotonIsFSR(kk)) {
+    if (fsrflux == realfsrflux::no_flux) flux = 1.;
+    else if (fsrflux == realfsrflux::flux_squared) flux *= flux;  // (m_ff^2/s')^2
+    /*
+      own_dipole: the flux of the photon's OWN pair, (Q_D - k)^2/Q_D^2 with Q_D the
+      pre-emission momentum of the dipole that radiated k. CalculateFlux
+      above takes (Q - k)^2/Q^2 with Q the WHOLE ISR-reduced final state,
+      which is the same number for a single resonant pair (Q_D = Q) but
+      not with two: the recoil Jacobian the FSR generator produced
+      (FSR::RescalePhotons, m_yy) is that of the pair in its own frame,
+      and a photon of x = 2E/sqrt(s) = 0.05 at 250 GeV has 1 - x = 0.95
+      against a pair-mass ratio of 0.69-0.94 depending on its direction
+      relative to the Z boost. See the numbers in the report for
+      e+e- -> mu mu tau tau (with REAL_FSR_MAP 2 the fixed-order/CEEX ratio
+      on single-FSR-photon events grows with x: 1.00, 1.07, 1.10, 1.10,
+      1.28, 1.47 for x in <0.01, 0.01-0.03, 0.03-0.06, 0.06-0.12,
+      0.12-0.3, >0.3).
+    */
+    else if (fsrflux == realfsrflux::own_dipole && m_plab.size() == m_flavs.size()) {
+      const YFS::Photon *g(FindPhoton(kk));
+      if (g != nullptr && g->Dip() != nullptr) {
+        const int l(g->Dip()->Left()), r(g->Dip()->Right());
+        if (l >= 2 && r >= 2 && l < (int)m_plab.size() && r < (int)m_plab.size()) {
+          const Vec4D Qd(m_plab[l] + m_plab[r]);
+          const double q2(Qd.Abs2());
+          if (q2 > 0.) flux = (Qd - kk).Abs2()/q2;
+        } } }
+  }
+}
+
+/*
+  The subtraction eikonal subloc and the density subb for photon k, and
+  the per-photon terms read after CalculateReal() (m_wifterms, m_eikeex,
+  m_subloc). Starts from the coherent eikonal at the point and the crude of
+  the event; REAL_SUB_EIK then replaces them for its photons, and
+  REAL_FSR_FLUX on_crude moves the flux of a final-state photon into subb.
+*/
+void NLO_Base::RealSubtraction(RealTerms &rt)
+{
   // CalculateRealSub is the plain eikonal; the symmetry factor is on r above
-  double subloc = p_nlodipoles->CalculateRealSub(k);
-  double subb   = p_dipoles->CalculateRealSubEEX(kk);
-  const double flux0(flux), subloc0(subloc), subb0(subb);   // SUB8_TRACE
+  rt.subloc = p_nlodipoles->CalculateRealSub(rt.k);
+  rt.subb   = p_dipoles->CalculateRealSubEEX(rt.kk);
+  rt.flux0 = rt.flux; rt.subloc0 = rt.subloc; rt.subb0 = rt.subb;   // SUB8_TRACE
   /*
     Which eikonal beta_1 subtracts (YFS: REAL_SUB_EIK, name or old integer;
     default multichannel_prefsr (8) since 2026-09-26, see below). Each name
@@ -447,634 +622,694 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
         of the event, the legs the form factor exponent is built on.
       crude_fsr (3), post_emission_fsr (4), coherent_born_fsr (5),
       assignment_born_fsr (6), multichannel (7), multichannel_prefsr (8):
-        described at their branches below.
+        described at their branches below and at the SubEik* helpers.
   */
-  { static const realsubeik::code subeik(RealSubEik());
-    if (subeik == realsubeik::crude) subloc = subb;
-    else if (subeik == realsubeik::coherent_born) subloc = p_dipoles->CalculateRealSub(kk);
-    /*
-      crude_fsr (3): the event's crude for FINAL-state photons only. With the
-      post-emission map (REAL_FSR_MAP >= 1) the coherent eikonal at the
-      (n+1)-body point is 0.2-0.6 of the event's crude for a hard FSR photon,
-      so 1 + (r flux - S_pt B)/S~_ev carries an extra (1 - S_pt/S~_ev) that
-      the exact one-photon weight r flux/(S~_ev B) does not have. Subtracting
-      the crude the photon was generated with removes it; ISR photons keep
-      their reduced-point subtraction and denominator (m_map_reduced).
-      Measured 2026-09-25, MODE: FSR, Z-pole mu mu, one photon, 3 < theta/(m/E)
-      < 30: FO/CEEX 1.00/1.00/1.00/1.00/0.97 for x < 0.01 .. > 0.4 with this
-      and REAL_FSR_FLUX 1, against 1.00/1.00/1.01/1.09/1.34 before.
-    */
-    else if (subeik == realsubeik::crude_fsr && PhotonIsFSR(kk)) subloc = subb;
-    /*
-      post_emission_fsr (4): for FINAL-state photons, subtraction AND
-      denominator on the
-      POST-emission legs. The FSR generator's crude weight (FSR::Weight,
-      m_wt2/m_yy, KKMC's KarFin) already carries the Jacobian from the
-      generation variables to the physical momenta, so the density to divide
-      by is the eikonal on the physical legs - which is what CEEX's rho_crude
-      uses (m_Sprod on m_pceex). Dividing by the eikonal on the PRE-emission
-      Born momenta instead gives, for a soft photon whose parent lepton was
-      kicked by a hard companion, a bracket (r_j - S~_pre B)/S~_pre of O(1)
-      inside the collinear cone (the lepton moved by >> m/E): measured with
-      mode 3, Z-pole mu mu at the peak, nfsr >= 3 all soft, 10th percentile
-      of the fixed-order factor -5 while CEEX has 0.97. With the
-      post-emission legs the point built by MapMomentaFSR (post legs, other
-      photons re-absorbed by rescaling, directions kept) has the same
-      collinear structure as the crude, and the bracket vanishes as it must.
-      The one-photon identity r/(S~_post B) = CEEX is exact by construction.
-    */
-    /*
-      coherent_born_fsr (5): for FINAL-state photons, the COHERENT eikonal on
-      the pre-emission
-      legs of the event, |J_II + J_FF|^2 on the Born momenta. Mode 3 (the
-      incoherent crude) leaves each photon's soft initial-final interference
-      2 Re(J_II J_FF^*) in its bracket, additively and with either sign,
-      while m_ifi_prod supplies the same interference multiplicatively:
-      traced at the Z pole, events with three soft wide-angle FSR photons
-      had brackets -0.6, -0.9, -0.99 each (r/(S~_crude B) = 0.35, 0.06,
-      0.007, i.e. destructive interference) and a factor of -3, 10th
-      percentile -5. With the coherent eikonal the soft brackets vanish and
-      the one-photon weight is still exact: 1 + (r - S_coh B)/S~_cr plus the
-      product's (S_coh/S~_cr - 1) is r/(S~_cr B). Mode 0 subtracts the
-      coherent eikonal too, but at the MAPPED point, which for a hard photon
-      is 0.2-0.6 of the event's - the (1 - S_pt/S~_ev) excess. ISR photons
-      keep their reduced-point pair (m_map_reduced).
-    */
-    else if (subeik == realsubeik::coherent_born_fsr && PhotonIsFSR(kk)) {
-      // The same two pieces m_ifi_prod is built from (below): the incoherent
-      // crude on the generation legs plus the initial-final interference on
-      // those legs. CalculateRealSub(kk) is NOT this - it sits on the
-      // post-emission dipole momenta and reproduced mode 4 exactly.
-      const double ifg(p_dipoles->CalculateRealSubIF(kk));
-      if (!IsBad(ifg) && !IsZero(subb)) subloc = subb + ifg;
-    }
-    /*
-      assignment_born_fsr (6): mode 3 with the crude carrying the Born of
-      each ASSIGNMENT. A hard
-      photon labelled FSR at wide angle to its pair has a tiny FF crude, but
-      the exact ME does not know the label: at 250 GeV such a photon is really
-      the initial-state one that brings an off-peak pair onto the Z peak, so
-      r is on-peak-large while m_born (pre-emission pair, off peak) is tiny
-      and the weight r/(S~ B) reached 1e4 (clean probe: FO 12919, CEEX 0.30,
-      x_fsr 0.39, S~_crude 1e-5). CEEX divides by sum_assignments |s|^2 B at
-      that assignment's reduced s', so it gives O(1). Here: subtraction and
-      denominator become S~_II B_I/B + S~_FF, B_I the Born at the scaled
-      ISR-reduced point of this photon, S~_FF and S~_II on the generation
-      legs. At the Z pole B_I/B ~ 1 and this reduces to mode 3.
-    */
-    else if (subeik == realsubeik::assignment_born_fsr && PhotonIsFSR(kk)) {
-      double sII(0.), sFF(0.), br(1.);
-      if (p_dipoles->HasDipoleII()) {
-        YFS::Dipole &D(p_dipoles->GetDipoleII());
-        sII = D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1)); }
-      for (auto &D : p_dipoles->GetDipoleFF())
-        sFF += D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1));
-      if (sII + sFF > 0. && ReducedBornISR(kk, br)) {
-        const double s6(sII*br + sFF);
-        if (s6 > 0. && !IsBad(s6)) { subloc = subb = s6; }
-      } else subloc = subb;
-    }
-    /*
-      multichannel (7): the MULTICHANNEL crude. The generator reaches a given final state
-      with a photon labelled ISR or FSR, each channel with its own Born and
-      Jacobian: g_I = S~_II B_I / flux_I, g_F = S~_FF B_F, the two one-photon
-      identities measured separately (ISR: r flux/(S~_II B) exact; FSR:
-      r/(S~_FF B_pre) exact). The unbiased weight divides r by g_I + g_F
-      WHATEVER the label - mode 6 did so only for FSR-labelled photons and
-      counted the ISR region twice (Z pole, 66-76 GeV: 1.20 of KKMC) and
-      dropped flux_I. For an FSR-labelled photon B = B_F (the event's Born),
-      so subb = S~_FF + S~_II (B_I/B)/flux_I, B_I the Born at (P - k)^2 and
-      flux_I = (P - k)^2/P^2; subloc adds the IF interference on the same
-      legs (as mode 5) so soft brackets vanish, the product m_ifi_prod
-      supplying it multiplicatively. No flux on r (REAL_FSR_FLUX 1). The
-      ISR-labelled half is applied where the reduced-point crude is built.
-    */
-    else if (subeik == realsubeik::multichannel && PhotonIsFSR(kk)) {
-      double sII(0.), sFF(0.), bI(1.), s2(1.);
-      if (p_dipoles->HasDipoleII()) {
-        YFS::Dipole &D(p_dipoles->GetDipoleII());
-        sII = D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1)); }
-      for (auto &D : p_dipoles->GetDipoleFF())
-        sFF += D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1));
-      const double ifg(p_dipoles->CalculateRealSubIF(kk));
-      if (sFF > 0. && ReducedBornAlt(kk, -1, bI, s2) && s2 > 0.) {
-        const double s7(sFF + sII*bI/s2);
-        if (s7 > 0. && !IsBad(s7)) { subb = s7; subloc = s7 + (IsBad(ifg) ? 0. : ifg); }
-      } else { subloc = subb + (IsBad(ifg) ? 0. : ifg); }
-      flux = 1.;
-    }
-    /*
-      multichannel_prefsr (8): mode 7 with the alternative channel built
-      from the right system.
-      Mode 7 took the invariant of the other label from the FULL beams,
-      (P -+ k)^2, and normalised to the Born at m_bornMomenta (the Born
-      kinematics at the full s), neither of which is the system the event's
-      Born m_born sits at once ISR photons are present. Here both come from
-      the event's PRE-FSR final state Q_pre (NLO m_plab): an FSR-labelled
-      photon's ISR alternative has its Born at (Q_pre - k)^2 with the ISR
-      flux (Q_pre - k)^2/Q_pre^2, an ISR-labelled photon's FSR alternative
-      at (Q_pre + k)^2; the Born ratios are taken between two points of the
-      same construction (PreFSRBornRatio). The subtraction is scaled with the
-      denominator, subloc -> subloc*(new subb)/(old subb), so that together
-      with m_ifi_prod the one-photon weight is exactly r/(g_I + g_F) and the
-      soft bracket is unchanged (the scale -> 1 as k -> 0). The FSR-labelled
-      base is mode 5 (subloc = S~ + S_IF on the generation legs), flux 1.
-    */
-    else if (subeik == realsubeik::multichannel_prefsr && PhotonIsFSR(kk)
-             && p_bornproc != nullptr && Sub8Part() != 2) {
-      double sII(0.), sFF(0.);
-      if (p_dipoles->HasDipoleII()) {
-        YFS::Dipole &D(p_dipoles->GetDipoleII());
-        sII = D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1)); }
-      /*
-        YFS: SUB8_FSR_LEGS (2026-09-27; name or old integer; default
-        generation (0), the pre-emission eikonal below).
-        post_emission (1): the FSR channel density on the POST-emission legs
-        times the pair
-        flux, S~_FF(q_1', q_2'; k) (q_D + k)^2/q_D^2, q_D the post-emission
-        pair of the radiating dipole - what the FSR generator produces
-        (FSR::F's mass weight is the eikonal of the post-emission legs) and
-        what CEEX's rho_crude uses (m_Sprod on the physical legs times
-        m_pflux). The pre-emission eikonal below has the same size outside
-        the dead cone but a narrower dead cone (m/E_pre instead of m/E_post):
-        Z-pole mu mu, one hard FSR photon at theta < 2 m/E, it is up to 5x
-        the generator density, and YFS.NLO fell to 0.2-0.8 of the exact
-        |M_1|^2 there while CEEX stayed at 1.00. See
-        NOTES-collinear-fsr-referee-2026-09-27.md.
-      */
-      static const sub8fsrlegs::code fsrlegs(ATOOLS::Settings::GetMainSettings()["YFS"]
-          ["SUB8_FSR_LEGS"].SetDefault(sub8fsrlegs::generation).Get<sub8fsrlegs::code>());
-      /*
-        event_density (2) and point_density (3)
-        (NOTES-deadcone-crude-2026-09-28.md): the FSR channel density
-        the generator really has, post-emission eikonal times pair flux,
-        so that the one-photon weight is r/(g B), the density CEEX divides by
-        (hard half of SUB8_FSRSUB 4: g (1 + S_IF/crude), on the new g).
-        Unlike 1, the SOFT half keeps the generation-leg scale (gsoft below):
-        it is the point's coherent current, the soft limit of r, and must not
-        be rescaled by a post/pre eikonal ratio, which leaves soft photons
-        next to a lepton kicked by a companion with O(1) brackets
-        (post_emission doubled YFS.NLO's error at the Z pole).
-        event_density (2): the EVENT's density, GeneratorFSRDensity - S~ on the event's
-           post-emission legs times the dipole's flux F_D shared among its
-           photons. Right at one photon; with companions it describes a
-           different emission from the one |M_1|^2 is evaluated for (the
-           REAL_FSR_MAP 2 point re-absorbs the companions, which moves the
-           lepton by more than its dead cone for electrons): Z-pole e e,
-           YFS.NLO fiducial error x4, CEEX/NLO 1.034 at s'/s 0.85-0.93.
-        point_density (3, recommended): the POINT's density,
-           PointFSRDensity - S~ on the legs of the (n+1)-body point times its
-           own single-emission flux. Identical to event_density at one photon; with companions it is the density
-           of the emission the point describes, and it reduces to the old
-           generation-leg crude where the companions dominate the recoil.
-      */
-      double sFFgen(0.);
-      for (auto &D : p_dipoles->GetDipoleFF())
-        sFFgen += D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1));
-      const bool densityscale(fsrlegs == sub8fsrlegs::event_density
-                              || fsrlegs == sub8fsrlegs::point_density);
-      if (fsrlegs == sub8fsrlegs::event_density) {
-        if (!GeneratorFSRDensity(kk, *p_dipoles, m_postlab, sFF)) sFF = sFFgen;
-      }
-      else if (fsrlegs == sub8fsrlegs::point_density) {
-        if (!PointFSRDensity(k, *p_dipoles, pp, sFF)) sFF = sFFgen;
-      }
-      else if (fsrlegs == sub8fsrlegs::post_emission && m_postlab.size() == m_plab.size()) {
-        for (auto &D : p_dipoles->GetDipoleFF()) {
-          const int l(D.Left()), r(D.Right());
-          if (l >= 2 && r >= 2 && l < (int)m_postlab.size() && r < (int)m_postlab.size()) {
-            const Vec4D qd(m_postlab[l] + m_postlab[r]);
-            const double qd2(qd.Abs2());
-            const double F(qd2 > 0. ? (qd + kk).Abs2()/qd2 : 1.);
-            sFF += F*D.Eikonal(kk, m_postlab[l], m_postlab[r]);
-          }
-          else sFF += D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1));
-        }
-      }
-      else sFF = sFFgen;
-      const double ifg(p_dipoles->CalculateRealSubIF(kk));
-      const Vec4D Q(PreFSRSystem()), R(Q - kk);
-      const double s2(Q.Abs2() > 0. ? R.Abs2()/Q.Abs2() : 0.);
-      double bI(0.);
-      if (!(s2 > 0.) || !PreFSRBornRatio(R, bI)) bI = 0.;   // no ISR channel
-      const double isrchannel(s2 > 0. ? sII*bI/s2 : 0.);
-      const double g(sFF + isrchannel);
-      // the scale of the soft (point) subtraction: see SUB8_FSR_LEGS
-      // event_density, point_density
-      const double gsoft(densityscale ? sFFgen + isrchannel : g);
-      /*
-        Which subtraction (YFS: SUB8_FSRSUB, name or old integer):
-        generation (0): mode 5's, on the generation (pre-FSR) legs, scaled
-           with g. The
-           one-photon weight is then exactly r/(g_I + g_F) (MODE: FSR cone
-           identity 1.00), but r's soft limit sits on the legs of the point
-           it is evaluated at, not on the generation legs: with a hard ISR
-           photon (250 GeV radiative return) the FSR point's beams are the
-           generator's reduced beams, tilted by the ISR transverse momentum,
-           and next to a hard FSR companion its leptons are the kicked ones.
-           Soft FSR photons there kept O(1) brackets (mean +0.18 per photon
-           below x = 1e-3, single photons up to 250), YFS.NLO +6% at 250 GeV
-           from this half alone.
-        point (1): the coherent current at that point (the default's subloc),
-           scaled with g: soft brackets vanish, the identity for hard photons
-           does not hold (Z pole +4.4% on Born+real).
-        blend (4, default): point for soft photons, generation for hard ones,
-           w = 1/(1 + (y/y0)^2), y = 2 k.Q_pre/Q_pre^2, y0 = YFS: SUB8_Y0
-           (0.01). 250 GeV FSR half 1.062 -> 0.992 of CEEX, Z pole and the
-           cone identity unchanged.
-      */
-      static const sub8fsrsub::code fsub(ATOOLS::Settings::GetMainSettings()["YFS"]
-          ["SUB8_FSRSUB"].SetDefault(sub8fsrsub::blend).Get<sub8fsrsub::code>());
-      if (g > 0. && !IsBad(g) && subb > 0.) {
-        const double cru(subb);
-        const double sgen(g*(1. + (IsBad(ifg) ? 0. : ifg/cru)));
-        if (fsub == sub8fsrsub::point) subloc *= gsoft/cru;
-        else if (fsub == sub8fsrsub::blend) {
-          /*
-            blend: the point's coherent subtraction for soft photons, mode 5's
-            for hard ones, w = 1/(1 + (y/y0)^2), y = 2 k.Q_pre/Q_pre^2.
-          */
-          static const double y0(ATOOLS::Settings::GetMainSettings()["YFS"]
-                                 ["SUB8_Y0"].SetDefault(0.01).Get<double>());
-          const double q2(Q.Abs2()), y(q2 > 0. ? 2.*(kk*Q)/q2 : 1.);
-          const double w(1./(1. + sqr(y/y0)));
-          subloc = w*subloc*gsoft/cru + (1. - w)*sgen;
-        }
-        else subloc = sgen;
-        subb   = g;
-        flux   = 1.;
-      }
-      m_sub8[0] = sII; m_sub8[1] = sFF; m_sub8[2] = bI; m_sub8[3] = s2;
-    }
-    else if (subeik == realsubeik::post_emission_fsr && PhotonIsFSR(kk)
-             && m_postlab.size() == m_plab.size()) {
-      double s(0.);
-      if (p_dipoles->HasDipoleII()) {
-        YFS::Dipole &D(p_dipoles->GetDipoleII());
-        s += D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1)); }
-      for (auto &D : p_dipoles->GetDipoleFF()) {
-        const int l(D.Left()), r(D.Right());
-        if (l >= 2 && r >= 2 && l < (int)m_postlab.size() && r < (int)m_postlab.size())
-          s += D.Eikonal(kk, m_postlab[l], m_postlab[r]); }
-      if (s > 0. && !IsBad(s)) { subloc = subb = s; }
-    } }
+  static const realsubeik::code subeik(RealSubEik());
+  if (subeik == realsubeik::crude) rt.subloc = rt.subb;
+  else if (subeik == realsubeik::coherent_born) rt.subloc = p_dipoles->CalculateRealSub(rt.kk);
   /*
-    REAL_FSR_FLUX: on_crude (3) - the crude a FINAL-state photon is divided by carries
-    F = (q + k)^2/q^2 on its final-state part, q the post-emission pair, and
-    r carries no flux. This is the crude CEEX divides by (validated against
-    KKMC): on single-FSR-photon events K rho_crude(CEEX)/((S~_II + F S~_FF) B)
-    has median 0.96 where K rho_crude/(S~ B) has 1.15 and a tail to 2.1.
+    crude_fsr (3): the event's crude for FINAL-state photons only. With the
+    post-emission map (REAL_FSR_MAP >= 1) the coherent eikonal at the
+    (n+1)-body point is 0.2-0.6 of the event's crude for a hard FSR photon,
+    so 1 + (r flux - S_pt B)/S~_ev carries an extra (1 - S_pt/S~_ev) that
+    the exact one-photon weight r flux/(S~_ev B) does not have. Subtracting
+    the crude the photon was generated with removes it; ISR photons keep
+    their reduced-point subtraction and denominator (m_map_reduced).
+    Measured 2026-09-25, MODE: FSR, Z-pole mu mu, one photon, 3 < theta/(m/E)
+    < 30: FO/CEEX 1.00/1.00/1.00/1.00/0.97 for x < 0.01 .. > 0.4 with this
+    and REAL_FSR_FLUX 1, against 1.00/1.00/1.01/1.09/1.34 before.
   */
-  { if (RealFSRFlux() == realfsrflux::on_crude && PhotonIsFSR(kk)
-        && m_postlab.size() == m_plab.size()) {
-      Vec4D q; for (size_t i = 2; i < m_postlab.size(); ++i) q += m_postlab[i];
-      const double q2(q.Abs2());
-      if (q2 > 0.) {
-        const double F((q + kk).Abs2()/q2);
-        double sII(0.), sFF(0.);
-        if (p_dipoles->HasDipoleII()) {
-          YFS::Dipole &D(p_dipoles->GetDipoleII());
-          sII = D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1)); }
-        for (auto &D : p_dipoles->GetDipoleFF())
-          sFF += D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1));
-        if (sII + F*sFF > 0.) { subb = sII + F*sFF; flux = 1.; m_eikeex = subb; }
-      } } }
-  m_wifterms.push_back(subb != 0. ? subloc/subb : 1.);
-  m_eikeex = subb;
-  m_subloc = subloc;
+  else if (subeik == realsubeik::crude_fsr && PhotonIsFSR(rt.kk)) rt.subloc = rt.subb;
+  else if (subeik == realsubeik::coherent_born_fsr && PhotonIsFSR(rt.kk))
+    SubEikCoherentBornFSR(rt);
+  else if (subeik == realsubeik::assignment_born_fsr && PhotonIsFSR(rt.kk))
+    SubEikAssignmentBornFSR(rt);
+  else if (subeik == realsubeik::multichannel && PhotonIsFSR(rt.kk))
+    SubEikMultichannelFSR(rt);
+  else if (subeik == realsubeik::multichannel_prefsr && PhotonIsFSR(rt.kk)
+           && p_bornproc != nullptr && Sub8Part() != 2)
+    SubEikPreFSRMultichannelFSR(rt);
+  else if (subeik == realsubeik::post_emission_fsr && PhotonIsFSR(rt.kk)
+           && m_postlab.size() == m_plab.size())
+    SubEikPostEmissionFSR(rt);
+  if (RealFSRFlux() == realfsrflux::on_crude && PhotonIsFSR(rt.kk)
+      && m_postlab.size() == m_plab.size())
+    FluxOnFSRCrude(rt);
+  m_wifterms.push_back(rt.subb != 0. ? rt.subloc/rt.subb : 1.);
+  m_eikeex = rt.subb;
+  m_subloc = rt.subloc;
 
-  msg_Debugging() << METHOD << " r=" << r << " flux=" << flux
+  msg_Debugging() << METHOD << " r=" << rt.r << " flux=" << rt.flux
                   << " (mode=" << m_flux_mode << ")"
-                  << " subloc=" << subloc << " subb=" << subb
+                  << " subloc=" << rt.subloc << " subb=" << rt.subb
                   << " born=" << m_born << " alpha=" << m_rescale_alpha << "\n";
+}
 
-  if (!CheckMomentumConservation(p)) {
-    msg_Debugging() << METHOD << " momentum conservation failed"
-                    << " k.E=" << k.E() << " dip_mass=" << (p[2]+p[3]).Mass() << "\n";
-    msg_Error() << "Momentum Conservation fails in " << METHOD << "\n";
-    if (m_isr_debug || m_fsr_debug) {
-      m_histograms1d["k_E"]->Insert(k.E());
-      m_histograms1d["k_pt"]->Insert(k.PPerp());
-      m_histograms1d["dip_mass"]->Insert((p[2] + p[3]).Mass());
+/*
+  REAL_SUB_EIK post_emission_fsr (4): for FINAL-state photons, subtraction AND
+  denominator on the
+  POST-emission legs. The FSR generator's crude weight (FSR::Weight,
+  m_wt2/m_yy, KKMC's KarFin) already carries the Jacobian from the
+  generation variables to the physical momenta, so the density to divide
+  by is the eikonal on the physical legs - which is what CEEX's rho_crude
+  uses (m_Sprod on m_pceex). Dividing by the eikonal on the PRE-emission
+  Born momenta instead gives, for a soft photon whose parent lepton was
+  kicked by a hard companion, a bracket (r_j - S~_pre B)/S~_pre of O(1)
+  inside the collinear cone (the lepton moved by >> m/E): measured with
+  mode 3, Z-pole mu mu at the peak, nfsr >= 3 all soft, 10th percentile
+  of the fixed-order factor -5 while CEEX has 0.97. With the
+  post-emission legs the point built by MapMomentaFSR (post legs, other
+  photons re-absorbed by rescaling, directions kept) has the same
+  collinear structure as the crude, and the bracket vanishes as it must.
+  The one-photon identity r/(S~_post B) = CEEX is exact by construction.
+*/
+void NLO_Base::SubEikPostEmissionFSR(RealTerms &rt)
+{
+  const Vec4D &kk(rt.kk);
+  double s(GenerationEikonalII(*p_dipoles, kk));
+  for (auto &D : p_dipoles->GetDipoleFF()) {
+    const int l(D.Left()), r(D.Right());
+    if (l >= 2 && r >= 2 && l < (int)m_postlab.size() && r < (int)m_postlab.size())
+      s += D.Eikonal(kk, m_postlab[l], m_postlab[r]); }
+  if (s > 0. && !IsBad(s)) { rt.subloc = rt.subb = s; }
+}
+
+/*
+  REAL_SUB_EIK coherent_born_fsr (5): for FINAL-state photons, the COHERENT
+  eikonal on the pre-emission
+  legs of the event, |J_II + J_FF|^2 on the Born momenta. Mode 3 (the
+  incoherent crude) leaves each photon's soft initial-final interference
+  2 Re(J_II J_FF^*) in its bracket, additively and with either sign,
+  while m_ifi_prod supplies the same interference multiplicatively:
+  traced at the Z pole, events with three soft wide-angle FSR photons
+  had brackets -0.6, -0.9, -0.99 each (r/(S~_crude B) = 0.35, 0.06,
+  0.007, i.e. destructive interference) and a factor of -3, 10th
+  percentile -5. With the coherent eikonal the soft brackets vanish and
+  the one-photon weight is still exact: 1 + (r - S_coh B)/S~_cr plus the
+  product's (S_coh/S~_cr - 1) is r/(S~_cr B). Mode 0 subtracts the
+  coherent eikonal too, but at the MAPPED point, which for a hard photon
+  is 0.2-0.6 of the event's - the (1 - S_pt/S~_ev) excess. ISR photons
+  keep their reduced-point pair (m_map_reduced).
+*/
+void NLO_Base::SubEikCoherentBornFSR(RealTerms &rt)
+{
+  // The same two pieces m_ifi_prod is built from (IFIRealRatio): the incoherent
+  // crude on the generation legs plus the initial-final interference on
+  // those legs. CalculateRealSub(kk) is NOT this - it sits on the
+  // post-emission dipole momenta and reproduced mode 4 exactly.
+  const double ifg(p_dipoles->CalculateRealSubIF(rt.kk));
+  if (!IsBad(ifg) && !IsZero(rt.subb)) rt.subloc = rt.subb + ifg;
+}
+
+/*
+  REAL_SUB_EIK assignment_born_fsr (6): mode 3 with the crude carrying the
+  Born of each ASSIGNMENT. A hard
+  photon labelled FSR at wide angle to its pair has a tiny FF crude, but
+  the exact ME does not know the label: at 250 GeV such a photon is really
+  the initial-state one that brings an off-peak pair onto the Z peak, so
+  r is on-peak-large while m_born (pre-emission pair, off peak) is tiny
+  and the weight r/(S~ B) reached 1e4 (clean probe: FO 12919, CEEX 0.30,
+  x_fsr 0.39, S~_crude 1e-5). CEEX divides by sum_assignments |s|^2 B at
+  that assignment's reduced s', so it gives O(1). Here: subtraction and
+  denominator become S~_II B_I/B + S~_FF, B_I the Born at the scaled
+  ISR-reduced point of this photon, S~_FF and S~_II on the generation
+  legs. At the Z pole B_I/B ~ 1 and this reduces to mode 3.
+*/
+void NLO_Base::SubEikAssignmentBornFSR(RealTerms &rt)
+{
+  const Vec4D &kk(rt.kk);
+  const double sII(GenerationEikonalII(*p_dipoles, kk));
+  const double sFF(GenerationEikonalFF(*p_dipoles, kk));
+  double br(1.);
+  if (sII + sFF > 0. && ReducedBornISR(kk, br)) {
+    const double s6(sII*br + sFF);
+    if (s6 > 0. && !IsBad(s6)) { rt.subloc = rt.subb = s6; }
+  } else rt.subloc = rt.subb;
+}
+
+/*
+  REAL_SUB_EIK multichannel (7), FSR-labelled photon: the MULTICHANNEL
+  crude. The generator reaches a given final state
+  with a photon labelled ISR or FSR, each channel with its own Born and
+  Jacobian: g_I = S~_II B_I / flux_I, g_F = S~_FF B_F, the two one-photon
+  identities measured separately (ISR: r flux/(S~_II B) exact; FSR:
+  r/(S~_FF B_pre) exact). The unbiased weight divides r by g_I + g_F
+  WHATEVER the label - mode 6 did so only for FSR-labelled photons and
+  counted the ISR region twice (Z pole, 66-76 GeV: 1.20 of KKMC) and
+  dropped flux_I. For an FSR-labelled photon B = B_F (the event's Born),
+  so subb = S~_FF + S~_II (B_I/B)/flux_I, B_I the Born at (P - k)^2 and
+  flux_I = (P - k)^2/P^2; subloc adds the IF interference on the same
+  legs (as mode 5) so soft brackets vanish, the product m_ifi_prod
+  supplying it multiplicatively. No flux on r (REAL_FSR_FLUX 1). The
+  ISR-labelled half is MultichannelISRPhoton.
+*/
+void NLO_Base::SubEikMultichannelFSR(RealTerms &rt)
+{
+  const Vec4D &kk(rt.kk);
+  double &subloc(rt.subloc), &subb(rt.subb);
+  const double sII(GenerationEikonalII(*p_dipoles, kk));
+  const double sFF(GenerationEikonalFF(*p_dipoles, kk));
+  double bI(1.), s2(1.);
+  const double ifg(p_dipoles->CalculateRealSubIF(kk));
+  if (sFF > 0. && ReducedBornAlt(kk, -1, bI, s2) && s2 > 0.) {
+    const double s7(sFF + sII*bI/s2);
+    if (s7 > 0. && !IsBad(s7)) { subb = s7; subloc = s7 + (IsBad(ifg) ? 0. : ifg); }
+  } else { subloc = subb + (IsBad(ifg) ? 0. : ifg); }
+  rt.flux = 1.;
+}
+
+/*
+  REAL_SUB_EIK multichannel_prefsr (8), FSR-labelled photon: mode 7 with
+  the alternative channel built from the right system.
+  Mode 7 took the invariant of the other label from the FULL beams,
+  (P -+ k)^2, and normalised to the Born at m_bornMomenta (the Born
+  kinematics at the full s), neither of which is the system the event's
+  Born m_born sits at once ISR photons are present. Here both come from
+  the event's PRE-FSR final state Q_pre (NLO m_plab): an FSR-labelled
+  photon's ISR alternative has its Born at (Q_pre - k)^2 with the ISR
+  flux (Q_pre - k)^2/Q_pre^2, an ISR-labelled photon's FSR alternative
+  at (Q_pre + k)^2; the Born ratios are taken between two points of the
+  same construction (PreFSRBornRatio). The subtraction is scaled with the
+  denominator, subloc -> subloc*(new subb)/(old subb), so that together
+  with m_ifi_prod the one-photon weight is exactly r/(g_I + g_F) and the
+  soft bracket is unchanged (the scale -> 1 as k -> 0). The FSR-labelled
+  base is mode 5 (subloc = S~ + S_IF on the generation legs), flux 1.
+  The ISR-labelled half is PreFSRMultichannelISRPhoton.
+*/
+void NLO_Base::SubEikPreFSRMultichannelFSR(RealTerms &rt)
+{
+  const Vec4D &kk(rt.kk);
+  double &subloc(rt.subloc), &subb(rt.subb);
+  const double sII(GenerationEikonalII(*p_dipoles, kk));
+  /*
+    YFS: SUB8_FSR_LEGS (2026-09-27; name or old integer; default
+    generation (0), the pre-emission eikonal below).
+    post_emission (1): the FSR channel density on the POST-emission legs
+    times the pair
+    flux, S~_FF(q_1', q_2'; k) (q_D + k)^2/q_D^2, q_D the post-emission
+    pair of the radiating dipole - what the FSR generator produces
+    (FSR::F's mass weight is the eikonal of the post-emission legs) and
+    what CEEX's rho_crude uses (m_Sprod on the physical legs times
+    m_pflux). The pre-emission eikonal below has the same size outside
+    the dead cone but a narrower dead cone (m/E_pre instead of m/E_post):
+    Z-pole mu mu, one hard FSR photon at theta < 2 m/E, it is up to 5x
+    the generator density, and YFS.NLO fell to 0.2-0.8 of the exact
+    |M_1|^2 there while CEEX stayed at 1.00. See
+    NOTES-collinear-fsr-referee-2026-09-27.md.
+  */
+  static const sub8fsrlegs::code fsrlegs(ATOOLS::Settings::GetMainSettings()["YFS"]
+      ["SUB8_FSR_LEGS"].SetDefault(sub8fsrlegs::generation).Get<sub8fsrlegs::code>());
+  /*
+    event_density (2) and point_density (3)
+    (NOTES-deadcone-crude-2026-09-28.md): the FSR channel density
+    the generator really has, post-emission eikonal times pair flux,
+    so that the one-photon weight is r/(g B), the density CEEX divides by
+    (hard half of SUB8_FSRSUB 4: g (1 + S_IF/crude), on the new g).
+    Unlike 1, the SOFT half keeps the generation-leg scale (gsoft below):
+    it is the point's coherent current, the soft limit of r, and must not
+    be rescaled by a post/pre eikonal ratio, which leaves soft photons
+    next to a lepton kicked by a companion with O(1) brackets
+    (post_emission doubled YFS.NLO's error at the Z pole).
+    event_density (2): the EVENT's density, GeneratorFSRDensity - S~ on the event's
+       post-emission legs times the dipole's flux F_D shared among its
+       photons. Right at one photon; with companions it describes a
+       different emission from the one |M_1|^2 is evaluated for (the
+       REAL_FSR_MAP 2 point re-absorbs the companions, which moves the
+       lepton by more than its dead cone for electrons): Z-pole e e,
+       YFS.NLO fiducial error x4, CEEX/NLO 1.034 at s'/s 0.85-0.93.
+    point_density (3, recommended): the POINT's density,
+       PointFSRDensity - S~ on the legs of the (n+1)-body point times its
+       own single-emission flux. Identical to event_density at one photon; with companions it is the density
+       of the emission the point describes, and it reduces to the old
+       generation-leg crude where the companions dominate the recoil.
+  */
+  const double sFFgen(GenerationEikonalFF(*p_dipoles, kk));
+  const bool densityscale(fsrlegs == sub8fsrlegs::event_density
+                          || fsrlegs == sub8fsrlegs::point_density);
+  const double sFF(Sub8FSRChannelDensity(rt, fsrlegs, sFFgen));
+  const double ifg(p_dipoles->CalculateRealSubIF(kk));
+  const Vec4D Q(PreFSRSystem()), R(Q - kk);
+  const double s2(Q.Abs2() > 0. ? R.Abs2()/Q.Abs2() : 0.);
+  double bI(0.);
+  if (!(s2 > 0.) || !PreFSRBornRatio(R, bI)) bI = 0.;   // no ISR channel
+  const double isrchannel(s2 > 0. ? sII*bI/s2 : 0.);
+  const double g(sFF + isrchannel);
+  // the scale of the soft (point) subtraction: see SUB8_FSR_LEGS
+  // event_density, point_density
+  const double gsoft(densityscale ? sFFgen + isrchannel : g);
+  /*
+    Which subtraction (YFS: SUB8_FSRSUB, name or old integer):
+    generation (0): mode 5's, on the generation (pre-FSR) legs, scaled
+       with g. The
+       one-photon weight is then exactly r/(g_I + g_F) (MODE: FSR cone
+       identity 1.00), but r's soft limit sits on the legs of the point
+       it is evaluated at, not on the generation legs: with a hard ISR
+       photon (250 GeV radiative return) the FSR point's beams are the
+       generator's reduced beams, tilted by the ISR transverse momentum,
+       and next to a hard FSR companion its leptons are the kicked ones.
+       Soft FSR photons there kept O(1) brackets (mean +0.18 per photon
+       below x = 1e-3, single photons up to 250), YFS.NLO +6% at 250 GeV
+       from this half alone.
+    point (1): the coherent current at that point (the default's subloc),
+       scaled with g: soft brackets vanish, the identity for hard photons
+       does not hold (Z pole +4.4% on Born+real).
+    blend (4, default): point for soft photons, generation for hard ones,
+       w = 1/(1 + (y/y0)^2), y = 2 k.Q_pre/Q_pre^2, y0 = YFS: SUB8_Y0
+       (0.01). 250 GeV FSR half 1.062 -> 0.992 of CEEX, Z pole and the
+       cone identity unchanged.
+  */
+  static const sub8fsrsub::code fsub(ATOOLS::Settings::GetMainSettings()["YFS"]
+      ["SUB8_FSRSUB"].SetDefault(sub8fsrsub::blend).Get<sub8fsrsub::code>());
+  if (g > 0. && !IsBad(g) && subb > 0.) {
+    const double cru(subb);
+    const double sgen(g*(1. + (IsBad(ifg) ? 0. : ifg/cru)));
+    if (fsub == sub8fsrsub::point) subloc *= gsoft/cru;
+    else if (fsub == sub8fsrsub::blend) {
+      /*
+        blend: the point's coherent subtraction for soft photons, mode 5's
+        for hard ones, w = 1/(1 + (y/y0)^2), y = 2 k.Q_pre/Q_pre^2.
+      */
+      static const double y0(ATOOLS::Settings::GetMainSettings()["YFS"]
+                             ["SUB8_Y0"].SetDefault(0.01).Get<double>());
+      const double q2(Q.Abs2()), y(q2 > 0. ? 2.*(kk*Q)/q2 : 1.);
+      const double w(1./(1. + sqr(y/y0)));
+      subloc = w*subloc*gsoft/cru + (1. - w)*sgen;
     }
-    return 0;
+    else subloc = sgen;
+    subb   = g;
+    rt.flux = 1.;
   }
+  m_sub8[0] = sII; m_sub8[1] = sFF; m_sub8[2] = bI; m_sub8[3] = s2;
+}
 
-  if ((p[2] + p[3]).Mass() < massmin)
-    massmin = (p[2] + p[3]).Mass();
-
-  if (m_isr_debug || m_fsr_debug) {
-    m_histograms1d["k_E_pass"]->Insert(k.E());
-    m_histograms1d["k_pt_pass"]->Insert(k.PPerp());
-    m_histograms1d["dip_mass_pass"]->Insert((p[2] + p[3]).Mass());
+/*
+  The FSR channel density S~_FF of REAL_SUB_EIK multichannel_prefsr on the
+  legs SUB8_FSR_LEGS selects; sFFgen, the generation-leg eikonal, where
+  the chosen density is not available.
+*/
+double NLO_Base::Sub8FSRChannelDensity(const RealTerms &rt,
+                                       sub8fsrlegs::code fsrlegs, double sFFgen)
+{
+  const Vec4D &kk(rt.kk);
+  double sFF(0.);
+  if (fsrlegs == sub8fsrlegs::event_density) {
+    if (!GeneratorFSRDensity(kk, *p_dipoles, m_postlab, sFF)) sFF = sFFgen;
   }
+  else if (fsrlegs == sub8fsrlegs::point_density) {
+    if (!PointFSRDensity(rt.k, *p_dipoles, rt.pp, sFF)) sFF = sFFgen;
+  }
+  else if (fsrlegs == sub8fsrlegs::post_emission && m_postlab.size() == m_plab.size()) {
+    for (auto &D : p_dipoles->GetDipoleFF()) {
+      const int l(D.Left()), r(D.Right());
+      if (l >= 2 && r >= 2 && l < (int)m_postlab.size() && r < (int)m_postlab.size()) {
+        const Vec4D qd(m_postlab[l] + m_postlab[r]);
+        const double qd2(qd.Abs2());
+        const double F(qd2 > 0. ? (qd + kk).Abs2()/qd2 : 1.);
+        sFF += F*D.Eikonal(kk, m_postlab[l], m_postlab[r]);
+      }
+      else sFF += D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1));
+    }
+  }
+  else sFF = sFFgen;
+  return sFF;
+}
 
-  if (IsZero(r)) {
+/*
+  REAL_FSR_FLUX: on_crude (3) - the crude a FINAL-state photon is divided by carries
+  F = (q + k)^2/q^2 on its final-state part, q the post-emission pair, and
+  r carries no flux. This is the crude CEEX divides by (validated against
+  KKMC): on single-FSR-photon events K rho_crude(CEEX)/((S~_II + F S~_FF) B)
+  has median 0.96 where K rho_crude/(S~ B) has 1.15 and a tail to 2.1.
+*/
+void NLO_Base::FluxOnFSRCrude(RealTerms &rt)
+{
+  const Vec4D &kk(rt.kk);
+  Vec4D q; for (size_t i = 2; i < m_postlab.size(); ++i) q += m_postlab[i];
+  const double q2(q.Abs2());
+  if (q2 > 0.) {
+    const double F((q + kk).Abs2()/q2);
+    const double sII(GenerationEikonalII(*p_dipoles, kk));
+    const double sFF(GenerationEikonalFF(*p_dipoles, kk));
+    if (sII + F*sFF > 0.) { rt.subb = sII + F*sFF; rt.flux = 1.; m_eikeex = rt.subb; }
+  }
+}
+
+// ISR_DEBUG / FSR_DEBUG: the photon and the point's first pair, for every
+// point (suffix "") or for those that conserve momentum ("_pass")
+void NLO_Base::FillPointHistograms(const RealTerms &rt, const std::string &suffix)
+{
+  m_histograms1d["k_E" + suffix]->Insert(rt.k.E());
+  m_histograms1d["k_pt" + suffix]->Insert(rt.k.PPerp());
+  m_histograms1d["dip_mass" + suffix]->Insert((rt.p[2] + rt.p[3]).Mass());
+}
+
+// false (and CalculateReal returns 0) for a vanishing or non-finite real
+bool NLO_Base::RealMEUsable(const RealTerms &rt)
+{
+  if (IsZero(rt.r)) {
     msg_Debugging() << METHOD << " r=0, returning 0\n";
     m_zero_real_amp++;
-    return 0;
+    return false;
   }
-  if (IsBad(r) || IsBad(flux)) {
-    msg_Debugging() << METHOD << " bad point: r=" << r << " flux=" << flux << "\n";
+  if (IsBad(rt.r) || IsBad(rt.flux)) {
+    msg_Debugging() << METHOD << " bad point: r=" << rt.r << " flux=" << rt.flux << "\n";
     msg_Error() << "Bad point for YFS Real\n"
-                << "  Real ME : " << r << "\n"
-                << "  Flux    : " << flux << "\n";
-    return 0;
+                << "  Real ME : " << rt.r << "\n"
+                << "  Flux    : " << rt.flux << "\n";
+    return false;
   }
+  return true;
+}
 
-  double tot;
-  /*
-    The CRUDE eikonal of the mapped point: S~_II + S~_FF, each dipole on the
-    momenta of the point, incoherently, like CalculateRealSubEEX does for the
-    event. Only used when the mapped point is not the event (m_map_reduced).
+/*
+  The CRUDE eikonal of the mapped point: S~_II + S~_FF, each dipole on the
+  momenta of the point, incoherently, like CalculateRealSubEEX does for the
+  event. Only used when the mapped point is not the event (m_map_reduced).
 
-    beta_1 at the reduced point carries the photon's collinear structure at
-    a different overall scale from the event (the 1/x^2 of the scaled photon,
-    electron-mass terms), so the bounded object is the residual
-    r flux - S~coh B divided by an eikonal OF THE POINT, and the crude sum is
-    the one to divide by: it is positive, and |J_II + J_FF|^2 <= 2 (|J_II|^2
-    + |J_FF|^2) so wherever residual/S~coh is bounded so is residual/crude.
-    Dividing by the coherent S~coh instead (the first version of this
-    branch) put the coherent ZEROS of the II-FF interference pattern into the
-    denominator: the full |M_1|^2 does not vanish there, its hard remainder
-    does not, and the ratio did not stay bounded. Measured on e+e- -> u ubar
-    at the Z pole, 100k events: YFS.BR 4904 +- 6.9% against 4481 +- 0.16%
-    with the legacy map, the heavy events all having S~coh(point) 20-60x
-    below the event's crude (a 5.8 GeV photon: 3.3e-6 against 1.2e-4, x =
-    0.93). nu nu has no FF current and was not affected (S~coh = crude).
+  beta_1 at the reduced point carries the photon's collinear structure at
+  a different overall scale from the event (the 1/x^2 of the scaled photon,
+  electron-mass terms), so the bounded object is the residual
+  r flux - S~coh B divided by an eikonal OF THE POINT, and the crude sum is
+  the one to divide by: it is positive, and |J_II + J_FF|^2 <= 2 (|J_II|^2
+  + |J_FF|^2) so wherever residual/S~coh is bounded so is residual/crude.
+  Dividing by the coherent S~coh instead (the first version of this
+  branch) put the coherent ZEROS of the II-FF interference pattern into the
+  denominator: the full |M_1|^2 does not vanish there, its hard remainder
+  does not, and the ratio did not stay bounded. Measured on e+e- -> u ubar
+  at the Z pole, 100k events: YFS.BR 4904 +- 6.9% against 4481 +- 0.16%
+  with the legacy map, the heavy events all having S~coh(point) 20-60x
+  below the event's crude (a 5.8 GeV photon: 3.3e-6 against 1.2e-4, x =
+  0.93). nu nu has no FF current and was not affected (S~coh = crude).
 
-    Crude(point) ~ crude(event)/x^2 up to the bounded Doppler change of the
-    final-state angles, so residual/crude(point) is the event-normalised
-    beta_1/S~crude - and the n = 1 formula (r flux - subloc B)/subb, with
-    subb the event's crude, is the same object with x = 1.
-  */
-  double subb_loc(subb);
+  Crude(point) ~ crude(event)/x^2 up to the bounded Doppler change of the
+  final-state angles, so residual/crude(point) is the event-normalised
+  beta_1/S~crude - and the n = 1 formula (r flux - subloc B)/subb, with
+  subb the event's crude, is the same object with x = 1.
+*/
+void NLO_Base::PointDenominator(RealTerms &rt)
+{
+  rt.subb_loc = rt.subb;
   if (m_map_reduced) {
-    subb_loc = 0.;
-    if (p_nlodipoles->HasDipoleII()) {
-      YFS::Dipole &D(p_nlodipoles->GetDipoleII());
-      subb_loc += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
-    }
-    for (auto &D : p_nlodipoles->GetDipoleFF())
-      subb_loc += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
-    if (IsZero(subb_loc) || IsBad(subb_loc)) subb_loc = subb;
+    rt.subb_loc = PointCrude(*p_nlodipoles, rt.k);
+    if (IsZero(rt.subb_loc) || IsBad(rt.subb_loc)) rt.subb_loc = rt.subb;
   }
   // the denominator as it would be without REAL_SUB_EIK's changes to it
-  const double denom0(m_map_reduced ? subb_loc : subb0);
-  /*
-    REAL_SUB_EIK multichannel (7), ISR-labelled photon: the final-state channel term of the
-    crude carries its own Born and the ISR flux, f = flux B_F/B with B_F the
-    Born at (P + k)^2 (the photon returned to beams and pair). At one photon
-    r flux/(B (S~_II + f S~_FF)) = r/(g_I + g_F). The same (f - 1) S~_FF is
-    added to the subtraction, which keeps the soft bracket at its old value.
-  */
-  { if (RealSubEik() == realsubeik::multichannel && !PhotonIsFSR(kk)) {
-      double bF(1.), s2(1.);
-      if (ReducedBornAlt(kk, +1, bF, s2)) {
-        const double f(flux*bF);
-        double sFFpt(0.);
-        if (m_map_reduced) {
-          for (auto &D : p_nlodipoles->GetDipoleFF())
-            sFFpt += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
-        } else {
-          for (auto &D : p_dipoles->GetDipoleFF())
-            sFFpt += D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1));
-        }
-        static const int t7(ATOOLS::Settings::GetMainSettings()["YFS"]
-                            ["SUB7_TRACE"].SetDefault(0).Get<int>());
-        static long n7(0);
-        const double sb0(subb_loc), sl0(subloc);
-        if (!IsBad(f) && !IsBad(sFFpt)) {
-          subb_loc += (f - 1.)*sFFpt;
-          subloc   += (f - 1.)*sFFpt;
-          if (!m_map_reduced) subb += (f - 1.)*sFFpt;
-        }
-        if (t7 && n7 < t7) { ++n7;
-          Vec4D P(m_bornMomenta[0] + m_bornMomenta[1]);
-          std::ostringstream o;
-          o<<"@@@ SUB7 x="<<2.*kk.E()/sqrt(m_s)<<" flux="<<flux<<" bF="<<bF<<" s2="<<s2
-           <<" f="<<f<<" sFFpt="<<sFFpt<<" subb_loc "<<sb0<<"->"<<subb_loc
-           <<" subloc "<<sl0<<"->"<<subloc<<" reduced="<<(m_map_reduced?1:0)
-           <<" sqrtP2="<<P.Mass()<<" r*flux/B="<<r*flux/m_born
-           <<" bracket="<<(r*flux/m_born - subloc)/subb_loc<<"\n";
-          std::cerr<<o.str(); }
-      }
-    } }
-  /*
-    REAL_SUB_EIK multichannel_prefsr (8), ISR-labelled photon: the FSR channel term of the crude,
-    S~_FF with the Born at (Q_pre + k)^2 in the ISR photon's own units
-    (times its flux), the whole subtraction scaled with the denominator.
-  */
-  { const bool se8(RealSubEik() == realsubeik::multichannel_prefsr);
-    static const int t8(ATOOLS::Settings::GetMainSettings()["YFS"]
-                        ["SUB8_TRACE"].SetDefault(0).Get<int>());
-    static long n8(0);
-    const bool fsr(PhotonIsFSR(kk));
-    double bF(-1.), f(-1.), scale(1.);
-    if (se8 && !fsr && p_bornproc != nullptr && Sub8Part() != 1) {
-      /*
-        The FSR channel's invariant is taken at the POINT r is evaluated at,
-        (final legs of the point + its photon)^2: the ratio this bracket
-        forms is r/(S~ B) there, and at n >= 2 the scaled point
-        (MapMomentaScaled) boosts the pair rigidly, which moves both the
-        photon-lepton angles (S~_FF of the point) and (Q' + k')^2. With the
-        event's (Q_pre + k)^2 but the point's S~_FF the correction removed a
-        spurious final-state collinear enhancement of the point from the
-        denominator while r kept its share of it (250 GeV, radiative return,
-        S~_FF(point) up to 60% of the crude at the point against 4% in the
-        event; YFS.NLO +8% in 86-96 GeV). At one photon the point is the
-        event and nothing changes.
-      */
-      const Vec4D Q(PreFSRSystem());
-      Vec4D R(Q + kk);
-      if (m_map_reduced && pp.size() == m_flavs.size() && Q.Abs2() > 0.) {
-        Vec4D Rp(k);
-        for (size_t i(2); i < pp.size(); ++i) Rp += pp[i];
-        const double r2(Rp.Abs2());
-        if (r2 > 0.) R = sqrt(r2/Q.Abs2())*Q;
-      }
-      bF = 0.;
-      if (!PreFSRBornRatio(R, bF)) bF = 0.;
-      f = flux*bF;
-      double sFFpt(0.);
-      if (m_map_reduced) {
-        for (auto &D : p_nlodipoles->GetDipoleFF())
-          sFFpt += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
-      } else {
-        for (auto &D : p_dipoles->GetDipoleFF())
-          sFFpt += D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1));
-      }
-      // YFS: SUB8_ISR_REDUCED (default true): also rescale when the point is
-      // the reduced one (m_map_reduced)
-      static const bool isrred(ATOOLS::Settings::GetMainSettings()["YFS"]
-                               ["SUB8_ISR_REDUCED"].SetDefault(true).Get<bool>());
-      const double nb(subb_loc + (f - 1.)*sFFpt);
-      if ((isrred || !m_map_reduced) && !IsBad(nb) && nb > 0. && subb_loc > 0.) {
-        scale = nb/subb_loc;
-        subb_loc = nb;
-        subloc  *= scale;
-        if (!m_map_reduced) subb *= scale;
-      }
+  rt.denom0 = m_map_reduced ? rt.subb_loc : rt.subb0;
+}
+
+/*
+  REAL_SUB_EIK multichannel (7), ISR-labelled photon: the final-state channel term of the
+  crude carries its own Born and the ISR flux, f = flux B_F/B with B_F the
+  Born at (P + k)^2 (the photon returned to beams and pair). At one photon
+  r flux/(B (S~_II + f S~_FF)) = r/(g_I + g_F). The same (f - 1) S~_FF is
+  added to the subtraction, which keeps the soft bracket at its old value.
+*/
+void NLO_Base::MultichannelISRPhoton(RealTerms &rt)
+{
+  const Vec4D &k(rt.k), &kk(rt.kk);
+  double &subb_loc(rt.subb_loc), &subloc(rt.subloc), &subb(rt.subb);
+  const double r(rt.r), flux(rt.flux);
+  double bF(1.), s2(1.);
+  if (ReducedBornAlt(kk, +1, bF, s2)) {
+    const double f(flux*bF);
+    const double sFFpt(m_map_reduced ? PointEikonalFF(*p_nlodipoles, k)
+                                     : GenerationEikonalFF(*p_dipoles, kk));
+    static const int t7(ATOOLS::Settings::GetMainSettings()["YFS"]
+                        ["SUB7_TRACE"].SetDefault(0).Get<int>());
+    static long n7(0);
+    const double sb0(subb_loc), sl0(subloc);
+    if (!IsBad(f) && !IsBad(sFFpt)) {
+      subb_loc += (f - 1.)*sFFpt;
+      subloc   += (f - 1.)*sFFpt;
+      if (!m_map_reduced) subb += (f - 1.)*sFFpt;
     }
-    if (se8 && t8 && n8 < t8) { ++n8;
-      double me2ref(-1.);
-      { Vec4D_Vector pr; if (PreFSRBornPoint(PreFSRSystem(), pr)) me2ref = BornME2At(pr); }
+    if (t7 && n7 < t7) { ++n7;
+      Vec4D P(m_bornMomenta[0] + m_bornMomenta[1]);
       std::ostringstream o;
-      o<<"@@@ SUB8 fsr="<<(fsr?1:0)<<" x="<<2.*kk.E()/sqrt(m_s)
-       <<" nph="<<m_photons.size()<<" mpre="<<PreFSRSystem().Mass()
-       <<" flux="<<flux<<" r*flux/B="<<r*flux/m_born
-       <<" subloc="<<subloc<<" subb="<<(m_map_reduced?subb_loc:subb)
-       <<" bracket="<<(r*flux/m_born - subloc)/(m_map_reduced?subb_loc:subb)
-       <<" isr:bF="<<bF<<" f="<<f<<" scale="<<scale
-       <<" fsr:sII="<<m_sub8[0]<<" sFF="<<m_sub8[1]<<" bI="<<m_sub8[2]<<" s2="<<m_sub8[3]
-       <<" Bref/m_born="<<(m_born>0.?me2ref/m_born:-1.)
-       <<" bracket0="<<(r*flux0/m_born - subloc0)/(m_map_reduced?subb_loc/scale:subb0)
-       <<" flux0="<<flux0<<" subloc0="<<subloc0<<" subb0="<<subb0
-       <<" reduced="<<(m_map_reduced?1:0);
-      { double thl(1e9);
-        for (size_t i(2); i < m_postlab.size() && i < m_flavs.size(); ++i) {
-          if (!m_flavs[i].IsChargedLepton()) continue;
-          const Vec4D &lq(m_postlab[i]);
-          const double ct(Vec3D(lq)*Vec3D(kk)/(Vec3D(lq).Abs()*Vec3D(kk).Abs()));
-          thl = Min(thl, acos(Max(-1., Min(1., ct)))/(lq.Mass()/lq[0]));
-        }
-        double xisr(0.), xfsr(0.);
-        for (const YFS::Photon &gph : m_photons) {
-          const double xx(2.*gph.K()[0]/sqrt(m_s));
-          if (gph.IsFSR()) { if (gph.K() != kk) xfsr = Max(xfsr, xx); }
-          else xisr = Max(xisr, xx); }
-        o<<" thl="<<thl<<" xisrmax="<<xisr<<" xfsrother="<<xfsr; }
-      // which legs the FF eikonal sits on: generation (GetBornMomenta),
-      // pre-FSR lab (m_plab), post-FSR lab (m_postlab)
-      { double sg(0.), sl(0.), sp(0.), dmax(0.);
-        for (auto &D : p_dipoles->GetDipoleFF()) {
-          const int l(D.Left()), rr(D.Right());
-          sg += D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1));
-          if (l < (int)m_plab.size() && rr < (int)m_plab.size()) {
-            sl += D.Eikonal(kk, m_plab[l], m_plab[rr]);
-            dmax = Max(dmax, (D.GetBornMomenta(0) - m_plab[l]).PSpat()
-                             + std::abs((D.GetBornMomenta(0) - m_plab[l])[0])); }
-          if (l < (int)m_postlab.size() && rr < (int)m_postlab.size())
-            sp += D.Eikonal(kk, m_postlab[l], m_postlab[rr]);
-        }
-        o<<" sFFgen="<<sg<<" sFFpre="<<sl<<" sFFpost="<<sp<<" |dBorn|="<<dmax; }
-      o<<"\n";
+      o<<"@@@ SUB7 x="<<2.*kk.E()/sqrt(m_s)<<" flux="<<flux<<" bF="<<bF<<" s2="<<s2
+       <<" f="<<f<<" sFFpt="<<sFFpt<<" subb_loc "<<sb0<<"->"<<subb_loc
+       <<" subloc "<<sl0<<"->"<<subloc<<" reduced="<<(m_map_reduced?1:0)
+       <<" sqrtP2="<<P.Mass()<<" r*flux/B="<<r*flux/m_born
+       <<" bracket="<<(r*flux/m_born - subloc)/subb_loc<<"\n";
       std::cerr<<o.str(); }
-    m_sub8[0] = m_sub8[1] = m_sub8[2] = m_sub8[3] = -1.; }
+  }
+}
+
+/*
+  REAL_SUB_EIK multichannel_prefsr (8), ISR-labelled photon: the FSR channel term of the crude,
+  S~_FF with the Born at (Q_pre + k)^2 in the ISR photon's own units
+  (times its flux), the whole subtraction scaled with the denominator.
+*/
+void NLO_Base::PreFSRMultichannelISRPhoton(RealTerms &rt)
+{
+  const Vec4D &k(rt.k), &kk(rt.kk);
+  double &subb_loc(rt.subb_loc), &subloc(rt.subloc), &subb(rt.subb);
+  /*
+    The FSR channel's invariant is taken at the POINT r is evaluated at,
+    (final legs of the point + its photon)^2: the ratio this bracket
+    forms is r/(S~ B) there, and at n >= 2 the scaled point
+    (MapMomentaScaled) boosts the pair rigidly, which moves both the
+    photon-lepton angles (S~_FF of the point) and (Q' + k')^2. With the
+    event's (Q_pre + k)^2 but the point's S~_FF the correction removed a
+    spurious final-state collinear enhancement of the point from the
+    denominator while r kept its share of it (250 GeV, radiative return,
+    S~_FF(point) up to 60% of the crude at the point against 4% in the
+    event; YFS.NLO +8% in 86-96 GeV). At one photon the point is the
+    event and nothing changes.
+  */
+  const Vec4D Q(PreFSRSystem());
+  Vec4D R(Q + kk);
+  if (m_map_reduced && rt.pp.size() == m_flavs.size() && Q.Abs2() > 0.) {
+    Vec4D Rp(k);
+    for (size_t i(2); i < rt.pp.size(); ++i) Rp += rt.pp[i];
+    const double r2(Rp.Abs2());
+    if (r2 > 0.) R = sqrt(r2/Q.Abs2())*Q;
+  }
+  double &bF(rt.sub8_bF), &f(rt.sub8_f);
+  bF = 0.;
+  if (!PreFSRBornRatio(R, bF)) bF = 0.;
+  f = rt.flux*bF;
+  const double sFFpt(m_map_reduced ? PointEikonalFF(*p_nlodipoles, k)
+                                   : GenerationEikonalFF(*p_dipoles, kk));
+  // YFS: SUB8_ISR_REDUCED (default true): also rescale when the point is
+  // the reduced one (m_map_reduced)
+  static const bool isrred(ATOOLS::Settings::GetMainSettings()["YFS"]
+                           ["SUB8_ISR_REDUCED"].SetDefault(true).Get<bool>());
+  const double nb(subb_loc + (f - 1.)*sFFpt);
+  if ((isrred || !m_map_reduced) && !IsBad(nb) && nb > 0. && subb_loc > 0.) {
+    const double scale(nb/subb_loc);
+    rt.sub8_scale = scale;
+    subb_loc = nb;
+    subloc  *= scale;
+    if (!m_map_reduced) subb *= scale;
+  }
+}
+
+/*
+  YFS: SUB8_TRACE n: "@@@ SUB8" for the first n photons under REAL_SUB_EIK
+  multichannel_prefsr, both labels, with the terms before (flux0,
+  subloc0, subb0) and after the scheme; clears the m_sub8 scratch the FSR
+  half left for it.
+*/
+void NLO_Base::Sub8Trace(const RealTerms &rt)
+{
+  const bool se8(RealSubEik() == realsubeik::multichannel_prefsr);
+  static const int t8(ATOOLS::Settings::GetMainSettings()["YFS"]
+                      ["SUB8_TRACE"].SetDefault(0).Get<int>());
+  static long n8(0);
+  if (se8 && t8 && n8 < t8) { ++n8;
+    const Vec4D &kk(rt.kk);
+    const bool fsr(PhotonIsFSR(kk));
+    const double r(rt.r), flux(rt.flux), subloc(rt.subloc), subb(rt.subb),
+                 subb_loc(rt.subb_loc), flux0(rt.flux0), subloc0(rt.subloc0),
+                 subb0(rt.subb0), bF(rt.sub8_bF), f(rt.sub8_f), scale(rt.sub8_scale);
+    double me2ref(-1.);
+    Vec4D_Vector pr;
+    if (PreFSRBornPoint(PreFSRSystem(), pr)) me2ref = BornME2At(pr);
+    std::ostringstream o;
+    o<<"@@@ SUB8 fsr="<<(fsr?1:0)<<" x="<<2.*kk.E()/sqrt(m_s)
+     <<" nph="<<m_photons.size()<<" mpre="<<PreFSRSystem().Mass()
+     <<" flux="<<flux<<" r*flux/B="<<r*flux/m_born
+     <<" subloc="<<subloc<<" subb="<<(m_map_reduced?subb_loc:subb)
+     <<" bracket="<<(r*flux/m_born - subloc)/(m_map_reduced?subb_loc:subb)
+     <<" isr:bF="<<bF<<" f="<<f<<" scale="<<scale
+     <<" fsr:sII="<<m_sub8[0]<<" sFF="<<m_sub8[1]<<" bI="<<m_sub8[2]<<" s2="<<m_sub8[3]
+     <<" Bref/m_born="<<(m_born>0.?me2ref/m_born:-1.)
+     <<" bracket0="<<(r*flux0/m_born - subloc0)/(m_map_reduced?subb_loc/scale:subb0)
+     <<" flux0="<<flux0<<" subloc0="<<subloc0<<" subb0="<<subb0
+     <<" reduced="<<(m_map_reduced?1:0);
+    // the photon's dead-cone angle to the post-emission leptons, and the
+    // hardest ISR photon and other FSR photon
+    double thl(1e9);
+    for (size_t i(2); i < m_postlab.size() && i < m_flavs.size(); ++i) {
+      if (!m_flavs[i].IsChargedLepton()) continue;
+      const Vec4D &lq(m_postlab[i]);
+      const double ct(Vec3D(lq)*Vec3D(kk)/(Vec3D(lq).Abs()*Vec3D(kk).Abs()));
+      thl = Min(thl, acos(Max(-1., Min(1., ct)))/(lq.Mass()/lq[0]));
+    }
+    double xisr(0.), xfsr(0.);
+    for (const YFS::Photon &gph : m_photons) {
+      const double xx(2.*gph.K()[0]/sqrt(m_s));
+      if (gph.IsFSR()) { if (gph.K() != kk) xfsr = Max(xfsr, xx); }
+      else xisr = Max(xisr, xx); }
+    o<<" thl="<<thl<<" xisrmax="<<xisr<<" xfsrother="<<xfsr;
+    // which legs the FF eikonal sits on: generation (GetBornMomenta),
+    // pre-FSR lab (m_plab), post-FSR lab (m_postlab)
+    double sg(0.), sl(0.), sp(0.), dmax(0.);
+    for (auto &D : p_dipoles->GetDipoleFF()) {
+      const int l(D.Left()), rr(D.Right());
+      sg += D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1));
+      if (l < (int)m_plab.size() && rr < (int)m_plab.size()) {
+        sl += D.Eikonal(kk, m_plab[l], m_plab[rr]);
+        dmax = Max(dmax, (D.GetBornMomenta(0) - m_plab[l]).PSpat()
+                         + std::abs((D.GetBornMomenta(0) - m_plab[l])[0])); }
+      if (l < (int)m_postlab.size() && rr < (int)m_postlab.size())
+        sp += D.Eikonal(kk, m_postlab[l], m_postlab[rr]);
+    }
+    o<<" sFFgen="<<sg<<" sFFpre="<<sl<<" sFFpost="<<sp<<" |dBorn|="<<dmax;
+    o<<"\n";
+    std::cerr<<o.str();
+  }
+  m_sub8[0] = m_sub8[1] = m_sub8[2] = m_sub8[3] = -1.;
+}
+
+/*
+  beta_1/S~ = (r flux - subloc B/kappa)/density, the density by Sub_Mode:
+  the subtraction eikonal (local), the crude at the point (global), or the
+  event's crude with nothing subtracted (off). The terms are kept for the
+  real-virtual and the double real (m_last*), the *0 ones as they were
+  before REAL_SUB_EIK.
+*/
+void NLO_Base::AssembleBeta1(RealTerms &rt)
+{
+  const double r(rt.r), flux(rt.flux), subloc(rt.subloc), subb(rt.subb),
+               subb_loc(rt.subb_loc), subloc0(rt.subloc0), subb0(rt.subb0);
   m_lastflux = flux; m_lastsubloc = subloc;
   m_lastdenom = (m_submode == submode::local ? subloc
                  : m_submode == submode::global ? subb_loc : subb);
   m_lastsubloc0 = subloc0;
   m_lastdenom0 = (m_submode == submode::local ? subloc0
-                  : m_submode == submode::global ? denom0 : subb0);
+                  : m_submode == submode::global ? rt.denom0 : subb0);
   if (m_submode == submode::local)
-    tot = (r * flux - subloc * m_born / m_rescale_alpha) / subloc;
+    rt.tot = (r * flux - subloc * m_born / m_rescale_alpha) / subloc;
   else if (m_submode == submode::global)
-    tot = (r * flux - subloc * m_born / m_rescale_alpha) / subb_loc;
+    rt.tot = (r * flux - subloc * m_born / m_rescale_alpha) / subb_loc;
   else if (m_submode == submode::off)
-    tot = (r * flux) / subb;
+    rt.tot = (r * flux) / subb;
   else
     msg_Error() << METHOD << " unknown YFS subtraction mode " << m_submode << "\n";
+}
 
-  /*
-    YFS: REAL_ALPHA0 (default true since 2026-09-27). The real above is Comix's, with
-    the model's alpha on every photon (1/131.9 under G_mu), and the
-    subtraction is raised to match it (/m_rescale_alpha), while beta_0 and
-    the eikonals carry alpha(0) (USE_MODEL_ALPHA 0). beta_1 is then the hard
-    remainder at alpha_model: where the generated channel's S~ B exceeds
-    the exact real by far (a Born near its t-channel pole), the one-photon
-    factor tends to 1 - alpha_model/alpha(0) = -0.0387, not to 0. CEEX
-    rescales its Comix reals to alpha(0) (Ceex_Base::ComixPhotonCoupling).
-    true does the same here: beta_1 -> m_rescale_alpha beta_1, the whole real
-    correction at alpha(0), as in CEEX. Measured with the same seed, 100k
-    events, 0 -> 1: Z-pole mu mu fiducial CEEX/YFS.NLO 1.0056 -> 1.0044,
-    m_ff at 60 GeV 1.111 -> 1.079; Bhabha 1.0071 -> 1.0046 and 1.035 ->
-    1.007; YFS.NLO rises (its real correction is negative there). false
-    restores the alpha_model remainder. No change with USE_MODEL_ALPHA true.
-  */
-  { if (RealAlpha0()) tot *= m_rescale_alpha; }
-
-  // WEIGHT_PROBE bookkeeping for the hardest photon of the event: the
-  // exact-over-crude ratio before the multichannel share, the subtraction
-  // over the denominator (the "1 - sub" floor), and G.
-  if (kk.E() >= m_bpmc_hardx) {
-    const double den(m_submode == submode::local ? subloc : subb_loc);
-    m_bpmc_hardx = kk.E();
+// WEIGHT_PROBE bookkeeping for the hardest photon of the event: the
+// exact-over-crude ratio before the multichannel share, the subtraction
+// over the denominator (the "1 - sub" floor), and G.
+void NLO_Base::RecordHardestPhoton(const RealTerms &rt)
+{
+  if (rt.kk.E() >= m_bpmc_hardx) {
+    const double den(m_submode == submode::local ? rt.subloc : rt.subb_loc);
+    m_bpmc_hardx = rt.kk.E();
     m_bpmc_hardG = m_bpmc_lastG;
-    m_bpmc_hardR = (m_born != 0. && den != 0.) ? r_nomc*flux/(m_born*den) : 0.;
-    m_bpmc_hardsub = (den != 0.) ? subloc/(m_rescale_alpha*den) : 0.;
+    m_bpmc_hardR = (m_born != 0. && den != 0.) ? rt.r_nomc*rt.flux/(m_born*den) : 0.;
+    m_bpmc_hardsub = (den != 0.) ? rt.subloc/(m_rescale_alpha*den) : 0.;
   }
+}
 
-  { static const double tr(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_TRACE"].Get<double>());
-    if (tr > 0.) {
-      // The lab photon (kk), the mapped photon (k), the reduced beams of the
-      // (n+1)-body point, the real ME and the two eikonals it is compared to.
-      Vec4D Q;
-      for (size_t i(2); i < m_plab.size(); ++i) Q += m_plab[i];
-      double cmin(2.);
-      for (size_t i(0); i < 2; ++i) {
-        const double ct(Vec3D(m_plab[i]) * Vec3D(kk) / (Vec3D(m_plab[i]).Abs() * Vec3D(kk).Abs()));
-        cmin = std::min(cmin, 1. - std::fabs(ct));
-      }
-      const double S(subloc * m_born / m_rescale_alpha);
-      double sII(0.), sFF(0.);
-      if (p_dipoles->HasDipoleII()) {
-        YFS::Dipole &D(p_dipoles->GetDipoleII());
-        sII = D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1)); }
-      for (auto &D : p_dipoles->GetDipoleFF())
-        sFF += D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1));
-      m_realtrace<<std::setprecision(6)
-                 <<"  gam Elab="<<kk.E()<<" x="<<2.*kk.E()/sqrt(m_s)
-                 <<" SII="<<sII<<" SFF="<<sFF<<" fsr="<<(PhotonIsFSR(kk)?1:0)
-                 <<" 1-|cos|="<<cmin
-                 <<" Emap="<<k.E()
-                 <<" sqrt_sj="<<(p[0]+p[1]).Mass()
-                 <<" sqrt_sp="<<Q.Mass()
-                 <<" M_ff="<<(p[2]+p[3]).Mass()
-                 <<" r="<<r<<" flux="<<flux<<" rflux="<<r*flux
-                 <<" S~loc*B="<<S<<" S~loc="<<subloc<<" S~crude="<<subb
-                 <<" S~crude_pt="<<subb_loc<<" reduced="<<(m_map_reduced?1:0)
-                 <<" Bpp/B="<<(m_born>0.?BornME2At(pp)/m_born:-1.)
-                 <<" born="<<m_born
-                 <<" beta1/S~="<<tot<<" beta1/(S~B)="<<(m_born!=0.?tot/m_born:0.)
-                 <<" failcut="<<(p_real->FailCut()?1:0)
-                 <<"\n     klab="<<kk<<" kmap="<<k
-                 <<"\n     Pa="<<m_bornMomenta[0]<<" Pb="<<m_bornMomenta[1]
-                 <<" IIborn0="<<p_dipoles->GetDipoleII().GetBornMomenta(0)
-                 <<"\n     pa_j="<<p[0]<<" pb_j="<<p[1]<<" Qlab="<<Q
-                 <<"\n";
-    } }
-  { static const bool ds(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_STAB"].Get<int>()!=0);
-    if (ds) {
-      const double S(subloc * m_born / m_rescale_alpha);
-      const double num(r * flux - S);
-      const double subb_k(p_dipoles->CalculateRealSubEEX(k));
-      const double subloc_kk(p_nlodipoles->CalculateRealSub(kk));
-      const double dk((k-kk).PSpat()/(kk.PSpat()>0.?kk.PSpat():1.));
-      const double coskk(Vec3D(k)*Vec3D(kk)
-                         /(Vec3D(k).Abs()*Vec3D(kk).Abs()));
-      double cmin(2.), pkmin(1e300);
-      for (size_t i(0); i < m_plab.size(); ++i) {
-        if (m_flavs[i].Charge() == 0.) continue;
-        const Vec4D &q(m_plab[i]);
-        const double ct(Vec3D(q) * Vec3D(kk) / (Vec3D(q).Abs() * Vec3D(kk).Abs()));
-        cmin = std::min(cmin, 1. - std::fabs(ct));
-        pkmin = std::min(pkmin, (q * kk) / (q.E() * kk.E()));
-      }
-      std::cerr << "@@@ RSTAB x=" << (2. * kk.E() / sqrt(m_s))
-                << " 1-|cos|=" << cmin
-                << " pk/EE=" << pkmin
-                << " Rflux=" << r * flux
-                << " S=" << S
-                << " num=" << num
-                << " depth=" << (num != 0. ? std::fabs(S / num) : -1.)
-                << " tot=" << tot << " born=" << m_born
-                << " subloc=" << subloc << " subb=" << subb
-                << " subb_k=" << subb_k << " subloc_kk=" << subloc_kk
-                << " dk=" << dk << " 1-cos_kkk=" << (1.-coskk)
-                << std::endl;
-    } }
+/*
+  YFS: REAL_TRACE: one line per photon into m_realtrace, which
+  CalculateReal() prints for events whose Born+real factor exceeds the
+  threshold.
+*/
+void NLO_Base::RealTrace(const RealTerms &rt)
+{
+  static const double tr(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_TRACE"].Get<double>());
+  if (tr > 0.) {
+    const Vec4D &k(rt.k), &kk(rt.kk);
+    const Vec4D_Vector &p(rt.p);
+    const double r(rt.r), flux(rt.flux), subloc(rt.subloc), subb(rt.subb),
+                 subb_loc(rt.subb_loc), tot(rt.tot);
+    // The lab photon (kk), the mapped photon (k), the reduced beams of the
+    // (n+1)-body point, the real ME and the two eikonals it is compared to.
+    Vec4D Q;
+    for (size_t i(2); i < m_plab.size(); ++i) Q += m_plab[i];
+    double cmin(2.);
+    for (size_t i(0); i < 2; ++i) {
+      const double ct(Vec3D(m_plab[i]) * Vec3D(kk) / (Vec3D(m_plab[i]).Abs() * Vec3D(kk).Abs()));
+      cmin = std::min(cmin, 1. - std::fabs(ct));
+    }
+    const double S(subloc * m_born / m_rescale_alpha);
+    const double sII(GenerationEikonalII(*p_dipoles, kk));
+    const double sFF(GenerationEikonalFF(*p_dipoles, kk));
+    m_realtrace<<std::setprecision(6)
+               <<"  gam Elab="<<kk.E()<<" x="<<2.*kk.E()/sqrt(m_s)
+               <<" SII="<<sII<<" SFF="<<sFF<<" fsr="<<(PhotonIsFSR(kk)?1:0)
+               <<" 1-|cos|="<<cmin
+               <<" Emap="<<k.E()
+               <<" sqrt_sj="<<(p[0]+p[1]).Mass()
+               <<" sqrt_sp="<<Q.Mass()
+               <<" M_ff="<<(p[2]+p[3]).Mass()
+               <<" r="<<r<<" flux="<<flux<<" rflux="<<r*flux
+               <<" S~loc*B="<<S<<" S~loc="<<subloc<<" S~crude="<<subb
+               <<" S~crude_pt="<<subb_loc<<" reduced="<<(m_map_reduced?1:0)
+               <<" Bpp/B="<<(m_born>0.?BornME2At(rt.pp)/m_born:-1.)
+               <<" born="<<m_born
+               <<" beta1/S~="<<tot<<" beta1/(S~B)="<<(m_born!=0.?tot/m_born:0.)
+               <<" failcut="<<(p_real->FailCut()?1:0)
+               <<"\n     klab="<<kk<<" kmap="<<k
+               <<"\n     Pa="<<m_bornMomenta[0]<<" Pb="<<m_bornMomenta[1]
+               <<" IIborn0="<<p_dipoles->GetDipoleII().GetBornMomenta(0)
+               <<"\n     pa_j="<<p[0]<<" pb_j="<<p[1]<<" Qlab="<<Q
+               <<"\n";
+  }
+}
 
+// YFS: REAL_STAB: "@@@ RSTAB", how deep the cancellation in r flux - S B
+// goes and how far the mapped photon moved
+void NLO_Base::RealStabilityProbe(const RealTerms &rt)
+{
+  static const bool ds(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_STAB"].Get<int>()!=0);
+  if (ds) {
+    const Vec4D &k(rt.k), &kk(rt.kk);
+    const double r(rt.r), flux(rt.flux), subloc(rt.subloc), subb(rt.subb), tot(rt.tot);
+    const double S(subloc * m_born / m_rescale_alpha);
+    const double num(r * flux - S);
+    const double subb_k(p_dipoles->CalculateRealSubEEX(k));
+    const double subloc_kk(p_nlodipoles->CalculateRealSub(kk));
+    const double dk((k-kk).PSpat()/(kk.PSpat()>0.?kk.PSpat():1.));
+    const double coskk(Vec3D(k)*Vec3D(kk)
+                       /(Vec3D(k).Abs()*Vec3D(kk).Abs()));
+    double cmin(2.), pkmin(1e300);
+    for (size_t i(0); i < m_plab.size(); ++i) {
+      if (m_flavs[i].Charge() == 0.) continue;
+      const Vec4D &q(m_plab[i]);
+      const double ct(Vec3D(q) * Vec3D(kk) / (Vec3D(q).Abs() * Vec3D(kk).Abs()));
+      cmin = std::min(cmin, 1. - std::fabs(ct));
+      pkmin = std::min(pkmin, (q * kk) / (q.E() * kk.E()));
+    }
+    std::cerr << "@@@ RSTAB x=" << (2. * kk.E() / sqrt(m_s))
+              << " 1-|cos|=" << cmin
+              << " pk/EE=" << pkmin
+              << " Rflux=" << r * flux
+              << " S=" << S
+              << " num=" << num
+              << " depth=" << (num != 0. ? std::fabs(S / num) : -1.)
+              << " tot=" << tot << " born=" << m_born
+              << " subloc=" << subloc << " subb=" << subb
+              << " subb_k=" << subb_k << " subloc_kk=" << subloc_kk
+              << " dk=" << dk << " 1-cos_kkk=" << (1.-coskk)
+              << std::endl;
+  }
+}
+
+/*
+  YFS: IFI_Real, Sub_Mode global: the photon's initial-final interference
+  as the factor 1 + S_IF/S~_crude on the generation legs, multiplied into
+  m_ifi_prod for photons above the IF dipoles' omega, with its statistics
+  (m_ifi_*).
+*/
+void NLO_Base::IFIRealRatio(const RealTerms &rt)
+{
+  const Vec4D &kk(rt.kk);
+  const double subloc(rt.subloc), subb(rt.subb);
   const bool ifi_above = (kk.E() > p_dipoles->IFIOmega());
   if (m_ifireal && ifi_above && m_submode == submode::global &&
       !IsZero(subb) && !IsBad(subloc) && !IsBad(subb)) {
@@ -1085,56 +1320,48 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
     if (!IsBad(ratio)) {
       m_ifi_prod *= ratio;
       ++m_ifi_n; m_ifi_sum += ratio; m_ifi_sum2 += ratio*ratio;
-      {
-        const int ib = std::min(4, (int)(10.*kk.E()/sqrt(m_s)));
-        if (ib >= 0) {
-          ++m_ifi_x_n[ib];
-          m_ifi_x_r[ib] += ratio;
-          const double ex = subloc/(m_rescale_alpha*subb);
-          m_ifi_x_e[ib] += IsBad(ex) ? ratio : ex;
-        }
+      const int ib = std::min(4, (int)(10.*kk.E()/sqrt(m_s)));
+      if (ib >= 0) {
+        ++m_ifi_x_n[ib];
+        m_ifi_x_r[ib] += ratio;
+        const double ex = subloc/(m_rescale_alpha*subb);
+        m_ifi_x_e[ib] += IsBad(ex) ? ratio : ex;
       }
       if (ratio < m_ifi_min) m_ifi_min = ratio;
       if (ratio > m_ifi_max) m_ifi_max = ratio;
     }
     msg_Debugging() << METHOD << " IFI_Real ratio=" << ratio << "\n";
   }
+}
 
-  msg_Debugging() << METHOD << " submode=" << m_submode
-                  << " r*flux=" << r*flux
-                  << " sub=" << subloc * m_born / m_rescale_alpha
-                  << " tot=" << tot << "\n";
+void NLO_Base::ReportBadReal(const RealTerms &rt)
+{
+  msg_Debugging() << METHOD << " tot is NaN/Inf"
+                  << " r*flux=" << rt.r*rt.flux
+                  << " subloc*born=" << rt.subloc*m_born
+                  << " subb=" << rt.subb << "\n";
+  msg_Error() << "NLO real is NaN\n"
+              << "  R        : " << rt.r << "\n"
+              << "  Local  S : " << rt.subloc * m_born << "\n"
+              << "  Global S : " << rt.subb << "\n";
+}
 
-  if (m_isr_debug || m_fsr_debug) {
-    if (m_isr_debug)
-      m_histograms2d["Real_Flux"]->Insert(
-          flux, sqrt(p_dipoles->GetDipoleII().Sprime()));
-  }
+// ISR_DEBUG / FSR_DEBUG: the IF eikonal, the real and beta_1 over the photon
+void NLO_Base::FillRealHistograms(const RealTerms &rt)
+{
+  const Vec4D &k(rt.k);
+  const Vec4D_Vector &p(rt.p);
+  m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(), k.PPerp(),
+                                        p_nlodipoles->CalculateRealSubIF(k));
+  m_histograms2d["REAL_SUB"]->Insert((p[0] + p[1]).Mass(), k.E(), rt.tot / m_born);
+  m_histograms2d["REAL"]->Insert(k.E(), k.Theta(), rt.r);
+  m_histograms2d["REAL_SUB"]->Insert(k.E(), k.Theta(), rt.tot);
+}
 
-  if (m_no_subtraction) {
-    msg_Debugging() << METHOD << " no_subtraction: returning r/subloc=" << r/subloc << "\n";
-    return r / subloc;
-  }
-
-  if (IsBad(tot)) {
-    msg_Debugging() << METHOD << " tot is NaN/Inf"
-                    << " r*flux=" << r*flux
-                    << " subloc*born=" << subloc*m_born
-                    << " subb=" << subb << "\n";
-    msg_Error() << "NLO real is NaN\n"
-                << "  R        : " << r << "\n"
-                << "  Local  S : " << subloc * m_born << "\n"
-                << "  Global S : " << subb << "\n";
-  }
-
-  if (m_isr_debug || m_fsr_debug) {
-    m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(), k.PPerp(),
-                                          p_nlodipoles->CalculateRealSubIF(k));
-    m_histograms2d["REAL_SUB"]->Insert((p[0] + p[1]).Mass(), k.E(), tot / m_born);
-    m_histograms2d["REAL"]->Insert(k.E(), k.Theta(), r);
-    m_histograms2d["REAL_SUB"]->Insert(k.E(), k.Theta(), tot);
-  }
-
+// the running average of beta_1/S~ over all photons, for the debug line on
+// jumps of more than 10% after the first 1000
+void NLO_Base::TrackRealAverage(double tot)
+{
   sumw += tot;
   rcount += 1;
   double avg = sumw / rcount;
@@ -1149,19 +1376,19 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
       m_ravg = avg;
     }
   }
+}
 
-  if (raw) {
-    double rawval = r * flux - subloc * m_born / m_rescale_alpha;
-    msg_Debugging() << METHOD << " raw: returning " << rawval << "\n";
-    return rawval;
-  }
-
-  msg_Debugging() << METHOD << " returning tot=" << tot << "\n";
+/*
+  RV_MODE 1 and RR_MODE 1: the point and the photon's exact-over-crude
+  ratio, in the same units and coupling as tot (REAL_ALPHA0's kappa
+  included), for the real-virtual remainder and the double real.
+*/
+void NLO_Base::StoreRealPointInfo(const RealTerms &rt)
+{
+  const double r(rt.r), flux(rt.flux), tot(rt.tot);
   if (RVMode() == rvmode::remainder && m_born != 0. && m_lastdenom != 0.) {
-    // RV_MODE 1: the point and the photon's exact-over-crude ratio, in the
-    // same units and coupling as tot (REAL_ALPHA0's kappa included)
     m_lastrvinfo.ok = true;
-    m_lastrvinfo.p = p;
+    m_lastrvinfo.p = rt.p;
     m_lastrvinfo.rho = (RealAlpha0() ? m_rescale_alpha : 1.)*r*flux/(m_lastdenom*m_born);
   }
   if (RRMode() == rrmode::exact && m_born != 0. && m_lastdenom != 0. && !IsBad(tot)) {
@@ -1171,9 +1398,8 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
     m_lastrrinfo.denom = m_lastdenom;
     m_lastrrinfo.subloc = m_lastsubloc/m_lastdenom;
     m_lastrrinfo.rho = (RealAlpha0() ? m_rescale_alpha : 1.)*r*flux/(m_lastdenom*m_born);
-    m_lastrrinfo.pt = p;
+    m_lastrrinfo.pt = rt.p;
   }
-  return tot;
 }
 
 double NLO_Base::CrudeOnLegs(const Vec4D_Vector &pt, const Vec4D &k)
@@ -1181,14 +1407,7 @@ double NLO_Base::CrudeOnLegs(const Vec4D_Vector &pt, const Vec4D &k)
   Vec4D_Vector legs(pt.begin(), pt.begin() + m_flavs.size());
   p_nlodipoles->MakeDipolesII(m_flavs, legs, legs);
   p_nlodipoles->MakeDipoles(m_flavs, legs, legs);
-  double s(0.);
-  if (p_nlodipoles->HasDipoleII()) {
-    YFS::Dipole &D(p_nlodipoles->GetDipoleII());
-    s += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
-  }
-  for (auto &D : p_nlodipoles->GetDipoleFF())
-    s += D.Eikonal(k, D.GetMomenta(0), D.GetMomenta(1));
-  return s;
+  return PointCrude(*p_nlodipoles, k);
 }
 
 namespace {

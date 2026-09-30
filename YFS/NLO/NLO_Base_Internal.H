@@ -93,7 +93,8 @@ inline rvloopframe::code RVLoopFrame() {
   return m;
 }
 
-// YFS: REAL_SUB_EIK, documented where it is used in NLO_Base::CalculateReal
+// YFS: REAL_SUB_EIK, documented where it is used in NLO_Base::RealSubtraction
+// and the SubEik* helpers (NLO_Real.C)
 inline realsubeik::code RealSubEik() {
   static const realsubeik::code m(ATOOLS::Settings::GetMainSettings()["YFS"]
     ["REAL_SUB_EIK"].SetDefault(realsubeik::multichannel_prefsr).Get<realsubeik::code>());
@@ -102,7 +103,7 @@ inline realsubeik::code RealSubEik() {
 
 /*
   YFS: REAL_FSR_FLUX, the flux a final-state photon's real carries (name or
-  old integer; NLO_Base::CalculateReal):
+  old integer; NLO_Base::RealFlux):
     event_flux (0): CalculateFlux's, as for an initial-state photon;
     no_flux (1, default since 2026-09-26): none;
     flux_squared (2): the event flux squared, (m_ff^2/s')^2;
