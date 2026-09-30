@@ -96,8 +96,8 @@ bool Define_Dipoles::MakeDipolesPole(ATOOLS::Flavour_Vector const &fl,
                                      ATOOLS::Vec4D_Vector const &born) {
   if (m_wwscheme != wwscheme::pole) return false;
   if (!HasFSR()) return false;
-  const bool built(m_set.BuildPole(fl, mom, born, m_alpha, m_wwonshell != 0,
-                                   m_resonace_max, m_wwpoleemission != 0));
+  const bool built(m_set.BuildPole(fl, mom, born, m_alpha, m_wwonshell,
+                                   m_resonace_max, m_wwpoleemission));
   ++m_pole_tried;
   if (built) ++m_pole_built;
   m_pole_active = built;
@@ -238,10 +238,10 @@ double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
     which fixed the soft cancellation of beta_1 but left beta_1/(S~ B) a
     factor N+1 too small everywhere else (e+e- -> gamma gamma: one-photon
     factor 1 + (w - 1)/3), and carried the same inconsistency into RV, RR,
-    the n-photon recursion and RealIFWeight. 0 restores it.
+    the n-photon recursion and RealIFWeight. false restores it.
   */
-  static const int bornphsym(ATOOLS::Settings::GetMainSettings()["YFS"]
-                             ["REAL_BORN_PHOTON_SYM"].SetDefault(1).Get<int>());
+  static const bool bornphsym(ATOOLS::Settings::GetMainSettings()["YFS"]
+                              ["REAL_BORN_PHOTON_SYM"].SetDefault(true).Get<bool>());
   if (bornphsym) return sub;
   return sub/(m_N_born_Gamma!=0?m_N_born_Gamma:1.0);
 }
@@ -298,7 +298,7 @@ double Define_Dipoles::CalculateVirtualSub() {
 */
 bool Define_Dipoles::DecayVirtualSubtraction() const {
   static const bool on(ATOOLS::Settings::GetMainSettings()["YFS"]
-                       ["WW_DECAY_VIRTUAL_SUB"].Get<int>() != 0);
+                       ["WW_DECAY_VIRTUAL_SUB"].Get<bool>());
   return on;
 }
 
@@ -582,7 +582,7 @@ void Define_Dipoles::DumpDipoles(){
       const double M(D.GetMass(0)), ml(D.GetMass(1));
       if (M > ml) y = fabs(D.m_QiQj)*p_yfsFormFact->BVR_decay(M, ml, omega);
     } else if (type == "IF") {
-      y = m_ifisub == 1
+      y = m_ifisub
               ? D.ChargeNorm()*p_yfsFormFact->IFForFac(D, IFIOmega()) : 0.;
     } else {
       y = D.ChargeNorm()*p_yfsFormFact->BVR_full(D, omega);
@@ -619,7 +619,7 @@ void Define_Dipoles::DumpDipoles(){
   // IF dipoles only contribute to the form factor when IFI_Sub is on, so say
   // so rather than printing a cutoff that is not being used.
   for (auto &D : m_set.IF())
-    line(D, "IF", m_ifisub == 1 ? IFIOmega() : 0.);
+    line(D, "IF", m_ifisub ? IFIOmega() : 0.);
   if (m_set.FF().empty())
     msg_Info() << "  (no final-state dipoles: fewer than two charged out-legs)"
                << std::endl;
@@ -629,7 +629,7 @@ void Define_Dipoles::DumpDipoles(){
 
 
 double Define_Dipoles::FormFactorSumIF(){
-  if(m_ifisub!=1) return 0.;
+  if (!m_ifisub) return 0.;
   double form = 0;
   // IFForFac = Btilda + t-channel virtual, i.e. KKMC's TForFac, and
   // ChargeNorm() = -QiQj*thetaij reproduces KKMC's +/- pattern across its
@@ -671,7 +671,7 @@ double Define_Dipoles::FormFactorSumIF(){
 
 
 double Define_Dipoles::FormFactorSumIF(double omega){
-  if(m_ifisub!=1) return 0.;
+  if (!m_ifisub) return 0.;
   double form = 0;
   for(auto &D: m_set.IF())
     form += D.ChargeNorm()*p_yfsFormFact->IFForFac(D, omega);
@@ -798,7 +798,7 @@ double Define_Dipoles::TFormFactor(){
     for(auto &D: m_set.FF()){
       form += D.ChargeNorm()*p_yfsFormFact->R1(D);
   }
-  if(m_ifisub==1){
+  if (m_ifisub) {
     // IF dipoles use IFForFac here too, NOT R1. An initial-final pair is
     // t-channel-like by construction, so its form factor does not depend on the
     // TChannel setting -- that flag is about how the II/FF (s-channel) dipoles
@@ -1021,15 +1021,15 @@ double Define_Dipoles::CalculateRealSubEEX(const Vec4D &k) {
     S~_gen/S~_coh wherever the photon is at a wide angle to its own pair (in
     the collinear limit the cross terms cancel pairwise, the other pair being
     neutral). With one resonant pair the two sums are the same number.
-    YFS: REAL_CRUDE_RADIATING: 1 restricts the sum to the radiating pairs;
+    YFS: REAL_CRUDE_RADIATING: true restricts the sum to the radiating pairs;
     the interference then enters through the IFI_Real weight subloc/subb
     (RealIFWeight), which is where the II-FF interference already sits.
     Numbers: see the report / the comment in NLO_Base::MapMomentaFSRDipole.
   */
-  static const int rad(ATOOLS::Settings::GetMainSettings()["YFS"]
-                       ["REAL_CRUDE_RADIATING"].SetDefault(0).Get<int>());
+  static const bool rad(ATOOLS::Settings::GetMainSettings()["YFS"]
+                        ["REAL_CRUDE_RADIATING"].SetDefault(false).Get<bool>());
   for (auto &D : m_set.FF()) {
-    if (rad != 0 && !D.IsResonance()) continue;
+    if (rad && !D.IsResonance()) continue;
     sub += D.Eikonal(k, D.GetBornMomenta(0), D.GetBornMomenta(1));
   }
   // for (auto &D : m_set.IF()) {
@@ -1062,7 +1062,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k){
   double flux = 1;
   dipoletype::code fluxtype;
   Vec4D Q,QX;
-  if(m_noflux==1) return 1;
+  if (m_noflux) return 1;
   /*
     MODE: FSR. The Jacobian of the (n+1)-body point against the crude,
     (Q - k)^2/Q^2 with Q the pre-emission final state, is the same whether
@@ -1121,7 +1121,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, dipoletype::code &fluxtype)
   double sq, sx;
   double flux = 1;
   Vec4D Q,QX;
-  if(m_noflux==1) return 1;
+  if (m_noflux) return 1;
   if(fluxtype==dipoletype::initial){
     for (auto &D : m_set.ByType(dipoletype::initial)) {
       QX = D.GetNewMomenta(0)+D.GetNewMomenta(1);
@@ -1153,7 +1153,7 @@ double Define_Dipoles::CalculateFlux(const Vec4D &k, const Vec4D &kk){
   double flux = 1;
   Vec4D Q,QX;
   dipoletype::code fluxtype1, fluxtype2;
-  if(m_noflux==1) return 1;
+  if (m_noflux) return 1;
   fluxtype1 = WhichResonant(k);
   fluxtype2 = WhichResonant(kk);
   if(fluxtype1==dipoletype::initial && fluxtype2==dipoletype::initial){

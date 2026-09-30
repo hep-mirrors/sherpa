@@ -24,9 +24,10 @@ using namespace ATOOLS;
 using namespace std;
 
 /*
-  YFS: RV_MODE - how the squared-level real-virtual (NLO_Part with E) is built.
+  YFS: RV_MODE - how the squared-level real-virtual (NLO_Part with E) is built
+  (name or old integer).
 
-  0 (default): the legacy RV, CalculateRealVirtual(Vec4D): per photon
+  legacy (0, default): the legacy RV, CalculateRealVirtual(Vec4D): per photon
     [r_RV flux - (B~ rtree flux + S~ B v)/kappa]/S~_crude, the whole
     beta_1^(2) - beta_1^(1) = R v_{n+1} - S~ B v, with its own point, crude,
     flux and coupling, and with E present REAL_COMBINE's product and
@@ -35,7 +36,7 @@ using namespace std;
     mu dependent beyond its IR pole (+0.4% G_mu, +0.8% alpha(0) per event
     whose photons are all soft).
 
-  1: the remainder. With v = V_sub/B of the event, v_{n+1} the same object at
+  remainder (1): with v = V_sub/B of the event, v_{n+1} the same object at
     photon j's (n+1)-body point and rho_j = R_j/(crude_j B) the photon's
     exact-over-crude ratio, the exact one-photon O(alpha^2) weight
       beta_0 (1 + v) + [R (1 + v_{n+1}) - S B (1 + v)]/crude
@@ -44,10 +45,11 @@ using namespace std;
     delta = (R - S B)/(crude B) the real's bracket.
 */
 /*
-  YFS: RR_MODE - how the squared-level double real (NLO_Part with W) is built.
-  0 (default): the legacy assembly (CalculateRealReal(k1,k2), steered by
+  YFS: RR_MODE - how the squared-level double real (NLO_Part with W) is built
+  (name or old integer).
+  legacy (0, default): the legacy assembly (CalculateRealReal(k1,k2), steered by
     RR_CONVENTIONS), which also switches REAL_COMBINE's product off.
-  1: exact at O(alpha^2) for every photon pair. f_k is photon k's factor in
+  exact (1): exact at O(alpha^2) for every photon pair. f_k is photon k's factor in
     REAL_COMBINE's product (its bracket plus its IF ratio, = kappa r F/(c B),
     the exact over crude at its own single-real point), and
         rho_ij = kappa^2 R_2(P) F_ij / (c_i c_j B)
@@ -72,22 +74,61 @@ using namespace std;
     (e+e- -> gamma gamma needs them). RR_PROBE 1 prints "@@@ RRPAIR" per pair
     (2 adds P and the Born point) and "@@@ RRID" per two-photon event.
 */
-inline int RRMode() {
-  static const int m(ATOOLS::Settings::GetMainSettings()["YFS"]["RR_MODE"]
-                     .SetDefault(0).Get<int>());
+inline rrmode::code RRMode() {
+  static const rrmode::code m(ATOOLS::Settings::GetMainSettings()["YFS"]["RR_MODE"]
+                              .SetDefault(rrmode::legacy).Get<rrmode::code>());
   return m;
 }
 
-inline int RVMode() {
-  static const int m(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_MODE"]
-                     .SetDefault(0).Get<int>());
+inline rvmode::code RVMode() {
+  static const rvmode::code m(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_MODE"]
+                              .SetDefault(rvmode::legacy).Get<rvmode::code>());
   return m;
 }
 
 // YFS: RV_LOOP_FRAME, documented at RVLoopPoint
-inline int RVLoopFrame() {
-  static const int m(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_LOOP_FRAME"]
-                     .SetDefault(1).Get<int>());
+inline rvloopframe::code RVLoopFrame() {
+  static const rvloopframe::code m(ATOOLS::Settings::GetMainSettings()["YFS"]
+    ["RV_LOOP_FRAME"].SetDefault(rvloopframe::canonical).Get<rvloopframe::code>());
+  return m;
+}
+
+// YFS: REAL_SUB_EIK, documented where it is used in NLO_Base::CalculateReal
+inline realsubeik::code RealSubEik() {
+  static const realsubeik::code m(ATOOLS::Settings::GetMainSettings()["YFS"]
+    ["REAL_SUB_EIK"].SetDefault(realsubeik::multichannel_prefsr).Get<realsubeik::code>());
+  return m;
+}
+
+/*
+  YFS: REAL_FSR_FLUX, the flux a final-state photon's real carries (name or
+  old integer; NLO_Base::CalculateReal):
+    event_flux (0): CalculateFlux's, as for an initial-state photon;
+    no_flux (1, default since 2026-09-26): none;
+    flux_squared (2): the event flux squared, (m_ff^2/s')^2;
+    on_crude (3): no flux on r; F = (q + k)^2/q^2 on the crude's final-state
+      part instead, q the post-emission pair;
+    own_dipole (4): the flux of the photon's own pair, (Q_D - k)^2/Q_D^2.
+  The double real takes the pair's ISR flux with no_flux and Flux_Mode event.
+*/
+inline realfsrflux::code RealFSRFlux() {
+  static const realfsrflux::code m(ATOOLS::Settings::GetMainSettings()["YFS"]
+    ["REAL_FSR_FLUX"].SetDefault(realfsrflux::no_flux).Get<realfsrflux::code>());
+  return m;
+}
+
+// YFS: REAL_FSR_MAP, documented in YFS_Base::RegisterDefaults
+inline realfsrmap::code RealFSRMap() {
+  static const realfsrmap::code m(ATOOLS::Settings::GetMainSettings()["YFS"]
+                                  ["REAL_FSR_MAP"].Get<realfsrmap::code>());
+  return m;
+}
+
+// YFS: REAL_ALPHA0 (default true), documented in NLO_Base::CalculateReal:
+// beta_1 at alpha(0) rather than at the model's alpha
+inline bool RealAlpha0() {
+  static const bool m(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_ALPHA0"]
+                      .SetDefault(true).Get<bool>());
   return m;
 }
 

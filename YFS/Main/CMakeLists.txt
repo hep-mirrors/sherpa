@@ -9,7 +9,8 @@ set(YFSMain_SOURCES Coulomb.C
                  YFS_Base.C
                  YFS_FB_Analysis.C
                  YFS_Form_Factor.C
-                 YFS_Handler.C)
+                 YFS_Handler.C
+                 YFS_Options.C)
 
 set(YFSMain_HEADERS Coulomb.H
                  Dipole.H
@@ -23,7 +24,8 @@ set(YFSMain_HEADERS Coulomb.H
                  YFS_Base.H
                  YFS_FB_Analysis.H
                  YFS_Form_Factor.H
-                 YFS_Handler.H)
+                 YFS_Handler.H
+                 YFS_Options.H)
 
 
 sherpa_create_git_info(YFSMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})

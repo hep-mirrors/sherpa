@@ -5,6 +5,7 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "YFS/Main/YFS_Options.H"
 #include <memory>
 
 
@@ -176,12 +177,13 @@ public:
   // <=0 disables.
   double m_rv_me_max_ratio;
 
-  int  m_order, m_betaorder, m_fullform, m_formWW, m_ifisub;
+  int  m_order, m_betaorder, m_fullform;
+  bool m_formWW, m_ifisub;
   wwscheme::code m_wwscheme;
-  int  m_wwonshell, m_wwpoleemission;
+  bool m_wwonshell, m_wwpoleemission;
   // Emission-side IFI: reweight generated photons by the IF radiation function
   // and drop the IF form factor's cutoff to m_ifiomega. Both or neither.
-  int    m_ifireal;
+  bool   m_ifireal;
   double m_ifiomega;
   // Per-photon IF reweight factors outside [m_ifi_rclip, 1/m_ifi_rclip] are
   // dropped, and counted here so the rate is reportable rather than silent.
@@ -208,22 +210,24 @@ public:
   // single production run yields RV_total(cut) and the cut can be validated.
   int  m_rv_cancel_hist;
   int  m_check_mass_reg, m_check_poles, m_check_real, m_check_rr, m_check_rv, m_rv_hard_photon;
-  int m_rmode, m_qedmode, m_kkmcAngles, m_virt_sub,m_mingammaN;
+  int m_rmode, m_qedmode, m_kkmcAngles, m_mingammaN;
+  bool m_virt_sub;
   // m_no_born_setting is the card value (YFS: No_Born), a global override.
   // m_no_born is the effective flag: the override OR'd with the per-process
   // request from SetNoBorn(), since one handler is shared by all processes.
-  int m_no_born_setting;
+  bool m_no_born_setting;
   // The YFS.* named weights carry a full per-order breakdown (Real, Virtual,
   // RealReal, the *_1g/_2g multiplicity truncations, the VV band, ...), which
   // is a lot of columns to write for every event. Off by default: only the
   // headline YFS.LO / YFS.NLO / YFS.NNLO are emitted. Set the card option
-  // YFS: NLO_Weight_Breakdown: 1 to get the individual contributions back.
-  int m_nlo_weight_breakdown;
-  int m_ladder_weights;
+  // YFS: NLO_Weight_Breakdown: true to get the individual contributions back.
+  bool m_nlo_weight_breakdown;
+  bool m_ladder_weights;
   int m_dump_dipoles;
   //! YFS: CHECK_INVARIANTS - run YFS_Handler::CheckInvariants each event.
   bool m_check_invariants;
-  int m_no_born, m_check_real_sub, m_check_rr_sub, m_no_subtraction, m_tchannel, m_check_virt_born, m_noflux, m_massless_sub;
+  int m_check_real_sub, m_check_rr_sub, m_tchannel, m_check_virt_born;
+  bool m_no_born, m_no_subtraction, m_noflux, m_massless_sub;
   //! Meaning of the YFS: Check_Real_Sub runcard integer (m_check_real_sub).
   //! See NLO_Checks.C for what each check actually does.
   enum CheckRealSubMode {
@@ -235,12 +239,10 @@ public:
   
   bool m_looptool, m_virtual_only, m_real_only, m_use_model_alpha,m_failcut,m_nlocuts;
   /*!
-    CEEX_WEIGHT: take the O(alpha) correction factor from CEEX rather than
-    from the EEX beta expansion. Default 0 - CEEX runs as a validation
-    object either way, and this is the switch that lets it into the
-    physics.
+    CEEX_WEIGHT, resolved: take the O(alpha) correction factor from CEEX
+    rather than from the EEX beta expansion (the card's auto follows CEEX).
   */
-  int  m_ceex_weight = 0;
+  bool m_ceex_weight = false;
   /*!
     NLO_FSR_FROM_EVENT: take the final-state photons for the fixed-order real
     correction from the EVENT RECORD (Dipole::GetPhotons(), what CEEX is
@@ -255,15 +257,17 @@ public:
     changes which photons are corrected at all - the two effects are not
     separable from here.
 
-    Default 0 = unchanged.
+    Card default true (YFS_Base::RegisterDefaults).
   */
-  int  m_nlo_fsr_from_event = 0;
+  bool m_nlo_fsr_from_event = false;
   bool m_isrinital, m_realtool, m_realvirt, m_useceex, m_coll_real, m_rrtool, m_vvtool, m_dim_reg;
   bool m_skipNegWeights;
   bool m_nlo_fsr_photons;
   bool m_fb_analysis;
   int m_fb_kf;
-  int m_flux_mode, m_hidephotons, m_photon_split, m_int_nlo, m_eex_virt;
+  fluxmode::code m_flux_mode;
+  bool m_hidephotons, m_eex_virt;
+  int m_photon_split, m_int_nlo;
   std::string m_name, m_type, m_debugDIR_ISR, m_debugDIR_FSR, m_debugDIR_NLO;
   Vec4D m_beam1, m_beam2;
 

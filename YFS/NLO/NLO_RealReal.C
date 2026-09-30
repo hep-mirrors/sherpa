@@ -343,9 +343,7 @@ double NLO_Base::RealRealRemainder(size_t i, size_t j)
   */
   double Fij(gi.flux*gj.flux);
   {
-    static const int fsrflux(ATOOLS::Settings::GetMainSettings()["YFS"]
-                             ["REAL_FSR_FLUX"].Get<int>());
-    if (m_flux_mode == 0 && fsrflux == 1) {
+    if (m_flux_mode == fluxmode::event && RealFSRFlux() == realfsrflux::no_flux) {
       const Vec4D Q(P[0] + P[1]);
       Vec4D K;
       if (!m_photons[i].IsFSR()) K += P[nl];
@@ -353,10 +351,8 @@ double NLO_Base::RealRealRemainder(size_t i, size_t j)
       if (Q.Abs2() > 0.) Fij = (Q - K).Abs2()/Q.Abs2();
     }
   }
-  static const int a0(ATOOLS::Settings::GetMainSettings()["YFS"]
-                      ["REAL_ALPHA0"].SetDefault(1).Get<int>());
   const double kap(m_rescale_alpha);
-  const double rhoij((a0 ? kap*kap : 1.)*r2*Fij/(ci*cj*m_born));
+  const double rhoij((RealAlpha0() ? kap*kap : 1.)*r2*Fij/(ci*cj*m_born));
   double others(1.);
   for (size_t k(0); k < m_rrphot.size(); ++k)
     if (k != i && k != j) others *= m_rrphot[k].factor;
@@ -391,14 +387,14 @@ double NLO_Base::CalculateRealReal() {
   m_rrExactPair = std::numeric_limits<double>::quiet_NaN();
   if (!m_rrtool)
     return 0;
-  if (RRMode() == 1) {
+  if (RRMode() == rrmode::exact) {
     static bool checked(false);
     if (!checked) {
       checked = true;
       if (!(m_rr_soft_cut > 0.))
         THROW(fatal_error, "YFS: RR_MODE 1 needs RR_SOFT_CUT > 0 (the lower edge of "
               "the soft x hard form-factor difference in the real-virtual).");
-      if (!m_realvirt || RVMode() != 1)
+      if (!m_realvirt || RVMode() != rvmode::remainder)
         msg_Error()<<"YFS: RR_MODE 1 without RV_MODE 1: the double real's soft x "
                    <<"hard log is not cancelled; the result depends on RR_SOFT_CUT."
                    <<std::endl;
@@ -414,7 +410,7 @@ double NLO_Base::CalculateRealReal() {
     if (!h1 || g.E() > h1->E())      { h2 = h1; h1 = &g; }
     else if (!h2 || g.E() > h2->E()) { h2 = &g; }
   }
-  if (RRMode() == 1) {
+  if (RRMode() == rrmode::exact) {
     for (size_t i(0); i < photons.size(); ++i)
       for (size_t j(i + 1); j < photons.size(); ++j) {
         const double contrib(RealRealRemainder(i, j));
@@ -500,7 +496,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2) {
   const double subloc2 = p_nlodipoles->CalculateRealSub(k2);
 
   double flux;
-  if (m_flux_mode == 1)
+  if (m_flux_mode == fluxmode::mapped)
     flux = p_nlodipoles->CalculateFlux(k1 + k2);
   else
     flux = p_dipoles->CalculateFlux(k1) * p_dipoles->CalculateFlux(k2);
@@ -552,10 +548,10 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2) {
   const double rd1(ratio(SB1, SB01)), rd2(ratio(SB2, SB02));
   m_recola_evts += 1;
   /*
-    YFS: RR_CONVENTIONS (1). beta_2 = R_2 F_1 F_2 - S_2 beta_1(k_1)
+    YFS: RR_CONVENTIONS (single_flux). beta_2 = R_2 F_1 F_2 - S_2 beta_1(k_1)
     - S_1 beta_1(k_2) - S_1 S_2 B over the crude of each photon, with the flux,
     subtraction eikonal and crude of each photon taken from the single real's
-    own calculation of that photon (m_last*). The old assembly (0) built its
+    own calculation of that photon (m_last*). The old assembly (legacy) built its
     own: the plain eikonal at the double-mapped point, an initial-state flux
     product for every photon and the EEX crude, while beta_1 inside it came
     from the single real. With REAL_SUB_EIK 8 and REAL_FSR_FLUX 1 the two no
@@ -577,19 +573,30 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2) {
     photon's legs) made it worse. Open: the FSR maps, and REAL_SUB_EIK 8's
     multichannel crude inside beta_2.
   */
-  static const int rrconv(ATOOLS::Settings::GetMainSettings()["YFS"]
-                          ["RR_CONVENTIONS"].SetDefault(3).Get<int>());
-  if (rrconv) {
-    // bitmask while the right combination is established: 1 = the single
-    // real's flux, 2 = its subtraction eikonal, 4 = its denominator; a clear
-    // bit keeps the old double-real piece (flux product, eikonal at the
-    // double-mapped point, EEX crude)
-    // 1: the single real's flux; 2: the double real's own eikonal (at its
-    // double-mapped point) times the single real's modification factor;
-    // 4: the same for the denominator (the EEX crude of the event)
-    const double fF(rrconv & 1 ? F1 * F2 : flux);
-    const double s1(rrconv & 2 ? subloc1 * rs1 : subloc1), s2(rrconv & 2 ? subloc2 * rs2 : subloc2);
-    const double d1(rrconv & 4 ? sub1 * rd1 : sub1), d2(rrconv & 4 ? sub2 * rd2 : sub2);
+  /*
+    YFS: RR_CONVENTIONS, a list of names (or the old integer mask, the value
+    in brackets), each taking one piece from the single real while the right
+    combination is established; a piece not named keeps the old double-real
+    one (flux product, eikonal at the double-mapped point, EEX crude):
+      single_flux (1): the single real's flux;
+      single_subtraction (2): the double real's own eikonal (at its
+        double-mapped point) times the single real's modification factor;
+      single_denominator (4): the same for the denominator (the EEX crude of
+        the event);
+      soft_limit_legs (8): the soft-limit eikonals, below.
+    Default [single_flux, single_subtraction] (the old 3); legacy (0), or an
+    empty list, is the old assembly.
+  */
+  static const rrconventions rrconv(ReadRRConventions(
+      ATOOLS::Settings::GetMainSettings()["YFS"]["RR_CONVENTIONS"]
+      .SetDefault(std::vector<std::string>{"single_flux", "single_subtraction"})
+      .GetVector<std::string>()));
+  if (!rrconv.Legacy()) {
+    const double fF(rrconv.single_flux ? F1 * F2 : flux);
+    const double s1(rrconv.single_subtraction ? subloc1 * rs1 : subloc1);
+    const double s2(rrconv.single_subtraction ? subloc2 * rs2 : subloc2);
+    const double d1(rrconv.single_denominator ? sub1 * rd1 : sub1);
+    const double d2(rrconv.single_denominator ? sub2 * rd2 : sub2);
     if (IsZero(real1) || IsZero(real2) || !(d1 > 0.) || !(d2 > 0.)) {
       m_zeroRR++;
       return 0;
@@ -598,7 +605,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2) {
     double num(r * fF - (s2 * real1 + s1 * real2) / ra
                - s1 * s2 * m_born / (ra * ra));
     /*
-      8: the soft limits. As k2 -> soft, R_2 -> S(k2; legs of photon 1's
+      soft_limit_legs (8): the soft limits. As k2 -> soft, R_2 -> S(k2; legs of photon 1's
       point) R_1(k1), so the eikonal multiplying beta_1(k1) must be k2's on
       THOSE legs (a2), not at the double-mapped point where k1 is removed;
       for FSR the final legs recoil against a hard k1 and the two differ at
@@ -607,7 +614,7 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2) {
       beta_2 vanishes in both single-soft limits with
       c = a2 S_1 + a1 S_2 - S_1 S_2, S_i the single real's subtraction.
     */
-    if (rrconv & 8) {
+    if (rrconv.soft_limit_legs) {
       const double a1(A1raw * rs1), a2(A2raw * rs2);
       num = r * fF - (a2 * real1 + a1 * real2) / ra
             - (a2 * SL1 + a1 * SL2 - SL1 * SL2) * m_born / (ra * ra);

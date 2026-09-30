@@ -134,7 +134,7 @@ namespace YFS {
       with a photon multiplicity other than one keep the hand-coded path
       (see ApplyComixReal for why).
     */
-    int m_comixreal = 0;
+    bool m_comixreal = false;
     /*!
       Real matrix-element providers, indexed by photon multiplicity. One per
       multiplicity because the n-photon amplitude comes from a DIFFERENT
@@ -241,7 +241,7 @@ namespace YFS {
     //! standalone reconstruction of it.
     std::vector<Amplitude> m_cxcsub;
     std::vector<char>      m_cxratiook;
-    int m_perphoton = 0;
+    bool m_perphoton = false;
     YFS::NLO_Base *p_nlo = nullptr;
     //! Per-PHOTON accounting, kept apart from the per-EVENT counters above:
     //! one run has as many of these as it has photons, not as it has events,
@@ -265,7 +265,7 @@ namespace YFS {
     bool m_vpon = false;
     Amplitude m_cxbalign;
     bool      m_cxbalignok = false;
-    int       m_comixborn = 0;
+    bool      m_comixborn = false;
     /*
       The normalisation between Comix's amplitudes and CEEX's is a true
       CONSTANT only when the two differ by the spin-average alone, which is
@@ -441,14 +441,15 @@ namespace YFS {
     //! this event: reduced-point beta_0 and balanced-point M_1 (see above)
     bool m_redborn = false;
     /*!
-      CEEX: TCHANNEL_MULTIPHOTON (0 off, 1 point, 2 point + factorised),
-      the multi-photon companion of the reduced t-channel Born. Active only
-      with m_redborn and two or more photons; see Ceex_Base::RegisterDefaults.
+      CEEX: TCHANNEL_MULTIPHOTON (partition_legs, one_photon_point,
+      factorised), the multi-photon companion of the reduced t-channel Born.
+      Active only with m_redborn and two or more photons; see
+      Ceex_Base::RegisterDefaults.
     */
-    int TchannelMultiphotonMode() const;
+    tchmultiphoton::code TchannelMultiphotonMode() const;
     bool TchannelMultiphotonActive() const
     { return m_redborn && m_allphotons.size() >= 2
-             && TchannelMultiphotonMode() > 0; }
+             && TchannelMultiphotonMode() != tchmultiphoton::partition_legs; }
     /*!
       The one-photon point for photon iphot (TCHANNEL_MULTIPHOTON >= 1): the
       event with only this photon, scaled by one factor x so that the final
@@ -512,13 +513,13 @@ namespace YFS {
       int              decayStage = -1; //!< the stage it is incoming in
     };
     std::vector<Resonance> m_resonances;
-    //! CEEX: W_STAGES (0 off, 1 on, -1 auto: on inside the pole window)
-    int  m_wstages = 0;
-    //! CEEX: W_EIKONAL (0 fixed: W at its daughters; 1 partition: pole at
+    //! CEEX: W_STAGES (off, on, auto: on inside the pole window)
+    tristate::code m_wstages = tristate::off;
+    //! CEEX: W_EIKONAL (daughters: W at its daughters; partition: pole at
     //! daughters + this partition's decay photons)
-    int  m_weikonal = 0;
-    inline bool WStagesRequested() const { return m_wstages != 0; }
-    inline int  WStagesMode() const { return m_wstages; }
+    weikonal::code m_weikonal = weikonal::daughters;
+    inline bool WStagesRequested() const { return m_wstages != tristate::off; }
+    inline tristate::code WStagesMode() const { return m_wstages; }
     //! true once BuildStages has put a resonance into the stage table
     inline bool WStagesActive() const { return !m_resonances.empty(); }
     bool IsResonanceLeg(int leg) const;
@@ -781,7 +782,7 @@ namespace YFS {
     long   m_uvn = 0, m_uvflipn = 0;
     void   AccumulateBornShape(double cth, double val);
     void   ReportBornShape();
-    int m_onlyz, m_onlyg;
+    bool m_onlyz, m_onlyg;
     bool m_fixedwidth,m_checkxs;
     std::vector<int> m_PhoHel;
     PHASIC::Process_Info m_pi;
@@ -810,7 +811,7 @@ namespace YFS {
     //! 2*T3 and 4*Q*sin^2(theta_W) kept separately so the kappa factors can
     //! multiply the sin^2 piece alone, as in GPS_EWFFact.
     Complex m_t3e2, m_t3f2, m_qesw, m_qfsw;
-    int     m_weak = 0;
+    bool    m_weak = false;
     //! t-channel spinor structures: the 2<->3 crossing of the s-channel
     //! pairings, i.e. (2,1)x(3,4) and (2,3)x(1,4).
     Complex m_Tampt[2][2][2][2], m_Uampt[2][2][2][2];
@@ -902,10 +903,10 @@ namespace YFS {
     std::vector<std::vector<int> > m_crudegroups;
     inline void SetCrudeStageGroups(const std::vector<std::vector<int> > &g)
     { m_crudegroups = g; }
-    //! CEEX: CRUDE_FROM_GENERATOR: 0 off, 1 use it, 2 compute and print,
-    //! -1 (default) use it when W stages are active
-    //! both (@@@ CRUDEGEN) without using it
-    int m_crudegen = 0;
+    //! CEEX: CRUDE_FROM_GENERATOR: off, on (use it), compare (compute and
+    //! print both, @@@ CRUDEGEN, without using it), auto (default: use it
+    //! when W stages are active)
+    crudegen::code m_crudegen = crudegen::off;
     /*!
       Saves the stage tables (legs, momenta, resonances, soft factors,
       partition state) on construction and restores them on destruction, so
@@ -991,7 +992,7 @@ namespace YFS {
     //! or A_1 under CEEX: ORDER2_VIRTUAL_ON_BETA1 (KKMC's (1+v/2) on beta_1)
     inline double GetResultVV() const { return m_resultV; }
     //! CEEX: REAL_VIRTUAL (Ceex_Base.C, RealVirtualMode)
-    static int RealVirtualMode();
+    static ceexrv::code RealVirtualMode();
     /*!
       CEEX: REAL_VIRTUAL 2: the non-factorisable real-virtual on top of the
       (1 + v/2) A_1 placement, sum_j dv_j Re<A, M_1j>/4, A = A_1 (A_2 at

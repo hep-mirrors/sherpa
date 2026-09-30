@@ -110,7 +110,7 @@ void Ceex_Base::InfraredSubtractedME_0_1() {
   // X = P - sum(ISR k) - they are not event constants.
   
   static const bool useboxes(Settings::GetMainSettings()["CEEX"]["BOXES"]
-                             .SetDefault(1).Get<int>() != 0);
+                             .SetDefault(true).Get<bool>());
 
   // Boxes first. The ut combination is the tu one with t and u swapped.
   const Complex coef(m_alpha * m_qe * m_qf / M_PI);

@@ -74,7 +74,7 @@ void Ceex_Base::BornAmplitude(const Vec4D_Vector &k, Amplitude &M,
   const double m4(Mf4 >= 0. ? Mf4 : m_flavs[i2].Mass());
   static const bool exactisrmass(
       Settings::GetMainSettings()["CEEX"]["EXACT_ISR_SPINOR_MASS"]
-      .SetDefault(0).Get<int>() != 0);
+      .SetDefault(false).Get<bool>());
   const double mi(exactisrmass || m_bhabha ? m1 : 0.);
   const bool cached(slot >= 0 && slot < (int)m_spinvalid.size()
                     && m_spinvalid[slot]);
@@ -280,7 +280,7 @@ void Ceex_Base::InfraredSubtractedME_0_0() {
       mu mu came out at 6215 pb. That was the flux, not the alignment.
     */
     static const bool sprime(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                             ["BORN_AT_SPRIME"].Get<int>() != 0);
+                             ["BORN_AT_SPRIME"].Get<bool>());
     bool ok(false);
     // BornLegsAt is a 2 -> 2 reduction (one pair at Y): not with W stages
     if ((sprime || m_redborn) && !WStagesActive()) {   // m_redborn: CEEX: TCHANNEL_REDUCED_BORN
@@ -328,10 +328,10 @@ void Ceex_Base::InfraredSubtractedME_0_0() {
   // the real-point Born carries its own scale: soft factors only, no flux.
   // fac0 feeds rho_1 (and beta_1's subtraction), fac00 feeds rho_0; see the
   // NO_PSEUDOFLUX modes in the partition loop.
-  static const int pfmode(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                          ["NO_PSEUDOFLUX"].Get<int>());
-  const Complex fac0(m_e * m_e * (realpoint ? 1. : (pfmode == 0 ? m_pflux : 1.)));
-  const Complex fac00(m_e * m_e * (realpoint ? 1. : (pfmode == 1 ? 1. : m_pflux)));
+  static const pseudoflux::code pfmode(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                          ["NO_PSEUDOFLUX"].Get<pseudoflux::code>());
+  const Complex fac0(m_e * m_e * (realpoint ? 1. : (pfmode == pseudoflux::rho0_and_rho1 ? m_pflux : 1.)));
+  const Complex fac00(m_e * m_e * (realpoint ? 1. : (pfmode == pseudoflux::neither ? 1. : m_pflux)));
   const Complex fac(fac0 * m_Sprod), facA0(fac00 * m_Sprod);
   /*
     Every helicity the container holds. This loop ran over the 16 entries of
@@ -389,8 +389,8 @@ void Ceex_Base::InfraredSubtractedME_0_0() {
     Still 2 -> 2 only (the gate below); beyond that the crude should come
     from the generator's m_born on the sampled partition.]
   */
-  static const int crudeborn(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                             ["CRUDE_BORN"].SetDefault(1).Get<int>());
+  static const bool crudeborn(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                             ["CRUDE_BORN"].SetDefault(true).Get<bool>());
   /*
     2 -> 2: the Born at BornLegsAt(X_wp), which rebuilds the one pair.
     Beyond (2026-09-26): the generator's own point, GeneratorBornAt(X_wp),
@@ -400,7 +400,7 @@ void Ceex_Base::InfraredSubtractedME_0_0() {
     (a photon that puts mu nu gamma on the W while mu nu is off it), CEEX
     3-8x YFS.NLO. The same failure is the Hll/4f hard-FSR flux problem.
   */
-  bool usered(crudeborn != 0 && m_flavs.size() >= 4 && m_comixborn
+  bool usered(crudeborn && m_flavs.size() >= 4 && m_comixborn
               && m_cxbalignok && !realpoint
               && (m_flavs.size() == 4 || m_prefsr.size() == m_flavs.size()));
   Amplitude Cred;
@@ -468,7 +468,7 @@ void Ceex_Base::InfraredSubtractedME_0_0() {
     |beta_0|^2 is (svarX/svarQ) on B_red^2; the initial-stage factor
     s/X_wp^2 is the same statement for the beams.
   */
-  const double crudered((pfmode == 1 ? 1. : m_pflux) * fluxred
+  const double crudered((pfmode == pseudoflux::neither ? 1. : m_pflux) * fluxred
                         * (m_crudefixed ? m_crudeprod : std::norm(m_Sprod)));
   /*
     The crude the CEEX weight divides by is the generator's density, whose

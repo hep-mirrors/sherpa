@@ -250,9 +250,9 @@ bool Ceex_Base::ComixInfraredSubtracted_2_0(int j, int l)
   Amplitude M2;
   const bool addm2(dj && dl);
   if (addm2) {
-    static const int legsmode(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                              ["BETA1_LEGS"].Get<int>());
-    const bool rebuild(legsmode != 0 || m_redborn);
+    static const beta1legs::code legsmode(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                              ["BETA1_LEGS"].Get<beta1legs::code>());
+    const bool rebuild(legsmode == beta1legs::balanced || m_redborn);
     Vec4D_Vector pb;
     PropShifts shifts;
     if (rebuild) { if (!PartitionLegs2(j, l, pb)) { ++m_b2fail; return false; } }
@@ -380,8 +380,8 @@ void Ceex_Base::Beta2SoftLimit()
   const int fmaskx(nh - 1);
   const double rn(RealNorm());
   const double rs(sqrt(m_s));
-  static const int pfmode(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                          ["NO_PSEUDOFLUX"].Get<int>());
+  static const pseudoflux::code pfmode(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                          ["NO_PSEUDOFLUX"].Get<pseudoflux::code>());
   const size_t ni(m_isrphotons.size());
   const char *cls(ni == 2 ? "II" : ni == 1 ? "IF" : "FF");
   for (int mode(0); mode < 3; ++mode) {

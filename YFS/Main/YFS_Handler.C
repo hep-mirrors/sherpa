@@ -479,7 +479,7 @@ bool YFS_Handler::SetCEEXWStageGroups() {
   if (!p_ceex || !p_ceex->WStagesRequested()) return false;
   const DipoleSet::WWLegs w(DipoleSet::FindWW(m_flavs, m_ev.m_plab));
   if (!w.ok) return false;
-  if (p_ceex->WStagesMode() < 0) {
+  if (p_ceex->WStagesMode() == tristate::automatic) {
     // auto: the pole scheme's own window, both W's near the pole
     const double MW(Flavour(kf_Wplus).Mass()), GW(Flavour(kf_Wplus).Width());
     if (GW > 0. && (fabs(w.wm.Mass() - MW)/GW > m_resonace_max
@@ -863,21 +863,23 @@ void YFS_Handler::CalculateBeta() {
       YFS: REAL_BORN_PHOTON_MULTICHANNEL, the CEEX half: rho_crude becomes the
       sum of the crudes of every assignment of photons to Born pair and ISR
       that the generator could have produced this final state with
-      (NLO_Base::BornPhotonChannelSum, all Born-pair choices). 1 applies it,
-      2 only computes it for WEIGHT_PROBE. G = 1 exactly without Born
-      photons or when no ISR photon passes the Born cuts.
+      (NLO_Base::BornPhotonChannelSum, all Born-pair choices). on applies
+      it, report only computes it for WEIGHT_PROBE. G = 1 exactly without
+      Born photons or when no ISR photon passes the Born cuts.
     */
     m_bpmc_evtG = 1.; m_bpmc_evtn = 0;
-    { static const int bpmc(ATOOLS::Settings::GetMainSettings()["YFS"]
-                            ["REAL_BORN_PHOTON_MULTICHANNEL"].SetDefault(1).Get<int>());
-      if (bpmc && p_ceex && p_nlo && p_dipoles->HasDipoleII()
+    { static const bornphotonmc::code bpmc(ATOOLS::Settings::GetMainSettings()["YFS"]
+        ["REAL_BORN_PHOTON_MULTICHANNEL"].SetDefault(bornphotonmc::on)
+        .Get<bornphotonmc::code>());
+      if (bpmc != bornphotonmc::off && p_ceex && p_nlo && p_dipoles->HasDipoleII()
           && !m_ev.m_ISRPhotons.empty()) {
         InitNLO();
         const std::vector<Vec4D> isr(m_ev.m_ISRPhotons.begin(), m_ev.m_ISRPhotons.end());
         m_bpmc_evtG = p_nlo->BornPhotonChannelSum(m_ev.m_reallab, isr,
                                                   p_dipoles->GetDipoleII(), -1,
                                                   &m_bpmc_evtn);
-        if (bpmc == 1 && m_bpmc_evtG != 1.) p_ceex->ScaleRhoCrude(m_bpmc_evtG);
+        if (bpmc == bornphotonmc::on && m_bpmc_evtG != 1.)
+          p_ceex->ScaleRhoCrude(m_bpmc_evtG);
       } }
     if (heavy > 0. && p_ceex) {
       const double r0(p_ceex->GetRhoCrude()), r1(p_ceex->GetResult());
@@ -1308,8 +1310,9 @@ double YFS_Handler::CalculateNLO(){
   }
   /*
     YFS: VIRTUAL_COMBINE. Where the virtual v = V/B enters the squared-level
-    weight. 0: the sum 1 + v + sum_j delta_j, v times the sampled Born on
-    every event. 1 (default): the product (1 + v)(1 + sum_j delta_j), v times
+    weight (name or old integer). sum (0): 1 + v + sum_j delta_j, v times the
+    sampled Born on every event. product (1, default): the product
+    (1 + v)(1 + sum_j delta_j), v times
     the event's own real correction - the placement CEEX has, where the
     virtual sits inside sum_h |A_1 + (v/2) A_0|^2. The two agree at O(alpha);
     the product adds v * sum_j delta_j, nothing CEEX lacks.
@@ -1324,9 +1327,10 @@ double YFS_Handler::CalculateNLO(){
     does not - it is defined as the real-virtual beyond (1 + v) x real - so
     there the term is kept, whatever VIRTUAL_COMBINE says.
   */
-  { static const int vcomb(ATOOLS::Settings::GetMainSettings()["YFS"]
-                           ["VIRTUAL_COMBINE"].SetDefault(1).Get<int>());
-    const bool addvxr((vcomb == 1 && !p_nlo->HasRealVirtual()) || p_nlo->RVRemainder());
+  { static const virtualcombine::code vcomb(ATOOLS::Settings::GetMainSettings()["YFS"]
+        ["VIRTUAL_COMBINE"].SetDefault(virtualcombine::product).Get<virtualcombine::code>());
+    const bool addvxr((vcomb == virtualcombine::product && !p_nlo->HasRealVirtual())
+                      || p_nlo->RVRemainder());
     if (addvxr && m_born != 0.) {
       const double vxr((m_ev.m_nlo_virtual/m_born)
                        *(m_ev.m_nlo_real + m_ev.m_nlo_rr + m_ev.m_nlo_rn));
@@ -1392,7 +1396,7 @@ void YFS_Handler::GenerateWeight() {
     // side did not see every photon.
     const std::vector<double> &wt(p_nlo->WIFTerms());
     static const bool wifnlo(ATOOLS::Settings::GetMainSettings()["YFS"]
-                             ["IFI_REAL_FROM_NLO"].SetDefault(1).Get<int>() != 0);
+                             ["IFI_REAL_FROM_NLO"].SetDefault(true).Get<bool>());
     if (wifnlo && wt.size() == allphotons.size() && !wt.empty()) {
       wif = 1.; for (double t : wt) wif *= t;
     } else
@@ -1413,7 +1417,7 @@ void YFS_Handler::GenerateWeight() {
     takes the IF form factor at sqrt(s)/2, the whole soft integral, which is
     exactly the LO of an IFI_Real 0 run (the event generation does not depend
     on IFI_Real). Same conditions as the CEEX IF cut below.
-    YFS: LO_WITHOUT_IFI: 0 restores the old column.
+    YFS: LO_WITHOUT_IFI: false restores the old column.
   */
   /*
     YFS: LO_PROBE - the factors of the Born-level weight, per event, to compare
@@ -1432,8 +1436,8 @@ void YFS_Handler::GenerateWeight() {
       std::cerr<<o.str();
     } }
   { static const bool lonoifi(ATOOLS::Settings::GetMainSettings()["YFS"]
-                              ["LO_WITHOUT_IFI"].SetDefault(1).Get<int>() != 0);
-    if (lonoifi && m_ifireal && m_ifisub == 1 && m_fullform >= 1 &&
+                              ["LO_WITHOUT_IFI"].SetDefault(true).Get<bool>());
+    if (lonoifi && m_ifireal && m_ifisub && m_fullform >= 1 &&
         m_tchannel == 0 && p_dipoles) {
       const double dy(p_dipoles->FormFactorSumIF(0.5*sqrt(m_s))
                       - p_dipoles->FormFactorSumIF());
@@ -1504,7 +1508,7 @@ void YFS_Handler::GenerateWeight() {
     else ++m_ceexstats.m_bad;
     // CEEX: REAL_VIRTUAL 2 - the non-factorisable real-virtual, YFS.NLO's
     // per-photon v_{n+1} - v_B on each photon's M_1 (Ceex_Base.C)
-    if (YFS::Ceex_Base::RealVirtualMode() == 2 && rcr > 0.) {
+    if (YFS::Ceex_Base::RealVirtualMode() == ceexrv::averaged && rcr > 0.) {
       const double arv(CeexRealVirtualRemainder()/rcr);
       if (!IsBad(arv)) corr_ceex += arv;
     }
@@ -1604,11 +1608,11 @@ void YFS_Handler::GenerateWeight() {
     with the exponent cut at the generation cutoff it is +1.03/+1.06% at 1e-5
     and 1e-7. So the CEEX column swaps exp(Y_IF(IFIOmega)) for
     exp(Y_IF(omega_gen)); with IFI_Real on the two coincide and this is 1.
-    CEEX: IF_FORMFACTOR_CUT: 0 restores the old behaviour.
+    CEEX: IF_FORMFACTOR_CUT: false restores the old behaviour.
   */
   { static const bool ifcut(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                            ["IF_FORMFACTOR_CUT"].SetDefault(1).Get<int>() != 0);
-    if (ifcut && corr_ceex != 0. && m_ifisub == 1 && m_fullform >= 1 &&
+                            ["IF_FORMFACTOR_CUT"].SetDefault(true).Get<bool>());
+    if (ifcut && corr_ceex != 0. && m_ifisub && m_fullform >= 1 &&
         m_tchannel == 0 && p_dipoles) {
       const double wgen(0.5*sqrt(m_s)*m_isrcut);
       const double dy(p_dipoles->FormFactorSumIF(wgen)
@@ -1782,7 +1786,7 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
     }
     if (m_ladder_weights) {
       if (m_coulomb && p_coulomb) names.push_back("NoCoulomb");
-      if (m_ifisub == 1 && m_fullform >= 1 && m_tchannel == 0 &&
+      if (m_ifisub && m_fullform >= 1 && m_tchannel == 0 &&
           FixedOrder() != fixed_order::nlo && p_dipoles)
         names.push_back("NoIFI");
     }
@@ -2002,7 +2006,7 @@ bool YFS_Handler::BuildLadderWeights(ATOOLS::Weights &w) {
     if (!IsZero(wc) && !IsBad(wc)) { w["NoCoulomb"] = 1./wc; any = true; }
   }
 
-  if (m_ifisub == 1 && m_fullform >= 1 && m_tchannel == 0 &&
+  if (m_ifisub && m_fullform >= 1 && m_tchannel == 0 &&
       FixedOrder() != fixed_order::nlo && p_dipoles) {
     const double fif(p_dipoles->FormFactorSumIF());
     if (!IsBad(fif)) { w["NoIFI"] = exp(-fif); any = true; }

@@ -262,7 +262,7 @@ Ceex_Base::StageLegMomentum(const StageLeg &l, int iphot,
   for (size_t k(0); k < r.daughters.size(); ++k)
     if (r.daughters[k] < (int)p.size()) m.num += p[r.daughters[k]];
   m.pole = m.num;
-  if (m_weikonal != 0 && r.decayStage >= 0)
+  if (m_weikonal == weikonal::partition && r.decayStage >= 0)
     m.pole += StagePhotonSum(r.decayStage, iphot);
   return m;
 }
@@ -283,7 +283,7 @@ Complex Ceex_Base::StageCurrent(int stage, int iphot, const Vec4D &k, int hel,
 
 void Ceex_Base::RecomputeResonanceSfactors()
 {
-  if (!WStagesActive() || m_weikonal == 0) return;
+  if (!WStagesActive() || m_weikonal == weikonal::daughters) return;
   if ((int)m_Sfac.size() != m_nstages) return;
   for (int g(0); g < m_nstages; ++g) {
     bool hasres(false);
@@ -389,8 +389,8 @@ void Ceex_Base::CalculateSfactors() {
 */
 bool Ceex_Base::RepairMomentumBalance()
 {
-  static const int on(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                      ["MOMENTUM_REPAIR"].Get<int>());
+  static const bool on(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                      ["MOMENTUM_REPAIR"].Get<bool>());
   m_repairresid = -1.;
   if (!on || m_pceex.size() < 3) return false;
   std::vector<Vec4D*> v;
@@ -579,11 +579,11 @@ Ceex_Base::StageTableSwap::~StageTableSwap()
 
 double Ceex_Base::CrudeFromGenerator()
 {
-  static const int crudeborn(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                             ["CRUDE_BORN"].SetDefault(1).Get<int>());
-  static const int pfmode(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                          ["NO_PSEUDOFLUX"].Get<int>());
-  if (crudeborn == 0 || !m_comixborn || !m_cxbalignok
+  static const bool crudeborn(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                             ["CRUDE_BORN"].SetDefault(true).Get<bool>());
+  static const pseudoflux::code pfmode(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                          ["NO_PSEUDOFLUX"].Get<pseudoflux::code>());
+  if (!crudeborn || !m_comixborn || !m_cxbalignok
       || m_pceex.size() != m_flavs.size() || m_flavs.size() < 4) return -1.;
   if (m_flavs.size() > 4 && m_prefsr.size() != m_flavs.size()) return -1.;
   if (m_PhoHel.size() != m_allphotons.size()) return -1.;
@@ -622,7 +622,7 @@ double Ceex_Base::CrudeFromGenerator()
     const double X2(PX.Abs2());
     if (X2 > 0. && m_svarQ > 0.) {
       double pflux(1.);
-      if (pfmode != 1)
+      if (pfmode != pseudoflux::neither)
         for (int g(0); g < m_nstages; ++g) {
           if (g == m_initstage || m_stagelegs[g].empty()) continue;
           const Vec4D q(StageSystemMomentum(g)), K(StagePhotonSum(g, -1));
@@ -635,7 +635,7 @@ double Ceex_Base::CrudeFromGenerator()
       const bool legs(m_flavs.size() == 4 ? BornLegsAt(PX, pb)
                                            : GeneratorBornAt(PX, pb));
       if (!legs || !ComixBornAmplitude(pb, Cred, NULL, -1., -1.)) return -1.;
-      const double crudered((pfmode == 1 ? 1. : pflux) * (m_s/X2)
+      const double crudered((pfmode == pseudoflux::neither ? 1. : pflux) * (m_s/X2)
                             * (crudefixed ? crudeprod : std::norm(sProd)));
       double rc(0.);
       for (int f(0); f < nhel; ++f)
@@ -715,7 +715,7 @@ void Ceex_Base::Calculate() {
   m_justdumped = false;
   m_rhocrud = 0.0;
   { static const bool coh(Settings::GetMainSettings()["CEEX"]["IFI"]
-                          .SetDefault(1).Get<int>() != 0);
+                          .SetDefault(true).Get<bool>());
     m_ifi_coherent = coh || m_order == 2; }
   m_inc00 = m_inc11 = m_inc01 = 0.;
   m_b1n = 0; m_b1min = m_b1max = m_b1sum = m_b1sq = 0.;  // beta_1 spread, per event
@@ -864,7 +864,8 @@ void Ceex_Base::Calculate() {
   m_spincache.resize(1 + 4*m_allphotons.size());
   m_spinvalid.assign(m_spincache.size(), 0);
   m_realphot.assign(m_allphotons.size(), Amplitude());
-  m_realphotM1.assign(RealVirtualMode() == 2 ? m_allphotons.size() : 0, Amplitude());
+  m_realphotM1.assign(RealVirtualMode() == ceexrv::averaged ? m_allphotons.size() : 0,
+                      Amplitude());
   /*
     Trace the beta_1 pieces on the event the CHECK_XS dump will write - the
     same gate the dump uses, evaluated before the partition loop so the loop
@@ -905,11 +906,11 @@ void Ceex_Base::Calculate() {
     if (bs) Beta1Scan(); }
   BuildComixBornAlignment();
   BuildComixPhotonRatios();
-  // CEEX: TCHANNEL_REDUCED_BORN (-1 auto, see Ceex_Base::RegisterDefaults)
-  { static const int rb(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                        ["TCHANNEL_REDUCED_BORN"].Get<int>());
+  // CEEX: TCHANNEL_REDUCED_BORN (tristate, see Ceex_Base::RegisterDefaults)
+  { static const tristate::code rb(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                                   ["TCHANNEL_REDUCED_BORN"].Get<tristate::code>());
     /*
-      Auto (-1) needs a single radiating stage as well as an exchange line.
+      auto needs a single radiating stage as well as an exchange line.
       ComixBeta1At subtracts ONE reduced Born, times the soft factors of all
       stages, while the partition sum puts a different reduced Born (at that
       partition's X) on each stage, so rho_1 = |M_1|^2 at one photon holds
@@ -924,7 +925,7 @@ void Ceex_Base::Calculate() {
     int nrad(0);
     for (size_t g(0); g < m_stagelegs.size(); ++g)
       if (!m_stagelegs[g].empty()) ++nrad;
-    m_redborn = rb > 0 || (rb < 0 && m_comixborn && nrad == 1
+    m_redborn = rb == tristate::on || (rb == tristate::automatic && m_comixborn && nrad == 1
                            && BornHasExchangeLine());
     // the reduced point is LegsAt's 2 -> 2 construction; with W stages the
     // partition Born stays the shifted physical-spinor one
@@ -980,7 +981,7 @@ void Ceex_Base::Calculate() {
       photons), so they are rebuilt here and the products above redone
       with them. No-op without W stages.
     */
-    if (WStagesActive() && m_weikonal != 0) {
+    if (WStagesActive() && m_weikonal == weikonal::partition) {
       RecomputeResonanceSfactors();
       sProd = Complex(1., 0.); crudeprod = 1.;
       for (size_t j(0); j < m_allphotons.size(); ++j) {
@@ -1062,8 +1063,8 @@ void Ceex_Base::Calculate() {
       Measured on the seed-11 n=2 point: rho_1 with the flux off agrees with
       KKMC's to 0.04%; with it on, A1 loses 0.26 A0 in every helicity.
     */
-    static const int pfmode(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                            ["NO_PSEUDOFLUX"].Get<int>());
+    static const pseudoflux::code pfmode(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                            ["NO_PSEUDOFLUX"].Get<pseudoflux::code>());
     /*
       The pseudo-flux, generalised: one factor (q_g + K_g)^2 / q_g^2 per
       final stage g, q_g the physical momentum of the stage's legs and K_g
@@ -1075,7 +1076,7 @@ void Ceex_Base::Calculate() {
       moved CEEX from -6.4% to +11.3% against Born+real.
     */
     m_pflux = 1.;
-    if (pfmode != 1)
+    if (pfmode != pseudoflux::neither)
       for (int g(0); g < m_nstages; ++g) {
         if (g == m_initstage || m_stagelegs[g].empty()) continue;
         // for a W decay stage q is the W's daughters: (P_W + K)^2/P_W^2
@@ -1083,7 +1084,7 @@ void Ceex_Base::Calculate() {
         const double q2(q.Abs2());
         if (q2 > 0.) m_pflux *= (q + K).Abs2()/q2;
       }
-    m_cfac = sProd * Complex(pfmode == 0 ? m_pflux : 1., 0.);   // rho_1 side
+    m_cfac = sProd * Complex(pfmode == pseudoflux::rho0_and_rho1 ? m_pflux : 1., 0.);   // rho_1 side
     MakeProp();
     // Electroweak form factors at THIS partition's scale, and the scattering
     // angle the WW/ZZ boxes depend on. No-op unless CEEX: WEAK is set.
@@ -1186,13 +1187,14 @@ void Ceex_Base::Calculate() {
   }
   /*
     CEEX: CRUDE_FROM_GENERATOR - the crude on the generator's own stages.
-    Mode 2 only prints it next to the per-partition one (the gate: the two
+    compare only prints it next to the per-partition one (the gate: the two
     must agree wherever CEEX's stages are the generator's dipoles).
   */
-  const int crudegen(m_crudegen >= 0 ? m_crudegen : (WStagesActive() ? 1 : 0));
-  if (crudegen != 0) {
+  const crudegen::code cg(m_crudegen != crudegen::automatic ? m_crudegen
+                          : (WStagesActive() ? crudegen::on : crudegen::off));
+  if (cg != crudegen::off) {
     const double rg(CrudeFromGenerator());
-    if (crudegen == 2) {
+    if (cg == crudegen::compare) {
       static long ncg(0);
       if (ncg < 5000) { ++ncg;
         std::cerr<<std::setprecision(10)<<"@@@ CRUDEGEN nphot="<<m_allphotons.size()

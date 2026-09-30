@@ -157,7 +157,7 @@ bool Ceex_Base::FetchComixReal()
                  <<(np+ng)<<" packed legs, got "<<sa.size()
                  <<". CEEX: COMIX_REAL disabled for this run."<<std::endl;
     }
-    m_comixreal = 0;
+    m_comixreal = false;
     return false;
   }
 
@@ -273,7 +273,7 @@ void Ceex_Base::ApplyComixReal()
     NLO_Base::MapMomenta already builds for YFS.NLO.
   */
   static const bool multi(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                          ["COMIX_REAL_MULTIPHOTON"].Get<int>() != 0);
+                          ["COMIX_REAL_MULTIPHOTON"].Get<bool>());
   if (m_allphotons.size() > 1 && !multi) {
     CountComixReal(m_allphotons.size(), false);
     // ApplyComixReal no longer substitutes anything (the one-photon
@@ -800,7 +800,7 @@ void Ceex_Base::DeriveComixMap()
     msg_Error()<<METHOD<<"(): Born calibration failed; the Comix real cannot"
                <<" be normalised. Set CEEX: COMIX_REAL_NORM and"
                <<" COMIX_REAL_FLIP by hand, or leave COMIX_REAL off.\n";
-    m_comixreal = 0;
+    m_comixreal = false;
     return;
   }
 
@@ -1033,10 +1033,10 @@ Ceex_Base::PropShifts Ceex_Base::StageShifts(int iphot) const
 */
 bool Ceex_Base::ExchangeLineShiftsOn() const
 {
-  static const int mode(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                        ["TCHANNEL_SHIFT"].Get<int>());
-  if (mode >= 0) return mode != 0;
-  return m_flavs.size() == 4;
+  static const tristate::code mode(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                                   ["TCHANNEL_SHIFT"].Get<tristate::code>());
+  if (mode == tristate::automatic) return m_flavs.size() == 4;
+  return mode == tristate::on;
 }
 
 void Ceex_Base::AddExchangeLineShifts(int iphot, PropShifts &sh) const
@@ -1386,12 +1386,12 @@ bool Ceex_Base::LegsAt(const Vec4D &X, const Vec4D &Y, Vec4D_Vector &pb) const
     e+e- -> gamma gamma, whose Born is 1/(1 - cos^2). An s-channel Born
     hardly sees the axis; a space-like exchange line does, and the crude
     the CEEX weight divides by is the generator's, so its axis is the one
-    to use. CEEX: REDUCED_AXIS: 0 keeps the boosted-beam axis.
+    to use. CEEX: REDUCED_AXIS: false keeps the boosted-beam axis.
   */
-  static const int axis(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                        ["REDUCED_AXIS"].SetDefault(1).Get<int>());
+  static const bool reducedaxis(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                                ["REDUCED_AXIS"].SetDefault(true).Get<bool>());
   Vec3D da(0., 0., 1.);
-  if (axis == 0) {
+  if (!reducedaxis) {
     Vec4D ra(m_pceex[0]);
     cmsX.Boost(ra);
     const double rap(Vec3D(ra).Abs());
@@ -1496,10 +1496,10 @@ bool Ceex_Base::PartitionLegs(int iphot, Vec4D_Vector &pb) const
   return LegsAt(X, Y, pb);
 }
 
-int Ceex_Base::TchannelMultiphotonMode() const
+tchmultiphoton::code Ceex_Base::TchannelMultiphotonMode() const
 {
-  static const int mode(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                        ["TCHANNEL_MULTIPHOTON"].Get<int>());
+  static const tchmultiphoton::code mode(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                                         ["TCHANNEL_MULTIPHOTON"].Get<tchmultiphoton::code>());
   return mode;
 }
 
@@ -1844,9 +1844,9 @@ bool Ceex_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
     two final-state photons at the Z pole: real/Born +2.26 against KKMC's
     -0.17.
   */
-  static const int legsmode(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                            ["BETA1_LEGS"].Get<int>());
-  const bool rebuild(legsmode != 0 || m_redborn);
+  static const beta1legs::code legsmode(ATOOLS::Settings::GetMainSettings()["CEEX"]
+                            ["BETA1_LEGS"].Get<beta1legs::code>());
+  const bool rebuild(legsmode == beta1legs::balanced || m_redborn);
   Vec4D_Vector pb;
   Vec4D dI;
   PropShifts shifts;
@@ -1963,7 +1963,7 @@ bool Ceex_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
   }
   double nsub(0.), nm1(0.), nv(0.);
   // TCHANNEL_MULTIPHOTON 2: this photon's term, for AddFactorisedRemainder
-  const bool keepterm(onept && TchannelMultiphotonMode() >= 2);
+  const bool keepterm(onept && TchannelMultiphotonMode() == tchmultiphoton::factorised);
   if (keepterm) m_b1terms.push_back(Amplitude());
   for (int f(0); f < nh; ++f) {
     const Complex sub(w * sj * m_partborn0.m_A[f]);
@@ -2111,7 +2111,7 @@ bool Ceex_Base::ComixBeta1At(const Vec4D &k, int hel,
     e+e- -> gamma gamma a CEEX column of 7e7 pb with that switch on.
   */
   { static const bool sprime(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                             ["BORN_AT_SPRIME"].Get<int>() != 0);
+                             ["BORN_AT_SPRIME"].Get<bool>());
     bool ok(false);
     if (sprime || m_redborn) {
       Vec4D_Vector pb;
@@ -2187,7 +2187,7 @@ void Ceex_Base::BuildComixPhotonRatios()
       the same order as beta_1 itself.
     */
     static const bool ceexargs(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                               ["COMIX_REAL_CEEX_ARGS"].Get<int>() != 0);
+                               ["COMIX_REAL_CEEX_ARGS"].Get<bool>());
     if (ceexargs) {
       bp.assign(m_pceex.begin(), m_pceex.begin()+4);
       kmap = k0;

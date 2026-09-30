@@ -120,7 +120,7 @@ NLO_Base::~NLO_Base() {
 #endif
   msg_Out()<<"Total soft RV skipped: "<<m_softRV<<std::endl;
   msg_Out()<<"Total unstable-ME RV skipped (RV_ME_MAX_RATIO): "<<m_rvUnstable<<std::endl;
-  if (RVMode() == 1 && m_realvirt) {
+  if (RVMode() == rvmode::remainder && m_realvirt) {
 #ifdef USING__MPI
     if (mpi->Size() > 1) {
       int rb[2] = {m_rvPoleFail, m_rvNoVirt};

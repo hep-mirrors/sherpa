@@ -39,9 +39,13 @@ FSR::FSR()
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   s["FSR_FCUT"].SetDefault(0);
   s["FSR_NBAR"].SetDefault(0);
-  s["MASSIVE_NBAR"].SetDefault(0);
-  s["FSR_EIK"].SetDefault(0);
-  s["FSR_CRU"].SetDefault(1);
+  s["MASSIVE_NBAR"].SetDefault(false);
+  // FSR_EIK: true takes f, fbar from the eikonal functions (Eikonal,
+  // EikonalInterferance) rather than the del1/del2 expressions
+  s["FSR_EIK"].SetDefault(false);
+  // FSR_CRU: true takes the crude B-tilde from BVR_cru (false: BVR_full,
+  // with the photon mass); t-channel dipoles use BVirtT either way
+  s["FSR_CRU"].SetDefault(true);
   s["FSR_NGAMMA"].SetDefault(-1);
   s["FSR_CUT"].SetDefault(1e-2*m_isrcut);
   m_fsrcut = s["FSR_CUT"].Get<double>();
@@ -49,8 +53,8 @@ FSR::FSR()
   m_fsrcutF = s["FSR_FCUT"].Get<double>();
   m_nbar = s["FSR_NBAR"].Get<double>();
   m_use_massive_nbar = s["MASSIVE_NBAR"].Get<bool>();
-  m_use_crude = s["FSR_CRU"].Get<int>();
-  m_eikonal_mode = s["FSR_EIK"].Get<int>();
+  m_use_crude = s["FSR_CRU"].Get<bool>();
+  m_eikonal_mode = s["FSR_EIK"].Get<bool>();
   m_fixed_ngamma = s["FSR_NGAMMA"].Get<int>();
   p_fsrFormFact = std::make_unique<YFS::YFS_Form_Factor>();
 }
@@ -436,7 +440,7 @@ bool FSR::F() {
     }
     m_del1.push_back(del1);
     m_del2.push_back(del2);
-    if (m_eikonal_mode == 1) {
+    if (m_eikonal_mode) {
       m_f    = Eikonal(m_photons[i]);
       m_fbar = EikonalInterferance(m_photons[i]);
       // m_fbar *= m_sprim/m_sQ;
@@ -539,14 +543,14 @@ bool FSR::YFS_FORM(){
   }
   m_volmc = m_gammapFF*log(1./m_fsrcut);
   // Reset before the branch. m_DelYFS and m_delvol are only assigned inside
-  // the m_hidephotons==1 arm, but m_YFS_IR below reads m_DelYFS
+  // the m_hidephotons arm, but m_YFS_IR below reads m_DelYFS
   // unconditionally, so with HIDE_PHOTONS != 1 it used to pick up whatever the
   // previous event left behind (or uninitialised memory on the first one).
   // Zero is the right value there: it reproduces KKMC's KeyPia == 0 branch,
   // which applies exp(YFS_IRfin) with no DelYFS at all (KKceex.cxx:294-298).
   m_DelYFS = 0.;
   m_delvol = 0.;
-   if(m_hidephotons==1){
+   if (m_hidephotons) {
     if(m_tchannel){
       m_btilStar = p_fsrFormFact->BVirtT(m_dipole[0],m_dipole[1],m_Emin*m_Emin);
       m_btil     = p_fsrFormFact->BVirtT(m_dipole[0],m_dipole[1],m_EminQ*m_EminQ);

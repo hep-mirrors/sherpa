@@ -50,7 +50,7 @@ double NLO_Base::CalculateVirtual() {
   p_dipoles->p_yfsFormFact->p_virt = p_virt->p_loop_me.get();
   CheckMassReg();
   /*
-    YFS: VIRTUAL_CANONICAL_FRAME (default 0): evaluate the Born's one-loop
+    YFS: VIRTUAL_CANONICAL_FRAME (default false): evaluate the Born's one-loop
     in the rest frame of the beams with the beams exactly on the z axis
     (CanonicalBeamFrame, which documents why). The event's Born point after
     ISR has two beams with the same tiny p_T, and there OpenLoops' 2 -> 2
@@ -59,7 +59,7 @@ double NLO_Base::CalculateVirtual() {
     helicity, whose helicity labels are the lab's.
   */
   static const bool vcanon(ATOOLS::Settings::GetMainSettings()["YFS"]
-                           ["VIRTUAL_CANONICAL_FRAME"].SetDefault(0).Get<int>() != 0);
+                           ["VIRTUAL_CANONICAL_FRAME"].SetDefault(false).Get<bool>());
   if (vcanon && !(m_useceex && m_ceexvirtsrc == ceexvirt::helicity))
     virt = p_virt->CalcInFrame(m_plab, CanonicalBeamFrame(m_plab), m_born);
   else
@@ -105,7 +105,7 @@ double NLO_Base::CalculateVirtual() {
                 << m_plab << std::endl;
   }
   if (m_check_poles == 1) {
-    if (m_virt_sub == 0)
+    if (!m_virt_sub)
       sub = p_dipoles->CalculateVirtualSub();
     double p1 = p_virt->p_loop_me->ME_E1() * p_virt->m_factor;
     double yfspole = p_dipoles->Get_E1();
@@ -228,7 +228,7 @@ double NLO_Base::CalculateVV() {
   double yfse1 = p_dipoles->Get_E1();
   double yfse2 = p_dipoles->GetVV_E2();
   if (m_check_poles == 1) {
-    if (m_virt_sub == 0)
+    if (!m_virt_sub)
       sub = p_dipoles->CalculateVirtualSub();
     const double p1 = p_vv->p_loop_me->ME_E1() * p_vv->m_factor;
     const double p2 =

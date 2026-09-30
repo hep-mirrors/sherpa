@@ -59,9 +59,9 @@ void YFS_Base::RegisterDefaults(){
   s["DEBUG_DIR_NLO"].SetDefault("YFS_NLO_Hist");
   s["TChannel-Cut"].SetDefault(0);
   s["COULOMB"].SetDefault(false);
-  s["HIDE_PHOTONS"].SetDefault(1);
+  s["HIDE_PHOTONS"].SetDefault(true);
   s["FULL_FORM"].SetDefault(1);
-  s["WW_FORM"].SetDefault(0);
+  s["WW_FORM"].SetDefault(false);
   // Which YFS scheme to use for a W+W- -> 4f final state.
   //   flat : exponentiate the four external fermions. Correct for photons
   //          softer than Gamma_W, where the W lives too briefly to be resolved.
@@ -73,12 +73,12 @@ void YFS_Base::RegisterDefaults(){
   // rather than letting them carry the invariant mass of their own decay
   // products. The leading-pole approximation strictly wants on shell; the
   // difference is an LPA ambiguity worth measuring rather than choosing.
-  s["WW_OnShell"].SetDefault(0);
+  s["WW_OnShell"].SetDefault(false);
   // Whether the pole expansion also drives photon emission, or only the form
   // factor. With it off the production-stage W pair does not radiate, so the
   // pole scheme changes the exponent alone and the two halves of the scheme
   // can be measured separately. Only read when WW_Scheme is pole.
-  s["WW_Pole_Emission"].SetDefault(1);
+  s["WW_Pole_Emission"].SetDefault(true);
   s["WW_BETAT"].SetDefault(0.382);
   s["CHECK_MASS_REG"].SetDefault(0);
   s["CHECK_POLES"].SetDefault(0);
@@ -97,42 +97,45 @@ void YFS_Base::RegisterDefaults(){
   s["RV_ME_MAX_RATIO"].SetDefault(0.);
   s["CHECK_REAL_REAL"].SetDefault(0);
   s["CHECK_VIRT_BORN"].SetDefault(1);
-  s["VIRTUAL_ONLY"].SetDefault(0);
-  s["REAL_ONLY"].SetDefault(0);
+  s["VIRTUAL_ONLY"].SetDefault(false);
+  s["REAL_ONLY"].SetDefault(false);
   // photon emission with alpha(0), the hard process in the model scheme
-  s["USE_MODEL_ALPHA"].SetDefault(0);
+  s["USE_MODEL_ALPHA"].SetDefault(false);
   s["KKMC_ANG"].SetDefault(0);
   s["WEIGHT_MODE"].SetDefault(wgt::full);
   s["HARD_MIN"].SetDefault(0.);
   s["PHOTON_MASS"].SetDefault(0.1);
-  s["CEEX"].SetDefault(0);
+  s["CEEX"].SetDefault(false);
   /*
-    Which O(alpha) correction the event carries as its NOMINAL weight.
-    -1 (default): follow CEEX - with CEEX on, ACRAIC (the amplitude-level CEEX
-    weight) is the nominal and YFS.NLO (squared level) becomes the named
-    column YFS.NLO_EW; with CEEX off, YFS.NLO as before. 1 / 0 force either.
+    Which O(alpha) correction the event carries as its NOMINAL weight
+    (tristate, or the old -1/0/1):
+      auto (-1, default): follow CEEX - with CEEX on, ACRAIC (the
+        amplitude-level CEEX weight) is the nominal and YFS.NLO (squared
+        level) becomes the named column YFS.NLO_EW; with CEEX off, YFS.NLO as
+        before.
+      on (1) / off (0): force ACRAIC / YFS.NLO.
     Every other named column keeps its absolute weight either way.
   */
-  s["CEEX_WEIGHT"].SetDefault(-1);
+  s["CEEX_WEIGHT"].SetDefault(tristate::automatic);
   /*
     Where CEEX's virtual comes from. The default reproduces what the code did
     implicitly - CEEX's own when no loop provider exists - but now says so, and
     refuses rather than proceeding when that choice cannot be right.
   */
   s["CEEX_Virtual"].SetDefault(ceexvirt::automatic);
-  s["Collinear_Real"].SetDefault(0);
+  s["Collinear_Real"].SetDefault(false);
   s["CLUSTERING_THRESHOLD"].SetDefault(10);
   // End-of-run counts of why CalculateFSR returned false or set a zero
   // weight, per dipole and failure kind (YFS_Handler::CountFSRFailure).
   s["FSR_FAILURE_STATS"].SetDefault(0);
   // Pole scheme: subtract the decay dipoles' virtual B from the loop
-  // (Define_Dipoles::DecayVirtualSubtraction). 0 (default) off, unvalidated.
-  s["WW_DECAY_VIRTUAL_SUB"].SetDefault(0);
+  // (Define_Dipoles::DecayVirtualSubtraction). false (default), unvalidated.
+  s["WW_DECAY_VIRTUAL_SUB"].SetDefault(false);
   s["TChannel"].SetDefault(0);
-  s["NLO_Weight_Breakdown"].SetDefault(0);
-  s["Ladder_Weights"].SetDefault(0);
+  s["NLO_Weight_Breakdown"].SetDefault(false);
+  s["Ladder_Weights"].SetDefault(false);
   s["Dump_Dipoles"].SetDefault(0);
-  s["CHECK_INVARIANTS"].SetDefault(0);
+  s["CHECK_INVARIANTS"].SetDefault(false);
   /*
     NLO diagnostics. Off by default, read through Settings rather than the
     environment for the same reason as the CEEX ones: a run has to be
@@ -140,34 +143,57 @@ void YFS_Base::RegisterDefaults(){
   */
   s["REAL_STAB"].SetDefault(0);        // @@@ RSTAB / @@@ MAPQ
   s["REAL_TRACE"].SetDefault(0.0);     // @@@ RTRACE, per-photon Born+real terms of heavy events
-  // FSR photons at n >= 2 (n = 1 is the event on every setting >= 1):
-  //   2 = the photon's own dipole recoils, the other resonant pairs keep their
-  //       pre-emission momenta (default since 2026-09-25, see
-  //       NLO_Base::MapMomentaFSRDipole for the four-fermion numbers);
-  //   1 = Q fixed, ALL final legs rescaled together in their rest frame
-  //       (identical to 2 for a single resonant pair);
-  //   0 = rest-frame map (legacy, puts sqrt(s_j) above sqrt(s)).
-  s["REAL_FSR_MAP"].SetDefault(2);
-  s["REAL_MAP"].SetDefault(2);         // ISR photons at n>=2: 2 = scaled (KKMC convention), 3 = scaled + (final+k)^2 kept, 1 = beam-axis reduction, 0 = rest-frame (legacy)
+  /*
+    REAL_FSR_MAP, the (n+1)-body point of a final-state photon at n >= 2
+    (n = 1 is the event on every setting but rest_frame); name or old integer:
+      dipole (2, default since 2026-09-25): the photon's own dipole recoils,
+        the other resonant pairs keep their pre-emission momenta (see
+        NLO_Base::MapMomentaFSRDipole for the four-fermion numbers); falls
+        back to rescale_all where the per-dipole construction does not apply;
+      rescale_all (1): Q fixed, ALL final legs rescaled together in their
+        rest frame from the post-emission legs (identical to dipole for a
+        single resonant pair). The old value 4 is read as this: the code has
+        not distinguished the two since dipole became the default;
+      pre_emission (3): rescale_all from the PRE-emission legs, the
+        single-emission point (NLO_Base::MapMomentaFSR);
+      rest_frame (0): the rest-frame map (legacy, puts sqrt(s_j) above
+        sqrt(s)).
+  */
+  s["REAL_FSR_MAP"].SetDefault(realfsrmap::dipole);
+  /*
+    REAL_MAP, the (n+1)-body point of an initial-state photon at n >= 2:
+      scaled (2, default): scaled reduction (KKMC convention);
+      invariant (3): scaled, with (final + k)^2 kept;
+      beam_axis (1): beam-axis reduction;
+      rest_frame (0): rest-frame map (legacy).
+  */
+  s["REAL_MAP"].SetDefault(realmap::scaled);
   s["PHOTON_DUMP"].SetDefault(0);      // @@@ PHC, per-photon contributions
   s["BETA_RECURSION"].SetDefault(0);   // @@@ BETA2, hand vs recursive beta_2
   s["COMIX_AMPS"].SetDefault(0);       // @@@ CAMP, Comix helicity amplitudes
   s["ULP_CHECK"].SetDefault(0);        // last-digit sensitivity of the real
   s["ROT_CHECK"].SetDefault(0);        // rotation invariance as an error bar
   s["SOFT_SCAN"].SetDefault(0.0);      // rel. deviation that triggers SoftScan
-  s["No_Born"].SetDefault(0);
-  s["No_Sub"].SetDefault(0);
+  s["No_Born"].SetDefault(false);
+  s["No_Sub"].SetDefault(false);
   s["Sub_Mode"].SetDefault(submode::global);
-  s["No_Flux"].SetDefault(0);
-  s["Flux_Mode"].SetDefault(1);
-  s["IFI_Sub"].SetDefault(1);
+  s["No_Flux"].SetDefault(false);
+  /*
+    Flux_Mode, the initial-state flux the real (and RV, RR) carries:
+      mapped (1, default): the NLO dipoles' flux at the mapped photon;
+      event (0): the generation dipoles' flux at the event's photon;
+      average (2): the mean of the two (single real and RV; the double real
+        treats it as event).
+  */
+  s["Flux_Mode"].SetDefault(fluxmode::mapped);
+  s["IFI_Sub"].SetDefault(true);
   // Emission-side initial-final interference. Off by default: with it off the
   // IF form factor holds the whole soft integral (omega = sqrt(s)/2) and is
   // cutoff-independent, which is the safe inclusive approximation. With it on,
   // Define_Dipoles::RealIFWeight() reweights every generated photon by the IF
   // radiation function and the form factor's cutoff drops to IFI_Omega, so the
   // two must be switched together - see Define_Dipoles::IFIOmega().
-  s["IFI_Real"].SetDefault(1);
+  s["IFI_Real"].SetDefault(true);
   // Soft cutoff shared by the IF form factor and the photon reweighting, in
   // GeV. Only read when IFI_Real is on.
   //
@@ -200,13 +226,13 @@ void YFS_Base::RegisterDefaults(){
   // RealIFWeight cancels against beta_1 exactly, so clamping is not a safety
   // net - it injects a residue exactly where it fires. Only for bisecting.
   s["IFI_RClip"].SetDefault(0.);
-  s["Massless_Sub"].SetDefault(0);
+  s["Massless_Sub"].SetDefault(false);
   s["Check_Real_Sub"].SetDefault(0);
   s["Check_RR_Sub"].SetDefault(0);
-  s["Integrate_NLO"].SetDefault(1);
-  s["Collinear_Virtual"].SetDefault(0);
-  s["Virtual_Sub"].SetDefault(1);
-  s["Dim_Reg"].SetDefault(1);
+  s["Integrate_NLO"].SetDefault(true);
+  s["Collinear_Virtual"].SetDefault(false);
+  s["Virtual_Sub"].SetDefault(true);
+  s["Dim_Reg"].SetDefault(true);
   s["IR_SCALE"].SetDefault(100);
   s["NLO_CUTS"].SetDefault(false);
   s["Fixed_Order"].SetDefault(fixed_order::full);
@@ -219,8 +245,9 @@ void YFS_Base::RegisterDefaults(){
   // r/rho_1(CEEX) spread over 0.005-0.4 on single-FSR-photon events where the
   // event-record photons give 0.01613 on every event. The photons hidden as
   // unresolved are below the resolution threshold and carry no beta_1 worth
-  // the frame error; set 0 to correct them anyway (then REAL_FSR_MAP: 0).
-  s["NLO_FSR_FROM_EVENT"].SetDefault(1);
+  // the frame error; set false to correct them anyway (then REAL_FSR_MAP:
+  // rest_frame).
+  s["NLO_FSR_FROM_EVENT"].SetDefault(true);
   s["MIN_PHOTON"].SetDefault<int>(-1);
   s["FB_Analysis"].SetDefault(false);
   s["FB_Analysis_KF"].SetDefault<int>(0);
@@ -234,7 +261,7 @@ void YFS_Base::RegisterSettings(){
   // YFS_Handler::SetFlavours when no final-state particle is charged. An
   // explicit MODE always wins, including MODE: off.
   if (!s["MODE"].IsSetExplicitly() && m_mode == yfsmode::off &&
-      s["CEEX"].Get<int>() != 0) { m_mode = yfsmode::isrfsr; m_mode_from_ceex = true; }
+      s["CEEX"].Get<bool>()) { m_mode = yfsmode::isrfsr; m_mode_from_ceex = true; }
   m_isrcut   = s["IR_CUTOFF"].Get<double>();
   m_isrcut = m_isrcut/sqrt(m_s); // dimensionless units
   m_vmax = s["VMAX"].Get<double>();
@@ -248,12 +275,12 @@ void YFS_Base::RegisterSettings(){
   m_isr_debug = s["ISR_DEBUG"].Get<bool>();
   m_deltacut = s["DELTA"].Get<double>()*m_isrcut;
   m_coulomb = s["COULOMB"].Get<bool>();
-  m_hidephotons=s["HIDE_PHOTONS"].Get<int>();
+  m_hidephotons = s["HIDE_PHOTONS"].Get<bool>();
   m_fullform = s["FULL_FORM"].Get<int>();
-  m_formWW = s["WW_FORM"].Get<int>();
+  m_formWW = s["WW_FORM"].Get<bool>();
   m_wwscheme = s["WW_Scheme"].Get<wwscheme::code>();
-  m_wwonshell = s["WW_OnShell"].Get<int>();
-  m_wwpoleemission = s["WW_Pole_Emission"].Get<int>();
+  m_wwonshell = s["WW_OnShell"].Get<bool>();
+  m_wwpoleemission = s["WW_Pole_Emission"].Get<bool>();
   m_betatWW = s["WW_BETAT"].Get<double>();
   m_check_mass_reg = s["CHECK_MASS_REG"].Get<int>();
   m_check_poles = s["CHECK_POLES"].Get<int>();
@@ -286,25 +313,26 @@ void YFS_Base::RegisterSettings(){
   m_fixed_weight = s["WEIGHT_MODE"].Get<wgt::code>();
   m_hardmin = s["HARD_MIN"].Get<double>();
   m_photonMass = s["PHOTON_MASS"].Get<double>();
-  m_useceex = s["CEEX"].Get<int>();
-  m_ceex_weight = s["CEEX_WEIGHT"].Get<int>();
-  if (m_ceex_weight < 0) m_ceex_weight = (m_useceex != 0);
+  m_useceex = s["CEEX"].Get<bool>();
+  const tristate::code ceexweight(s["CEEX_WEIGHT"].Get<tristate::code>());
+  m_ceex_weight = (ceexweight == tristate::automatic ? m_useceex
+                                                     : ceexweight == tristate::on);
   m_ceexvirtsrc = s["CEEX_Virtual"].Get<ceexvirt::code>();
   m_coll_real = s["Collinear_Real"].Get<bool>();
   m_resonace_max = s["CLUSTERING_THRESHOLD"].Get<double>();
-  m_nlo_weight_breakdown = s["NLO_Weight_Breakdown"].Get<int>();
-  m_ladder_weights = s["Ladder_Weights"].Get<int>();
+  m_nlo_weight_breakdown = s["NLO_Weight_Breakdown"].Get<bool>();
+  m_ladder_weights = s["Ladder_Weights"].Get<bool>();
   m_dump_dipoles = s["Dump_Dipoles"].Get<int>();
   m_check_invariants = s["CHECK_INVARIANTS"].Get<bool>();
-  m_no_born_setting = s["No_Born"].Get<int>();
+  m_no_born_setting = s["No_Born"].Get<bool>();
   m_no_born = m_no_born_setting;
-  m_no_subtraction = s["No_Sub"].Get<int>();
+  m_no_subtraction = s["No_Sub"].Get<bool>();
   m_submode = s["Sub_Mode"].Get<submode::code>();
   m_tchannel = s["TChannel"].Get<int>();
-  m_noflux = s["No_Flux"].Get<int>();
-  m_flux_mode=s["Flux_Mode"].Get<int>();
-  m_ifisub = s["IFI_Sub"].Get<int>();
-  m_ifireal = s["IFI_Real"].Get<int>();
+  m_noflux = s["No_Flux"].Get<bool>();
+  m_flux_mode = s["Flux_Mode"].Get<fluxmode::code>();
+  m_ifisub = s["IFI_Sub"].Get<bool>();
+  m_ifireal = s["IFI_Real"].Get<bool>();
   m_ifiomega = s["IFI_Omega"].Get<double>();
   // Default to FSR::Initialize()'s m_Emin, the scale the Piatek term m_DelYFS
   // translates the FSR bookkeeping onto. Kept as the same expression, not a
@@ -314,22 +342,22 @@ void YFS_Base::RegisterSettings(){
   if (m_ifireal && m_ifiomega <= 0.) m_ifiomega = 0.5*sqrt(m_s)*m_isrcut;
   m_ifi_rclip = s["IFI_RClip"].Get<double>();
   m_ifi_clipped = 0;
-  m_massless_sub = s["Massless_Sub"].Get<int>();
+  m_massless_sub = s["Massless_Sub"].Get<bool>();
   // 0 = off, 1 = one-shot energy-scan sub check (CheckReal[Real]Sub, exits),
   // 2 = accumulating angle/energy scatter (RecordSubScatter, no exit)
   m_check_real_sub = s["Check_Real_Sub"].Get<int>();
   m_check_rr_sub = s["Check_RR_Sub"].Get<int>();
   m_photon_split = s["PHOTON_SPLITTER_MODE"].ResetDefault().SetDefault(0).Get<bool>();
   m_int_nlo = s["Integrate_NLO"].Get<bool>();
-  m_eex_virt = s["Collinear_Virtual"].Get<int>();
-  m_virt_sub = s["Virtual_Sub"].Get<int>();
+  m_eex_virt = s["Collinear_Virtual"].Get<bool>();
+  m_virt_sub = s["Virtual_Sub"].Get<bool>();
   m_dim_reg = s["Dim_Reg"].Get<bool>();
   m_irscale = s["IR_SCALE"].Get<double>();
   m_nlocuts = s["NLO_CUTS"].Get<bool>();
   m_fixedOrder = s["Fixed_Order"].Get<fixed_order::code>();
   m_skipNegWeights = s["SKIP_NEG_WEIGHTS"].Get<bool>();
   m_nlo_fsr_photons = s["NLO_FSR_PHOTONS"].Get<bool>();
-  m_nlo_fsr_from_event = s["NLO_FSR_FROM_EVENT"].Get<int>();
+  m_nlo_fsr_from_event = s["NLO_FSR_FROM_EVENT"].Get<bool>();
   m_mingammaN = s["MIN_PHOTON"].Get<int>();
   m_fb_analysis = s["FB_Analysis"].Get<bool>();
   m_fb_kf = s["FB_Analysis_KF"].Get<int>();

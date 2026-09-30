@@ -63,18 +63,18 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
   RegisterDefaults();
   Scoped_Settings s{ Settings::GetMainSettings()["CEEX"] };
   Settings& ss = Settings::GetMainSettings();
-  m_onlyz = s["ONLYZ"].Get<int>();
-  m_onlyg = s["ONLYG"].Get<int>();
+  m_onlyz = s["ONLYZ"].Get<bool>();
+  m_onlyg = s["ONLYG"].Get<bool>();
   m_checkxs = s["CHECK_XS"].Get<int>();
-  m_comixreal = s["COMIX_REAL"].Get<int>();
+  m_comixreal = s["COMIX_REAL"].Get<bool>();
   m_comixflip = s["COMIX_REAL_FLIP"].Get<int>();
   m_comixnorm = s["COMIX_REAL_NORM"].Get<double>();
   m_comixphoflip = s["COMIX_REAL_PHOTON_FLIP"].Get<int>();
-  m_perphoton    = s["COMIX_REAL_PER_PHOTON"].Get<int>();
-  m_comixborn    = s["COMIX_BORN"].Get<int>();
-  m_wstages      = s["W_STAGES"].Get<int>();
-  m_weikonal     = s["W_EIKONAL"].Get<int>();
-  m_crudegen     = s["CRUDE_FROM_GENERATOR"].Get<int>();
+  m_perphoton    = s["COMIX_REAL_PER_PHOTON"].Get<bool>();
+  m_comixborn    = s["COMIX_BORN"].Get<bool>();
+  m_wstages      = s["W_STAGES"].Get<tristate::code>();
+  m_weikonal     = s["W_EIKONAL"].Get<weikonal::code>();
+  m_crudegen     = s["CRUDE_FROM_GENERATOR"].Get<crudegen::code>();
   m_vpon         = s["VIRT_PARTITION_CHECK"].Get<int>() != 0;
   m_order        = s["ORDER"].Get<int>();
   if (m_order != 1 && m_order != 2) {
@@ -147,7 +147,7 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
     been shown to reduce to the structure CEEX hand-codes", not "the number is
     meaningless".
   */
-  static const int devmultileg(s["DEV_MULTILEG"].SetDefault(0).Get<int>());
+  static const bool devmultileg(s["DEV_MULTILEG"].SetDefault(false).Get<bool>());
   /*
     The 2 -> 2 special path (hand-coded Born, its Comix alignment and map,
     CEEX's own virtual, the fermion-pair m_if1/m_if2) is a description of
@@ -241,7 +241,7 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
 
   m_sin2tw = MODEL::s_model->ComplexConstant("csin2_thetaW");
   if (Settings::GetMainSettings()["CEEX"]["REAL_SIN2THETAW"]
-      .SetDefault(0).Get<int>() != 0)
+      .SetDefault(false).Get<bool>())
     m_sin2tw = Complex(m_sin2tw.real(), 0.);
   m_sW = m_sin2tw;
   m_e = sqrt(4.*M_PI * m_alpha);
@@ -262,7 +262,7 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
   m_vf       = (m_af - 4.*m_qf * m_sin2tw) / m_norm;
   m_ae /= m_norm;
   m_af /= m_norm;
-  m_weak = s["WEAK"].Get<int>();
+  m_weak = s["WEAK"].Get<bool>();
   m_mass_I = flavs[0].Mass();
   m_mass_F = flavs[m_if1].Mass();
   // full EW couplings
@@ -287,13 +287,13 @@ Ceex_Base::Ceex_Base(const Flavour_Vector &flavs)
 void Ceex_Base::RegisterDefaults()
 {
   Scoped_Settings s{ Settings::GetMainSettings()["CEEX"] };
-  s["ONLYZ"].SetDefault(0);
-  s["ONLYG"].SetDefault(0);
+  s["ONLYZ"].SetDefault(false);
+  s["ONLYG"].SetDefault(false);
   s["CHECK_XS"].SetDefault(0);
-  // 0: tree-level couplings in CEEX's hand-coded Born; the weak virtual
+  // false: tree-level couplings in CEEX's hand-coded Born; the weak virtual
   // comes from the loop provider (CEEX_Virtual: auto/external)
-  s["WEAK"].SetDefault(0);
-  s["COMIX_REAL"].SetDefault(1);
+  s["WEAK"].SetDefault(false);
+  s["COMIX_REAL"].SetDefault(true);
   /*
     Both of these used to be fitted numbers (26 and 0.5). They are now DERIVED
     at the Born, by Ceex_Base::CalibrateComixMap, which is why the defaults
@@ -316,14 +316,14 @@ void Ceex_Base::RegisterDefaults()
     rather than an extension of this one. Kept reachable because the machinery
     is in place and the comparison is worth being able to make.
   */
-  s["COMIX_REAL_MULTIPHOTON"].SetDefault(0);
+  s["COMIX_REAL_MULTIPHOTON"].SetDefault(false);
   /*
     Take the one-photon real from Comix once per PHOTON, at every
     multiplicity, instead of once per event with every photon attached. This
     is the structure CEEX actually has - beta_1 is a sum over photons - and it
     needs only the one-photon process, which always exists.
   */
-  s["COMIX_REAL_PER_PHOTON"].SetDefault(0);
+  s["COMIX_REAL_PER_PHOTON"].SetDefault(false);
   s["BETA1_PARTITION_CHECK"].SetDefault(0);  // @@@ B1PART
   s["BETA1_CLOSURE"].SetDefault(0);          // @@@ B1CLOSE
   s["CLOSURE_1PHOT"].SetDefault(0);          // @@@ CLOS1
@@ -342,29 +342,31 @@ void Ceex_Base::RegisterDefaults()
   */
   s["SOFT_PARTITION_CUT"].SetDefault(1e-3);
   /*
-    MOMENTUM_REPAIR (1): project the final legs and all photons onto exact
+    MOMENTUM_REPAIR (true): project the final legs and all photons onto exact
     momentum conservation against the beams and onto their mass shells before
-    anything is evaluated on them; 0 = use the event's momenta as handed
+    anything is evaluated on them; false = use the event's momenta as handed
     over. See Ceex_Base::RepairMomentumBalance.
   */
-  s["MOMENTUM_REPAIR"].SetDefault(1);
+  s["MOMENTUM_REPAIR"].SetDefault(true);
   /*
-    Legs for beta_1's M_1: 0 = the physical legs with the s-channel
-    propagator momenta shifted by the other photons per side (KKMC's
-    construction, default); 1 = a rebuilt balanced point (PartitionLegs).
+    Legs for beta_1's M_1 (name or old integer):
+      physical (0, default): the physical legs with the s-channel propagator
+        momenta shifted by the other photons per side (KKMC's construction);
+      balanced (1): a rebuilt balanced point (PartitionLegs).
     See ComixInfraredSubtracted_1_0.
   */
-  s["BETA1_LEGS"].SetDefault(0);
+  s["BETA1_LEGS"].SetDefault(beta1legs::physical);
   /*
     Space-like exchange lines (Bhabha's t-channel boson, the t/u-channel
     electrons of e+e- -> gamma gamma, a t-channel neutrino: any current with
     one initial leg and part of the final state, detected by leg content in
     COMIX::Amplitude::SetPropShifts) of the partition Born and of M_1 at the
     partition's REDUCED invariant rather than at the unreduced one Comix's
-    root-0 recursion leaves them at. 1 on, 0 off, -1 (default) on for 2 -> 2
-    only (ExchangeLineShiftsOn). See Ceex_Base::AddExchangeLineShifts.
+    root-0 recursion leaves them at. on (1), off (0), auto (-1, default): on
+    for 2 -> 2 only (ExchangeLineShiftsOn). See
+    Ceex_Base::AddExchangeLineShifts.
   */
-  s["TCHANNEL_SHIFT"].SetDefault(-1);
+  s["TCHANNEL_SHIFT"].SetDefault(tristate::automatic);
   /*
     W stages for e+e- -> W+W- -> 4f (NOTES-w-stages-2026-09-27.md). The
     charged final legs of a WW-type final state are split into two DECAY
@@ -378,39 +380,44 @@ void Ceex_Base::RegisterDefaults()
     (SetPropShifts's "partly contained, root side" rule), which dragged an
     off-shell W onto its pole: cc_em_mup at 161 GeV, CEEX factors up to
     4777 with TCHANNEL_SHIFT off, rho_0/rho_crude 267 against the 2^n bound.
-      0: off, every process as before, bit for bit.
-      1 (default since 2026-09-28): on whenever DipoleSet::FindWW recognises
+    Tristate, name or old integer:
+      off (0): every process as before, bit for bit.
+      on (1, default since 2026-09-28): whenever DipoleSet::FindWW recognises
         the final state; a process without W's is unchanged bit for bit.
         cc_mum_taup CEEX/NLO 0.989 -> 1.000 +- 0.02, cc_em_mup 0.93 -> 0.975
         +- 0.04 (with CRUDE_FROM_GENERATOR), NOTES-w-stages-2026-09-27.md 8.2.
-     -1: on when in addition both W's are within YFS: CLUSTERING_THRESHOLD
-         widths of the pole (the pole scheme's own window).
+      auto (-1): on when in addition both W's are within YFS:
+        CLUSTERING_THRESHOLD widths of the pole (the pole scheme's own
+        window).
     Needs the handler to hand over the W groups (YFS_Handler::CEEXStageGroups).
   */
-  s["W_STAGES"].SetDefault(1);
+  s["W_STAGES"].SetDefault(tristate::on);
   /*
     The W momentum a decay- or production-stage eikonal uses (see
-    StageLegMomentum). 0: the W at its daughters, a per-event quantity, so
+    StageLegMomentum; name or old integer). daughters (0, default): the W at
+    its daughters, a per-event quantity, so
     the soft-factor table is computed once; the soft limit of Comix's M_1
     is then missed by O(K_decay/M_W) on the W term when other hard photons
-    sit on that decay stage. 1: the pole momentum follows the partition
+    sit on that decay stage. partition (1): the pole momentum follows the
+    partition
     (daughters + that partition's other decay photons), which is what
     Comix's shifted propagator carries; the resonance stages' soft factors
     are recomputed per partition. Cost negligible against the Comix calls.
   */
-  s["W_EIKONAL"].SetDefault(0);
+  s["W_EIKONAL"].SetDefault(weikonal::daughters);
   /*
     The crude the CEEX weight divides by, built on the GENERATOR's stages
     (the flat radiating-dipole groups) rather than on CEEX's own; see
     Ceex_Base::CrudeFromGenerator. With CEEX's stages equal to the
     generator's dipoles - every process without W stages - it is the same
     number as the per-partition crude, which is the gate it has to pass
-    (mode 2 prints both per event as @@@ CRUDEGEN). 0 off, 1 use it,
-    2 compare only, -1 (default) use it exactly when W stages are active -
-    the case where CEEX's stages and the generator's dipoles differ - and
-    leave every other process untouched.
+    (compare prints both per event as @@@ CRUDEGEN). Name or old integer:
+    off (0); on (1), use it; compare (2), compare only; auto (-1, default),
+    use it exactly when W stages are active - the case where CEEX's stages
+    and the generator's dipoles differ - and leave every other process
+    untouched.
   */
-  s["CRUDE_FROM_GENERATOR"].SetDefault(-1);
+  s["CRUDE_FROM_GENERATOR"].SetDefault(crudegen::automatic);
   /*
     beta_0(X_wp) on the REAL phase-space point whose invariant is X_wp^2 -
     beams at X_wp, radiating pair at X_wp minus the spectators, per partition
@@ -419,23 +426,24 @@ void Ceex_Base::RegisterDefaults()
     InfraredSubtractedME_0_0 for the two forms and what the earlier,
     single-point version of this switch got wrong.
   */
-  s["BORN_AT_SPRIME"].SetDefault(0);
+  s["BORN_AT_SPRIME"].SetDefault(false);
   /*
     Born processes with a space-like exchange line (a current holding one
     initial leg and part of the final state: the t/u-channel electrons of
     e+e- -> gamma gamma, Bhabha's t-channel boson, a t-channel neutrino).
     For those the physical-spinor partition Born with only its poles moved
     is not the reduced-point Born times a flux, as it is for an s-channel
-    Born: the numerators do not scale with the poles. So
-      1: beta_0 is the Born at the partition's REAL reduced point
+    Born: the numerators do not scale with the poles. Tristate, name or old
+    integer:
+      on (1): beta_0 is the Born at the partition's REAL reduced point
          (the BORN_AT_SPRIME form, BornLegsAt(X_wp)), the crude that Born
          times s/X_wp^2 (the generator's density), and every photon's M_1
          in beta_1 is evaluated on the balanced point with the other
          photons taken out of the beams (the BETA1_LEGS: 1 form,
          PartitionLegs) - genuine amplitudes throughout, so the soft
          cancellations between beta_0 and beta_1 hold between like objects.
-      0: the physical-spinor forms, as for s-channel Borns.
-     -1 (default): 1 exactly when the Born has such a line, detected once
+      off (0): the physical-spinor forms, as for s-channel Borns.
+      auto (-1, default): on exactly when the Born has such a line, detected once
          per Born process (Ceex_Base::BornHasExchangeLine), AND there is a
          single radiating stage (no charged final state, e.g. gamma gamma).
          Every s-channel process keeps the old numbers bit for bit. With a
@@ -448,19 +456,20 @@ void Ceex_Base::RegisterDefaults()
     crude; with 1 the one-photon factor equals the exact one to 1e-4 at every
     x and the column is 158.4 +- 1.1% pb, largest single-event share 0.6%.
   */
-  s["TCHANNEL_REDUCED_BORN"].SetDefault(-1);
+  s["TCHANNEL_REDUCED_BORN"].SetDefault(tristate::automatic);
   /*
     CEEX: TCHANNEL_MULTIPHOTON - beta_1 beyond one photon when beta_0 is the
     reduced t-channel Born (TCHANNEL_REDUCED_BORN active: gamma gamma).
     Nothing changes at one photon, nor for any process without the reduced
-    Born (every s-channel Born, Bhabha).
-      0 (default): HEAD - M_1 on PartitionLegs, subtraction with the
-        eikonal on those legs.
-      1: M_1 at the photon's one-photon point (OnePhotonScaledLegs, YFS.NLO's
+    Born (every s-channel Born, Bhabha). Name or old integer:
+      partition_legs (0, default): M_1 on PartitionLegs, subtraction with
+        the eikonal on those legs.
+      one_photon_point (1): M_1 at the photon's one-photon point (OnePhotonScaledLegs, YFS.NLO's
         REAL_MAP 2 point carried into the generator's frame), as the ratio
         M_1/s(point) times the physical eikonal, so the subtraction is
         exactly the Born term's s_phys B_0.
-      2: 1, and the partition's beta_1 terms combined in factorised form
+      factorised (2): one_photon_point, and the partition's beta_1 terms
+        combined in factorised form
         along the Born helicity vector (AddFactorisedRemainder): identical
         at O(alpha^1), with the factorised beta_2 and higher added.
     Why (e+e- -> gamma gamma, Z pole, 2026-09-28): with a hard wide-angle ISR
@@ -471,18 +480,19 @@ void Ceex_Base::RegisterDefaults()
     |A_0| where the exact ME is 1e-4 of it: ACRAIC 1.65 x YFS.NLO in the
     photon-tagged region. NOTES-aa-multiisr-2026-09-28.md.
   */
-  s["TCHANNEL_MULTIPHOTON"].SetDefault(0);
+  s["TCHANNEL_MULTIPHOTON"].SetDefault(tchmultiphoton::partition_legs);
   s["BETA1_BORNLEGS"].SetDefault(1);         // 1 = reduced, 0 = physical
   /*
-    The pseudo-flux svarY/svarQ on beta_0: 0 = in rho_0 and rho_1 (KKMC's
-    beta_0 without KKMC's compensation), 1 = in neither, 2 = in rho_0 only.
+    The pseudo-flux svarY/svarQ on beta_0 (name or old integer):
+    rho0_and_rho1 (0) = in rho_0 and rho_1 (KKMC's beta_0 without KKMC's
+    compensation), neither (1) = in neither, rho0_only (2) = in rho_0 only.
     KKMC's O(alpha^1) amplitude is flux-free (its (1-CKine) terms cancel the
     flux per final-state photon up to 2k_i.k_j/Q^2) while its RhoExp0 keeps
-    it, so 2 is KKMC's own rho_1/rho_0: -0.16525 against KKMC's -0.16557 on
-    the seed-11 n=2 point, and the Z-pole cross section within 1.1% of
-    YFS.NLO (0: -2.8%, 1: +24%). Default 2.
+    it, so rho0_only is KKMC's own rho_1/rho_0: -0.16525 against KKMC's
+    -0.16557 on the seed-11 n=2 point, and the Z-pole cross section within
+    1.1% of YFS.NLO (rho0_and_rho1: -2.8%, neither: +24%). Default rho0_only.
   */
-  s["NO_PSEUDOFLUX"].SetDefault(2);
+  s["NO_PSEUDOFLUX"].SetDefault(pseudoflux::rho0_only);
   s["SOFT_NORM_CHECK"].SetDefault(0);        // @@@ SOFTNORM
   s["SOFT_LIMIT_TEST"].SetDefault(0);        // @@@ SOFTLIM
   s["BETA1_COMPARE"].SetDefault(0);          // @@@ B1CMP
@@ -504,16 +514,16 @@ void Ceex_Base::RegisterDefaults()
     ON by default: the Comix Born is the DERIVED object and the hand-coded
     2 -> 2 spinor algebra is the fallback. At 2 -> 2 it reproduces the
     hand-coded CEEX weight to round-off; past 2 -> 2 the hand-coded Born is not
-    the right amplitude at all. COMIX_BORN: 0 selects the hand-coded one.
+    the right amplitude at all. COMIX_BORN: false selects the hand-coded one.
   */
-  s["COMIX_BORN"].SetDefault(1);
+  s["COMIX_BORN"].SetDefault(true);
   // @@@ BORNALIGN: is the Comix -> CEEX Born alignment scale independent?
   s["BORN_ALIGN_CHECK"].SetDefault(0);
   // @@@ BETA1: the Comix hard remainder against the hand-coded one, vs E_gamma
   s["BETA1_CHECK"].SetDefault(0);
   // Hand Comix CEEX's own (non-conserving) beta_1 arguments rather than a
   // mapped conserving configuration. Needs COMIX: MOMENTUM_PROJECTION: 0.
-  s["COMIX_REAL_CEEX_ARGS"].SetDefault(0);
+  s["COMIX_REAL_CEEX_ARGS"].SetDefault(false);
   // Write the |beta_1|/beta_0 vs E_gamma scan (the real-validation figure).
   s["BETA1_SCAN"].SetDefault(0);
   // @@@ VIRTPART: does the virtual factor V(h) depend on the partition?
@@ -553,37 +563,41 @@ void Ceex_Base::RegisterDefaults()
   */
   s["BETA2_XCUT"].SetDefault(0.05);
   /*
-    External virtual at ORDER 2: 0 (default) keeps the O(alpha^1) composition
-    sum_h |A_2 + (v/2) A_0|^2; 1 puts (1+v/2) on beta_0 AND beta_1,
+    External virtual at ORDER 2: false (default) keeps the O(alpha^1)
+    composition sum_h |A_2 + (v/2) A_0|^2; true puts (1+v/2) on beta_0 AND
+    beta_1,
     sum_h |A_2 + (v/2) A_1|^2, which is KKMC's O(alpha^2) structure
     ((1+d_I)(1+d_F) on r in HiniPlus/HfinPlus). The difference is the
     O(alpha^2) real-virtual v x beta_1 interference; see
     NOTES-ceex-order2-2026-09-26.md. Ignored at ORDER 1 (CEEX: REAL_VIRTUAL
-    1 is the same composition at ORDER 1).
+    factorisable is the same composition at ORDER 1).
   */
-  s["ORDER2_VIRTUAL_ON_BETA1"].SetDefault(0);
+  s["ORDER2_VIRTUAL_ON_BETA1"].SetDefault(false);
   /*
-    CEEX: REAL_VIRTUAL (default 0) - the O(alpha^2) real-virtual on the
+    CEEX: REAL_VIRTUAL (default off; name or old integer) - the O(alpha^2)
+    real-virtual on the
     one-photon residuals, so that ACRAIC carries what YFS.NLO carries with
-    YFS: VIRTUAL_COMBINE 1 and YFS: RV_MODE 1 (NOTES-yfsnlo-realvirtual-
-    2026-09-28.md, ACRAIC section). External/auto virtual only.
-    0: unchanged, sum_h |A_1 + (v/2) A_0|^2 (at ORDER 2 as
+    YFS: VIRTUAL_COMBINE product and YFS: RV_MODE remainder
+    (NOTES-yfsnlo-realvirtual-2026-09-28.md, ACRAIC section). External/auto
+    virtual only.
+    off (0): unchanged, sum_h |A_1 + (v/2) A_0|^2 (at ORDER 2 as
        ORDER2_VIRTUAL_ON_BETA1 says).
-    1: the factorisable part, sum_h |(1 + v/2) A_1|^2 (A_2 at ORDER 2): v/2
-       on every beta_1 as well as on beta_0 - ORDER2_VIRTUAL_ON_BETA1 1, now
+    factorisable (1): the factorisable part, sum_h |(1 + v/2) A_1|^2 (A_2 at ORDER 2): v/2
+       on every beta_1 as well as on beta_0 - ORDER2_VIRTUAL_ON_BETA1 true, now
        also at ORDER 1. KKMC CEEX2's (1+d_I)(1+d_F) on beta_1, and YFS.NLO's
        (1 + v) x real.
-    2: 1 plus the non-factorisable remainder: photon j's M_1 (in every
+    averaged (2): factorisable plus the non-factorisable, helicity-averaged
+       remainder: photon j's M_1 (in every
        partition that carries it) gets (v_{n+1,j} - v_B)/2 on top, the
        helicity-averaged loop over tree of the (n+1)-body point minus the
        Born's, both IR subtracted on their own legs. The numbers are YFS.NLO's
-       (NLO_Base, YFS: RV_MODE 1: same loop call, photons matched by lab
-       momentum), so ACRAIC needs no loop call of its own; it needs NLO_Part
-       with E and YFS: RV_MODE 1. In |A|^2 this adds sum_j dv_j Re<A_1, M_1j>
+       (NLO_Base, YFS: RV_MODE remainder: same loop call, photons matched by
+       lab momentum), so ACRAIC needs no loop call of its own; it needs
+       NLO_Part with E and YFS: RV_MODE remainder. In |A|^2 this adds sum_j dv_j Re<A_1, M_1j>
        (RealVirtualRemainderRho), at one photon dv |M_1|^2 = YFS.NLO's
        rho dv on the same event.
   */
-  s["REAL_VIRTUAL"].SetDefault(0);
+  s["REAL_VIRTUAL"].SetDefault(ceexrv::off);
   s["BETA2_CLOSURE"].SetDefault(0);    // @@@ B2CLOS, n = 2 closure
   s["BETA2_SOFT_TEST"].SetDefault(0);  // @@@ B2SOFT, soft limits (N events)
   s["BETA2_TRACE"].SetDefault(0);      // @@@ B2TRACE, per pair and partition
@@ -812,14 +826,14 @@ void Ceex_Base::MakeRho() {
     number above is the one it always was.
   */
   // CEEX: REAL_VIRTUAL >= 1 at ORDER 1: v/2 on A_1 as a whole
-  if (m_order == 1 && RealVirtualMode() >= 1) {
+  if (m_order == 1 && RealVirtualMode() != ceexrv::off) {
     m_result01 = m_result1;
     m_resultV  = m_result1;
   }
   if (m_order == 2) {
     static const bool vb1(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                          ["ORDER2_VIRTUAL_ON_BETA1"].Get<int>() != 0
-                          || RealVirtualMode() >= 1);
+                          ["ORDER2_VIRTUAL_ON_BETA1"].Get<bool>()
+                          || RealVirtualMode() != ceexrv::off);
     double s2(0.), s12(0.), s02(0.);
     for (int f = 0; f < nh; ++f) {
       m_AmpExpo2.m_A[f] = m_AmpExpo1.m_A[f] + m_AmpBeta2.m_A[f];
@@ -871,10 +885,10 @@ double Ceex_Base::Xi(const Vec4D p, const Vec4D q) {
   return sqrt((m_zeta * p) / (q * m_zeta));
 }
 
-int Ceex_Base::RealVirtualMode()
+ceexrv::code Ceex_Base::RealVirtualMode()
 {
-  static const int m(ATOOLS::Settings::GetMainSettings()["CEEX"]["REAL_VIRTUAL"]
-                     .SetDefault(0).Get<int>());
+  static const ceexrv::code m(ATOOLS::Settings::GetMainSettings()["CEEX"]
+    ["REAL_VIRTUAL"].SetDefault(ceexrv::off).Get<ceexrv::code>());
   return m;
 }
 

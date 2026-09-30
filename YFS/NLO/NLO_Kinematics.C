@@ -8,6 +8,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "YFS/NLO/NLO_Base.H"
+#include "YFS/NLO/NLO_Base_Internal.H"
 #include "METOOLS/Main/Spin_Structure.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
@@ -57,7 +58,7 @@ void NLO_Base::CheckMappingRecoil(const Vec4D_Vector &p, const Vec4D &ksum) {
 }
 
 /*
-  The (n+1)-body point for beta_1(k_j) of FINAL-state photons (REAL_FSR_MAP: 1).
+  The (n+1)-body point for beta_1(k_j) of FINAL-state photons (REAL_FSR_MAP: rescale_all).
 
   p[2..] are the final legs BEFORE final-state emission (m_reallab), so their
   sum is the ISR-reduced total momentum Q, of mass sqrt(s'). The rest-frame
@@ -89,7 +90,7 @@ bool NLO_Base::MapMomentaFSR(Vec4D_Vector &p, Vec4D_Vector &k) {
   Vec4D Kall;
   for (const Vec4D &kj : m_FSRPhotons) Kall += kj;
   /*
-    REAL_FSR_MAP: 3 - the SINGLE-EMISSION point: the pre-emission legs with
+    REAL_FSR_MAP: pre_emission (3) - the SINGLE-EMISSION point: the pre-emission legs with
     photon j's own recoil applied by the rescaling below and nothing else.
     The post-emission construction above re-absorbs the other photons by
     rescaling, which keeps the post-emission DIRECTIONS; a soft photon whose
@@ -102,9 +103,7 @@ bool NLO_Base::MapMomentaFSR(Vec4D_Vector &p, Vec4D_Vector &k) {
     tends to the crude configuration as k_j -> 0, and with one photon it is
     the generator's own post-emission point (same rescaling recipe).
   */
-  { static const int fsrmap(ATOOLS::Settings::GetMainSettings()["YFS"]
-                            ["REAL_FSR_MAP"].Get<int>());
-    if (fsrmap == 3 && m_plab.size() == p.size()) {
+  { if (RealFSRMap() == realfsrmap::pre_emission && m_plab.size() == p.size()) {
       for (size_t i = 2; i < p.size(); ++i) p[i] = m_plab[i];
       Kall = Vec4D();
     } else if (m_postlab.size() == p.size()) {
@@ -187,7 +186,7 @@ bool NLO_Base::MapMomentaFSR(Vec4D_Vector &p, Vec4D_Vector &k) {
 
 /*
   The (n+1)-body point for beta_1(k_j) of FINAL-state photons when the final
-  state has MORE THAN ONE radiating dipole (REAL_FSR_MAP: 2, the default).
+  state has MORE THAN ONE radiating dipole (REAL_FSR_MAP: dipole, the default).
 
   Each final-state photon is radiated by one resonant pair (its dipole,
   YFS::Photon::Dip()): Dipole::GenerateEmissions samples it in that pair's
@@ -681,18 +680,20 @@ bool NLO_Base::MapMomentaInvariant(Vec4D_Vector &p, Vec4D_Vector &k) {
 }
 
 void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D_Vector &k) {
-  static const int mapmode(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_MAP"].Get<int>());
+  // YFS: REAL_MAP and REAL_FSR_MAP, documented in YFS_Base::RegisterDefaults
+  static const realmap::code mapmode(ATOOLS::Settings::GetMainSettings()["YFS"]
+                                     ["REAL_MAP"].Get<realmap::code>());
   m_map_reduced = false;
-  if (mapmode == 1 && MapMomentaBeamAxis(p, k)) return;
-  if (mapmode == 2 && MapMomentaScaled(p, k)) return;
-  if (mapmode == 3 && MapMomentaInvariant(p, k)) return;
-  { static const int fsrmap(ATOOLS::Settings::GetMainSettings()["YFS"]
-                            ["REAL_FSR_MAP"].Get<int>());
-    if (fsrmap == 2 && MapMomentaFSRDipole(p, k)) return;
-    // 2 falls back to the common rescaling when the per-dipole construction
-    // does not apply (a photon without a dipole, a pair below threshold).
-    if (fsrmap >= 1 && MapMomentaFSR(p, k)) return; }
-  if (mapmode != 0) {
+  if (mapmode == realmap::beam_axis && MapMomentaBeamAxis(p, k)) return;
+  if (mapmode == realmap::scaled && MapMomentaScaled(p, k)) return;
+  if (mapmode == realmap::invariant && MapMomentaInvariant(p, k)) return;
+  { const realfsrmap::code fsrmap(RealFSRMap());
+    if (fsrmap == realfsrmap::dipole && MapMomentaFSRDipole(p, k)) return;
+    // dipole falls back to the common rescaling when the per-dipole
+    // construction does not apply (a photon without a dipole, a pair below
+    // threshold).
+    if (fsrmap != realfsrmap::rest_frame && MapMomentaFSR(p, k)) return; }
+  if (mapmode != realmap::rest_frame) {
     // Only initial-state photons are reduced by the new constructions; a
     // final-state photon (or an early exit) comes here by design. Counted so
     // that a solver that never converges cannot masquerade as the legacy map.

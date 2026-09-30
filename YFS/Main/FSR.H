@@ -39,8 +39,8 @@ namespace YFS {
       std::vector<double> m_mass, m_MassWls, m_cos, m_sin, m_dist1, m_dist2,
                           m_del1, m_del2, m_yini, m_zini, m_phi_vec, m_k0,
                           m_fbarvec;
-      int m_n, m_N, m_NRemoved, m_eikonal_mode, m_use_crude, m_fixed_ngamma;
-      bool m_use_massive_nbar, m_failed;   // m_use_model_alpha shadowed YFS_Base's, unused here
+      int m_n, m_N, m_NRemoved, m_fixed_ngamma;
+      bool m_eikonal_mode, m_use_crude, m_use_massive_nbar, m_failed;   // m_use_model_alpha shadowed YFS_Base's, unused here
     Vec4D_Vector m_photons, m_dipole, m_photonspreboost;
       Flavour_Vector m_dipoleFl;
       Vec4D m_photonSum, m_photonSumPreBoost, m_r1, m_r2, m_QFrame, m_Q, m_px;
