@@ -1,4 +1,9 @@
 set(YFSNLO_SOURCES NLO_Base.C
+                 NLO_Real.C
+                 NLO_Virtual.C
+                 NLO_RealVirtual.C
+                 NLO_RealReal.C
+                 NLO_Kinematics.C
                  NLO_LoopHelicity.C
                  NLO_Checks.C
                  Photon_Counterterm.C

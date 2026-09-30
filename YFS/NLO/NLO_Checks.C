@@ -591,3 +591,142 @@ void NLO_Base::CEEXComparePoint() {
      << b0 << " " << real << " " << virt << "\n";
   pt.close();
 }
+
+void NLO_Base::ProbeRealVirtual(const Vec4D &kk, const Vec4D_Vector &p,
+                                double r, double rtree, double subloc,
+                                double eikloc, double flux, double subb,
+                                double tot) {
+  PHASIC::Virtual_ME2_Base *lme(p_realvirt->p_loop_me.get());
+  const double lt(lme->ME_Finite()*p_realvirt->m_factor);
+  const double e1lt(lme->ME_E1()*p_realvirt->m_factor);
+  const double kap(m_rescale_alpha);
+  const double e1ev(p_nlodipoles->Get_E1());
+  // the same subtraction on the (n+1)-body point's own legs
+  Vec4D_Vector pp(p);
+  pp.pop_back();
+  p_nlodipoles->MakeDipolesII(m_flavs, pp, pp);
+  p_nlodipoles->MakeDipoles(m_flavs, pp, pp);
+  p_nlodipoles->MakeDipolesIF(m_flavs, pp, pp);
+  const double subpp(p_nlodipoles->CalculateRealVirtualSubEps(p.back()));
+  const double e1pp(p_nlodipoles->Get_E1());
+  const double v(m_born != 0. ? m_oneloop/m_born : 0.);
+  std::ostringstream o;
+  o<<std::setprecision(10)<<"@@@ RVPROBE x="<<2.*kk.E()/sqrt(m_s)
+   <<" fsr="<<(PhotonIsFSR(kk)?1:0)<<" nph="<<m_photons.size()
+   <<" lt="<<lt<<" Trv/rtree="<<(rtree != 0. ? r/(lt*rtree) : 0.)
+   <<" sub_ev="<<subloc/kap<<" sub_pt="<<subpp/kap
+   <<" v="<<v<<" subB="<<(m_born != 0. ? m_virt_subval/m_born : 0.)
+   <<" vraw="<<(m_born != 0. ? m_virt_raw/m_born : 0.)
+   <<" dv_ev="<<lt - subloc/kap - v<<" dv_pt="<<lt - subpp/kap - v
+   <<" eikB/rtree="<<(rtree != 0. ? eikloc*m_born/(kap*rtree) : 0.)
+   <<" flux="<<flux<<" subb="<<subb<<" tot/B="<<(m_born != 0. ? tot/m_born : 0.)
+   <<" E1lt="<<e1lt<<" E1ev="<<e1ev/kap<<" E1pt="<<e1pp/kap
+   <<" irs="<<lme->IRscale()<<" kap="<<kap
+   <<" Tloop="<<lme->ME_Born()<<" rtree="<<rtree*2.*pow(2.*M_PI,3)
+   <<"\n   p=";
+  for (const Vec4D &q : p) o<<q<<" ";
+  o<<"\n   plab=";
+  for (const Vec4D &q : m_plab) o<<q<<" ";
+  o<<"\n";
+  std::cerr<<o.str();
+}
+
+void NLO_Base::CheckMasses(Vec4D_Vector &p, int realmode) {
+  bool allonshell = true;
+  std::vector<double> masses;
+  Flavour_Vector flavs = m_flavs;
+  if (realmode >= 1)
+    flavs.push_back(Flavour(kf_photon));
+  if (realmode >= 2)
+    flavs.push_back(Flavour(kf_photon));
+  if (p.size() != flavs.size())
+    msg_Error() << "Mismatch between mass and flavour vectors in " << METHOD
+                << std::endl;
+  for (int i = 0; i < p.size(); ++i) {
+    masses.push_back(flavs[i].Mass());
+    if (!IsEqual(p[i].Mass(), flavs[i].Mass()) && flavs[i].Mass() != 0) {
+      allonshell = false;
+    }
+  }
+  if (!allonshell) {
+    m_stretcher.StretchMomenta(p, masses);
+    // for (int i = 0; i < p.size(); ++i) {
+    // }
+  }
+}
+
+bool NLO_Base::CheckPhotonForReal(const Vec4D &k) {
+  for (int i = 0; i < m_plab.size(); ++i) {
+    if (m_flavs[i].IsChargedLepton()) {
+      double sik = (k + m_plab[i]).Abs2();
+      if (sik  < m_hardmin*m_plab[i].Abs2()) {
+        msg_Out() << "Rejecting photon k = " << k << std::endl
+                  << "sik = " << sik << std::endl;
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+bool NLO_Base::CheckPhotonForReal(const Vec4D &k, const Vec4D_Vector &p) {
+  for (int i = 0; i < p.size(); ++i) {
+    if (m_flavs[i].IsChargedLepton()) {
+      double sik = (k + p[i]).Abs2();
+      if (sik < m_hardmin * p[i].Abs2()) {
+        msg_Out() << "Rejecting photon k = " << k << std::endl
+                  << "sik = " << sik << std::endl;
+        return false;
+      }
+      // if(p[i].PPerp() < m_hardmin) return false;
+    }
+  }
+  // if(k.PPerp() < m_hardmin) return false;
+  return true;
+}
+
+bool NLO_Base::CheckMomentumConservation(Vec4D_Vector p) {
+  Vec4D incoming = p[0] + p[1];
+  Vec4D outgoing;
+  for (int i = 2; i < p.size(); ++i) {
+    if (p[i].E() < 0 || IsBad(p[i].E())) {
+      msg_Error() << "Energy less than zero!: " << p[i] << std::endl;
+      return false;
+    }
+    outgoing += p[i];
+  }
+  Vec4D diff = incoming - outgoing;
+  if (!IsEqual(incoming, outgoing, 1e-8)) {
+    msg_Error() << METHOD << std::endl
+                << "Momentum not conserverd in YFS NLO" << std::endl
+                << "Incoming momentum = " << incoming << std::endl
+                << "Outgoing momentum = " << outgoing << std::endl
+                << "Difference = " << diff << std::endl
+                << "Vetoing Event " << std::endl;
+    return false;
+  }
+  return true;
+}
+
+
+Vec4D NLO_Base::MostEnergeticPhoton() const {
+  Vec4D hardest;
+  for (const auto &k : m_ISRPhotons)
+    if (k.E() > hardest.E()) hardest = k;
+  for (const auto &k : m_FSRPhotons)
+    if (k.E() > hardest.E()) hardest = k;
+  return hardest;
+}
+
+
+Vec4D NLO_Base::FixedTestPhoton() const {
+  double E = m_rv_test_x * sqrt(m_s) / 2.;
+  double st = sin(m_rv_test_theta), ct = cos(m_rv_test_theta);
+  Vec4D k(E, E * st * cos(m_rv_test_phi), E * st * sin(m_rv_test_phi),
+         E * ct);
+  Poincare pRot(m_bornMomenta[0], Vec4D(0., 0., 0., 1.));
+  Poincare boostLab(m_bornMomenta[0] + m_bornMomenta[1]);
+  pRot.Rotate(k);
+  boostLab.BoostBack(k);
+  return k;
+}
