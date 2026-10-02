@@ -318,10 +318,11 @@ int Subprocess_Info::Combine
     return 0;
   }
   else {
-    for (std::vector<Subprocess_Info>::iterator 
-	   psit(m_ps.begin());psit!=m_ps.end();++psit) {
+    for (std::vector<Subprocess_Info>::iterator
+           psit(m_ps.begin());psit!=m_ps.end();) {
       int stat(psit->Combine(i,j,flij,cnt));
-      if (stat<0) psit=m_ps.erase(psit)-1;
+      if (stat<0) psit=m_ps.erase(psit);
+      else ++psit;
     }
     return 1;
   }

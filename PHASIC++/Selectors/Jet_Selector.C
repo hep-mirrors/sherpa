@@ -261,7 +261,7 @@ bool Jet_Selector::Trigger(Selector_List &sl)
           moms[j]=cjit->second;
           jetinputidx.erase(std::remove(jetinputidx.begin(),jetinputidx.end(),j),
                             jetinputidx.end());
-          clusidjetmoms.erase(cjit);
+          cjit = clusidjetmoms.erase(cjit);
           assigned=true;
           break;
         }
