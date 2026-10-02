@@ -671,7 +671,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,
       msg_Debugging()<<"S event\n";
       p_read->SetAmpl(ampl);
       p_bviproc->SetEventReader(p_read);
-      winfo = p_bviproc->OneEvent(wmode);
+      winfo = p_bviproc->OneEvent(wmode, varmode, mode);
       p_bviproc->SetEventReader(NULL);
       S=1; H=0;
     }
@@ -679,7 +679,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,
       msg_Debugging()<<"H event\n";
       p_read->SetAmpl(ampl);
       p_rsproc->SetEventReader(p_read);
-      winfo = p_rsproc->OneEvent(wmode);
+      winfo = p_rsproc->OneEvent(wmode, varmode, mode);
       p_rsproc->SetEventReader(NULL);
       S=0; H=1;
     }
