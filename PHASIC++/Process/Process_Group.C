@@ -65,7 +65,7 @@ Weight_Info *Process_Group::OneEvent(const int wmode,
     if (proc!=NULL) THROW(fatal_error,"Process not in group: "+pname);
     p_int->PSHandler()->SetPoint(ampl);
     p_selected->SetEventReader(p_read);
-    Weight_Info *winfo(p_selected->OneEvent(mode));
+    Weight_Info *winfo(p_selected->OneEvent(wmode, varmode, mode));
     p_int->PSHandler()->SetPoint(NULL);
     p_selected->Integrator()->SetMax(p_int->Max());
     p_selected->SetEventReader(winfo?p_read:NULL);
@@ -75,7 +75,7 @@ Weight_Info *Process_Group::OneEvent(const int wmode,
   p_selected=NULL;
   if (p_int->TotalXS()==0.0) {
     p_selected=m_procs[int(ATOOLS::ran->Get()*m_procs.size())];
-    return p_selected->OneEvent(mode, varmode);
+    return p_selected->OneEvent(wmode, varmode, mode);
   }
   double disc=p_int->SelectionWeight(wmode)*ATOOLS::ran->Get();
   for (size_t i=0;i<m_procs.size();++i) {
@@ -83,7 +83,7 @@ Weight_Info *Process_Group::OneEvent(const int wmode,
     disc-=ATOOLS::Max(m_procs[i]->Integrator()->SelectionWeight(wmode),0.0);
     if (disc<=0.) {
       p_selected=m_procs[i];
-      return p_selected->OneEvent(mode, varmode);
+      return p_selected->OneEvent(wmode, varmode, mode);
     }
   }
   msg_Error()<<METHOD<<"(): Cannot select any process. xs = "

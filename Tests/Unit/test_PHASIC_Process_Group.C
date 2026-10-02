@@ -2,6 +2,8 @@
 
 #include "Tests/Unit/PHASIC_Selector_Test_Utils.H"
 #include "PHASIC++/Process/Process_Group.H"
+#include "PHASIC++/Main/Phase_Space_Point.H"
+#include "ATOOLS/Math/Random.H"
 
 namespace {
 
@@ -23,6 +25,16 @@ public:
     : PHASIC_Test::Process({}, 0), m_destroyed(destroyed)
   { m_name = name; }
   ~Child() override { ++m_destroyed; }
+  int weight_mode = -1, phase_space_mode = -1;
+  ATOOLS::Variations_Mode variation_mode = ATOOLS::Variations_Mode::all;
+  ATOOLS::Weight_Info* OneEvent(int wmode, ATOOLS::Variations_Mode varmode,
+                               int mode) override
+  {
+    weight_mode = wmode;
+    variation_mode = varmode;
+    phase_space_mode = mode;
+    return nullptr;
+  }
 };
 
 } // namespace
@@ -57,4 +69,25 @@ TEST_CASE("Process_Group::Clear releases children and resets selection and looku
     CHECK(group.Size() == 1);
   }
   CHECK(destroyed == 3);
+}
+
+TEST_CASE("Process_Group forwards all event-generation modes to its child",
+          "[PHASIC::Process_Group]")
+{
+  PHASIC_Test::SeedGlobals();
+  // Random registers itself with the shutdown handler even in a bare test.
+  if (!ATOOLS::exh) ATOOLS::exh = new ATOOLS::Terminator_Object_Handler();
+  if (!ATOOLS::ran) ATOOLS::ran = new ATOOLS::Random(1234);
+  size_t destroyed = 0;
+  Group group;
+  auto* child = new Child("only", destroyed);
+  group.Add(child);
+  // Zero total cross section uses the uniform fallback selection branch.
+  for (const auto varmode : {ATOOLS::Variations_Mode::nominal_only,
+                            ATOOLS::Variations_Mode::all}) {
+    CHECK(group.OneEvent(1, varmode, PHASIC::psmode::no_gen_isr) == nullptr);
+    CHECK(child->weight_mode == 1);
+    CHECK(child->variation_mode == varmode);
+    CHECK(child->phase_space_mode == PHASIC::psmode::no_gen_isr);
+  }
 }
