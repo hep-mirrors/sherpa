@@ -147,12 +147,13 @@ double Single_Process::NfSchemeConversionTerms() const
   int nfa(p_int->ISR()->PDF(0)?p_int->ISR()->PDF(0)->ASInfo().m_nf:-1);
   int nfb(p_int->ISR()->PDF(1)?p_int->ISR()->PDF(1)->ASInfo().m_nf:-1);
   if (nfa!=nfb)       THROW(fatal_error,"Nf(a) and Nf(b) differ. Abort.");
-  if (nfb==-1 && nfb!=MODEL::as->Nf(1.e20))
-    THROW(fatal_error,"Inconsistent Nf between PDFs and \\alpha_s.");
-  if (nfb==-1) nfa=MODEL::as->Nf(1.e20);
+  // Do not compare with alphaS: its thresholds include every strong quark in
+  // the particle table, so it counts six flavours at high scales even with a
+  // five-flavour PDF.
+  if (nfb==-1) nfa=nfb=MODEL::as->Nf(1.e20);
   const size_t nf(nfb);
   const size_t nfl(Flavour(kf_quark).Size()/2);
-  if (nfl==nf) return 0.;
+  if (nfl==nf) return m_nfconvscheme==2?-m_lastxs:0.;
   // debugging output
   msg_Debugging()<<"a="<<m_flavs[0]<<", b="<<m_flavs[1]
                  <<", nf(a)="<<nfa<<", nf(b)="<<nfb<<", nfl="<<nfl<<std::endl;
