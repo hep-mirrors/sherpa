@@ -34,6 +34,7 @@ namespace PHASIC {
     double m_taucut, m_delta_r, m_ptmin, m_etmin, m_etamax, m_ymax;
     fjcore::RecombinationScheme m_reco;
     fjcore::JetAlgorithm m_algo;
+    fjcore::JetDefinition m_jdef;
 
     inline void SetFrame(const std::string& frame);
     inline void SetNorm(const std::string& norm);
@@ -72,6 +73,10 @@ namespace PHASIC {
       /// determine the hard-directions... for the moment use anti-kt in
       /// in the lab frame
       const auto algo = s["Algorithm"]          .SetDefault("antikt")  .Get<std::string>();
+      m_algo = GetAlgorithm(algo);
+      if (m_algo == fjcore::undefined_jet_algorithm)
+        THROW(fatal_error, "Unknown NJettiness algorithm '" + algo
+                           + "', use antikt, kt or cambridge.");
       const auto reco = s["RecombinationScheme"].SetDefault("E")       .Get<std::string>();
       m_reco = ATOOLS::GetRecombinationScheme(reco);
 
@@ -81,6 +86,11 @@ namespace PHASIC {
       m_etmin   = s["ETMin"] .SetDefault("None").UseZeroReplacements()     .Get<double>();
       m_etamax  = s["EtaMax"].SetDefault("None").UseMaxDoubleReplacements().Get<double>();
       m_ymax    = s["YMax"]  .SetDefault("None").UseMaxDoubleReplacements().Get<double>();
+
+      /// the e+e- kt (Durham) algorithm takes no radius
+      m_jdef = m_algo == fjcore::ee_kt_algorithm
+        ? fjcore::JetDefinition(m_algo, m_reco)
+        : fjcore::JetDefinition(m_algo, m_delta_r, m_reco);
 
 
     }
@@ -121,8 +131,7 @@ namespace PHASIC {
     if(m_N > 0){
       /// create cluster sequence and get the hard fs directions (these need to be added to beam)
       /// in a hadron-collider setup
-      fjcore::ClusterSequence cs(input,
-                                 fjcore::JetDefinition(m_algo,m_delta_r, m_reco));
+      fjcore::ClusterSequence cs(input, m_jdef);
       jets = cs.exclusive_jets(static_cast<int>(m_N));
 
       /// Check user selection for hard directions
@@ -185,9 +194,6 @@ namespace PHASIC {
       else return fjcore::kt_algorithm;
     } else if(algo == "antikt") {
       return fjcore::antikt_algorithm;
-    } else if(algo == "genkt"){
-      if(leplep) return fjcore::ee_genkt_algorithm;
-      else return fjcore::genkt_algorithm;
     } else if(algo == "cambridge") {
       return fjcore::cambridge_algorithm;
     } else return fjcore::undefined_jet_algorithm;
@@ -233,7 +239,7 @@ PrintInfo(std::ostream &str,const size_t width) const
      << width << "  TauN: NJettiness-cut\n"
      << width << "  Frame: frame in which to evaluate NJettiness: lab, com (default: lab)"
      << width << "  Normalization: normalization for the jettiness contribution: jet, jet2, com (default: jet2)"
-     << width << "  Algorithm: antikt, kt, genkt, cambridge\n"
+     << width << "  Algorithm: antikt, kt, cambridge\n"
      << width << "  RecombinationScheme: E, pt, pt2, Et, Et2, BIpt, BIpt2 (default: E) \n"
      << width << "  PTMin: minimum jet pT for each hard direction\n"
      << width << "  ETMin: minimum jet eta for each hard direction\n"

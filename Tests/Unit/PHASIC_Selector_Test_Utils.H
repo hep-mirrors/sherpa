@@ -44,6 +44,25 @@ public:
   void SetLookUp(bool lookup) override { m_lookup = lookup; }
 };
 
+class Bunches {
+  ATOOLS::Flavour m_first, m_second;
+public:
+  Bunches(const ATOOLS::Flavour& first, const ATOOLS::Flavour& second)
+    : m_first(ATOOLS::rpa->gen.Bunch(0)),
+      m_second(ATOOLS::rpa->gen.Bunch(1))
+  {
+    ATOOLS::rpa->gen.SetBunch(first, 0);
+    ATOOLS::rpa->gen.SetBunch(second, 1);
+  }
+  ~Bunches()
+  {
+    ATOOLS::rpa->gen.SetBunch(m_first, 0);
+    ATOOLS::rpa->gen.SetBunch(m_second, 1);
+  }
+  Bunches(const Bunches&) = delete;
+  Bunches& operator=(const Bunches&) = delete;
+};
+
 // Temporarily supply the jet group without altering any existing shared entry
 // or leaving Flavours pointing at a destroyed Particle_Info after the test.
 class Jet_Group {
