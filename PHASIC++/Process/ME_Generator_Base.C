@@ -650,8 +650,8 @@ int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl,
     Poincare oldHCM(pStrongOut);
     Poincare newHCM(pStrongOut-pStrongIn+newInMom);
 
+    size_t idxout = 0;
     for(size_t i=0; i<ampl->Legs().size(); i++) {
-      size_t idxout = 0;
       if(i < ampl->NIn()) {
         if(!ampl->Leg(i)->Flav().IsLepton()) ampl->Leg(i)->SetMom(-newInMom);
         else                              ampl->Leg(i)->SetMom(pLepIn);
