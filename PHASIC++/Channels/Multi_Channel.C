@@ -350,12 +350,12 @@ void Multi_Channel::GeneratePoint() {
 
 void Multi_Channel::GenerateWeight()
 {
+  m_weight = 0.;
   if (channels.size()==1) {
     channels[0]->GenerateWeight();
     if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
     return;
   }
-  m_weight = 0.;
   for (size_t i=0;i<channels.size();++i) {
     if (channels[i]->Alpha()>0.) {
       channels[i]->GenerateWeight();
