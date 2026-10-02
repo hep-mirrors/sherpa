@@ -74,6 +74,44 @@ TEST_CASE("NJettiness uses the requested kt or antikt hard directions",
   }
 }
 
+TEST_CASE("NJettiness requires its hard directions to satisfy the jet cuts",
+          "[PHASIC::NJettiness_Selector]")
+{
+  PHASIC_Test::SeedGlobals();
+  ATOOLS::Particle_Info gluon;
+  gluon.m_kfc = kf_gluon;
+  gluon.m_strong = 8;
+  ATOOLS::Flavour flavour(gluon);
+  PHASIC_Test::Jet_Group jet_group(flavour);
+  PHASIC_Test::Bunches bunches(flavour, flavour);
+  PHASIC_Test::Process process({flavour, flavour, flavour, flavour}, 2);
+  const double pt = 20., y = 1.;
+  const double e = pt * std::cosh(y), pz = pt * std::sinh(y);
+  ATOOLS::Selector_List particles(process.Flavours(),
+    {ATOOLS::Vec4D(e, 0., 0., e), ATOOLS::Vec4D(e, 0., 0., -e),
+     ATOOLS::Vec4D(e, pt, 0., pz), ATOOLS::Vec4D(e, -pt, 0., -pz)}, 2);
+
+  for (const std::string cut : {"", ", PTMin: 100", ", ETMin: 100",
+                                ", EtaMax: 0.5", ", YMax: 0.5"}) {
+    CAPTURE(cut);
+    PHASIC::Selector_Key key;
+    key.p_proc = &process;
+    key.m_settings = ATOOLS::Scoped_Settings(
+      "NJettiness: {N: 1, TauN: 1, Algorithm: kt" + cut + "}");
+    std::unique_ptr<PHASIC::Selector_Base> selector(
+      PHASIC::Selector_Getter::GetObject("NJettiness", key));
+    REQUIRE(selector != nullptr);
+    CHECK(selector->Trigger(particles) == cut.empty());
+    // Reflect longitudinal momenta: maximum rapidities bound |eta| and |y|.
+    for (size_t i = 2; i < particles.size(); ++i) {
+      auto p = particles[i].Momentum();
+      p[3] = -p[3];
+      particles[i].SetMomentum(p);
+    }
+    CHECK(selector->Trigger(particles) == cut.empty());
+  }
+}
+
 TEST_CASE("NJettiness uses the Durham algorithm for kt in lepton collisions",
           "[PHASIC::NJettiness_Selector]")
 {

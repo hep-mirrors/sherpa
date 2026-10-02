@@ -136,10 +136,10 @@ namespace PHASIC {
 
       /// Check user selection for hard directions
       for(auto&j : jets){
-        if(j.pt() < m_ptmin)                       trigger = false;
-        if(sqrt(j.m2() + j.pt()*j.pt()) < m_etmin) trigger = false;
-        if(j.eta() > m_etamax)                     trigger = false;
-        if(j.rapidity() > m_ymax)                  trigger = false;
+        if (j.pt() < m_ptmin ||
+            sqrt(j.m2() + j.pt()*j.pt()) < m_etmin ||
+            dabs(j.eta()) > m_etamax || dabs(j.rapidity()) > m_ymax)
+          return m_sel_log->CountingIdentity(false);
       }
     }
 
