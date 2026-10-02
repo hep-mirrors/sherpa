@@ -94,6 +94,7 @@ Phase_Space_Handler::Differential(Process_Integrator *const process,
   // phase space trigger, calculate and construct weights
   if (process->Process()->Trigger(p_lab)) {
     if (p_point) {
+      m_ISsymmetryfactor = m_pspoint.ISSymmetryFactor();
       if (process->Process()->EventReader()->Compute()==1) {
         std::vector<double> scales{p_point->MuF2(),p_point->MuR2(),p_point->MuQ2()};
         process->Process()->ScaleSetter(true)->SetFixedScale(scales);
