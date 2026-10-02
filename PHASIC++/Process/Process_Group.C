@@ -195,8 +195,9 @@ bool Process_Group::Delete(Process_Base *const proc)
 
 void Process_Group::Clear()
 {
+  p_selected=this;
+  m_procmap.clear();
   while (m_procs.size()>0) {
-    p_selected->SetEventReader(NULL);
     delete m_procs.back();
     m_procs.pop_back();
   }
