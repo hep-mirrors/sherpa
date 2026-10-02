@@ -492,9 +492,9 @@ void Vegas::Refine() {
   p_xin = new double[m_nd];
   delete[] p_r;
   p_r = new double[m_nd];
+  for (int j = 0; j < m_nd; ++j) p_r[j] = 1.0;
+  p_xin[m_nd - 1] = 1.;
   for (int i = 0; i < m_dim; ++i) {
-    p_r[i] = 1.0;
-    p_xin[m_nd - 1] = 1.;
     std::vector<double> xi(&p_xi[i][0], &p_xi[i][m_nd / 2]);
     delete[] p_xi[i];
     p_xi[i] = new double[m_nd];
@@ -636,9 +636,9 @@ void Vegas::ReadIn(const std::string &pid) {
     p_xin = new double[m_nd];
     delete[] p_r;
     p_r = new double[m_nd];
+    for (int j = 0; j < m_nd; ++j) p_r[j] = 1.0;
+    p_xin[m_nd - 1] = 1.;
     for (int i = 0; i < m_dim; ++i) {
-      p_r[i] = 1.0;
-      p_xin[m_nd - 1] = 1.;
       delete[] p_xi[i];
       p_xi[i] = new double[m_nd];
       delete[] p_bestxi[i];
