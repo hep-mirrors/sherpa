@@ -25,6 +25,7 @@ namespace PHASIC {
   public:
 
     Fastjet_Enhance_Observable(const Enhance_Arguments &args);
+    ~Fastjet_Enhance_Observable() override;
 
     double operator()(const ATOOLS::Vec4D *p,
 		      const ATOOLS::Flavour *fl,
@@ -117,6 +118,11 @@ Fastjet_Enhance_Observable::Fastjet_Enhance_Observable
     m_calc.AddTag("MU_"+ToString(i)+"2",ToString(m_mu2[i]));
   m_calc.AddTag("H_T2","1.0");
   m_calc.Interprete(arg);
+}
+
+Fastjet_Enhance_Observable::~Fastjet_Enhance_Observable()
+{
+  delete p_jdef;
 }
 
 double Fastjet_Enhance_Observable::operator()

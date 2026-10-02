@@ -149,6 +149,10 @@ Isolation_Selector::Isolation_Selector(const Selector_Key &key) :
 
 
 Isolation_Selector::~Isolation_Selector() {
+  while (!m_sels.empty()) {
+    delete m_sels.back();
+    m_sels.pop_back();
+  }
 }
 
 

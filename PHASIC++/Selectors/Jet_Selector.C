@@ -180,6 +180,7 @@ Jet_Selector::Jet_Selector(const Selector_Key &key) :
 
 
 Jet_Selector::~Jet_Selector() {
+  delete p_jdef;
   while (m_jetids.size()>0) {
     delete *m_jetids.begin();
     m_jetids.erase(m_jetids.begin());

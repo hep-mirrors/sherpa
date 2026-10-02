@@ -76,6 +76,10 @@ Color_Integrator::~Color_Integrator()
     delete m_ids.back();
     m_ids.pop_back();
   }
+  while (m_decids.size()>0) {
+    delete m_decids.back();
+    m_decids.pop_back();
+  }
 }
 
 double Color_Integrator::Factorial(const double &n) const
@@ -580,6 +584,7 @@ void Color_Integrator::SetDecayIds(const std::vector<size_t> &ids,
 				   const Int_Vector &types,
 				   const Int_Vector &acts)
 {
+  for (auto* representation : m_decids) delete representation;
   m_decids.resize(ids.size());
   for (size_t i(0);i<ids.size();++i)
     m_decids[i] = new Representation(ids[i],types[i],acts[i]);
