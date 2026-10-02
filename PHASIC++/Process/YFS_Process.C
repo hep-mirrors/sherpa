@@ -34,7 +34,8 @@ using namespace std;
 
 YFS_Process::YFS_Process
 (ME_Generators& gens, NLOTypeStringProcessMap_Map *pmap):
-  m_gens(gens), p_bornproc(NULL), p_realproc(NULL)
+  m_gens(gens), p_gen(NULL), p_yfs(NULL),
+  p_bornproc(NULL), p_realproc(NULL), p_virtproc(NULL)
 {
   m_lastxs= 0.0;
   RegisterDefaults();
@@ -44,11 +45,13 @@ YFS_Process::YFS_Process
 }
 
 YFS_Process::~YFS_Process() {
+  // CalculateTotalXSec borrows the born process's integrator. Otherwise the
+  // integrator created by Process_Base is still owned by the base class.
+  if (p_bornproc && p_int == p_bornproc->Integrator()) p_int = NULL;
   if (p_bornproc) delete p_bornproc;
   if (p_realproc) delete p_realproc;
   if (p_virtproc) delete p_virtproc;
-  if (p_int) delete p_int;
-  if (p_yfs) delete p_yfs;
+  // p_yfs is shared with the other processes and owned by Initialization_Handler.
 }
 
 void YFS_Process::Init(const Process_Info &pi,
@@ -112,6 +115,7 @@ Process_Base* YFS_Process::InitProcess
 bool YFS_Process::CalculateTotalXSec(const std::string &resultpath,
                                      const bool create)
 {
+  if (p_int != p_bornproc->Integrator()) delete p_int;
   p_int = p_bornproc->Integrator();
   p_int->Reset();
   auto psh = p_int->PSHandler();
