@@ -437,6 +437,7 @@ Cluster_Amplitude *MCatNLO_Process::GetAmplitude()
   if (stat<0) {
     msg_Tracking() << METHOD << "(): Mass shift failed." << std::endl;
     gen->SetMassMode(mm);
+    ampl->Delete();
     return NULL;
   }
   if (stat==1) {

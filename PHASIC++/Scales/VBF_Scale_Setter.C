@@ -416,6 +416,7 @@ double VBF_Scale_Setter::Calculate
   if (!m_nproc)
     if (p_proc->Caller()->Generator()->ShiftMasses(ampl)<0) {
        p_proc->Caller()->Generator()->SetMassMode( mm);
+       ampl->Delete();
        return sqrt(-1.0);
     }
   Cluster(ampl,ampls,1);
