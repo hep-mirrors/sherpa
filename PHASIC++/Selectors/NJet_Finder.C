@@ -95,7 +95,7 @@ NJet_Finder::~NJet_Finder() {
 
 
 void NJet_Finder::AddToJetlist(const Vec4D &jet) {
-  if (dabs(jet.Eta())<m_etamax && dabs(jet.Y()<m_ymax)) {
+  if (dabs(jet.Eta())<m_etamax && dabs(jet.Y())<m_ymax) {
     if (jet.EPerp2()>=m_et2min && jet.PPerp2()>=m_pt2min) {
       m_jetpt.push_back(jet.PPerp2());
     }
