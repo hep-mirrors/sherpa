@@ -102,7 +102,7 @@ Process_Base* YFS_Process::InitProcess
   Process_Info cpi(pi);
   cpi.m_fi.SetNLOType(nlotype);
   Process_Base* proc;
-  if(!real) proc = m_gens.InitializeProcess(pi, false);
+  if(!real) proc = m_gens.InitializeProcess(cpi, false);
   if (!proc)
   {
     std::stringstream msg;

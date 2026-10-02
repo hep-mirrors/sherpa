@@ -68,6 +68,18 @@ public:
   int PerformTests() override { return 1; }
   bool NewLibraries() override { return false; }
 };
+
+class RecordingGenerator : public Generator {
+public:
+  ATOOLS::nlo_type::code type = ATOOLS::nlo_type::lo;
+  PHASIC::Process_Base* InitializeProcess(const PHASIC::Process_Info& info,
+                                         bool) override
+  {
+    type = info.m_fi.NLOType();
+    const ATOOLS::Flavour none(kf_none);
+    return new PHASIC_Test::Process({none, none}, 2);
+  }
+};
 }
 
 TEST_CASE("YFS_Process can be destroyed before process initialization",
@@ -99,4 +111,24 @@ TEST_CASE("YFS_Process exposes its generator through Process_Base",
   base.SetGenerator(nullptr);
   CHECK(base.Generator() == nullptr);
   CHECK(process.Generator() == nullptr);
+}
+
+TEST_CASE("YFS_Process initializes the requested NLO contribution",
+          "[PHASIC::YFS_Process]")
+{
+  GeneratorSettings settings;
+  PHASIC::ME_Generators generators;
+  PHASIC_Test::Jet_Group jets(ATOOLS::Flavour(kf_none));
+  auto generator = new RecordingGenerator();
+  generators.push_back(generator); // ME_Generators owns registered backends.
+  PHASIC::YFS_Process process(generators, nullptr);
+  PHASIC::Process_Info info;
+  const auto original_type = ATOOLS::nlo_type::born | ATOOLS::nlo_type::loop
+                             | ATOOLS::nlo_type::real;
+  info.m_fi.SetNLOType(original_type);
+  std::unique_ptr<PHASIC::Process_Base> born(
+    process.InitProcess(info, ATOOLS::nlo_type::born, false));
+  REQUIRE(born != nullptr);
+  CHECK(generator->type == ATOOLS::nlo_type::born);
+  CHECK(info.m_fi.NLOType() == original_type);
 }
