@@ -2,6 +2,7 @@
 
 #include "Tests/Unit/PHASIC_Selector_Test_Utils.H"
 #include "PHASIC++/Process/ME_Generators.H"
+#include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/YFS_Process.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/My_MPI.H"
@@ -56,6 +57,17 @@ public:
     if (m_mpi) ATOOLS::mpi = nullptr;
   }
 };
+
+class Generator : public PHASIC::ME_Generator_Base {
+public:
+  Generator() : ME_Generator_Base("YFSTest") {}
+  bool Initialize(MODEL::Model_Base*, BEAM::Beam_Spectra_Handler*,
+                  PDF::ISR_Handler*, YFS::YFS_Handler*) override { return false; }
+  PHASIC::Process_Base* InitializeProcess(const PHASIC::Process_Info&,
+                                         bool) override { return nullptr; }
+  int PerformTests() override { return 1; }
+  bool NewLibraries() override { return false; }
+};
 }
 
 TEST_CASE("YFS_Process can be destroyed before process initialization",
@@ -69,4 +81,22 @@ TEST_CASE("YFS_Process can be destroyed before process initialization",
     CHECK(process.p_yfs == nullptr);
   }
   SUCCEED("The base-owned integrator is destroyed once");
+}
+
+TEST_CASE("YFS_Process exposes its generator through Process_Base",
+          "[PHASIC::YFS_Process]")
+{
+  GeneratorSettings settings;
+  PHASIC::ME_Generators generators;
+  PHASIC_Test::Jet_Group jets(ATOOLS::Flavour(kf_none));
+  Generator generator;
+  PHASIC::YFS_Process process(generators, nullptr);
+  PHASIC::Process_Base& base = process;
+
+  base.SetGenerator(&generator);
+  CHECK(base.Generator() == &generator);
+  CHECK(process.Generator() == &generator);
+  base.SetGenerator(nullptr);
+  CHECK(base.Generator() == nullptr);
+  CHECK(process.Generator() == nullptr);
 }

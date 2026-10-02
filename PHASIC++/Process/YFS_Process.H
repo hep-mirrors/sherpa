@@ -36,7 +36,6 @@ namespace PHASIC {
     bool   m_wassevent;
     //! Separate scale for RS events
     std::string m_rsscale;
-    ME_Generator_Base *p_gen;
     
     //! Map of integrated dipoles
     ATOOLS::StringIDipSet_Map m_iinfo;
@@ -173,8 +172,6 @@ namespace PHASIC {
      */
     void SetShower(PDF::Shower_Base *const ps) override;
     void SetNLOMC(PDF::NLOMC_Base *const mc) override;
-    void SetGenerator(ME_Generator_Base *const gen) override;
-    inline ME_Generator_Base * Generator() { PRINT_INFO("HERE"); return p_gen;}
     void InitializeTheReweighting(ATOOLS::Variations_Mode mode) override;
     std::vector<ATOOLS::Hard_Process_Variation_Generator_Base*>
       m_hard_process_variation_generators;

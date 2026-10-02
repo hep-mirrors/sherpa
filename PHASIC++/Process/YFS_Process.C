@@ -34,7 +34,7 @@ using namespace std;
 
 YFS_Process::YFS_Process
 (ME_Generators& gens, NLOTypeStringProcessMap_Map *pmap):
-  m_gens(gens), p_gen(NULL), p_yfs(NULL),
+  m_gens(gens), p_yfs(NULL),
   p_bornproc(NULL), p_realproc(NULL), p_virtproc(NULL)
 {
   m_lastxs= 0.0;
@@ -319,12 +319,6 @@ void YFS_Process::SetSelector(const Selector_Key &key)
 {
   if (p_bornproc) p_bornproc->SetSelector(key);
   if (p_realproc) p_realproc->SetSelector(key);
-}
-
-void YFS_Process::SetGenerator(ME_Generator_Base *const gen)
-{
-  PRINT_INFO("HERE");
-  p_gen = gen;
 }
 
 
