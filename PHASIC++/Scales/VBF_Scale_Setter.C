@@ -130,7 +130,7 @@ VBF_Scale_Setter::VBF_Scale_Setter
   m_nproc=!(p_proc->Info().m_fi.NLOType()==nlo_type::lo);
   m_nmin=p_proc->Info().m_fi.NMinExternal();
   size_t pos(tag.find('['));
-  if (pos==4) {
+  if (pos==3) {
     tag=tag.substr(pos+1);
     pos=tag.find(']');
     if (pos==std::string::npos) 

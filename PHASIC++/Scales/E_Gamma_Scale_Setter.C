@@ -139,7 +139,7 @@ E_Gamma_Scale_Setter::E_Gamma_Scale_Setter
   m_nproc=!(p_proc->Info().m_fi.NLOType()==nlo_type::lo);
   m_nmin=p_proc->Info().m_fi.NMinExternal();
   size_t pos(tag.find('['));
-  if (pos==4) {
+  if (pos==7) {
     tag=tag.substr(pos+1);
     pos=tag.find(']');
     if (pos==std::string::npos)
@@ -204,7 +204,7 @@ E_Gamma_Scale_Setter::E_Gamma_Scale_Setter
   */
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
-  if (s_uoscale=="None") p_uoscale=NULL;
+  if (uoscale=="None") p_uoscale=NULL;
   else {
     p_uoscale=Core_Scale_Getter::GetObject(uoscale,Core_Scale_Arguments(p_proc,uoscale));
     if (p_uoscale==NULL) THROW(fatal_error,"Invalid unordered scale '"+uoscale+"'");

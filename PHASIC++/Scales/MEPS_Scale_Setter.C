@@ -133,7 +133,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
   */
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
-  if (s_uoscale=="None") p_uoscale=NULL;
+  if (uoscale=="None") p_uoscale=NULL;
   else {
     p_uoscale=Core_Scale_Getter::GetObject(uoscale,Core_Scale_Arguments(p_proc,uoscale));
     if (p_uoscale==NULL) THROW(fatal_error,"Invalid unordered scale '"+uoscale+"'");
