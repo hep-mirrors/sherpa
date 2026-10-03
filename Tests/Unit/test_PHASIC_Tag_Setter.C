@@ -54,6 +54,12 @@ TEST_CASE("Scale tags distinguish the massive transverse product from indexed sc
     CHECK_THAT(calculator.Calculate()->Get<double>(),
                Catch::Matchers::WithinRel(momenta[4].PPerp2(), 1.e-12));
   }
+  SECTION("the retired beam-thrust tag fails instead of returning P_SUM") {
+    CHECK_THROWS([&] {
+      calculator.Interprete("TAUB");
+      calculator.Calculate();
+    }());
+  }
 }
 
 TEST_CASE("Hadronic H_T tags sum p_T or m_T of coloured final-state legs",

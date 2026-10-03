@@ -51,8 +51,9 @@ Term *Tag_Setter::ReplaceTags(Term *term) const
     term->Set(p_setter->PSum());
     return term;
   case 9:
-    term->Set(p_setter->PSum());
-    return term;
+    // TAUB used to return P_SUM, written into a scalar term. Beam thrust is
+    // not available as a scale tag; fail instead of returning a wrong value.
+    THROW(fatal_error,"The scale tag TAUB (beam thrust) is not available.");
   case 10:
     term->Set(sqr(p_setter->PTM()));
     return term;

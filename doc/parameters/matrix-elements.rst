@@ -541,7 +541,9 @@ choices or easily implement a user defined scale.
   ``<kf>,<dR>`` pairs, e.g. ``DH_Tp2(Cone,0.1,13,0.2)``.
 
 :option:`TAUB`
-  Square of the beam thrust.
+  Not available: evaluating it stops the run with an error. Earlier versions
+  returned ``P_SUM`` instead of a beam thrust; Sherpa provides no beam-thrust
+  scale tag.
 
 :option:`P_TM2`
   Square of the geometric mean of the transverse masses of all massive
