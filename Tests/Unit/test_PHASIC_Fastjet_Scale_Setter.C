@@ -1,6 +1,6 @@
 #include <catch2/catch_all.hpp>
 
-#include "Tests/Unit/PHASIC_Selector_Test_Utils.H"
+#include "Tests/Unit/PHASIC_Coupling_Test_Utils.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Org/My_MPI.H"
@@ -10,8 +10,7 @@
 
 namespace {
 class Environment {
-  ATOOLS::Particle_Info m_gluon;
-  ATOOLS::Particle_Info* p_previous_gluon;
+  PHASIC_Test::MasslessQCDParticles m_particles;
   MODEL::Running_AlphaS* p_previous_as;
   std::unique_ptr<MODEL::Running_AlphaS> m_as;
   std::unique_ptr<ATOOLS::My_MPI> m_mpi;
@@ -35,11 +34,6 @@ public:
       m_mpi.reset(new ATOOLS::My_MPI());
       ATOOLS::mpi = m_mpi.get();
     }
-    const auto it = ATOOLS::s_kftable.find(kf_gluon);
-    p_previous_gluon = it == ATOOLS::s_kftable.end() ? nullptr : it->second;
-    m_gluon.m_kfc = kf_gluon;
-    m_gluon.m_strong = 8;
-    ATOOLS::s_kftable[kf_gluon] = &m_gluon;
     p_previous_as = MODEL::as;
     m_as.reset(new MODEL::Running_AlphaS(.118, 91.1876 * 91.1876, 0, 1));
     MODEL::as = m_as.get();
@@ -48,8 +42,6 @@ public:
   {
     MODEL::as = p_previous_as;
     m_as.reset();
-    if (p_previous_gluon) ATOOLS::s_kftable[kf_gluon] = p_previous_gluon;
-    else ATOOLS::s_kftable.erase(kf_gluon);
     if (m_mpi) ATOOLS::mpi = nullptr;
   }
 };

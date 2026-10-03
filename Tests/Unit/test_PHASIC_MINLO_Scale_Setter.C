@@ -1,6 +1,6 @@
 #include <catch2/catch_all.hpp>
 
-#include "Tests/Unit/PHASIC_Selector_Test_Utils.H"
+#include "Tests/Unit/PHASIC_Coupling_Test_Utils.H"
 #include "PHASIC++/Scales/MINLO_Scale_Setter.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -17,8 +17,7 @@ std::string ScaleFactor(const std::string& name)
 }
 
 class Environment {
-  ATOOLS::Particle_Info m_gluon;
-  ATOOLS::Particle_Info* p_previous_gluon;
+  PHASIC_Test::MasslessQCDParticles m_particles;
   MODEL::Running_AlphaS* p_previous_as;
   std::unique_ptr<MODEL::Running_AlphaS> m_as;
   double m_ecms;
@@ -31,11 +30,6 @@ public:
     settings["ASSOCIATED_CONTRIBUTIONS_VARIATIONS"].SetDefault(
       std::vector<std::vector<std::string>>{});
     settings["DIPOLES"]["NF_GSPLIT"].SetDefault(0);
-    const auto it = ATOOLS::s_kftable.find(kf_gluon);
-    p_previous_gluon = it == ATOOLS::s_kftable.end() ? nullptr : it->second;
-    m_gluon.m_kfc = kf_gluon;
-    m_gluon.m_strong = 8;
-    ATOOLS::s_kftable[kf_gluon] = &m_gluon;
     p_previous_as = MODEL::as;
     m_as.reset(new MODEL::Running_AlphaS(.118, 91.1876 * 91.1876, 0, 1));
     MODEL::as = m_as.get();
@@ -54,8 +48,6 @@ public:
     ATOOLS::rpa->gen.SetVariable("FACTORIZATION_SCALE_FACTOR", m_fsf);
     MODEL::as = p_previous_as;
     m_as.reset();
-    if (p_previous_gluon) ATOOLS::s_kftable[kf_gluon] = p_previous_gluon;
-    else ATOOLS::s_kftable.erase(kf_gluon);
   }
 };
 
