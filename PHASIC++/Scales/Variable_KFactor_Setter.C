@@ -98,6 +98,9 @@ double Variable_KFactor_Setter::KFactor(const int mode)
 double Variable_KFactor_Setter::KFactor(const ATOOLS::NLO_subevt &sub)
 {
   if (!m_on) return 1.0;
+  // A dipole that fails the cuts has no weight, and Scale_Setter_Base gives
+  // it scales of -1, at which the couplings vanish.
+  if (!sub.m_trig && !sub.IsReal()) return m_weight=1.0;
   m_p=Vec4D_Vector(sub.p_mom,&sub.p_mom[sub.m_n]);
   m_mu2=sub.m_mu2;
   return m_weight=p_calc->Calculate()->Get<double>();
@@ -112,10 +115,10 @@ Term *Variable_KFactor_Setter::ReplaceTags(Term *term) const
 {
   switch (term->Id()) {
   case 1:
-    term->Set(p_proc->ScaleSetter()->Scale(stp::ren));
+    term->Set(m_mu2[stp::ren]);
     return term;
   case 2:
-    term->Set(p_proc->ScaleSetter()->Scale(stp::fac));
+    term->Set(m_mu2[stp::fac]);
     return term;
   case 3:
     term->Set(rpa->gen.Ecms());
@@ -174,7 +177,8 @@ void Variable_KFactor_Setter::SetKFactor(const std::string &kftag)
   p_calc->AddTag("Order_EW","0.0");
   if (p_proc->ScaleSetter()==NULL) THROW
     (fatal_error,"Process "+p_proc->Name()+" has no scale setter");
-  for (size_t i(0);i<p_proc->ScaleSetter()->Scales().size();++i)
+  m_mu2=p_proc->ScaleSetter()->Scales();
+  for (size_t i(0);i<m_mu2.size();++i)
     p_calc->AddTag("MU_"+ToString(i)+"2","1.0");
   m_p.resize(p_proc->NIn()+p_proc->NOut(),Vec4D());
   for (size_t i(0);i<p_proc->NIn()+p_proc->NOut();++i)
