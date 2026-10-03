@@ -86,11 +86,11 @@ public:
 
 class Process : public PHASIC::Single_Process {
 public:
-  Process()
+  explicit Process(double order = 2.)
   {
     m_flavs.assign(4, ATOOLS::Flavour(kf_gluon));
     m_nin = m_nout = 2;
-    m_maxcpl = m_mincpl = {2., 0.};
+    m_maxcpl = m_mincpl = {order, 0.};
   }
   double Partonic(const ATOOLS::Vec4D_Vector&, ATOOLS::Variations_Mode,
                   int) override { return 0.; }
@@ -125,4 +125,30 @@ TEST_CASE("MINLO stops clustering at the configured minimum final multiplicity",
   REQUIRE(minlo->Ampl() != nullptr);
   CHECK(minlo->Ampl()->Legs().size() == 4);
   CHECK(minlo->Ampl()->Next() == nullptr);
+}
+
+TEST_CASE("MINLO's geometric renormalization scale includes the QCD core powers",
+          "[PHASIC::MINLO_Scale_Setter]")
+{
+  Environment environment;
+  PHASIC_Test::Jet_Group jets{ATOOLS::Flavour(kf_gluon)};
+  PDF::ISR_Handler isr({new ISR(), new ISR()});
+  for (const double factor : {1., 4.}) {
+    ATOOLS::rpa->gen.SetVariable("RENORMALIZATION_SCALE_FACTOR", ATOOLS::ToString(factor));
+    for (const double order : {0., 1., 2.}) {
+      CAPTURE(factor, order);
+      Process process(order);
+      process.Integrator()->SetISR(&isr);
+      auto scale = MakeScale(process);
+      REQUIRE(scale != nullptr);
+      auto* minlo = dynamic_cast<PHASIC::MINLO_Scale_Setter*>(scale.get());
+      REQUIRE(minlo != nullptr);
+      scale->CalculateScale(momenta);
+      // With no clustering nodes the weighted mean is the scaled core itself,
+      // regardless of its positive QCD power; the zero-power fallback agrees.
+      const double expected = factor * minlo->Ampl()->Mu2();
+      CHECK_THAT(minlo->MuRAvg(0), Catch::Matchers::WithinRel(expected, 1.e-12));
+      CHECK_THAT(scale->Scale(ATOOLS::stp::ren), Catch::Matchers::WithinRel(expected, 1.e-12));
+    }
+  }
 }
