@@ -291,3 +291,21 @@ TEST_CASE("Massive_Kernels Dire finite pair shifts equal the two single-leg shif
     }
   }
 }
+
+TEST_CASE("Massive_Kernels scalar t4 includes the integrated alpha restriction",
+          "[PHASIC::Massive_Kernels]") {
+  Boot();
+  Massive_Kernels kernel(sbt::qcd, 0, 0);
+  const double mass_ratio = .2;
+  for (const int type : {1, 4}) {
+    for (const double x : {.2, .8}) {
+      CAPTURE(type, x);
+      kernel.SetAlpha(1., 1., 1., 1.);
+      const double unrestricted = kernel.t4(type, 0, mass_ratio, x);
+      kernel.SetAlpha(1., .3, 1., 1.);
+      // t4 subtracts the integrated restriction at4, on either side of 1-alpha.
+      CHECK_THAT(kernel.t4(type, 0, mass_ratio, x) + kernel.at4(type, 0, mass_ratio, x),
+                 WithinAbs(unrestricted, 1.e-12));
+    }
+  }
+}

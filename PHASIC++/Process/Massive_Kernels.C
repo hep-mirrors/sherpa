@@ -1098,7 +1098,7 @@ double Massive_Kernels::t4(int type,int spin,double muq2,double x)
   double lny=log(y);
   switch (spin) {
   case 0:
-    return sqr(lny)+2.*(DiLog(-y/muq2)-DiLog(-1./muq2)-log(muq2)*lny)-2.*lny;
+    return sqr(lny)+2.*(DiLog(-y/muq2)-DiLog(-1./muq2)-log(muq2)*lny)-2.*lny + aterm;
   case 1:
     return sqr(lny)+2.*(DiLog(-y/muq2)-DiLog(-1./muq2)-log(muq2)*lny)
       +0.5*(muq2*x/((1.+muq2)*(y+muq2))-log((1.+muq2)/(y+muq2)))-2.*lny + aterm;
