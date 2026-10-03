@@ -48,10 +48,10 @@ PDF::Cluster_Param TZj_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   else if ((f[2].Kfcode()==24 && f[3].Strong() && f[3].QuarkFamily()!=3) ||
 	   (f[2].Strong() && f[2].QuarkFamily()!=3 && f[3].Kfcode()==24)) {
     muf2 = muq2 = 
-      (f[2].Kfcode()==23?
+      (f[2].Kfcode()==24?
        ampl->Leg(2)->Mom().MPerp2():ampl->Leg(3)->Mom().MPerp2());
     mur2 =       
-      (f[2].Kfcode()!=23?
+      (f[2].Kfcode()!=24?
        ampl->Leg(2)->Mom().PPerp2():ampl->Leg(3)->Mom().PPerp2());
   }
   // t-channel top: muF = \hat{t} 
