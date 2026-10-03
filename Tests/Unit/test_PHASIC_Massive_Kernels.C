@@ -309,3 +309,73 @@ TEST_CASE("Massive_Kernels scalar t4 includes the integrated alpha restriction",
     }
   }
 }
+
+namespace {
+
+  // gives kf_code 1 the mass m for the lifetime of the object, so that a
+  // Massive_Kernels with one massive flavour picks it up
+  class MassiveQuark {
+    Particle_Info m_info;
+    Particle_Info *p_previous;
+  public:
+    explicit MassiveQuark(double mass) {
+      m_info.m_kfc = static_cast<kf_code>(1);
+      m_info.m_mass = m_info.m_hmass = mass;
+      m_info.m_massive = true;
+      auto old = s_kftable.find(m_info.m_kfc);
+      p_previous = old == s_kftable.end() ? nullptr : old->second;
+      s_kftable[m_info.m_kfc] = &m_info;
+    }
+    ~MassiveQuark() {
+      if (p_previous) s_kftable[m_info.m_kfc] = p_previous;
+      else s_kftable.erase(m_info.m_kfc);
+    }
+  };
+
+}
+
+TEST_CASE("Massive_Kernels Dire closed heavy-pair channels have no finite contribution",
+          "[PHASIC::Massive_Kernels]") {
+  Boot();
+  const double mass = 2.;
+  MassiveQuark heavy(mass);
+  Massive_Kernels massive(sbt::qcd, 0, 1);
+  Massive_Kernels massless(sbt::qcd, 0, 0);
+  REQUIRE(massive.Nmf() == 1);
+  REQUIRE_THAT(massive.FMass(0), WithinAbs(mass, 1.e-14));
+  massive.SetSubType(subscheme::Dire);
+  massless.SetSubType(subscheme::Dire);
+  for (const double s : {.5 * mass * mass, mass * mass, 2. * mass * mass, 4. * mass * mass}) {
+    for (const int incoming : {1, 2}) {
+      for (const int outgoing : {1, 2}) {
+        if (incoming == 1 && outgoing == 1) continue;
+        CAPTURE(s, incoming, outgoing);
+        // With massless spectators, g->QQ opens only at s > (2m)^2.
+        CHECK_THAT(massive.t2c(incoming, outgoing, 0., s),
+                   WithinAbs(massless.t2c(incoming, outgoing, 0., s), 1.e-12));
+      }
+    }
+  }
+}
+
+TEST_CASE("Massive_Kernels Dire closed heavy-pair channels with a massive spectator have no finite contribution",
+          "[PHASIC::Massive_Kernels]") {
+  Boot();
+  const double mass = 2., spectator = .25;
+  MassiveQuark heavy(mass);
+  Massive_Kernels massive(sbt::qcd, 0, 1);
+  Massive_Kernels massless(sbt::qcd, 0, 0);
+  REQUIRE(massive.Nmf() == 1);
+  massive.SetSubType(subscheme::Dire);
+  massless.SetSubType(subscheme::Dire);
+  // An incoming gluon with a massive spectator; the outgoing quark term does
+  // not depend on heavy flavours. The pair channel opens near s = 95 here.
+  for (const double s : {mass * mass, 2. * mass * mass, 4. * mass * mass, 50.}) {
+    CAPTURE(s);
+    CHECK_THAT(massive.t2c(2, 1, spectator, s),
+               WithinAbs(massless.t2c(2, 1, spectator, s), 1.e-12));
+  }
+  const double open = massive.t2c(2, 1, spectator, 1000.);
+  CHECK(std::isfinite(open));
+  CHECK(std::abs(open - massless.t2c(2, 1, spectator, 1000.)) > 1.e-6);
+}

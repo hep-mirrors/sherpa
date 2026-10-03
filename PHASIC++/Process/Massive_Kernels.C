@@ -1013,8 +1013,9 @@ double Massive_Kernels::t2c(int type,int spin,double muq2,double saj)
     case 2:// muq is irrelevant
       gc+=1./36.-1./18.*m_TR*m_nf/m_CA;
       for (size_t i(0);i<m_nmf;++i) {
-        double mui2=sqr(m_massflav[i])/saj, rho1=sqrt(1.-4.*mui2);
-        if (mui2>1.0) continue;
+        double mui2=sqr(m_massflav[i])/saj;
+        if (4.*mui2>=1.0) continue;
+        double rho1=sqrt(1.-4.*mui2);
         gc+=m_TR/m_CA*((rho1*(-1.-154.*mui2+64.*pow(mui2,3)-152.*sqr(mui2))+
                         12.*mui2*log((1.-rho1)/(1.+rho1))*(-4.-17.*mui2+4.*sqr(mui2)))/(18.*sqr(1.-2.*mui2)));
       }
@@ -1029,7 +1030,7 @@ double Massive_Kernels::t2c(int type,int spin,double muq2,double saj)
         gc+=1./36.-1./18.*m_TR*m_nf/m_CA;
         for (size_t i(0);i<m_nmf;++i) {
           double mui2=sqr(m_massflav[i])/saj;
-          if (mui2>1.0) continue;
+          if (4.*mui2>=1.0) continue;
           double rho1=sqrt(1.-4.*mui2);
           gc+=m_TR/m_CA*((rho1*(-1.-154.*mui2+64.*pow(mui2,3)-152.*sqr(mui2))+
                           12.*mui2*log((1.-rho1)/(1.+rho1))*(-4.-17.*mui2+4.*sqr(mui2)))/(18.*sqr(1.-2.*mui2)));
@@ -1042,8 +1043,9 @@ double Massive_Kernels::t2c(int type,int spin,double muq2,double saj)
                             -2.*muq2/(3.*(1.-muq2))*log(2.*muq/(1.+muq)));
         for (size_t i(0);i<m_nmf;++i) {
           double mui2=sqr(m_massflav[i])/saj;
-          if (mui2>1.0) continue;
-          double rho1=sqrt(1.-4.*sqr(m_massflav[i]/(sqrt(saj*(1.+muq2))-sqrt(saj*muq))));
+          double rho1sq=1.-4.*sqr(m_massflav[i]/(sqrt(saj*(1.+muq2))-sqrt(saj*muq)));
+          if (4.*mui2>=1.0 || rho1sq<=0.) continue;
+          double rho1=sqrt(rho1sq);
           double rho2=sqrt(1.-4.*sqr(m_massflav[i])/saj);
 	  gc+=m_TR/m_CA*(-(((3.-2.*mui2)/(3.*(1.-muq2))-(3+2*mui2-(2*mui2*(9+5*mui2))/(1-2*mui2-muq2))/(3.*(1-2*mui2-muq2)))*
                            log((1-rho1)/(1+rho1)))-(2*muq2*((-8*mui2*rho1)/(1-muq2)-log((1-rho1)/(1+rho1))+log((-rho1+rho2)/(rho1+rho2))*pow(rho2,3)))/(3.*(1-muq2))-
