@@ -23,7 +23,7 @@ using namespace PHASIC;
 const size_t s_noptmin(10);
 
 BBar_Emission_Generator::BBar_Emission_Generator():
-  m_opt(5)
+  p_active(NULL), m_opt(5), m_weight(0.0)
 {
   auto& s = Settings::GetMainSettings();
   m_omode = s["EEG"]["OMODE"].SetDefault(2).Get<size_t>();
@@ -210,6 +210,7 @@ bool BBar_Emission_Generator::GenerateWeight
 
 void BBar_Emission_Generator::AddPoint(const double &value)
 {
+  if (p_active==NULL) return;
   double rssum(0.0);
   const std::map<Process_Base*,Process_Vector> &procs(m_pmap[p_active]);
   for (std::map<Process_Base*,Process_Vector>::const_iterator
@@ -300,7 +301,7 @@ void BBar_Emission_Generator::MPISync()
   for (size_t i(0), j(0);i<m_dipoles.size();++i)
     m_dipoles[i]->MPICollect(sv,j);
   if (mpi->Size())
-    mpi->Allreduce(&sv[0],sv.size(),MPI_DOUBLE,MPI_SUM);
+    mpi->Allreduce(sv.data(),sv.size(),MPI_DOUBLE,MPI_SUM);
   for (size_t i(0), j(0);i<m_dipoles.size();++i)
     m_dipoles[i]->MPIReturn(sv,j);
 #endif
