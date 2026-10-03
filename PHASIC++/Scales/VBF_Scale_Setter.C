@@ -322,7 +322,7 @@ void VBF_Scale_Setter::Combine
   li->SetMom(ci.second.m_pijt);
   li->SetStat(ci.second.m_stat);
   lk->SetMom(ci.second.m_pkt);
-  ampl.Prev()->SetIdNew(ampl.Leg(ci.first.m_j)->Id());
+  ampl.Prev()->SetIdNew(lj->Id());
   for (size_t m(0);m<ampl.Legs().size();++m) {
     ampl.Leg(m)->SetK(0);
     ampl.Leg(m)->SetStat(ampl.Leg(m)->Stat()|1);
