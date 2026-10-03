@@ -179,7 +179,9 @@ double MINLO_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &m
     std::set<MCS_Params> &trials(alltrials[ampl->Legs().size()-(m_nin+m_noutmin)]);
     MCS_Params ckw(0,0,0,kf_none);
     msg_Debugging()<<"Weights: {\n";
-    for (size_t i(0);i<ampl->Legs().size();++i) {
+    // The minimum multiplicity is the core and is not clustered further.
+    const bool cluster(ampl->Legs().size()>m_nin+m_noutmin);
+    for (size_t i(0);cluster && i<ampl->Legs().size();++i) {
       msg_Indent();
       Cluster_Leg *li(ampl->Leg(i));
       for (size_t j(Max((size_t)2,i+1));j<ampl->Legs().size();++j) {
