@@ -257,3 +257,37 @@ TEST_CASE("Kbc3 corrects the CSS initial-final shifts for a massive final-state 
     }
   }
 }
+
+TEST_CASE("Massive_Kernels Dire finite pair shifts equal the two single-leg shifts",
+          "[PHASIC::Massive_Kernels]") {
+  Boot();
+  // No massive flavours: this is pure massless arithmetic, without model setup.
+  Massive_Kernels kernel(sbt::qcd, 0, 0);
+  const double scale = 100.;
+  for (const size_t nf : {0, 3, 5}) {
+    CAPTURE(nf);
+    kernel.SetNf(nf);
+    auto shift = [&](ist::itype type) {
+      kernel.SetSubType(subscheme::CS);
+      kernel.Calculate(type, scale, scale, 0., 0., true, false, false);
+      const double cs = kernel.I_Fin();
+      kernel.SetSubType(subscheme::Dire);
+      kernel.Calculate(type, scale, scale, 0., 0., true, false, false);
+      return kernel.I_Fin() - cs;
+    };
+    const double quark_shift = shift(ist::q);
+    const double gluon_shift = shift(ist::g);
+    for (const int incoming : {1, 2}) {
+      for (const int outgoing : {1, 2}) {
+        CAPTURE(incoming, outgoing);
+        const double expected = (incoming == 1 ? quark_shift : gluon_shift)
+                                + (outgoing == 1 ? quark_shift : gluon_shift);
+        // The reference subtracts two finite I terms, allowing cancellation.
+        CHECK_THAT(kernel.t2c(incoming, outgoing, 0., scale), WithinAbs(expected, 1.e-12));
+        kernel.SetSubType(subscheme::CS);
+        CHECK_THAT(kernel.t2c(incoming, outgoing, 0., scale), WithinAbs(0., 1.e-14));
+        kernel.SetSubType(subscheme::Dire);
+      }
+    }
+  }
+}

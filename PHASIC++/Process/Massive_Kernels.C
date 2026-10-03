@@ -1009,6 +1009,7 @@ double Massive_Kernels::t2c(int type,int spin,double muq2,double saj)
     case 1:// muq is scaled quark mass
       if (muq2==0.) gc+=-1./4.;
       else gc+=-1./4.*(1.+muq2)/(1.-muq2)-muq2/(1.-muq2)*(1.+(2.+muq2)/(1.-muq2)*log(muq2)/2.);
+      break;
     case 2:// muq is irrelevant
       gc+=1./36.-1./18.*m_TR*m_nf/m_CA;
       for (size_t i(0);i<m_nmf;++i) {
@@ -1022,6 +1023,7 @@ double Massive_Kernels::t2c(int type,int spin,double muq2,double saj)
     case 1:// muq is scaled spectator mass
       if (muq2==0.) gc+=-1./4.;
       else gc+=-(1.-muq)*(1.+3.*muq)/(4.*sqr(1.+muq));
+      break;
     case 2:// muq is scaled spectator mass
       if (muq2==0.) {
         gc+=1./36.-1./18.*m_TR*m_nf/m_CA;
