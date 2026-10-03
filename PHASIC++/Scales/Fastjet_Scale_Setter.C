@@ -136,9 +136,13 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
     if (m_calcs.size()==1) m_tagset.SetCalculator(m_calcs.back());
     ctags.push_back(ctag);
   }
+  // m_scale holds the three scales followed by one entry per expression or
+  // clustering node. SetCouplings keeps pointers into it, so size it here
+  // for every node and never let Calculate reallocate it.
+  size_t nclus(0);
   for (size_t i(p_proc->NIn());i<m_f.size();++i)
-    if (!ToBeClustered(m_f[i], m_bmode)) m_scale.push_back(0.0);
-  m_scale.resize(Max(m_scale.size(),m_calcs.size()+stp::size));
+    if (ToBeClustered(m_f[i], m_bmode)) ++nclus;
+  m_scale.resize(stp::size+Max(m_calcs.size(),nclus));
   for (size_t i(0);i<m_calcs.size();++i)
     SetScale(ctags[i],*m_calcs[i]);
   m_scale.resize(stp::size);
@@ -208,7 +212,11 @@ double Fastjet_Scale_Setter::Calculate
           (m_y==100.0 || dabs(pj.Y())<m_y)) m_p.push_back(pj);
     }
   }
-  m_scale.resize(Max(m_scale.size(),m_calcs.size()+stp::size));
+  const size_t nscale(stp::size+Max(m_calcs.size(),input.size()));
+  if (nscale>m_scale.capacity())
+    THROW(fatal_error,"More clustering nodes than final-state partons in '"
+          +p_proc->Name()+"'.");
+  m_scale.resize(Max(m_scale.size(),nscale));
   for (size_t idx(stp::size), i(0);i<input.size();++i)
     m_scale[idx++]=cs.exclusive_dmerge_max(i);
   for (size_t i(0);i<m_calcs.size();++i)
