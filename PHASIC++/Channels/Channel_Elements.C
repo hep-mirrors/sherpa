@@ -472,18 +472,17 @@ double Channel_Elements::ExponentialWeight(double sexp, double smin,
     ran = -1.;
     return 0.;
   }
-  double wt_inv = 0;
-  double cbwt =
+  const double cbwt =
     PHASIC::ExponentialWeight(sexp, 0, smax - smin); // 1/integral
-  wt_inv =
-      1 / (exp(-sexp * (s - smin)) * cbwt); // weight = P(s)/I, this is inverse
+  const double weight = exp(-sexp * (s - smin)) * cbwt;
+  ran = expm1(-sexp * (s - smin)) / expm1(-sexp * (smax - smin));
 
-  if (!(wt_inv > 0) && !(wt_inv < 0) && wt_inv != 0) {
-    msg_Error() << "ExponentialWeight produces a nan: " << wt_inv << endl
+  if (!(weight > 0) && !(weight < 0) && weight != 0) {
+    msg_Error() << "ExponentialWeight produces a nan: " << weight << endl
                 << "   smin,s,smax = " << smin << " < " << s << " < " << smax
                 << "   sexp = " << sexp << endl;
   }
-  return wt_inv;
+  return weight;
 }
 
 double Channel_Elements::AntennaWeight(double amin, double amax, const double a,
