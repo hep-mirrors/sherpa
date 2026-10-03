@@ -86,7 +86,8 @@ MINLO_Scale_Setter::MINLO_Scale_Setter
   m_bumode = metssettings["BACKUP_MODE"].Get<int>();
   m_murmode = metssettings["MUR_MODE"].Get<int>();
   m_dr = metssettings["DELTA_R"].Get<double>();
-  m_muf2min = metssettings["MUF2_MIN"].Get<double>();
+  m_muf2min = metssettings["MUF2_MIN"].GetScalarWithOtherDefault<double>(
+      p_isr->PDF(0)->Q2Min());
   if (core == "") {
     core = metssettings["CORE_SCALE"].GetScalarWithOtherDefault<std::string>(
         "VAR{H_TM2/4}");
@@ -138,7 +139,6 @@ void MINLO_Scale_Setter::RegisterDefaults() const
   s["BACKUP_MODE"].SetDefault(1);
   s["MUR_MODE"].SetDefault(1);
   s["DELTA_R"].SetDefault(1.0);
-  s["MUF2_MIN"].SetDefault(p_isr->PDF(0)->Q2Min());
   s.DeclareVectorSettingsWithEmptyDefault({ "ALLOW_CORE" });
 }
 

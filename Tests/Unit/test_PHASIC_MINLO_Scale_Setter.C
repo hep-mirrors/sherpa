@@ -7,6 +7,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "PDF/Main/ISR_Base.H"
 
+#include <algorithm>
 #include <memory>
 
 namespace {
@@ -55,22 +56,22 @@ public:
 class BoundsPDF : public PDF::PDF_Base {
   void CalculateSpec(const double&, const double&) override {}
 public:
-  BoundsPDF()
+  explicit BoundsPDF(double q2min = 1.)
   {
     m_bunch = ATOOLS::Flavour(kf_gluon);
     m_partons.insert(m_bunch);
-    m_q2min = 1.;
+    m_q2min = q2min;
     m_q2max = 1.e6;
     SetBounds();
   }
   double GetXPDF(const ATOOLS::Flavour&) override { return 1.; }
   double GetXPDF(const kf_code&, bool) override { return 1.; }
-  PDF::PDF_Base* GetCopy() override { return new BoundsPDF(); }
+  PDF::PDF_Base* GetCopy() override { return new BoundsPDF(m_q2min); }
 };
 
 class ISR : public PDF::ISR_Base {
 public:
-  ISR() : PDF::ISR_Base(new BoundsPDF())
+  explicit ISR(double q2min = 1.) : PDF::ISR_Base(new BoundsPDF(q2min))
   { m_bunch = p_pdf->Bunch(); m_type = PDF::isrtype::hadron; }
   bool CalculateWeight(double, double, double, double, int) override { return true; }
   double Weight(ATOOLS::Flavour) override { return 1.; }
@@ -117,6 +118,25 @@ TEST_CASE("MINLO stops clustering at the configured minimum final multiplicity",
   REQUIRE(minlo->Ampl() != nullptr);
   CHECK(minlo->Ampl()->Legs().size() == 4);
   CHECK(minlo->Ampl()->Next() == nullptr);
+}
+
+TEST_CASE("MINLO's default factorization floor follows each PDF context",
+          "[PHASIC::MINLO_Scale_Setter]")
+{
+  Environment environment;
+  PHASIC_Test::Jet_Group jets{ATOOLS::Flavour(kf_gluon)};
+  for (const double q2min : {1., 200., 1.}) {
+    CAPTURE(q2min);
+    PDF::ISR_Handler isr({new ISR(q2min), new ISR(q2min)});
+    Process process;
+    process.Integrator()->SetISR(&isr);
+    std::unique_ptr<PHASIC::Scale_Setter_Base> scale;
+    REQUIRE_NOTHROW(scale = MakeScale(process));
+    REQUIRE(scale != nullptr);
+    CHECK_THAT(scale->CalculateScale(momenta),
+               Catch::Matchers::WithinRel(std::max(100., q2min), 1.e-12));
+    CHECK_THAT(scale->Scale(ATOOLS::stp::ren), Catch::Matchers::WithinRel(100., 1.e-12));
+  }
 }
 
 TEST_CASE("MINLO's geometric renormalization scale includes the QCD core powers",
