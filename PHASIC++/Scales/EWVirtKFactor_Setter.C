@@ -87,8 +87,8 @@ void EWVirtKFactor_Setter::CopyMomenta()
 
 void EWVirtKFactor_Setter::CopyMomenta(const NLO_subevt& evt)
 {
-  Vec4D_Vector p(evt.p_mom, &(evt.p_mom[evt.m_n]));
-  for (size_t i(0);i<p_proc->NIn();++i) p[i]=-p[i];
+  m_p.assign(evt.p_mom, evt.p_mom + evt.m_n);
+  for (size_t i(0);i<p_proc->NIn();++i) m_p[i]=-m_p[i];
 }
 
 void EWVirtKFactor_Setter::InitEWVirt()
