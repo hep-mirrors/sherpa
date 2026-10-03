@@ -164,7 +164,7 @@ bool ISR_Channels::CreateChannels()
       AddResonance(i,collmode);
       break;
     case channel_type::threshold:
-      AddResonance(i,collmode);
+      AddThreshold(i,collmode);
       break;
     case channel_type::leadinglog:
       AddLeadingLog(i,collmode);
