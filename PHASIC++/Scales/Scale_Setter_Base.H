@@ -25,7 +25,7 @@ namespace PHASIC {
 			   const std::string &scale="",
 			   const std::string &coupling=""):
       p_proc(NULL), p_model(model), p_cpls(NULL),
-      m_scale(scale), m_coupling(coupling) {}
+      m_scale(scale), m_coupling(coupling), m_nin(0), m_nout(0) {}
   };// end of class Scale_Setter_Arguments
 
   class Scale_Setter_Base {
