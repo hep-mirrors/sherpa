@@ -290,13 +290,10 @@ PrintInfo(std::ostream &str,const size_t width) const
   str<<"2->2 U-channel integrator";
 }
 
-Decay2Channel::Decay2Channel(int _nin,int _nout,const Flavour * fl,Flavour res) 
+Decay2Channel::Decay2Channel(int _nin,int _nout,const Flavour * fl,Flavour res) :
+  Single_Channel(_nin,_nout,fl)
 {
-  m_nin = _nin; m_nout = _nout;
-  p_ms[0] = ATOOLS::sqr(res.Mass());
-  for (int i=m_nin;i<m_nin+m_nout;i++) {
-    p_ms[i] = ATOOLS::sqr(fl[i-1].Mass());
-  }
+  if (res!=Flavour(kf_none)) p_ms[0] = ATOOLS::sqr(res.Mass());
   if (m_nout != 2 || m_nin!=1) {
     msg_Error()<<"Tried to initialize Decay2Channel with nout = "<<_nin<<" -> "<<_nout<<endl;
     Abort();
