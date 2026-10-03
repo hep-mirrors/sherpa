@@ -17,12 +17,12 @@ std::string Tag_Setter::ReplaceTags(std::string &expr) const
 
 Term *Tag_Setter::ReplaceTags(Term *term) const
 {
-  if (term->Id()>=10) {
+  if (term->Id()>=11) {
     if (term->Id()>=100) {
       term->Set(p_setter->Momenta()[term->Id()-100]);
       return term;
     }
-    term->Set(p_setter->Scales()[term->Id()-10]);
+    term->Set(p_setter->Scales()[term->Id()-11]);
     return term;
   }
   switch (term->Id()) {
@@ -77,7 +77,7 @@ void Tag_Setter::AssignId(Term *term)
   else if (term->Tag()=="P_TM2") term->SetId(10);
   else if (term->Tag()=="hH_T2") term->SetId(0);
   else if (term->Tag().find("MU_")==0) {
-    term->SetId(10+ToType<int>
+    term->SetId(11+ToType<int>
 		(term->Tag().substr
 		 (3,term->Tag().length()-4)));
   }

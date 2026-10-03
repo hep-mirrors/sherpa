@@ -127,6 +127,10 @@ double Scale_Setter_Base::PTM() const
         n++;
      }
     }
+  // the empty product would give pow(1,1/0) = 1, i.e. a silent 1 GeV scale
+  if (n==0)
+    THROW(fatal_error,"P_TM2 needs at least one massive final-state particle;"
+          " process '"+p_proc->Name()+"' has none.");
   return pow(ptm,1./n);
 }
 
