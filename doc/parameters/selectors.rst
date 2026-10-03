@@ -97,9 +97,13 @@ respective keywords are
     energy cut
 
 :option:`Polar_Angle`
-    Polar Angle cut in radians. An optional
-    boolean can be provided to switch to degrees
-    e.g [<keyword>, <flavour code>, <min value>, <max value>, <radians>]
+    Polar angle cut, in radians by default. The optional ``radians`` flag
+    selects radians (``1``) or degrees (``0``). A further optional
+    ``labframe`` flag (default ``0``) boosts the momenta back to the
+    laboratory frame before applying the cut. The syntax is
+    ``[Polar_Angle, <flavour code>, <min value>, <max value>, <radians>, <labframe>]``.
+    Both trailing flags may be omitted, or ``labframe`` may be omitted after
+    an explicit ``radians`` flag.
 
 
 .. _Two particle selectors:
@@ -395,10 +399,12 @@ are required, and ``<Taucut>`` the minimum value that the observable
 is allowed to have to be considered a valid phase space point.
 In the current implementation, the algorithm used to cluster the jets defining
 the hard directions can be specified using the ``Algorithm`` option. The
-following values are accepted: ``antikt, kt, genkt, cambridge``, and they
-correspond to those that can be accessed throught the ``Fastjet`` implementation.
-The algorithm is then used to find ``<N>`` pseudojet, which are then
-used to compute the minima that determine the final value of ``NJetttiness``.
+accepted values are ``antikt``, ``kt`` and ``cambridge``, corresponding to the
+associated ``Fastjet`` algorithms; any other value is rejected at setup. This
+includes ``genkt``, whose exponent cannot be configured here. In lepton-lepton
+collisions ``kt`` is the Durham algorithm, which ignores ``DR``. The algorithm is
+then used to find ``<N>`` pseudojets, which are
+used to compute the minima that determine the final value of ``NJettiness``.
 Note, that in the case of Hadron Colliders, the beam are added internally as
 additional ``jets``. Further options can be specified to determine the behaviour
 of this selector. In particular as ``NJettiness`` is a frame dependent quantity,
@@ -407,18 +413,18 @@ option. Currently only two values are accepted which correspond to the hadronic
 centre of mass frame (or Laboratory frame), which is the default and referred to
 as ``lab``, and the partonic centre of mass frame specified as ``com``.
 Additionally, the normalization of each contribution to ``NJettiness`` can be
-choosen through the ``Norm`` parameter between three options: ``jet``, ``jet2``
+chosen through the ``Normalization`` parameter between three options: ``jet``, ``jet2``
 and ``com``.
 The first correspond to normalizing the scalar product with the jet energy, the second and
 default choice is equal to the first but multiplied by a factor two, while the
 last one corresponds to normalizing each contribution with the centre of mass
 energy and leads to a Lorentz invariant definition of ``NJettiness``.
 
-Finally a variaty of parameters to control the clustering of the hard directions
-can be passed, similarly to the :option:`FastjetFinder` case. In particular the
-minimum transverse momentum and/or transverse energy (``PTMin,ETMin``), the
-radius of the jet (``DR``), which defaults to ``1``, and the maximum rapidity
-and/or pseudorapidity can be specified (``YMax,EtaMax``).dsd
+Finally, a variety of parameters controlling the clustering of the hard
+directions can be passed, similarly to the :option:`FastjetFinder` case. In
+particular the minimum transverse momentum and/or transverse energy
+(``PTMin,ETMin``), the radius of the jet (``DR``, default ``1``), and the
+maximum rapidity and/or pseudorapidity (``YMax,EtaMax``) can be specified.
 
 For example, in the case of vector boson plus jet setup, with ``0.1`` GeV
 0-Jettiness cut, one would use something along the lines of
@@ -466,7 +472,6 @@ to them. Example:
            Ranges:
            - [20, E_CMS]
            - [18, E_CMS]
-           Ordering: [PT_UP]
        - [DR, 22, 22, 0.2, 10000.0 ]
        #for integration efficiency: m_yy >= sqrt(2 pTmin1 pTmin2 (1-cos dR))
        - [Mass, 22, 22, 3.7, E_CMS]
@@ -510,24 +515,22 @@ variable has to be calculated from.  The ranges :option:`[<min>,
 
 If the ``Ordering`` parameter is not given, the order of cuts is
 determined internally, according to Sherpa's process classification
-scheme.  This then has to be matched if you want to have different
-cuts on certain different particles in the matrix element. To do this,
-you should put enough (for the possible number of combinations of your
-particles) arbitrary ranges at first and run Sherpa with debugging
-output for the universal selector: ``Sherpa 'FUNCTION_OUTPUT:
-{"Variable_Selector::Trigger": 15}'``.  This will start to produce
-lots of output during integration, at which point you can interrupt
-the run (Ctrl-c). In the ``Variable_Selector::Trigger(): {...}``
-output you can see, which particle combinations have been found and
-which cut range your selector has held for them (vs. the arbitrary
-range you specified). From that you should get an idea, in which order
-the cuts have to be specified.
+scheme. This then has to be matched if you want to have different cuts
+on certain particles in the matrix element. To do this, you should put
+enough (for the possible number of combinations of your particles)
+arbitrary ranges at first and run Sherpa with debugging output for the
+universal selector: ``Sherpa 'FUNCTION_OUTPUT:
+{"Variable_Selector::Trigger": 15}'``. This will start to produce lots
+of output during integration, at which point you can interrupt the run
+(Ctrl-c). In the ``Variable_Selector::Trigger(): {...}`` output you can
+see which particle combinations have been found and which cut range
+your selector has held for them (vs. the arbitrary range you specified).
 
-If the fourth argument is given, particles are ordered before the cut
-is applied. Possible orderings are :option:`PT_UP`, :option:`ET_UP`,
-:option:`E_UP`, :option:`ETA_UP` and :option:`ETA_DOWN`, (increasing
-p_T, E_T, E, eta, and decreasing eta). They have to be specified for
-each of the particles, separated by commas.
+.. warning::
+
+   ``Ordering`` is currently parsed but not applied by
+   ``VariableSelector``. Do not rely on it to select, for example, the
+   hardest lepton.
 
 Examples
 
@@ -541,13 +544,12 @@ Examples
        Ranges:
        - [50, E_CMS]
 
-   # cut on the pT of only the hardest lepton in the event
+   # cut on the pT of a lepton in the event
    - VariableSelector:
        Variable: PT
        Flavs: 90
        Ranges:
        - [50, E_CMS]
-       Ordering: [PT_UP]
 
    # using bool operations to restrict eta of the electron to |eta| < 1.1 or
    # 1.5 < |eta| < 2.5
@@ -563,7 +565,6 @@ Examples
        Flavs: [93, 93]
        Ranges:
        - [-100, 0]
-       Ordering: [PT_UP, PT_UP]
 
    # restricting electron+photon mass to be outside of [87.0,97.0]
    - VariableSelector:

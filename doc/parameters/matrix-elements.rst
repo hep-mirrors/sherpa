@@ -235,10 +235,11 @@ The scale setter options which are currently available are
   jets are given as a comma separated list of
 
   * the jet algorithm ``A:kt,antikt,cambridge`` (default
-    ``kt``)
+    ``antikt``)
 
   * phase space restrictions, i.e. ``PT:<min-pt>``, ``ET:<min-et>``,
-    ``Eta:<max-eta>``, ``Y:<max-rap>`` (otherwise unrestricted)
+    ``Eta:<max-eta>``, ``Y:<max-rap>`` (defaults ``0``, ``0``, ``100``,
+    ``100``, respectively; ``100`` disables the ``Eta`` or ``Y`` cut)
 
   * radial parameter ``R:<rad-param>`` (default ``0.4``)
 
@@ -423,18 +424,19 @@ Possible choices for the core scale setter are:
   To be used with the corresponding scale setter, see above.
 
 
-Unordered cluster histories are by default not allowed. Instead, if during
-clustering a new smaller scale is encountered, the previous maximal scale
-will be used, or alternatively a user-defined scale specified, e.g.
+Unordered cluster histories are allowed by default in ``METS``
+(``MEPS: {ALLOW_SCALE_UNORDERING: 1}``). This automatically requests the
+:ref:`CCFM KFactor scheme <CCFM KFactor>`.
+
+To disallow unordered histories, set
+``MEPS: {ALLOW_SCALE_UNORDERING: 0}``. If during clustering a new smaller
+scale is encountered, the previous maximal scale will be used, or
+alternatively a user-defined scale specified, e.g.
 
 .. code-block:: yaml
 
    MEPS:
      UNORDERED_SCALE: VAR{H_Tp2/sqr(N_FS-2)}
-
-If instead you want to allow unordered histories you can enable them with
-``ALLOW_SCALE_UNORDERING: 1``. This will automatically request the
-:ref:`CCFM KFactor scheme <CCFM KFactor>`.
 
 Clusterings onto 2->n (n>2) configurations is possible and for complicated
 processes can warrant the implementation of a custom core scale, cf. :ref:`Customization`.
@@ -501,7 +503,7 @@ choices or easily implement a user defined scale.
   particle masses into account.
 
 :option:`hH_T2`
-  Square of the scalar sum of the transverse energies of
+  Square of the scalar sum of the transverse momenta of
   all QCD final state particles.
 
 :option:`H_TY2(<factor>,<exponent>)`
@@ -529,8 +531,15 @@ choices or easily implement a user defined scale.
   ``Cone``, ``kt``, ``CA`` or ``antikt``, while ``<dR>`` is
   the respective algorithm's angular distance parameter.
 
-:option:`TAU_B2`
+:option:`TAUB`
   Square of the beam thrust.
+
+:option:`P_TM2`
+  Square of the geometric mean of the transverse masses of all massive
+  final-state particles. "Massive" refers to the masses used in the matrix
+  element, so the particles included depend on the ``MASSIVE`` settings, e.g.
+  b quarks only count in a scheme with massive b quarks. Using the tag for a
+  process without a massive final-state particle stops the run with an error.
 
 :option:`MU_F2, MU_R2, MU_Q2`
   Tags holding the values of the factorisation, renormalisation scale and
@@ -674,6 +683,7 @@ on the command line. Currently available options are
   Note that counting starts at zero.
 
 .. _CCFM KFactor:
+
 :option:`CCFM`
   Requires the :ref:`METS <METS scale setting with multiparton core processes>`
   scale and is automatically requested by this scale if
