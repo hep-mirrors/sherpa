@@ -73,7 +73,7 @@ namespace PHASIC {
     void   WriteOut(std::string pId) { if (m_ownvegas) p_vegas->WriteOut(pId); }
     void   ReadIn(std::string pId)   { if (m_ownvegas) p_vegas->ReadIn(pId); }
 
-    int    RTH()                     { return m_thmass; }
+    double RTH()                     { return m_thmass; }
     int    RD1()                     { return n_d1; }
     int    RD2()                     { return n_d2; }
     int    Type()                    { return m_type; }
@@ -747,7 +747,7 @@ namespace PHASIC {
       size_t bpos(key.m_key.find('[')), epos(key.m_key.rfind(']'));
       if (bpos==std::string::npos || epos==std::string::npos) {
         Scoped_Settings s{ Settings::GetMainSettings()["VHAAG"] };
-	m_th=s["TH"].SetDefault(40.0).Get<int>();
+	m_th=s["TH"].SetDefault(40.0).Get<double>();
 	m_d1=s["D1"].SetDefault(2).Get<int>();
 	m_d2=s["D2"].SetDefault(3).Get<int>();
 	return;
