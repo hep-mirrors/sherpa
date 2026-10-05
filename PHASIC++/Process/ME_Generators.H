@@ -42,6 +42,7 @@ namespace PHASIC   {
     Process_Base* InitializeProcess(const Process_Info &pi, bool add);
 
     inline MODEL::Model_Base *Model() const { return p_model; }
+    inline PDF::ISR_Handler *ISR() const { return p_isr; }
     void SetModel(MODEL::Model_Base*);
     void SetRemnant(REMNANTS::Remnant_Handler *remnant);
   };
