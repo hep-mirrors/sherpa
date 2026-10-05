@@ -61,6 +61,7 @@ if (SHERPA_ENABLE_INTEGRATION_TESTS)
   if (SHERPA_ENABLE_HDF5)
     set(test test-HDF5-LO_mumu)
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
+    find_program(SHERPA_H5DUMP_EXECUTABLE h5dump HINTS ${HDF5_DIR}/bin)
     add_test(
       NAME Main${test}part1
       COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/HDF5/Sherpa.yaml
@@ -70,6 +71,7 @@ if (SHERPA_ENABLE_INTEGRATION_TESTS)
       NAME Main${test}part2
       COMMAND ${CMAKE_COMMAND}
         -DOUTPUT_FILE=${CMAKE_CURRENT_BINARY_DIR}/${test}/events.hdf5
+        -DH5DUMP=${SHERPA_H5DUMP_EXECUTABLE}
         -P ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/HDF5/check_output.cmake
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
       )
