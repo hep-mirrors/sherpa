@@ -8,6 +8,7 @@
 #include "ATOOLS/Math/BreitBoost.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "MODEL/Main/Model_Base.H"
+#include "PDF/Main/ISR_Handler.H"
 #include "REMNANTS/Main/Remnant_Handler.H"
 #include <algorithm>
 
@@ -276,25 +277,30 @@ namespace PHASIC {
     }
   };// end of class ShiftMasses_DIS
 
-  /// indices of the two incoming legs, classified by their beam remnants:
-  /// - `intact` is the leg taken from the non-PDF (intact) beam — the
-  ///   lepton for DIS, the real photon for EPA photoproduction — whose
-  ///   momentum is fixed by the beam and must be preserved;
-  /// - `pdf` is the leg extracted from a PDF, whose momentum may be shifted.
-  /// An index is -1 if there is no such leg.
-  struct shift_legs { int intact, pdf; };
-
-  shift_legs FindShiftMassesLegs(const ATOOLS::Cluster_Amplitude *const ampl,
-                                 const REMNANTS::Remnant_Handler *const remnant)
-  {
-    shift_legs legs {-1,-1};
-    for (size_t i(0); i < ampl->NIn(); ++i) {
-      if (remnant->GetRemnant(i)->Type() == REMNANTS::rtp::intact) legs.intact = i;
-      else                                                         legs.pdf    = i;
-    }
-    return legs;
-  }
 }// end of namespace PHASIC
+
+Mass_Shift_Mapping PHASIC::SelectMassShiftMapping(const Flavour &in0,
+                                                  const Flavour &in1,
+                                                  const int pdfs,
+                                                  const int leptonbunches)
+{
+  const bool lepton[2] = {in0.IsLepton(), in1.IsLepton()};
+  const bool pdf[2] = {(pdfs&1)!=0, (pdfs&2)!=0};
+  /// DIS: the lepton of a lepton beam scatters off a parton from a PDF;
+  /// leptons taken from a hadron or photon PDF are shifted like partons
+  if (lepton[0]!=lepton[1]) {
+    const int lep(lepton[0]?0:1), had(1-lep);
+    if ((leptonbunches&(1<<lep)) && pdf[had])
+      return {Mass_Shift_Mapping::dis, lep, had};
+  }
+  /// EPA: a non-lepton without PDF, whose momentum is fixed by the beam
+  /// spectrum, scatters off a leg from a PDF
+  if (pdf[0]!=pdf[1]) {
+    const int fix(pdf[0]?1:0);
+    if (!lepton[fix]) return {Mass_Shift_Mapping::epa, fix, 1-fix};
+  }
+  return {Mass_Shift_Mapping::standard, -1, -1};
+}
 
 int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
 {
@@ -307,23 +313,31 @@ int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
     if (m_psmass.find(ampl->Leg(i)->Flav())!=m_psmass.end()) run=true;
   }
   if (!run) return 1;
-  /// decays never need mass shifting
-  if (ampl->NIn() <= 1) return 1;
-  /// without a remnant handler the legs cannot be classified
-  if (p_remnant==NULL) return ShiftMassesDefault(ampl, cms);
-  /// classify the incoming legs by their remnants:
-  /// no PDF leg → nothing to shift; two PDF legs → Default; one PDF leg →
-  /// DIS if the intact leg is a lepton (virtual-photon exchange, Breit frame
-  /// well-defined), else EPA (real photon, momentum fixed by beam spectrum)
-  const auto legs = FindShiftMassesLegs(ampl, p_remnant);
-  if (legs.pdf < 0) return 1;
-  if (legs.intact < 0) return ShiftMassesDefault(ampl, cms);
-  if (ampl->Flav(legs.intact).IsLepton())
-    return ShiftMassesDIS(ampl, cms);
-  return ShiftMassesEPA(ampl, cms);
+  /// decays are shifted in the rest frame of the decaying particle
+  if (ampl->NIn() <= 1) return ShiftMassesDefault(ampl, cms, 0);
+  /// generators without an ISR handler (e.g. for multiple interactions) only
+  /// scatter partons from PDFs
+  const PDF::ISR_Handler *const isr(p_gens ? p_gens->ISR() : NULL);
+  const int pdfs(isr ? isr->On() : 3);
+  int leptonbunches(0);
+  for (size_t i(0);i<2;++i)
+    if (rpa->gen.Bunch(i).IsLepton()) leptonbunches|=1<<i;
+  const Mass_Shift_Mapping mapping
+    (SelectMassShiftMapping(ampl->Leg(0)->Flav(),ampl->Leg(1)->Flav(),
+                            pdfs,leptonbunches));
+  switch (mapping.m_mode) {
+  case Mass_Shift_Mapping::dis:
+    return ShiftMassesDIS(ampl, mapping.m_fixed, mapping.m_pdf);
+  case Mass_Shift_Mapping::epa:
+    return ShiftMassesEPA(ampl, mapping.m_fixed, mapping.m_pdf);
+  case Mass_Shift_Mapping::standard:
+    break;
+  }
+  return ShiftMassesDefault(ampl, cms, pdfs);
 }
 
-int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl, Vec4D cms)
+int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl,
+                                          Vec4D cms, const int pdfs)
 {
   DEBUG_FUNC(m_name);
   msg_Debugging()<<"Before shift: "<<*ampl<<"\n";
@@ -345,6 +359,11 @@ int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl, Vec4D c
       ampl->Leg(i)->SetMom(boost*p);
     }
   }
+  else {
+    /// a decaying particle keeps its momentum
+    for (size_t i(0);i<ampl->NIn();++i)
+      ampl->Leg(i)->SetMom(boost*ampl->Leg(i)->Mom());
+  }
   ShiftMasses_Energy etot(this,ampl,1);
   double xi(etot.WDBSolve(cms[0],0.0,1.0));
   if (!IsEqual(etot(xi),cms[0],rpa->gen.Accu())) {
@@ -356,9 +375,9 @@ int ME_Generator_Base::ShiftMassesDefault(Cluster_Amplitude *const ampl, Vec4D c
     p[0]=sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
     ampl->Leg(i)->SetMom(boost*p);
   }
-  for (int i = 0; i < 2; i++) {
-    if (p_remnant!=NULL &&
-        p_remnant->GetRemnant(i)->Type() == REMNANTS::rtp::intact) continue;
+  /// only legs from a PDF are bounded by their bunch energy
+  for (size_t i(0);i<ampl->NIn();++i) {
+    if (!(pdfs&(1<<i))) continue;
     double Ebunch = rpa->gen.PBunch(ampl->Leg(i)->Mom()[3] < 0.0 ? 0 : 1)[0];
     double Ei = -ampl->Leg(i)->Mom()[0];
     if (Ebunch < Ei && !IsEqual(Ei,Ebunch)) return -1;
@@ -375,17 +394,13 @@ Vec4D MomSum(Cluster_Amplitude *const ampl) {
   return ret;
 }
 
-int ME_Generator_Base::ShiftMassesEPA(Cluster_Amplitude *const ampl, Vec4D cms) {
-  /// mass shift for 1-PDF processes where the non-PDF incoming leg is
+int ME_Generator_Base::ShiftMassesEPA(Cluster_Amplitude *const ampl,
+                                      const int lep_leg, const int had_leg) {
+  /// mass shift for 1-PDF processes where the non-PDF incoming leg lep_leg is
   /// an on-shell (real) particle, e.g. direct photoproduction via EPA:
   /// its momentum is fixed by the beam spectrum and must be preserved.
   DEBUG_FUNC(m_name);
   msg_Debugging()<<"Before shift: "<<*ampl<<"\n";
-  /// identify the non-PDF and PDF incoming legs
-  const auto legs = FindShiftMassesLegs(ampl, p_remnant);
-  const int lep_leg(legs.intact), had_leg(legs.pdf);
-  if (lep_leg < 0 || had_leg < 0)
-    THROW(fatal_error, "Cannot identify photon/hadron legs in ShiftMassesEPA");
   /// store the non-PDF momenta, they must not be touched
   const Vec4D pLepIn = ampl->Leg(lep_leg)->Mom();
   std::vector<Vec4D> pLepOut;
@@ -466,14 +481,12 @@ int ME_Generator_Base::ShiftMassesEPA(Cluster_Amplitude *const ampl, Vec4D cms) 
   return 1;
 }
 
-int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl, Vec4D cms) {
+int ME_Generator_Base::ShiftMassesDIS(Cluster_Amplitude *const ampl,
+                                      const int lep_leg, const int had_leg) {
+  /// mass shift for lepton-beam DIS: the incoming lepton lep_leg and all
+  /// outgoing leptons keep their momenta, the hadronic system takes the recoil
   DEBUG_FUNC(m_name);
   msg_Debugging()<<"Before shift: "<<*ampl<<"\n";
-  /// identify the non-PDF and PDF incoming legs
-  const auto legs = FindShiftMassesLegs(ampl, p_remnant);
-  const int lep_leg(legs.intact), had_leg(legs.pdf);
-  if (lep_leg < 0 || had_leg < 0)
-    THROW(fatal_error, "Cannot identify lepton/hadron legs in ShiftMassesDIS");
   const Vec4D pLepIn = ampl->Leg(lep_leg)->Mom();
   std::vector<Vec4D> pLepOut;
   for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {

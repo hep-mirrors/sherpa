@@ -15,6 +15,25 @@ namespace PHASIC {
 
   class ME_Generators;
 
+  /// Momentum mapping that puts a 2->n amplitude on the parton-shower mass
+  /// shell, with the incoming legs it treats specially:
+  /// - dis: m_fixed is the lepton of a lepton beam, m_pdf the parton it hits;
+  /// - epa: m_fixed is a non-lepton without PDF (e.g. a real photon from an
+  ///   EPA spectrum), m_pdf the leg from a PDF it hits;
+  /// - standard: both legs are rescaled alike, m_fixed = m_pdf = -1.
+  struct Mass_Shift_Mapping {
+    enum code { standard, dis, epa };
+    code m_mode;
+    int m_fixed, m_pdf;
+  };
+
+  /// Select the mapping from the incoming flavours, the beams with a PDF and
+  /// the beams whose bunch is a lepton (bit i set for beam i in both masks).
+  Mass_Shift_Mapping SelectMassShiftMapping(const ATOOLS::Flavour &in0,
+                                            const ATOOLS::Flavour &in1,
+                                            const int pdfs,
+                                            const int leptonbunches);
+
   class ME_Generator_Base: public ATOOLS::Mass_Selector
   {
   private:
@@ -30,9 +49,12 @@ namespace PHASIC {
     template <typename T>
     void SetParameter(const std::string& param, const T& def);
 
-    int ShiftMassesDefault(ATOOLS::Cluster_Amplitude *const ampl, ATOOLS::Vec4D cms);
-    int ShiftMassesDIS(ATOOLS::Cluster_Amplitude *const ampl, ATOOLS::Vec4D cms);
-    int ShiftMassesEPA(ATOOLS::Cluster_Amplitude *const ampl, ATOOLS::Vec4D cms);
+    int ShiftMassesDefault(ATOOLS::Cluster_Amplitude *const ampl,
+                           ATOOLS::Vec4D cms, const int pdfs);
+    int ShiftMassesDIS(ATOOLS::Cluster_Amplitude *const ampl,
+                       const int lep_leg, const int had_leg);
+    int ShiftMassesEPA(ATOOLS::Cluster_Amplitude *const ampl,
+                       const int lep_leg, const int had_leg);
 
   protected:
 
