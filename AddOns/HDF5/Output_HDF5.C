@@ -299,7 +299,12 @@ namespace SHERPA {
       inames.push_back("PDFsetB");
       idata.push_back(rpa->gen.PDF(1)?rpa->gen.PDF(1)->LHEFNumber():-1);
       inames.push_back("weightingStrategy");
-      idata.push_back(ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"))==0?1:3);
+      // events are unweighted if Sherpa generates them unweighted, or if they
+      // are unweighted for the HDF5 output only
+      const bool unweighted
+	(ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"))!=0 ||
+	 m_unweight);
+      idata.push_back(unweighted?3:1);
       const PHASIC::Process_Vector procs(p_me->AllProcesses());
       inames.push_back("numProcesses");
       idata.push_back(procs.size());
