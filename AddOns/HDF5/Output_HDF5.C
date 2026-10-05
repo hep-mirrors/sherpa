@@ -11,6 +11,7 @@
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "PDF/Main/PDF_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
+#include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Phys/Variations.H"
 #include "ATOOLS/Org/My_MPI.H"
@@ -578,6 +579,7 @@ namespace SHERPA {
       m_ecache.back()[4]=sqrt(muq2);
       m_ecache.back()[5]=sqrt(muf2);
       m_ecache.back()[6]=sqrt(mur2);
+      m_ecache.back()[7]=MODEL::s_model->ScalarConstant("alpha_QED");
       m_ecache.back()[8]=mur2?(*MODEL::as)(mur2):-1.0;
       for (int i=0;i<sp->NInP();++i) {
 	Vec4D p(sp->InParticle(i)->Momentum());
