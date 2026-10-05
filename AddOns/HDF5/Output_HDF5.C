@@ -280,7 +280,7 @@ namespace SHERPA {
 #if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
       xfer_props.add(UseCollectiveIO{});
 #endif
-      std::vector<int> versionno = {2, 0, 1};
+      std::vector<int> versionno = {2, 7, 0};
       m_dss["version"]=p_file->createDataSet<int>
 	("version",DataSpace::From(versionno));
       m_dss["version"].write(versionno, xfer_props);
