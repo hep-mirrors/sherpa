@@ -567,7 +567,6 @@ int Matrix_Element_Handler::InitializeProcesses(
   p_isr=isr;
   p_yfs=yfs;
   if (!m_gens.InitializeGenerators(p_model,beam,isr,yfs)) return false;
-  m_gens.SetRemnant(p_remnants);
   Settings& s = Settings::GetMainSettings();
   int initonly=s["INIT_ONLY"].Get<int>();
   if (initonly&4) return 1;
