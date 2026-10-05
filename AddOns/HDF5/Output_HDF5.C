@@ -8,6 +8,7 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Color_Integrator.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "PDF/Main/PDF_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
@@ -247,6 +248,26 @@ namespace SHERPA {
       ampl->Delete();
     }
     
+    // The phase-space generator of events that have been read in is passed
+    // on, such that their origin is not lost when they are written out
+    // again. Sherpa's own phase-space generator is reported otherwise.
+    static std::string PhaseSpaceGenerator(const PHASIC::Process_Vector &procs)
+    {
+      std::vector<std::string> names;
+      for (const auto proc : procs) {
+	const Event_Reader *read(proc->EventReader());
+	const std::string name(read?read->PhaseSpaceGenerator():"Sherpa");
+	if (std::find(names.begin(),names.end(),name)==names.end())
+	  names.push_back(name);
+      }
+      std::string res;
+      for (const auto& name : names) {
+	if (!res.empty()) res+=", ";
+	res+=name.empty()?"Unknown":name;
+      }
+      return names.size()==1?names.front():res;
+    }
+
     void Header() override
     {
       // the variations are only initialised after the outputs are constructed
@@ -288,6 +309,18 @@ namespace SHERPA {
       m_dss["init"].write(idata, xfer_props);
       m_dss["init"].createAttribute<std::string>
 	("properties",DataSpace::From(inames)).write(inames);
+      const std::string gname("Sherpa");
+      const std::string gversion(SHERPA_VERSION "." SHERPA_SUBVERSION);
+      const std::string psgen(PhaseSpaceGenerator(procs));
+      const std::string description;
+      m_dss["init"].createAttribute<std::string>
+	("generatorName",DataSpace::From(gname)).write(gname);
+      m_dss["init"].createAttribute<std::string>
+	("generatorVersion",DataSpace::From(gversion)).write(gversion);
+      m_dss["init"].createAttribute<std::string>
+	("phasespaceGenerator",DataSpace::From(psgen)).write(psgen);
+      m_dss["init"].createAttribute<std::string>
+	("description",DataSpace::From(description)).write(description);
       std::vector<std::vector<double> > pdata
 	(procs.size(),std::vector<double>(6,0));
       std::vector<std::string> pnames(6);
