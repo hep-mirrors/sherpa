@@ -57,6 +57,11 @@ If desired, you can also specify spectra for beamstrahlung through
   particles remain unchanged.  That is the default and corresponds to
   ordinary hadron-hadron or lepton-lepton collisions.
 
+:option:`Gaussian`
+  The beam energy is smeared by a Gaussian energy spread, truncated at a
+  finite number of standard deviations, as is relevant for the beam energy
+  spread of circular lepton colliders.
+
 :option:`Laser_Backscattering`
   This can be used to describe the
   backscattering of a laser beam off initial leptons. The energy
@@ -85,6 +90,51 @@ If desired, you can also specify spectra for beamstrahlung through
 
 :option:`Reggeon`
   This enables the Proton--Reggeon flux, see details below.
+
+.. _Gaussian Energy Spread:
+
+Gaussian Energy Spread
+======================
+
+.. index:: BEAM_SPREAD
+.. index:: BEAM_SPREAD_NSIGMA
+.. index:: BEAM_SPREAD_CORRELATION
+
+With ``BEAM_SPECTRA: [Gaussian, Gaussian]`` each beam energy :math:`E` is
+distributed as a Gaussian around the nominal energy given by
+:option:`BEAM_ENERGIES`, truncated at :math:`\pm N\sigma`. One beam may also be
+``Gaussian`` while the other is ``Monochromatic``. Event weights include the
+Gaussian densities, so the cross section is the convolution of the
+partonic cross section with the beam energy distribution, and the
+centre-of-mass energy varies from event to event.
+
+.. code-block:: yaml
+
+   BEAMS: [11, -11]
+   BEAM_ENERGIES: 45.5938
+   BEAM_SPECTRA: [Gaussian, Gaussian]
+   BEAM_SPREAD: [1.0e-3, 1.0e-3]
+   BEAM_SPREAD_NSIGMA: 4
+   BEAM_SPREAD_CORRELATION: 0.5
+
+:option:`BEAM_SPREAD`
+  Relative energy spread :math:`\sigma_E/E` of each beam, given as a list of
+  two values, one for each beam. It must be positive for every beam with a
+  ``Gaussian`` spectrum. The default is ``[0, 0]``, which is only valid if no
+  beam uses a ``Gaussian`` spectrum.
+
+:option:`BEAM_SPREAD_NSIGMA`
+  Number of standard deviations :math:`N` at which the Gaussian is truncated.
+  The product :math:`N \sigma_E/E` must be smaller than one. Defaults to
+  ``4``. The truncated densities are renormalised to one.
+
+:option:`BEAM_SPREAD_CORRELATION`
+  Correlation :math:`\rho` between the energies of the two beams. If non-zero,
+  the energies follow a correlated two-dimensional Gaussian instead of the
+  product of the two single-beam Gaussians. It requires ``BEAM_SPECTRA: [Gaussian, Gaussian]``
+  and must lie in :math:`(-1, 1)`. The default is ``0`` (independent beams).
+  The correlated density is renormalised on the truncated box, so that the
+  weights have unit average.
 
 .. _Laser Backscattering:
 
