@@ -170,7 +170,7 @@ namespace SHERPA {
       for (size_t i(0);i<orders.size();++i)
 	if ((sum+=psum[i])>=disc) {
 	  msg_Debugging()<<"selected ordering "<<i<<" -> "<<orders[i]<<"\n";
-	  int last(0), first(-1), counter(0);
+	  int last(0), first(-1), counter(m_clabel);
 	  for (size_t j(0);j<orders[i].size();++j) {
 	    Cluster_Leg *cl(ampl->Leg((size_t)orders[i][j]));
 	    if (cl->Flav().StrongCharge()==3) {
