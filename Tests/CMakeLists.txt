@@ -75,9 +75,16 @@ if (SHERPA_ENABLE_INTEGRATION_TESTS)
         -P ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/HDF5/check_output.cmake
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
       )
-    set_tests_properties(Main${test}part1 Main${test}part2
+    # read the events back in
+    add_test(
+      NAME Main${test}part3
+      COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/HDF5/ReadBack.yaml
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+      )
+    set_tests_properties(Main${test}part1 Main${test}part2 Main${test}part3
       PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
     set_tests_properties(Main${test}part2 PROPERTIES DEPENDS Main${test}part1)
+    set_tests_properties(Main${test}part3 PROPERTIES DEPENDS Main${test}part1)
   endif()
 
   if (SHERPA_ENABLE_PYTHIA8)
