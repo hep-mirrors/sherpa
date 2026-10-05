@@ -381,7 +381,10 @@ namespace SHERPA {
       std::vector<size_t> max(min);
       DataSetCreateProps props;
       if (m_unweight) max.front()=DataSpace::UNLIMITED;
-      std::vector<std::string> wnames(1,"NOMINAL");
+      // the matrix-element and phase-space components of the nominal weight,
+      // defined as for the HepMC3 output
+      std::vector<std::string> wnames
+	{"NOMINAL","EXTRA__MEWeight","EXTRA__PSWeight"};
       if (p_vars) {
 	// use the same order as FillVariations, and skip duplicate names, as
 	// is done for the HepMC3 output
@@ -580,6 +583,10 @@ namespace SHERPA {
       size_t nup(sp->NInP()+sp->NOutP());
       m_ecache.push_back(std::vector<double>(m_neprops,-1));
       m_ecache.back().push_back(weight*wratio);
+      Blob_Data_Base *mewgt((*sp)["MEWeight"]);
+      const double me(mewgt?mewgt->Get<double>():0.0);
+      m_ecache.back().push_back(me);
+      m_ecache.back().push_back(me?weight*wratio/me:0.0);
       if (p_vars) {
 	// fill the variations in the order of the weight names written in
 	// Initialize()
