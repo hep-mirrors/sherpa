@@ -42,6 +42,9 @@ namespace SHERPA {
     std::vector<std::vector<double> > m_necache, m_npcache;
     ATOOLS::Weights_Map m_xs, m_err;
     double m_max, m_trials;
+    // sums of the nominal weights, their squares, and the trials of all
+    // events, before any unweighting for the output
+    double m_sumw, m_sumw2, m_sumtrials;
     std::string m_basename;
     int m_setcol, m_ncache, m_events, m_unweight, m_offset, m_nmax;
     size_t m_nweights, m_neprops, m_npprops, m_clabel;
@@ -55,7 +58,8 @@ namespace SHERPA {
 
     Output_HDF5(const Output_Arguments &args):
       Output_Base("HDF5"), m_max(1.0),
-      m_trials(0.0), m_events(0), m_offset(0), m_nmax(0),
+      m_trials(0.0), m_sumw(0.0), m_sumw2(0.0), m_sumtrials(0.0),
+      m_events(0), m_offset(0), m_nmax(0),
       m_basename(args.m_outpath+"/"+args.m_outfile)
     {
       Settings& s {Settings::GetMainSettings()};
@@ -376,6 +380,32 @@ namespace SHERPA {
     void Footer() override
     {
       Write(1);
+      WriteGeneratedResult();
+    }
+
+    // Write the total cross section and its error, as estimated from all
+    // events generated across all ranks.
+    void WriteGeneratedResult()
+    {
+      auto xfer_props = DataTransferProps{};
+      std::vector<double> sums{m_sumw,m_sumw2,m_sumtrials};
+#if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
+      xfer_props.add(UseCollectiveIO{});
+      mpi->Allreduce(&sums[0],sums.size(),MPI_DOUBLE,MPI_SUM);
+#endif
+      const double sumw(sums[0]), sumw2(sums[1]), n(sums[2]);
+      std::vector<double> result{0.0,0.0};
+      if (n>0.0) result[0]=sumw/n;
+      if (n>1.0) {
+	const double num(sumw2*n-sumw*sumw);
+	if (num>0.0) result[1]=sqrt(num/(n-1.0))/n;
+      }
+      const std::vector<std::string> rnames{"xSection","error"};
+      m_dss["generatedResult"]=p_file->createDataSet<double>
+	("generatedResult",DataSpace::From(result));
+      m_dss["generatedResult"].write(result,xfer_props);
+      m_dss["generatedResult"].createAttribute<std::string>
+	("properties",DataSpace::From(rnames)).write(rnames);
     }
 
     void Initialize(const size_t &nup)
@@ -573,6 +603,9 @@ namespace SHERPA {
       Blob *sp(blobs->FindFirst(btp::Signal_Process));
       const auto trials((*sp)["Trials"]->Get<double>());
       Process_Base *proc((*sp)["Process"]->Get<Process_Base*>());
+      m_sumw+=weight;
+      m_sumw2+=weight*weight;
+      m_sumtrials+=trials;
       if (m_unweight) {
         double weight((*sp)["WeightsMap"]->Get<Weights_Map>().Nominal());
         double max((*sp)["Max"]->Get<double>());
