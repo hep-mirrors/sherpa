@@ -259,6 +259,11 @@ namespace LHEH5 {
 	(procinfo,0,procinfo.getSpace().getDimensions()[0],
 	 ColumnIndices(ColumnNames(procinfo),ProcInfoColumns(),"procInfo"),
 	 xfer_props);
+      // Files written with LHEH5 versions 2.3.0 to 2.5.x count only the
+      // final-state particles in npLO, while all others count the two
+      // incoming ones as well.
+      if (version>=std::vector<int>{2,3,0} && version<std::vector<int>{2,6,0})
+	for (auto& row : pinfo) if (row[1]>=0) row[1]+=2;
       HighFive::DataSet init(file.getDataSet("init"));
       if (init.hasAttribute("phasespaceGenerator"))
         init.getAttribute("phasespaceGenerator").read(psgen);
