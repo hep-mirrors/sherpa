@@ -91,6 +91,19 @@ bool Beam_Channels::DefineColliderChannels() {
     CheckForStructuresFromME();
     return true;
   }
+  // Gaussian energy spread, on one or both beams, the rest monochromatic.
+  //
+  const bool beam0_is_gauss = m_beamtype[0] == beamspectrum::Gaussian;
+  const bool beam1_is_gauss = m_beamtype[1] == beamspectrum::Gaussian;
+  if ((beam0_is_gauss || beam1_is_gauss) &&
+      (beam0_is_gauss || m_beamtype[0] == beamspectrum::monochromatic) &&
+      (beam1_is_gauss || m_beamtype[1] == beamspectrum::monochromatic)) {
+    const double exponent =
+        (int(beam0_is_gauss) + int(beam1_is_gauss)) * 0.5;
+    m_beamparams.push_back(Channel_Info(channel_type::simple, exponent));
+    CheckForStructuresFromME();
+    return true;
+  }
   // one or two EPA/Pomeron spectra with monochromatic beams.
   // currently our EPA is completely collinear, with real photons.
   bool beam0_is_on = m_beamtype[0] == beamspectrum::EPA ||

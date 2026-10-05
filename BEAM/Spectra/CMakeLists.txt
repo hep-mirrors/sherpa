@@ -1,4 +1,5 @@
 set(Spectra_SOURCES Monochromatic.C
+                    Gaussian.C
                     Laser_Backscattering.C
                     EPA.C
                     EPA_FF.C
@@ -7,6 +8,7 @@ set(Spectra_SOURCES Monochromatic.C
                     DM_beam.C)
 
 set(Spectra_HEADERS Monochromatic.H
+                    Gaussian.H
                     Laser_Backscattering.H
                     EPA.H
                     EPA_FF.H
