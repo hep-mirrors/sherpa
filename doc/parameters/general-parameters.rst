@@ -552,6 +552,40 @@ The following formats are currently available:
   In particular, Sherpa can read these output files again
   in a separate run, see :ref:`Event_Files`.
 
+  The files are written according to version 2.7.0 of the format,
+  as described in the manual of the Pepper event generator.
+  Next to the nominal event weight, the ``events`` dataset holds
+  its matrix-element and phase-space components
+  ``EXTRA__MEWeight`` and ``EXTRA__PSWeight``,
+  defined as for the HepMC3 output,
+  and the weights of any :ref:`On-the-fly event weight variations`.
+  Since the order of these weight columns is not fixed,
+  they should be located by their names,
+  as given by the ``properties`` attribute of the dataset.
+  Random numbers are not written,
+  which is signalled by ``numRandomNumbers = -1`` in the ``procInfo`` dataset.
+
+  The output can be steered further with the following settings:
+
+  * ``HDF5_UNWEIGHT``: If non-zero, the events are unweighted
+    before they are written out, independent of the
+    :ref:`EVENT_GENERATION_MODE`.
+    The trials of events rejected in this step are carried by
+    rows with a vanishing weight,
+    which are written whenever the output is flushed.
+    Default: ``0``.
+  * ``HDF5_SET_COLORS``: If non-zero, a leading-colour flow is selected for
+    each event and written out.
+    This requires a matrix-element generator with a colour integrator,
+    e.g. Comix.
+    Default: ``1``.
+  * ``HDF5_START_COLOR_LABEL``: The colour labels of the written colour flows
+    start right after this value.
+    Default: ``500``.
+  * ``HDF5_CACHE_SIZE``: The number of events that are cached
+    before they are written out.
+    Default: ``10000``.
+
   Requires ``-DHDF5_DIR=/path/to/hdf5``
   (or ``-DSHERPA_ENABLE_HDF5``, if HDF5 is installed in a standard location).
 
