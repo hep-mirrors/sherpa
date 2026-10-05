@@ -122,9 +122,3 @@ Process_Base* ME_Generators::InitializeProcess(const Process_Info &pi, bool add)
   msg_Debugging()<<"Couldn't initialize process."<<std::endl;;
   return NULL;
 }
-
-void ME_Generators::SetRemnant(REMNANTS::Remnant_Handler *remnant) {
-  for (ME_Generators::iterator mit = begin(); mit != end(); ++mit) {
-    (*mit)->SetRemnantHandler(remnant);
-  }
-}
