@@ -381,7 +381,7 @@ namespace SHERPA {
 	("events",DataSpace(min,max),props);
       m_ecache.reserve(m_ncache);
       m_dss["events"].createAttribute<std::string>
-	("events",DataSpace::From(enames)).write(enames);
+	("properties",DataSpace::From(enames)).write(enames);
       if (m_hasnlo) {
 	// LHEF bbar event information
 	std::vector<std::string> nenames(m_nneprops=9);
@@ -404,7 +404,7 @@ namespace SHERPA {
 	  ("ctevents",DataSpace(min,max),props);
 	m_necache.reserve(m_ncache);
 	m_dss["ctevents"].createAttribute<std::string>
-	  ("ctevents",DataSpace::From(nenames)).write(nenames);
+	  ("properties",DataSpace::From(nenames)).write(nenames);
       }
       min.front()*=nup;
       if (!m_unweight) max.front()*=nup;
