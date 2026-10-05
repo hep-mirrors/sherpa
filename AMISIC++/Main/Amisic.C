@@ -44,6 +44,7 @@ bool Amisic::Initialize(MODEL::Model_Base *const model,
     // Initialize the parton-level processes - currently only 2->2 scatters.
     ///////////////////////////////////////////////////////////////////////////
     m_processes.SetXSecCalculator(&m_xsecs);
+    m_processes.SetRemnantHandler(remnant_handler);
     m_processes.Initialize(model,nullptr,isr,yfs);
     ///////////////////////////////////////////////////////////////////////////
     // Calculate the ratios of hard and non-diffractive cross sections.

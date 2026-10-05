@@ -20,7 +20,7 @@ Remnant_Handler::Remnant_Handler(PDF::ISR_Handler* isr, YFS::YFS_Handler *yfs,
                                  BEAM::Beam_Spectra_Handler* beam_handler,
 				 const std::array<size_t, 2>& tags) :
   m_id(isr->Id()), m_tags(tags), p_softblob(nullptr),
-  m_check(true), m_output(false), m_fails(0) {
+  m_check(true), m_fails(0) {
   if (!rempars) rempars = new Remnants_Parameters();
   p_remnants = {nullptr, nullptr};
   for (int i = 0; i < 2; ++i) {
@@ -60,7 +60,7 @@ Remnant_Handler(std::array<std::shared_ptr<Remnant_Base>, 2> remnants,
 		BEAM::Beam_Spectra_Handler* beam_handler,
 		const std::array<size_t, 2>& tags) :
   m_id(isr->Id()), p_remnants(remnants), m_tags(tags), p_softblob(nullptr),
-  m_check(true), m_output(false), m_fails(0)
+  m_check(true), m_fails(0)
 {
   if (!rempars) rempars = new Remnants_Parameters();
   // this constructor is to create remnants, where one of the remnants
@@ -315,25 +315,21 @@ bool Remnant_Handler::CheckBeamBreakup()
     if (!p_remnants[beam]->GetBlob()->MomentumConserved() ||
         !p_remnants[beam]->GetBlob()->CheckColour()) {
       ok = false;
-      if (m_output) {
-        msg_Error() << "Error in " << METHOD << ": "
-                    << "colour or four-momentum not conserved in beamblob:\n"
-                    << (*p_remnants[beam]->GetBlob()) << "\n";
-        p_remnants[0]->Output();
-        p_remnants[1]->Output();
-      }
+      msg_Debugging() << "Error in " << METHOD << ": "
+                  << "colour or four-momentum not conserved in beamblob:\n"
+                  << (*p_remnants[beam]->GetBlob()) << "\n";
+      p_remnants[0]->Output();
+      p_remnants[1]->Output();
     }
   }
   if (!p_softblob) return ok;
   if (!p_softblob->MomentumConserved() || !p_softblob->CheckColour()) {
     ok = false;
-    if (m_output) {
-      msg_Error() << "Error in " << METHOD << ": "
-                  << "colour or four-momentum not conserved in softblob:\n"
-                  << (*p_softblob) << "\n";
-      p_remnants[0]->Output();
-      p_remnants[1]->Output();
-    }
+    msg_Debugging() << "Error in " << METHOD << ": "
+                << "colour or four-momentum not conserved in softblob:\n"
+                << (*p_softblob) << "\n";
+    p_remnants[0]->Output();
+    p_remnants[1]->Output();
   }
   return ok;
 }
