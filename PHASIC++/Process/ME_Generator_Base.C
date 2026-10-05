@@ -9,7 +9,6 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PDF/Main/ISR_Handler.H"
-#include "REMNANTS/Main/Remnant_Handler.H"
 #include <algorithm>
 
 #define COMPILE__Getter_Function
@@ -22,7 +21,7 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 ME_Generator_Base::ME_Generator_Base(const std::string &name):
-  m_name(name), m_massmode(0), p_gens(NULL), p_remnant(NULL)
+  m_name(name), m_massmode(0), p_gens(NULL)
 {
   RegisterDefaults();
 }

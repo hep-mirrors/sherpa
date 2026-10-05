@@ -8,7 +8,6 @@ namespace MODEL    { class Model_Base; }
 namespace BEAM     { class Beam_Spectra_Handler; }
 namespace PDF      { class ISR_Handler; }
 namespace YFS      { class YFS_Handler; }
-namespace REMNANTS { class Remnant_Handler; }
 
 namespace PHASIC   {
 
@@ -44,7 +43,6 @@ namespace PHASIC   {
     inline MODEL::Model_Base *Model() const { return p_model; }
     inline PDF::ISR_Handler *ISR() const { return p_isr; }
     void SetModel(MODEL::Model_Base*);
-    void SetRemnant(REMNANTS::Remnant_Handler *remnant);
   };
 
 }
