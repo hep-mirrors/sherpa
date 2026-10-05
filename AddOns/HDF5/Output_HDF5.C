@@ -322,14 +322,16 @@ namespace SHERPA {
       m_dss["init"].createAttribute<std::string>
 	("description",DataSpace::From(description)).write(description);
       std::vector<std::vector<double> > pdata
-	(procs.size(),std::vector<double>(6,0));
-      std::vector<std::string> pnames(6);
+	(procs.size(),std::vector<double>(7,0));
+      std::vector<std::string> pnames(7);
       pnames[0]="procId";
       pnames[1]="npLO";
       pnames[2]="npNLO";
       pnames[3]="xSection";
       pnames[4]="error";
       pnames[5]="unitWeight";
+      // random numbers are not written, which is signalled by -1
+      pnames[6]="numRandomNumbers";
       m_hasnlo=false;
       for (size_t i(0);i<pdata.size();++i) {
 	pdata[i][0]=i+1;
@@ -351,6 +353,7 @@ namespace SHERPA {
 	pdata[i][3]*=rpa->Picobarn();
 	pdata[i][4]*=rpa->Picobarn();
 	pdata[i][5]=procs[i]->Integrator()->Max()*rpa->Picobarn();
+	pdata[i][6]=-1;
 	m_nmax=std::max(m_nmax,int(procs[i]->NIn()+procs[i]->NOut()));
       }
       m_dss["procInfo"]=p_file->createDataSet<double>
