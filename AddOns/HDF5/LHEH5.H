@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -82,13 +83,102 @@ namespace LHEH5 {
     }
     return s<<"}"; }
 
+  // The column names of an LHEH5 dataset. They are stored in an attribute
+  // called "properties" since LHEH5 version 2.1.0, while earlier versions
+  // named some of these attributes after their datasets instead.
+  inline std::vector<std::string> ColumnNames(const HighFive::DataSet &ds)
+  {
+    const std::vector<std::string> keys(ds.listAttributeNames());
+    if (keys.empty())
+      throw std::runtime_error("LHEH5 dataset \""+ds.getPath()+
+			       "\" does not name its columns.");
+    std::string key(keys.front());
+    for (const auto& k : keys) if (k=="properties") key=k;
+    std::vector<std::string> names;
+    ds.getAttribute(key).read(names);
+    return names;
+  }
+
+  // The indices of the columns `names` among the columns `all` of the
+  // dataset `ds`.
+  inline std::vector<size_t>
+  ColumnIndices(const std::vector<std::string> &all,
+		const std::vector<std::string> &names,
+		const std::string &ds)
+  {
+    std::vector<size_t> cols;
+    for (const auto& name : names) {
+      const auto it(std::find(all.begin(),all.end(),name));
+      if (it==all.end())
+	throw std::runtime_error("LHEH5 dataset \""+ds+
+				 "\" has no column \""+name+"\".");
+      cols.push_back(it-all.begin());
+    }
+    return cols;
+  }
+
+  // Read the rows [first, first + n) of the dataset `ds`, keeping only the
+  // columns `cols`, in that order.
+  inline std::vector<std::vector<double> >
+  ReadColumns(const HighFive::DataSet &ds,size_t first,size_t n,
+	      const std::vector<size_t> &cols,
+	      const HighFive::DataTransferProps &xfer_props)
+  {
+    const size_t ncols(ds.getSpace().getDimensions()[1]);
+    std::vector<std::vector<double> > rows(n,std::vector<double>(ncols));
+    ds.select({first,0},{n,ncols}).read(rows,xfer_props);
+    for (auto& row : rows) {
+      std::vector<double> sel(cols.size());
+      for (size_t i(0);i<cols.size();++i) sel[i]=row[cols[i]];
+      row.swap(sel);
+    }
+    return rows;
+  }
+
+  // The columns are located by name, and stored in the order given here,
+  // such that the reader does not depend on the order they are written in.
+  inline const std::vector<std::string> &ProcInfoColumns()
+  {
+    static const std::vector<std::string> names
+      {"procId","npLO","npNLO","xSection","error","unitWeight"};
+    return names;
+  }
+  inline const std::vector<std::string> &EventColumns()
+  {
+    static const std::vector<std::string> names
+      {"pid","nparticles","start","trials",
+       "scale","fscale","rscale","aqed","aqcd"};
+    return names;
+  }
+  inline const std::vector<std::string> &ParticleColumns()
+  {
+    static const std::vector<std::string> names
+      {"id","status","mother1","mother2","color1","color2",
+       "px","py","pz","e","m"};
+    return names;
+  }
+  inline const std::vector<std::string> &CTEventColumns()
+  {
+    static const std::vector<std::string> names
+      {"ijt","kt","i","j","k","z1","z2","bbpsw","tlpsw"};
+    return names;
+  }
+  inline const std::vector<std::string> &CTParticleColumns()
+  {
+    static const std::vector<std::string> names {"px","py","pz","e"};
+    return names;
+  }
+
   class LHEFile {
   private:
     
     std::vector<int> version;
     std::vector<std::vector<double> > evts, parts, pinfo;
     std::vector<std::vector<double> > ctevts, ctparts;
+    // The weight names, starting with the nominal one. In the event rows,
+    // the weights follow the columns listed in EventColumns().
     std::vector<std::string> wgtnames;
+    std::vector<size_t> ecols;
     std::string psgen;
 
     inline Particle GetParticle(size_t i) const
@@ -164,15 +254,31 @@ namespace LHEH5 {
                     = HighFive::DataTransferProps{})
     {
       file.getDataSet("version").read(version,xfer_props);
-      file.getDataSet("procInfo").read(pinfo,xfer_props);
+      HighFive::DataSet procinfo(file.getDataSet("procInfo"));
+      pinfo=ReadColumns
+	(procinfo,0,procinfo.getSpace().getDimensions()[0],
+	 ColumnIndices(ColumnNames(procinfo),ProcInfoColumns(),"procInfo"),
+	 xfer_props);
       HighFive::DataSet init(file.getDataSet("init"));
       if (init.hasAttribute("phasespaceGenerator"))
         init.getAttribute("phasespaceGenerator").read(psgen);
       HighFive::DataSet events(file.getDataSet("events"));
-      auto attr_keys(events.listAttributeNames());
-      HighFive::Attribute a(events.getAttribute(attr_keys[0]));
-      a.read(wgtnames);
-      for (int i(0);i<9;++i) wgtnames.erase(wgtnames.begin());
+      const std::vector<std::string> enames(ColumnNames(events));
+      ecols=ColumnIndices(enames,EventColumns(),"events");
+      // All other columns are weights. The nominal one is called "NOMINAL",
+      // and is assumed to be the first one if no column has that name.
+      wgtnames.clear();
+      for (size_t i(0);i<enames.size();++i)
+	if (std::find(ecols.begin(),ecols.end(),i)==ecols.end())
+	  wgtnames.push_back(enames[i]);
+      if (wgtnames.empty())
+	throw std::runtime_error("LHEH5 dataset \"events\" has no weights.");
+      const auto nominal(std::find(wgtnames.begin(),wgtnames.end(),"NOMINAL"));
+      if (nominal!=wgtnames.end())
+	std::rotate(wgtnames.begin(),nominal,nominal+1);
+      const std::vector<size_t> wcols
+	(ColumnIndices(enames,wgtnames,"events"));
+      ecols.insert(ecols.end(),wcols.begin(),wcols.end());
     }
     void ReadEvents(HighFive::File &file,
                     size_t first_event,size_t n_events,
@@ -180,29 +286,28 @@ namespace LHEH5 {
                     = HighFive::DataTransferProps{})
     {
       HighFive::DataSet events(file.getDataSet("events"));
-      std::vector<size_t> eoffsets{first_event,0};
-      std::vector<size_t> ecounts{n_events,9+wgtnames.size()};
-      evts.resize(n_events,std::vector<double>(9+wgtnames.size()));
-      events.select(eoffsets,ecounts).read(evts,xfer_props);
+      evts=ReadColumns(events,first_event,n_events,ecols,xfer_props);
       HighFive::DataSet particles(file.getDataSet("particles"));
-      std::vector<size_t> poffsets{(size_t)evts.front()[2],0};
+      const size_t pstart(evts.front()[2]);
       size_t nmax(0);
       for (size_t i(0);i<pinfo.size();++i)
 	nmax=std::max((size_t)std::max(pinfo[i][1],pinfo[i][2]+1),nmax);
-      std::vector<size_t> pcounts{n_events*nmax,13};
-      parts.resize(n_events*nmax,std::vector<double>(13));
-      particles.select(poffsets,pcounts).read(parts,xfer_props);
+      parts=ReadColumns
+	(particles,pstart,n_events*nmax,
+	 ColumnIndices(ColumnNames(particles),ParticleColumns(),"particles"),
+	 xfer_props);
       if (file.exist("ctevents")) {
-	HighFive::DataSet events(file.getDataSet("ctevents"));
-	std::vector<size_t> eoffsets{first_event,0};
-	std::vector<size_t> ecounts{n_events,9};
-	ctevts.resize(n_events,std::vector<double>(9));
-	events.select(eoffsets,ecounts).read(ctevts,xfer_props);
-	HighFive::DataSet particles(file.getDataSet("ctparticles"));
-	std::vector<size_t> poffsets{(size_t)evts.front()[2],0};
-	std::vector<size_t> pcounts{n_events*nmax,4};
-	ctparts.resize(n_events*nmax,std::vector<double>(4));
-	particles.select(poffsets,pcounts).read(ctparts,xfer_props);
+	HighFive::DataSet ctevents(file.getDataSet("ctevents"));
+	ctevts=ReadColumns
+	  (ctevents,first_event,n_events,
+	   ColumnIndices(ColumnNames(ctevents),CTEventColumns(),"ctevents"),
+	   xfer_props);
+	HighFive::DataSet ctparticles(file.getDataSet("ctparticles"));
+	ctparts=ReadColumns
+	  (ctparticles,pstart,n_events*nmax,
+	   ColumnIndices(ColumnNames(ctparticles),CTParticleColumns(),
+			 "ctparticles"),
+	   xfer_props);
       }
     }
     
