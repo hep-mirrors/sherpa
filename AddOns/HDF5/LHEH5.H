@@ -89,6 +89,7 @@ namespace LHEH5 {
     std::vector<std::vector<double> > evts, parts, pinfo;
     std::vector<std::vector<double> > ctevts, ctparts;
     std::vector<std::string> wgtnames;
+    std::string psgen;
 
     inline Particle GetParticle(size_t i) const
     {
@@ -106,6 +107,10 @@ namespace LHEH5 {
   public:
 
     inline const std::vector<int> &Version() const { return version; }
+
+    // Empty if the file does not specify its phase-space generator, which
+    // files written before LHEH5 version 2.5.0 never do.
+    inline const std::string &PhaseSpaceGenerator() const { return psgen; }
 
     inline double TotalXS() const
     {
@@ -160,6 +165,9 @@ namespace LHEH5 {
     {
       file.getDataSet("version").read(version,xfer_props);
       file.getDataSet("procInfo").read(pinfo,xfer_props);
+      HighFive::DataSet init(file.getDataSet("init"));
+      if (init.hasAttribute("phasespaceGenerator"))
+        init.getAttribute("phasespaceGenerator").read(psgen);
       HighFive::DataSet events(file.getDataSet("events"));
       auto attr_keys(events.listAttributeNames());
       HighFive::Attribute a(events.getAttribute(attr_keys[0]));

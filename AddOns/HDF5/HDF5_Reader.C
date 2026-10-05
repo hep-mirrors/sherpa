@@ -136,6 +136,7 @@ namespace LHEH5 {
       e->ReadHeader(file,TransferProps());
       m_totalxs=e->TotalXS();
       m_unitwgt=e->UnitWeight();
+      m_psgen=e->PhaseSpaceGenerator();
       if (e->Version()[0]==2 &&
 	  e->Version()[1]==0 &&
 	  e->Version()[2]==0) m_unitwgt*=rpa->Picobarn();

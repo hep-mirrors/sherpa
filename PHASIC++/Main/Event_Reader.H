@@ -42,6 +42,11 @@ namespace PHASIC {
     double m_totalxs, m_unitwgt;
     int    m_compute;
 
+    // Name of the phase-space generator that produced the events read in,
+    // e.g. to keep track of it when the events are written out again. Empty
+    // if it is unknown.
+    std::string m_psgen;
+
   public:
 
     typedef ATOOLS::Getter_Function
@@ -77,6 +82,7 @@ namespace PHASIC {
 
     inline double TotalXS() const { return m_totalxs; }
     inline double UnitWeight() const { return m_unitwgt; }
+    inline const std::string &PhaseSpaceGenerator() const { return m_psgen; }
 
     inline int Compute() const { return m_compute; }
 

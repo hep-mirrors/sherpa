@@ -993,6 +993,7 @@ namespace LHEH5 {
       if (m_ncurrent > 0) {
         m_totalxs = p_current->TotalXS();
         m_unitwgt = p_current->UnitWeight();
+        m_psgen = p_current->PhaseSpaceGenerator();
         if (p_current->Version()[0]==2 &&
             p_current->Version()[1]==0 &&
             p_current->Version()[2]==0) m_unitwgt*=rpa->Picobarn();
