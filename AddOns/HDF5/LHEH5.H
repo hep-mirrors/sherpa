@@ -265,11 +265,14 @@ namespace LHEH5 {
       HighFive::DataSet events(file.getDataSet("events"));
       const std::vector<std::string> enames(ColumnNames(events));
       ecols=ColumnIndices(enames,EventColumns(),"events");
-      // All other columns are weights. The nominal one is called "NOMINAL",
-      // and is assumed to be the first one if no column has that name.
+      // All other columns are weights, except for auxiliary ones like the
+      // ME and PS components of the nominal weight, whose names start with
+      // "EXTRA__". The nominal one is called "NOMINAL", and is assumed to be
+      // the first one if no column has that name.
       wgtnames.clear();
       for (size_t i(0);i<enames.size();++i)
-	if (std::find(ecols.begin(),ecols.end(),i)==ecols.end())
+	if (std::find(ecols.begin(),ecols.end(),i)==ecols.end() &&
+	    enames[i].rfind("EXTRA__",0)!=0)
 	  wgtnames.push_back(enames[i]);
       if (wgtnames.empty())
 	throw std::runtime_error("LHEH5 dataset \"events\" has no weights.");
