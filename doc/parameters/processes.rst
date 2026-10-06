@@ -801,6 +801,15 @@ by an external library hooked into the current run.
    Use ``PRINT_MPI_XS: false`` in MPI configurations
    when using :ref:`Event_Files` or :ref:`Event_Source`.
 
+.. note::
+
+   Weighted parton-level events can only be unweighted
+   if their source provides their maximum weight.
+   For LHEH5 files, this is signalled by a ``weightingStrategy`` of
+   ±1 or ±2, as for ``IDWTUP`` in the Les Houches Accord,
+   while the maximum weight is not provided for ±4.
+   Otherwise, use ``EVENT_GENERATION_MODE: Weighted`` when reading them in.
+
 .. contents::
    :local:
 

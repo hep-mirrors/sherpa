@@ -564,6 +564,14 @@ The following formats are currently available:
   as given by the ``properties`` attribute of the dataset.
   Random numbers are not written,
   which is signalled by ``numRandomNumbers = -1`` in the ``procInfo`` dataset.
+  As for ``IDWTUP`` in the Les Houches Accord,
+  the ``weightingStrategy`` of the ``init`` dataset is -1 for weighted
+  and -3 for unweighted events,
+  where the negative sign signals that weights can be negative.
+  This can never be ruled out,
+  e.g. at NLO, but also at LO when using PDFs with negative values.
+  The ``unitWeight`` of the ``procInfo`` dataset
+  is the maximum weight in either case.
 
   The output can be steered further with the following settings:
 
@@ -573,6 +581,9 @@ The following formats are currently available:
     The trials of events rejected in this step are carried by
     rows with a vanishing weight,
     which are written whenever the output is flushed.
+    This can not be used for weighted events read in
+    via :ref:`Event_Files` or :ref:`Event_Source`
+    whose source does not provide their maximum weight.
     Default: ``0``.
   * ``HDF5_SET_COLORS``: If non-zero, a leading-colour flow is selected for
     each event and written out.
