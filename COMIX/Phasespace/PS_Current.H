@@ -18,11 +18,13 @@ namespace COMIX {
 
     ATOOLS::NLO_subevt *p_dip;
 
+    bool m_aux;
+
   public:
 
     // constructor
     inline PS_Current(const Current_Key &key):
-      Current(key), p_scc(NULL), p_dip(NULL) { m_j.resize(1); }
+      Current(key), p_scc(NULL), p_dip(NULL), m_aux(false) { m_j.resize(1); }
 
     // member functions
     void ConstructJ(const ATOOLS::Vec4D &p,const int ch,
@@ -46,6 +48,10 @@ namespace COMIX {
     inline Current *SCC() const { return p_scc; }
 
     inline ATOOLS::NLO_subevt *Dip() const { return p_dip; }
+
+    inline void SetAux(const bool aux) { m_aux=aux; }
+
+    inline bool Aux() const { return m_aux; }
 
   };// end of class PS_Current
 

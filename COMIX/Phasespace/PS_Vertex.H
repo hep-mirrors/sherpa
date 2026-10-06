@@ -56,8 +56,10 @@ namespace COMIX {
     inline void SetSum2(const double &sum2) { m_sum2=sum2; }
 
     inline double Mean() const { return m_sum/m_np; }
-    inline double Variance() const    
-    { return (m_sum2-m_sum*m_sum/m_np)/(m_np-1.0); }
+    // rounding can make the variance of constant weights negative
+    inline double Variance() const
+    { double var((m_sum2-m_sum*m_sum/m_np)/(m_np-1.0));
+      return var>0.0?var:0.0; }
     inline double Sigma() const  
     { return sqrt(Variance()/m_np); }
 

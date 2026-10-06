@@ -57,6 +57,7 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   m_thexp = s["THEXP"].Get<double>();
   m_mfac = s["MFAC"].Get<double>();
   m_speak = s["SPEAK"].Get<double>();
+  m_auxexp = s["AUXEXP"].Get<double>();
   if (!(m_vmode&8)) m_nvints=Max(10,Min(m_nvints,500));
   if (m_vsopt>0) (m_vmode&=~1)|=2;
   m_nr=3*m_nout-4;
@@ -89,6 +90,7 @@ void PS_Channel::RegisterDefaults() const
   s["THEXP"].SetDefault(1.5);     // threshold exponent
   s["MFAC"].SetDefault(1.0);      // m_{min} factor
   s["SPEAK"].SetDefault(1.0);      // Peak for the regulated 1/s distribution
+  s["AUXEXP"].SetDefault(0.);     // contact vertex auxiliary current exp
 }
 
 const std::vector<int> &PS_Channel::GetCId(const size_t &id)
@@ -207,6 +209,7 @@ double PS_Channel::PropMomenta(const PS_Current *cur,const size_t &id,
 #endif
   }
   if (cur && cur->Dip()) return CE.MasslessPropMomenta(m_stexp,smin,smax,*cr);
+  if (cur && cur->Aux()) return CE.MasslessPropMomenta(m_auxexp,smin,smax,*cr);
   double sexp(m_sexp/pow(m_srbase,IdCount(id)-2.0));
   if (cur!=NULL && cur->Mass()<rpa->gen.Ecms()) {
     if (cur->Width()>s_pwmin)
@@ -224,6 +227,8 @@ double PS_Channel::PropWeight(const PS_Current *cur,const size_t &id,
 {
   double wgt(1.0), rn;
   if (cur && cur->Dip()) wgt=CE.MasslessPropWeight(m_stexp,smin,smax,s,rn);
+  else if (cur && cur->Aux())
+    wgt=CE.MasslessPropWeight(m_auxexp,smin,smax,s,rn);
   else {
   double sexp(m_sexp/pow(m_srbase,IdCount(id)-2.0));
   if (cur!=NULL && cur->Mass()<rpa->gen.Ecms()) {
@@ -319,7 +324,8 @@ void PS_Channel::TChannelMomenta
   double ctmin(-1.0), ctmax(1.0);
   TChannelBounds(aid,id,ctmin,ctmax,pa,pb,s1,s2);
   CE.TChannelMomenta(pa,pb,p1,p2,s1,s2,cur->Mass(),
-		     dip?m_stexp:m_texp,ctmax,ctmin,cr[0],cr[1]);
+		     dip?m_stexp:cur->Aux()?m_auxexp:m_texp,
+		     ctmax,ctmin,cr[0],cr[1]);
 }
 
 double PS_Channel::TChannelWeight
@@ -330,7 +336,8 @@ double PS_Channel::TChannelWeight
   double ctmin(-1.0), ctmax(1.0), rns[2];
   TChannelBounds(aid,id,ctmin,ctmax,pa,pb,s1,s2);
   double wgt(CE.TChannelWeight(pa,pb,p1,p2,cur->Mass(),
-			       dip?m_stexp:m_texp,ctmax,ctmin,rns[0],rns[1]));
+			       dip?m_stexp:cur->Aux()?m_auxexp:m_texp,
+			       ctmax,ctmin,rns[0],rns[1]));
   if (m_vmode&3) {
     Vegas *cvgs(GetTVegas(id,cur,dip));
     size_t id(0);
