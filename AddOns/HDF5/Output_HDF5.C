@@ -19,6 +19,8 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 
+#include <algorithm>
+
 #include <highfive/H5DataSet.hpp>
 #include <highfive/H5DataSpace.hpp>
 #include <highfive/H5File.hpp>
@@ -44,6 +46,7 @@ namespace SHERPA {
     size_t m_nneprops, m_nnpprops;
     Matrix_Element_Handler *p_me;
     Variations *p_vars;
+    std::vector<std::pair<Variations_Type,size_t> > m_wvars;
     bool m_hasnlo;
 
   public:
@@ -61,7 +64,6 @@ namespace SHERPA {
 
       m_ncache=std::min(m_ncache,(int)rpa->gen.NumberOfEvents());
       p_me=args.p_init->GetMatrixElementHandler();
-      p_vars=args.p_init->GetVariations();
 
 #if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
       MPI_Info info;
@@ -246,6 +248,8 @@ namespace SHERPA {
     
     void Header() override
     {
+      // the variations are only initialised after the outputs are constructed
+      p_vars=s_variations;
       auto xfer_props = DataTransferProps{};
 #if defined(USING__MPI) && defined(H5_HAVE_PARALLEL)
       xfer_props.add(UseCollectiveIO{});
@@ -342,10 +346,16 @@ namespace SHERPA {
       if (m_unweight) max.front()=DataSpace::UNLIMITED;
       std::vector<std::string> wnames(1,"NOMINAL");
       if (p_vars) {
-	const Variations::Parameters_Vector *params
-	  (p_vars->GetParametersVector());
-	for (size_t i(0);i<params->size();++i)
-	  wnames.push_back((*params)[i]->Name());
+	// use the same order as FillVariations, and skip duplicate names, as
+	// is done for the HepMC3 output
+	for (const auto type : p_vars->ManagedVariationTypes())
+	  for (size_t i(0);i<p_vars->Size(type);++i) {
+	    const std::string name(p_vars->GetVariationNameAt(i,type));
+	    if (std::find(wnames.begin(),wnames.end(),name)!=wnames.end())
+	      continue;
+	    wnames.push_back(name);
+	    m_wvars.push_back({type,i});
+	  }
       }
       m_nweights=wnames.size();
       // LHEF event information
@@ -370,8 +380,6 @@ namespace SHERPA {
       m_dss["events"]=p_file->createDataSet<double>
 	("events",DataSpace(min,max),props);
       m_ecache.reserve(m_ncache);
-      for (size_t i(0);i<m_ecache.size();++i)
-	m_ecache[i].reserve(m_neprops+m_nweights);
       m_dss["events"].createAttribute<std::string>
 	("events",DataSpace::From(enames)).write(enames);
       if (m_hasnlo) {
@@ -395,8 +403,6 @@ namespace SHERPA {
 	m_dss["ctevents"]=p_file->createDataSet<double>
 	  ("ctevents",DataSpace(min,max),props);
 	m_necache.reserve(m_ncache);
-	for (size_t i(0);i<m_necache.size();++i)
-	  m_necache[i].reserve(m_nneprops);
 	m_dss["ctevents"].createAttribute<std::string>
 	  ("ctevents",DataSpace::From(nenames)).write(nenames);
       }
@@ -426,8 +432,6 @@ namespace SHERPA {
       m_dss["particles"]=p_file->createDataSet<double>
 	("particles",DataSpace(min,max),props);
       m_pcache.reserve(m_ncache*nup);
-      for (size_t i(0);i<m_pcache.size();++i)
-	m_pcache[i].reserve(m_npprops);
       m_dss["particles"].createAttribute<std::string>
 	("properties",DataSpace::From(pnames)).write(pnames);
       if (m_hasnlo) {
@@ -446,8 +450,6 @@ namespace SHERPA {
 	m_dss["ctparticles"]=p_file->createDataSet<double>
 	  ("ctparticles",DataSpace(min,max),props);
 	m_npcache.reserve(m_ncache*nup);
-	for (size_t i(0);i<m_npcache.size();++i)
-	  m_npcache[i].reserve(m_nnpprops);
 	m_dss["ctparticles"].createAttribute<std::string>
 	  ("properties",DataSpace::From(npnames)).write(npnames);
       }
@@ -503,14 +505,16 @@ namespace SHERPA {
       }
       rank+=m_offset;
       m_offset+=sumcache;
-      m_dss["events"].select({rank,0},{ncache,m_ecache.front().size()}).write(m_ecache, xfer_props);
+      // use the fixed column counts rather than reading them off the caches,
+      // which can be empty on this rank while others still have data
+      m_dss["events"].select({rank,0},{ncache,m_neprops+m_nweights}).write(m_ecache, xfer_props);
       m_ecache.clear();
-      m_dss["particles"].select({rank*m_nmax,0},{ncache*m_nmax,m_pcache.front().size()}).write(m_pcache,xfer_props);
+      m_dss["particles"].select({rank*m_nmax,0},{ncache*m_nmax,m_npprops}).write(m_pcache,xfer_props);
       m_pcache.clear();
       if (m_hasnlo) {
-	m_dss["ctevents"].select({rank,0},{ncache,m_necache.front().size()}).write(m_necache,xfer_props);
+	m_dss["ctevents"].select({rank,0},{ncache,m_nneprops}).write(m_necache,xfer_props);
 	m_necache.clear();
-	m_dss["ctparticles"].select({rank*m_nmax,0},{ncache*m_nmax,m_npcache.front().size()}).write(m_npcache,xfer_props);
+	m_dss["ctparticles"].select({rank*m_nmax,0},{ncache*m_nmax,m_nnpprops}).write(m_npcache,xfer_props);
 	m_npcache.clear();
       }
     }
@@ -540,12 +544,20 @@ namespace SHERPA {
       m_ecache.push_back(std::vector<double>(m_neprops,-1));
       m_ecache.back().push_back(weight*wratio);
       if (p_vars) {
-	Weights_Map& wgtmap((*sp)["WeightsMap"]->Get<Weights_Map>());
-	std::map<std::string, double> wgts;
-	wgtmap.FillVariations(wgts);
-        for (const auto &pair : wgts) {
-          m_ecache.back().push_back(pair.second * wratio);
-        }
+	// fill the variations in the order of the weight names written in
+	// Initialize()
+	const Weights_Map& wgtmap((*sp)["WeightsMap"]->Get<Weights_Map>());
+	for (const auto& var : m_wvars) {
+	  const auto it(wgtmap.find(var.first));
+	  // fall back to the nominal if the weight was not varied
+	  if (it==wgtmap.end() || var.second+1>=it->second.Size()) {
+	    m_ecache.back().push_back(wgtmap.Nominal()*wratio);
+	    continue;
+	  }
+	  m_ecache.back().push_back
+	    (it->second.Variation(var.second)
+	     *wgtmap.NominalIgnoringVariationType(var.first)*wratio);
+	}
       }
       m_ecache.back()[0]=0;
       if (proc) {

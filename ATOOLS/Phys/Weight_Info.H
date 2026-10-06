@@ -25,7 +25,7 @@ namespace ATOOLS {
 
   struct Weight_Info {
     Weights_Map m_weightsmap;
-    double m_dxs, m_ntrial;
+    double m_max, m_dxs, m_ntrial;
     PDF_Info m_pdf;
     Weight_Info(const Weights_Map &weightsmap={0.0},
                 const double &dxs=0.0, const double &ntrial=0.0,
@@ -34,7 +34,7 @@ namespace ATOOLS {
                 const double &xf1=0.0,const double &xf2=0.0,
                 const double &muf12=0.0,const double &muf22=0.0):
       m_weightsmap(weightsmap),
-        m_dxs(dxs), m_ntrial(ntrial),
+        m_max(0.0), m_dxs(dxs), m_ntrial(ntrial),
       m_pdf(PDF_Info(fl1,fl2,x1,x2,muf12,muf22,xf1,xf2)) {}
     bool operator==(const Weight_Info& rhs) const;
     bool operator!=(const Weight_Info& rhs) const;

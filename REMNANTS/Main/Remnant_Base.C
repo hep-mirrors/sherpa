@@ -143,12 +143,12 @@ void Remnant_Base::Reset(const bool & resc,const bool &DIS) {
 }
 
 void Remnant_Base::Output() {
-  msg_Out()<<"------------------------------------------------------------\n"
+  msg_Debugging()<<"------------------------------------------------------------\n"
 	   <<METHOD<<"("<<m_beam<<"): extracted :\n";
   for (Part_List::iterator pit=m_extracted.begin();pit!=m_extracted.end();pit++)
-    msg_Out()<<(**pit);
-  msg_Out()<<METHOD<<"("<<m_beam<<"): spectators :\n";
+    msg_Debugging()<<(**pit);
+  msg_Debugging()<<METHOD<<"("<<m_beam<<"): spectators :\n";
   for (Part_List::iterator pit=m_spectators.begin();pit!=m_spectators.end();pit++)
-    msg_Out()<<(**pit);
-  msg_Out()<<"------------------------------------------------------------\n";
+    msg_Debugging()<<(**pit);
+  msg_Debugging()<<"------------------------------------------------------------\n";
 }
