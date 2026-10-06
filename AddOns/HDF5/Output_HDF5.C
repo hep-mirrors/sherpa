@@ -310,6 +310,13 @@ namespace SHERPA {
 	 m_unweight);
       idata.push_back(unweighted?3:1);
       const PHASIC::Process_Vector procs(p_me->AllProcesses());
+      // unweighting needs the maximum weight, which weighted input lacks
+      if (m_unweight)
+	for (const auto proc : procs)
+	  if (proc->EventReader() && !proc->EventReader()->HasMaxWeight())
+	    THROW(invalid_input,
+		  "`HDF5_UNWEIGHT` can not be used for events read in from an "
+		  "LHEH5 source that does not provide their maximum weight.");
       inames.push_back("numProcesses");
       idata.push_back(procs.size());
       DataSetCreateProps props;
