@@ -163,6 +163,95 @@ bool PS_Generator::AddCurrent
   return found;
 }
 
+Current *PS_Generator::AuxCurrent(Current *const ja,Current *const jb)
+{
+  size_t cid(ja->CId()|jb->CId()), n(IdCount(cid));
+  for (size_t i(0);i<m_cur[n].size();++i)
+    if (m_cur[n][i]->CId()==cid &&
+	m_cur[n][i]->Mass()==0.0 && m_cur[n][i]->Width()==0.0)
+      return m_cur[n][i];
+  // the phase space is flavour blind, a colourless massless current
+  // only provides the propagator structure
+  PS_Current *cur(new PS_Current(Current_Key(Flavour(kf_photon),NULL,0)));
+  cur->SetAux(true);
+  cur->SetId(ID(cid));
+  cur->SetKey(m_cur[n].size());
+  m_cur[n].push_back(cur);
+  m_tccs[cid].push_back(cur);
+  // no amplitude current refers to it, so it serves as its own
+  // reference in case a later amplitude current matches it
+  m_cmap.insert(CB_Pair(cur,cur));
+  m_cbmap.insert(CB_Pair(cur,cur));
+  bool found(false);
+  for (size_t i(0);i<m_ctt.size();++i)
+    if (m_ctt[i]->PSInfo()==cur->PSInfo()) {
+      found=true;
+      break;
+    }
+  if (!found) m_ctt.push_back(cur);
+  return cur;
+}
+
+void PS_Generator::AddAuxVertex(Current *ja,Current *jb,Current *const jc)
+{
+  const Vertex_Vector &in(jc->In());
+  for (size_t i(0);i<in.size();++i)
+    if ((in[i]->J(0)==ja && in[i]->J(1)==jb) ||
+	(in[i]->J(0)==jb && in[i]->J(1)==ja)) return;
+  if (ja->PSInfo()<jb->PSInfo()) std::swap<Current*>(ja,jb);
+  Vertex_Key *dummy(Vertex_Key::New(Current_Vector(),NULL,NULL));
+  PS_Vertex *vtx(new PS_Vertex(*dummy));
+  dummy->Delete();
+  vtx->AddJ(ja);
+  vtx->AddJ(jb);
+  vtx->SetJC(jc);
+}
+
+void PS_Generator::AddNPointVertex(const Current_Vector &j,Current *const jc)
+{
+  // decompose j[0] ... j[k-1] -> jc into all chains of three-point
+  // vertices, joining the legs pairwise through auxiliary currents
+  if (j.size()==2) {
+    AddAuxVertex(j[0],j[1],jc);
+    return;
+  }
+  for (size_t a(0);a<j.size();++a)
+    for (size_t b(a+1);b<j.size();++b) {
+      Current *aux(AuxCurrent(j[a],j[b]));
+      AddAuxVertex(j[a],j[b],aux);
+      Current_Vector rest(1,aux);
+      for (size_t i(0);i<j.size();++i)
+	if (i!=a && i!=b) rest.push_back(j[i]);
+      AddNPointVertex(rest,jc);
+    }
+}
+
+void PS_Generator::AddContactVertices(Current *const ref,Current *const jc)
+{
+  const Vertex_Vector &in(ref->In());
+  for (size_t i(0);i<in.size();++i) {
+    const Current_Vector &j(in[i]->J());
+    std::vector<CB_MMap::const_iterator> its(j.size());
+    bool mapped(true);
+    for (size_t k(0);k<j.size();++k)
+      if ((its[k]=m_cmap.lower_bound(j[k]))==
+	  m_cmap.upper_bound(j[k])) mapped=false;
+    if (!mapped) continue;
+    // all combinations of the phase-space images of the legs
+    while (true) {
+      Current_Vector jj(j.size());
+      for (size_t k(0);k<j.size();++k) jj[k]=its[k]->second;
+      AddNPointVertex(jj,jc);
+      size_t k(0);
+      for (;k<j.size();++k) {
+	if (++its[k]!=m_cmap.upper_bound(j[k])) break;
+	its[k]=m_cmap.lower_bound(j[k]);
+      }
+      if (k==j.size()) break;
+    }
+  }
+}
+
 int PS_Generator::DecayType(const Current *jc,
 			    const Current *ja,const Current *jb) const
 {
@@ -247,6 +336,7 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
   }
   Vertex_Key *dummy(Vertex_Key::New(Current_Vector(),NULL,NULL));
   for (size_t n(1);n<m_n;++n) {
+    Current_Vector contact;
     for (size_t j(0);j<curs[n].size();++j) {
       if (curs[n][j]->Sub() ||
 	  curs[n][j]->Flav().IsDummy()) continue;
@@ -259,6 +349,12 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 	      // m_cur[n][i]->Order()==curs[n][j]->Order() &&
 	      m_cur[n][i]->NTChannel()==curs[n][j]->NTChannel()))) {
 	  Current *ref(m_cbmap[m_cur[n][i]]);
+	  // an amplitude current with a three-point vertex turns an
+	  // auxiliary current into a genuine propagator
+	  if (ref==m_cur[n][i])
+	    for (size_t k(0);k<curs[n][j]->In().size();++k)
+	      if (curs[n][j]->In()[k]->J().size()==2)
+		((PS_Current*)ref)->SetAux(false);
 	  for (CB_MMap::const_iterator cit(m_cmap.lower_bound(ref));
 	       cit!=m_cmap.upper_bound(ref);++cit) {
 	    m_cmap.insert(CB_Pair(curs[n][j],cit->second));
@@ -324,7 +420,10 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 	  valid=true;
 	  break;
 	}
-      if (!valid) continue;
+      if (!valid) {
+	contact.push_back(curs[n][j]);
+	continue;
+      }
       curs[n][j]->Print();
       if (curs[n][j]->Flav().Width()<s_pwmin &&
 	  !curs[n][j]->Cut() && curs[n][j]->Flav().Mass()>0.0 &&
@@ -371,6 +470,40 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
       for (CB_MMap::const_iterator cit(m_cmap.lower_bound(curs[n][j]));
 	   cit!=m_cmap.upper_bound(curs[n][j]);++cit)
 	cit->second->Print();
+    }
+    // currents produced only by vertices with more than three legs,
+    // e.g. contact interactions of higher-dimensional operators, are
+    // given phase-space vertices only if no current with the same
+    // propagator structure was constructed from three-point vertices
+    std::set<Current*> ccur;
+    for (size_t j(0);j<contact.size();++j) {
+      Current *cur(NULL);
+      for (size_t i(0);i<m_cur[n].size();++i)
+	if (m_cur[n][i]->Id()==contact[j]->Id() &&
+	    m_cur[n][i]->Flav().Mass()==contact[j]->Flav().Mass() &&
+	    m_cur[n][i]->Flav().Width()==contact[j]->Flav().Width() &&
+	    m_cur[n][i]->NTChannel()==contact[j]->NTChannel()) {
+	  cur=m_cur[n][i];
+	  break;
+	}
+      if (cur!=NULL) {
+	// map onto the existing current, so that parent currents
+	// can still be reached through it
+	m_cmap.insert(CB_Pair(contact[j],cur));
+	if (ccur.find(cur)==ccur.end()) continue;
+      }
+      else {
+	contact[j]->Print();
+	if (contact[j]->Flav().Width()<s_pwmin &&
+	    !contact[j]->Cut() && contact[j]->Flav().Mass()>0.0 &&
+	    contact[j]->Flav().Mass()<m_chmass && n<m_n-1)
+	  AddCurrent(contact[j],contact[j]->Flav(),n,1);
+	else AddCurrent(contact[j],contact[j]->Flav(),n);
+	cur=m_cur[n].back();
+	ccur.insert(cur);
+      }
+      AddContactVertices(contact[j],cur);
+      cur->Print();
     }
   }
   dummy->Delete();
@@ -519,6 +652,7 @@ void PS_Generator::AddExtraCurrent
  const double &m,const double &w,Current *const scc)
 {
   AddCurrent(cur,cur->Flav(),n,1,m,w,scc);
+  ((PS_Current*)m_cur[n].back())->SetAux(((PS_Current*)cur)->Aux());
 #ifdef DEBUG__BG
   msg_Debugging()<<"  Add "<<m_cur[n].back()->PSInfo()
 		 <<(scc?" ("+scc->PSInfo()+") ":"")<<" {\n";

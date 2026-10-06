@@ -55,6 +55,11 @@ namespace COMIX {
 			 const double &m,const double &w,
 			 Current *const scc=NULL);
 
+    Current *AuxCurrent(Current *const ja,Current *const jb);
+    void AddAuxVertex(Current *ja,Current *jb,Current *const jc);
+    void AddNPointVertex(const Current_Vector &j,Current *const jc);
+    void AddContactVertices(Current *const ref,Current *const jc);
+
     int DecayType(const Current *jc,
 		  const Current *ja,const Current *jb) const;
 
