@@ -991,12 +991,8 @@ namespace LHEH5 {
       m_ncurrent = p_current ? p_current->NEvents() : 0;
       ++m_iblock;
       if (m_ncurrent > 0) {
-        m_totalxs = p_current->TotalXS();
-        m_unitwgt = p_current->UnitWeight();
+        SetXSAndUnitWeight(*p_current);
         m_psgen = p_current->PhaseSpaceGenerator();
-        if (p_current->Version()[0]==2 &&
-            p_current->Version()[1]==0 &&
-            p_current->Version()[2]==0) m_unitwgt*=rpa->Picobarn();
       }
       if (filled == 0) m_finished = true;
       else LaunchFill();

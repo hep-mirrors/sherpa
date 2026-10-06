@@ -47,6 +47,10 @@ namespace PHASIC {
     // if it is unknown.
     std::string m_psgen;
 
+    // Whether m_unitwgt is the maximum weight of the events read in, as is
+    // needed to unweight them.
+    bool m_hasmaxwgt {true};
+
   public:
 
     typedef ATOOLS::Getter_Function
@@ -83,6 +87,7 @@ namespace PHASIC {
     inline double TotalXS() const { return m_totalxs; }
     inline double UnitWeight() const { return m_unitwgt; }
     inline const std::string &PhaseSpaceGenerator() const { return m_psgen; }
+    inline bool HasMaxWeight() const { return m_hasmaxwgt; }
 
     inline int Compute() const { return m_compute; }
 

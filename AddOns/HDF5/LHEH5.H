@@ -180,6 +180,7 @@ namespace LHEH5 {
     std::vector<std::string> wgtnames;
     std::vector<size_t> ecols;
     std::string psgen;
+    int wstrategy {0};
 
     inline Particle GetParticle(size_t i) const
     {
@@ -201,6 +202,24 @@ namespace LHEH5 {
     // Empty if the file does not specify its phase-space generator, which
     // files written before LHEH5 version 2.5.0 never do.
     inline const std::string &PhaseSpaceGenerator() const { return psgen; }
+
+    // Whether the unit weight is the maximum weight of the events. As for
+    // XMAXUP in the Les Houches Accord, this is the case for the weighting
+    // strategies (IDWTUP) +-1 and +-2, but not for +-4. For the unweighted
+    // events of strategy +-3, it is the common absolute weight, which is the
+    // maximum as well. Files written with LHEH5 versions 2.5.0 to 2.6.x are an
+    // exception, since Pepper wrote a unit weight of 1 for weighted events of
+    // strategy 1 back then. Pepper did so before as well, but older files can
+    // not be told apart from those of Sherpa, which wrote the maximum weight.
+    inline bool HasMaxWeight() const
+    {
+      const int s(std::abs(wstrategy));
+      if (s==4) return false;
+      if (s==1 || s==2)
+	return !(version>=std::vector<int>{2,5,0} &&
+		 version<std::vector<int>{2,7,0});
+      return true;
+    }
 
     inline double TotalXS() const
     {
@@ -267,6 +286,12 @@ namespace LHEH5 {
       HighFive::DataSet init(file.getDataSet("init"));
       if (init.hasAttribute("phasespaceGenerator"))
         init.getAttribute("phasespaceGenerator").read(psgen);
+      std::vector<double> idata;
+      init.read(idata,xfer_props);
+      const std::vector<std::string> inames(ColumnNames(init));
+      const size_t iwgt
+	(ColumnIndices(inames,{"weightingStrategy"},"init").front());
+      wstrategy=std::lround(idata[iwgt]);
       // Since LHEH5 version 2.0.2, the particles dataset is optional, but
       // events can not be reconstructed without it.
       if (!file.exist("particles"))

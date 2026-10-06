@@ -15,7 +15,9 @@
 
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Settings.H"
@@ -36,6 +38,8 @@ namespace LHEH5 {
     size_t m_ievt, m_trials;
     // Number of events a single buffer holds at most.
     size_t m_ncache;
+    // Describes the event source in user-facing messages.
+    std::string m_sourcedesc;
 
     ATOOLS::Vec4D_Vector m_ctmoms;
 
@@ -49,6 +53,25 @@ namespace LHEH5 {
     // event generation with ExhaustionMessage() shown to the user.
     virtual bool NextBuffer() = 0;
     virtual std::string ExhaustionMessage() const = 0;
+
+    // Take over the total cross section and the unit weight of `file`. If
+    // the latter is not the maximum weight of the events, they can not be
+    // unweighted, and m_sourcedesc describes their source in the error.
+    void SetXSAndUnitWeight(const LHEFile &file)
+    {
+      m_totalxs=file.TotalXS();
+      m_unitwgt=file.UnitWeight();
+      if (file.Version()==std::vector<int>{2,0,0})
+	m_unitwgt*=ATOOLS::rpa->Picobarn();
+      m_hasmaxwgt=file.HasMaxWeight();
+      if (!m_hasmaxwgt &&
+	  ATOOLS::ToType<int>
+	  (ATOOLS::rpa->gen.Variable("EVENT_GENERATION_MODE"))!=0)
+	THROW(invalid_input,
+	      "The events read in from "+m_sourcedesc+" are weighted without "
+	      "providing their maximum weight, which is needed to unweight "
+	      "them. Please use `EVENT_GENERATION_MODE: Weighted`.");
+    }
 
     bool FillAmplitude()
     {
@@ -121,7 +144,8 @@ namespace LHEH5 {
     LHEH5_Reader_Base(const PHASIC::Event_Reader_Key &key,
 		      const std::string &cachesizekey,
 		      const std::string &sourcedesc):
-      Event_Reader(key), m_ievt(0), m_trials(0), m_ncache(0)
+      Event_Reader(key), m_ievt(0), m_trials(0), m_ncache(0),
+      m_sourcedesc(sourcedesc)
     {
       ATOOLS::Settings& s {ATOOLS::Settings::GetMainSettings()};
       m_ncache = s[cachesizekey].SetDefault(10000).Get<int>();

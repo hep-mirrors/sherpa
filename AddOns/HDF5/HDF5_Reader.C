@@ -134,12 +134,8 @@ namespace LHEH5 {
 #endif
       LHEFile *e(new LHEFile());
       e->ReadHeader(file,TransferProps());
-      m_totalxs=e->TotalXS();
-      m_unitwgt=e->UnitWeight();
+      SetXSAndUnitWeight(*e);
       m_psgen=e->PhaseSpaceGenerator();
-      if (e->Version()[0]==2 &&
-	  e->Version()[1]==0 &&
-	  e->Version()[2]==0) m_unitwgt*=rpa->Picobarn();
       m_ntotal = file.getDataSet("events").getSpace().getDimensions().front();
       msg_Info() << "Reading events from file: '" << m_files[m_ifile]
                  << "' (total per rank: " << m_ntotal / mpi->MySize();
