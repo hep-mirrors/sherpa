@@ -270,6 +270,40 @@ namespace METOOLS {
     Complex operator()(const Invariants & k) const;
   };
 
+  //! A constant, independent of every invariant.
+  //
+  //  Exists for CONTACT TERMS: a direct gamma* -> 3 pi coupling that does not
+  //  proceed through a two-body resonance, so it has no pole and no invariant
+  //  to be evaluated at.  Added into the same Sum_Term as the line shapes it
+  //  interferes with, which is what makes the interference come out right --
+  //  a constant added to |A|^2 afterwards would lose the phase entirely.
+  class Constant_Term : public Invariant_Term {
+  private:
+    Complex m_c;
+  public:
+    Constant_Term(const Complex & c);
+    Complex operator()(const Invariants & k) const;
+  };
+
+  //! The Khuri-Treiman basis at one named two-pion invariant,
+  //!     F_a(s; q^2) + r F_b(s; q^2),
+  //! read from the tables in KT3Pi_Tables.H.
+  //
+  //  Unlike every other leaf here it depends on q^2 as well as on its own
+  //  invariant -- the crossed-channel feed-in knows the total energy -- so it
+  //  could not be a Propagator_Base even in principle.  r is in m_pi^-2, the
+  //  tables' own units, because F_b carries one power of s in m_pi^2.  Zero
+  //  outside the tabulated q^2 window; what to do about that is the form
+  //  factor's decision.
+  class KT3Pi_Term : public Invariant_Term {
+  private:
+    invariant_arg m_arg;
+    double        m_r;
+  public:
+    KT3Pi_Term(const invariant_arg & arg,const double & r);
+    Complex operator()(const Invariants & k) const;
+  };
+
   //! Sum of terms.  Children are borrowed; see the note above.
   class Sum_Term : public Invariant_Term {
   private:

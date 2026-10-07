@@ -72,19 +72,61 @@ void ee_3pi::ReadParameters() {
   // name -> double map, so the run card is copied into one here.  Same tags the
   // form factor documents: EE3Pi_amp_<res> and EE3Pi_phase_<res>.
   Scoped_Settings s{ Settings::GetMainSettings()["EE_3PI"] };
-  // Only one model here: hep-ph/0512180 Eq. (10) over registry rho line shapes.
-  // The factorised variants that lived alongside it upstream are not ported --
-  // this one supersedes them (chi2/ndf 1.80 against their best of 2.56).
+  // Two parameterisations, chosen by FormFactor below: hep-ph/0512180 Eq. (10)
+  // over registry rho line shapes, and a Khuri-Treiman form for the low-energy
+  // window.  The factorised variants that lived alongside Eq. (10) upstream
+  // are not ported -- it supersedes them (chi2/ndf 1.80 against their best of
+  // 2.56).
   m_norm = s["Norm"].SetDefault(1.).Get<double>();
+
+  // The parameterisation, as an ff_model number (FormFactor_Base.H).  100, the
+  // default, is Eq. (10).  300 is Khuri-Treiman: it keeps the A--D bracket,
+  // drops E and F, has no contact term, and runs only for 0.454 <= sqrt(s)
+  // <= 1.060 GeV.  See FF_0_Isoscalar3Pi.H.
+  const int ffm = s["FormFactor"].SetDefault(100).Get<int>();
+  m_model["EE3Pi_ff_model"] = ffm;
+  // Khuri-Treiman only: the ratio of the two subtraction constants, in
+  // m_pi^-2.  0.03298 was fixed on the BESIII omega -> 3 pi Dalitz parameter
+  // alpha.
+  m_model["EE3Pi_KT_r"] = s["KT_r"].SetDefault(0.03298).Get<double>();
 
   // A--F, refitted against Belle 2024 with these line shapes, BELOW 2.5 GeV
   // only.  NOT the paper's published values, which assume its own inline
   // propagators.  See FF_0_Isoscalar3Pi.C for why the tail is excluded and
-  // why the model is knowingly a factor ~2.6 high above 2.5 GeV.
+  // why the model is knowingly a factor ~2.6 high above 2.5 GeV.  The
+  // Khuri-Treiman mode has its own A and B, refitted over its window; see the
+  // same place.
   const string tags[6] = { "A", "B", "C", "D", "E", "F" };
-  const double def[6]  = { 18.20, -0.87, -0.5068, -1.1262, -0.1954, -0.6368 };
+  const double def_eq10[6] = { 18.20, -0.87,  -0.5068, -1.1262, -0.1954, -0.6368 };
+  const double def_kt[6]   = { 13.14, -0.895, -0.5068, -1.1262, -0.1954, -0.6368 };
+  const double * def = (ffm==300) ? def_kt : def_eq10;
   for (size_t i(0);i<6;++i)
     m_model["EE3Pi_"+tags[i]] = s[tags[i]].SetDefault(def[i]).Get<double>();
+
+  // Contact term: a direct gamma* -> 3 pi coupling interfering with the rho-pi
+  // mechanism, which Dalitz analyses at the phi measure at the ~10% level and
+  // Eq. (10) does not contain.  OFF by default, so the validated cross section
+  // is unchanged; turn it on with EE_3PI: Contact_a.
+  //
+  // CMD-2 (Budker 2006-028) Eq. (39), Table 8:  a = 0.101 +- 0.044 +- 0.017,
+  // phase = -2.91 +- 0.14 +- 0.07.  KLOE 2003:  a = 0.104 +- 0.010 +- 0.020,
+  // phase = -2.47 +- 0.08 +- 0.08.  The phase is in CMD-2's own sign
+  // convention -- the published number goes straight in; see
+  // FF_0_Isoscalar3Pi.H for why that is not the phase the code applies.
+  //
+  // a, phase and Norm were all measured AT THE PHI.  Using them across the
+  // whole 1.05-3.5 GeV range is a modelling choice, not a measurement.
+  m_model["EE3Pi_contact_a"]     = s["Contact_a"].SetDefault(0.).Get<double>();
+  m_model["EE3Pi_contact_phase"] =
+    s["Contact_phase"].SetDefault(-2.91).Get<double>();
+  m_model["EE3Pi_contact_norm"]  =
+    s["Contact_norm"].SetDefault(7.52).Get<double>();
+  // Shape-preserving by default: CMD-2 normalise to the observed event count,
+  // so a and phase are a Dalitz SHAPE measurement and say nothing about the
+  // rate.  Set to 0 to add the contact term at amplitude level instead, which
+  // moves sigma at the phi by +17% and would need A--F refitting.
+  m_model["EE3Pi_contact_preserve_norm"] =
+    s["Contact_preserve_norm"].SetDefault(true).Get<bool>() ? 1. : 0.;
 
   // Isoscalar poles.  These are MODEL parameters, not particle properties --
   // see FF_0_Isoscalar3Pi.H for why.  Zero is not special here; the form
@@ -99,7 +141,8 @@ void ee_3pi::ReadParameters() {
   // The first four are the isoscalar tower in s; the last two are the rho
   // tower in the two-pion sub-masses.  Defaults are documented where the form
   // factor reads them, in FF_0_Isoscalar3Pi::FixParameters.
-  msg_Out()<<METHOD<<": hep-ph/0512180 Eq.(10) over registry rho line shapes"
+  msg_Out()<<METHOD<<": "<<(ffm==300 ? "Khuri-Treiman (FormFactor 300)" :
+			    "hep-ph/0512180 Eq.(10) over registry rho line shapes")
 	   <<", norm = "<<m_norm<<", A-F =";
   for (size_t i(0);i<6;++i) msg_Out()<<" "<<m_model["EE3Pi_"+tags[i]];
   msg_Out()<<"\n";

@@ -20,6 +20,7 @@ set(FormFactors_SOURCES Line_Shapes.C
 			FF_PP_Wave.C
 			RChL_Functions.C
                      Novosibirsk4pi_GTables.C
+                     KT3Pi_Tables.C
 		      )
 set(FormFactors_HEADERS Line_Shapes.H
                         Resonance_Base.H
@@ -43,6 +44,7 @@ set(FormFactors_HEADERS Line_Shapes.H
 			FF_PP_Wave.H
 			RChL_Functions.H
 			Novosibirsk4pi_GTables.H
+			KT3Pi_Tables.H
 		      )
 
 

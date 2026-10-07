@@ -72,6 +72,13 @@ namespace METOOLS {
     // config files can already reference it and get a clear error
     // rather than silently falling through to ff_model::unknown.
     combRChL  = 202,
+    // --- 300s: dispersive family -- the two-body dynamics come from a
+    //     solved dispersion relation rather than from line shapes. ---
+    // Khuri-Treiman representation of gamma* -> 3 pi with two
+    // subtractions, tabulated in KT3Pi_Tables.[C,H].  Implemented by
+    // FF_0_Isoscalar3Pi only, and only for sqrt(q^2) in 0.740-1.060 GeV;
+    // see that class for why the window.
+    KT        = 300,
     unknown   = 999
   };
 

@@ -1,6 +1,7 @@
 #include "METOOLS/HadronCurrents/Tools.H"
 #include "METOOLS/HadronCurrents/FormFactors/Propagator.H"
 #include "METOOLS/HadronCurrents/FormFactors/Novosibirsk4pi_GTables.H"
+#include "METOOLS/HadronCurrents/FormFactors/KT3Pi_Tables.H"
 #include "METOOLS/HadronCurrents/FormFactors/Resonance_Base.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/MyComplex.H"
@@ -353,6 +354,23 @@ void Sum_Term::Add(Invariant_Term * term) { m_terms.push_back(term); }
 void Sum_Term::Add(Propagator_Base * prop,const invariant_arg & arg,
                    const Complex & weight) {
   m_terms.push_back(new Line_Shape_Term(prop,arg,weight));
+}
+
+Constant_Term::Constant_Term(const Complex & c) : m_c(c) {}
+
+Complex Constant_Term::operator()(const Invariants &) const { return m_c; }
+
+KT3Pi_Term::KT3Pi_Term(const invariant_arg & arg,const double & r) :
+  m_arg(arg), m_r(r)
+{
+  if (m_arg==invariant_arg::total)
+    THROW(fatal_error,"KT3Pi_Term: belongs at a two-pion invariant, not q^2.");
+}
+
+Complex KT3Pi_Term::operator()(const Invariants & k) const {
+  const double s(k.At(m_arg));
+  return KT3PiLookup(k.m_q2,s,kKT3Pi_a_re,kKT3Pi_a_im)
+    + m_r*KT3PiLookup(k.m_q2,s,kKT3Pi_b_re,kKT3Pi_b_im);
 }
 
 Complex Sum_Term::operator()(const Invariants & k) const {
