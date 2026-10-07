@@ -81,8 +81,7 @@ TEST_CASE("VPMODE tags are parsed, and unknown ones are rejected",
   // tags are case sensitive, like all other Sherpa settings
   CHECK_THROWS(Parse("full"));
   CHECK_THROWS(Parse("hp"));
-  CHECK_THROWS(Parse("Fuul"));
-  CHECK_THROWS(Parse("Legacy"));
+  CHECK_THROWS(Parse("NotAMode"));
 }
 
 TEST_CASE("Default VPMODE keeps the built-in running of alpha_QED",
