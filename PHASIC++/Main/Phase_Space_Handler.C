@@ -380,10 +380,6 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
     Single_Channel * TestCh = new Rambo(nin,info->m_ps.size(),&fl.front(),ms);
     TestCh->GeneratePoint(&cp.front(),(Cut_Data*)(NULL));
     delete TestCh;
-    if (nin==1) {
-      Poincare cms(cp.front());
-      for (size_t i(1);i<cp.size();++i) cms.BoostBack(cp[i]);
-    }
   }
   for (size_t i(0);i<info->m_ps.size();++i) {
     msg_Indent();

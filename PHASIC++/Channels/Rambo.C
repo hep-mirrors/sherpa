@@ -4,6 +4,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Math/Poincare.H"
 #include <algorithm>
 
 using namespace PHASIC;
@@ -73,7 +74,13 @@ void Rambo::GenerateWeight(Vec4D * p,Cut_Data * cuts)
   for (short int i=0;i<m_nin;i++) sump += p[i];
   double ET = sqrt(sump.Abs2());
   m_weight    = 1.;
-  if (massflag) MassiveWeight(p,ET);
+  if (massflag) {
+    // MassiveWeight needs the momenta in the c.m. frame of the initial state
+    Vec4D_Vector cp(p,p+m_nin+m_nout);
+    Poincare cms(sump);
+    for (short int i=m_nin;i<m_nin+m_nout;i++) cms.Boost(cp[i]);
+    MassiveWeight(&cp.front(),ET);
+  }
   m_weight   *= exp((2.*m_nout-4.)*log(ET)+Z_N)/pow(2.*M_PI,m_nout*3.-4.);
 }
 
@@ -124,6 +131,11 @@ void Rambo::GeneratePoint(Vec4D * p,Cut_Data * cuts)
   m_weight = 1.;
   //if (massflag)
   MassivePoint(p,ET); // The boost is numerically not very precise, MassivePoint is always called for momentum conservation
+
+  // the momenta are generated in the c.m. frame of the initial state,
+  // boost them back to the frame of the incoming momenta
+  Poincare cms(sump);
+  for(i=m_nin;i<m_nin+m_nout;i++) cms.BoostBack(p[i]);
 }
 
 void Rambo::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran) {
