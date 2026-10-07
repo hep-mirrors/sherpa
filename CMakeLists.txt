@@ -40,6 +40,7 @@ message(STATUS "SHERPA: CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 ###########################Options#####################################
 option(SHERPA_ENABLE_ANALYSIS                "Enables building of Analyses." OFF)
+option(SHERPA_ENABLE_ALPHAQEDHAD             "Enables hadronic contribution to alphaqed." OFF)
 option(SHERPA_ENABLE_BINRELOC                "Enables binreloc." OFF)
 option(SHERPA_ENABLE_CATCH2                  "Enables Unit Tests with Catch2 (must be installed separately)" OFF)
 option(SHERPA_ENABLE_CLANG_TIDY              "Enables checks with clang-tidy." OFF)
@@ -113,20 +114,52 @@ foreach (en IN LISTS alldirenables)
   endif()
 endforeach()
 ###########################Options handeling############################
-set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS DOXYGEN
+set( allenables ALPHAQEDHAD ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS DOXYGEN
  EWSUD GOSAM GZIP HDF5 HEPMC3 HEPMC3_ROOT
  INTERNAL_PDFS INSTALL_LIBZIP INSTALL_LHAPDF LHAPDF MERGED_LIBS
  MADLOOP MANUAL MCFM MPI OPENLOOPS PEPPER PYTHIA8 PYTHON RECOLA RIVET ROOT THREADING TESTING UFO VERSIONING)
 foreach (en IN LISTS allenables)
   message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
 endforeach()
-if (SHERPA_ENABLE_INTERNAL_PDFS)
+# ALPHAQEDHAD compiles hadr5x19.f, so it needs Fortran
+if (SHERPA_ENABLE_INTERNAL_PDFS OR SHERPA_ENABLE_ALPHAQEDHAD)
  set(SHERPA_ENABLE_FORTRAN ON)
  enable_language(Fortran)
  message(STATUS "SHERPA: SHERPA_ENABLE_FORTRAN=${SHERPA_ENABLE_FORTRAN}")
 else()
  message(STATUS "SHERPA: SHERPA_ENABLE_FORTRAN=${SHERPA_ENABLE_FORTRAN}")
 endif()
+if (SHERPA_ENABLE_ALPHAQEDHAD)
+  set(SHERPA_ALPHAQEDHAD_VERSION "26" CACHE STRING
+      "Jegerlehner hadr5x tabulation to use for the hadronic alpha_QED (26 or 19)")
+  set_property(CACHE SHERPA_ALPHAQEDHAD_VERSION PROPERTY STRINGS 26 19)
+  if (NOT SHERPA_ALPHAQEDHAD_VERSION MATCHES "^(19|26)$")
+    message(FATAL_ERROR "SHERPA: SHERPA_ALPHAQEDHAD_VERSION must be 26 or 19, got "
+                        "'${SHERPA_ALPHAQEDHAD_VERSION}'.")
+  endif()
+  set(ALPHAQEDHAD_SRC hadr5x${SHERPA_ALPHAQEDHAD_VERSION}.f)
+
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fdefault-real-8 -fdefault-double-8")
+
+  if (NOT EXISTS ${PROJECT_SOURCE_DIR}/MODEL/Main/${ALPHAQEDHAD_SRC})
+    message(STATUS "SHERPA: fetching ${ALPHAQEDHAD_SRC} for the hadronic alpha_QED")
+    file(DOWNLOAD
+      https://people.physik.hu-berlin.de/~fjeger/${ALPHAQEDHAD_SRC}
+      ${PROJECT_SOURCE_DIR}/MODEL/Main/${ALPHAQEDHAD_SRC}
+      TLS_VERIFY ON
+      STATUS download_status
+    )
+    list(GET download_status 0 download_result)
+    if(NOT download_result EQUAL 0)
+      file(REMOVE ${PROJECT_SOURCE_DIR}/MODEL/Main/${ALPHAQEDHAD_SRC})
+      message(FATAL_ERROR "SHERPA: could not download ${ALPHAQEDHAD_SRC} from "
+                          "people.physik.hu-berlin.de/~fjeger (${download_status}), and "
+                          "MODEL/Main/${ALPHAQEDHAD_SRC} is not present.")
+    endif()
+  endif()
+  message(STATUS "SHERPA: hadronic alpha_QED from ${ALPHAQEDHAD_SRC}")
+endif()
+
 message(STATUS "SHERPA: CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}")
 if (SHERPA_ENABLE_VERSIONING)
   set (VERSIONING "-${EXTERNAL_VERSION_STRING}")
@@ -1016,6 +1049,8 @@ $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define USING__MCFM \"1\",/* #undef USING__MC
 $<IF:$<BOOL:${SHERPA_ENABLE_MCFM}>,#define MCFM_PATH \"${MCFM_PATH}\",/* #undef MCFM_PATH */>\n\n\
 /* using EWSud */\n\
 $<IF:$<BOOL:${SHERPA_ENABLE_EWSUD}>,#define USING__EWSud \"1\",/* #undef USING__EWSud */>\n\n\
+/* using  hadronic contribution to alphaqed */\n\
+$<IF:$<BOOL:${SHERPA_ENABLE_ALPHAQEDHAD}>,#define USING__HADALPHAQED \"1\",/* #undef USING__HADALPHAQED */>\n\n\
 #endif")
 file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ATOOLS/Org/CXXFLAGS_PACKAGES.H CONTENT "${CXXFLAGS_PACKAGES_H_CONTENT}")
 ########################################################################

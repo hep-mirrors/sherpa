@@ -20,6 +20,7 @@ Standard Model
 .. index:: CKM_Output
 .. index:: ALPHAS(MZ)
 .. index:: ALPHAQED_DEFAULT_SCALE
+.. index:: VPMODE
 .. index:: GMU_CMS_AQED_CONVENTION
 .. index:: ORDER_ALPHAS
 .. index:: ALPHAS_USE_PDF
@@ -182,6 +183,39 @@ If the setup at hand involves PDFs, both ``ALPHAS(MZ)`` and
 strong coupling is kept consistent with the PDF fit. This behaviour,
 including the choice of which PDF supplies the value, is controlled by
 the ``ALPHAS`` settings described below.
+
+.. _AlphaQED running:
+
+alphaQED running
+~~~~~~~~~~~~~~~~
+
+The running of the electromagnetic coupling :math:`\alpha_{QED}(t)`, which is
+used wherever a scale-dependent :math:`\alpha_{QED}` is evaluated (e.g. for
+:option:`ALPHAQED_DEFAULT_SCALE`), is given by
+:math:`\alpha_{QED}(t) = \alpha_{QED}(0)/(1-\Delta\alpha(t))`. By default
+the vacuum polarisation :math:`\Delta\alpha` is taken from a built-in
+parameterisation (leptonic and top loops, and a fit for the hadronic part).
+Alternatively, it can be selected with
+
+.. code-block:: yaml
+
+   Alpha_QED:
+     VPMODE: Full
+
+:option:`None`
+  No running, :math:`\alpha_{QED}(t)=\alpha_{QED}(0)` for all :math:`t`.
+
+:option:`Full`, :option:`HP`, :option:`LP`
+  Use F. Jegerlehner's ``hadr5x`` fit to :math:`e^+e^-` data for the
+  hadronic part. ``Full`` adds the leptonic and top contributions,
+  ``HP`` returns the hadronic contribution alone, and ``LP`` the leptonic one
+  alone. These modes need Sherpa configured with
+  ``-DSHERPA_ENABLE_ALPHAQEDHAD=ON``, which builds the Fortran routine and
+  requires a Fortran compiler. If you use it, please cite :cite:`Jegerlehner:2006ju` and the references
+  given in the source file.
+
+For time-like :math:`t>0` and space-like :math:`t<0` momentum transfer the
+``hadr5x`` fit is evaluated at :math:`E=\pm\sqrt{|t|}`.
 
 .. _ALPHAS settings:
 
