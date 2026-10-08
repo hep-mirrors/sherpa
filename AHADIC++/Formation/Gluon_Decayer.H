@@ -16,8 +16,9 @@ namespace AHADIC {
     Gluon_Splitter   m_splitter;
     Trivial_Splitter m_breaker;
 
-    bool m_analyse;
-    int  m_Nclusters;
+    bool   m_analyse;
+    int    m_Nclusters;
+    size_t m_fails;
     std::map<std::string, ATOOLS::Histogram *> m_histos;
     
     
@@ -25,6 +26,8 @@ namespace AHADIC {
     Proto_Particle * FirstGluon();
     bool Trivial(Proto_Particle * part1,Proto_Particle * part2,
 		 const bool & force=true);
+    bool HadroniseTwoPartons(Proto_Particle * part1,Proto_Particle * part2,
+			     const bool & force=true);
     int  Step(Proto_Particle * part1,Proto_Particle * part2,
 	      Proto_Particle * part3=NULL);
     bool LastStep();
