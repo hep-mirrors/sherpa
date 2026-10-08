@@ -410,6 +410,68 @@ namespace METOOLS {
     const double  Normalised2(const double & s);
   };
 
+  // Complex-pole propagator,
+  //     D(s) = s_pole / (s_pole - s),   s_pole = (M - i Gamma/2)^2,
+  // normalised to D(0) = 1 so that it matches the convention of
+  // BreitWigner above (M^2/(M^2-s-i sqrt(s) Gamma(s)) -> 1 at s=0) and
+  // can be dropped into a Summed_Propagator alongside one.
+  //
+  // Takes no Total_Width_Base: there is no running width to evaluate,
+  // which is the whole point. The flavour is carried separately, only
+  // so that DumpPropagatorStructure can label it.
+  class Complex_Pole : public Propagator_Base {
+  private:
+    Complex         m_spole;
+    double          m_Mpole, m_Gpole;
+    ATOOLS::Flavour m_flav;
+  public:
+    Complex_Pole(const double & Mpole,const double & Gpole,
+                 const ATOOLS::Flavour & flav=ATOOLS::Flavour(kf_none));
+    ATOOLS::Flavour Flav() const { return m_flav; }
+    const Complex operator()(const double & s);
+    const Complex Normalised(const double & s);
+    const double  Normalised2(const double & s);
+    virtual double OnShellWidth() const { return m_Gpole; }
+    virtual Complex PoleNumerator() const { return m_spole; }
+    inline Complex PolePosition() const { return m_spole; }
+  };
+
+  // Flatte, two channels:
+  //
+  //   D(s) = M^2 / ( M^2 - s - i [ g_1 rho_1(s) + g_2 rho_2(s) ] ),
+  //
+  // with the two-body phase-space factors
+  //   rho_ab(s) = sqrt( (1-(m_a+m_b)^2/s)(1-(m_a-m_b)^2/s) )
+  // continued ANALYTICALLY below threshold, where rho becomes
+  // i|rho| and the term moves from the imaginary to the real part of
+  // the denominator. The couplings g_i carry GeV^2.
+  //
+  // The M^2 numerator matches the BreitWigner convention in this file
+  // (D -> 1 at s=0 up to the subthreshold rho's), so PoleNumerator()
+  // returns M^2 and callers deriving a coupling from a width divide it
+  // out exactly as they do for a Breit-Wigner.
+  class Flatte : public Propagator_Base {
+  private:
+    double m_g1, m_g2;
+    double m_ma1, m_mb1, m_ma2, m_mb2;
+    ATOOLS::Flavour m_flav;
+    Complex Rho(const double & s,const double & ma,
+                const double & mb) const;
+  public:
+    Flatte(const double & M,const double & g1,const double & g2,
+           const double & ma1,const double & mb1,
+           const double & ma2,const double & mb2,
+           const ATOOLS::Flavour & flav=ATOOLS::Flavour(kf_none));
+    const Complex operator()(const double & s);
+    const Complex Normalised(const double & s);
+    const double  Normalised2(const double & s);
+    // Width at the pole from the OPEN channel only, so that a caller
+    // deriving a decay coupling gets something meaningful.
+    virtual double OnShellWidth() const;
+    virtual Complex PoleNumerator() const { return Complex(m_M2,0.); }
+    ATOOLS::Flavour Flav() const { return m_flav; }
+  };
+
   // ------------------------------------------------------------------
   // Propagators of the Novosibirsk four-pion parameterisation, as
   // TAUOLA implements them (tauola-factory/Binp/binp.f).
