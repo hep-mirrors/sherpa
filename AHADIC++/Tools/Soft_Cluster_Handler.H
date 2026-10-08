@@ -5,6 +5,7 @@
 #include "AHADIC++/Tools/Single_Transitions.H"
 #include "AHADIC++/Tools/Double_Transitions.H"
 #include "AHADIC++/Tools/Cluster.H"
+#include <vector>
 
 namespace AHADIC {
   class Soft_Cluster_Handler {
@@ -73,5 +74,16 @@ namespace AHADIC {
 
     std::list<Proto_Particle *> * GetHadrons() const { return p_hadrons; } 
   };
+
+  /// Index of the hadron that takes the recoil when Soft_Cluster_Handler::Rescue
+  /// turns a cluster with momentum `cluster` into a hadron of mass `newmass`:
+  /// the one with the largest (p_cluster+p_i)^2/(newmass+m_i)^2 above 1.
+  /// Returns -1 if no hadron qualifies, or if there is no hadron for the
+  /// cluster to turn into (`hastransition` false, e.g. for a
+  /// diquark-antidiquark pair).
+  int SelectRescuePartner(const ATOOLS::Vec4D & cluster,
+			  const bool hastransition,const double newmass,
+			  const std::vector<ATOOLS::Vec4D> & hadmoms,
+			  const std::vector<double> & hadmasses);
 }
 #endif

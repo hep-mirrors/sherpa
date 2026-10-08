@@ -133,9 +133,12 @@ int Soft_Cluster_Handler::CheckOutsideRange() {
 
 bool Soft_Cluster_Handler::RadiativeDecay(Cluster * cluster) {
   FillFlavours(cluster);
-  if (m_mass>p_singletransitions->GetLightestMass(m_flavs) &&
-      RadiationWeight(false)>0.) {
-    m_hads[0] = p_singletransitions->GetLightestTransition(m_flavs);
+  // no single hadron for these flavours (e.g. a diquark-antidiquark pair):
+  // the radiative decay would produce a kf_none particle
+  const Flavour lightest(p_singletransitions->GetLightestTransition(m_flavs));
+  if (lightest==Flavour(kf_none)) return false;
+  if (m_mass>lightest.HadMass() && RadiationWeight(false)>0.) {
+    m_hads[0] = lightest;
     m_hads[1] = Flavour(kf_photon);
     return FixKinematics();
   }
@@ -146,22 +149,26 @@ bool Soft_Cluster_Handler::Rescue(Cluster * cluster) {
   FillFlavours(cluster);
   if (m_flavs.first.IsGluon() && m_flavs.second.IsGluon()) return TreatTwoGluons(cluster);
   if (m_flavs.first.IsGluon() || m_flavs.second.IsGluon()) return false;
-  Proto_Particle * winner = NULL;
   Flavour newhad  = LowestTransition(m_flavs.first, m_flavs.second);
   double  newmass = newhad.Mass();
-  double  wratio  = 1., test;
-  Vec4D   mom, totmom;
+  vector<Vec4D>  hadmoms;
+  vector<double> hadmasses;
   for (list<Proto_Particle *>::iterator pit=p_hadrons->begin();
        pit!=p_hadrons->end();pit++) {
-    mom = (*pit)->Momentum()+cluster->Momentum();
-    test = mom.Abs2()/sqr(newmass+(*pit)->Flavour().Mass());
-    if (test>wratio) {
-      winner = (*pit);
-      wratio = test;
-      totmom = mom;
-    }
+    hadmoms.push_back((*pit)->Momentum());
+    hadmasses.push_back((*pit)->Flavour().Mass());
   }
-  if (winner==NULL) return false;
+  // without a hadron for these flavours (e.g. a diquark-antidiquark pair)
+  // there is nothing to rescue into: building one would leave a kf_none
+  // particle in the event
+  const int iwinner(SelectRescuePartner(cluster->Momentum(),
+					newhad!=Flavour(kf_none),newmass,
+					hadmoms,hadmasses));
+  if (iwinner<0) return false;
+  list<Proto_Particle *>::iterator wit(p_hadrons->begin());
+  advance(wit,iwinner);
+  Proto_Particle * winner = (*wit);
+  Vec4D  totmom   = winner->Momentum()+cluster->Momentum();
   double totmass2 = totmom.Abs2(), totmass = sqrt(totmass2), wmass2 = sqr(winner->Flavour().Mass());
   Vec4D  wvec     = winner->Momentum();
   Poincare boost  = Poincare(totmom);
@@ -176,6 +183,24 @@ bool Soft_Cluster_Handler::Rescue(Cluster * cluster) {
   p_hadrons->push_back(new Proto_Particle(newhad,newvec));
   winner->SetMomentum(wvec);
   return true;
+}
+
+int AHADIC::SelectRescuePartner(const Vec4D & cluster,
+				const bool hastransition,const double newmass,
+				const vector<Vec4D> & hadmoms,
+				const vector<double> & hadmasses)
+{
+  if (!hastransition) return -1;
+  int    winner(-1);
+  double wratio(1.);
+  for (size_t i(0);i<hadmoms.size();++i) {
+    const double test((hadmoms[i]+cluster).Abs2()/sqr(newmass+hadmasses[i]));
+    if (test>wratio) {
+      winner = int(i);
+      wratio = test;
+    }
+  }
+  return winner;
 }
 
 bool Soft_Cluster_Handler::TreatTwoGluons(Cluster * cluster) {
