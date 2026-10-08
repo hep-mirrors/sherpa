@@ -1,7 +1,6 @@
 #include "AHADIC++/Formation/Gluon_Decayer.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Exception.H"
 
 #include <cassert>
 
@@ -14,7 +13,7 @@ Gluon_Decayer::Gluon_Decayer(list<Cluster *> * cluster_list,
   Singlet_Tools(),
   p_cluster_list(cluster_list), p_softclusters(softclusters),
   m_splitter(Gluon_Splitter(cluster_list,softclusters)),
-  m_analyse(false)
+  m_analyse(false), m_fails(0)
 {
   if (m_analyse) {
     m_histos[string("N_primaries")] = new Histogram(0,0.,100.,100);
@@ -28,6 +27,9 @@ Gluon_Decayer::Gluon_Decayer(list<Cluster *> * cluster_list,
 }
 
 Gluon_Decayer::~Gluon_Decayer() {
+  if (m_fails>0)
+    msg_Error()<<METHOD<<" with "<<m_fails
+	       <<" 2-parton systems that could not be hadronised.\n";
   if (m_analyse) {
     Histogram * histo;
     string name;
@@ -64,13 +66,10 @@ bool Gluon_Decayer::operator()(Singlet * singlet) {
     return false;
   }
   if (p_singlet->size()==2) {
-    bool flag = Trivial(p_singlet->front(),p_singlet->back(),false);
-    if (!flag) {
-      msg_Error()<<(*singlet)<<"\n";
-      THROW(fatal_error,"Couldn't deal with 2-parton singlet.");
-    }
+    if (!HadroniseTwoPartons(p_singlet->front(),p_singlet->back(),false))
+      return false;
     delete p_singlet;
-    return flag;
+    return true;
   }
   Proto_Particle * part1,* part2;
   size_t count(0);
@@ -192,11 +191,29 @@ bool Gluon_Decayer::LastStep() {
   // perform step and return result
   int stepres = Step(part[split],part[gluon],part[spect]);
   if (stepres==0) {
-    return Trivial(p_singlet->front(),p_singlet->back());
+    return HadroniseTwoPartons(p_singlet->front(),p_singlet->back());
   }
   if (split==0) p_singlet->pop_front();
            else p_singlet->pop_back();
-  return Trivial(p_singlet->front(),p_singlet->back(),false);
+  return HadroniseTwoPartons(p_singlet->front(),p_singlet->back(),false);
+}
+
+bool Gluon_Decayer::HadroniseTwoPartons(Proto_Particle * part1,
+					Proto_Particle * part2,
+					const bool & force) {
+  // Trivial pops both partons off the singlet, so record what the error
+  // message needs first.
+  const Flavour flav1(part1->Flavour()), flav2(part2->Flavour());
+  const double  mass(sqrt(Max(0.,(part1->Momentum()+
+				  part2->Momentum()).Abs2())));
+  if (Trivial(part1,part2,force)) return true;
+  // e.g. a diquark-antidiquark pair below the baryon-pair threshold with no
+  // hadron to take the recoil: the event is discarded
+  if (m_fails++<5)
+    msg_Error()<<"Error in "<<METHOD<<": could not hadronise the 2-parton "
+	       <<"system ["<<flav1<<", "<<flav2<<"] with mass "<<mass<<".\n"
+	       <<"   Will ask for a new event.\n";
+  return false;
 }
 
 bool Gluon_Decayer::Trivial(Proto_Particle * part1,Proto_Particle * part2,
