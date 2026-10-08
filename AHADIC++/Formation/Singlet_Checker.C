@@ -469,7 +469,7 @@ bool Singlet_Checker::TwoQuarkSingletToHadrons() {
   Cluster * cluster = new Cluster(p_part1,p_part2);
   if ((m_mass > p_softclusters->MinDoubleMass(p_part1->Flavour(),
 					      p_part2->Flavour()) &&
-       p_softclusters->Treat(cluster,true)) ||
+       p_softclusters->Treat(cluster,true)==1) ||
       p_softclusters->RadiativeDecay(cluster)) {
     delete cluster;
     return true;
