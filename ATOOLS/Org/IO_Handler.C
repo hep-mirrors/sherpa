@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace ATOOLS;
 using namespace std;
@@ -168,6 +169,11 @@ Type * IO_Handler::ArrayInput(const std::string name,int nx) {
     string value(sit1,sit2);
     helpstr<<value;
     helpstr>>values[x];
+    std::string rest;
+    if (!helpstr.fail()) helpstr>>rest;
+    else rest=value;
+    if (!rest.empty())
+      THROW(fatal_error,"Failed to parse '"+value+"' in "+m_infilename);
 
     sit1=++sit2;
     if ((sit1==send)) {
