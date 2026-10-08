@@ -4,6 +4,26 @@
 
 namespace ATOOLS {
 
+// formats a complex number for Kabbala strings as "a", "i*b" or "a+i*b";
+// local to Kabbala, so that stream output of Complex keeps the std format
+// "(a,b)", which is what std::operator>> reads back (e.g. in IO_Handler)
+static std::string KabbalaString(const Complex& c) {
+  MyStrStream ss;
+  double a(c.real());
+  double b(c.imag());
+  if (a != 0.) {
+    if (b != 0) ss << a << "+i*" << b;
+    else ss << a;
+  }
+  else {
+    if (b != 0) ss << "i*" << b;
+    else ss << "0";
+  }
+  std::string s;
+  ss >> s;
+  return s;
+}
+
 //Default constructor, zero
 Kabbala::Kabbala() {
   shem = "0";
@@ -16,7 +36,7 @@ Kabbala::Kabbala() {
 //Constructor for fixed constant.
 Kabbala::Kabbala(const Complex& c) : rishbon(c) {
   rishbon = c;
-  shem = ToString(c);
+  shem = KabbalaString(c);
   Complex c1 (c);
   lambda = [c1](Function_Argument map) {
     return c1;
@@ -90,7 +110,7 @@ Kabbala& Kabbala::operator+=(const Complex& c){
   rishbon += c;
   if (shem!=std::string("")) shem += std::string("+");
   MyStrStream ss;
-  ss << "(" << c << ")";
+  ss << "(" << KabbalaString(c) << ")";
   std::string s;
   ss >> s;
   shem += s;  
@@ -126,7 +146,7 @@ Kabbala& Kabbala::operator-=(const Complex& c) {
   if (ATOOLS::IsZero(c)) return *this;
   rishbon -= c;
   MyStrStream ss;
-  ss << "-(" << c << ")";
+  ss << "-(" << KabbalaString(c) << ")";
   std::string s;
   ss >> s;
   shem    += s;
@@ -155,7 +175,7 @@ Kabbala& Kabbala::operator*=(const Complex& c) {
   rishbon *= c;
   std::string save = shem;
   MyStrStream sstr;  
-  sstr<<"("<<save<<")*("<< c <<")";
+  sstr<<"("<<save<<")*("<< KabbalaString(c) <<")";
   sstr >> shem;
   Func copy(lambda);
   Complex c2(c);
@@ -190,7 +210,7 @@ Kabbala& Kabbala::operator/=(const Complex& c) {
   rishbon /= c;
   std::string save = shem;
   MyStrStream sstr;  
-  sstr<<"("<<save<<")/("<< c <<")";
+  sstr<<"("<<save<<")/("<< KabbalaString(c) <<")";
   sstr >> shem;
   Func copy(lambda);
   Complex c2(c);
@@ -208,7 +228,7 @@ Kabbala operator/(const Complex& c, const Kabbala& k1) {
   Kabbala k(k1);
   k.SetValue(c/k1.Value());
   MyStrStream ss;
-  ss << "(" << c << ")/(" << k1.String() << ")";
+  ss << "(" << KabbalaString(c) << ")/(" << k1.String() << ")";
   std::string s;
   ss >> s;
   k.SetString(s);
@@ -280,7 +300,7 @@ Kabbala pow(const Kabbala& k1, const Complex& c) {
   Kabbala k(k1);
   k.SetValue(std::pow(k.Value(), c));
   MyStrStream ss;
-  ss << "(" << k.String() << ")^(" << c << ")";
+  ss << "(" << k.String() << ")^(" << KabbalaString(c) << ")";
   std::string s;
   ss >> s;
   k.SetString(s);
