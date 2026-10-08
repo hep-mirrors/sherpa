@@ -4,6 +4,7 @@
 #include "METOOLS/Explicit/C_Object.H"
 #include "METOOLS/Main/Polarization_Index.H"
 #include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/DDouble.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Getter_Function.H"
 #include "MODEL/Main/Model_Base.H"
@@ -49,6 +50,13 @@ namespace METOOLS {
     Int_Vector    m_id, m_fid;
 
     ATOOLS::Vec4D  m_p;
+    // Double-double shadow of m_p, used only for the p^2 bookkeeping below.
+    // m_p itself stays double on purpose.
+    ATOOLS::Vec4<ATOOLS::DDouble> m_ph;
+    ATOOLS::Vec4<ATOOLS::DDouble> m_phx;
+    bool m_hasphx;
+
+    ATOOLS::DDouble m_p2;
     CObject_Matrix m_j;
 
     Polarization_Index m_h;
@@ -116,7 +124,23 @@ namespace METOOLS {
     // inline functions
     inline const CObject_Matrix &J() const { return m_j; }
 
-    inline void SetP(const ATOOLS::Vec4D &p) { m_p=p; }
+    inline void SetPWideExt(const ATOOLS::Vec4<ATOOLS::DDouble> &ph)
+    { m_phx=ph; m_hasphx=true; }
+
+    inline void SetPWide()
+    {
+      if (m_hasphx) { m_ph=m_phx; return; }
+      typedef ATOOLS::DDouble DD;
+      DD pp(DD(m_p[0])+DD(m_p[3])), pm(DD(m_p[0])-DD(m_p[3]));
+      const DD pt2(DD(m_p[1])*DD(m_p[1])+DD(m_p[2])*DD(m_p[2]));
+      if (abs(pp)>abs(pm)) { if (pp!=DD(0.0)) pm=(m_p2+pt2)/pp; }
+      else                 { if (pm!=DD(0.0)) pp=(m_p2+pt2)/pm; }
+      m_ph=ATOOLS::Vec4<DD>(DD(0.5)*(pp+pm),DD(m_p[1]),DD(m_p[2]),
+                            DD(0.5)*(pp-pm));
+    }
+
+    inline void SetP(const ATOOLS::Vec4D &p)
+    { m_p=p; m_p2=ATOOLS::sqr(m_mass); SetPWide(); }
 
     inline void SetFId(const Int_Vector &fid) { m_fid=fid; }
     inline void SetKey(const size_t &key)     { m_key=key; }
@@ -138,6 +162,16 @@ namespace METOOLS {
     { return m_fl.IsAnti()?m_fl:m_fl.Bar(); }
 
     inline ATOOLS::Vec4D P() const { return m_p; }
+
+    inline double P2() const { return (double)m_p2; }
+
+    inline const ATOOLS::Vec4<ATOOLS::DDouble> &PH() const { return m_ph; }
+
+    template <typename SType>
+    inline ATOOLS::Vec4<SType> PW() const
+    { return ATOOLS::Vec4<SType>((SType)m_ph[0],(SType)m_ph[1],
+                                 (SType)m_ph[2],(SType)m_ph[3]); }
+    inline const ATOOLS::DDouble &P2H() const { return m_p2; }
 
     inline const Int_Vector &Id() const   { return m_id;   }
     inline const Int_Vector &FId() const  { return m_fid;  }
@@ -191,7 +225,7 @@ namespace METOOLS {
 
   };// end of class Current
 
-  template <class SType> inline void 
+  template <class SType> inline void
   Current::Contract(const Current &c,const Int_Vector &pols,
 		    std::vector<std::complex<SType> > &ress,
 		    const size_t &offset) const

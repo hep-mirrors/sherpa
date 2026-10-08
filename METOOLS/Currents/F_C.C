@@ -126,18 +126,21 @@ void CF<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			   const int cr,const int ca,const int mode)
 {
   this->m_p=p;
+  this->m_p2=sqr(this->m_mass);
+  this->SetPWide();
   this->ResetJ();
+  const ATOOLS::Vec4<SType> pw(this->template PW<SType>());
   bool anti(this->m_fl.IsAnti());
   if (this->m_fl.Majorana()) anti=(mode&1)?this->m_dir<0:this->m_dir>0;
   if (ch>=0) {
     CSpinorType j(anti^(this->m_dir>0)?
 		  CSpinorType(this->m_fl.Majorana()?-2:-1,-this->m_dir,
 			      this->m_fl.Majorana()?(mode?1:-1):1,
-			      p,cr,ca,0,0,sqr(this->m_mass),
+			      pw,cr,ca,0,0,sqr(this->m_mass),
 			      this->m_fl.MassSign()):
 		  CSpinorType(this->m_fl.Majorana()?2:1,this->m_dir,
 			      this->m_fl.Majorana()?(mode?-1:1):1,
-			      p,cr,ca,0,0,sqr(this->m_mass),
+			      pw,cr,ca,0,0,sqr(this->m_mass),
 			      this->m_fl.MassSign()));
     j.SetH(anti^(this->m_dir>0)?1:0);
 #ifdef DEBUG__BG
@@ -154,11 +157,11 @@ void CF<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
     CSpinorType j(anti^(this->m_dir>0)?
 		  CSpinorType(this->m_fl.Majorana()?-2:-1,-this->m_dir,
 			      this->m_fl.Majorana()?(mode?-1:1):-1,
-			      p,cr,ca,0,0,sqr(this->m_mass),
+			      pw,cr,ca,0,0,sqr(this->m_mass),
 			      this->m_fl.MassSign()):
 		  CSpinorType(this->m_fl.Majorana()?2:1,this->m_dir,
 			      this->m_fl.Majorana()?(mode?1:-1):-1,
-			      p,cr,ca,0,0,sqr(this->m_mass),
+			      pw,cr,ca,0,0,sqr(this->m_mass),
 		              this->m_fl.MassSign()));
     j.SetH(anti^(this->m_dir>0)?0:1);
 #ifdef DEBUG__BG
@@ -186,15 +189,20 @@ void CF<SType>::AddPropagator()
 {
   const CSpinorType hs;
   // add propagator for off-shell leg
-  SComplex prop(M_I/(SType(this->m_p.Abs2())-m_cmass2));
+  SComplex prop(M_I/(SType(this->m_p2)-m_cmass2));
   if (this->m_osd) prop=SComplex(M_I);
-  SComplex pp(Spinor<SType>::PPlus(this->m_p));
-  SComplex pm(Spinor<SType>::PMinus(this->m_p));
-  SComplex pt(Spinor<SType>::PT(this->m_p));
-  SComplex ptc(Spinor<SType>::PTC(this->m_p));
+  const size_t r1(Spinor<SType>::R1()),r2(Spinor<SType>::R2()),
+               r3(Spinor<SType>::R3());
+  const ATOOLS::DDouble hpp(this->m_ph[0]+this->m_ph[r3]);
+  const ATOOLS::DDouble hpm(this->m_ph[0]-this->m_ph[r3]);
+  // braces, not parens: SComplex pp(SType(x)) parses as a function declaration
+  const SType tr1(this->m_ph[r1]), tr2(this->m_ph[r2]);
+  SComplex pp{SType(hpp)}, pm{SType(hpm)};
+  SComplex pt{tr1,tr2}, ptc{tr1,-tr2};
 #ifdef DEBUG__BG
   msg_Debugging()<<"propagator: "<<prop
-		 <<" <- p^2 = "<<this->m_p.Abs2()<<", m = "<<m_cmass<<"\n";
+		 <<" <- p^2 = "<<this->m_p2<<" (Abs2 "<<this->m_p.Abs2()
+		 <<"), m = "<<m_cmass<<"\n";
   msg_Debugging()<<"pp = "<<pp<<", pm = "<<pm<<", pt = "<<pt<<"\n";
 #endif
   for (size_t i(0);i<m_j.size();++i) {

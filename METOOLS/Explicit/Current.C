@@ -28,8 +28,10 @@ char METOOLS::ParticleType(const Flavour &fl)
 }
 
 Current::Current(const Current_Key &key):
-  m_fl(key.m_fl), m_key(0), m_order(2,0), m_cid(0), m_ntc(0),
-  m_mass(m_fl.Mass()), m_width(m_fl.Width()), 
+  m_fl(key.m_fl), m_p2(sqr(key.m_fl.Mass())),
+  m_key(0), m_order(2,0), m_cid(0), m_ntc(0),
+  m_mass(m_fl.Mass()), m_width(m_fl.Width()),
+  m_hasphx(false),
   m_msv(!IsZero(m_mass)), m_zero(true),
   m_dir(0), m_cut(0), m_osd(0), p_sub(NULL) {}
 
@@ -163,6 +165,34 @@ void Current::ResetJ()
   m_zero=true;
 }
 
+
+namespace {
+
+  /*!
+    Dot product of two momenta whose virtualities are known exactly.
+
+    Vec4::LCDot still forms p- = p[0]-p[3] by subtraction. 
+    and p+ p- = p^2 + pT^2 identically, and the exact p^2 is already carried in
+    P2H(). So divide the small component out of the large one instead of
+    subtracting: no cancellation, and the mass that enters is the nominal one
+    rather than the one the rounded components happen to imply.
+  */
+  inline DDouble ExactLCDot(const Vec4<DDouble> &p,const DDouble &p2,
+			    const Vec4<DDouble> &q,const DDouble &q2)
+  {
+    const DDouble ptt(p[1]*p[1]+p[2]*p[2]), qtt(q[1]*q[1]+q[2]*q[2]);
+    DDouble pp(p[0]+p[3]), pm(p[0]-p[3]);
+    DDouble qp(q[0]+q[3]), qm(q[0]-q[3]);
+    // recover whichever component cancelled, from the one that did not
+    if (abs(pp)>abs(pm)) { if (pp!=DDouble(0.0)) pm=(p2+ptt)/pp; }
+    else                 { if (pm!=DDouble(0.0)) pp=(p2+ptt)/pm; }
+    if (abs(qp)>abs(qm)) { if (qp!=DDouble(0.0)) qm=(q2+qtt)/qp; }
+    else                 { if (qm!=DDouble(0.0)) qp=(q2+qtt)/qm; }
+    return DDouble(0.5)*(pp*qm+pm*qp)-p[1]*q[1]-p[2]*q[2];
+  }
+
+}
+
 void Current::Evaluate()
 {
 #ifdef DEBUG__BG
@@ -173,10 +203,33 @@ void Current::Evaluate()
   Vertex_Vector::const_iterator vit(m_in.begin());
   if (p_sub==NULL || m_id.size()>
       (p_sub->Sub()->In().front()->Info()->Mode()==1?2:1)) {
-    // calculate outgoing momentum
-    m_p=Vec4D();
-    for (Current_Vector::const_iterator jit((*vit)->J().begin());
-	 jit!=(*vit)->J().end();++jit) m_p+=(*jit)->P();
+    // calculate outgoing momentum and its virtuality
+    //
+    // p^2 is accumulated as sum_i p_i^2 + 2 sum_{i<j} p_i.p_j rather than
+    // taken as m_p.Abs2() afterwards. Both are equal in exact arithmetic, but
+    // the sub-current virtualities p_i^2 are already free of cancellation.
+    m_ph=Vec4<DDouble>();
+    m_p2=DDouble(0.0);
+    const Current_Vector &js((*vit)->J());
+    for (size_t i(0);i<js.size();++i) {
+      m_p2+=js[i]->P2H();
+      for (size_t j(i+1);j<js.size();++j)
+	m_p2+=DDouble(2.0)*ExactLCDot(js[i]->PH(),js[i]->P2H(),
+				      js[j]->PH(),js[j]->P2H());
+      m_ph+=js[i]->PH();
+    }
+    // narrow once, at the end: everything downstream of a current reads the
+    // momentum as a double, but nothing downstream re-derives p^2 from it.
+    m_p=Vec4D((double)m_ph[0],(double)m_ph[1],
+	      (double)m_ph[2],(double)m_ph[3]);
+#ifdef DEBUG__BG
+    // m_p2 must track m_p.Abs2() to within the latter's own accuracy; a
+    // mismatch beyond that means a P()/P2() pair went out of sync somewhere.
+    if (!IsEqual((double)m_p2,m_p.Abs2(),1.0e-6) &&
+	dabs((double)m_p2-m_p.Abs2())>1.0e-6*sqr(m_p[0]))
+      msg_Error()<<METHOD<<"(): p^2 bookkeeping mismatch: recursive "
+		 <<(double)m_p2<<" vs. Abs2() "<<m_p.Abs2()<<" for "<<m_id<<"\n";
+#endif
   }
   // calculate subcurrents
   for (;vit!=m_in.end();++vit) (*vit)->Evaluate();

@@ -44,6 +44,7 @@ Amplitude::Amplitude():
   m_murcoeffvirt = s["NLO_MUR_COEFFICIENT_FROM_VIRTUAL"].Get<bool>();
   p_dinfo->SetMassive(0);
   m_pmode = comixsettings["PMODE"].Get<std::string>()[0];
+  m_momproj = comixsettings["MOMENTUM_PROJECTION"].Get<bool>();
   m_wfmode = comixsettings["WF_MODE"].Get<int>();
   m_pgmode = comixsettings["PG_MODE"].Get<int>();
   m_ngpl = Min(1, Max(5, comixsettings["N_GPL"].Get<int>()));
@@ -1224,6 +1225,96 @@ void Amplitude::ResetZero()
   }
 }
 
+/*!
+  Project the external momenta onto the intersection of the mass shells and
+  exact momentum conservation, in double-double.
+
+      sum_i delta_i = R          R   = -sum_i P_i        (4 equations)
+      2 P_i.delta_i = r_i        r_i = m_i^2 - P_i^2     (n equations)
+
+  gives delta_i^nu = L_nu + mu_i (P_i)_nu with (P_i)_nu = (E,-px,-py,-pz), and
+  eliminating mu_i leaves a 4x4 system for L:
+
+      M_{nu,sg} = n d_{nu,sg} - sum_i (P_i)_nu (P_i)_sg / d_i
+      b_nu      = R^nu - sum_i (P_i)_nu r_i / (2 d_i),   d_i = E_i^2+|p_i|^2
+*/
+void Amplitude::ProjectWideMomenta()
+{
+  m_pw.resize(m_n);
+  std::vector<DD> m2(m_n);
+  for (size_t i(0);i<m_n;++i) {
+    m_pw[i]=ATOOLS::Vec4<DD>(DD(m_p[i][0]),DD(m_p[i][1]),
+                             DD(m_p[i][2]),DD(m_p[i][3]));
+    const DD m(m_cur[1][i]->Mass());
+    m2[i]=m*m;
+  }
+  if (!m_momproj) return;
+  std::vector<DD> d(m_n),r(m_n);
+  for (int pass(0);pass<2;++pass) {
+    DD R[4]={DD(0.0),DD(0.0),DD(0.0),DD(0.0)};
+    for (size_t i(0);i<m_n;++i)
+      for (int n(0);n<4;++n) R[n]-=m_pw[i][n];
+    size_t nact(0);
+    for (size_t i(0);i<m_n;++i) {
+      const DD pl[4]={m_pw[i][0],-m_pw[i][1],-m_pw[i][2],-m_pw[i][3]};
+      d[i]=DD(0.0);
+      for (int n(0);n<4;++n) d[i]+=pl[n]*pl[n];
+      r[i]=DD(0.0);
+      if (d[i]==DD(0.0)) continue;
+      ++nact;
+      r[i]=m2[i]-(m_pw[i][0]*m_pw[i][0]-m_pw[i][1]*m_pw[i][1]
+                  -m_pw[i][2]*m_pw[i][2]-m_pw[i][3]*m_pw[i][3]);
+    }
+    if (nact==0) return;
+    DD M[4][4],b[4],L[4];
+    for (int n(0);n<4;++n) {
+      b[n]=R[n];
+      for (int sg(0);sg<4;++sg) M[n][sg]=DD(n==sg?(double)nact:0.0);
+    }
+    for (size_t i(0);i<m_n;++i) {
+      if (d[i]==DD(0.0)) continue;
+      const DD pl[4]={m_pw[i][0],-m_pw[i][1],-m_pw[i][2],-m_pw[i][3]};
+      for (int n(0);n<4;++n) {
+        b[n]-=pl[n]*r[i]/(DD(2.0)*d[i]);
+        for (int sg(0);sg<4;++sg) M[n][sg]-=pl[n]*pl[sg]/d[i];
+      }
+    }
+    // 4x4 solve with partial pivoting. A singular matrix leaves m_pw as it
+    // was, degrading to the previous behaviour rather than emitting garbage.
+    bool ok(true);
+    for (int c(0);c<4;++c) {
+      int piv(c);
+      for (int rw(c+1);rw<4;++rw)
+        if (abs(M[rw][c])>abs(M[piv][c])) piv=rw;
+      if (M[piv][c]==DD(0.0)) { ok=false; break; }
+      if (piv!=c) { for (int k(0);k<4;++k) std::swap(M[c][k],M[piv][k]);
+                    std::swap(b[c],b[piv]); }
+      for (int rw(c+1);rw<4;++rw) {
+        const DD f(M[rw][c]/M[c][c]);
+        if (f==DD(0.0)) continue;
+        for (int k(c);k<4;++k) M[rw][k]-=f*M[c][k];
+        b[rw]-=f*b[c];
+      }
+    }
+    if (!ok) break;
+    for (int rw(3);rw>=0;--rw) {
+      DD t(b[rw]);
+      for (int k(rw+1);k<4;++k) t-=M[rw][k]*L[k];
+      L[rw]=t/M[rw][rw];
+    }
+    for (size_t i(0);i<m_n;++i) {
+      if (d[i]==DD(0.0)) continue;
+      const DD pl[4]={m_pw[i][0],-m_pw[i][1],-m_pw[i][2],-m_pw[i][3]};
+      DD c(DD(0.0));
+      for (int n(0);n<4;++n) c+=pl[n]*L[n];
+      const DD mu((r[i]/DD(2.0)-c)/d[i]);
+      DD np[4];
+      for (int n(0);n<4;++n) np[n]=m_pw[i][n]+L[n]+mu*pl[n];
+      m_pw[i]=ATOOLS::Vec4<DD>(np[0],np[1],np[2],np[3]);
+    }
+  }
+}
+
 bool Amplitude::SetMomenta(const Vec4D_Vector &moms)
 {
 #ifdef DEBUG__BG
@@ -1244,6 +1335,9 @@ bool Amplitude::SetMomenta(const Vec4D_Vector &moms)
     msg_Error()<<METHOD<<"(): Four momentum not conserved. sum = "
   	       <<sum<<"."<<std::endl;
 #endif
+  ProjectWideMomenta();
+  for (size_t i(0);i<m_n && i<m_cur[1].size();++i)
+    m_cur[1][i]->SetPWideExt(m_pw[i]);
   if (m_subs.empty()) return true;
   p_dinfo->SetStat(1);
   for (size_t i(0);i<m_cur[1].size();++i) m_cur[1][i]->SetP(m_p[i]);

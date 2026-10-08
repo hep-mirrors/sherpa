@@ -84,6 +84,8 @@ namespace COMIX {
 
     ATOOLS::Flavour_Vector m_fl, m_ndc;
     ATOOLS::Vec4D_Vector   m_p;
+    
+    std::vector<ATOOLS::Vec4<ATOOLS::DDouble> > m_pw;
 
     ATOOLS::DecayInfo_Vector m_decid;
 
@@ -94,7 +96,7 @@ namespace COMIX {
 
     size_t m_nin, m_nout, m_dec;
     size_t m_n, m_wfmode, m_pgmode, m_ngpl;
-    bool m_sccmur, m_murcoeffvirt;
+    bool m_sccmur, m_murcoeffvirt, m_momproj;
     size_t m_minntc, m_maxntc, m_stype;
     char   m_pmode;
 
@@ -215,6 +217,8 @@ namespace COMIX {
 
     bool Map(const Amplitude &ampl,ATOOLS::Flavour_Map &flmap);
     bool GaugeTest(const ATOOLS::Vec4D_Vector &moms,const int mode=0);
+
+    void ProjectWideMomenta();
 
     bool SetMomenta(const ATOOLS::Vec4D_Vector &moms);
     void SetColors(const Int_Vector &rc,

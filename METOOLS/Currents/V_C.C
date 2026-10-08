@@ -177,9 +177,12 @@ void CV<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			   const int cr,const int ca,const int mode)
 {
   this->m_p=p;
+  this->m_p2=sqr(this->m_mass);
   if (this->m_fl.Mass()==0.0 && p[1]==0.0 && p[2]==0.0)
     this->m_p[0]=this->m_p[0]<0.0?
       -std::abs(this->m_p[3]):std::abs(this->m_p[3]);
+  // after the on-axis energy fix-up, not before
+  this->SetPWide();
   this->ResetJ();
   if (ch>=0) {
     if (this->m_msv && (ch==0 || ch==3)) {
@@ -240,7 +243,8 @@ template <typename SType>
 void CV<SType>::AddPropagator()
 {
   // add propagator for off-shell leg
-  SComplex p2(SType(this->m_p.Abs2())), prop(-M_I/(p2-m_cmass2));
+  // m_p2, not m_p.Abs2(): see Current::Evaluate().
+  SComplex p2(SType(this->m_p2)), prop(-M_I/(p2-m_cmass2));
   if (this->m_osd) prop=SComplex(M_I);
 #ifdef DEBUG__BG
   msg_Debugging()<<"propagator: "<<prop<<"\n";
