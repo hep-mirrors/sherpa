@@ -1,0 +1,459 @@
+# One file is one fit is one citation.  Apply this set whole or not at all.
+# Never substitute a mass, width or weight from a database or from another
+# column / another parametrisation of the same paper.  The KS, GS and GP files
+# from this paper share a source block and NOTHING else.
+
+source:
+  paper: "G. Lopez Castro, A. Miranda, P. Roig, Isospin breaking corrections in 2pi production in tau decays and e+e- annihilation: consequences for the muon g-2 and CVC tests"
+  arxiv: "2411.07696"
+  main_tex: "main.tex"
+  note: >
+    Extracted from the arXiv LaTeX source only (gzip -> tar -> main.tex, 1253
+    lines, no \input; bib.bib alongside).  Line numbers refer to main.tex.
+    Equation numbers are not used as locators; the line number is authoritative.
+  siblings: []
+  not_emitted: >
+    The paper also fits GS, GP and dispersive forms. None is kept: GS and GP
+    were extracted but could not pass closure from this paper alone (GS f(s),
+    d and GP's chiral-loop functions are delegated to other papers), and were
+    removed 2026-09-22; the dispersive fit is unresolved (no equation for the
+    weak form factor f_+ is printed).
+
+variant:
+  taken: "Table tab:KS_Fit (main.tex:679-709), last column `Global fit 2` = BABAR12 + KLOEc + CMD3 + Belle tau (337+85+209+62 points)"
+  rejected:
+    - "BABAR12+Belle, KLOE12+Belle, KLOEc+Belle, CMD3+Belle (single e+e- experiment + Belle) columns"
+    - "Global fit 1 (KLOE12 instead of KLOEc)"
+  purpose: "closed-form weak form factor f_+(s) for tau- -> pi- pi0 nu_tau in Sherpa"
+  why: >
+    EVERY column of this table contains the Belle tau data, so "includes tau
+    data" does not select a column.  The last column is the one the paper
+    itself uses for all its downstream results, main.tex:599: "Using the
+    results in the last column of the quoted tables for these models, we update
+    the numbers in Table \ref{tab:IB_BR} for
+    $\Delta\mathcal{B}^\mathrm{CVC}_{\pi\pi}$ and
+    $\Delta a_\mu^{\mathrm{HVP,\,LO}}$."  The closure test below reproduces
+    those downstream numbers from this column, which confirms the
+    identification.  CAVEAT for a tau generator: in this column the tau part of
+    the chi2 is 318.8 for 62 Belle points.  The best tau description in this
+    table is BABAR12+Belle (chi2_tau = 122.7), but that column is not what the
+    paper quotes.  Switching column is a physics decision for a human.  It must
+    be a whole-column switch, never a per-parameter one.
+  dagger_notation:
+    where: "main.tex:438"
+    provenance: printed-eq
+    fidelity: verbatim
+    quote: 'The $\dagger$ symbol means that a parameter was fixed in a given fit (the choice of fixed parameters differentiates the four fits shown), a notation that we will use throughout.'
+    in_this_column: "No parameter carries a dagger in Global fit 2.  All 14 are fitted.  (The KLOE12/KLOEc/CMD3+Belle columns fix m_rho''=1730 MeV and Gamma_rho''=260 MeV with a dagger, and the three columns without CMD-3 fix |delta_rhophi| = 0 with a dagger.)"
+
+applies_to:
+  - channel: "-211,111,16"
+    model: 100
+applies_to_note: >
+  The paper fits Belle tau- -> pi- pi0 nu_tau (62 points, full spectrum)
+  simultaneously with e+e- -> pi+ pi- data.  This file carries the WEAK form
+  factor f_+(s) built as the paper prescribes (see model.weak_form_factor).
+  The electromagnetic F_V(s) of the same fit is recorded only to define it.
+  Using it for e+e- channels is not claimed here.
+
+fit_quality:
+  where: "Table tab:KS_Fit, main.tex:685-688, caption :707"
+  chi2_ee_plus_chi2_tau: "3100.7 + 318.8"
+  chi2: 3419.5
+  chi2_per_dof: 5.0
+  n_points: "337+85+209+62 = 693"
+  n_free_params: 14
+  p_value_caption:
+    where: "main.tex:707"
+    provenance: printed-num
+    fidelity: verbatim
+    quote: 'Fit results for the KS model using the $e^+e^-$ data sets and Belle $\tau$ decay measurements. \textcolor{black}{All two-sided p-values are smaller than $10^{-4}$.}'
+  verdict: >
+    POOR FIT, recorded as such.  chi2/dof = 5.0 and p < 1e-4.  Every KS column
+    has p < 1e-4, including BABAR12+Belle (chi2/dof 1.3).  The tau part alone is
+    318.8/62.  The paper ranks KS below GS and the dispersive form on
+    analyticity (main.tex:1139, :1245).
+  paper_ranking:
+    where: "main.tex:1245"
+    provenance: printed-num
+    fidelity: verbatim
+    quote: 'These results show clearly that GS complies with analyticity constraints much better than the other FFs (KS, GP and Seed). The fulfillment of these restrictions is even better using the dispersive form factor, by construction.'
+
+model:
+  form: kuehn_santamaria_three_pole_normalised_sum
+  n_poles: 3
+  normalisation: "F(0) = 1 exactly: BW^KS(0) = 1, the omega/phi terms vanish like s, and the sum is divided by the COMPLEX 1 + c_rho' + c_rho''"
+  equations:
+    em_form_factor:
+      where: "eq.(eq:KSGS), main.tex:156-161"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: '&\quad+c_{\rho^\prime}\,BW_{\rho^\prime}(s,m_{\rho^\prime},\Gamma_{\rho^\prime})+c_{\rho^{\prime\prime}}\,BW_{\rho^{\prime\prime}}(s,m_{\rho^{\prime\prime}},\Gamma_{\rho^{\prime\prime}})\bigg]/(1+c_{\rho^\prime}+c_{\rho^{\prime\prime}}),'
+      first_line_main_tex_159: '\bigg[BW_{\rho}(s,m_\rho,\Gamma_\rho)\bigg(1+\delta_{\rho\omega}\frac{s}{m_{\omega}^2}\,BW_{\omega}^{NR}(s,m_\omega,\Gamma_\omega)+\delta_{\rho\phi}\frac{s}{m_{\phi}^2}\,BW_{\phi}^{NR}(s,m_\phi,\Gamma_\phi)\bigg)\\[1ex]'
+      note: "Lines 157-158 contain a commented-out alternative prefactor.  The live equation divides by (1+c_rho'+c_rho'')."
+    nr_breit_wigner:
+      where: "main.tex:167"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: 'BW^{NR}_V(s,m_V,\Gamma_V)=\frac{m_V^2}{m_V^2-s-im_V\Gamma_V} \, ,'
+    lineshape:
+      where: "main.tex:184"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: 'BW^{KS}(s,m,\Gamma)=\frac{m^2}{m^2-s-im\Gamma(s,m,\Gamma)}.'
+    width:
+      where: "main.tex:178"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: 'm\Gamma(s,m,\Gamma)=\Gamma\,\frac{s}{m}\left(\frac{\beta_{\pi\pi}(s)}{\beta_{\pi\pi}(m^2)}\right)^3\theta(s-4m_\pi^2),'
+      note: "Printed in the GS paragraph.  It applies to KS by main.tex:215, 'the energy-dependence of the GS, KS and GP widths is the same'."
+    beta:
+      where: "main.tex:180"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: 'where $\beta_{\pi\pi}(s)=\sqrt{1-4m_\pi^2/s}$.'
+    beta_unequal:
+      where: "main.tex:111"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: 'where $s\beta_{PP''}(s)=\sqrt{[s-(m_P-m_{P''})^2][s-(m_P+m_{P''})^2]}$.'
+
+  width_convention:
+    denominator:
+      where: "main.tex:184"
+      quote: 'm^2-s-im\Gamma(s,m,\Gamma)'
+      provenance: printed-eq
+    running:
+      where: "main.tex:178"
+      quote: 'm\Gamma(s,m,\Gamma)=\Gamma\,\frac{s}{m}\left(\frac{\beta_{\pi\pi}(s)}{\beta_{\pi\pi}(m^2)}\right)^3'
+      provenance: printed-eq
+    summary: >
+      Im part of the denominator is Gamma*(s/m)*(beta(s)/beta(m^2))^3.
+      Equivalently the denominator is m*Gamma(s) with Gamma(s) = Gamma*(s/m^2)*(beta/beta0)^3.
+      The same convention applies to rho', rho'' (one width function for every
+      isovector pole).
+       [Corrected on review, 2026-09-22: an earlier note called this the OPPOSITE of Belle 0805.3773. It is not - the two are the SAME imaginary part. Belle writes sqrt(s)*Gamma(s) with Gamma(s)=Gamma*(M^2/s)*(k/k0)^3; with k=(sqrt(s)/2)*beta that equals Gamma*(s/M)*(beta/beta0)^3, which is this paper's m*Gamma(s). Verified numerically to 5 figures at m=0.4-1.4 GeV. Both papers DO differ from METOOLS' V_PP registry width, which gives Gamma*M*(k/k0)^3: 0.52x at 0.4 GeV, 1.30x at 1.0 GeV, 1.81x at 1.4 GeV. Compare full denominators, never one half.]
+    on_shell: "Gamma = Gamma(m^2,m,Gamma) (main.tex:180)"
+
+  weak_form_factor:
+    statement:
+      where: "main.tex:163"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: 'A similar expression holds for the weak form factor $f_+(s)$, with charged rho mesons parameters replacing the neutral ones and vanishing $\delta_{\rho\omega/\rho\phi}$ mixing parameters.'
+    definitions:
+      where: "main.tex:150-153"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: 'In the limit of exact isospin symmetry, $f_+(s)=F_V(s)$, $f_-(s)=0$ and, in particular, $f_+(0)=F_V(0)=1$'
+    excited_resonances:
+      where: "main.tex:597 (footnote)"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: 'We neglect IB in the masses and widths of the excited isovector resonances, to which data are not yet sensitive.'
+    recipe: >
+      f_+(s) = [BW^KS(s, m_rho+, Gamma_rho+)
+                + c_rho' BW^KS(s, m_rho', Gamma_rho')
+                + c_rho'' BW^KS(s, m_rho'', Gamma_rho'')] / (1 + c_rho' + c_rho'')
+      with delta_rhoomega = delta_rhophi = 0, and
+        m_rho+     = m_rho + Delta M_rho            (Delta M_rho = +1.0 MeV, fixed input)
+        Gamma_rho+ = Gamma_rho - 1.8 MeV            (radiative, fixed input)
+        rho(770) running width in f_+ :  Gamma * (s/m_rho+) * (beta_{pi+pi0}(s) / beta_{pi+pi-}(m_rho+^2))^3
+      and rho', rho'' unchanged from the fitted values.
+    ib_inputs:
+      where: "main.tex:418"
+      provenance: printed-num
+      fidelity: verbatim
+      quote: '$\Delta\Gamma_\rho=\Gamma_{\rho^0}-\Gamma_{\rho^\pm}=(1.8\pm 0.2) \text{ MeV}$ due to radiative corrections, $\Delta\Gamma_\rho=-1.07 \text{ MeV}$ due to $\Delta m_\pi$ in phase-space, $\Delta M_\rho=m_{\rho^\pm}-m_{\rho^0}=(1.0\pm0.9)\text{ MeV}$'
+      used_for_all_models:
+        where: "main.tex:620-621"
+        quote: 'we use the same input for $\Delta\Gamma_\rho$ and $\Delta M_\rho$, as previously done'
+      not_fitted:
+        where: "main.tex:621 (footnote)"
+        provenance: printed-num
+        fidelity: verbatim
+        quote: 'Our attempts of fitting also this information from the data yielded only upper bounds for $(\Delta M_{\rho}, \Delta\Gamma_\rho)$, consistent with our inputs.'
+    pion_mass_in_weak_width:
+      value: "beta_{pi+pi0}(s)^3 in the numerator of the rho(770) running width, with the normalisation beta_{pi+pi-}(m_rho^2)^3 KEPT"
+      provenance: resolved
+      where: "main.tex:111 (beta_PP'), :418 (-1.07 MeV); resolved against Tab. tab:IB_BR_CMD3 row 5 (main.tex:980)"
+      evidence: >
+        The paper never prints the weak width with beta_{pi+pi0}.  Two readings
+        were tested.  (a) beta_{pi+pi0} replacing beta_{pi+pi-} in numerator AND
+        normalisation gives Delta B row = +0.002e-2.  (b) numerator only gives
+        -0.214e-2.  The printed KS value is -0.22e-2.  Reading (b) also gives an
+        on-shell shift Gamma_rho+ - Gamma_rho0 = +1.068 MeV.  The paper prints
+        this as "Delta Gamma_rho = -1.07 MeV due to Delta m_pi in phase-space"
+        with Delta Gamma = Gamma_rho0 - Gamma_rho+, so the two agree to 3
+        significant figures.  Reading (b) is therefore resolved.  Under it the
+        -1.07 MeV is NOT applied as a separate shift, because it IS this effect.
+    radiative_width_shift_applied_to:
+      value: "the fitted constant Gamma_rho entering the rho(770) width of f_+"
+      provenance: resolved
+      evidence: "Gamma_rho -> Gamma_rho - 1.8 MeV reproduces the `pi pi gamma, electromagnetic decays` row: +0.372e-2 computed vs +0.38e-2 printed (main.tex:996)"
+    neutral_or_charged_fitted_parameters: >
+      The fitted m_rho, Gamma_rho are the NEUTRAL (e+e-) parameters (main.tex:163,
+      "charged rho mesons parameters replacing the neutral ones").  Belle enters
+      the same chi2 through f_+ built by the recipe above (chi2 eq.,
+      main.tex:592-595).
+
+  constants_not_printed:
+    provenance: assumed
+    values:
+      m_pi_charged: 0.13957039
+      m_pi_neutral: 0.1349768
+      m_omega: 0.78266
+      Gamma_omega: 0.00868
+      m_phi: 1.019461
+      Gamma_phi: 0.004249
+    unit: GeV
+    note: "PDG values.  The paper names these symbols but never gives numbers.  They do not enter f_+ except m_pi (the mixing is off in the weak form factor)."
+
+parameters:
+  # Table tab:KS_Fit, column `Global fit 2`, main.tex:689-703.  All fitted (no dagger).
+  # Only the fit (statistical) error is printed.  No systematics.  No correlation matrix.
+  rho_770.M:
+    value: 0.7715
+    unit: GeV
+    sigfigs: 4
+    err: 0.0001
+    provenance: printed-num
+    where: "Tab. KS_Fit GF2, main.tex:689"
+    kind: physical_state_model_dependent
+    fixed: false
+  rho_770.Gamma:
+    value: 0.1457
+    unit: GeV
+    sigfigs: 4
+    err: 0.0002
+    provenance: printed-num
+    where: "main.tex:690"
+    kind: physical_state_model_dependent
+    fixed: false
+  delta_rhoomega.mag:
+    value: 1.9e-3
+    sigfigs: 2
+    err: 0.0
+    provenance: printed-num
+    where: "main.tex:691"
+    note: "em only.  Zero in f_+.  Printed error `0.0` in units of 1e-3."
+    fixed: false
+  delta_rhoomega.phase:
+    value: 6.5
+    unit: deg
+    sigfigs: 2
+    err: 0.4
+    provenance: printed-num
+    where: "main.tex:692"
+    note: "em only; zero in f_+"
+    fixed: false
+  delta_rhophi.mag:
+    value: 1.4e-4
+    sigfigs: 2
+    err: 0.2e-4
+    provenance: printed-num
+    where: "main.tex:693"
+    note: "em only; zero in f_+"
+    fixed: false
+  delta_rhophi.phase:
+    value: 73.2
+    unit: deg
+    sigfigs: 3
+    err: 8.1
+    provenance: printed-num
+    where: "main.tex:694"
+    note: "em only; zero in f_+"
+    fixed: false
+  rho_1450.M:
+    value: 1.5475
+    unit: GeV
+    sigfigs: 5
+    err: 0.0081
+    provenance: printed-num
+    where: "main.tex:696"
+    kind: effective_fit_pole
+    fixed: false
+  rho_1450.Gamma:
+    value: 0.447
+    unit: GeV
+    sigfigs: 3
+    err: 0.016
+    provenance: printed-num
+    where: "main.tex:697"
+    kind: effective_fit_pole
+    fixed: false
+  c_rho1450.re:
+    value: -0.6e-2
+    sigfigs: 1
+    err: 2.7e-2
+    provenance: printed-num
+    where: "main.tex:698"
+    kind: effective_fit_pole
+    note: "Error 4.5x the central value.  Consistent with zero."
+    fixed: false
+  c_rho1450.im:
+    value: -0.27
+    sigfigs: 2
+    err: 0.02
+    provenance: printed-num
+    where: "main.tex:699"
+    kind: effective_fit_pole
+    fixed: false
+  rho_1700.M:
+    value: 1.8682
+    unit: GeV
+    sigfigs: 5
+    err: 0.0163
+    provenance: printed-num
+    where: "main.tex:700"
+    kind: effective_fit_pole
+    fixed: false
+  rho_1700.Gamma:
+    value: 0.650
+    unit: GeV
+    sigfigs: 3
+    err: 0.050
+    provenance: printed-num
+    where: "main.tex:701"
+    kind: effective_fit_pole
+    fixed: false
+  c_rho1700.re:
+    value: -0.20
+    sigfigs: 2
+    err: 0.03
+    provenance: printed-num
+    where: "main.tex:702"
+    kind: effective_fit_pole
+    fixed: false
+  c_rho1700.im:
+    value: 0.12
+    sigfigs: 2
+    err: 0.01
+    provenance: printed-num
+    where: "main.tex:703"
+    kind: effective_fit_pole
+    fixed: false
+
+fixed_inputs:
+  # Not fitted.  Taken by the paper from Davier et al. and applied to every model.
+  DeltaM_rho:
+    value: 0.0010
+    unit: GeV
+    sigfigs: 2
+    err: 0.0009
+    provenance: printed-num
+    where: "main.tex:418"
+    meaning: "m_rho+- - m_rho0"
+  DeltaGamma_rho_radiative:
+    value: 0.0018
+    unit: GeV
+    sigfigs: 2
+    err: 0.0002
+    provenance: printed-num
+    where: "main.tex:418"
+    meaning: "Gamma_rho0 - Gamma_rho+- from radiative corrections"
+  DeltaGamma_rho_phase_space:
+    value: -0.00107
+    unit: GeV
+    sigfigs: 3
+    provenance: printed-num
+    where: "main.tex:418"
+    meaning: "Gamma_rho0 - Gamma_rho+-, from Delta m_pi.  Generated automatically by the beta_{pi+pi0} numerator.  Do NOT add it again."
+
+effective_poles:
+  which: ["rho_1450.*", "c_rho1450.*", "rho_1700.*", "c_rho1700.*"]
+  why: >
+    The rho' and rho'' parameters swing far beyond their errors between data
+    sets in the same table.  Gamma_rho' runs 447-717 MeV and Gamma_rho'' runs
+    442-721 MeV (main.tex:697, :701).  Re c_rho' changes sign between Global fit
+    1 and Global fit 2 (:698).  In this column Gamma_rho'' = 650 MeV at
+    m = 1868 MeV, and KS and GS fitted to identical data put rho' 100 MeV apart
+    (1547.5 vs 1443.7 MeV).  These are fit poles absorbing the region above the
+    rho, not particles.  Never substitute database values.  rho(770): M and
+    Gamma are well determined (0.1-0.2 MeV errors) but model-dependent.  KS and
+    GS on the same data differ by 1.4 MeV in M and 1.2 MeV in Gamma, so they are
+    not substitutable either.
+
+correlations:
+  printed: false
+  where_looked: "all tables (main.tex:364-1100) and text; no correlation or covariance matrix is printed for any fit"
+
+closure:
+  against: >
+    The paper prints NO tabulated form factor or spectrum (all curves are
+    figures).  The printed model outputs it DOES give are the row-by-row IB
+    decompositions of Delta B_pipi^CVC (Tab. tab:IB_BR_CMD3, main.tex:968-1012,
+    KS column) and Delta a_mu (Tab. tab:IB_amu_CMD3, main.tex:1052-1100).
+    main.tex:354 says these are computed from the FITS, not the binned data, and
+    main.tex:599 says from the last column.  Each row is
+    B_e * int_{4m_pi^2}^{m_tau^2} ds sigma0(s) N(s) (1/R_IB^row - 1)  (eq. ibtpbr,
+    main.tex:139-141), with sigma0 = (pi alpha^2/3s) beta^3_{pi+pi-} |F_V|^2 and
+    R_IB^row = |F_V/f_+|^2 restricted to one IB source.  Rebuilt from THIS FILE
+    alone plus PDG B_e = 0.1782, m_tau, alpha, pion masses (V_ud = 0.97367
+    printed, main.tex:356).  Absolute, no rescaling.
+  result: >
+    Delta B^CVC rows (units 1e-2), computed vs printed:
+      m_pi+- - m_pi0 on sigma   +0.196 vs +0.20  (model-independent weight check)
+      m_pi+- - m_pi0 on Gamma   -0.214 vs -0.22
+      m_rho+- - m_rho0          +0.088 vs +0.09
+      rho-omega interference    -0.093 vs -0.09
+      rho-phi interference      +0.000 vs -0.00
+      pi pi gamma / em decays   +0.372 vs +0.38
+    Ratios to the model-independent row (free of B_e, alpha and overall
+    normalisation): -1.091 vs -1.10, 0.449 vs 0.45, -0.472 vs -0.45, 1.893 vs
+    1.90.  On-shell weak-width shift from Delta m_pi: +1.068 MeV vs printed
+    1.07 MeV.
+    Delta a_mu rows (units 1e-10, with G_EM(s) = 1 because G_EM is not printed):
+    sigma -7.23 vs -7.52, Gamma +3.88 vs +4.13, pipigamma -6.33 vs -6.49,
+    rho-omega +4.08 vs +4.03, rho-phi +0.029 vs +0.03, Delta m_rho +0.034 vs
+    -0.01.  a_mu^HVP,LO[pipi] from this fit: 503.8e-10 (paper quotes 517.0e-10
+    from tau data, main.tex:1150).
+    Discrete scans: complex prefactor 1+c'+c'' vs moduli gives 0.196 vs 0.057 on
+    the sigma row (decisive).  Weak-width pion-mass reading numerator-only vs
+    both gives -0.214 vs +0.002 (decisive).  s/m vs m^2/s running width gives
+    0.196 vs 0.190 (not decisive; the printed form is kept).
+  residual_explained: >
+    The Delta B rows are low by a UNIFORM 2.1% (ratios 0.974-0.982; rho-omega
+    1.03 lies inside its 1-digit rounding).  The ratios BETWEEN rows are right
+    to <1%.  Per Step 3b, a uniform offset with correct ratios is a fault in the
+    common weight B_e*sigma0*N, not in the form factor.  The weight contains
+    three things this paper does not print: B_e (PDG, not quoted), the FSR(s)
+    factor of Drees-Hikasa that dresses the fitted e+e- cross section (~+1% at
+    the rho), and the paper's exact PDG constants.  The printed rows also carry
+    2.5-5.6% rounding (two decimals on 0.09-0.38).  The Delta a_mu rows are low
+    by a further ~2% (ratios 0.94-0.98).  That is expected: their weight also
+    contains G_EM(s) (Miranda-Roig 2020, not printed), set to 1 here, and
+    G_EM > 1 at low s where the kernel K(s) is large.  The one sign mismatch,
+    Delta a_mu Delta m_rho (+0.034 vs -0.01), is a near-total cancellation
+    between two regions of size ~4.  The paper quotes it as
+    -0.01(+0.08/-0.00), so the gap is inside the printed uncertainty.  It sits
+    at low s, which is exactly where G_EM = 1 is least accurate.  Nothing was
+    tuned.
+  status: accepted
+
+# ---------------------------------------------------------------------
+# GENERATED by code_analysis/sherpa/paper_to_model/export_sherpa_blocks.py
+# from the `parameters` above.  Do not edit by hand - edit the recorded
+# values and regenerate.  This is the only block METOOLS reads.
+# ---------------------------------------------------------------------
+sherpa:
+  PS_npoles: 3
+  PS_lineshape: 0
+  PS_M_0: 0.7725
+  PS_G_0: 0.1439
+  PS_wre_0: 1.0
+  PS_wim_0: 0.0
+  PS_knum_0: 0
+  PS_knorm_0: 1
+  PS_M_1: 1.5475
+  PS_G_1: 0.447
+  PS_wre_1: -0.006
+  PS_wim_1: -0.27
+  PS_knum_1: 1
+  PS_knorm_1: 1
+  PS_M_2: 1.8682
+  PS_G_2: 0.65
+  PS_wre_2: -0.2
+  PS_wim_2: 0.12
+  PS_knum_2: 1
+  PS_knorm_2: 1

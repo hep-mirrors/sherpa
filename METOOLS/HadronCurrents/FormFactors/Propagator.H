@@ -55,9 +55,10 @@ namespace METOOLS {
     // in Resonance_Base.H, included by Propagator.C but not here), so
     // calling its methods requires the complete type to be visible.
     inline double Mass() const { return m_M; }
-    // virtual so that propagators without a Total_Width_Base (the
-    // complex pole) can still report a meaningful width to the
-    // diagnostic dump instead of a silent zero.
+    // Virtual so that a propagator with no Total_Width_Base -- the complex
+    // pole, or one carrying its OWN pole parameters (p_width==NULL, see
+    // Fitted_VPP_Propagator below) -- can still report a meaningful width to
+    // the ### diagnostic dump instead of a silent zero.  Diagnostics only.
     virtual double OnShellWidth() const;
     // Constant numerator this propagator carries on top of the BARE
     // pole 1/(M^2-s-i...). BreitWigner returns M^2/(...), i.e. it is
@@ -68,7 +69,7 @@ namespace METOOLS {
     // D -> K pi widths at 0.60 of PDG and D0 -> pi- pi0 at 0.349,
     // which is m_rho^4 = 0.3515 to within half a percent.
     virtual Complex PoleNumerator() const { return Complex(m_M2,0.); }
-    ATOOLS::Flavour Flav() const;
+    virtual ATOOLS::Flavour Flav() const;
   };
 
   class BreitWigner : public Propagator_Base {
@@ -328,6 +329,76 @@ namespace METOOLS {
     void Add(Propagator_Base * prop,const invariant_arg & arg,
              const Complex & weight=Complex(1.,0.));
     Complex operator()(const Invariants & k) const;
+  };
+
+  // ====================================================================
+  // A vector -> pi pi propagator carrying its OWN pole parameters, in either
+  // Gounaris-Sakurai or plain running-width Breit-Wigner form.  Built for
+  // local ParameterSets (see Current_ME::SelectCurrent), e.g. Belle 2008 on
+  // FORM_FACTOR = 101.  The two line shapes share Gamma(s); only the numerator and f(s)
+  // differ.  k(s) and k(M^2) may use DIFFERENT pion pairs - the charged-rho
+  // weak form factor of arXiv:2411.07696 needs pi+ pi0 at s but pi+ pi- in
+  // the normalisation.
+  //
+  // WHY THIS IS NOT BreitWigner(resonance_type::GS)
+  // ------------------------------------------------
+  // BreitWigner takes M and Gamma(s) from the shared line-shape
+  // registry. That is right for a PHYSICAL resonance, but the rho' and
+  // rho'' of a Kuehn-Santamaria/Gounaris-Sakurai tower are not physical
+  // states - they are EFFECTIVE POLES of a fit to the 2pi spectrum, and
+  // the complex weights multiplying them were fitted together with the
+  // very pole parameters used here. Substituting database values while
+  // keeping the fitted weights breaks the destructive interference that
+  // shapes the 1.2-1.5 GeV region; measured against Belle's own data
+  // that costs a factor ~2 at 1.35 GeV and ~4 at 1.45 GeV.
+  //
+  // Concretely, the registry's rho(1450) width is a MULTI-CHANNEL total
+  // (pi pi 19.7%, K K 5.8%, omega pi 21.2%, a_1 pi 21%, ...) whereas the
+  // GS functions f(s) and d are derived from a 2pi ELASTIC dispersion
+  // relation; Belle's Gamma_rho' = 434 MeV is an effective 2pi GS width,
+  // a different quantity that happens to share a symbol.
+  //
+  // So this class takes M, Gamma and the daughter masses explicitly and
+  // owns its Gamma(s). Same precedent as Novo4Pi_Propagator below
+  // (p_width==NULL, parameterisation supplies its own width).
+  //
+  // Conventions are Fujikawa et al. [Belle], Phys.Rev.D78 (2008) 072006:
+  //   Eq.(12)  BW^GS = (M^2 + d M Gamma(s)) /
+  //                    ((M^2 - s) + f(s) - i sqrt(s) Gamma(s))
+  //   Eq.(13)  Gamma(s) = Gamma (M^2/s) (k(s)/k(M^2))^3
+  //   Eq.(14)  f(s), Eq.(15) h(s) and dh/ds|_{M^2}, Eq.(16) d
+  // NOTE Eq.(13) carries (M^2/s); METOOLS' V_PP running width instead
+  // gives (M/sqrt(s)) - see Vector_Decays.C. The two differ off the pole
+  // and the Belle parameters were fitted with Eq.(13), which is why this
+  // class computes its own rather than reusing the registry's.
+  //
+  // k(s) = 1/2 sqrt(s) beta_-(s) uses the UNEQUAL pi^- pi^0 masses
+  // (m1,m2), while h(s) and d carry the single m_pi of Eqs.(15)/(16).
+  // ====================================================================
+  class Fitted_VPP_Propagator : public Propagator_Base {
+  private:
+    ATOOLS::Flavour m_flav;              // label for the ### dump only
+    double m_G0;                         // on-shell width Gamma_i
+    bool   m_gs;                         // true = Gounaris-Sakurai, false = plain BW
+    double m_m1, m_m2;                   // pion pair in k(s)
+    double m_n1, m_n2;                   // pion pair in k(M^2), the width normalisation
+    double m_mpi;                        // the single m_pi of the GS h(s) and d
+    double m_kPole, m_hPole, m_hPrimePole, m_d;   // fixed at construction
+    static double kFor(const double & s, const double & a, const double & b);
+    double k(const double & s) const { return kFor(s,m_m1,m_m2); }
+    double h(const double & s, const double & ks) const;
+    double Gamma(const double & s) const;
+  public:
+    Fitted_VPP_Propagator(const ATOOLS::Flavour & flav,
+                          const double & M, const double & G0, const bool & gs,
+                          const double & m1, const double & m2,
+                          const double & n1, const double & n2,
+                          const double & mpi);
+    const Complex operator()(const double & s);
+    const Complex Normalised(const double & s);
+    const double  Normalised2(const double & s);
+    double OnShellWidth() const { return m_G0; }
+    ATOOLS::Flavour Flav() const { return m_flav; }
   };
 
   class RChL_BW : public Propagator_Base {

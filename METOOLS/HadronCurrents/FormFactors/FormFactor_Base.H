@@ -46,12 +46,44 @@ namespace METOOLS {
     // f0(600) running width. See F1_0_KPiPi::Construct().
     KS_f0     = 103,
     CLEO_f0   = 104,
-    // (105 was a Kiers-et-al. CLEO+F3 model, arXiv:0808.1707.  Removed:
-    //  measured WORSE than plain CLEO on BaBar 2007 and its F3 normalisation
-    //  was never calibrated - their N/N3 are in a convention with no explicit
-    //  CKM factor, so their numbers cannot be used directly.  See the note in
-    //  FS_0_KPiPi::FF_KS.)
+    // (105 PREVIOUSLY held a Kiers-et-al. CLEO+F3 model, arXiv:0808.1707.
+    //  Removed: measured WORSE than plain CLEO on BaBar 2007 and its F3
+    //  normalisation was never calibrated - their N/N3 are in a convention
+    //  with no explicit CKM factor, so their numbers cannot be used directly.
+    //  See the note in FS_0_KPiPi::FF_KS.  It was then briefly "GS_Belle", the
+    //  Belle 2008 pion form-factor fit with its numbers hardcoded - which was
+    //  just the Gounaris-Sakurai form (101) carrying one specific fit.  Since
+    //  model numbers mean the FUNCTIONAL FORM and local ParameterSets carry
+    //  the fit, that is FORM_FACTOR = 101 with Resonance_Parameters = local
+    //  and ParameterSets/Belle2008_Fujikawa.yaml.  RETIRED 2026-09-22: a
+    //  config naming 105 now fails in FormFactor_Base's constructor with that
+    //  instruction rather than silently selecting something else.)
+    retired_105 = 105,
     KS_flatte = 106,
+    // 107 is a TUNE OF OURS, not a published model, and deliberately has no
+    // ParameterSets file: it is the CLEO/Mileo K pi pi parameterisation
+    // (Mileo, Kiers & Szynkman, arXiv:1410.1909, itself completing CLEO's
+    // Asner et al. PRD 62 072006) with the constant-width K1(1270) replaced
+    // by the two-channel Flatte of model 106.
+    //
+    // Why: the K1(1270) is not one resonance.  In the chiral unitary approach
+    // it has TWO poles - roughly 1195/246 MeV coupling to K* pi, and 1284/146
+    // coupling to K rho - and those are exactly the two sub-chains of this
+    // current.  A single Breit-Wigner cannot represent that, which is the
+    // likeliest reason every analysis fits a different K1(1270) width (FM95
+    // 0.090, CLEO 0.26, the registry 0.20).  Kuhn, Mirkes and Willibald
+    // (hep-ph/9712263) traced their own K pi pi disagreement to "the K1
+    // widths".  A Flatte is the two-channel amplitude, so it is a cruder
+    // version of the right object.
+    //
+    // CONSEQUENCE, and why this cannot be a parameter set: A, C and N were
+    // fixed against the constant-width K1(1270).  Changing that line shape
+    // invalidates them - A and C are that resonance's coefficients, and N
+    // normalises a width computed with it.  They are SEEDED from Mileo's
+    // values here and MUST be re-determined against data before any rate from
+    // 107 is quoted.  Same situation as xi in 106, which had to move from
+    // FM95's 0.33 to 0.70 once the K1(1270) became a Flatte.
+    CLEO_flatte = 107,
     // --- 200s: Resonance Chiral Theory / chiral-resonance family
     //     (tree-level exchange, full RChL currents, and dispersive
     //     refinements built on RChL input) - consecutive numbering. ---

@@ -1,0 +1,498 @@
+# One file is one fit is one citation.  Apply this set whole or not at all.
+# The rho, rho' and rho'' masses/widths and the complex weights below were
+# adjusted TOGETHER to data (tex:2714-2716); none of them is a PDG value and
+# none may be replaced by one.  The rho(770) width is NOT a parameter at all:
+# it is computed from M_rho and F (Eq. rhowidth_nosu2).
+
+source:
+  paper:    "O. Shekhovtsova, T. Przedzinski, P. Roig, Z. Was, Resonance chiral Lagrangian currents and tau decay Monte Carlo, Phys. Rev. D 86 (2012) 113008"
+  arxiv:    "1203.3955"
+  main_tex: "tau3scal_update_checked.tex"
+  note: >
+    Extracted from the arXiv LaTeX source only (3130 lines, one .tex, no
+    \input).  Line numbers refer to tau3scal_update_checked.tex as retrieved
+    from arxiv.org/e-print/1203.3955 (e-print dated 2013-01-17).  Equations
+    are referred to by their \label, because the source numbers them
+    automatically.  The paper is a Monte Carlo implementation paper, not a fit
+    paper: its "parameter sets" are the per-channel defaults of the FORTRAN
+    file value_parameter.f, printed in App. C, Tables `Constants` (:2757-2794)
+    and `Variation_of_Parameters1` (:2857-2912).  The pi- pi0 defaults are the
+    only ones the paper says were adjusted to data (:2714-2716), and it does
+    not say which data or how.
+
+variant:
+  taken: >
+    The default two-pion current, Eq.(VFFpipi) (:765-780) with FSI on
+    (FFVEC = 1), and the rows of Table Variation_of_Parameters1 whose
+    `Used in channel` column contains channel 1 (= pi- pi0, numbering of
+    Table table3 :2997): M_rho = 0.77554 (:2864), M_rho' = 1.453 (:2867),
+    Gamma_rho' = 0.50155 (:2869), M_rho'' = 1.8105 (:2871), Gamma_rho'' =
+    0.4178 (:2872), gamma, delta, phi_1, phi_2 (:2873-2876), F (:2889).
+  rejected:
+    - "Eq.(VFFpipi_rho) (:754-761), the rho-only form 'if only rho resonance is taken into account'. It is printed but the code runs Eq.(VFFpipi) for this channel (:787-788)."
+    - "The FSI-off variant FFVEC = 0 (Re A = 0 in the exponents, :1592-1595). A switch for studies, not a model the paper recommends; its width 4.0642e-13 GeV is used below as a second closure point only."
+    - "The rows labelled 4-9 (M_rho = 0.775, M_rho' = 1.465, Gamma_rho' = 0.4; :2865, :2868, :2870). Those are the PDG defaults for the other channels (:2717-2718), not this set."
+  purpose: "closed-form tau- -> pi- pi0 nu_tau vector form factor for Sherpa METOOLS/HadronCurrents, model 201. Not stated in the task beyond 'closed-form generator model'; every component here is closed form, no binned table is involved."
+  why: >
+    There is only one pi- pi0 set in the paper.  The alternatives above are
+    either not what the code runs (Eq. VFFpipi_rho), a diagnostic switch
+    (FFVEC = 0), or another channel's defaults.  Taking M_rho = 0.775 from the
+    4-9 row while keeping gamma, delta from the channel-1 rows would be exactly
+    the cross-fit mixing this file exists to prevent.
+
+applies_to:
+  - { channel: "-211,111,16", model: 201 }
+
+applies_to_note: >
+  The paper gives this parameter set for pi- pi0 only.  It additionally
+  reuses gamma, delta, phi_1, phi_2 and M_rho'', Gamma_rho'' (rows `1, 4`) in
+  the NON-default K- K0 variant FFKKVEC = 1 (:1548-1552, :2871-2876), but
+  there with M_rho = 0.775, M_rho' = 1.465, Gamma_rho' = 0.4 and it states
+  that 'in the real world the parameters for pion and kaon modes are likely
+  not to coincide and have to be fitted by the experiments' (:1553).  That is
+  a different set; it is not claimed here.
+
+model:
+  form: rcht_omnes_exponentiated_rho_tower
+  n_poles: 3
+  normalisation: "F(0) = 1 exactly: the exponents vanish at s = 0 for the pi pi and K K loops (A_PQ is finite times s there for these nearly-equal masses), and the rho', rho'' terms carry an explicit factor s.  Checked numerically: F(1e-6 GeV^2) = 0.999995 - 7.6e-8 i with physical masses."
+  current:
+    where: "eq. at :267-269, tau3scal_update_checked.tex:268"
+    provenance: printed-eq
+    fidelity: verbatim
+    quote: |-
+      J^\mu  = N \left[ \left(p_1 - p_2-\frac{\Delta_{12}}{s}(p_1+p_2)\right)^\mu F^{V}(s) + \frac{\Delta_{12}}{s}(p_1 + p_2)^\mu F^{P}(s) \right],
+    note: >
+      p_1 = pi-, p_2 = pi0.  F^P = 0 for this channel: 'for both two-pion and
+      two-kaon modes the scalar form factor vanishes and the corresponding
+      channel is described by the vector form factor only' (:729-733).  The
+      Delta_12/s term in the first bracket therefore survives only as the
+      transverse projection of the vector part.
+  normalisation_N:
+    where: "tau3scal_update_checked.tex:285"
+    provenance: printed-eq
+    fidelity: verbatim
+    quote: |-
+      N^{\pi^-\pi^0} = 1 , \, \, N^{K^-K^0} = \frac{1}{\sqrt{2}} ,\, \, N^{\pi^- \bar K^0} = \frac{1}{\sqrt{2}}, \, \, N^{\pi^0 K^-} = \frac{1}{2}\,.
+  overall_normalisation:
+    value: "The physical rate is that of <pi- pi0|J|0> = sqrt(2) N [(p1-p2)_T F^V], times G_F/sqrt(2) cos(theta_C) - i.e. TAUOLA's J carries a hidden factor sqrt(2) relative to the printed N"
+    provenance: resolved
+    where: "Eq. at :268 and :285; resolved against the printed width :1540"
+    note: >
+      The paper defers its matrix-element normalisation to TAUOLA
+      (Ref. Jadach:1993hs, :247-251) and prints no two-body rate formula.
+      With the standard dGamma/ds = G_F^2 |V|^2 m_tau^3/(768 pi^3) |C|^2
+      (1-s/m^2)^2 (1+2s/m^2) lambda^{3/2}(1,m1^2/s,m2^2/s) |F^V|^2 and
+      |C|^2 = 2 N^2 = 2 this set gives 5.2458e-13 GeV against the printed
+      5.2431e-13 (+0.05%); |C|^2 = N^2 would give half.  The same factor 2
+      reproduces K- K0 (N = 1/sqrt2; rho-only default, -0.13%) and K pi
+      (N = 1/2, 1/sqrt2; within 0.6%, see the sibling K pi file), which is
+      what 'SU(3) symmetry relates all four normalization factors' (:282)
+      requires.
+  vector_form_factor:
+    where: "eq.(VFFpipi), tau3scal_update_checked.tex:765-780"
+    provenance: printed-eq
+    fidelity: verbatim
+    quote: |-
+      \frac{M^2_{\rho} + s\bigl(\gamma \mathrm{e}^{i\phi_1} + \delta \mathrm{e}^{i\phi_2} \bigr)}{M^2_\rho-s-iM_\rho \Gamma_\rho (s)}
+    quote_rho_prime_term: |-
+      - \frac{s\gamma \mathrm{e}^{i\phi_1}}{M^2_{\rho'}-s-iM_{\rho'} \Gamma_{\rho'} (s)}
+    quote_rho_prime_exponent: |-
+      \frac{-s \Gamma_{\rho'} }{\pi M_{\rho'}^3\sigma^3_\pi(M_{\rho'}^2)} \biggl[Re A_{\pi}(s) \biggr] \Biggr\}
+    quote_rho_exponent: |-
+      \frac{-s}{96\pi^2 F^2} \biggl[Re A_{\pi^- \pi^0}(s) + \frac{1}{2} Re A_{K^- K^0}(s)  \biggr] \Biggr\}
+    note: >
+      Assembled: F(s) = [M_rho^2 + s(gamma e^{i phi1} + delta e^{i phi2})] /
+      [M_rho^2 - s - i M_rho Gamma_rho(s)] * exp{-s/(96 pi^2 F^2)[Re A_{pi-pi0}(s)
+      + (1/2) Re A_{K-K0}(s)]}
+      - s gamma e^{i phi1}/[M_rho'^2 - s - i M_rho' Gamma_rho'(s)] * exp{-s Gamma_rho' Re A_pi(s)/(pi M_rho'^3 sigma_pi^3(M_rho'^2))}
+      - (same with rho'', delta, phi2).
+      Each resonance carries its OWN Omnes exponent (:3069-3070 says so
+      explicitly: 'it is different in every term in Eq. (VFFpipi)').  Only
+      the real parts of the loop functions are exponentiated; the imaginary
+      parts are the widths in the denominators (:3067-3068).
+  sigma:
+    where: "eq.(eq:sigma), tau3scal_update_checked.tex:783"
+    provenance: printed-eq
+    fidelity: verbatim
+    quote: |-
+      \sigma_P(q^2) \equiv \sqrt{1 - 4 m_P^2/q^2}\,
+  loop_A_PQ:
+    where: "eq.(loopfun_2pi) and following, tau3scal_update_checked.tex:2216-2244"
+    provenance: printed-eq
+    fidelity: verbatim
+    quote: |-
+      A_{PQ}(s) \, = - \, \frac{192 \pi^2 [s M_{PQ}(s) - L_{PQ}(s)]}{s} ,
+    quote_M: |-
+      M_{PQ}(s) = \frac{1}{12 s}( s - 2 \Sigma_{PQ}) \bar{J}_{PQ}(s) + \frac{\Delta^2_{PQ}}{3 s^2} \tilde{J}_{PQ}(s) - \frac{1}{6} k_{PQ} + \frac{1}{288 \pi^2}\,,
+    quote_k: |-
+      \Sigma_{PQ} = m_{P}^2 + m_Q^2,\quad \Delta_{PQ} = m_{P}^2 - m_Q^2 , \quad k_{PQ} = \frac{F^2}{\Delta_{PQ}}(\mu_P - \mu_Q)
+    quote_L: |-
+      L_{PQ}(s) = \frac{\Delta^2_{PQ}(s)}{4 s} \bar{J}_{PQ}(s)\,.
+    quote_mu: |-
+      The  $\mu_P = \mathstrut \frac{\displaystyle m_P^2}{32 \pi^2 F^2}\mathrm{ln}\left(\frac{m_P^2}{\mu^2}\right)$ (at present  we take $\mu = M_\rho $ for all 2 pseudo-scalars modes
+    quote_Jbar: |-
+      \bar{J}_{PQ}(s) & = &  \frac{1}{32\pi^2}\left[ 2 + \left( \frac{\Delta_{PQ}}{s} - \frac{\Sigma_{PQ}(s)}{\Delta_{PQ}}\right) \ln\frac{m_Q^2}{m_P^2} - \frac{\nu}{s}\ln\frac{(s+\nu)^2-\Delta^2_{PQ}}{(s-\nu)^2-\Delta^2_{PQ}} \right] \,,\nonumber \\
+    quote_Jtilde: |-
+      \tilde{J}_{PQ}(s) & = & \bar{J}_{PQ}(s) - s\bar{J'}(0) \,,
+    quote_nu: |-
+      where $\nu^2 = \lambda(s,m_P^2,m_Q^2)$. Care has to be taken to keep the imaginary part of $\nu^2$ in the phase-space regions where $\nu^2<0$, and where ${\mathrm Im}\, \nu$ must not be set to zero,
+    note: >
+      J-bar'(0) is not printed; it is the derivative at s = 0 of the printed
+      J-bar (inferred, see `inferred_details.Jbar_prime0`).  Below the K K
+      threshold nu is imaginary and the log is a pure phase; Re A_{K-K0}(s)
+      is then real and finite, as :2245-2247 says.  In the equal-mass limit
+      k_PQ -> (ln(m^2/mu^2) + 1)/(32 pi^2) and the printed A_PQ reduces
+      EXACTLY to the printed A_pi below (checked numerically to 1e-15 at
+      s = 0.1 ... 3 GeV^2).  That identity is a transcription check on both
+      formulae.
+  loop_A_pi:
+    where: "tau3scal_update_checked.tex:2254-2258"
+    provenance: printed-eq
+    fidelity: verbatim
+    quote: |-
+      \ln{\left( \frac{m^2_\pi}{\mu^2}\right)} + {8 \frac{m^2_\pi}{s}} - \frac{5}{3}  + \sigma_\pi^3 \,\ln{\left(\frac{\sigma_\pi+1}{\sigma_\pi-1}\right)}\,.
+    quote_mass: |-
+      In the last formulas the  $SU(2)$ limit is taken and $m_{\pi^\pm} = m_{\pi^{0}}= 0.13804$ GeV.
+
+  width_convention:
+    rho_770:
+      denominator:
+        where: "eq.(VFFpipi), tau3scal_update_checked.tex:768"
+        provenance: printed-eq
+        fidelity: verbatim
+        quote: '{M^2_\rho-s-iM_\rho \Gamma_\rho (s)}'
+      running:
+        where: "eq.(eq:rhowidth_nosu2), tau3scal_update_checked.tex:856-858, lambda and thresholds :861"
+        provenance: printed-eq
+        fidelity: verbatim
+        quote: |-
+          \Gamma_\rho(q^2) = \frac{M_\rho q^2}{96 \pi F^2}\, \bigg[ \theta(q^2 - thr_{\pi\pi}) \lambda^{3/2} \bigg(1,\frac{m_{\pi^+}^2}{q^2},\frac{m_{\pi^0}^2}{q^2} \bigg) +  \frac{1}{2}\theta(q^2 - thr_{KK}) \lambda^{3/2} \bigg(1,\frac{m_{K^+}^2}{q^2},\frac{m_{K^0}^2}{q^2} \bigg) \bigg]\,,
+        quote_lambda: |-
+          $\lambda(x,y,z) = (x - y -z)^2 - 4yz$,  $thr_{\pi\pi} = (m_{\pi^+} + m_{\pi^0})^2$ and  $thr_{KK} = (m_{K^+} + m_{K^0})^2$.
+      note: >
+        m0*Gamma(s) denominator.  There is NO free rho width: Gamma_rho(s) is
+        the RChT two-pion + (1/2) two-kaon absorptive part, fixed by M_rho
+        and F.  With this set's M_rho = 0.77554, F = 0.0924 and physical
+        masses Gamma_rho(M_rho^2) = 0.14818 GeV (computed).  The pi pi part
+        is M_rho * Gamma_0 (s/M_rho^2)(beta(s)/beta(M^2))^3 with
+        beta = lambda^{1/2}(1, m+^2/s, m0^2/s), which is algebraically
+        identical to sqrt(s) Gamma_0 (M^2/s)(k/k0)^3 (k = sqrt(s) beta/2) -
+        i.e. the same imaginary part as the Belle-2008 sqrt(s)*Gamma(s)
+        convention, NOT its opposite.  A consumer with a fixed-Gamma or
+        M^2/s-running rho line shape cannot use this set.
+    rho_1450_and_1700:
+      denominator:
+        where: "eq.(VFFpipi), tau3scal_update_checked.tex:774 and :777"
+        provenance: printed-eq
+        fidelity: verbatim
+        quote: |-
+          - \frac{s\delta \mathrm{e}^{i \phi_2}}{M^2_{\rho''}-s-iM_{\rho''} \Gamma_{\rho''} (s)}
+      running:
+        where: "eq.(eq:rho1width), tau3scal_update_checked.tex:866-868"
+        provenance: printed-eq
+        fidelity: verbatim
+        quote: |-
+          \Gamma_{\rho'}(q^2) = \Gamma_{\rho'}\,\frac{q^2}{M_{\rho'}^2}\,\frac{\sigma_\pi^3\left(q^2\right)}{\sigma_\pi^3\left(M_{\rho'}^2\right)}\,\theta\left(q^2 - 4m_\pi^2\right) ,
+      note: >
+        The running factor is (s/M^2)(sigma(s)/sigma(M^2))^3 - note s/M^2, not
+        M^2/s.  Evaluated, not assumed: with sigma = 2k/sqrt(s) this is
+        (M/sqrt(s))(k/k0)^3, so M*Gamma(s) = Gamma M^2/sqrt(s) (k/k0)^3, which
+        equals sqrt(s)*Gamma*(M^2/s)(k/k0)^3 identically.  Im(denominator)
+        for rho' (M = 1.453, Gamma = 0.50155, m_pi = 0.13804) computed both
+        ways: s = 0.3: 0.070498 / 0.070498; s = 0.8: 0.251112 / 0.251112;
+        s = 1.5: 0.505966 / 0.505966; s = 2.5: 0.870507 / 0.870507 GeV^2.
+        The equation is printed for rho' only; the paper says rho' and rho''
+        'are modeled as decays to two pions' (:864), so the rho'' uses the
+        same form with its own M, Gamma.
+    omnes_widths_consistency: >
+      The rho', rho'' exponents use -s Gamma/(pi M^3 sigma^3(M^2)) Re A_pi(s);
+      since Im A_pi = pi sigma^3, this is the real-part partner of exactly
+      the imaginary part M*Gamma_rho'(s) in the denominator (up to the overall
+      M^2 vs s scaling), mirroring what 96 pi^2 F^2 does for the rho.
+
+  daughter_masses:
+    phase_space_and_rho_width: "physical m_pi+ = 0.13957018, m_pi0 = 0.1349766 (and m_K+, m_K0 in the KK part of Gamma_rho) - printed in Eq.(rhowidth_nosu2)"
+    A_pi-pi0_and_A_K-K0:
+      value: "physical charged/neutral masses, m_P = m_pi+, m_Q = m_pi0; m_P = m_K+, m_Q = m_K0"
+      provenance: inferred
+      where: ":770-771 subscripts A_{pi^- pi^0}, A_{K^- K^0}; :1544 'In both channels the physical values of pion and kaon masses are used.'"
+      note: "Isospin-averaged masses in both loops instead change the width by +0.034% (5.24759e-13 vs 5.24579e-13 GeV) - inside the closure residual, not load-bearing."
+    A_pi_and_Gamma_rho'_sigma:
+      value: "m_pi = 0.13804 GeV (isospin average)"
+      provenance: printed-num
+      where: "tau3scal_update_checked.tex:2258 (for A_pi); for sigma_pi in Eq.(rho1width) the paper names no mass - same value used, `inferred`"
+      note: "m_pi+ or m_pi0 instead moves the width by +0.003% / -0.005%."
+    mu_renormalisation_scale:
+      value: "mu = M_rho = 0.77554 GeV (this set's M_rho)"
+      provenance: inferred
+      where: "tau3scal_update_checked.tex:2231 ('we take mu = M_rho for all 2 pseudo-scalars modes')"
+      note: >
+        The paper says mu = M_rho but prints two M_rho values (0.77554 for
+        channel 1, 0.775 for 4-9).  Taken as this set's M_rho.  The
+        alternative mu = 0.775 moves the width by -0.03% (5.24406e-13 GeV);
+        both are inside the closure residual, so this is not load-bearing.
+
+  inferred_details:
+    Jbar_prime0:
+      value: "d Jbar_PQ/ds at s = 0 of the printed Jbar, evaluated numerically (Richardson-extrapolated central difference); agrees with (1/32pi^2)[Sigma/Delta^2 + 2 mP^2 mQ^2/Delta^3 ln(mQ^2/mP^2)] to 6e-6"
+      provenance: inferred
+      where: "tau3scal_update_checked.tex:2239 uses Jbar'(0) without printing it"
+      note: "For pi- pi0 and K- K0 Delta^2 is tiny and the term is numerically irrelevant (< 1e-5 of the width)."
+    phase_units:
+      value: "phi_1, phi_2 in RADIANS"
+      provenance: resolved
+      where: "Table Variation_of_Parameters1, :2875-2876 print bare numbers; caption :2905 says only 'Energy units are powers of GeV'"
+      note: >
+        The table gives theta_V explicitly in degrees (:2897) but phi_1, phi_2
+        without a unit.  Resolved against the printed analytic width
+        5.2431e-13 GeV (:1540): radians give 5.2458e-13 (+0.05%), degrees give
+        5.1487e-13 (-1.80%); FSI-off radians 4.0629e-13 vs printed MC
+        4.0642e-13 (-0.03%), degrees 3.9900e-13 (-1.83%).  Degrees are
+        excluded by 36x the residual of radians.
+
+parameters:
+  # Table Variation_of_Parameters1 (:2857-2912), rows whose channel column
+  # contains 1.  Printed without uncertainties: the table's bracketed ranges
+  # are "an educated guess for the variation" (caption :2905), not errors.
+  # sigfigs = significant figures AS PRINTED.
+  rho_770.M:
+    value: 0.77554
+    unit: GeV
+    sigfigs: 5
+    provenance: printed-num
+    where: "Tab. Variation_of_Parameters1, :2864 (row `mro`, channel 1)"
+    origin: fitted_to_data_elsewhere
+    kind: physical_state_but_fitted_in_this_model
+    note: "Adjusted to (unnamed) data together with the rest of this set (:2714-2716). Also the Omnes scale mu (:2231). Not interchangeable with the 0.775 used for every other channel (:2865)."
+  rho_1450.M:
+    value: 1.453
+    unit: GeV
+    sigfigs: 4
+    provenance: printed-num
+    where: "Tab. Variation_of_Parameters1, :2867 (row `mrho1`, channel 1)"
+    origin: fitted_to_data_elsewhere
+    kind: effective_fit_pole
+  rho_1450.Gamma:
+    value: 0.50155
+    unit: GeV
+    sigfigs: 5
+    provenance: printed-num
+    where: "Tab. Variation_of_Parameters1, :2869 (row `grho1`, channel 1)"
+    origin: fitted_to_data_elsewhere
+    kind: effective_fit_pole
+    note: "Outside the paper's own suggested range [0.32, 0.39] (:2869), which footnote :2727-2731 acknowledges."
+  rho_1700.M:
+    value: 1.8105
+    unit: GeV
+    sigfigs: 5
+    provenance: printed-num
+    where: "Tab. Variation_of_Parameters1, :2871 (row `mrho2`, channels 1, 4)"
+    origin: fitted_to_data_elsewhere
+    kind: effective_fit_pole
+    note: "Outside the suggested range [1.68, 1.78]."
+  rho_1700.Gamma:
+    value: 0.4178
+    unit: GeV
+    sigfigs: 4
+    provenance: printed-num
+    where: "Tab. Variation_of_Parameters1, :2872 (row `grho2`, channels 1, 4)"
+    origin: fitted_to_data_elsewhere
+    kind: effective_fit_pole
+    note: "Outside the suggested range [0.08, 0.20] by a factor 2."
+  gamma.mag:
+    value: 0.14199
+    sigfigs: 5
+    provenance: printed-num
+    where: "Tab. Variation_of_Parameters1, :2873 (row `coef_ga`, channels 1, 4)"
+    origin: fitted_to_data_elsewhere
+    kind: effective_fit_pole
+    note: "Theory meaning gamma = -F_V' G_V'/F^2 (:1863), but the value is a fit output, outside the suggested range [0.077, 0.099]."
+  delta.mag:
+    value: -0.12623
+    sigfigs: 5
+    provenance: printed-num
+    where: "Tab. Variation_of_Parameters1, :2874 (row `coef_de`, channels 1, 4)"
+    origin: fitted_to_data_elsewhere
+    kind: effective_fit_pole
+    note: "Signed, as printed; enters as delta e^{i phi_2}. delta = -F_V'' G_V''/F^2 (:1863). Outside the suggested range [-0.035, -0.012]."
+  gamma.phase:
+    value: -0.17377
+    unit: rad
+    sigfigs: 5
+    provenance: printed-num
+    where: "Tab. Variation_of_Parameters1, :2875 (row `phi_1`); unit resolved, see model.inferred_details.phase_units"
+    origin: fitted_to_data_elsewhere
+    kind: effective_fit_pole
+  delta.phase:
+    value: 0.27632
+    unit: rad
+    sigfigs: 5
+    provenance: printed-num
+    where: "Tab. Variation_of_Parameters1, :2876 (row `phi_2`); unit resolved, see model.inferred_details.phase_units"
+    origin: fitted_to_data_elsewhere
+    kind: effective_fit_pole
+  F:
+    value: 0.0924
+    unit: GeV
+    sigfigs: 3
+    provenance: printed-num
+    where: "Tab. Variation_of_Parameters1, :2889 (row `fpi_rpt`, all channels); defined at :300 as 'the pion decay constant in the chiral limit'"
+    origin: theory_input
+    note: "Sets the rho width (no separate Gamma_rho) and the Omnes exponent. Part of the set: changing it changes Gamma_rho."
+  mu:
+    value: 0.77554
+    unit: GeV
+    sigfigs: 5
+    provenance: inferred
+    where: ":2231, mu = M_rho"
+    origin: theory_choice
+  N_loop:
+    value: { pi-pi0: 1, K-K0: 0.5 }
+    provenance: printed-num
+    where: "tau3scal_update_checked.tex:749"
+    origin: fixed_by_chiral_symmetry
+  masses:
+    provenance: printed-num
+    where: "Tab. Constants, :2764-2774"
+    origin: PDG_2010_inputs
+    m_tau: { value: 1.777, unit: GeV, sigfigs: 4 }
+    m_pi_charged: { value: 0.13957018, unit: GeV, sigfigs: 8 }
+    m_pi_neutral: { value: 0.1349766, unit: GeV, sigfigs: 7 }
+    m_K_charged: { value: 0.493677, unit: GeV, sigfigs: 6 }
+    m_K_neutral: { value: 0.497648, unit: GeV, sigfigs: 6 }
+    m_pi_average_in_A_pi: { value: 0.13804, unit: GeV, sigfigs: 5, where: ":2258" }
+    cos_theta_Cabibbo: { value: 0.975, sigfigs: 3, where: ":2766" }
+    G_F: { value: 1.166375e-5, unit: GeV^-2, sigfigs: 7, where: ":2767" }
+    note: >
+      These are the paper's inputs, needed to reproduce its numbers.  m_pi,
+      m_K here are kinematic and may be taken from the consumer's database;
+      the width changes by ~1e-4 for 0.1 MeV shifts.
+
+effective_poles:
+  which: ["rho_1450.*", "rho_1700.*", "gamma.*", "delta.*"]
+  why: >
+    The paper prints no uncertainties, so the tell here is the paper's own
+    statement that five of these seven values lie outside its educated-guess
+    physical ranges (footnote :2727-2731: "the values for the parameters
+    Gamma_rho', M_rho'', Gamma_rho'', gamma, delta, phi_1 and phi_2 lie
+    outside the educated guess for its range of variation"), plus
+    Gamma_rho'' = 418 MeV against a suggested 80-200 MeV and
+    M_rho'' = 1.81 GeV against 1.68-1.78.  They are effective poles absorbing
+    whatever the (unnamed) data needed above the rho.  A database mass or
+    width may never be substituted.  The rho(770) is a physical state, but
+    its mass is also a fit output here (0.77554, not the 0.775 used for the
+    other channels), it doubles as the Omnes scale mu, and the rho width is
+    derived from it: it is not separable either.
+
+origin_summary:
+  fitted_to_data: "M_rho, M_rho', Gamma_rho', M_rho'', Gamma_rho'', gamma, delta, phi_1, phi_2 - 'result from the adjustment to the experimental data' (:2714-2716); the fit itself (data, method, errors, correlations) is NOT in this paper"
+  fixed_by_theory: "the functional form (RChT + Omnes exponentiation, Guerrero-Pich), Gamma_rho(s) (no free width), N_loop, N = 1, F(0) = 1, mu = M_rho"
+  taken_from_elsewhere: "F = 0.0924 (chiral-limit decay constant), PDG masses, cos(theta_C) = 0.975"
+
+correlations:
+  printed: false
+  note: "The paper prints no uncertainties and no correlation matrix for this set; the fit that produced it is not documented here."
+
+assertions:
+  width_analytic_physical_masses:
+    value: 5.2431e-13
+    unit: GeV
+    uncertainty: "0.02%"
+    provenance: printed-num
+    where: "tau3scal_update_checked.tex:1540"
+    quote: |-
+      $\tau^-\to \nu_\tau \pi^-\pi^0$ equals $(5.2431\pm 0.02\%)\cdot 10^{-13} $ GeV, and for $\tau^-\to \nu_\tau K^-K^0$
+  width_MC_physical_masses:
+    value: 5.2441e-13
+    unit: GeV
+    uncertainty: "0.005%"
+    provenance: printed-num
+    where: "tau3scal_update_checked.tex:1542, Tab. Table:bench :1308, Tab. table3 :2997"
+  width_MC_equal_masses:
+    value: 5.2283e-13
+    unit: GeV
+    uncertainty: "0.005%"
+    provenance: printed-num
+    where: "Tab. Table:bench, :1308 (column 'Equal masses')"
+  width_MC_FSI_off:
+    value: 4.0642e-13
+    unit: GeV
+    uncertainty: "0.005%"
+    provenance: printed-num
+    where: "tau3scal_update_checked.tex:1596; Tab. table3 :3014"
+  width_PDG_quoted_by_paper:
+    value: 5.778e-13
+    unit: GeV
+    provenance: printed-num
+    where: "Tab. Table:bench, :1308"
+    note: "The model is 9.3% below the PDG width; the paper does not claim otherwise."
+
+closure:
+  status: ACCEPTED
+  against: >
+    The paper publishes no spectrum or form-factor table, only partial widths.
+    Compared: (1) the analytic width with physical masses, 5.2431e-13 GeV
+    +- 0.02% (:1540); (2) the FSI-off Monte Carlo width, 4.0642e-13 GeV +-
+    0.005% (:1596), which isolates the Breit-Wigner/width part from the
+    Omnes exponents; (3) the equal-mass Monte Carlo width 5.2283e-13 (:1308).
+    Rebuilt from this file alone in numpy (scratch script, not the Sherpa
+    code): Eq.(VFFpipi) with Eq.(rhowidth_nosu2), Eq.(rho1width), App. A
+    loop functions, the standard two-body rate with |C|^2 = 2 N^2 = 2,
+    G_F, cos(theta_C), m_tau from Table Constants, 64-point Gauss-Legendre
+    on 200 panels (integration error < 1e-8).
+  result: |
+    FSI on,  physical masses : 5.24579e-13 GeV vs 5.2431e-13 analytic  (+0.051%)
+                                               vs 5.2441e-13 MC        (+0.033%)
+    FSI off, physical masses : 4.06285e-13 GeV vs 4.0642e-13 MC        (-0.033%)
+    equal masses (m_pi = 0.13804 in phase space AND form factor): 5.24711e-13 vs 5.2283e-13 MC (+0.36%)
+    equal masses in phase space only, form factor with physical masses: 5.23198e-13 vs 5.2283e-13 (+0.07%)
+    phases in degrees instead (rejected): 5.14868e-13 (-1.80%), FSI off 3.98998e-13 (-1.83%)
+  residual_explained: >
+    The +0.05% (FSI on) and -0.03% (FSI off) residuals are 2.5x and 1.6x the
+    paper's own quoted numerical precision (0.02% analytic, 0.005% MC).  They
+    are the size of, and explained by, the inputs the paper leaves
+    unspecified to that level, each quantified here: the Omnes scale mu
+    (0.77554 vs 0.775: -0.033%), m_tau (Table 1.777 vs PDG-2010 1.77682:
+    -0.037%), physical vs isospin-averaged masses inside A_{pi pi},
+    A_{K K} (+0.034%), and which pion mass enters A_pi and sigma_pi in the
+    rho', rho'' terms (+-0.005%).  None of these was adjusted to close the gap:
+    the file carries the paper's literal values.  The equal-mass MC number
+    is reproduced to +0.07% only if 'equal masses' is read as the phase-space
+    masses (which is how the paper introduces the notion, :354-358, 'At first
+    step we will take such assumption for our phase space generator'); with
+    averaged masses also in the form factor it is +0.36%.  That tells us how
+    their equal-mass run was configured; it does not affect this set, which
+    is defined with physical masses.  The model's own precision claim is far
+    looser ('a few percent for the two-meson modes', :1987-1991).
+  reference_values:
+    note: "F^V(s) computed from this file, physical masses, FSI on - for consumers to check an implementation against; NOT printed in the paper."
+    table:
+      - { s: 0.10, F_re:  1.25241, F_im: -0.00281, abs2:  1.56853 }
+      - { s: 0.30, F_re:  2.19320, F_im:  0.27366, abs2:  4.88500 }
+      - { s: 0.50, F_re:  3.64194, F_im:  3.00641, abs2: 22.30225 }
+      - { s: 0.60, F_re:  0.38608, F_im:  5.93890, abs2: 35.41963 }
+      - { s: 0.70, F_re: -2.24494, F_im:  3.57809, abs2: 17.84253 }
+      - { s: 0.80, F_re: -2.14055, F_im:  1.98973, abs2:  8.54096 }
+      - { s: 1.00, F_re: -1.52695, F_im:  0.94591, abs2:  3.22633 }
+      - { s: 1.50, F_re: -0.90704, F_im:  0.33434, abs2:  0.93450 }
+      - { s: 2.00, F_re: -0.47942, F_im: -0.00649, abs2:  0.22989 }
+      - { s: 3.00, F_re: -0.04957, F_im:  0.42286, abs2:  0.18127 }
+
+# ---------------------------------------------------------------------
+# GENERATED by code_analysis/sherpa/paper_to_model/export_sherpa_blocks.py
+# from the `parameters` above.  Do not edit by hand - edit the recorded
+# values and regenerate.  This is the only block METOOLS reads.
+# ---------------------------------------------------------------------
+sherpa:
+  RCHL_local: 1
+  F_rchl: 0.0924
+  Mrho_rchl: 0.77554
+  Mrhop_rchl: 1.453
+  Mrhopp_rchl: 1.8105
+  RCHL_Grhop: 0.50155
+  RCHL_Grhopp: 0.4178
+  gammaMag_pipi_RChL2012: 0.14199
+  gammaPhase_pipi_RChL2012: -0.17377
+  deltaMag_pipi_RChL2012: -0.12623
+  deltaPhase_pipi_RChL2012: 0.27632

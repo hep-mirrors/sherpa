@@ -1,0 +1,784 @@
+# One file is one fit is one citation.  Apply this set whole or not at all.
+#
+# Standard-Model hadronic model for tau- -> K- pi- pi+ nu_tau: the axial form
+# factors F1, F2 and the anomalous (Wess-Zumino) F3 of Eqs.(21)-(29), with the
+# inputs of Table tabla4.  The paper is a charged-scalar sensitivity study; its
+# new-physics content (the pseudoscalar form factor f_H, the couplings eta_S,
+# eta_P, the shift F4 -> F4 + f_H eta_P/m_tau, the CP-odd observables and the
+# A2HDM section) is deliberately and completely EXCLUDED here - see
+# `variant.rejected`.  Nothing in this file depends on it.
+#
+# READ `model.normalisation_convention` BEFORE USING N OR N_3.  The short
+# answer: this paper's sin(theta_c) is EXPLICIT in the rate (Eqs.(1),(6)) and
+# is NOT absorbed into N or N_3, so a current that carries its own Cabibbo
+# factor uses N = 1.4088 and N_3 = 1.4696 exactly as printed, applying the
+# Cabibbo factor once, alongside them.
+
+source:
+  paper: >
+    N. Mileo, K. Kiers, A. Szynkman - Probing sensitivity to charged scalars
+    through partial differential widths: tau -> K pi pi nu_tau decays.
+    Title as printed at :89, where the final state is the macro
+    \tauprocess; no journal reference appears in the source.
+  arxiv:    "1410.1909"
+  main_tex: "Paper.tex"
+  note: >
+    Extracted from the arXiv LaTeX source only (Paper.tex, 1718 lines, the
+    v2/April-2015 source).  Line numbers below are ":<line>" into that file.
+    NO other paper was consulted.  The paper leans heavily on four of them and
+    every quantity that exists only by reference is marked `unresolved` and
+    listed in `not_in_this_paper`.  Those references, resolved from Paper.bbl
+    for the reader's benefit only:
+      [CLEO]        D. M. Asner et al. (CLEO), Phys. Rev. D 62, 072006 (2000)
+      [KA]          K. Kiers, K. Little, A. Datta, D. London, M. Nagashima,
+                    A. Szynkman, Phys. Rev. D 78, 113008 (2008)
+      [Kuhn]        J. H. Kuhn, E. Mirkes, Z. Phys. C 56, 661 (1992)
+      [Decker]      R. Decker, M. Finkemeier, E. Mirkes, Phys. Rev. D 50, 6863 (1994)
+      [Decker2]     R. Decker, E. Mirkes, R. Sauer, Z. Was, Z. Phys. C 58, 445 (1993)
+      [Finkemeier]  M. Finkemeier, E. Mirkes, Z. Phys. C 69, 243 (1996)
+      [Santamarina] J. H. Kuhn, A. Santamaria, Z. Phys. C 48, 445 (1990)
+      [Babar]       B. Aubert et al. (BABAR), Phys. Rev. Lett. 100, 011801 (2008)
+
+variant:
+  taken: >
+    The paper's single Standard-Model parameterisation of the form factors,
+    Sec. "Parameterization of form factors" (:531-621): Eqs.(21)-(23) for
+    F1, F2, F3, Eq.(24) for the K_1 propagators, Eqs.(25)-(28) for the K* and
+    rho propagators, Eq.(29) for the rho tower, and ALL of Table tabla4
+    (:586-615).  Together with F4 = 0 (:452-456) this is the complete SM
+    hadronic model used to generate every event in the paper.
+  rejected:
+    - "Everything new-physics.  H^NP_eff with eta_S, eta_P (Eq.(2), :221); the shift F4 -> F4 + f_H eta_P/m_tau (:234); f_H (Eq.(4), :238); B_4 and B_4bar (Eqs.(11)-(12), :279, :288); the reference inputs |f_H eta_P| = 17.9 and 1.79 e^{i pi/4} (:472, :526); the CP-odd observables 5(-), 6(-), 7(-) (Tab. tabla3, :431-433); the whole A2HDM section (:1340-1456).  NONE of this enters any number in this file."
+    - "The fitted parameters of Sec. V.D.  The paper re-extracts A and N_3 from its own simulated events (A = 0.91-0.95 in Tab. tabla8, :1195-1205; N_3 = 1.3-1.5 in Tab. tabla9, :1300-1302).  Those are outputs of a closure exercise on Monte Carlo data, with the input values of Table tabla4 as truth; they are NOT an improved determination and must not be substituted for the table."
+  purpose: >
+    A closed-form Standard-Model hadronic current for tau- -> K- pi- pi+
+    nu_tau.  Every component of this variant is a function; nothing is binned
+    or tabulated.  The purpose was stated in the task: supply the two
+    normalisations N and N_3 that Ref. [CLEO] leaves arbitrary.
+  why: >
+    The paper presents ONE parameterisation of F1-F3 - there is no second fit
+    to choose between, and no parameter of the SM model is varied anywhere in
+    the paper.  The only choice to make is SM vs SM+NP, and the task asks for
+    SM.
+
+applies_to:
+  - { channel: "-321,211,-211,16", model: 102 }
+
+applies_to_note: >
+  The paper fits/models exactly one final state, tau- -> K- pi- pi+ nu_tau
+  (:207, :224), with p_1 = K-, p_2 = pi-, p_3 = pi+.  Nothing else is claimed.
+  In particular the isospin-related modes K- pi0 pi0 and K0bar pi- pi0 are NOT
+  covered: the paper never writes their currents, and the Clebsch factors and
+  the rho/K* sub-chain content differ.  Extending this set to them is a
+  physics decision for a human, not an extraction.
+
+model:
+  form: kaon_axial_K1_tower_plus_wess_zumino
+  channel_ordering:
+    where: ":224 and :234"
+    provenance: printed-eq
+    fidelity: verbatim
+    quote_labels: |-
+      The hadronic matrix element $J^{\mu}\equiv \langle K^-(p_1)\pi^{-}(p_2)\pi^+(p_3)|\bar{s}\gamma^{\mu}(1-\gamma_5)u|0\rangle$ can be conveniently parameterized in terms of four form factors as follows,
+    quote_invariants: |-
+      where $Q^{\mu}=(p_1+p_2+p_3)^{\mu}$, $T^{\mu\nu}=g^{\mu\nu}-Q^{\mu}Q^{\nu}/Q^2$, $s_1=(p_2+p_3)^2$ and $s_2=(p_1+p_3)^2$ and where we adopt the convention $\epsilon_{0123}=+1$, as in Refs.
+    note: >
+      p_1 = K-, p_2 = pi-, p_3 = pi+.  Hence s_1 = m^2(pi- pi+) is the RHO
+      channel and s_2 = m^2(K- pi+) is the K* channel, and the third
+      invariant s_3 = (p_1+p_2)^2 = m^2(K- pi-) never appears: the model has
+      no K- pi- (exotic) sub-chain at all.  The epsilon convention
+      eps_{0123} = +1 fixes the sign of the Wess-Zumino term.  Getting s_1
+      and s_2 the wrong way round is not a small error: see `closure`, where
+      putting the K* on s_1 moves the paper's printed zero-crossing by 13%
+      and turns one root into three.
+  equations:
+    current:
+      where: "eq.(3), :226-233"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: |-
+        J^{\mu} = \left[F_1(Q^2,s_1,s_2)(p_1-p_3)_{\nu}+F_2(Q^2,s_1,s_2)(p_2-p_3)_{\nu}\right]\!T^{\mu\nu}
+      quote_cont: |-
+        +iF_3(Q^2,s_1,s_2)\epsilon^{\mu\nu\rho\sigma}p_{1\nu}p_{2\rho}p_{3\sigma}+F_4(Q^2,s_1,s_2)Q^{\mu},
+      note: >
+        Four form factors.  F_4 is set to zero in this work (see
+        model.F4_is_zero); F_1, F_2, F_3 are given in Eqs.(21)-(23).  NOTE the
+        index placement as printed: (p_1-p_3)_nu contracted with T^{mu nu}, so
+        the transverse projector acts on the momentum difference.
+    F1:
+      where: "eq.(21), :541"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: |-
+        F_1(Q^2,s_1,s_2)&=&-\frac{2N}{3F_{\pi}}[C\cdot BW_{1270}(Q^2)+D\cdot BW_{1400}(Q^2)]\,BW_{K^*}(s_2)
+      note: "Axial, K* sub-chain (K- pi+).  Weights C, D on the two K_1 poles."
+    F2:
+      where: "eq.(22), :543"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: |-
+        F_2(Q^2,s_1,s_2)&=&-\frac{N}{\sqrt{3}F_{\pi}}[A\cdot BW_{1270}(Q^2)+B\cdot BW_{1400}(Q^2)]\,T^{(1)}_{\rho}(s_1)
+      note: >
+        Axial, rho sub-chain (pi- pi+).  Weights A, B on the two K_1 poles.
+        The SAME N appears in F_1 and F_2, with FIXED relative coefficients
+        -2/(3 F_pi) and -1/(sqrt3 F_pi): N is one number for the whole axial
+        part and cannot be split between the two form factors.
+    F3:
+      where: "eq.(23), :545"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: |-
+        F_3(Q^2,s_1,s_2)&=&\frac{N_3}{2\sqrt{2}\pi^2 F^3_{\pi}}BW_{K^*}(Q^2)\left[\frac{T^{(1)}_{\rho}(s_1)+\alpha\,BW_{K^*}(s_2)}{1+\alpha}\right].
+      note: >
+        The anomalous Wess-Zumino term.  Overall sign is PLUS, unlike F_1 and
+        F_2.  Note the K* propagator evaluated at the three-body mass Q^2 -
+        that is the Q^2 dependence of the whole WZ term - and a second K*
+        propagator at s_2 inside the bracket, weighted by alpha.  Three
+        powers of F_pi here against one in F_1, F_2, so N_3 and N are NOT
+        commensurable: they are normalisations of differently-dimensioned
+        objects (F_3 carries two more inverse powers of mass than F_1, F_2, as
+        Eq.(3) requires).
+    K1_propagator:
+      where: "eq.(24), :547-550"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote_intro: |-
+        The normalized Breit-Wigner propagators for the $K_1(1270)$ and the $K_1(1400)$ appearing in the axial vector form factors $F_1$ and $F_2$ are assumed to be
+      quote: |-
+        BW_{K_1}(Q^2)=\frac{-m^2_{K_1}+im_{K_1}\Gamma_{K_1}}{Q^2-m^2_{K_1}+im_{K_1}\Gamma_{K_1}},
+      note: >
+        CONSTANT width.  "Normalized" means BW_{K_1}(0) = 1, which is what the
+        numerator -m^2 + i m Gamma achieves; it is not a unit-residue
+        convention.  There is NO running width for either K_1 anywhere in this
+        paper - contrast the K* and rho, Eq.(26).  Substituting a running
+        width here is a real error: it moves the paper's printed zero-crossing
+        by -1.0% (see closure.discrimination), 30x the closure residual.
+    KstarRho_propagator:
+      where: "eqs.(25)-(28), :552-568"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote_intro: |-
+        The Breit-Wigner propagators for the $K^*$ and $\rho$ are taken to have energy-dependent widths (see Refs.
+      quote: |-
+        BW_R(s)=\frac{-m^ 2_R}{s-m^ 2_R+i\sqrt{s}\Gamma_R(s)},
+      quote_p: |-
+        p&=&\frac{1}{2\sqrt{s}}\sqrt{[s-(m_1+m_2)^ 2][s-(m_1-m_2)^ 2]}
+      quote_pR: |-
+        p_R&=&\frac{1}{2m_R}\sqrt{[m^ 2_R-(m_1+m_2)^ 2][m^ 2_R-(m_1-m_2)^ 2]}
+      note: >
+        Also normalised to BW_R(0) = 1 by the -m_R^2 numerator.  p and p_R are
+        the two-body momenta of Eqs.(27)-(28); ":569" states 'In the above
+        expressions the decay of the resonance $R$ to two particles with
+        masses $m_1$ and $m_2$ is assumed.'
+    rho_tower:
+      where: "eq.(29), :569-572"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote_intro: |-
+        For the $K^*$, a single resonance with an energy-dependent width is assumed while the expression for the $\rho$ includes two different resonances:
+      quote: |-
+        T^{(1)}_{\rho}(s_1)=\frac{BW_{\rho}(s_1)+\beta BW_{\rho\prime}(s_1)}{1+\beta}.
+      note: >
+        Two poles only - no rho''.  The 1/(1+beta) prefactor keeps
+        T^(1)_rho(0) = 1, so beta = -0.145 ENHANCES the tower by 1/0.855 =
+        1.169 relative to a bare rho while subtracting the rho' with a
+        relative minus sign.  beta is locked to N: changing its sign alone
+        moves the printed zero-crossing by +1.3%.
+  width_convention:
+    K1_1270_and_K1_1400:
+      denominator:
+        where: "eq.(24), :550"
+        provenance: printed-eq
+        fidelity: verbatim
+        quote: |-
+          Q^2-m^2_{K_1}+im_{K_1}\Gamma_{K_1}
+      running:
+        value: "none - the width is constant, Gamma_{K_1}(Q^2) = Gamma_{K_1}"
+        provenance: printed-eq
+        where: "eq.(24), :550; the paper contrasts it at :552 by saying the K* and rho widths are the energy-dependent ones"
+      note: >
+        Both halves: m_0 * Gamma with a CONSTANT Gamma, i.e.
+        Im(denominator) = m_{K_1} Gamma_{K_1}, independent of Q^2.  Any
+        Gamma(s) substituted here is a different model.
+    Kstar_892_and_rho_and_rhoprime:
+      denominator:
+        where: "eq.(25), :555"
+        provenance: printed-eq
+        fidelity: verbatim
+        quote: |-
+          s-m^ 2_R+i\sqrt{s}\Gamma_R(s)
+      running:
+        where: "eq.(26), :560"
+        provenance: printed-eq
+        fidelity: verbatim
+        quote: |-
+          \Gamma_R(s)=\Gamma_R\frac{m^2_R}{s}\left(\frac{p}{p_R}\right)^3,
+      note: >
+        Both halves: sqrt(s) * Gamma(s) with Gamma(s) = Gamma (m_R^2/s)(p/p_R)^3,
+        so Im(denominator) = Gamma_R (m_R^2/sqrt(s))(p/p_R)^3.  This is the
+        Kuehn-Santamaria form.  It is NOT the same as m_R Gamma(s) with the
+        same Gamma(s), and the two were evaluated rather than assumed to
+        differ: with the rho parameters of Table tabla4 (m = 0.773,
+        Gamma = 0.145, pi pi daughters), Im(denominator) at
+        s = 0.5, 0.5975 (= m_rho^2), 1.0, 1.5 GeV^2 is
+          sqrt(s) Gamma(s) : 0.08971, 0.11208, 0.20482, 0.32030 GeV^2
+          m_R     Gamma(s) : 0.09806, 0.11208, 0.15832, 0.20216 GeV^2
+        - identical on the pole by construction, 58% apart at 1.5 GeV^2.
+        Using this set's Gamma values under the m*Gamma(s) reading moves the
+        paper's printed zero-crossing by -0.88%, 29x the closure residual.
+    daughter_masses:
+      value: "rho, rho' -> pi pi (m_1 = m_2 = m_pi); K* -> K pi (m_1 = m_K, m_2 = m_pi), in ALL THREE places a K* propagator appears: F_1(s_2), F_3(Q^2), F_3(s_2)"
+      provenance: inferred
+      where: ":569 ('the decay of the resonance $R$ to two particles with masses $m_1$ and $m_2$ is assumed')"
+      note: >
+        The paper never names the daughters of each R explicitly.  The only
+        reading consistent with :569 and with the sub-chains of Eqs.(21)-(23)
+        is rho -> pi pi and K* -> K pi.  Confirmed by closure: with these
+        masses the printed zero-crossing comes out to 0.03%.  The K*
+        propagator evaluated at Q^2 in F_3 is a two-body K pi width
+        extrapolated far above threshold, up to Q^2 = m_tau^2; that is
+        Ref. [Decker]'s form and the paper adopts it unchanged (:574).
+  F4_is_zero:
+    where: ":452-456"
+    provenance: printed-eq
+    fidelity: verbatim
+    quote: |-
+      First of all, note that the SM scalar form factor $F_4$ is generally assumed to be small for $\tau\rightarrow K\pi\pi\nu_{\tau}$, since there are no pseudoscalar resonances that mediate this decay. Therefore, we will neglect this contribution by setting $F_4=0$.
+    note: >
+      This is a Standard-Model statement, not a new-physics one, and it is
+      part of the model: the SM current here has NO scalar (Q^mu) component.
+      The paper's own reason, from :234, is that 'there is no pseudoscalar
+      resonance through which the decay can proceed'.
+  normalisation_convention:
+    cabibbo_factor:
+      value: "EXPLICIT.  sin(theta_c) appears in the Hamiltonian and sin^2(theta_c) in the rate; it is NOT absorbed into N or N_3."
+      provenance: resolved
+      where: "eq.(1), :212-216 and eq.(6), :259-262; the chain that closes it is eq.(3) :226-233 -> eqs.(8)-(11) :273-279 -> eq.(5) :247-256"
+      fidelity: verbatim
+      quote_hamiltonian: |-
+        \mathcal{H}^{\mathrm{SM}}_{\mathrm{eff}}=\frac{G_F}{\sqrt{2}}\sin\theta_c\,[\bar{\nu}_{\tau}\gamma_{\mu}(1-\gamma_5)\tau]\,[\bar{s}\gamma^{\mu}(1-\gamma_5)u]+\mathrm{h.c.},
+      quote_rate_prefactor: |-
+        A(Q^2)=\frac{G^2_F\sin^2\theta_c}{128(2\pi)^5}\frac{(m^2_{\tau}-Q^2)^2}{m^3_{\tau}Q^2},
+      evidence: >
+        The convention is closed, with nowhere else for a CKM factor to hide.
+        The rate, Eq.(5), is A(Q^2)/(4 pi) times a bracket built ONLY from
+        B_1..B_4; Eqs.(8)-(11) build B_1..B_4 ONLY from F_1..F_4, f_H, momenta
+        and sqrt(Q^2); Eqs.(21)-(23) build F_1..F_3 ONLY from N, N_3, F_pi,
+        A-D, alpha, beta and Breit-Wigners.  The single Cabibbo factor in the
+        whole chain is the sin^2(theta_c) of A(Q^2), inherited from the
+        Hamiltonian Eq.(1).  Therefore N and N_3 were fixed (by matching the
+        branching ratio, see below) in a convention in which the Cabibbo
+        factor is carried separately.
+      consumer_instruction: >
+        A current that already carries its own Cabibbo / V_us factor must use
+        N = 1.4088 and N_3 = 1.4696 EXACTLY AS PRINTED and apply the Cabibbo
+        factor once, alongside them.  Do not divide N by sin(theta_c), do not
+        multiply it in, and do not apply it twice.  This differs from
+        Ref. [KA] (Kiers et al. 2008), whose N/N_3 pair was quoted in a
+        convention with no explicit CKM factor; the two are numerically
+        different objects even though the criterion used to fix them (5%/95%)
+        is the same.  The paper recomputed them here (:574) against a
+        different, BaBar, branching ratio.
+      cabibbo_value: "NOT PRINTED.  No numerical value of theta_c, sin(theta_c) or V_us appears anywhere in Paper.tex.  The consumer supplies it; see not_in_this_paper."
+    what_N_multiplies:
+      value: "N multiplies the FORM FACTORS F_1 and F_2 (one power of 1/F_pi each); N_3 multiplies the form factor F_3 (one power of 1/F_pi^3).  Neither multiplies the amplitude or the width."
+      provenance: printed-eq
+      where: "eqs.(21)-(23), :541-545"
+      note: >
+        Explicitly: F_1 = -(2N/(3 F_pi)) [...], F_2 = -(N/(sqrt3 F_pi)) [...],
+        F_3 = (N_3/(2 sqrt2 pi^2 F_pi^3)) [...].  Since the width is quadratic
+        in the form factors (Eq.(5) uses |B_i|^2), N enters the axial part of
+        the rate as N^2 and N_3 the anomalous part as N_3^2.  F_pi = 93.3 MeV
+        (Table tabla4) - the F_pi ~ 93 MeV normalisation, NOT f_pi ~ 130 MeV.
+        Inserting 130 MeV would change the axial rate by (93.3/130)^2 = 0.51
+        and the anomalous one by (93.3/130)^6 = 0.13.
+    how_N_was_fixed:
+      value: "5% of the tau -> K pi pi nu width ascribed to F_3, 95% to F_1 and F_2, against the BaBar branching ratio of Ref. [Babar]"
+      provenance: printed-num
+      where: ":574"
+      fidelity: verbatim
+      quote: |-
+        Regarding the parameters $N$ and $N_3$ that regulate the contributions coming from the axial and anomalous form factors, respectively, we apply the criteria proposed in Ref.~\cite{KA}, in which $5\%$ of the $\tau\rightarrow K\pi\pi\nu_{\tau}$ width is ascribed to the $F_3$ term and the remaining $95\%$ to the $F_1$ and $F_2$ terms. For this computation, we have used the value of the branching ratio $\mathcal{B}(\tau\rightarrow K\pi\pi\nu_{\tau})$ obtained in \cite{Babar}, which is the most precise one at present (see Refs.
+      note: >
+        So YES, N and N_3 are tied to a particular measured rate: the BaBar
+        branching fraction of B. Aubert et al., PRL 100, 011801 (2008).  Its
+        numerical VALUE is not printed in this paper (see
+        not_in_this_paper.branching_ratio), so the normalisation cannot be
+        re-derived from this source; it can only be taken as given.
+        Consequences for use:
+        (a) N and N_3 are a PAIR fixed by one condition each on the same
+            total.  Rescaling one without the other changes the 5%/95% split.
+        (b) They are fixed jointly with A, B, C, D, alpha, beta and every
+            mass and width in Table tabla4, because those determine the two
+            partial widths being normalised.  Changing any of them (for
+            instance substituting PDG K_1 parameters) invalidates N and N_3.
+        (c) The 95% is the AXIAL total, F_1 plus F_2 including their
+            interference, not F_1 alone.
+        (d) The split is a modelling criterion imported from Ref. [KA], not a
+            measurement: the paper offers no uncertainty on the 5%.
+    normalisation_of_the_plots:
+      value: "the paper's distributions are normalised to the total tau width, via the measured branching ratio"
+      provenance: printed-eq
+      where: "fig. caption :1136 and eq.(Apeq1), :1667-1679"
+      fidelity: verbatim
+      quote: |-
+        We note that the presence of the branching ratio ($\mathcal{B}_{\tau\rightarrow K\pi\pi\nu_{\tau}}$) arises from the fact that we have normalized the observables to the total decay width ($\Gamma_{\mathrm{tot}}$).
+      note: >
+        Relevant only to reading the paper's figures; no effect on the form
+        factors themselves.
+  coordinate_frame:
+    value: >
+      B_1, B_2, B_3 are the x, y, z components of the hadronic current in the
+      hadronic (Q) rest frame, with the three mesons in the x-y plane, the
+      x axis along p_3 (the pi+), and z normal to the decay plane.
+    provenance: resolved
+    where: "eqs.(8)-(10), :273-277; the frame itself is defined only in Refs. [KA],[Kuhn] (:270)"
+    fidelity: verbatim
+    quote_B1: |-
+      B_1&=&[F_1(p_1-p_3)^x+F_2(p_2-p_3)^x]
+    quote_B2: |-
+      B_2&=&(F_1-F_2)p^y_1
+    quote_B3: |-
+      B_3&=&F_3\sqrt{Q^2}\,p^y_1p^x_3
+    evidence: >
+      Two independent derivations from the paper's OWN equations, neither
+      needing the cited papers.
+      (1) Eq.(3) gives the transverse part of J as the 3-vector
+      F_1(p_1-p_3) + F_2(p_2-p_3) in the Q rest frame.  Its y component is
+      F_1(p_1^y - p_3^y) + F_2(p_2^y - p_3^y); with p_1 + p_2 + p_3 = 0 this
+      equals (F_1 - F_2) p_1^y, as Eq.(9) states, if and ONLY IF p_3^y = 0
+      and p_2^y = -p_1^y.  So the x axis lies along p_3.
+      (2) With that frame, a direct numerical evaluation of
+      eps^{mu nu rho sig} p_{1 nu} p_{2 rho} p_{3 sig} with eps_{0123} = +1
+      (as :234 specifies) gives (0, 0, 0, sqrt(Q^2) p_1^y p_3^x) exactly -
+      ratio 1.000000 over random configurations - which is Eq.(10).
+      The overall orientation (x along +p_3 or -p_3, and the sign of the y
+      axis) is not fixed by this and flips the sign of B_1, B_2, B_3
+      together; it cancels in every observable in the paper and in the
+      closure test below.
+    note: >
+      Needed to evaluate B_1 and hence to reproduce the paper's printed
+      zero-crossing.  Without it nothing in Eqs.(8)-(10) is computable, since
+      Refs.[KA],[Kuhn] were not consulted.
+
+parameters:
+  # Table tabla4 (:576-621).  Caption (:576-577) read first: "The left table
+  # (a) lists the dimensionless parameters while the right table (b) shows the
+  # masses and widths of the various resonances, along with the pion decay
+  # constant ($F_{\pi}$)."  It carries no normalisation instruction and no
+  # per-mode or doubling caveat.  NO uncertainties are printed on ANY of these
+  # numbers, anywhere in the paper.
+  alpha:
+    value: -0.2
+    sigfigs: 1
+    provenance: printed-num
+    where: "Tab. tabla4(a), :586"
+    origin: taken_from_elsewhere
+    enters: "eq.(23) ONLY - the Wess-Zumino form factor F_3"
+    note: >
+      alpha weights the K*(s_2) sub-chain of the WZ term against the rho(s_1)
+      sub-chain, inside [T^(1)_rho(s_1) + alpha BW_{K*}(s_2)]/(1+alpha).
+      So: the rho chain has weight 1, the K* chain weight alpha = -0.2.  It
+      therefore SUPPRESSES the K* sub-chain to 20% of the rho sub-chain AND
+      flips its relative sign.  The 1/(1+alpha) = 1.25 prefactor then scales
+      the whole WZ term up by 25% relative to alpha = 0, so alpha is locked to
+      N_3: the pair was fixed together by the 5% criterion.  alpha does NOT
+      appear in F_1 or F_2, so it has no effect on the axial part and is NOT
+      tested by the closure below.  Attribution: F_3 follows Ref. [Decker]
+      (:574).  One significant figure.
+  beta:
+    value: -0.145
+    sigfigs: 3
+    provenance: printed-num
+    where: "Tab. tabla4(a), :587"
+    origin: taken_from_elsewhere
+    enters: "eq.(29), the rho tower T^(1)_rho, which appears in F_2 and in F_3"
+    note: "Relative weight of the rho' against the rho; negative, with 1/(1+beta) normalising T^(1)_rho(0) = 1.  Attributed to Refs. [Finkemeier],[Santamarina] (:574)."
+  A:
+    value: 0.944
+    sigfigs: 3
+    provenance: printed-num
+    where: "Tab. tabla4(a), :588"
+    origin: taken_from_elsewhere
+    enters: "eq.(22): weight of BW_1270 in F_2 (K_1(1270) -> rho K)"
+    note: "Based on Ref. [CLEO] (:574), where C and D are constrained by the tabulated K_1 branching fractions.  The dominant coefficient of the model."
+  B:
+    value: 0.0
+    sigfigs: 1
+    provenance: printed-num
+    where: "Tab. tabla4(a), :589"
+    origin: taken_from_elsewhere
+    enters: "eq.(22): weight of BW_1400 in F_2 (K_1(1400) -> rho K)"
+    note: >
+      Exactly zero: the K_1(1400) does not couple to rho K in this model, so
+      F_2 has a single pole.  The paper keeps B fixed at zero in every fit
+      (:961-962, :1175-1176).  Printed as '0', not '0.000'.
+  C:
+    value: 0.195
+    sigfigs: 3
+    provenance: printed-num
+    where: "Tab. tabla4(a), :590"
+    origin: taken_from_elsewhere
+    enters: "eq.(21): weight of BW_1270 in F_1 (K_1(1270) -> K* pi)"
+  D:
+    value: 0.266
+    sigfigs: 3
+    provenance: printed-num
+    where: "Tab. tabla4(a), :591"
+    origin: taken_from_elsewhere
+    enters: "eq.(21): weight of BW_1400 in F_1 (K_1(1400) -> K* pi)"
+    note: "C and D are 'constrained by the branching fractions into the $K^*\\pi$ final state from the $K_1(1270)$ and $K_1(1400)$' (:1172-1174), per Ref. [CLEO]."
+  N:
+    value: 1.4088
+    sigfigs: 5
+    provenance: printed-num
+    where: "Tab. tabla4(a), :592"
+    origin: derived_in_this_paper
+    enters: "eqs.(21) and (22) - the SAME N in both"
+    note: >
+      The overall axial normalisation, fixed by ascribing 95% of the
+      tau -> K pi pi nu width to F_1 + F_2 against the BaBar branching ratio.
+      See model.normalisation_convention: the Cabibbo factor is NOT inside it.
+      This is one of the two numbers this file exists to carry.
+  N_3:
+    value: 1.4696
+    sigfigs: 5
+    provenance: printed-num
+    where: "Tab. tabla4(a), :593"
+    origin: derived_in_this_paper
+    enters: "eq.(23) only"
+    note: >
+      The Wess-Zumino normalisation, fixed by ascribing 5% of the width to
+      F_3, same convention, same branching ratio, same caveats.  Must be used
+      together with N, with alpha = -0.2 and with F_pi = 93.3 MeV; it is
+      meaningless apart from them.
+  F_pi:
+    value: 93.3
+    unit: MeV
+    sigfigs: 3
+    provenance: printed-num
+    where: "Tab. tabla4(b), :605"
+    origin: PDG_input
+    note: "0.0933 GeV.  Appears as 1/F_pi in F_1, F_2 and as 1/F_pi^3 in F_3."
+  K1_1270.m:
+    value: 1.254
+    unit: GeV
+    sigfigs: 4
+    provenance: printed-num
+    where: "Tab. tabla4(b), :606"
+    origin: taken_from_elsewhere
+    kind: physical_state_but_fitted_elsewhere
+    note: >
+      From Ref. [CLEO].  :574 notes that the later Belle value of
+      Ref. [Guler] (PRD 83, 032005) 'is still in agreement with the input
+      value used here', but the CLEO value is the one used.  No uncertainty
+      printed here; the paper says varying the K_1 parameters 'within the
+      uncertainties reported in Ref.~\cite{CLEO}' worsens its fits
+      (:852-859).
+  K1_1270.Gamma:
+    value: 0.26
+    unit: GeV
+    sigfigs: 2
+    provenance: printed-num
+    where: "Tab. tabla4(b), :607"
+    origin: taken_from_elsewhere
+    kind: physical_state_but_fitted_elsewhere
+    note: "Two significant figures, constant width."
+  K1_1400.m:
+    value: 1.463
+    unit: GeV
+    sigfigs: 4
+    provenance: printed-num
+    where: "Tab. tabla4(b), :608"
+    origin: taken_from_elsewhere
+    kind: physical_state_but_fitted_elsewhere
+  K1_1400.Gamma:
+    value: 0.30
+    unit: GeV
+    sigfigs: 2
+    provenance: printed-num
+    where: "Tab. tabla4(b), :609"
+    origin: taken_from_elsewhere
+    kind: physical_state_but_fitted_elsewhere
+    note: "Constant width, like the K_1(1270): Eq.(24) is the only K_1 line shape in the paper."
+  Kstar_892.m:
+    value: 0.892
+    unit: GeV
+    sigfigs: 3
+    provenance: printed-num
+    where: "Tab. tabla4(b), :610"
+    origin: taken_from_elsewhere
+    kind: physical_state
+    note: >
+      Attribution NOT stated separately - see attribution below.  Used in
+      BW_{K*}(s_2) in F_1 and in BOTH K* propagators of F_3.
+  Kstar_892.Gamma:
+    value: 0.050
+    unit: GeV
+    sigfigs: 2
+    provenance: printed-num
+    where: "Tab. tabla4(b), :611"
+    origin: taken_from_elsewhere
+    kind: physical_state
+    note: "Running width, Eq.(26), with K pi daughters."
+  rho_770.m:
+    value: 0.773
+    unit: GeV
+    sigfigs: 3
+    provenance: printed-num
+    where: "Tab. tabla4(b), :612"
+    origin: taken_from_elsewhere
+    kind: physical_state
+    note: "'guided by' Refs. [Finkemeier],[Santamarina] (:574)."
+  rho_770.Gamma:
+    value: 0.145
+    unit: GeV
+    sigfigs: 3
+    provenance: printed-num
+    where: "Tab. tabla4(b), :613"
+    origin: taken_from_elsewhere
+    kind: physical_state
+  rhoprime_1370.m:
+    value: 1.370
+    unit: GeV
+    sigfigs: 4
+    provenance: printed-num
+    where: "Tab. tabla4(b), :614"
+    origin: taken_from_elsewhere
+    kind: effective_fit_pole
+  rhoprime_1370.Gamma:
+    value: 0.510
+    unit: GeV
+    sigfigs: 3
+    provenance: printed-num
+    where: "Tab. tabla4(b), :615"
+    origin: taken_from_elsewhere
+    kind: effective_fit_pole
+
+attribution:
+  where: ":574"
+  fidelity: verbatim
+  quote: |-
+    All the reference values related to the form factors $F_1-F_3$ used in our analysis are listed in Table \ref{tabla4}. Among them, those corresponding to the form factors $F_1$ and $F_2$ are based  on Ref.~\cite{CLEO}.
+  quote_F3_and_rho: |-
+    For the form factor $F_3$ we follow Ref.~\cite{Decker}, whereas for the $\rho$ and $\rho'$ resonances the input values are guided by Refs.~\cite{Finkemeier,Santamarina}.
+  resolved: >
+    Per the paper's own attribution: A, B, C, D and the two K_1 masses and
+    widths are 'based on' Ref. [CLEO] = Asner et al. (CLEO), PRD 62, 072006;
+    alpha and the functional form of F_3 'follow' Ref. [Decker] = Decker,
+    Finkemeier, Mirkes, PRD 50, 6863; the rho and rho' masses, widths and
+    beta are 'guided by' Ref. [Finkemeier] = Finkemeier & Mirkes, ZPC 69, 243
+    and Ref. [Santamarina] = Kuhn & Santamaria, ZPC 48, 445; N and N_3 are
+    this paper's own, computed by the criterion of Ref. [KA].
+  unresolved_Kstar: >
+    The K*(892) mass and width are NOT attributed.  They belong to no clause
+    of the sentence at :574: the K* appears in both F_1 (a [CLEO] quantity)
+    and F_3 (a [Decker] quantity), and the rho/rho' clause does not cover it.
+    The values are printed, so nothing is missing for use; only their
+    provenance is unstated.  Note in passing that this paper PRINTS the rho,
+    rho' and K* inputs, which is why it is worth having: :574 says the F_1/F_2
+    values are 'based on' [CLEO], but [CLEO] was not consulted here and this
+    file makes no claim about what is or is not in it.
+
+effective_poles:
+  which: ["rhoprime_1370.m", "rhoprime_1370.Gamma"]
+  why: >
+    The rho(1450)/rho' of a Kuehn-Santamaria tower is a fitted effective pole
+    absorbing the continuum above the rho, not a state: 1.370 GeV with a
+    510 MeV width and a weight beta = -0.145 whose sign is a fit artefact.  A
+    database rho(1450) must NOT be substituted for it - beta was fixed with
+    this pole in place, and beta in turn ties into N.
+  physical_but_not_substitutable: >
+    The K_1(1270), K_1(1400), K*(892) and rho(770) entries ARE physical
+    states, but they too must not be replaced by database values: A, B, C, D,
+    N and N_3 were all fixed with exactly these numbers, and the paper reports
+    (:852-859) that moving the K_1 parameters within their quoted
+    uncertainties worsens its description.  Substitute nothing; take the set
+    whole.
+  no_uncertainties: >
+    The paper prints NO uncertainty on any entry of Table tabla4, so the usual
+    tell (a width with a 60 MeV systematic) is unavailable.  The
+    classification above rests on the role each pole plays in the tower.
+
+correlations:
+  printed: false
+  note: >
+    No correlation matrix anywhere.  Table tabla4 is a set of reference INPUTS
+    collected from other papers plus two numbers derived here, not the output
+    of a fit in this paper, so there is no covariance to print.  The paper
+    does compute correlations among its own re-fitted parameters (:1168-1170,
+    :1246-1249) but prints no matrix, and those fits are rejected above.
+    What matters for reuse is a hard functional dependence rather than a
+    statistical one: N and N_3 are functions of everything else in the table
+    (see model.normalisation_convention.how_N_was_fixed).
+
+not_in_this_paper:
+  # Quantities the model needs that Paper.tex never prints.  All `unresolved`.
+  branching_ratio:
+    status: unresolved
+    where: "cited at :574 as Ref. [Babar]; no number is given there or anywhere else in Paper.tex"
+    note: >
+      The measured B(tau -> K pi pi nu) that fixes N and N_3.  Exists only by
+      reference (B. Aubert et al., PRL 100, 011801 (2008)).  Consequence: the
+      absolute normalisation of this set cannot be re-derived or re-checked
+      from this paper alone.
+  angular_kernels_K_i:
+    status: unresolved
+    where: "eq.(7), :266, with ':268-270' saying the definitions 'may be found in Ref.~\\cite{KA}'"
+    note: >
+      <K_1>, <K_2>, <K_1bar>, <K_2bar>, <K_3bar> of Eq.(5).  Not printed.
+      These are properties of the tau-decay kinematics, not of the hadronic
+      model, so a generator that builds the leptonic side itself does not need
+      them - but they ARE needed to integrate this model into a width, which
+      is why the closure below uses the one printed number from which they
+      cancel.
+  euler_angle_frame:
+    status: resolved
+    note: "Was unresolved by reference (:270); resolved from Eqs.(8)-(10) - see model.coordinate_frame."
+  sin_theta_c:
+    status: unresolved
+    where: "symbolic in eq.(1) :214 and eq.(6) :261; no numerical value printed"
+  meson_masses:
+    status: unresolved
+    where: "nowhere; Table tabla4 lists only F_pi and resonance parameters"
+    note: >
+      m_K, m_pi (needed in p(s), p_R and in the phase space) and m_tau, G_F
+      (needed in A(Q^2)) are never given numerically.  PDG values were used
+      for the closure test; the spread over plausible choices is the entire
+      closure residual (see closure.residual_explained).
+
+assertions:
+  zero_crossing_Q2_6minus:
+    value: 1.85609
+    unit: GeV^2
+    provenance: printed-num
+    where: ":1546"
+    fidelity: verbatim
+    quote: |-
+      Projecting this distribution separately onto $Q^2,s_1$ and $s_2$ and performing a numerical computation of the corresponding zero-crossing points yields the values $Q^2\sim 1.85609\,\,\mathrm{GeV}^2,\,s_1\sim 0.55633\,\,\mathrm{GeV}^2$ and $s_2\sim 0.85142\,\,\mathrm{GeV}^2$, respectively.
+    note: >
+      The zero-crossing points of the projections of the 6(-) observable,
+      computed by the authors from this very model.  Six significant figures.
+      Only the Q^2 one is usable here - see closure.
+  zero_crossing_from_simulation:
+    value: { Q2: 1.86, s1: 0.56, s2: 0.84 }
+    uncertainty: { Q2: 0.04, s1: 0.03, s2: 0.04 }
+    unit: GeV^2
+    provenance: printed-num
+    where: "eq.(41), :1552"
+    note: "The same quantities re-extracted from 3e6 simulated events; the errors are the bin widths.  A consistency check of their generator, and the scale against which a 0.03% residual should be judged."
+  fit_recovers_A:
+    value: 0.944
+    provenance: printed-num
+    where: "Tab. tabla8 caption :1185; values :1195-1205"
+    note: "Input A recovered as 0.91-0.95 from 3e6 simulated events.  A closure exercise of the paper on itself, not an independent determination."
+  fit_recovers_N3:
+    value: 1.4696
+    provenance: printed-num
+    where: "Tab. tabla9 caption :1290-1291; values :1300-1302"
+    note: "Input N_3 recovered as 1.45 +- 0.05 from the 5(+) observable.  Same remark."
+
+closure:
+  status: ACCEPTED
+  against: >
+    The paper's own printed numerical output: the Q^2 zero-crossing of the
+    6(-) distribution, Q^2 = 1.85609 GeV^2 (:1546), computed by the authors
+    from this model to six significant figures.  Rebuilt FROM THIS FILE ALONE
+    in numpy (~90 lines, no Sherpa, no scipy).
+    Why this observable, and why only its Q^2 projection: Tab. tabla3 (:432)
+    gives dGamma^-_6/dQ^2 ds_1 ds_2 = A(Q^2) (2/3) <K_2bar> Re(B_1* B_4^(-)),
+    and under the paper's own assumptions (F_4 = 0, f_H real and flat with
+    phi_H = pi/2, :452-464) Eq.(36) (:1477) reduces it to
+    +(2/3) A(Q^2) <K_2bar> (sqrt(Q^2)/m_tau) Im(B_1) f^R_H eta^I_P.
+    At fixed Q^2 every factor except Im(B_1) is CONSTANT over the Dalitz
+    plot, so the projection onto Q^2 is
+      [A(Q^2) <K_2bar>(Q^2) sqrt(Q^2) (2/3) f^R_H eta^I_P / m_tau]
+      x  Integral ds_1 ds_2 Im(B_1),
+    and its zero is the zero of Integral ds_1 ds_2 Im(B_1) alone.  The
+    unavailable angular kernel <K_2bar>, the unavailable branching ratio, the
+    unprinted m_tau, G_F, sin(theta_c) and the entire new-physics factor all
+    drop out.  So does N, because B_1 = F_1 (p_1-p_3)^x + F_2 (p_2-p_3)^x and
+    F_1, F_2 share the same N/F_pi.  The s_1 and s_2 projections are NOT
+    usable: they integrate over Q^2 and so require <K_2bar>(Q^2).
+    What is therefore tested: A, B, C, D, the two K_1 masses and widths and
+    their CONSTANT-width line shape, the K*(892) mass, width, running-width
+    convention and its placement on s_2, the rho/rho' tower with beta and its
+    placement on s_1, the relative -2/(3 F_pi) vs -1/(sqrt3 F_pi) weights of
+    F_1 and F_2, the s_1/s_2 ordering, and the coordinate frame.
+    What is NOT tested: N, N_3, alpha, F_pi, the 5%/95% split, F_3 as a whole,
+    and the absolute rate.  Those cannot be tested from this paper - the
+    branching ratio and the angular kernels are not in it.  This is a weaker
+    test than a spectrum: it is one number, and it is blind to every overall
+    normalisation.  It is nevertheless sharp (six figures) and it is the only
+    model output the paper prints in closed numerical form.
+  result: |
+    Integral ds_1 ds_2 Im(B_1) = 0  at  Q^2 = 1.85553 GeV^2
+    paper                                    1.85609 GeV^2
+    deviation                                -0.030 %  (-5.6e-4 GeV^2)
+    Unique root over the whole physical range 0.597 < Q^2 < m_tau^2.
+    Integration: Gauss-Legendre on the exact Dalitz boundary; the root is
+    identical to five decimals at n = 80, 160, 240, 320 nodes, so the
+    numerics are converged and contribute nothing to the residual.
+    Integration region validated before use (Step 3b rule): the Gauss area at
+    Q^2 = 2 GeV^2 is 0.670125 GeV^4 against 0.670518 GeV^4 from an
+    independent Monte Carlo over the bounding box using p_1y^2 > 0, agreeing
+    to the 0.06% MC error; and p_1^x + p_2^x + p_3^x = 0 to machine precision
+    at interior points.
+  discrimination: |
+    The same root under deliberately wrong conventions, to show the test bites
+    (all deviations from 1.85609):
+      as published, this file                1.85553   -0.03 %
+      K_1 given a running width              1.83746   -1.00 %
+      m_R Gamma(s) instead of sqrt(s) Gamma(s)  1.83980   -0.88 %
+      beta -> +0.145                         1.87982   +1.28 %
+      D = 0 (K_1(1400) dropped from F_1)     1.80726   -2.63 %
+      K* put on s_1, rho on s_2       1.61476 / 1.97408 / 2.24610 (three roots)
+    Every wrong reading is 30-90x further out than the accepted one.
+  residual_explained: >
+    The meson masses.  m_K and m_pi are never printed in this paper (see
+    not_in_this_paper.meson_masses) yet they enter p(s), p_R and the Dalitz
+    boundary.  The residual is inside the spread they generate: with PDG
+    values (m_K = 0.493677, m_pi = 0.13957) the root is 1.85553 (-0.030%);
+    with the rounded m_K = 0.495, m_pi = 0.140 that a 2014 phenomenology code
+    might equally carry, it is 1.85639 (+0.016%).  The published number lies
+    between the two.  Nothing was tuned: PDG values were chosen first and kept.
+    Two further contributions, both smaller and neither adjusted: the paper
+    writes 'yields the values $Q^2\sim 1.85609$' with a tilde, i.e. its own
+    numerical root-finding precision is not claimed to be exact; and its own
+    simulated cross-check of the same quantity is 1.86 +- 0.04 GeV^2
+    (Eq.(41)), so the residual is 1/70 of the paper's own resolution on it.
+  not_closed: >
+    Honest gap: the absolute normalisation N = 1.4088, N_3 = 1.4696 and the
+    5%/95% split are NOT verified, and cannot be from this source.  Doing so
+    needs the angular kernels <K_1>, <K_2> (only in Ref. [KA]) and the BaBar
+    branching ratio (only in Ref. [Babar]), neither of which is printed here.
+    The two numbers are transcribed, their convention is established from the
+    paper's own equation chain (model.normalisation_convention), and their
+    magnitude is unchecked.
+
+# ---------------------------------------------------------------------
+# GENERATED by code_analysis/sherpa/paper_to_model/export_sherpa_blocks.py
+# from the `parameters` above.  Do not edit by hand - edit the recorded
+# values and regenerate.  This is the only block METOOLS reads.
+# ---------------------------------------------------------------------
+sherpa:
+  MILEO_local: 1
+  fpi: 0.1319461254
+  N_Kpipi_CLEO: 1.4088
+  MILEO_N3: 1.4696
+  MILEO_alpha: -0.2
+  gammaMag_pipi3: -0.145
+  ACLEO_Kpipi: 0.944
+  BCLEO_Kpipi: 0.0
+  CCLEO_Kpipi: 0.195
+  DCLEO_Kpipi: 0.266
+  MK1_1270_CLEO: 1.254
+  GK1_1270_CLEO: 0.26
+  MK1_1400_CLEO: 1.463
+  GK1_1400_CLEO: 0.3
+  MILEO_m_Kstar: 0.892
+  MILEO_G_Kstar: 0.05
+  MILEO_m_rho: 0.773
+  MILEO_G_rho: 0.145
+  MILEO_m_rhop: 1.37
+  MILEO_G_rhop: 0.51

@@ -138,7 +138,8 @@ Complex FF_0_PPP_Base::operator()(const ATOOLS::Vec4D_Vector& moms) {
   // through the SAME FF_KS() as plain KS - each derived class checks
   // m_ffmodel internally to pick the KS vs KS_CLEO formula, exactly
   // as FF_0_PP.C's Construct_XXX methods already do.
-  case ff_model::KS_CLEO: return m_norm * FF_KS(s123,s12,s13);
+  case ff_model::KS_CLEO:
+  case ff_model::CLEO_flatte: return m_norm * FF_KS(s123,s12,s13);
   // KS_f0/CLEO_f0 (103/104): routed through the same FF_KS() entry
   // point - only F1_0_KPiPi/FS_0_KPiPi currently check m_ffmodel for
   // these two values internally (Kppipi + added f0(500) admixture).
@@ -1722,6 +1723,11 @@ class F1_0_KPiPi : public FF_0_PPP_Base {
   // reuses Sherpa's registered running width.
   double  m_ACLEO, m_BCLEO, m_CCLEO, m_DCLEO;
   double  m_MK1_1270_CLEO, m_GK1_1270_CLEO, m_MK1_1400_CLEO, m_GK1_1400_CLEO;
+  //! Mileo/Kiers/Szynkman local set: same A-D parameterisation, but the K1
+  //! numerator is (-m^2+i m Gamma) rather than m^2 (their Eq.(24)), and the
+  //! rho/K* poles are the paper's, not the registry's.  Marked by MILEO_local.
+  bool    m_mileo_local;
+  Propagator_Base * p_K1Flatte;   //!< model 107 only
   Propagator_Base * p_KstCLEO;
 
   void    Construct(const FF_Parameters & params);
@@ -1733,7 +1739,7 @@ public:
   F1_0_KPiPi(const FF_Parameters & params) :
     FF_0_PPP_Base(params), m_isF2(false), m_xiK1(0.33,0.),
     p_TK1a(NULL), p_Trho1(NULL), p_TKstar1(NULL), p_TK1b(NULL),
-    p_KstCLEO(NULL)
+    p_KstCLEO(NULL), m_mileo_local(false), p_K1Flatte(NULL)
   {
     if (params.m_name=="F2_0_KPiPi") m_isF2 = true;
     Construct(params);
@@ -1744,8 +1750,148 @@ public:
     if (p_TKstar1) { delete p_TKstar1; p_TKstar1 = NULL; }
     if (p_TK1b)    { delete p_TK1b;    p_TK1b    = NULL; }
     if (p_KstCLEO) { delete p_KstCLEO; p_KstCLEO = NULL; }
+    if (p_K1Flatte) { delete p_K1Flatte; p_K1Flatte = NULL; }
   }
 };
+
+// ---------------------------------------------------------------------------
+// FM95 local ParameterSet (ParameterSets/FinkemeierMirkes1995.yaml).
+//
+// Marked by FM95_local, merged in by Current_ME::SelectCurrent for the three
+// K pi pi channels its generated block declares.  It replaces the K1, rho and
+// K* towers WHOLE: FM95's fitted weights (xi = 0.33, beta_rho, beta_K*) are
+// only valid with FM95's own pole parameters, and the registry's are different
+// objects - K1(1270) is 0.090 GeV here against the registry's 0.20.
+//
+// Line shapes follow the paper, not the registry:
+//  - K1(1270)/K1(1400): CONSTANT width, Eq.(34), which is derived with them;
+//    a running Gamma(s) destroys the K pi pi tail.
+//  - rho, K* towers: Gamma(s) = Gamma (M^2/s)(p/p_X)^3, which is what
+//    Fitted_VPP_Propagator computes (sqrt(s)Gamma(s) in the denominator).
+// An incomplete set is fatal rather than half-applied.
+// ---------------------------------------------------------------------------
+//! Mileo et al. Eq.(24): BW_K1(Q^2) = (-m^2 + i m Gamma)/(Q^2 - m^2 + i m Gamma).
+//! Constant width, and BW(0) = 1 exactly - INCLUDING the phase, which the
+//! plain m^2/(m^2-s-i m Gamma) numerator does not reproduce (they differ by a
+//! constant phase, ~4 degrees for the K1(1400), and the two K1 terms interfere).
+static Complex MileoK1BW(const double & s, const double & m, const double & G) {
+  const Complex num(-m*m, m*G);
+  return num/Complex(s-m*m, m*G);
+}
+
+static bool HasMileoLocal(const GeneralModel * md) {
+  return md!=NULL && md->find("MILEO_local")!=md->end();
+}
+
+static double MileoGet(const GeneralModel * md, const std::string & key) {
+  auto it = md->find(key);
+  if (it==md->end())
+    THROW(fatal_error,"Mileo local parameter set is incomplete: "+key+
+	  " missing.  A set is applied whole or not at all.");
+  return it->second;
+}
+
+//! As MileoGet, but with a fallback - used by model 107, which seeds these
+//! values in code because it is a tune and has no parameter set of its own.
+static double MileoOr(const GeneralModel * md, const std::string & key,
+		      const double & fallback) {
+  if (md==NULL) return fallback;
+  auto it = md->find(key);
+  return (it==md->end() ? fallback : it->second);
+}
+
+//! T_rho^(1) = [BW_rho + beta BW_rho'] / (1+beta), the paper's own poles.
+static Summed_Propagator * MileoTRho(const GeneralModel * md) {
+  const double mpi = Flavour(kf_pi_plus).HadMass();
+  Summed_Propagator * t = new Summed_Propagator();
+  t->Add(new Fitted_VPP_Propagator(Flavour(kf_rho_770_plus),
+				   MileoOr(md,"MILEO_m_rho",0.773),
+				   MileoOr(md,"MILEO_G_rho",0.145),
+				   false, mpi,mpi, mpi,mpi, mpi), Complex(1.,0.));
+  t->Add(new Fitted_VPP_Propagator(Flavour(kf_rho_1450_plus),
+				   MileoOr(md,"MILEO_m_rhop",1.370),
+				   MileoOr(md,"MILEO_G_rhop",0.510),
+				   false, mpi,mpi, mpi,mpi, mpi),
+	 Complex(MileoOr(md,"gammaMag_pipi3",-0.145),0.));
+  return t;
+}
+
+//! BW_K*(892) with the paper's mass and width; K pi daughters.
+static Propagator_Base * MileoKstar(const GeneralModel * md) {
+  return new Fitted_VPP_Propagator(Flavour(kf_K_star_892_plus),
+				   MileoOr(md,"MILEO_m_Kstar",0.892),
+				   MileoOr(md,"MILEO_G_Kstar",0.050), false,
+				   Flavour(kf_K_plus).HadMass(), Flavour(kf_pi_plus).HadMass(),
+				   Flavour(kf_K_plus).HadMass(), Flavour(kf_pi_plus).HadMass(),
+				   Flavour(kf_pi_plus).HadMass());
+}
+
+static bool HasFM95Local(const GeneralModel * md) {
+  return md!=NULL && md->find("FM95_local")!=md->end();
+}
+
+static double FM95Get(const GeneralModel * md, const std::string & key) {
+  auto it = md->find(key);
+  if (it==md->end())
+    THROW(fatal_error,"FM95 local parameter set is incomplete: "+key+
+	  " missing.  A set is applied whole or not at all.");
+  return it->second;
+}
+
+//! T_K1^(a) = BW_K1(1400) + xi BW_K1(1270), both constant-width (Eq.(34)).
+static Summed_Propagator * FM95_TK1a(const GeneralModel * md) {
+  Summed_Propagator * t = new Summed_Propagator();
+  t->Add(new FM95_Fixed_BW(FM95Get(md,"FM95_mK1_1400"),
+			   FM95Get(md,"FM95_GK1_1400")), Complex(1.,0.));
+  t->Add(new FM95_Fixed_BW(FM95Get(md,"FM95_mK1_1270"),
+			   FM95Get(md,"FM95_GK1_1270")),
+	 Complex(FM95Get(md,"FM95_xi"),0.));
+  return t;
+}
+
+//! T_K1^(b) = BW_K1(1270) alone.
+static Propagator_Base * FM95_TK1b(const GeneralModel * md) {
+  return new FM95_Fixed_BW(FM95Get(md,"FM95_mK1_1270"),
+			   FM95Get(md,"FM95_GK1_1270"));
+}
+
+//! T_rho^(1) = [BW_rho + beta_rho BW_rho'] / (1+beta_rho); pi pi daughters.
+static Summed_Propagator * FM95_TRho1(const GeneralModel * md) {
+  const double mpi = Flavour(kf_pi_plus).HadMass();
+  Summed_Propagator * t = new Summed_Propagator();
+  t->Add(new Fitted_VPP_Propagator(Flavour(kf_rho_770_plus),
+				   FM95Get(md,"FM95_m_rho"), FM95Get(md,"FM95_G_rho"),
+				   false, mpi,mpi, mpi,mpi, mpi), Complex(1.,0.));
+  t->Add(new Fitted_VPP_Propagator(Flavour(kf_rho_1450_plus),
+				   FM95Get(md,"FM95_m_rhop"), FM95Get(md,"FM95_G_rhop"),
+				   false, mpi,mpi, mpi,mpi, mpi),
+	 Complex(FM95Get(md,"FM95_beta_rho"),0.));
+  return t;
+}
+
+//! K* towers; K pi daughters, isospin-degenerate masses per the set's
+//! `conventions.meson_masses`.
+static Summed_Propagator * FM95_TKstar(const GeneralModel * md, const bool & second) {
+  const double mpi = Flavour(kf_pi_plus).HadMass();
+  const double mK  = Flavour(kf_K_plus).HadMass();
+  auto pole = [&](const kf_code & kf, const char * m, const char * g) {
+    return new Fitted_VPP_Propagator(Flavour(kf), FM95Get(md,m), FM95Get(md,g),
+				     false, mK,mpi, mK,mpi, mpi);
+  };
+  Summed_Propagator * t = new Summed_Propagator();
+  t->Add(pole(kf_K_star_892_plus,"FM95_m_Kstar","FM95_G_Kstar"), Complex(1.,0.));
+  if (!second) {
+    t->Add(pole(kf_K_star_1410_plus,"FM95_m_Kstarp","FM95_G_Kstarp"),
+	   Complex(FM95Get(md,"FM95_beta_Kstar"),0.));
+  }
+  else {
+    t->Add(pole(kf_K_star_1410_plus,"FM95_m_Kstarp","FM95_G_Kstarp"),
+	   Complex(FM95Get(md,"FM95_lambda"),0.));
+    t->Add(pole(kf_K_star_1680_plus,"FM95_m_Kstarpp","FM95_G_Kstarpp"),
+	   Complex(FM95Get(md,"FM95_mu"),0.));
+  }
+  return t;
+}
 
 void F1_0_KPiPi::Construct(const FF_Parameters & params) {
   if (m_ffmodel==ff_model::KS || m_ffmodel==ff_model::KS_f0 ||
@@ -1868,6 +2014,15 @@ void F1_0_KPiPi::Construct(const FF_Parameters & params) {
   p_TKstar1->Add(Kstar892,  Complex(1., 0.));
   p_TKstar1->Add(Kstar1410, gammaKst);
 
+  if (HasFM95Local(params.p_model)) {
+    delete p_TK1a; delete p_TK1b; delete p_Trho1; delete p_TKstar1;
+    p_TK1a    = FM95_TK1a(params.p_model);
+    p_TK1b    = FM95_TK1b(params.p_model);
+    p_Trho1   = FM95_TRho1(params.p_model);
+    p_TKstar1 = FM95_TKstar(params.p_model,false);
+    m_xiK1    = Complex(FM95Get(params.p_model,"FM95_xi"),0.);
+  }
+
   std::string label = std::string("F1_0_KPiPi, mode=")+std::to_string(int(m_mode))+
                        (m_isF2 ? " (F2)" : " (F1)");
   DumpPropagatorStructure(label+" [T_K1^a]",  int(m_ffmodel), p_TK1a);
@@ -1875,9 +2030,14 @@ void F1_0_KPiPi::Construct(const FF_Parameters & params) {
   DumpPropagatorStructure(label+" [T_rho^1]", int(m_ffmodel), p_Trho1);
   DumpPropagatorStructure(label+" [T_K*^1]",  int(m_ffmodel), p_TKstar1);
   }
-  else if ((m_ffmodel==ff_model::KS_CLEO || m_ffmodel==ff_model::CLEO_f0) &&
+  else if ((m_ffmodel==ff_model::KS_CLEO || m_ffmodel==ff_model::CLEO_f0 ||
+	    m_ffmodel==ff_model::CLEO_flatte) &&
 	   m_mode==FF_0_PPP_mode::KM_piM_piP) {
-    double fpi = (*params.p_model)("fpi",0.1307)/sqrt(2.);
+    // 107 seeds every default from Mileo et al. Tab.tabla4 rather than from
+    // CLEO's rounded printed values - see ff_model::CLEO_flatte.  A, C and N
+    // are seeds only: they were fixed against a constant-width K1(1270).
+    const bool seed = (m_ffmodel==ff_model::CLEO_flatte);
+    double fpi = (*params.p_model)("fpi",seed ? 0.0933*sqrt(2.) : 0.1307)/sqrt(2.);
     double Vus = (*params.p_model)("Vus",Tools::Vus);
     // FIXME: the note gives the "-2N/(3Fpi)"/"-N/(sqrt3 Fpi)" prefactor
     // STRUCTURE for F1/F2 respectively, but no explicit numeric value
@@ -1885,13 +2045,13 @@ void F1_0_KPiPi::Construct(const FF_Parameters & params) {
     // which gives a concrete CKM coefficient). N_Kpipi_CLEO below is a
     // placeholder (default 1) for whatever residual normalization
     // convention N represents - please supply if known.
-    double NCLEO = (*params.p_model)("N_Kpipi_CLEO", 1.);
+    double NCLEO = (*params.p_model)("N_Kpipi_CLEO", seed ? 1.4088 : 1.);
     if (!m_isF2) m_norm = Complex(-2.*NCLEO*Vus/(3.*fpi), 0.);
     else         m_norm = Complex(   -NCLEO*Vus/(sqrt(3.)*fpi), 0.);
 
-    m_CCLEO = (*params.p_model)("CCLEO_Kpipi", 0.20);
-    m_DCLEO = (*params.p_model)("DCLEO_Kpipi", 0.27);
-    m_ACLEO = (*params.p_model)("ACLEO_Kpipi", 0.94);
+    m_CCLEO = (*params.p_model)("CCLEO_Kpipi", seed ? 0.195 : 0.20);
+    m_DCLEO = (*params.p_model)("DCLEO_Kpipi", seed ? 0.266 : 0.27);
+    m_ACLEO = (*params.p_model)("ACLEO_Kpipi", seed ? 0.944 : 0.94);
     m_BCLEO = (*params.p_model)("BCLEO_Kpipi", 0.);
     // CLEO-fitted K1(1270)/K1(1400) - genuinely broader than FM95's
     // own values (0.090/0.174 GeV) - own masses/widths, not reused
@@ -1922,6 +2082,28 @@ void F1_0_KPiPi::Construct(const FF_Parameters & params) {
     }
     p_KstCLEO = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
 
+    if (m_ffmodel==ff_model::CLEO_flatte) {
+      // Mileo's own rho/rho'/K* poles as defaults, and the Flatte for the
+      // K1(1270).  The Flatte's two channels (K* pi, K rho) are the two
+      // sub-chains this current already has, and match the two poles the
+      // chiral unitary approach finds for the K1(1270).
+      delete p_Trho1; delete p_KstCLEO;
+      p_Trho1    = MileoTRho(params.p_model);
+      p_KstCLEO  = MileoKstar(params.p_model);
+      p_K1Flatte = MakeK1_1270_Flatte();
+      msg_Out()<<"###   K1(1270): two-channel Flatte (K* pi, K rho); "
+	       <<"A/C/N seeded from Mileo et al. and NOT re-tuned\n";
+    }
+    if (HasMileoLocal(params.p_model)) {
+      // The set replaces the tower AND the K1 line shape: its A-D, N and N_3
+      // were fixed with exactly these poles (see the file's `effective_poles`),
+      // so registry values must not be mixed in.
+      delete p_Trho1; delete p_KstCLEO;
+      p_Trho1    = MileoTRho(params.p_model);
+      p_KstCLEO  = MileoKstar(params.p_model);
+      m_mileo_local = true;
+    }
+
     std::string label = std::string("F1_0_KPiPi (CLEO), mode=")+std::to_string(int(m_mode))+
                          (m_isF2 ? " (F2)" : " (F1)");
     DumpPropagatorStructure(label+" [T_rho^1]", int(m_ffmodel), p_Trho1);
@@ -1937,12 +2119,27 @@ Complex F1_0_KPiPi::
 FF_KS(const double & s123,const double & s12,const double & s13) {
   double s1 = s123 - s12 - s13 +
     m_masses2[m_pi[0]] + m_masses2[m_pi[1]] + m_masses2[m_pi[2]];
-  if ((m_ffmodel==ff_model::KS_CLEO || m_ffmodel==ff_model::CLEO_f0) &&
+  if ((m_ffmodel==ff_model::KS_CLEO || m_ffmodel==ff_model::CLEO_f0 ||
+       m_ffmodel==ff_model::CLEO_flatte) &&
       m_mode==FF_0_PPP_mode::KM_piM_piP) {
     if (p_Trho1==NULL || p_KstCLEO==NULL) return Complex(0.,0.);
     // s_Kpi=s13, s_pipi=s1 (reconstructed) - same assignment as the
     // FM95 KS branch below (F1 uses the K*pi subchannel, F2 the Krho
     // one). Fixed-width K1(1270)/K1(1400) BWs (see Construct()).
+    if (m_ffmodel==ff_model::CLEO_flatte) {
+      if (p_K1Flatte==NULL || p_Trho1==NULL || p_KstCLEO==NULL) return Complex(0.,0.);
+      const Complex K1270 = (*p_K1Flatte)(s123);
+      const Complex K1400 = MileoK1BW(s123,m_MK1_1400_CLEO,m_GK1_1400_CLEO);
+      if (!m_isF2) return (m_CCLEO*K1270 + m_DCLEO*K1400) * (*p_KstCLEO)(s13);
+      return (m_ACLEO*K1270 + m_BCLEO*K1400) * (*p_Trho1)(s1);
+    }
+    if (m_mileo_local) {
+      // Eqs.(21)/(22) with their own Eq.(24) K1 propagator.
+      const Complex K1270 = MileoK1BW(s123,m_MK1_1270_CLEO,m_GK1_1270_CLEO);
+      const Complex K1400 = MileoK1BW(s123,m_MK1_1400_CLEO,m_GK1_1400_CLEO);
+      if (!m_isF2) return (m_CCLEO*K1270 + m_DCLEO*K1400) * (*p_KstCLEO)(s13);
+      return (m_ACLEO*K1270 + m_BCLEO*K1400) * (*p_Trho1)(s1);
+    }
     Complex BWK1_1270 = sqr(m_MK1_1270_CLEO) /
       Complex(sqr(m_MK1_1270_CLEO)-s123,-m_MK1_1270_CLEO*m_GK1_1270_CLEO);
     Complex BWK1_1400 = sqr(m_MK1_1400_CLEO) /
@@ -1977,6 +2174,11 @@ FF_KS(const double & s123,const double & s12,const double & s13) {
 
 class FS_0_KPiPi : public FF_0_PPP_Base {
   Summed_Propagator * p_TKstar2, * p_Trho1, * p_TKstar1;
+  //! Mileo et al. restore the anomalous F3 on top of CLEO's F1/F2, with
+  //! Decker's structure - see Construct.  CLEO themselves set F3 = 0.
+  bool    m_mileo_local;
+  double  m_alpha_mileo;
+  Propagator_Base * p_KstMileo;
 
   void    Construct(const FF_Parameters & params);
   Complex FF_KS(const double & s123,const double & s12,const double & s13);
@@ -1985,7 +2187,8 @@ class FS_0_KPiPi : public FF_0_PPP_Base {
   }
 public:
   FS_0_KPiPi(const FF_Parameters & params) :
-    FF_0_PPP_Base(params), p_TKstar2(NULL), p_Trho1(NULL), p_TKstar1(NULL)
+    FF_0_PPP_Base(params), p_TKstar2(NULL), p_Trho1(NULL), p_TKstar1(NULL),
+    m_mileo_local(false), m_alpha_mileo(0.), p_KstMileo(NULL)
   {
     Construct(params);
   }
@@ -1993,6 +2196,7 @@ public:
     if (p_TKstar2) { delete p_TKstar2; p_TKstar2 = NULL; }
     if (p_Trho1)   { delete p_Trho1;   p_Trho1   = NULL; }
     if (p_TKstar1) { delete p_TKstar1; p_TKstar1 = NULL; }
+    if (p_KstMileo) { delete p_KstMileo; p_KstMileo = NULL; }
   }
 };
 
@@ -2001,6 +2205,37 @@ void FS_0_KPiPi::Construct(const FF_Parameters & params) {
   // uncertainty into their systematics, so the anomalous piece is built only
   // for the FM95-family models.  Kiers et al., arXiv:0808.1707, restore F3 on
   // top of the CLEO F1/F2; that was tried here and is recorded in FF_KS below.
+  if ((m_ffmodel==ff_model::CLEO_flatte ||
+       ((m_ffmodel==ff_model::KS_CLEO || m_ffmodel==ff_model::CLEO_f0) &&
+	HasMileoLocal(params.p_model))) &&
+      m_mode==FF_0_PPP_mode::KM_piM_piP) {
+    // Mileo et al. Eq.(23), Decker's form:
+    //   F3 = N_3/(2 sqrt2 pi^2 F_pi^3) BW_K*(Q^2)
+    //        [T_rho^(1)(s_1) + alpha BW_K*(s_2)] / (1+alpha)
+    // This is NOT FM95's 1/2 [T_rho + T_K*]: alpha = -0.2 both suppresses the
+    // K* sub-chain and flips its sign, and 1/(1+alpha) scales the whole term
+    // up by 25%, so alpha and N_3 are locked together.  F3 is restored here
+    // only because the set supplies N_3; CLEO alone left it at zero.
+    const bool seed3  = (m_ffmodel==ff_model::CLEO_flatte);
+    const double fpi  = (*params.p_model)("fpi",seed3 ? 0.0933*sqrt(2.) : 0.1307)/sqrt(2.);
+    const double Vus  = (*params.p_model)("Vus",Tools::Vus);
+    const double pref = 1./(2.*sqrt(2.)*sqr(M_PI)*pow(fpi,3));
+    const double N3   = seed3 ? (*params.p_model)("MILEO_N3",1.4696)
+                              : MileoGet(params.p_model,"MILEO_N3");
+    m_norm        = Complex(pref*N3*Vus, 0.);
+    m_alpha_mileo = seed3 ? (*params.p_model)("MILEO_alpha",-0.2)
+                          : MileoGet(params.p_model,"MILEO_alpha");
+    p_Trho1       = MileoTRho(params.p_model);
+    p_KstMileo    = MileoKstar(params.p_model);
+    m_mileo_local = true;
+    std::string lab = std::string("FS_0_KPiPi (Mileo), mode=")+
+                      std::to_string(int(m_mode));
+    DumpPropagatorStructure(lab+" [T_rho^1]", int(m_ffmodel), p_Trho1);
+    DumpPropagatorStructure(lab+" [K*(892)]", int(m_ffmodel), p_KstMileo);
+    msg_Out()<<"###   alpha = "<<m_alpha_mileo<<", N_3 = "<<N3
+	     <<" (Mileo et al. Eq.(23))\n";
+    return;
+  }
   if (m_ffmodel!=ff_model::KS && m_ffmodel!=ff_model::KS_f0 &&
       m_ffmodel!=ff_model::KS_flatte) return;
   double fpi  = (*params.p_model)("fpi",0.1307)/sqrt(2.);
@@ -2077,6 +2312,13 @@ void FS_0_KPiPi::Construct(const FF_Parameters & params) {
   p_TKstar1->Add(Kstar892_1,  Complex(1., 0.));
   p_TKstar1->Add(Kstar1410_1, gammaKst);
 
+  if (HasFM95Local(params.p_model)) {
+    delete p_TKstar2; delete p_Trho1; delete p_TKstar1;
+    p_TKstar2 = FM95_TKstar(params.p_model,true);
+    p_Trho1   = FM95_TRho1(params.p_model);
+    p_TKstar1 = FM95_TKstar(params.p_model,false);
+  }
+
   std::string label = std::string("FS_0_KPiPi, mode=")+std::to_string(int(m_mode));
   DumpPropagatorStructure(label+" [T_K*^2]",  int(m_ffmodel), p_TKstar2);
   DumpPropagatorStructure(label+" [T_rho^1]", int(m_ffmodel), p_Trho1);
@@ -2085,6 +2327,14 @@ void FS_0_KPiPi::Construct(const FF_Parameters & params) {
 
 Complex FS_0_KPiPi::
 FF_KS(const double & s123,const double & s12,const double & s13) {
+  if (m_mileo_local) {
+    if (p_Trho1==NULL || p_KstMileo==NULL) return Complex(0.,0.);
+    const double s1 = s123 - s12 - s13 +
+      m_masses2[m_pi[0]] + m_masses2[m_pi[1]] + m_masses2[m_pi[2]];
+    return (*p_KstMileo)(s123) *
+           ( (*p_Trho1)(s1) + m_alpha_mileo*(*p_KstMileo)(s13) ) /
+           (1.+m_alpha_mileo);
+  }
   if (p_TKstar2==NULL || p_Trho1==NULL || p_TKstar1==NULL) return Complex(0.,0.);
   double s1 = s123 - s12 - s13 +
     m_masses2[m_pi[0]] + m_masses2[m_pi[1]] + m_masses2[m_pi[2]];

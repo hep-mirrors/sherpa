@@ -216,6 +216,114 @@ const Complex BreitWigner::Normalised(const double & s) {
 
 ///////////////////////////////////////////////////////////////////////////
 //
+// Fitted_VPP_Propagator - GS or plain BW with its own pole parameters.
+// Fujikawa et al. [Belle], Phys.Rev.D78 (2008) 072006, Eqs.(12)-(16).
+// See the class comment in Propagator.H for why this does not go
+// through the shared line-shape registry.
+//
+///////////////////////////////////////////////////////////////////////////
+
+Fitted_VPP_Propagator::Fitted_VPP_Propagator(const ATOOLS::Flavour & flav,
+					     const double & M, const double & G0,
+					     const bool & gs,
+					     const double & m1, const double & m2,
+					     const double & n1, const double & n2,
+					     const double & mpi) :
+  Propagator_Base(NULL,(gs ? resonance_type::GS : resonance_type::running)),
+  m_flav(flav), m_G0(G0), m_gs(gs), m_m1(m1), m_m2(m2), m_n1(n1), m_n2(n2),
+  m_mpi(mpi), m_kPole(0.), m_hPole(0.), m_hPrimePole(0.), m_d(0.)
+{
+  m_M = M; m_M2 = M*M;
+  m_kPole = kFor(m_M2,m_n1,m_n2);
+  if (m_kPole<=0.) {
+    THROW(fatal_error,"Vector pole mass below the two-body threshold - the "
+	  "running width is undefined there.");
+  }
+  if (!m_gs) return;
+  m_hPole      = h(m_M2,m_kPole);
+  // Belle Eq.(15): dh/ds|_{M^2} = h(M^2)[1/(8k^2) - 1/(2M^2)] + 1/(2 pi M^2)
+  m_hPrimePole = m_hPole*(1./(8.*sqr(m_kPole))-1./(2.*m_M2)) +
+                 1./(2.*M_PI*m_M2);
+  // Belle Eq.(16). Chosen so that BW^GS(0) = 1, which is what makes a
+  // 1/(sum of weights) normalisation give F(0) = 1.
+  m_d = (3./M_PI)*(sqr(m_mpi)/sqr(m_kPole)) *
+        log((m_M+2.*m_kPole)/(2.*m_mpi)) +
+        m_M/(2.*M_PI*m_kPole) -
+        sqr(m_mpi)*m_M/(M_PI*pow(m_kPole,3));
+}
+
+// Two-body momentum for the pair (a,b); zero below threshold.  With unequal
+// masses k = (sqrt(s)/2) beta_ab(s) exactly, which is why the k-form of Belle
+// Eq.(13) and the beta-form of arXiv:2411.07696 main.tex:178 are one function.
+double Fitted_VPP_Propagator::kFor(const double & s,
+				   const double & a, const double & b) {
+  if (s<=sqr(a+b)) return 0.;
+  const double arg = (s-sqr(a+b))*(s-sqr(a-b));
+  return (arg>0. ? sqrt(arg)/(2.*sqrt(s)) : 0.);
+}
+
+// Belle Eq.(15), with the single m_pi deliberately distinct from k's pair.
+double Fitted_VPP_Propagator::h(const double & s, const double & ks) const {
+  if (ks<=0.) return 0.;
+  return (2./M_PI)*(ks/sqrt(s))*log((sqrt(s)+2.*ks)/(2.*m_mpi));
+}
+
+// Gamma(s) = Gamma (M^2/s)(k(s)/k(M^2))^3, entering as sqrt(s) Gamma(s).
+// Identical to m Gamma(s) = Gamma (s/m)(beta(s)/beta(m^2))^3.  NOT the
+// (M/sqrt(s)) that METOOLS' V_PP registry width produces.
+double Fitted_VPP_Propagator::Gamma(const double & s) const {
+  const double ks = k(s);
+  if (ks<=0.) return 0.;
+  return m_G0*(m_M2/s)*pow(ks/m_kPole,3);
+}
+
+const Complex Fitted_VPP_Propagator::operator()(const double & s) {
+  const double Gs = Gamma(s);
+  // Plain running-width Breit-Wigner, arXiv:2411.07696 main.tex:184:
+  //   BW^KS = m^2 / (m^2 - s - i m Gamma(s,m,Gamma)).
+  if (!m_gs) return Complex(m_M2,0.)/Complex(m_M2-s,-sqrt(s)*Gs);
+  // Eq.(14)
+  const double fs = m_G0*m_M2/pow(m_kPole,3) *
+    ( sqr(k(s))*(h(s,k(s))-m_hPole) + (m_M2-s)*sqr(m_kPole)*m_hPrimePole );
+  // Eq.(12), with ONE DELIBERATE DEPARTURE from the equation as printed.
+  //
+  // Belle's Eq.(12) writes the numerator as M_i^2 + d M_i Gamma_i(s), i.e.
+  // with the RUNNING width. That cannot be right, and we use the constant
+  // Gamma_i instead:
+  //
+  //  - Their own Eq.(16) text says d is chosen so that BW^GS is unity at
+  //    s = 0. f(0) is linear in the CONSTANT Gamma_i, so only a constant
+  //    Gamma_i in the numerator can cancel it; Gamma_i(s) carries an
+  //    (M^2/s) and does not behave as needed there.
+  //  - Measured against the paper's OWN Table VI (|F_pi(s)|^2, 62 bins,
+  //    absolute, no rescaling): constant Gamma_i gives chi^2_diag ~ 90,
+  //    running Gamma_i(s) gives ~244. A factor 2.7 on the paper's own data.
+  //  - The constant form is also the standard Gounaris-Sakurai numerator
+  //    as used elsewhere in the literature.
+  //
+  // So this is read as a typo in Eq.(12), not as a modelling choice. It is
+  // recorded here rather than silently applied because it is the one place
+  // this class does not do what the source prints.
+  //
+  // NOTE METOOLS' shared BreitWigner::ValueGS (this file, above) has the
+  // running width in its numerator and so carries the same defect for
+  // FORM_FACTOR = 101. That is NOT changed here: it is a shared class whose
+  // other users were validated against its current form. Flagged, not fixed.
+  return Complex(m_M2+m_d*m_M*m_G0,0.) /
+         Complex(m_M2-s+fs, -sqrt(s)*Gs);
+}
+
+const Complex Fitted_VPP_Propagator::Normalised(const double & s) {
+  return (*this)(s);
+}
+
+const double Fitted_VPP_Propagator::Normalised2(const double & s) {
+  return norm((*this)(s));
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+//
 // RChL_BW: see the class comment in Propagator.H for the convention.
 //
 ///////////////////////////////////////////////////////////////////////////

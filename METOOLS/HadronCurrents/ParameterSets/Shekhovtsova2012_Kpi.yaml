@@ -1,0 +1,356 @@
+# One file is one fit is one citation.  Apply this set whole or not at all.
+#
+# STATUS: NOT ACCEPTED.  Closure against the paper's own widths misses by
+# -0.30% (FSI off) and -0.58% (FSI on), uniformly in both K pi submodes, with
+# the submode ratio right to 0.03%.  The paper quotes its numerics to 0.005%.
+# The residual is localised (see `closure`) but NOT explained.  Do not wire
+# this set into a generator until a human has reviewed `closure`.
+
+source:
+  paper:    "O. Shekhovtsova, T. Przedzinski, P. Roig, Z. Was, Resonance chiral Lagrangian currents and tau decay Monte Carlo, Phys. Rev. D 86 (2012) 113008"
+  arxiv:    "1203.3955"
+  main_tex: "tau3scal_update_checked.tex"
+  note: >
+    Extracted from the arXiv LaTeX source only.  Line numbers refer to
+    tau3scal_update_checked.tex (3130 lines).  The paper implements, without
+    refitting, the K pi vector form factor of an earlier paper (Ref.
+    Jamin:2008qg, 'Eq.(5)', :809) and prints the numerical defaults of its
+    FORTRAN in App. C.  That earlier paper was NOT consulted: everything here
+    is what 1203.3955 itself prints.
+
+variant:
+  taken: >
+    The default K pi current, FFKPIVEC = 1 (:2692), i.e. Eq.(VFFKpi)
+    (:815-824) with FSI on (FFVEC = 1), widths Eq.(kstarwidth_nosu3)
+    (:881-888) and the K*' width (:898-904), and the rows of Table
+    Variation_of_Parameters1 WITHOUT a dagger whose channel column contains
+    2,3: M_K* = 0.8953 (`mkst`, :2879), Gamma_K* = 0.0475 (:2882),
+    Gamma_K*' = 0.206 (:2884), M_K*' = 1.307 (:2886), gamma_Kpi = -0.043
+    (:2895), plus F (:2889) and m_eta (:2771).
+  rejected:
+    - "FFKPIVEC = 0, the dispersive form of Ref. Boito:2008fq Eqs.(17)-(18) with the dagger-marked parameters (:2881, :2883, :2885, :2887, :2896). Its functional form is NOT printed in this paper (only cited, :812, :1575-1578) and it needs a subtraction constant H_t0 and F_K (:2744-2751): not extractable from this source."
+    - "FFVEC = 0 (FSI off). Used below as a closure point only."
+    - "M_K*+- = 0.89166 and M_K*0 = 0.8961 (:2877-2878), which the table also marks as used in channels 2,3. Eq.(VFFKpi) contains a single M_K*, and the separate row `mkst` = 0.8953 is labelled for channels 2,3; inserting 0.89166 instead moves the FSI-off width by -2.7%, far outside the closure."
+  purpose: "closed-form tau- -> K pi nu_tau vector form factor for Sherpa METOOLS/HadronCurrents, model 201."
+  why: >
+    FFKPIVEC = 1 is the paper's default (:2692, :1576) and the only K pi form
+    it prints in full.  The FFKPIVEC = 0 alternative is delegated to another
+    paper and cannot be reconstructed from this one.
+
+applies_to:
+  - { channel: "-321,111,16", model: 201 }
+
+applies_to_note: >
+  The paper gives this set for BOTH pi0 K- and pi- K0bar (channels 2 and 3,
+  N^{pi0 K-} = 1/2 and N^{pi- K0bar} = 1/sqrt2, :285).  Only K- pi0 is
+  claimed.  The pi- K0bar amplitude is fully specified here, but Sherpa's keys
+  are "310,-211,16" (K_S pi-) and "-211,130,16" (pi- K_L), and the paper
+  never states how its K0bar amplitude is projected onto K_S / K_L - it only
+  labels histogram axes 'pi- K_S^0 invariant mass' (:1636) - and nothing in
+  its definitions forces a projection.  Mapping K0bar onto K_S/K_L (amplitude
+  1/sqrt2 each, neglecting CP violation) is a physics decision for a human.
+  If taken, it is a claim about the generator, not about this paper, and the
+  pi- K0bar closure numbers below apply to the K0bar state.
+
+model:
+  form: rcht_kstar_kstarprime_common_omnes
+  n_poles: 2
+  normalisation: >
+    F(0) != 1: the paper says so (:825, 'Note that due to the FSI effects,
+    the form factor F^V_{K pi}(0) != 1'), because A_{K pi}(s) diverges like
+    1/s for unequal masses so that s*Re A tends to a constant.  With FSI off
+    F(0) = 1 exactly.  NOTE: the printed Jbar is numerically unstable for
+    s -> 0 at unequal masses (catastrophic cancellation of O(Delta/s) terms);
+    evaluate below s ~ 1e-3 GeV^2 with care.  s = 0 is outside the physical
+    region (s >= (m_K + m_pi)^2 = 0.40 GeV^2) and is never sampled.
+  current:
+    where: "tau3scal_update_checked.tex:268 and :285"
+    provenance: printed-eq
+    fidelity: verbatim
+    quote: |-
+      J^\mu  = N \left[ \left(p_1 - p_2-\frac{\Delta_{12}}{s}(p_1+p_2)\right)^\mu F^{V}(s) + \frac{\Delta_{12}}{s}(p_1 + p_2)^\mu F^{P}(s) \right],
+    quote_N: |-
+      N^{\pi^-\pi^0} = 1 , \, \, N^{K^-K^0} = \frac{1}{\sqrt{2}} ,\, \, N^{\pi^- \bar K^0} = \frac{1}{\sqrt{2}}, \, \, N^{\pi^0 K^-} = \frac{1}{2}\,.
+    note: >
+      F^P = 0: 'Also for the K pi mode we restrict ourselves at first to the
+      vector form factor only' (:734-735).  With physical masses Delta_12 != 0,
+      so the (p1-p2) - (Delta/s) q structure matters: only the transverse
+      vector part is present.  Overall rate normalisation as resolved in the
+      pi pi file: |C|^2 = 2 N^2 (= 1/2 for K- pi0, 1 for pi- K0bar).
+  cabibbo:
+    value: "sin(theta_C) = sqrt(1 - 0.975^2) = 0.22220"
+    provenance: inferred
+    where: "tau3scal_update_checked.tex:313-315 (odd number of kaons -> sin theta_Cabibbo, stated for three mesons) and Tab. Constants :2766 (only cos theta_C = 0.975 printed)"
+    note: "Not printed for two mesons and no value of sin(theta_C) is printed anywhere.  This is the single most likely home of the unexplained uniform residual; see closure."
+  vector_form_factor:
+    where: "eq.(VFFKpi), tau3scal_update_checked.tex:815-824"
+    provenance: printed-eq
+    fidelity: verbatim
+    quote: |-
+      \left(\frac{M^2_{K^*}+s\gamma_{K\pi}}{M^2_{K^*}-s-iM_{K^*} \Gamma_{K^*} (s)} -  \frac{s\gamma_{K\pi}}{M^2_{K^{*\prime}}-s-iM_{K^{*\prime}} \Gamma_{K^{*\prime}} (s)} \right) \\
+    quote_exponent: |-
+      \frac{-s}{128\pi^2 F^2} \biggl[Re A_{K\pi}(s) + Re A_{K\eta}(s)  \biggr] \Biggr\} . \nn
+    note: >
+      One COMMON Omnes exponent multiplies both resonances (contrast the pi pi
+      form; :3069 says 'the exponential is a common factor in Eq. (VFFKpi)').
+      1/128 = (3/4)(1/96), i.e. N_loop^{K pi} = N_loop^{K eta} = 3/4 (:749).
+      A_PQ, Jbar, mu as printed in App. A (:2216-2244) - quoted in full in
+      Shekhovtsova2012_pipi.yaml, identical here, with (m_P, m_Q) = (m_K, m_pi)
+      and (m_K, m_eta).
+  form_factor_masses:
+    value: "isospin-averaged m_pi = (m_pi0 + 2 m_pi+)/3 = 0.13804, m_K = (m_K0 + m_K+)/2 = 0.495663 GeV in the form factor (widths AND loops), for both submodes; physical masses only in phase space"
+    provenance: printed-eq
+    where: "tau3scal_update_checked.tex:350-354"
+    fidelity: verbatim
+    quote: |-
+      In the model the results for all hadronic currents, with the exception of  two-pion and two-kaon modes, are calculated in the isospin limit, therefore the corresponding hadronic form factors depend only  on the average pion
+    note: >
+      K pi is not among the exceptions.  Confirmed by closure: with averaged
+      form-factor masses the ratio Gamma(pi- K0bar)/Gamma(K- pi0) is 1.92366
+      (FSI on) vs the paper's 1.92425 and 1.92162 (FSI off) vs 1.92205;
+      with physical masses inside A_{K pi} it is 1.9075, 0.9% off.
+  mu_renormalisation_scale:
+    value: "mu = 0.775 GeV"
+    provenance: assumed
+    where: "tau3scal_update_checked.tex:2231 ('we take mu = M_rho for all 2 pseudo-scalars modes')"
+    note: >
+      The paper sets mu = M_rho but the K pi channels (2,3) appear in neither
+      M_rho row (:2864 is channel 1, :2865 channels 4-9).  0.775 assumed (the
+      generic PDG default).  mu = 0.77554 moves the FSI factor by +0.04%; the
+      footnote alternative mu = M_K* (:2232-2233, 'Alternatively ...') is a
+      future option, not the default, and would move the width by +9.6%.
+
+  width_convention:
+    Kstar_892:
+      denominator:
+        where: "eq.(VFFKpi), tau3scal_update_checked.tex:817"
+        provenance: printed-eq
+        fidelity: verbatim
+        quote: |-
+          \left(\frac{M^2_{K^*}+s\gamma_{K\pi}}{M^2_{K^*}-s-iM_{K^*} \Gamma_{K^*} (s)}
+      running:
+        where: "eq.(eq:kstarwidth_nosu3), tau3scal_update_checked.tex:881-888"
+        provenance: printed-eq
+        fidelity: verbatim
+        quote: |-
+          \Gamma_{K^*}(q^2) = \Gamma_{K^*} \frac{q^2}{M_{K^*}^2} \frac{ \lambda^{3/2}\left(1,\frac{m_K^2}{q^2}, \frac{m_\pi^2}{q^2}\right)\theta(q^2 -thr_{K\pi}) + \lambda^{3/2}\left(1,\frac{m_K^2}{q^2},\frac{m_\eta^2}{q^2}\right)\theta(q^2 -thr_{K\eta})}
+      denominator_theta:
+        value: "the K eta term of the NORMALISING denominator lambda^{3/2}(1, m_K^2/M^2, m_eta^2/M^2) is set to zero because M_K* < m_K + m_eta"
+        provenance: inferred
+        where: "tau3scal_update_checked.tex:885-886 (printed without a theta function)"
+        note: >
+          Taken literally, lambda(1, m_K^2/M_K*^2, m_eta^2/M_K*^2) = -0.355 < 0
+          and its 3/2 power is complex: the width becomes complex and the
+          FSI-off width comes out +65% high.  The numerator carries
+          theta(q^2 - thr_K eta) for the same term; the only real reading is
+          the thresholded one, which is also what the definition
+          Gamma_K* = Gamma_K*(M_K*^2) (:891) requires.
+      note: >
+        m0*Gamma(s) denominator with Gamma(s) = Gamma (s/M^2) lambda^{3/2}(s)/lambda^{3/2}(M^2).
+        Since lambda^{1/2}(1,m1^2/s,m2^2/s) = 2k/sqrt(s), this is
+        Gamma (M/sqrt(s)) (k/k0)^3, so M*Gamma(s) = sqrt(s) Gamma (M^2/s)(k/k0)^3
+        identically (same algebra as the rho' in the pi pi file).  Plus the
+        K eta channel above 1.091 GeV^2.
+    Kstar_1410:
+      denominator:
+        where: "eq.(VFFKpi), tau3scal_update_checked.tex:818"
+        provenance: printed-eq
+        fidelity: verbatim
+        quote: |-
+          -  \frac{s\gamma_{K\pi}}{M^2_{K^{*\prime}}-s-iM_{K^{*\prime}} \Gamma_{K^{*\prime}} (s)}
+      running:
+        where: "tau3scal_update_checked.tex:898-904"
+        provenance: printed-eq
+        fidelity: verbatim
+        quote: |-
+          \Gamma_{K^{*\prime}}\frac{q^2}{M_{K^{*\prime}}^2} \frac{\lambda^{3/2}\left(1,\frac{m_K^2}{q^2},\frac{m_\pi^2}{q^2}\right)}
+      note: "K pi only, same (s/M^2) lambda^{3/2} ratio form."
+
+parameters:
+  # Table Variation_of_Parameters1 (:2857-2912), un-daggered rows for channels 2,3.
+  # No uncertainties are printed; bracketed ranges are 'educated guesses' (caption :2905).
+  Kstar_892.M:
+    value: 0.8953
+    unit: GeV
+    sigfigs: 4
+    provenance: printed-num
+    where: "Tab. Variation_of_Parameters1, :2879 (row `mkst`, channels 2,3)"
+    origin: taken_from_elsewhere
+    kind: physical_state_but_fitted_elsewhere
+    note: "From the Ref. Jamin:2008qg form factor that this paper implements (:809); presumably a fit value there - this paper does not say.  :2679 contrasts it with the FFKPIVEC = 0 masses, which 'are noticeably different from the pole values'."
+  Kstar_892.Gamma:
+    value: 0.0475
+    unit: GeV
+    sigfigs: 3
+    provenance: printed-num
+    where: "Tab. Variation_of_Parameters1, :2882 (row `gamma_kst`, channels 2,3)"
+    origin: taken_from_elsewhere
+    kind: physical_state_but_fitted_elsewhere
+    note: "Rate sensitivity: +-half a unit in the last printed digit moves the width by -+0.11%."
+  Kstar_1410.M:
+    value: 1.307
+    unit: GeV
+    sigfigs: 4
+    provenance: printed-num
+    where: "Tab. Variation_of_Parameters1, :2886 (row `mkstpr`, channels 2,3)"
+    origin: taken_from_elsewhere
+    kind: effective_fit_pole
+    note: "Suggested range [1.270, 1.350]; the paper labels this pole K*'(1410) (:897) yet its mass is 1.307."
+  Kstar_1410.Gamma:
+    value: 0.206
+    unit: GeV
+    sigfigs: 3
+    provenance: printed-num
+    where: "Tab. Variation_of_Parameters1, :2884 (row `gamma_kstpr`, channels 2,3)"
+    origin: taken_from_elsewhere
+    kind: effective_fit_pole
+    note: "Suggested range [0.155, 0.255] - a +-25% band."
+  gamma_Kpi:
+    value: -0.043
+    sigfigs: 2
+    provenance: printed-num
+    where: "Tab. Variation_of_Parameters1, :2895 (row `gamma_rcht`, channels 2,3)"
+    origin: taken_from_elsewhere
+    kind: effective_fit_pole
+    note: "gamma_Kpi = -F_V' G_V'/(F F_K) (:1864). Two significant figures; +-0.0005 moves the width by +-0.11%."
+  F:
+    value: 0.0924
+    unit: GeV
+    sigfigs: 3
+    provenance: printed-num
+    where: "Tab. Variation_of_Parameters1, :2889"
+    origin: theory_input
+  m_eta:
+    value: 0.547
+    unit: GeV
+    sigfigs: 3
+    provenance: printed-num
+    where: "Tab. Constants, :2771 (channels 2,3,5-9)"
+    origin: PDG_input
+  mu:
+    value: 0.775
+    unit: GeV
+    sigfigs: 3
+    provenance: assumed
+    where: ":2231 and :2865; see model.mu_renormalisation_scale"
+    origin: theory_choice
+  masses:
+    provenance: printed-num
+    where: "Tab. Constants, :2764-2774; averages defined at :353 and :1836"
+    m_tau: { value: 1.777, unit: GeV, sigfigs: 4 }
+    m_pi_charged: { value: 0.13957018, unit: GeV, sigfigs: 8 }
+    m_pi_neutral: { value: 0.1349766, unit: GeV, sigfigs: 7 }
+    m_K_charged: { value: 0.493677, unit: GeV, sigfigs: 6 }
+    m_K_neutral: { value: 0.497648, unit: GeV, sigfigs: 6 }
+    cos_theta_Cabibbo: { value: 0.975, sigfigs: 3 }
+    G_F: { value: 1.166375e-5, unit: GeV^-2, sigfigs: 7 }
+
+effective_poles:
+  which: ["Kstar_1410.*", "gamma_Kpi"]
+  why: >
+    No errors are printed.  The K*' is labelled K*(1410) but sits at 1.307
+    GeV with a +-25% suggested width band, and its coupling gamma_Kpi is
+    printed to two figures: an effective pole.  The K*(892) mass and width
+    are close to physical values but are the parameters of another paper's
+    fit (this paper also carries PDG-like K* masses 0.89166 / 0.8961 in the
+    same table and does NOT use them here), so they are not substitutable
+    either.
+
+origin_summary:
+  fitted_to_data: "none in this paper"
+  taken_from_elsewhere: "M_K*, Gamma_K*, M_K*', Gamma_K*', gamma_Kpi - the Ref. Jamin:2008qg form factor (:809); m_eta, masses, cos theta_C (PDG); F"
+  fixed_by_theory: "RChT + common Omnes exponent, N_loop = 3/4, N^{pi0 K-} = 1/2, N^{pi- K0bar} = 1/sqrt2, K* width shape Eq.(kstarwidth_nosu3)"
+
+correlations:
+  printed: false
+
+assertions:
+  width_Kpi_sum_analytic_SU2:
+    value: 2.5193e-14
+    unit: GeV
+    uncertainty: "0.02%"
+    provenance: printed-num
+    where: "tau3scal_update_checked.tex:1562"
+    quote: |-
+      The corresponding analytical result is $(2.5193 \pm 0.02\%)\cdot 10^{-14}$ GeV.
+  width_Kpi_sum_MC_SU2:
+    value: 2.5197e-14
+    unit: GeV
+    provenance: printed-num
+    where: "tau3scal_update_checked.tex:1560"
+  width_Kmpi0_MC_physical:
+    value: 8.5810e-15
+    unit: GeV
+    uncertainty: "0.005%"
+    provenance: printed-num
+    where: "Tab. Table:bench :1309; Tab. table3 :2998"
+  width_pimK0bar_MC_physical:
+    value: 1.6512e-14
+    unit: GeV
+    uncertainty: "0.006%"
+    provenance: printed-num
+    where: "Tab. Table:bench :1310; Tab. table3 :2999"
+  width_Kmpi0_MC_SU2:
+    value: 8.3981e-15
+    unit: GeV
+    provenance: printed-num
+    where: "Tab. Table:bench :1309"
+  width_Kmpi0_MC_FSI_off:
+    value: 7.4275e-15
+    unit: GeV
+    uncertainty: "0.004%"
+    provenance: printed-num
+    where: "tau3scal_update_checked.tex:1598; Tab. table3 :3015"
+  width_pimK0bar_MC_FSI_off:
+    value: 1.4276e-14
+    unit: GeV
+    uncertainty: "0.006%"
+    provenance: printed-num
+    where: "tau3scal_update_checked.tex:1599; Tab. table3 :3016"
+  width_PDG_quoted_by_paper:
+    value: { Kmpi0: 9.72e-15, pimK0bar: 1.9e-14 }
+    unit: GeV
+    provenance: printed-num
+    where: "Tab. Table:bench :1309-1310"
+
+closure:
+  status: NOT_ACCEPTED
+  against: >
+    The paper's partial widths (no spectrum is printed): analytic SU(2) sum
+    2.5193e-14 (:1562), MC with physical phase-space masses per submode
+    (:1309-1310), and MC with FSI off per submode (:1598-1599).  Rebuilt from
+    this file alone in numpy: standard two-body rate, |C|^2 = 2 N^2,
+    |V_us| = sin(theta_C) = 0.22220, averaged masses in the form factor,
+    physical masses in phase space.
+  result: |
+    FSI off, K- pi0      : 7.40532e-15 vs 7.4275e-15 MC   (-0.299%)
+    FSI off, pi- K0bar   : 1.42302e-14 vs 1.4276e-14 MC   (-0.321%)
+    FSI on,  K- pi0      : 8.53155e-15 vs 8.5810e-15 MC   (-0.576%)
+    FSI on,  pi- K0bar   : 1.64118e-14 vs 1.6512e-14 MC   (-0.607%)
+    FSI on,  SU(2) sum   : 2.50464e-14 vs 2.5193e-14 analytic (-0.582%)
+    submode ratio FSI on : 1.92366 vs 1.92425 ; FSI off : 1.92162 vs 1.92205
+    FSI factor (on/off), K- pi0 : 1.15208 vs 1.15530 (-0.28%)
+    Rejected readings, for the record: literal complex K eta term in the
+    Gamma_K* normaliser: +65% (FSI off); physical masses inside the loops:
+    submode ratio 1.9075 (0.9% off); M_K* = 0.89166: -2.7% (FSI off).
+  residual_explained: >
+    PARTLY.  Step 3b split: the two submodes are low by the same amount
+    (-0.30% and -0.32% FSI off) while their ratio is right to 0.03%, so every
+    component that differs between them (masses, N, phase space) is right and
+    the fault is common to both.  It has two separable pieces.
+    (a) -0.30% with FSI off, where F(0) = 1 exactly: a uniform normalisation
+    or a K*-shape effect.  Candidates, none adjusted: |V_us| - the paper
+    prints only cos theta_C = 0.975 and we infer sin theta_C = 0.22220; a
+    value 0.2225 would close (a) to -0.03%, but no such number is in the
+    paper, so this remains a hypothesis; or unprinted extra digits in
+    Gamma_K* (0.0475) and gamma_Kpi (-0.043), each worth +-0.11% per
+    half-unit of the last printed digit.
+    (b) a further -0.28% in the Omnes factor.  Not explained: mu = 0.77554
+    instead of 0.775 gives +0.04%, the K eta loop and the J-tilde
+    subtraction each move it by 5-6% (not candidates for a 0.3% effect).
+    Both pieces are 60-120 times the paper's quoted numerical precision, so
+    by the acceptance rule this set is not accepted.  Physically the miss is
+    irrelevant (the paper's own K pi width is 12% below PDG and it estimates
+    its precision at 'a few percent', :1987-1991); the point is that
+    something in this file may differ from what the paper ran, and that is
+    exactly what closure exists to catch.

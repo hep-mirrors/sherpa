@@ -210,6 +210,18 @@ class Fplus_0_PiZeroPiPlus : public FF_0_PP_Base {
   double  m_MKst, m_MKst2, m_MKstp, m_MKstp2;
   Complex m_gammaKpi;
   Complex m_gammaRC, m_deltaRC; // gamma*e^{i phi1}, delta*e^{i phi2}, Eq.(24)
+  // Local ParameterSet for RChL2012 (model 201).  Unlike the KS/GS tower,
+  // this model's widths do NOT come from a flat pole list: rho(770)'s is an
+  // analytic chiral formula and rho'/rho'' carry their own fitted Gammas.
+  // When a set is selected these three replace the registry widths, so that
+  // the set is applied WHOLE - masses from the paper with widths from the
+  // registry would be exactly the mixed-source error this machinery exists
+  // to prevent.
+  bool    m_rchl_local;
+  double  m_Grhop_rchl, m_Grhopp_rchl;
+  double  RChLGammaRho(const double & s) const;
+  double  RChLGammaExcited(const double & s, const double & M,
+			   const double & G0) const;
   // NOTE: rather than re-deriving the analytic energy-dependent widths
   // of Eqs.(28)-(34) of 1203.3955, we reuse Sherpa's own dynamic
   // Total_Width_Base widths for rho(770/1450/1700) and K*(892/1410),
@@ -268,7 +280,8 @@ Fplus_0_PiZeroPiPlus::Fplus_0_PiZeroPiPlus(const FF_Parameters & params)  :
   m_GVp(0.), m_GVpp(0.),
   m_MKst_RChiPT(0.), m_MKst2_RChiPT(0.),
   m_MKstp_RChiPT(0.), m_MKstp2_RChiPT(0.), m_gammaKpi_RChiPT(0.,0.),
-  p_GRho(NULL), p_GRhop(NULL), p_GRhopp(NULL), p_GKst(NULL), p_GKstp(NULL)
+  p_GRho(NULL), p_GRhop(NULL), p_GRhopp(NULL), p_GKst(NULL), p_GKstp(NULL),
+  m_rchl_local(false), m_Grhop_rchl(0.), m_Grhopp_rchl(0.)
 {
   Construct(params);
 }
@@ -278,6 +291,52 @@ Fplus_0_PiZeroPiPlus::Fplus_0_PiZeroPiPlus(const FF_Parameters & params)  :
 // Shared propagator-builder helpers.
 //
 ///////////////////////////////////////////////////////////////////////////
+
+// ---------------------------------------------------------------------------
+// Local ParameterSets (METOOLS/HadronCurrents/ParameterSets/*.yaml).
+//
+// Current_ME::SelectCurrent merges a set's flat `sherpa:` block into this
+// current's GeneralModel when the HADRON_DECAYS:Resonance_Parameters policy
+// selects it for this (channel, FORM_FACTOR).  Its presence is marked by
+// PS_npoles.  The set then REPLACES the whole tower - poles, weights and
+// width - and is never mixed with registry values: a fitted weight is only
+// valid with the poles and the width it was fitted against, and mixing the
+// two sources was worth a factor 2 at m(pipi) = 1.35 GeV.  So an incomplete
+// set is a fatal error, not something to fill in from the registry.
+// ---------------------------------------------------------------------------
+static bool HasLocalSet(const GeneralModel * md) {
+  return md!=NULL && md->find("PS_npoles")!=md->end();
+}
+
+static Summed_Propagator * BuildLocalTower(const GeneralModel * md) {
+  const double mpc = Flavour(kf_pi_plus).HadMass();
+  const double mp0 = Flavour(kf_pi).HadMass();
+  const int  n  = int(md->find("PS_npoles")->second+0.5);
+  const bool gs = (md->find("PS_lineshape")!=md->end() &&
+		   int(md->find("PS_lineshape")->second+0.5)==1);
+  static const kf_code labels[3] = { kf_rho_770_plus, kf_rho_1450_plus,
+				     kf_rho_1700_plus };
+  Summed_Propagator * tower = new Summed_Propagator();
+  for (int i=0; i<n; ++i) {
+    auto get = [&](const std::string & stem) {
+      const std::string key = "PS_"+stem+"_"+std::to_string(i);
+      auto it = md->find(key);
+      if (it==md->end())
+	THROW(fatal_error,"Local parameter set is incomplete: "+key+
+	      " missing.  A set is applied whole or not at all.");
+      return it->second;
+    };
+    // pion pair coding: 0 = pi+- pi0, 1 = pi+- pi+-
+    const double knum  = (get("knum") >0.5 ? mpc : mp0);
+    const double knorm = (get("knorm")>0.5 ? mpc : mp0);
+    tower->Add(new Fitted_VPP_Propagator(Flavour(i<3 ? labels[i]
+						   : kf_rho_1700_plus),
+					 get("M"), get("G"), gs,
+					 mpc, knum, mpc, knorm, mpc),
+	       Complex(get("wre"), get("wim")));
+  }
+  return tower;
+}
 
 Summed_Propagator * Fplus_0_PiZeroPiPlus::
 BuildRhoTower(bool useGS, const Complex & gamma, const Complex & delta) {
@@ -377,7 +436,15 @@ void Fplus_0_PiZeroPiPlus::Construct_PiPi(const FF_Parameters & params) {
 				   "deltaMag_pipi2_100", 0.050,"deltaPhase_pipi2_100");
   p_props_fallback = BuildRhoTower(false, m_gamma_base, m_delta_base);
 
-  if (m_ffmodel==ff_model::KS) {
+  if ((m_ffmodel==ff_model::KS || m_ffmodel==ff_model::GS) &&
+      HasLocalSet(params.p_model)) {
+    // A local ParameterSet was selected for this (channel, model): it
+    // replaces the tower wholesale - see HasLocalSet/BuildLocalTower.
+    p_props = BuildLocalTower(params.p_model);
+    delete p_props_fallback;
+    p_props_fallback = NULL;
+  }
+  else if (m_ffmodel==ff_model::KS) {
     p_props = p_props_fallback;
     p_props_fallback = NULL;
   }
@@ -452,6 +519,23 @@ void Fplus_0_PiZeroPiPlus::Construct_PiPi(const FF_Parameters & params) {
     p_GRho   = LineShapes->Get(Flavour(kf_rho_770_plus));
     p_GRhop  = LineShapes->Get(Flavour(kf_rho_1450_plus));
     p_GRhopp = LineShapes->Get(Flavour(kf_rho_1700_plus));
+    // A local set for (channel, 201) supplies the excited widths that this
+    // model otherwise takes from the registry, and switches rho(770) to the
+    // paper's analytic width.  Marked by RCHL_local; an incomplete set is
+    // fatal rather than half-applied.
+    if (params.p_model!=NULL &&
+	params.p_model->find("RCHL_local")!=params.p_model->end()) {
+      auto need = [&params](const std::string & key) {
+	auto it = params.p_model->find(key);
+	if (it==params.p_model->end())
+	  THROW(fatal_error,"Local RChL2012 parameter set is incomplete: "+key+
+		" missing.  A set is applied whole or not at all.");
+	return it->second;
+      };
+      m_Grhop_rchl  = need("RCHL_Grhop");
+      m_Grhopp_rchl = need("RCHL_Grhopp");
+      m_rchl_local  = true;
+    }
   }
 }
 
@@ -796,10 +880,41 @@ Complex Fplus_0_PiZeroPiPlus::A(const double & m2,const double & s,const double 
 //
 ///////////////////////////////////////////////////////////////////////////
 
+// arXiv:1203.3955 eq.(eq:rhowidth_nosu2): the rho(770) width is not a free
+// parameter at all, it is predicted by the chiral Lagrangian -
+//   Gamma_rho(q2) = M_rho q2 / (96 pi F^2)
+//                   [ theta(pipi) lambda^{3/2}(1,mpi+^2/q2,mpi0^2/q2)
+//                     + 1/2 theta(KK) lambda^{3/2}(1,mK+^2/q2,mK0^2/q2) ]
+// with lambda(x,y,z) = (x-y-z)^2 - 4yz, so lambda^{1/2} is the unequal-mass
+// velocity.  Used only when a local set is active; otherwise the registry
+// width applies, as before.
+double Fplus_0_PiZeroPiPlus::RChLGammaRho(const double & s) const {
+  if (s<=0.) return 0.;
+  auto lam32 = [&s](const double & ma2, const double & mb2) {
+    const double l = sqr(1.-ma2/s-mb2/s) - 4.*(ma2/s)*(mb2/s);
+    return (l>0. ? pow(l,1.5) : 0.);
+  };
+  return m_mV*s/(96.*M_PI*sqr(m_F_rchl)) *
+         ( lam32(m_mpi2,m_mpi0_2) + 0.5*lam32(m_mK2,m_mK0_2) );
+}
+
+// The excited-rho running width of the same paper, tau3scal:864 -
+// Gamma(s) = Gamma (s/M^2) (sigma(s)/sigma(M^2))^3.  Its imaginary part
+// M Gamma(s) is identical to Belle's sqrt(s) Gamma(s) with (M^2/s)(k/k0)^3,
+// and differs from METOOLS' V_PP registry width by sqrt(s)/M.
+double Fplus_0_PiZeroPiPlus::RChLGammaExcited(const double & s,
+					      const double & M,
+					      const double & G0) const {
+  const double sig = RChL::SigmaPhaseSpace(s,m_mpi2);
+  const double sig0 = RChL::SigmaPhaseSpace(sqr(M),m_mpi2);
+  if (sig<=0. || sig0<=0.) return 0.;
+  return G0*(s/sqr(M))*pow(sig/sig0,3.);
+}
+
 Complex Fplus_0_PiZeroPiPlus::FF_RChL2012(const double & s) {
   if (m_mode==FF_0_PP_mode::pipi_plus || m_mode==FF_0_PP_mode::KK_plus) {
     if (p_GRho==NULL) return Complex(0.,0.);
-    double GammaRho_s = (*p_GRho)(s);
+    double GammaRho_s = (m_rchl_local ? RChLGammaRho(s) : (*p_GRho)(s));
     // Eq.(23)'s exponent: -s/(96 pi^2 F^2) [ReA_pi-pi0(s) + 1/2 ReA_K-K0(s)]
     Complex Apipi = RChL::A_PQ(s,m_mpi0_2,m_mpi2,m_F_rchl,m_mu2_rchl);
     Complex AKK   = RChL::A_PQ(s,m_mK0_2, m_mK2, m_F_rchl,m_mu2_rchl);
@@ -809,18 +924,22 @@ Complex Fplus_0_PiZeroPiPlus::FF_RChL2012(const double & s) {
                        Complex(m_mV2-s,-sqrt(m_mV2)*GammaRho_s) * loopExp;
     Complex rhopTerm(0.,0.), rhoppTerm(0.,0.);
     if (norm(m_gammaRC)>0. && p_GRhop!=NULL) {
-      double GammaRhop_s = (*p_GRhop)(s);
+      double GammaRhop_s = (m_rchl_local ?
+			    RChLGammaExcited(s,m_mVp,m_Grhop_rchl) :
+			    (*p_GRhop)(s));
       double sigpi3 = pow(RChL::SigmaPhaseSpace(m_mVp2,m_mpi2),3.);
-      double GRhopPole = (*p_GRhop)(m_mVp2);
+      double GRhopPole = (m_rchl_local ? m_Grhop_rchl : (*p_GRhop)(m_mVp2));
       double expFac = ( sigpi3>0. ?
 			exp(-s*GRhopPole/(M_PI*pow(m_mVp,3.)*sigpi3) *
 			    A(m_mpi2,s,m_mV2).real()) : 0. );
       rhopTerm = - s*m_gammaRC / Complex(m_mVp2-s,-m_mVp*GammaRhop_s) * expFac;
     }
     if (norm(m_deltaRC)>0. && p_GRhopp!=NULL) {
-      double GammaRhopp_s = (*p_GRhopp)(s);
+      double GammaRhopp_s = (m_rchl_local ?
+			     RChLGammaExcited(s,m_mVpp,m_Grhopp_rchl) :
+			     (*p_GRhopp)(s));
       double sigpi3 = pow(RChL::SigmaPhaseSpace(m_mVpp2,m_mpi2),3.);
-      double GRhoppPole = (*p_GRhopp)(m_mVpp2);
+      double GRhoppPole = (m_rchl_local ? m_Grhopp_rchl : (*p_GRhopp)(m_mVpp2));
       double expFac = ( sigpi3>0. ?
 			exp(-s*GRhoppPole/(M_PI*pow(m_mVpp,3.)*sigpi3) *
 			    A(m_mpi2,s,m_mV2).real()) : 0. );

@@ -1,0 +1,542 @@
+# One file is one fit is one citation.  Apply this set whole or not at all.
+# Never substitute a mass, a width or a weight from a database or another
+# paper: every number below was fitted simultaneously under the conventions
+# recorded in `model`, and the correlations are large (see `correlations`).
+
+source:
+  paper:    "M. Fujikawa et al. [Belle Collaboration], High-Statistics Study of the tau- -> pi- pi0 nu_tau Decay, Phys. Rev. D 78, 072006 (2008)"
+  arxiv:    "0805.3773"
+  main_tex: "tau2pi_Jounal_v8.3-pre.tex"
+  note: >
+    Extracted from the arXiv LaTeX source only.  All line numbers below refer
+    to tau2pi_Jounal_v8.3-pre.tex as retrieved from arxiv.org/e-print/0805.3773
+    (3667 lines, single .tex, no \input).  Displayed-equation numbers were
+    obtained by counting numbered environments from the top of the file;
+    the line number is the authoritative locator.
+
+variant:
+  taken:    "Table VII, second column - the fit with |F_pi(0)|^2 fixed to unity (:2193-2233, column headed `(fixed $|F(0)|^2$)` at :2211)"
+  rejected: "Table VII, third column - the fit with all parameters allowed to float, |F_pi(0)|^2 = 1.02 +- 0.01 +- 0.04.  This is the fit the paper's own Figs. 10, 11(a) and 11(b) are drawn with."
+  purpose:  "closed-form hadronic current for tau- -> pi- pi0 nu_tau in Sherpa METOOLS/HadronCurrents; F(0) = 1 is imposed by the consuming code."
+  why: >
+    The consumer imposes F(0) = 1 through the 1/(1 + beta + gamma) prefactor of
+    Eq.(11), which is exactly the constraint under which the second column was
+    fitted.  The third column floats |F_pi(0)|^2 to 1.02 and so carries a 2%
+    overall normalisation that lives OUTSIDE the prefactor and that we have no
+    parameter to hold: taking the third column's ten resonance parameters
+    without its |F_pi(0)|^2 = 1.02 would be exactly the mix-and-match this file
+    exists to prevent.  Verified numerically in `closure`: the third column
+    reproduces Table VI only once multiplied by 1.02 (chi2_diag 89.3), and is
+    1.7% low at the rho peak without it (chi2_diag 212.2), while the second
+    column reproduces Table VI absolutely, with no rescaling (chi2_diag 90.7).
+    The paper does not designate either fit as "best".  What it says is
+    (:2169-2171) "The fit quality for the fixed case is slightly worse than that
+    for the floated one." and (:2172-2175) "The curves shown in
+    Figs.~\ref{unfold_pipi0}, \ref{Fpi} and \ref{Fpirho}(a) and \ref{Fpirho}(b),
+    correspond to the case when the parameter $|F_{\pi}(0)|^{2}$ is floated, but
+    the differences between the floated and the fixed cases are small."  Both
+    variants are closed-form; neither has a binned component.  The choice here
+    is driven solely by the F(0) = 1 constraint of the generator.
+
+applies_to:
+  - { channel: "-211,111,16", model: 101 }
+# Model changed 2026-09-22 from 105 to 101 (Gounaris-Sakurai): model numbers
+# now mean the functional form and this file carries the fit, so the retired
+# FORM_FACTOR = 105 is exactly 101 with this set selected locally.
+
+applies_to_note: >
+  The paper fits this channel and no other.  It relates the same form factor
+  to e+e- -> pi+ pi- through CVC (Eqs.(5)-(6)), but the e+e- form factor
+  differs by isospin-violating corrections the paper enumerates and does NOT
+  absorb into these parameters (appendix items (i)-(vii), :3040-3175), and in
+  particular by rho-omega interference, which is a separate amplitude
+  (:3139-3144) and is NOT part of this fit.  Using this set for an e+e-
+  channel is a physics decision for a human, not an extraction.
+
+model:
+  form: gounaris_sakurai_coherent_sum
+  n_poles: 3
+  normalisation: "F(0) = 1, enforced by the 1/(1 + beta + gamma) prefactor of Eq.(11) together with BW^GS_i(0) = 1"
+  rho_omega: "absent by construction - the paper states the omega(782) contribution is subtracted at the analysis level"
+  rho_omega_evidence:
+    where: ":3116-3119"
+    provenance: printed-num
+    fidelity: verbatim
+    quote: 'Since in our data this intermediate $\omega(782)$ contribution is already subtracted at  the analysis level, we use the $s$-dependent correction factor provided by Flores-Tlalpa, which does not include the $\omega$ contribution.'
+
+  equations:
+    amplitude:
+      where: "eq.(11), :1971-1975"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: 'F_{\pi}(s) = \frac{1}{1 + \beta +\gamma } (BW_{\rho} + \beta \cdot  BW_{\rho^{\prime}} +\gamma \cdot BW_{\rho^{\prime\prime}})\,,'
+      note: >
+        beta and gamma are complex; the paper says so at :1976-1978 -
+        "where the parameters $\beta$ and $\gamma$ (denoting the relative
+        magnitude of the two resonances) are in general complex."
+        The prefactor uses the COMPLEX sum 1 + beta + gamma, as printed.
+    lineshape:
+      where: "eq.(12), :1982-1985"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: 'BW_{i}^{GS} = \frac {M_{i}^2  + d \cdot M_{i}\Gamma_{i}(s) } {(M_{i}^{2} - s) + f(s) - i \sqrt{s} \Gamma_{i}(s)}\,,'
+      note: >
+        See `model.numerator_width` below: the numerator as printed carries
+        Gamma_i(s), but the value that reproduces Table VI is the CONSTANT
+        Gamma_i.  That is a resolved convention, not a transcription.
+    width:
+      where: "eq.(13), :1988-1990"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: '\Gamma_{i}(s) = \Gamma_{i}  \left( \frac{M_{i}^{2}}{s}\right) \left( \frac{k(s)}{k(M_{i}^2)}\right)^{3}\,.'
+    momentum:
+      where: ":1993-1994"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: 'Here, $ k(s)  =  \frac{1}{2} \sqrt{s} \beta_{-}(s)$ is the pion momentum in the $\pi^{-}\pi^{0}$ rest frame.'
+    beta_minus:
+      where: ":657-664"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: '$\beta_{-}(s) =\lambda^{1/2}(1, m_{\pi^{-}}^{2}/s, m_{\pi^{0}}^{2}/s)$'
+      quote_lambda: '$\lambda(x,y,z)=[x -(\sqrt{y} + \sqrt{z})^{2}] [x -(\sqrt{y} - \sqrt{z})^{2}]$.'
+    f_of_s:
+      where: "eq.(14), :1998-2005"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: 'f(s) & = & \Gamma^{}_i\,\frac{M^2_i}{k^3(M^2_i)} \left[\, k^2(s) \left( h(s) -h(M_{i}^2) \right) + (M_{i}^2 - s) k^2(M_{i}^2) \left.\frac{dh}{ds}\right|_{s=M^2_{i}} \,\right]'
+    h_of_s:
+      where: "eq.(15), :2007-2008"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: 'h(s) & = & \frac{2}{\pi} \frac{k(s)}{\sqrt{s}} \ln \left( \frac{\sqrt{s} + 2k(s)}{2m_{\pi}}\right) \,,'
+    dh_ds:
+      where: ":2011-2017"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: '$ \left. dh/ds\right|_{M_{i}^{2}} = h(M_{i}^{2})  \left [ \left( 8k^2(M_{i}^{2}) \right)^{-1} - (2 M_{i}^{2})^{-1}    \right ] + (2 \pi M_{i}^{2})^{-1} $'
+    d_constant:
+      where: "eq.(16), :2022-2028"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: 'd = \frac{3}{\pi} \frac{m_{\pi}^2} {k^2(M_{i}^2)} \ln\left( \frac{M_{i} + 2 k(M_{i}^2)} {2 m_{\pi}} \right) + \frac{M^{}_i} {2 \pi k(M^2_{i})} - \frac{m_{\pi}^2 M^{}_i} {\pi k^3(M^2_{i})}\,.'
+      note: >
+        d is per-resonance (it depends on M_i).  The paper states its purpose at
+        :2030-2031 - "Note that the function $d$ is chosen so that the $BW^{GS}$
+        function is unity at $s=0$~\cite{GS}."  See
+        `model.normalisation_at_zero` for the caveat that this is exact only in
+        the equal-mass form of k(s).
+
+  width_convention:
+    denominator:
+      where: "eq.(12), :1984"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: '{(M_{i}^{2} - s) + f(s) - i \sqrt{s} \Gamma_{i}(s)}\,,'
+      note: >
+        The imaginary part is sqrt(s)*Gamma_i(s), NOT M_i*Gamma_i(s).  A set
+        carrying these Gamma values is invalid under an m0*Gamma denominator.
+    running:
+      where: "eq.(13), :1988-1990"
+      provenance: printed-eq
+      fidelity: verbatim
+      quote: '\Gamma_{i}(s) = \Gamma_{i}  \left( \frac{M_{i}^{2}}{s}\right) \left( \frac{k(s)}{k(M_{i}^2)}\right)^{3}\,.'
+      note: >
+        The prefactor is (M_i^2/s), not (M_i/sqrt(s)).  Together with the
+        sqrt(s) in the denominator this makes the imaginary part
+        M_i^2 Gamma_i (k(s)/k(M_i^2))^3 / sqrt(s).  Both halves are recorded
+        because either alone settles nothing.
+
+  numerator_width:
+    value: "constant Gamma_i (NOT the running Gamma_i(s) printed in Eq.(12))"
+    provenance: resolved
+    where: "eq.(12) as printed, :1983; resolved against Table VI (:1859-1928)"
+    note: >
+      Eq.(12) prints `M_{i}^2  + d \cdot M_{i}\Gamma_{i}(s)` in the numerator.
+      Taken literally with the paper's own k(s) that is inconsistent with the
+      paper's own statement at :2030-2031 that d makes BW^GS unity at s = 0:
+      Gamma_i(s) = Gamma_i (M_i^2/s)(k(s)/k(M_i^2))^3 diverges as s -> 0, so no
+      choice of d can normalise it.  The standard Gounaris-Sakurai numerator
+      carries the constant width.  Settled by closure, not by taste: rebuilding
+      this set with the constant Gamma_i gives chi2_diag = 90.7 over the 62 bins
+      of Table VI and 1.005 at the rho peak, while the literal running-width
+      numerator gives chi2_diag = 248.7 (same parameters, same everything else).
+      That is a factor 2.7 in chi2 and it is the strongest discrete statement in
+      the closure scan.
+
+  phase_convention:
+    value: "beta = |beta| * exp(+i * phi_beta), gamma = |gamma| * exp(+i * phi_gamma), phases in degrees"
+    provenance: resolved
+    where: "commented out in the source at :1979; resolved against Table VI (:1859-1928)"
+    note: >
+      The source contains the line `% $\beta=|\beta|e^{i\phi}$.` at :1979 - it is
+      COMMENTED OUT and therefore does not appear in the published paper, which
+      gives only |beta|, phi_beta, |gamma|, phi_gamma without defining how they
+      combine.  Resolved by closure: exp(+i phi) gives chi2_diag = 90.7 against
+      Table VI, exp(-i phi) gives chi2_diag = 23012.  Likewise the prefactor
+      1/(1 + beta + gamma) uses the complex beta and gamma (chi2_diag = 90.7)
+      and not their moduli (chi2_diag = 30757, and 0.57 at the rho peak).
+
+  daughter_masses:
+    in_k_of_s:
+      value: "unequal m_pi- and m_pi0, via beta_-(s) = lambda^{1/2}(1, m_pi-^2/s, m_pi0^2/s)"
+      provenance: printed-eq
+      where: ":1993-1994 and :657-664"
+      note: >
+        Corroborated by the appendix, which counts the unequal-mass beta^3 in
+        the width as a deliberate isospin-violating effect (:3129-3133):
+        "The $\pi^-$ and $\pi^{0}$ mass difference also affects the $\beta^{3}$
+        factor in the energy-dependent decay width (Eq.~\ref{eq:width}), which
+        provides a positive shift".  So k(s) is genuinely the unequal-mass
+        momentum, not a transcription slip.
+    in_h_and_d:
+      value: "a single m_pi, taken as m_pi- = 0.13957018 GeV"
+      provenance: assumed
+      where: "eq.(15), :2008 (`2m_{\\pi}`); eq.(16), :2023-2027 (`m_{\\pi}^2`)"
+      note: >
+        h(s) and d are printed with a single symbol m_pi, which the paper never
+        assigns a numerical value.  Charged-pion mass assumed, because the
+        logarithm 2k + sqrt(s) over 2 m_pi is the Gounaris-Sakurai elastic
+        pi pi threshold.  The ambiguity is small and is quantified rather than
+        hidden: m_pi0 in place of m_pi- moves |F|^2 by -0.15% at the rho peak
+        and changes chi2_diag against Table VI from 90.7 to 96.6; the average of
+        the two gives 93.6.  All three are far inside the residual explained in
+        `closure`, so this choice is not load-bearing.
+    numerical_values:
+      value: "m_pi- = 0.13957018 GeV, m_pi0 = 0.1349766 GeV"
+      provenance: assumed
+      note: >
+        The paper never prints pion masses.  PDG values used for the closure
+        test.  Substituting the consuming code's own database values is safe
+        here: |F|^2 at the rho peak moves by less than 0.05% for any pion-mass
+        choice within 0.1 MeV of these.
+
+  normalisation_at_zero:
+    value: "F(0) = 1 exactly in the equal-mass GS construction; with the paper's unequal-mass k(s) the s -> 0 limit is singular, but s = 0 is below the physical threshold s > (m_pi- + m_pi0)^2 = 0.0754 GeV^2 and is never evaluated"
+    provenance: inferred
+    note: >
+      Derivation: BW^GS_i(0) = 1 requires k^2(0) finite, which holds only for
+      k(s)^2 = s/4 - m_pi^2.  With k(s) = (1/2) sqrt(s) beta_-(s) and unequal
+      masses, k^2(s) -> +(m_pi-^2 - m_pi0^2)^2/(4s) -> +infinity as s -> 0, and
+      both the numerator and f(s) diverge.  Checked numerically: with equal
+      masses BW^GS_rho(0+) = 1.0000000002; with the paper's unequal masses
+      |F(s)|^2 = 1.0063 at s = 1e-4, 1.0000 at 1e-8 in the equal-mass form but
+      collapsing to 2e-6 in the unequal-mass form.  This is a statement about a
+      point outside the physical region only.  The first data bin of Table VI is
+      centred at s = 0.088 GeV^2 and the threshold is 0.0754 GeV^2, so nothing
+      in the fit or in event generation samples the pathological region.  A
+      consumer that needs a literal F(0) = 1 should use the equal-mass k in the
+      GS auxiliary functions h, d and f only; that is what `in_h_and_d` already
+      does for the logarithms.
+
+parameters:
+  # Table VII, second column (fixed |F_pi(0)|^2 = 1), :2213-2225.
+  # Errors: first statistical, second systematic (caption, :2201).
+  # sigfigs is the number of significant figures AS PRINTED; the fit cannot be
+  # reproduced to better than this, and the parameters are strongly correlated
+  # so the rounding does not average out.  See `closure.residual_explained`.
+  rho_770.M:
+    value: 0.7746
+    unit: GeV
+    sigfigs: 4
+    stat: 0.0002
+    syst: 0.0005
+    provenance: printed-num
+    where: "Tab. VII col.2, :2213"
+    kind: physical_state
+  rho_770.Gamma:
+    value: 0.1481
+    unit: GeV
+    sigfigs: 4
+    stat: 0.0004
+    syst: 0.0017
+    provenance: printed-num
+    where: "Tab. VII col.2, :2214"
+    kind: physical_state
+  rho_1450.M:
+    value: 1.446
+    unit: GeV
+    sigfigs: 4
+    stat: 0.007
+    syst: 0.028
+    provenance: printed-num
+    where: "Tab. VII col.2, :2215"
+    kind: effective_fit_pole
+  rho_1450.Gamma:
+    value: 0.434
+    unit: GeV
+    sigfigs: 3
+    stat: 0.016
+    syst: 0.060
+    provenance: printed-num
+    where: "Tab. VII col.2, :2216"
+    kind: effective_fit_pole
+  beta.mag:
+    value: 0.15
+    sigfigs: 2
+    stat: 0.05
+    syst: { plus: 0.15, minus: 0.04 }
+    provenance: printed-num
+    where: "Tab. VII col.2, :2217"
+    kind: effective_fit_pole
+  beta.phase:
+    value: 202
+    unit: deg
+    sigfigs: 3
+    stat: 4
+    syst: { plus: 41, minus: 8 }
+    provenance: printed-num
+    where: "Tab. VII col.2, :2218"
+    kind: effective_fit_pole
+  rho_1700.M:
+    value: 1.728
+    unit: GeV
+    sigfigs: 4
+    stat: 0.017
+    syst: 0.089
+    provenance: printed-num
+    where: "Tab. VII col.2, :2219"
+    kind: effective_fit_pole
+  rho_1700.Gamma:
+    value: 0.164
+    unit: GeV
+    sigfigs: 3
+    stat: 0.021
+    syst: { plus: 0.089, minus: 0.026 }
+    provenance: printed-num
+    where: "Tab. VII col.2, :2220-2221"
+    kind: effective_fit_pole
+  gamma.mag:
+    value: 0.037
+    sigfigs: 2
+    stat: 0.006
+    syst: { plus: 0.065, minus: 0.009 }
+    provenance: printed-num
+    where: "Tab. VII col.2, :2222-2223"
+    kind: effective_fit_pole
+  gamma.phase:
+    value: 24
+    unit: deg
+    sigfigs: 2
+    stat: 9
+    syst: { plus: 118, minus: 28 }
+    provenance: printed-num
+    where: "Tab. VII col.2, :2224"
+    kind: effective_fit_pole
+  Fpi0_sq:
+    value: 1.0
+    sigfigs: null
+    provenance: printed-num
+    where: "Tab. VII col.2, :2225 - printed as `$ [$1.0$] $`, i.e. fixed, not fitted"
+    note: "Fixed by construction in this variant.  The all-free fit gives 1.02 +- 0.01 +- 0.04 (:2225, :2166)."
+
+effective_poles:
+  which: ["rho_1450.*", "rho_1700.*", "beta.*", "gamma.*"]
+  why: >
+    These are fitted effective poles absorbing the structure above the ground
+    state, not particles, and the tell is the paper's own error bars.
+    Gamma_rho' = 434 +- 16 +- 60 MeV carries a 60 MeV systematic; the positive
+    systematic on |gamma| (+0.065) is nearly twice its central value (0.037);
+    Gamma_rho'' = 164 +- 21 +89/-26 MeV has a positive systematic of 89 MeV;
+    phi_gamma = 24 +- 9 +118/-28 degrees is effectively unconstrained by the
+    systematics.  The paper also says the two interfere and trade against each
+    other (:2319-2322): "For the  $\rho^{\prime}(1450)$, a slightly higher mass
+    value than in the previous measurement is obtained. It is found that this
+    value is sensitive to the value of the resonance parameters for the
+    $\rho''(1700)$ since they both interfere."
+    Consequence: a particle-database mass or width may NEVER be substituted for
+    any of these.  rho(770) is a physical state (M and Gamma are determined to
+    0.5 and 1.7 MeV total), but it too was fitted jointly with the rest and
+    correlates at 0.58 with |F(0)|^2 and 0.39 with Gamma_rho, so it is not
+    separable either: the set is applied whole.
+
+assertions:
+  # Everything the paper prints about this fit, recorded because these are the
+  # only unforgeable checks on the extraction.
+  chi2_over_ndf_fixed:
+    value: "80/52"
+    provenance: printed-num
+    where: "Tab. VII, :2227 and text :2163-2164"
+    quote: 'The value of the $\chi^{2}$ per degree of freedom (NDF) is 80/52 for the fixed and 65/51 for the floated cases.'
+    note: >
+      NDF 52 = 62 bins of Table VI/Table V minus 10 free parameters, which
+      confirms that all 62 bins were fitted.  This chi2 is NOT reproducible
+      from published numbers: it uses the full covariance matrix X of the
+      unfolded spectrum, which the paper does not print.
+  chi2_over_ndf_free:
+    value: "65/51"
+    provenance: printed-num
+    where: "Tab. VII, :2227; text :2163-2164"
+  rho1700_significance:
+    value: "6.5 sigma (fixed), 7.0 sigma (all free)"
+    provenance: printed-num
+    where: "Tab. VII last row, :2229; text :2184-2190"
+  Fpi0_sq_when_floated:
+    value: "1.02 +- 0.01 +- 0.04"
+    provenance: printed-num
+    where: ":2166 and Tab. VII col.3, :2225"
+  no_background_term_needed:
+    value: true
+    provenance: printed-num
+    where: ":2167-2168"
+    quote: 'It should be noted that the data can be fitted using BW resonances only,  without any additional background terms.'
+  branching_fraction_pipi0:
+    value: "(25.24 +- 0.01 +- 0.39)%"
+    provenance: printed-num
+    where: "eq.(10), :1481-1483"
+    note: "Not a parameter of this set.  Recorded because Table VI was built with B_pipi = 25.24% (:2147), S_EW = 1.0235 (:2152) and V_ud = 0.97377 (:2149), and the closure test compares against Table VI."
+
+correlations:
+  where: "eq.(18), :2237-2255; parameter order given at :2256-2265"
+  order: ["|F_pi(0)|^2", "M_rho", "Gamma_rho", "M_rho'", "Gamma_rho'", "|beta|", "phi_beta", "M_rho''", "Gamma_rho''", "|gamma|", "phi_gamma"]
+  belongs_to: >
+    The 11-parameter (all-free) fit, NOT the 10-parameter fixed fit taken here:
+    the matrix is 11x11 and its first row/column is |F_pi(0)|^2, which is fixed
+    in our variant.  The paper does not print a correlation matrix for the fixed
+    fit.  This is a real gap, and it is why the residual in `closure` can be
+    bounded by the printed rounding but not computed from it exactly.
+  lower_triangle:
+    - [1.00]
+    - [0.58, 1.00]
+    - [0.45, 0.39, 1.00]
+    - [-0.30, -0.13, 0.24, 1.00]
+    - [-0.14, -0.28, -0.15, 0.36, 1.00]
+    - [-0.31, -0.24, -0.06, 0.47, 0.13, 1.00]
+    - [-0.42, -0.08, 0.25, 0.34, -0.61, 0.38, 1.00]
+    - [0.31, 0.22, 0.08, -0.10, -0.41, 0.37, 0.29, 1.00]
+    - [0.32, 0.27, 0.13, -0.13, -0.44, 0.48, 0.28, 0.64, 1.00]
+    - [0.54, 0.29, -0.01, -0.07, 0.05, 0.52, -0.27, 0.54, 0.67, 1.00]
+    - [-0.19, -0.06, 0.13, 0.61, 0.23, 0.49, 0.57, 0.53, 0.17, 0.07, 1.00]
+  transcription_note: >
+    Row 10 column 1 is printed in the source as `0.54.` with a trailing period
+    (:2250).  Read as 0.54; no other reading is consistent with a correlation
+    matrix.  Flagged rather than silently corrected.
+  largest: >
+    rho(|gamma|, Gamma_rho'') = 0.67, rho(Gamma_rho'', M_rho'') = 0.64,
+    rho(phi_gamma, M_rho') = 0.61, rho(phi_beta, Gamma_rho') = -0.61,
+    rho(M_rho, |F_pi(0)|^2) = 0.58, rho(phi_gamma, phi_beta) = 0.57,
+    rho(|gamma|, |F_pi(0)|^2) = 0.54, rho(|gamma|, M_rho'') = 0.54,
+    rho(|gamma|, |beta|) = 0.52.
+
+closure:
+  against: >
+    Table VI of the paper (:1859-1928), the pion form factor squared
+    |F_pi^-(s)|^2 in 62 bins of width 0.05 GeV^2 from s = 0.088 to
+    3.125 GeV^2, with separate statistical and systematic errors.  Table VI is
+    derived bin-by-bin from the measured Table V spectrum through Eq.(7)
+    (caption, :1861-1869), and the fit of Eq.(11) was made to that same
+    spectrum with NO free normalisation in this variant, so the comparison is
+    ABSOLUTE - the model was evaluated from this file alone and not rescaled by
+    anything.  Model evaluated at the bin centres, which is the paper's own
+    convention for f(s_i; alpha) in Eq.(17) (:2036-2044) and for its numerical
+    integration (:2820-2822, "The integration in Eq.~({\ref{eq:amu}) is carried
+    out numerically by taking the sum of the integrand evaluated at the center
+    of each bin.").
+  result: >
+    Where the paper is most precise, the agreement is sub-percent and absolute.
+    The six best-measured bins (total relative error 0.7-1.0%) give
+    model/table = 1.0049 (bin 11, s = 0.575, the rho peak, |F|^2 = 40.996 +-
+    0.122 +- 0.269), 1.0035 (bin 12, s = 0.625), 0.9897 (bin 14), 0.9978
+    (bin 10), 0.9709 (bin 13), 0.9965 (bin 7).  Mean model/table over the rho
+    peak region 0.5 < s < 0.7 GeV^2 is 0.9943; over 0.4 < s < 1.0 it is 0.9891.
+    Summed over all 62 bins with DIAGONAL stat (+) syst errors the chi2 is 90.7;
+    the paper quotes 80/52 using the full covariance matrix it does not publish.
+    Evaluating the model bin-averaged over each 0.05 GeV^2 bin instead of at the
+    bin centre gives chi2_diag = 82.0, i.e. the bin-width effect is real but
+    smaller than the residual below.  Above s ~ 1.6 GeV^2 the mean ratio falls
+    to 0.939 (1.6 < s < 2.3) - see `residual_explained`.
+  residual_explained: >
+    Two causes, both of which the paper itself identifies, and neither of which
+    was tuned away.
+
+    (1) Below s ~ 1.6 GeV^2 the residual is a smooth, coherent 1-3% deficit with
+    isolated bins up to 3 diagonal sigma (worst: bin 13, s = 0.675, ratio
+    0.9709, pull -3.0, with its immediate neighbours at +0.35% and -1.03%).  The
+    fit used a covariance matrix we do not have.  The paper states it at
+    :2033-2035: "Since the unfolded mass spectrum has bin-by-bin correlations,
+    the off-diagonal components of the covariance matrix $X$ are included in the
+    $\chi^{2}$ evaluation:".  SVD unfolding (:1614-1619) leaves strong
+    neighbour-to-neighbour anticorrelations, so a coherent few-percent offset
+    and an isolated 3-sigma bin flanked by good ones are both cheap in their
+    chi2 and expensive in a diagonal one.  This cannot be reproduced from
+    published numbers: only the diagonal errors are printed.
+
+    (2) Above s ~ 1.6 GeV^2 the residual is dominated by the rounding of
+    |beta| to two significant figures.  |beta| = 0.15 has a half-digit of 0.005,
+    i.e. 3.3% relative, and the sensitivity of |F|^2 to it grows away from the
+    rho: a +0.005 shift alone moves |F|^2 by +0.9% at s = 0.575, +2.9% at
+    s = 1.375, +7.4% at s = 1.975 and +12.9% at s = 2.175.  The observed
+    deficits in that region are 6-12%, i.e. entirely inside the rounding floor.
+    Quantified by scanning |beta| across its printed rounding interval with
+    everything else held at the published values: |beta| = 0.145 gives
+    chi2_diag = 241.2 and a mean ratio of 0.819 over 1.9 < s < 2.3, |beta| =
+    0.150 gives 90.7 and 0.913, |beta| = 0.155 gives 52.5 and 1.016.  The
+    printed value sits inside that interval and NOTHING IN THIS FILE HAS BEEN
+    MOVED: 0.15 is what Table VII prints and 0.15 is what is recorded.  This is
+    precisely what `sigfigs` is here for, and it is aggravated by the
+    correlations - |beta| correlates at 0.52 with |gamma| and at 0.49 with
+    phi_gamma - so the rounding errors do not average out.
+
+    Quadrature sum of all ten half-digit rounding shifts: 0.89% at s = 0.575,
+    1.49% at 0.875, 2.97% at 1.375, 7.67% at 1.975, 13.2% at 2.175.  Every
+    observed residual is inside this band.
+
+    Above s ~ 2.3 GeV^2 the paper's own errors reach 30-100% per bin
+    (Table VI bins 47-62), so the ratios there test nothing; they are reported
+    for completeness only.
+  not_closed: >
+    The paper's chi2 = 80/52 itself is NOT reproduced and cannot be, because the
+    covariance matrix X is not published.  The value obtained here with diagonal
+    stat (+) syst errors, 90.7 (bin-centre) or 82.0 (bin-averaged), is of a
+    similar size, but that similarity is a coincidence of scale and is not
+    claimed as agreement.
+  scan_performed: >
+    Discrete conventions scanned against Table VI rather than chosen by taste:
+    numerator width constant vs running (90.7 vs 248.7), phase sign exp(+i phi)
+    vs exp(-i phi) (90.7 vs 23012), prefactor complex 1+beta+gamma vs
+    1+|beta|+|gamma| (90.7 vs 30757), k(s) unequal- vs equal-mass (90.7 vs
+    94.5), m_pi in h and d charged/neutral/average (90.7 / 96.6 / 93.6), and the
+    rejected all-free column with and without its |F(0)|^2 = 1.02 (89.3 vs
+    212.2).  The first three are decisive and are recorded as `resolved`; the
+    last two are not, and are recorded as `printed-eq` (k) and `assumed` (m_pi).
+
+unresolved:
+  covariance_matrix_of_spectrum:
+    what: "the covariance matrix X of the unfolded mass spectrum used in the chi2 of Eq.(17)"
+    where_looked: ":2033-2044 (it is named and used), :1635-1636 (it is said to be an output of the unfolding program), Tables V and VI (:1776-1928, only diagonal stat and syst are printed)"
+    consequence: "the paper's chi2 = 80/52 cannot be recomputed, and the smooth few-percent closure residual below s ~ 1.6 GeV^2 can be attributed but not calculated"
+  correlation_matrix_for_the_fixed_fit:
+    what: "an 11x11 correlation matrix is printed, but it belongs to the all-free fit; none is printed for the fixed-|F(0)|^2 fit taken here"
+    where_looked: "eq.(18), :2237-2265"
+    consequence: "the rounding-induced uncertainty on this set can be bounded parameter by parameter but not propagated exactly"
+  pion_mass_values:
+    what: "numerical values of m_pi-, m_pi0, and which of them the single m_pi of Eqs.(15)-(16) denotes"
+    where_looked: ":655-664 (beta_- is defined symbolically), :2007-2028 (h and d use a bare m_pi), Table VII and its caption (:2193-2233), the external-parameter table (:2863-2893, which lists only V_ud, B_e and B_pipi0)"
+    consequence: "assumed, with the size of the ambiguity measured: 0.15% at the rho peak"
+
+# ---------------------------------------------------------------------
+# GENERATED by code_analysis/sherpa/paper_to_model/export_sherpa_blocks.py
+# from the `parameters` above.  Do not edit by hand - edit the recorded
+# values and regenerate.  This is the only block METOOLS reads.
+# ---------------------------------------------------------------------
+sherpa:
+  PS_npoles: 3
+  PS_lineshape: 1
+  PS_M_0: 0.7746
+  PS_G_0: 0.1481
+  PS_wre_0: 1.0
+  PS_wim_0: 0.0
+  PS_knum_0: 0
+  PS_knorm_0: 0
+  PS_M_1: 1.446
+  PS_G_1: 0.434
+  PS_wre_1: -0.1390775782
+  PS_wim_1: -0.056190989
+  PS_knum_1: 0
+  PS_knorm_1: 0
+  PS_M_2: 1.728
+  PS_G_2: 0.164
+  PS_wre_2: 0.0338011819
+  PS_wim_2: 0.0150492558
+  PS_knum_2: 0
+  PS_knorm_2: 0

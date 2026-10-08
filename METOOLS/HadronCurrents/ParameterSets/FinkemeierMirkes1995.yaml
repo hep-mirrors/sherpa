@@ -1,0 +1,1054 @@
+# One file is one fit is one citation.  Apply this set whole or not at all.
+#
+# This paper is a MODEL, not a fit to a spectrum: almost every number below is
+# either taken from RPP94, inherited from a named earlier fit (Kuehn-Santamaria
+# for T_rho^(1); Gomez-Cadenas et al. for T_rho^(2)), or fixed inside this paper
+# from a branching ratio.  The couplings are NOT free: they are fixed by the
+# chiral limit and by isospin/SU(3) Clebsch-Gordans, and the paper's whole point
+# is that they are correlated ACROSS channels.  Substituting a mass or a weight
+# from the particle database therefore breaks not one channel but the isospin
+# relations between all of them.
+#
+# In particular: rho' appears TWICE below with DIFFERENT parameters
+# (1.370/0.510 in T_rho^(1), 1.500/0.220 in T_rho^(2)).  That is deliberate and
+# is the paper's own text.  Do not unify them.
+
+source:
+  paper:    "M. Finkemeier and E. Mirkes, Tau Decays into Kaons, MAD/PH/882, LNF-95/015(P) (March 1995); Z. Phys. C 72 (1996) 619"
+  arxiv:    "hep-ph/9503474"
+  main_tex: "9503474.tex"
+  note: >
+    Extracted from the arXiv LaTeX source only (arxiv.org/e-print/hep-ph/9503474
+    -> single gzipped .tex, 1951 lines, no \input).  Every `where:` below is a
+    line number in that file; the line number, not the equation number, is the
+    authoritative locator, because this is a REVTeX source in which most of the
+    displayed equations carry no \label and are numbered only by counting.
+    No other paper, and no implementation, was consulted.
+
+variant:
+  taken: >
+    Table III (:1802-1838) - the paper's own "preferred parameter choices",
+    i.e. beta_K* = -0.135 in T_K*^(1) and xi = +0.33 in T_K1^(a).
+  rejected:
+    - >
+      Table IV (:1842-1865), xi = -0.33.  Rejected because the paper rejects it:
+      (:1361-1363) reads "The choice $\xi=+0.33$ is clearly preferred by the experimental data
+      and we therefore believe that this is the physical choice."
+    - >
+      Table V (:1869-1898), beta_K* = -0.11.  A legitimate alternative the paper
+      describes (:1373-1374) as "also consistent
+      with the $\tau\rightarrow K^\star \nu_\tau$ decay rate"; it is 3-4% below
+      Table III everywhere.  Not taken because -0.135 is the paper's central
+      determination.
+    - >
+      Table VI (:1902-1931), beta_K* = 0 (the Decker-Mirkes-Sauer-Was choice, and
+      what Tauola did).  This one needs care: the paper says at (:1377-1380)
+      "Use of $\beta_{K^\star} = 0$ as in \cite{Dec93} leads to the results in Tab.~\ref{tab6},
+      which overall agree better with the experimental results than those
+      obtained with $\beta_{K^\star}=-0.135$."  So the variant that best matches
+      experiment is NOT the variant the paper adopts.  We follow the paper's own
+      determination (beta_K* = -0.135 +- 0.025, fixed from B(K* nu) = 1.36 +- 0.08%)
+      rather than its remark about post-hoc agreement, because -0.135 is the value
+      that all of Table III, the isospin relations and the quoted 60% axial
+      fraction in K-pi-K+ were computed with.  Switching to 0 is a one-line change
+      (beta_K*), but it must be done whole: use Table VI as the closure target then.
+  purpose: >
+    Closed-form generator model: the three-meson hadronic currents for
+    tau -> K pi pi and tau -> K K pi in Sherpa METOOLS/HadronCurrents, at
+    form-factor model number 100.  Every component below is an evaluable
+    function of (Q^2, s_1, s_2, s_3) with ONE exception, flagged as unresolved:
+    the A_1 running-width function g(s), which this paper does not print.
+
+# ---------------------------------------------------------------------------
+applies_to:
+
+  # --- Cabibbo-suppressed, K pi pi:  parameterised directly in Tabs. I and II
+  - channel: "-321,211,-211,16"
+    model: 100
+    paper_channel: "K^- pi^- pi^+"
+    q1q2q3: "q1=K^-, q2=pi^-, q3=pi^+"
+    provenance: printed-eq
+    where: "Tab. I row 7, :1720-1723 and Tab. II row 7, :1785-1788"
+
+  - channel: "-321,111,111,16"
+    model: 100
+    paper_channel: "pi^0 pi^0 K^-"
+    q1q2q3: "q1=pi^0, q2=pi^0, q3=K^-"
+    provenance: printed-eq
+    where: "Tab. I row 6, :1715-1718 and Tab. II row 6, :1780-1783"
+    note: "identical-particle factor 1/2 required in the rate; see conventions.identical_particles"
+
+  - channel: "310,-211,111,16"
+    model: 100
+    paper_channel: "pi^- Kbar^0 pi^0"
+    q1q2q3: "q1=pi^-, q2=K_S, q3=pi^0"
+    provenance: inferred
+    amplitude_factor: "-1/sqrt(2)"
+    where: "Tab. I row 8 :1725-1732 / Tab. II row 8 :1790-1794, projected with eq.(klsdef) :1128-1137"
+    note: >
+      The paper parameterises pi^- Kbar^0 pi^0, not pi^- K_S pi^0.  Only Kbar^0
+      is produced (|Delta S| = 1), so <pi^- K_S pi^0| = -(1/sqrt2)<pi^- Kbar^0 pi^0|
+      and Gamma(pi^- K_S pi^0) = (1/2) Gamma(pi^- Kbar^0 pi^0), i.e. B = 0.48%.
+      This 1/sqrt(2) is INFERRED from eq.(klsdef); the paper states the K_S/K_L
+      projection only for the two-neutral-kaon modes.  The overall sign is
+      unobservable here.
+
+  - channel: "-211,130,111,16"
+    model: 100
+    paper_channel: "pi^- Kbar^0 pi^0"
+    q1q2q3: "q1=pi^-, q2=K_L, q3=pi^0"
+    provenance: inferred
+    amplitude_factor: "+1/sqrt(2)"
+    where: "Tab. I row 8 :1725-1732 / Tab. II row 8 :1790-1794, projected with eq.(klsdef) :1128-1137"
+    note: "as above; Gamma(pi^- K_L pi^0) = (1/2) Gamma(pi^- Kbar^0 pi^0), B = 0.48%."
+
+  # --- Cabibbo-allowed, K K pi
+  - channel: "321,-321,-211,16"
+    model: 100
+    paper_channel: "K^- pi^- K^+"
+    q1q2q3: "q1=K^-, q2=pi^-, q3=K^+"
+    provenance: printed-eq
+    where: "Tab. I row 1, :1683-1686 and Tab. II row 1, :1754-1757"
+
+  - channel: "-321,310,111,16"
+    model: 100
+    paper_channel: "K^- pi^0 K^0"
+    q1q2q3: "q1=K^-, q2=pi^0, q3=K_S"
+    provenance: inferred
+    amplitude_factor: "+1/sqrt(2)"
+    where: "Tab. I row 5 :1706-1711 / Tab. II row 5 :1775-1778, projected with eq.(klsdef) :1128-1137"
+    note: >
+      Only K^0 is produced (Delta S = 0 alongside the K^-), so
+      <K^- pi^0 K_S| = (1/sqrt2)<K^- pi^0 K^0| and likewise for K_L, giving
+      Gamma = (1/2) Gamma(K^- pi^0 K^0), i.e. B = 0.080% each.  INFERRED from
+      eq.(klsdef); the paper does not perform this projection itself.
+
+  - channel: "-321,130,111,16"
+    model: 100
+    paper_channel: "K^- pi^0 K^0"
+    q1q2q3: "q1=K^-, q2=pi^0, q3=K_L"
+    provenance: inferred
+    amplitude_factor: "+1/sqrt(2)"
+    where: "Tab. I row 5 :1706-1711 / Tab. II row 5 :1775-1778, projected with eq.(klsdef) :1128-1137"
+    note: "as above; B = 0.080%."
+
+  - channel: "310,-211,130,16"
+    model: 100
+    paper_channel: "K_S pi^- K_L"
+    q1q2q3: "q1=K_S, q2=pi^-, q3=K_L"
+    provenance: printed-eq
+    where: "Tab. I row 4, :1699-1704 and Tab. II row 4, :1769-1773"
+    note: >
+      q1 = K_S and q3 = K_L is NOT a free relabelling: G_1 and G_2 are not
+      symmetric under 1<->3.  The assignment is fixed by the paper writing, at
+      (:1163), "<K_S(q_1) \pi^-(q_2) K_L(q_3) | J^\mu | 0 >".
+
+  - channel: "310,310,-211,16"
+    model: 100
+    paper_channel: "K_S pi^- K_S"
+    q1q2q3: "q1=K_S, q2=pi^-, q3=K_S"
+    provenance: printed-eq
+    where: "Tab. I row 3, :1693-1697 and Tab. II row 3, :1764-1767"
+    note: "identical-particle factor 1/2 required in the rate."
+
+  - channel: "-211,130,130,16"
+    model: 100
+    paper_channel: "K_L pi^- K_L"
+    q1q2q3: "q1=K_L, q2=pi^-, q3=K_L"
+    provenance: printed-eq
+    amplitude_factor: "-1 relative to K_S pi^- K_S"
+    where: "eq.(eqn1), :1154-1157"
+    note: >
+      The paper prints, at (:1155-1156),
+      "<K_L(q_1) \pi^-(q_2) K_L(q_3) | J^\mu | 0 >
+       = -  <K_S(q_1) \pi^-(q_2) K_S(q_3) | J^\mu | 0 >",
+      so the current is the K_S pi^- K_S current with an overall sign and the
+      rate is identical.  The identical-particle factor 1/2 applies here too.
+
+applies_to_note: >
+  Every channel requested was included, but four of the ten (K_S pi^- pi^0,
+  pi^- K_L pi^0, K^- K_S pi^0, K^- K_L pi^0) are NOT parameterised by the paper
+  in that form: the paper gives pi^- Kbar^0 pi^0 and K^- pi^0 K^0 in the strong
+  eigenbasis and only performs the K_S/K_L projection for the TWO-neutral-kaon
+  modes.  Their 1/sqrt(2) is a one-line consequence of eq.(klsdef), which the
+  paper does print, but it is inferred, not quoted.
+  The paper also parameterises K^0 pi^- Kbar^0 (Tab. I/II row 2), which has no
+  Sherpa final-state key because it is not an observable final state; it is
+  retained below only because the K_S/K_L modes are built from it.
+  The paper further treats the TWO-meson modes K^- pi^0, Kbar^0 pi^-, K^0 K^-
+  (Sec. II).  Those are a different current (model number not requested here)
+  and are recorded under `two_meson` because they are what fixes beta_K*.
+
+# ---------------------------------------------------------------------------
+model:
+  form: decker_mirkes_sauer_was_chiral_resonance_three_meson
+  structure:
+    where: "eqs.(f1234),(videf), :535-558"
+    provenance: printed-eq
+    quote: 'J^{\mu}(q_{1},q_{2},q_{3})
+            &=&   V_{1}^{\mu}\,F_{1}
+                + V_{2}^{\mu}\,F_{2}
+                +\,i\, V_{3}^{\mu}\,F_{3}
+                + V_{4}^{\mu}\,F_{4} \>,'
+    quote_vi: 'V_{1}^{\mu}&= (q_{1}-q_{3})_{\nu}\,T^{\mu\nu}  \>,\\[2mm]
+               V_{2}^{\mu}&= (q_{2}-q_{3})_{\nu}\,T^{\mu\nu}  \>,\\[2mm]
+               V_{3}^{\mu}&= \epsilon^{\mu\alpha\beta\gamma}q_{1\,\alpha}q_{2\,\beta}
+                                                            q_{3\,\gamma} \>,'
+    f4:
+      provenance: printed-num
+      where: (:565-570)
+      quote: 'we set $F_4$ equal  to zero.'
+      note: "F_4 is set to zero; the pseudoscalar contribution is dropped."
+  form_factors:
+    where: "eqs.(f1),(f2),(f3), :669-679"
+    provenance: printed-eq
+    quote: 'F^{(abc)}_{1}(Q^2,s_2,s_3)&=&{2\sqrt 2 A^{(abc)}\over 3f_\pi}
+                                          G_{1}^{(abc)}(Q^2,s_2,s_3) \>,'
+    quote_f3: 'F^{(abc)}_{3}(Q^2,s_1,s_2,s_3) &=& {A^{(abc)}\over 2\sqrt 2\pi^2f^3_\pi}
+                                          G_3^{(abc)}(Q^2,s_1,s_2,s_3)\>,'
+    normalisation:
+      where: (:651-660)
+      provenance: printed-eq
+      quote: 'with the requirement $G^{(abc)}_{1,2,3}\rightarrow G^{(abc)}_{1,2,3,soft}= 1 $'
+      note: >
+        Every Breit-Wigner below is normalised to 1 at s = 0, and every G is a
+        product/sum of them arranged so that G -> 1 in the chiral limit, except
+        for G_{2,3}^(K- pi0 K0), G_2^(pi- Kbar0 pi0) and G_3^(pi0 pi0 K-),
+        which the paper says vanish there.  This normalisation IS the coupling:
+        there is no free overall strength per channel.
+
+# ---------------------------------------------------------------------------
+invariant_ordering:
+  # This is the single convention most likely to be got wrong.  It is printed.
+  definition:
+    where: (:571-572)
+    provenance: printed-eq
+    quote: 'All form factors $F_i$ are in general functions of $Q^2$,
+            $s_1=(q_2+q_3)^2, s_2=(q_1+q_3)^2$ and $s_3=(q_1+q_2)^2$.'
+  meson_labelling:
+    where: (:686-687)
+    provenance: printed-eq
+    quote: 'Note that by convenient ordering of the mesons, the two body resonances
+            in $F_1$ ($F_2$) occur only in the variables $s_2,s_3$ ($s_1,s_3)$.'
+    note: >
+      The channel label "(abc)" in Tabs. I and II IS the momentum assignment:
+      a = q_1, b = q_2, c = q_3.  Consequences worth stating explicitly, because
+      they are the opposite of the naive guess in two cases:
+        K^- pi^- pi^+ :  s_1 = m^2(pi^- pi^+)  [rho],  s_2 = m^2(K^- pi^+)  [K*]
+        K^- pi^- K^+  :  s_1 = m^2(pi^- K^+)   [K*],   s_2 = m^2(K^- K^+)   [omega/phi]
+        pi^- Kbar0 pi0:  s_1 = m^2(Kbar0 pi0)  [K*],   s_2 = m^2(pi^- pi^0) [rho],
+                         s_3 = m^2(pi^- Kbar0) [K*]
+      So for K^- pi^- pi^+ the RHO sits in s_1 and the K* in s_2, i.e. s_1 is
+      the NON-strange pair.  Verified: with this assignment every G listed in
+      Tab. I and Tab. II reduces to 1 (or to 0 where the paper says it must) at
+      Q^2, s_i -> 0, and the closure below reproduces all eight channels.
+  rest_frame:
+    provenance: resolved
+    where: "x_i definitions at :1305-1316"
+    quote: 'x_{1}= V_{1}^{x}=q_{1}^{x}-q_{3}^{x},\,
+            x_{2}= V_{2}^{x}=q_{2}^{x}-q_{3}^{x},\,
+            x_{3}= V_{1}^{y}=q_{1}^{y}=-q_{2}^{y},\,
+            x_{4}= V_{3}^{z}=\sqrt{Q^{2}}x_{3}q_{3}^{x},\,'
+    resolution: >
+      The paper defers the explicit x_i(s_1,s_2,s_3) to ref. [KueMi1] ((:1317-1318)
+      reads "They can easily be expressed in terms of $s_1$, $s_2$ and $s_3$").
+      The frame is nevertheless fully determined by the four definitions above:
+      hadrons in the x-y plane of the hadronic rest frame with q_3 along +x
+      (hence q_3^y = 0, hence x_3 = q_1^y = -q_2^y).  PROOF that this is the
+      intended frame, not a guess: substituting q_3 = Q - q_1 - q_2 into
+      V_3^mu = eps^{mu alpha beta gamma} q_1 q_2 q_3 gives
+      V_3^z = sqrt(Q^2) (q_1 x q_2)_z = sqrt(Q^2) x_3 q_3^x identically, which
+      is exactly the paper's printed x_4.  Closed form used here:
+        E_i = (Q^2 + m_i^2 - s_i)/(2 sqrt(Q^2)),  p_i = sqrt(E_i^2 - m_i^2)
+        q_1^x = (p_2^2 - p_1^2 - p_3^2)/(2 p_3),  q_2^x = -q_1^x - p_3,
+        q_3^x = p_3,  x_3^2 = p_1^2 - (q_1^x)^2
+      Only x_1, x_2, x_1 x_2, x_3^2 and x_4^2 enter W_A, W_B, so the residual
+      sign freedom (+-x, +-y) is unobservable.
+
+# ---------------------------------------------------------------------------
+width_conventions:
+  # Two conventions coexist in this paper and they are NOT interchangeable.
+  energy_dependent:
+    used_for: [rho, rho_prime, rho_double_prime, Kstar_892, Kstar_1410, Kstar_1680]
+    denominator:
+      where: (:317-319)
+      provenance: printed-eq
+      quote: '\mbox{BW}_{X}[s]\equiv {M^2_X\over [M^2_X-s-i\sqrt s \Gamma_X(s)]}\>,'
+      note: "denominator carries i sqrt(s) Gamma(s), NOT i M Gamma(s).  BW(0) = 1."
+    running:
+      where: (:327-332)
+      provenance: printed-eq
+      quote: '\Gamma_X(s)&=& \Gamma_X {M^2_X\over s} \biggl({ p\over p_X}
+              \biggr)^{2n+1}\,\>, \\[2mm]
+               p&=&{1\over 2\sqrt s} \sqrt{(s-(M_1+M_2)^2)(s-(M_1-M_2)^2)}\>,\\[2mm]
+              p_X&=& {1\over 2M_X}\sqrt{(M^2_X-(M_1+M_2)^2)(M^2_X-(M_1-M_2)^2)} \>,'
+      note: >
+        The mass factor is (M_X^2/s), NOT (M_X/sqrt(s)).  Both halves are
+        recorded because the pair is what defines Gamma: a set carrying these
+        Gamma_X under a (M/sqrt(s)) running width is invalid off the pole.
+    power:
+      where: (:335-336)
+      provenance: printed-num
+      quote: 'where $n$  is the power of $|p|$ in the matrix element,
+              {\it i.e.} $n=1$ for the decay modes in this paper.'
+      note: "n = 1 -> (p/p_X)^3 everywhere."
+    daughter_masses:
+      provenance: assumed
+      value: "rho-family: M_1 = M_2 = m_pi;  K*-family: M_1 = m_K, M_2 = m_pi"
+      note: >
+        The paper never says which M_1, M_2 go into p and p_X.  ASSUMED to be the
+        resonance's own dominant decay products.  This is forced for the rho in
+        the K^0 K^- channel: m_rho = 0.773 < 2 m_K, so p_X would be imaginary if
+        the channel's own masses were used.  Numerically irrelevant elsewhere:
+        swapping charged/neutral daughter masses changes B(K* nu) by < 0.02%.
+    applies_also_to_T2:
+      where: (:1100)
+      provenance: printed-num
+      quote: 'We use energy dependent widths here.'
+      note: "confirms T_rho^(2) and T_K*^(2) use the energy-dependent form, not the fixed one."
+  fixed_width:
+    used_for: [K1_1270, K1_1400, omega, phi]
+    denominator:
+      where: "eq.(bwc), :899-904"
+      provenance: printed-eq
+      quote: 'BW_{K_1}[s]\equiv
+              \frac{-m^2_{K_1}+im_{K_1}\Gamma_{K_1}}{[s-m^2_{K_1}+im_{K_1}
+              \Gamma_{K_1}]},'
+      note: >
+        Constant width.  Note the numerator is (-m^2 + i m Gamma), not m^2:
+        it is written so that BW(0) = +1 exactly, INCLUDING the imaginary part.
+        Replacing it by m^2/(m^2 - s - i m Gamma) is NOT the same function - it
+        differs by the factor (m^2 - i m Gamma)/m^2, i.e. by 3.9 degrees of
+        constant phase for the K_1(1400).  That phase is unobservable for a
+        single pole but is NOT unobservable in T_K1^(a), which is a coherent sum
+        of two such poles.
+      preamble:
+        where: (:895-896)
+        provenance: printed-num
+        quote: 'In case of the $K_1$ resonances we use  normalized Breit-Wigner propagators
+                with constant  widths:'
+    omega_phi_share_it:
+      where: (:959-961)
+      provenance: printed-num
+      quote: 'We use Breit-Wigner propagators with fixed widths,
+              of the same form as the one  used for the
+              $K_1$ resonances in Eq.~(\ref{bwc}), with \cite{RPP94}'
+  a1_width:
+    used_for: [a1_1260]
+    denominator:
+      where: (:799-803)
+      provenance: printed-eq
+      quote: '\mbox{BW}_{A_1}(s) =
+              \frac{m_{A_1}^2} {m_{A_1}^2 - s - i m_{A_1} \Gamma_{A_1} g(s) /
+              g(m_{A_1})}\>,'
+      note: >
+        A THIRD convention: denominator i m_{A1} Gamma g(s)/g(m_A1), i.e. the
+        mass-times-width form, not i sqrt(s) Gamma(s).  Do not apply the
+        energy-dependent rule above to the A_1.
+    running:
+      provenance: unresolved
+      where: (:814-815)
+      quote: 'where the  function $g(s)$ has been calculated in
+              \cite{KueSa}.'
+      note: >
+        UNRESOLVED.  The paper does not print g(s); it cites Kuehn-Santamaria,
+        Z. Phys. C 48 (1990) 445.  Per the rule that a functional form absent
+        from the source is unresolved whatever one thinks it obviously is, g(s)
+        is NOT supplied here.  Consequence: the AXIAL part of the five K K pi
+        channels cannot be evaluated from this file alone, and could not be
+        closed against Tab. III column 2 (see closure.not_closed).  The K pi pi
+        channels are unaffected - they use T_K1, which is fully specified.
+
+# ---------------------------------------------------------------------------
+parameters:
+
+  # ---- T_rho^(1): the two-body VECTOR form factor in the axial current -----
+  T_rho_1:
+    role: "two-body rho resonance factor, used for the non-strange pair in F_1/F_2 and in the two-meson K^0 K^- current"
+    form:
+      where: "eq.(beta), :342-347"
+      provenance: printed-eq
+      quote: 'T_\rho^{(1)}(s) & = & \frac{1}{1 + \beta_\rho}
+              \Big[ \mbox{BW}_\rho(s) + \beta_\rho\, \mbox{BW}_{\rho''}(s)
+              \Big] \>,'
+    provenance_of_values:
+      where: (:362-364)
+      provenance: printed-num
+      quote: 'These are the values which have been determined from $e^+ e^- \to \pi^+
+              \pi^-$ in \cite{KueSa} and have been used in \cite{Dec93} for the
+              non-strange case.'
+    values:
+      beta_rho:       { value: -0.145, sigfigs: 3, provenance: printed-num, where: "eq.(eqnrho), :354" }
+      m_rho:          { value: 0.773, unit: GeV, sigfigs: 3, provenance: printed-num, where: "eq.(eqnrho), :355" }
+      Gamma_rho:      { value: 0.145, unit: GeV, sigfigs: 3, provenance: printed-num, where: "eq.(eqnrho), :355" }
+      m_rho_prime:    { value: 1.370, unit: GeV, sigfigs: 4, provenance: printed-num, where: "eq.(eqnrho), :357" }
+      Gamma_rho_prime: { value: 0.510, unit: GeV, sigfigs: 3, provenance: printed-num, where: "eq.(eqnrho), :357" }
+    nature:
+      rho:        physical_state
+      rho_prime:  effective_fit_pole
+      note: >
+        m_rho' = 1.370, Gamma_rho' = 0.510 GeV is a Kuehn-Santamaria fit to
+        e+e- -> pi+pi-, not a PDG rho(1450).  Gamma/m = 0.37 - it is an effective
+        pole absorbing everything above the rho(770), and beta_rho = -0.145 is
+        its weight in that same fit.  The paper says so directly ((:460-463)):
+        "whereas the $\rho'$ mass and width parameters in Eq.~(\ref{eqnrho}) have
+        been determined from a fit to the $Q^2$ distribution in $\tau\to
+        2\pi\nu_\tau$ \cite{KueSa}."  NEVER substitute a database rho(1450), and
+        never move beta_rho without moving m_rho', Gamma_rho' with it.
+
+  # ---- T_K*^(1): the two-body strange VECTOR form factor -------------------
+  T_Kstar_1:
+    role: "two-body K* resonance factor; used for every strange pair in F_1, F_2, F_3, and for the two-meson K pi current"
+    form:
+      where: "eq.(betakst), :372-377"
+      provenance: printed-eq
+      quote: 'T_{K^\star}^{(1)}(s) & = &\frac{1}{1 + \beta_{K^\star}}
+              \Big[ \mbox{BW}_{K^\star}(s) + \beta_{K^\star}\, \mbox{BW}_{{K^\star}''}(s)
+              \Big]\>,'
+    values:
+      beta_Kstar:       { value: -0.135, error: 0.025, sigfigs: 3, provenance: printed-num,
+                          where: (:450), determined_in_this_paper: true }
+      m_Kstar:          { value: 0.892, unit: GeV, sigfigs: 3, provenance: printed-num, where: "eq.(ksdef), :385" }
+      Gamma_Kstar:      { value: 0.050, unit: GeV, sigfigs: 2, provenance: printed-num, where: "eq.(ksdef), :386" }
+      m_Kstar_prime:    { value: 1.412, unit: GeV, sigfigs: 4, provenance: printed-num, where: "eq.(ksdef), :388" }
+      Gamma_Kstar_prime: { value: 0.227, unit: GeV, sigfigs: 3, provenance: printed-num, where: "eq.(ksdef), :389" }
+    beta_determination:
+      where: (:445-450)
+      provenance: printed-num
+      quote: 'Thus our results favour a negative value of $\beta_{K^\star}$,
+              and we obtain
+              $\beta_{K^\star}=-0.135\pm 0.025$ as a result of this analysis.'
+      note: >
+        beta_K* is the ONLY quantity this paper fits, and it is fitted to a
+        single number: B(K* nu) = 1.36 +- 0.08%.  It is therefore 100%
+        anti-correlated with the overall normalisation of the strange axial and
+        vector currents - the paper says as much at (:1399-1409), where it notes
+        the dominant effect is the factor 1/(1+beta_K*)^2 and that it "may well
+        compensate the error being made by deriving the coupling constants using
+        flavour symmetry".  Treat beta_K* as a normalisation knob, not as
+        spectroscopy.
+    nature:
+      Kstar_892:   physical_state
+      Kstar_1410:  physical_state
+      note: >
+        Both masses/widths are RPP94 values, not fitted here ((:457-459)
+        "Note that we use here the values of \cite{RPP94} for the mass and widths
+        parameters of").  Only the WEIGHT beta_K* is this paper's.  This is the
+        one place in the file where substituting a modern database mass would be
+        defensible - but it would change B(K* nu) and hence invalidate beta_K*,
+        so it still may not be done piecemeal.
+
+  # ---- T_rho^(2), T_K*^(2): the THREE-body vector resonance ---------------
+  T_rho_2:
+    role: "three-body (Q^2) vector resonance in the anomalous current, non-strange"
+    form:
+      where: (:1048-1058)
+      provenance: printed-eq
+      quote: 'T_\rho^{(2)} & = & \frac{1}{1 + \lambda + \mu}
+              \Big[ \mbox{BW}_\rho(s) + \lambda \mbox{BW}_{\rho''}(s)
+              + \mu \mbox{BW}_{\rho''''}(s)
+              \Big] \>,'
+    values:
+      lambda:              { value: -0.25,  sigfigs: 2, provenance: printed-num, where: (:1065), printed_as: "6.5/-26" }
+      mu:                  { value: -0.038, sigfigs: 2, provenance: printed-num, where: (:1067), printed_as: "1/-26" }
+      m_rho:               { value: 0.773, unit: GeV, sigfigs: 3, provenance: printed-num, where: (:1075) }
+      Gamma_rho:           { value: 0.145, unit: GeV, sigfigs: 3, provenance: printed-num, where: (:1075) }
+      m_rho_prime:         { value: 1.500, unit: GeV, sigfigs: 4, provenance: printed-num, where: (:1077) }
+      Gamma_rho_prime:     { value: 0.220, unit: GeV, sigfigs: 3, provenance: printed-num, where: (:1077) }
+      m_rho_dprime:        { value: 1.750, unit: GeV, sigfigs: 4, provenance: printed-num, where: (:1079) }
+      Gamma_rho_dprime:    { value: 0.120, unit: GeV, sigfigs: 3, provenance: printed-num, where: (:1079) }
+    warning: >
+      THE rho' HERE IS NOT THE rho' IN T_rho^(1).  1.500/0.220 here against
+      1.370/0.510 there.  The paper is explicit that these come from different
+      fits: (:1083-1084) reads "This is exactly the parameterization of \cite{Gom90}, which was used in
+      \cite{Dec93}, written in a slightly different way."  Unifying them is the
+      single most tempting and most destructive edit that can be made to this file.
+    nature:
+      rho_prime:  effective_fit_pole
+      rho_dprime: effective_fit_pole
+      evidence: >
+        (:1104-1106) reads "The parameters $\lambda$ and $\mu$, as well as the $\rho'$
+        and $\rho''$ parameters of $T_\rho^{(2)}$ have been obtained from a fit
+        to data." - a fit to e+e- -> eta pi pi (DM2), i.e. a different hadronic
+        environment.  lambda and mu are printed as the ratios 6.5/-26 and 1/-26,
+        which is the tell of a fit residue, not a measured coupling.
+  T_Kstar_2:
+    role: "three-body (Q^2) vector resonance in the anomalous current, strange"
+    form:
+      where: (:1054-1057)
+      provenance: printed-eq
+      quote: 'T_{K^\star}^{(2)} & = &\frac{1}{1 + \lambda + \mu}
+              \Big[ \mbox{BW}_{K^\star}(s) + \lambda \mbox{BW}_{{K^\star}''}(s)
+              + \mu \mbox{BW}_{{K^\star}''''}(s)
+              \Big]\>,'
+    values:
+      lambda:               { value: -0.25,  sigfigs: 2, provenance: printed-num, where: (:1065) }
+      mu:                   { value: -0.038, sigfigs: 2, provenance: printed-num, where: (:1067) }
+      m_Kstar:              { value: 0.892, unit: GeV, sigfigs: 3, provenance: printed-num, where: (:1089) }
+      Gamma_Kstar:          { value: 0.050, unit: GeV, sigfigs: 2, provenance: printed-num, where: (:1090) }
+      m_Kstar_prime:        { value: 1.412, unit: GeV, sigfigs: 4, provenance: printed-num, where: (:1092) }
+      Gamma_Kstar_prime:    { value: 0.227, unit: GeV, sigfigs: 3, provenance: printed-num, where: (:1093) }
+      m_Kstar_dprime:       { value: 1.714, unit: GeV, sigfigs: 4, provenance: printed-num, where: (:1095) }
+      Gamma_Kstar_dprime:   { value: 0.323, unit: GeV, sigfigs: 3, provenance: printed-num, where: (:1096) }
+    nature:
+      Kstar_892: physical_state
+      Kstar_1410: physical_state
+      Kstar_1680: physical_state
+      lambda_mu: effective_fit_pole_weights_borrowed_from_the_rho_sector
+      evidence: >
+        (:1106-1108) reads "For the $K^\star$ in the anomalous channel,
+        we use the same parameters $\lambda$ and $\mu$ as for the $\rho$ with
+        ${K^\star}'$, ${K^\star}''$ parameters taken from \cite{RPP94}."
+        So lambda, mu here are ASSUMED equal to the rho-sector fit values by
+        SU(3), not measured.  The paper then says it does not much matter
+        ((:1112-1115)): "It should be noted, however, that the numerical significance of these
+        details is fairly small, because of the small vector channel
+        contribution to the relevant decay modes".
+
+  # ---- omega/phi mixing in the anomalous current --------------------------
+  T_omega:
+    role: "two-body isoscalar resonance for the K Kbar pair in the anomalous current"
+    form:
+      where: (:943-946)
+      provenance: printed-eq
+      quote: 'T_\omega(s) = \frac{1}{1 + \epsilon} [ \mbox{BW}_\omega(s) +
+              \epsilon \mbox{BW}_\Phi(s) ]\>,'
+    values:
+      epsilon:      { value: 0.05,    sigfigs: 1, provenance: printed-num, where: (:953) }
+      m_omega:      { value: 0.782,   unit: GeV, sigfigs: 3, provenance: printed-num, where: (:964) }
+      Gamma_omega:  { value: 0.00843, unit: GeV, sigfigs: 3, provenance: printed-num, where: (:964) }
+      m_phi:        { value: 1.020,   unit: GeV, sigfigs: 4, provenance: printed-num, where: (:965) }
+      Gamma_phi:    { value: 0.00443, unit: GeV, sigfigs: 3, provenance: printed-num, where: (:965) }
+    nature:
+      omega: physical_state
+      phi:   physical_state
+      epsilon: external_input
+    why_not_rho:
+      where: (:929-935)
+      provenance: printed-num
+      quote: 'Due to $G$ parity conservation, the vector resonance $V$ in the decay chain
+              $W^- \to \rho^-$, $\rho^- \to V \pi^-$, $V \to (K^- K^+, K^0 \overline{K^0})$
+              must have $G = -1$. Thus only the $\omega$ and the $\Phi$ qualify.'
+      note: >
+        This is a CORRECTION to Decker-Mirkes-Sauer-Was, which had a rho here.
+        If the consuming code inherited a rho in the K Kbar pair of the anomalous
+        K K pi current, it inherited the bug this paper fixes.
+
+  # ---- the strange axial three-body resonances ----------------------------
+  T_K1:
+    role: "three-body (Q^2) axial resonance for K pi pi; two distinct towers"
+    form:
+      where: (:870-876)
+      provenance: printed-eq
+      quote: 'T_{K_1}^{(a)}(s) & = & \frac{1}{1 + \xi}
+              \Big[ \mbox{BW}_{K_1(1400)}(s) + \xi \mbox{BW}_{K_1(1270)} (s)
+              \Big] \>,'
+      quote_b: 'T_{K_1}^{(b)}(s) & = & \mbox{BW}_{K_1(1270)}(s) \>,'
+      note: >
+        (a) is the K* pi decay chain, (b) is the rho K chain; the paper's
+        reasoning is at (:863-867) - "The $K_1(1400)$ decays exclusively into $K^\star \pi$, while the
+        $K_1(1270)$ decays mainly into $K \rho$, with a smaller branching ratio
+        into $K^\star \pi$."  T_K1^(b) has NO K_1(1400) at all and NO
+        normalisation prefactor: BW(0) = 1 already.
+    values:
+      xi:               { value: 0.33,  sigfigs: 2, provenance: resolved,
+                          where: "eq.(xidef), :884-886 for |xi|; sign at :1361-1363" }
+      m_K1_1400:        { value: 1.402, unit: GeV, sigfigs: 4, provenance: printed-num, where: (:912) }
+      Gamma_K1_1400:    { value: 0.174, unit: GeV, sigfigs: 3, provenance: printed-num, where: (:913) }
+      m_K1_1270:        { value: 1.270, unit: GeV, sigfigs: 4, provenance: printed-num, where: (:914) }
+      Gamma_K1_1270:    { value: 0.090, unit: GeV, sigfigs: 2, provenance: printed-num, where: (:915) }
+    xi_resolution:
+      magnitude:
+        where: (:879-887)
+        provenance: printed-num
+        quote: 'Using the ratio $\Gamma(K_1(1270) \to K^\star \pi) /
+                \Gamma(K_1(1400) \to K^\star \pi)$, we obtain after phase space
+                correction:'
+        note: "|xi| = 0.33."
+      sign:
+        provenance: resolved
+        where: ":888-892 and Tab. IV, :1842-1865"
+        quote: 'Thus $\xi$ is determined up to a sign ambiguity. We will consider both
+                possibilities below and find that $\xi = -0.33$ leads to decay rates
+                which strongly disagree with experimental data (see Sec.~\ref{numeric}).'
+        evidence: >
+          The paper resolves the sign against its own printed rates, and so does
+          this extraction: Tab. IV (xi = -0.33) predicts B(K- pi- pi+) = 1.37%
+          against 0.40 +- 0.09% measured, versus 0.77% for xi = +0.33.  Both
+          signs were evaluated in the closure below and BOTH reproduce the
+          paper's tables to ~2%, which is what makes the sign a genuine
+          `resolved` rather than an `assumed`: it is fixed by data, not by us.
+    nature:
+      K1_1270: physical_state
+      K1_1400: physical_state
+      xi:      derived_branching_ratio_weight
+      note: >
+        Both K_1 masses/widths are RPP94.  xi is NOT a fit parameter either - it
+        is a phase-space-corrected ratio of measured partial widths, with a sign
+        chosen by comparing to rate data.  This is the one tower in the file
+        where a database mass/width substitution would be conceptually
+        defensible; it is still forbidden, because xi = 0.33 was computed from
+        THESE widths.
+
+  # ---- the non-strange axial three-body resonance -------------------------
+  A1:
+    role: "three-body (Q^2) axial resonance for K Kbar pi"
+    values:
+      m_A1:      { value: 1.251, unit: GeV, sigfigs: 4, provenance: printed-num, where: "eq.(a1), :807" }
+      Gamma_A1:  { value: 0.475, unit: GeV, sigfigs: 3, provenance: printed-num, where: "eq.(a1), :809" }
+      g_of_s:    { provenance: unresolved, where: (:814-815), see: "width_conventions.a1_width.running" }
+    nature:
+      a1: effective_fit_pole
+      evidence: >
+        Gamma_A1 = 0.475 GeV is a CHOICE made in this paper, not a measurement,
+        and the paper chose it to move a branching ratio: (:815-816) reads
+        "Note that we use a smaller $A_1$ width than used
+        in \cite{Dec93,KueMi1,KueMi2} ($\Gamma_{A_1}=0.599$ GeV)." and
+        (:833-836) reads "An $A_1$ width of 0.475 GeV predicts a branching fraction
+        ${\cal B}(\tau^-\rightarrow \pi^-\pi^-\pi^+\nu_\tau)$ of 8.6 \%
+        (compared to 6.3 \% for $\Gamma_{A_1}=599$ GeV),".
+        A parameter whose two candidate values differ by 26% and move a
+        branching ratio from 6.3% to 8.6% is a fit parameter.  The paper
+        quantifies the consequence for THIS file at (:1419-1422): using 0.599
+        instead "decreases the branching fractions for the  $K\pi K$ decay modes in Tab.~\ref{tab3}
+        by about 15\%".  Never substitute a database a_1(1260) width here.
+        (Note the typo "599 GeV" for "0.599 GeV" at :835 in the source.)
+
+  # ---- the anomalous-current mixing parameter -----------------------------
+  alpha:
+    role: "relative strength of the strange and non-strange two-body resonances in the anomaly"
+    value: { value: 0.7071067811865476, expression: "1/sqrt(2)", sigfigs: exact,
+             provenance: printed-eq, where: (:1012-1014) }
+    note: >
+      In Decker-Mirkes-Sauer-Was alpha was a free parameter; here it is DERIVED.
+      (:1010-1011) reads "the parameter $\alpha$ can be determined, with the result".
+      alpha never appears explicitly in the final Tab. II - it has already been
+      substituted into the coefficients, which is why the K- pi- K+ anomaly reads
+      (sqrt2 - 1)[sqrt2 T_omega(s_2) + T_K*(s_1)] and not (T + alpha T)/(1+alpha).
+      Checked: (sqrt2-1)(sqrt2 + 1) = 1, so G_3 -> 1 in the chiral limit, exactly
+      as the normalisation requires.  Do not re-introduce alpha as a knob.
+
+# ---------------------------------------------------------------------------
+# Per-channel coefficients and form factors: Tab. I (axial) and Tab. II (vector).
+# These are the isospin content of the paper and they do NOT flatten to one
+# block.  Expressions are python, with T1K=T_Kstar_1, T1R=T_rho_1, T2K=T_Kstar_2,
+# T2R=T_rho_2, TW=T_omega, K1a=T_K1^(a), K1b=T_K1^(b), A1=BW_A1, S2=sqrt(2).
+channels:
+
+  "K- pi- K+":
+    where: "Tab. I :1683-1686, Tab. II :1754-1757"
+    provenance: printed-eq
+    cabibbo: cos
+    q: [K-, pi-, K+]
+    A_axial:  "-1/2"
+    A_vector: "-1"
+    G1: "A1(Q2) * T1R(s2)"
+    G2: "A1(Q2) * T1K(s1)"
+    G3: "T2R(Q2) * (S2-1) * (S2*TW(s2) + T1K(s1))"
+    symmetry_factor: 1
+    predicted: { gamma_over_gamma_e: 0.011, anomaly: 0.0045, B_percent: 0.20,
+                 where: "Tab. III, :1826" }
+
+  "K0 pi- K0bar":
+    where: "Tab. I :1688-1691, Tab. II :1759-1762"
+    provenance: printed-eq
+    cabibbo: cos
+    q: [K0, pi-, K0bar]
+    A_axial:  "-1/2"
+    A_vector: "+1"
+    G1: "A1(Q2) * T1R(s2)"
+    G2: "A1(Q2) * T1K(s1)"
+    G3: "T2R(Q2) * (S2-1) * (S2*TW(s2) + T1K(s1))"
+    symmetry_factor: 1
+    predicted: { gamma_over_gamma_e: 0.011, anomaly: 0.0045, B_percent: 0.20,
+                 where: "Tab. III, :1827" }
+    note: >
+      Not an observable final state; kept because the K_S/K_L modes are built
+      from it via eq.(eqn1).  Its A_vector is +cos theta_c where K- pi- K+ has
+      -cos theta_c; the G's are identical.  The paper's Tab. III lists this
+      channel and K- pi- K+ as EXACTLY equal in every column, which is only true
+      if the neutral and charged kaon masses are taken degenerate - see
+      conventions.meson_masses.
+
+  "K_S pi- K_S":
+    where: "Tab. I :1693-1697, Tab. II :1764-1767"
+    provenance: printed-eq
+    cabibbo: cos
+    q: [K_S, pi-, K_S]
+    A_axial:  "-1/4"
+    A_vector: "-1/2"
+    G1: "A1(Q2) * T1K(s3)"
+    G2: "-A1(Q2) * (T1K(s1) + T1K(s3))"
+    G3: "T2R(Q2) * (S2-1) * (T1K(s1) - T1K(s3))"
+    symmetry_factor: 0.5
+    predicted: { gamma_over_gamma_e: 0.0027, anomaly: 0.0008, B_percent: 0.048,
+                 where: "Tab. III, :1828" }
+    sign_note: >
+      Tab. I/II and the Sec. VI equations (:1190-1198, :1226-1234) differ by an
+      OVERALL sign for this channel only: the equations carry +cos/4 and +cos/2
+      where the tables carry -cos/4 and -cos/2.  Both the axial and the vector
+      flip together, so it is a global phase of this channel's current and does
+      not affect any rate or structure function.  Tab. I/II is taken as primary.
+
+  "K_S pi- K_L":
+    where: "Tab. I :1699-1704, Tab. II :1769-1773"
+    provenance: printed-eq
+    cabibbo: cos
+    q: [K_S, pi-, K_L]
+    A_axial:  "-1/4"
+    A_vector: "+1/2"
+    G1: "A1(Q2) * (2*T1R(s2) + T1K(s3))"
+    G2: "A1(Q2) * (T1K(s1) - T1K(s3))"
+    G3: "T2R(Q2) * (S2-1) * (2*S2*TW(s2) + T1K(s1) + T1K(s3))"
+    symmetry_factor: 1
+    predicted: { gamma_over_gamma_e: 0.0058, anomaly: 0.0029, B_percent: 0.10,
+                 where: "Tab. III, :1829" }
+
+  "K- pi0 K0":
+    where: "Tab. I :1706-1711, Tab. II :1775-1778"
+    provenance: printed-eq
+    cabibbo: cos
+    q: [K-, pi0, K0]
+    A_axial:  "3/(2*sqrt(2))"
+    A_vector: "-1/sqrt(2)"
+    G1: "A1(Q2) * (2./3*T1R(s2) + 1./3*T1K(s3))"
+    G2: "(1./3)*A1(Q2) * (T1K(s1) - T1K(s3))"
+    G3: "T2R(Q2) * (S2-1) * (T1K(s3) - T1K(s1))"
+    symmetry_factor: 1
+    predicted: { gamma_over_gamma_e: 0.0090, anomaly: 0.0032, B_percent: 0.16,
+                 where: "Tab. III, :1830" }
+    note: >
+      Both G_2 and G_3 vanish at s_1 = s_3 and in the chiral limit.  This whole
+      channel's K* content is NEW in this paper: (:722-723) reads
+      "which differs from $G_2^{(K^- \pi^0 K^0)} = 0$ in Tab.~\ref{tab1} of \cite{Dec93}."
+      and (:1034-1036) reads "These contributions were not taken into account in the
+      parameterization used in \cite{Dec93}."
+
+  "pi0 pi0 K-":
+    where: "Tab. I :1715-1718, Tab. II :1780-1783"
+    provenance: printed-eq
+    cabibbo: sin
+    q: [pi0, pi0, K-]
+    A_axial:  "1/4"
+    A_vector: "+1"
+    G1: "K1a(Q2) * T1K(s2)"
+    G2: "K1a(Q2) * T1K(s1)"
+    G3: "(1./4)*T2K(Q2) * (T1K(s1) - T1K(s2))"
+    symmetry_factor: 0.5
+    predicted: { gamma_over_gamma_e: 0.0080, anomaly: 0.0007, B_percent: 0.14,
+                 where: "Tab. III, :1832" }
+
+  "K- pi- pi+":
+    where: "Tab. I :1720-1723, Tab. II :1785-1788"
+    provenance: printed-eq
+    cabibbo: sin
+    q: [K-, pi-, pi+]
+    A_axial:  "-1/2"
+    A_vector: "+1"
+    G1: "K1a(Q2) * T1K(s2)"
+    G2: "K1b(Q2) * T1R(s1)"
+    G3: "(1./2)*T2K(Q2) * (T1R(s1) + T1K(s2))"
+    symmetry_factor: 1
+    predicted: { gamma_over_gamma_e: 0.043, anomaly: 0.0043, B_percent: 0.77,
+                 where: "Tab. III, :1833" }
+    note: >
+      This is the channel that most needs the ordering convention: the rho sits
+      in s_1 = m^2(pi- pi+) and the K* in s_2 = m^2(K- pi+).  It is also the only
+      channel in which the two axial form factors use DIFFERENT three-body
+      towers: G_1 uses T_K1^(a) (the K* pi chain) and G_2 uses T_K1^(b)
+      (the rho K chain, pure K_1(1270), no K_1(1400)).
+
+  "pi- K0bar pi0":
+    where: "Tab. I :1725-1732, Tab. II :1790-1794"
+    provenance: printed-eq
+    cabibbo: sin
+    q: [pi-, K0bar, pi0]
+    A_axial:  "3/(2*sqrt(2))"
+    A_vector: "sqrt(2)"
+    G1: "(2./3)*K1b(Q2)*T1R(s2) + (1./3)*K1a(Q2)*T1K(s3)"
+    G2: "(1./3)*K1a(Q2) * (T1K(s1) - T1K(s3))"
+    G3: "(1./4)*T2K(Q2) * (2*T1R(s2) + T1K(s1) + T1K(s3))"
+    symmetry_factor: 1
+    predicted: { gamma_over_gamma_e: 0.054, anomaly: 0.0058, B_percent: 0.96,
+                 where: "Tab. III, :1834" }
+    note: >
+      G_1 mixes the two K_1 towers within a single form factor: 2/3 of the rho K
+      chain and 1/3 of the K* pi chain.  G_2 vanishes in the chiral limit.
+
+# ---------------------------------------------------------------------------
+two_meson:
+  note: >
+    Not part of the model-100 three-meson current, but recorded because
+    beta_K* - which the three-meson channels all depend on - is fixed here, and
+    because these are the only absolute predictions in the paper that can be
+    closed without the unresolved g(s).
+  current:
+    where: "eq.(had2h), :251-261"
+    provenance: printed-eq
+    quote: '<  K^-(q_1) \pi^0(q_2) | V^\mu | 0 >
+            &=& \frac{1}{\sqrt{2}} <  \overline{K^0}(q_1) \pi^-(q_2)| V^\mu |0>\>,'
+    quote2: '< K^0(q_1) K^-(q_2) | V^\mu | 0 >
+             & = & T_\rho^{(1)} (q_1 - q_2)_\nu \,T^{\mu\nu} \>,'
+  predicted:
+    B_Kstar_nu:
+      where: "eq.(eqnkst), :421-438"
+      provenance: printed-num
+      values: { "beta=0": 1.00, "beta=-0.11": 1.28, "beta=-0.135": 1.36, "beta=-0.157": 1.44 }
+      unit: percent
+    B_K0Kminus:
+      where: (:476-478)
+      provenance: printed-num
+      quote: '{\cal B}(K^0 K^- \nu_\tau) = 0.11 \%\>,'
+  tauola_discrepancy:
+    where: (:294-308)
+    provenance: printed-num
+    quote: 'Note that our results for the hadronic matrix elements for $K^- \pi^0$ and
+            $\bar{K^0} \pi^-$ in Eq.~(\ref{had2h}) differ from the results in
+            the Tauola Monte Carlo \cite{tauola}
+            by an overall factor.'
+    note: >
+      Recorded as the paper's own claim, NOT used.  The paper asserts Tauola is
+      off by 2/sqrt(3) and that this nearly cancels against Tauola's missing
+      K*(1410).  Nothing from Tauola enters this file.
+
+# ---------------------------------------------------------------------------
+rate_formula:
+  # Needed to reproduce the paper's tables; recorded because the closure depends
+  # on it and because of the Cabibbo double-count trap below.
+  where: "eq.(rate), :1279-1302"
+  provenance: printed-eq
+  quote: '\Gamma(\tau\rightarrow 3h)=
+                     \frac{G^{2}}{12m_\tau}
+          \bigl(^{\cos\theta_{c}}_{\sin\theta_{c}}\bigr)^2
+          \frac{1}{(4\pi)^5}
+          \int \frac{dQ^{2}}{Q^4} ds_1 ds_2 \,(m_\tau^{2}-Q^{2})^{2}\,
+                    \left( 1+\frac{2Q^2}{m_\tau^2}\right)\,
+                     \,\,(W_{A}+W_{B})'
+  structure_functions:
+    quote: 'W_{A}  &=&   \hspace{3mm}(x_{1}^{2}+x_{3}^{2})\,|F_{1}|^{2}
+                       +(x_{2}^{2}+x_{3}^{2})\,|F_{2}|^{2}
+                       +2(x_{1}x_{2}-x_{3}^{2})\,\mbox{Re}\left(F_{1}F^{\ast}_{2}\right)'
+    quote_b: 'W_{B}  &=& \hspace{3mm} x_{4}^{2}|F_{3}|^{2}'
+  no_interference:
+    quote: 'Eq.~(\ref{rate}) shows that there is no interference
+            between the axial vector contributions ($F_1, F_2$) and the
+            vector current contribution  ($F_3$) in the total decay
+            width.'
+  normalisation_to_gamma_e:
+    where: (:1267-1272)
+    provenance: printed-num
+    quote: 'To calculate the branching ratios, we use the theoretical prediction
+            for $\Gamma_e/ \Gamma_{\mbox{tot}}=17.8 \%$ based on the experimental
+            values for the tau mass
+            $m_\tau = 1.7771 \, \mbox{GeV}$ and lifetime
+            $\tau_{\tau} = 291.6 \, \mbox{fs}$ \protect\cite{taulifetime}, rather
+            than using the experimental branching ratio.'
+
+# ---------------------------------------------------------------------------
+conventions:
+  cabibbo_counted_once:
+    provenance: resolved
+    where: "eq.(rate) :1283 carries (cos/sin theta_c)^2; Tab. I/II A^(abc) at :1683-1794 ALSO carry cos/sin theta_c"
+    resolution: >
+      The Cabibbo factor appears TWICE in the paper's own notation - once
+      explicitly in eq.(rate) and once inside every A^(abc) of Tabs. I and II -
+      and it must be applied ONCE.  Resolved against the printed numbers, not
+      assumed: applying it twice would suppress every Cabibbo-suppressed
+      channel by a further sin^2(theta_c) ~ 0.05, i.e. by a factor 20.  With it
+      applied once, the anomaly column of Tab. III reproduces to 2% across all
+      eight channels and across Tabs. IV, V and VI; with it applied twice, the
+      three K pi pi channels come out 20x too small.  Not a close call.
+      Practically: use A^(abc) exactly as printed in Tabs. I/II (theta_c
+      included) and DROP the prefactor in eq.(rate).
+  cabibbo_value:
+    provenance: resolved
+    value: { sin2_theta_c: 0.050, cos2_theta_c: 0.950 }
+    resolution: >
+      The paper never prints theta_c.  sin^2 = 0.05 is what simultaneously
+      reproduces B(K* nu) = 1.00/1.28/1.36/1.44% for beta_K* = 0/-0.11/-0.135/-0.157
+      (to -0.8/+0.5/+1.0/+1.2%) and the whole Cabibbo-suppressed three-meson block to
+      2%; cos^2 = 0.95 reproduces B(K^0 K^-) = 0.11%.  Equivalent to
+      sin theta_c = 0.2236, i.e. |V_us| = 0.224 - slightly above the RPP94 0.2205,
+      which is within the 2% scatter of the closure and cannot be pinned harder
+      from 2-significant-figure tables.
+  f_pi:
+    provenance: resolved
+    value: { value: 0.0933, unit: GeV, sigfigs: 3 }
+    resolution: >
+      f_pi is not printed anywhere in the paper, yet the absolute rate depends on
+      it as f_pi^-2 (axial) and f_pi^-6 (anomaly).  Resolved by requiring the
+      axial and anomalous residuals to agree: with f_pi = 0.0933 GeV the
+      Cabibbo-suppressed axial closure sits at 1.020 x paper and the
+      Cabibbo-suppressed anomaly at 1.018 x paper.  Since the two scale as
+      f_pi^-2 and f_pi^-6, their RATIO fixes f_pi independently of theta_c and of
+      Gamma_e: (1+delta)^4 = 1.018/1.020 gives f_pi = 0.0933 GeV to 0.05%
+      (0.35% once the tables' rounding is folded in).  So the convention is
+      f_pi = 93.3 MeV, i.e. the f_pi ~ 93 MeV normalisation, NOT 130 MeV.
+  identical_particles:
+    provenance: resolved
+    value: "extra factor 1/2 in the rate for pi0 pi0 K-, K_S pi- K_S and K_L pi- K_L"
+    resolution: >
+      Eq.(rate) integrates s_1 and s_2 over the full Dalitz plot and the paper
+      says nothing about identical particles.  Resolved against the printed
+      numbers: without the 1/2, the anomaly column comes out 2.09x the paper's
+      0.0007 for pi0 pi0 K- and 1.81x its 0.0008 for K_S pi- K_S, while every
+      non-identical channel sits at 0.99-1.02.  With the 1/2 they join the rest.
+      A clean factor-of-two signal in exactly the two channels with a repeated
+      meson, and in no others.
+  meson_masses:
+    provenance: resolved
+    value: "isospin-degenerate: all kaons at the charged-kaon mass, all pions at the charged-pion mass"
+    resolution: >
+      The paper says it uses "the physical masses and decay widths of the mesons
+      in the propagators and in the phase space" ((:1387-1389)) but its Tab. III
+      lists K- pi- K+ and K^0 pi- Kbar^0 as EXACTLY equal in every column of
+      every table.  With m_K0 = 0.4977 and m_K+ = 0.4937 those two rates differ
+      by 9% (computed here), so the paper cannot have used both.  Taking all
+      kaons at one mass makes them equal, and brings the K_S/K_L channels from
+      0.90x to 0.99x the paper's values.  The pion degeneracy is a weaker
+      inference: it moves the pi0 pi0 K- anomaly from 1.047x to 1.010x and
+      pi- Kbar0 pi0 from 1.037x to 1.021x, so it is preferred but not decisive.
+      Whichever is used, the spread stays inside 4%.
+  gamma_e:
+    provenance: assumed
+    value: "Gamma_e = G_F^2 m_tau^5 / (192 pi^3), with G_F = 1.16639e-5 GeV^-2, m_tau = 1.7771 GeV"
+    note: >
+      The paper prints m_tau and Gamma_e/Gamma_tot = 17.8% but not the expression
+      for Gamma_e.  Using instead Gamma_e = 0.178 hbar/291.6fs from the paper's own
+      lifetime raises every Gamma/Gamma_e by 0.8% and makes the closure slightly
+      worse, so the tree-level expression is the one assumed.  This is a pure
+      overall normalisation and is degenerate with theta_c and f_pi.
+
+correlations:
+  printed: false
+  note: >
+    The paper prints NO correlation matrix - there is no simultaneous fit to
+    correlate.  What it does print, and what matters more here, is a set of
+    explicit sensitivities, which are the honest substitute:
+      - beta_K* = -0.135 -> -0.11 moves every three-meson rate down 3-4%
+        (Tab. V); beta_K* -> 0 moves them down 19-23% (Tab. VI).
+      - Gamma_A1 = 0.475 -> 0.599 GeV decreases the K pi K modes by about 15%
+        ((:1419-1422)) and moves R from 0.48 to 0.42 ((:1446-1447)).
+      - xi = +0.33 -> -0.33 roughly DOUBLES the K pi pi rates (Tab. IV).
+    beta_K*, Gamma_A1 and the overall SU(3) coupling normalisation are strongly
+    degenerate by construction; the paper says so at (:1407-1409) -
+    "The main effect of choosing a different $\beta_{K^\star}$ is to
+    change the normalization, which may well compensate the error being made
+    by deriving the coupling constants using flavour symmetry."
+    It also states the size of that theory error at (:1391-1393):
+    "The approximation made may
+    lead to an error of about $10$--$30 \%$ on the matrix
+    element level."
+
+# ---------------------------------------------------------------------------
+closure:
+  against: >
+    The paper's own printed predictions, rebuilt from this file alone:
+      (i)   B(K* nu) at four values of beta_K*, eq.(eqnkst) :421-438;
+      (ii)  B(K^0 K^- nu) = 0.11%, :477;
+      (iii) the anomaly column (column 3) of Tabs. III, V and VI for all eight
+            three-meson channels - 24 numbers, none of which needs the A_1;
+      (iv)  the TOTAL column (column 2) of Tabs. III, IV, V and VI for the three
+            K pi pi channels - 12 numbers, which need T_K1 but not the A_1.
+    Integration: Gauss-Legendre in Q^2 and in (s_1, s_2) over the exact Dalitz
+    boundary s_2^{+-} = m_1^2 + m_3^2 + 2 E_1* E_3* +- 2 p_1* p_3* evaluated in
+    the (23) rest frame; x_i built from the frame construction in
+    invariant_ordering.rest_frame.  The integrator was validated BEFORE any
+    conclusion was drawn from it by reproducing B(tau -> pi- pi0 nu) = 23.7%
+    from T_rho^(1) with the same two-body kernel, and by checking that every G
+    in Tabs. I and II tends to 1 (or to 0) in the chiral limit.
+  result: >
+    Rebuilt from THIS FILE alone (parameters, channel expression strings and the
+    resolved conventions, including isospin-degenerate charged meson masses).
+    (i)   B(K* nu) [%], calc vs paper, sin^2 theta_c = 0.05:
+            beta = 0      : 0.992 vs 1.00   (-0.8%)
+            beta = -0.11  : 1.287 vs 1.28   (+0.5%)
+            beta = -0.135 : 1.373 vs 1.36   (+1.0%)   <- the value taken
+            beta = -0.157 : 1.458 vs 1.44   (+1.2%)
+    (ii)  B(K^0 K^-) = 0.110% vs 0.11% - exact to the printed digits.
+    (iii) anomaly column, calc/paper:
+            Tab. III: K-pi-K+ 0.988, K0pi-K0bar 0.988, KSpi-KS 0.986, KSpi-KL 0.989,
+                      K-pi0K0 0.986, pi0pi0K- 1.010, K-pi-pi+ 1.018, pi-K0barpi0 1.021
+            Tab. V:   1.002, 1.002, 1.064, 1.007, 0.993, 0.953, 1.020, 1.017
+            Tab. VI:  0.989, 0.989, 0.981, 0.993, 0.981, 1.049, 0.998, 1.019
+          (Tab. IV anomaly is identical to Tab. III by construction and is too.)
+          The only entries outside 2.1% (1.064, 0.953, 1.049) are against
+          ONE-significant-figure numbers (0.0007, 0.0007, 0.0005), i.e. +-7-10%.
+    (iv)  total column, calc/paper, for (pi0 pi0 K-, K- pi- pi+, pi- Kbar0 pi0):
+            Tab. III (xi=+0.33, beta=-0.135): 1.022, 1.020, 1.018
+            Tab. IV  (xi=-0.33, beta=-0.135): 0.995, 1.012, 1.014
+            Tab. V   (xi=+0.33, beta=-0.11 ): 1.014, 1.022, 1.020
+            Tab. VI  (xi=+0.33, beta= 0    ): 1.010, 1.005, 1.024
+    44 comparisons in all.  Every one against a 2-3 significant-figure entry is
+    within 2.4%; the three outliers are all against 1-significant-figure entries
+    and are inside that entry's own rounding.  The beta_K* ladder
+    (0 / -0.11 / -0.135 / -0.157), the xi sign flip (a factor ~2 in the rates),
+    the Cabibbo-allowed vs suppressed split, and the relative size of all eight
+    channels are all reproduced - the SHAPE of the model is confirmed, not one
+    number.
+  residual_explained: >
+    The residual is a COHERENT scale, not scatter, and it is fully accounted for
+    by three normalisation constants the paper never prints:
+      1. theta_c.  Not printed.  It enters as sin^2 or cos^2 and is the only
+         thing separating the +2% of the Cabibbo-suppressed block from the -1.3%
+         of the Cabibbo-allowed anomaly block.  Fixing sin^2 = 0.05 exactly makes
+         the suppressed block +2%; fixing it at 0.049 makes it exact and leaves
+         the allowed block at -1.2%.  No single theta_c removes both, which
+         means ~1% of genuine numerical difference remains - the size of one
+         unit in the last printed digit of a 2-significant-figure table.
+      2. f_pi.  Not printed.  Pinned to 0.0933 GeV by the ratio of the axial and
+         anomalous residuals (see conventions.f_pi), so it is no longer free -
+         but only to 0.35%, which is 2% of rate in the anomaly (f_pi^-6).
+      3. Gamma_e.  The paper gives Gamma_e/Gamma_tot but not Gamma_e; the
+         tree-level and lifetime-derived values differ by 0.8%.
+    Rounding is the other half: EVERY number in Tabs. III-VI is printed to one
+    or two significant figures.  0.0045 means [0.00445, 0.00455], i.e. +-1.1%;
+    0.0007 means +-7%.  Against that granularity a coherent 2% cannot be
+    resolved into a defect.
+    Nothing was tuned.  beta_K*, xi, lambda, mu, epsilon, alpha and every mass
+    and width below are exactly as printed; the three constants above are inputs
+    the paper omits, and they were fixed once, globally, and then held.
+  not_closed: >
+    The TOTAL column of the five K Kbar pi channels (0.011, 0.011, 0.0027,
+    0.0058, 0.0090 in Tab. III) could NOT be closed, because their axial part
+    needs BW_A1, and BW_A1 needs g(s), which this paper does not print
+    (see width_conventions.a1_width.running).  Their ANOMALY parts closed to 1.4%
+    (above), so the failure is isolated to the A_1 line shape.
+    Internal consistency check that survives without g(s): the paper's own
+    columns give an axial fraction (0.011 - 0.0045)/0.011 = 59% for K- pi- K+,
+    matching its prose at (:1343-1344) - "In fact, our predictions for the axial-vector contribution is
+    about 60\%." - so the missing piece is a line shape, not a coefficient.
+    Also not closed: R = Gamma(K_S pi- K_S)/Gamma(K_S pi- K_L) = 0.48 (:1440),
+    same reason.  From the rounded Tab. III entries, 0.0027/0.0058 = 0.466.
+
+# ---------------------------------------------------------------------
+# GENERATED by code_analysis/sherpa/paper_to_model/export_sherpa_blocks.py
+# from the `parameters` above.  Do not edit by hand - edit the recorded
+# values and regenerate.  This is the only block METOOLS reads.
+# ---------------------------------------------------------------------
+sherpa:
+  FM95_local: 1
+  fpi: 0.1319461254
+  FM95_xi: 0.33
+  FM95_mK1_1400: 1.402
+  FM95_GK1_1400: 0.174
+  FM95_mK1_1270: 1.27
+  FM95_GK1_1270: 0.09
+  FM95_beta_rho: -0.145
+  FM95_m_rho: 0.773
+  FM95_G_rho: 0.145
+  FM95_m_rhop: 1.37
+  FM95_G_rhop: 0.51
+  FM95_beta_Kstar: -0.135
+  FM95_m_Kstar: 0.892
+  FM95_G_Kstar: 0.05
+  FM95_m_Kstarp: 1.412
+  FM95_G_Kstarp: 0.227
+  FM95_lambda: -0.25
+  FM95_mu: -0.038
+  FM95_m_Kstarpp: 1.714
+  FM95_G_Kstarpp: 0.323
+  sherpa_applies_to:
+  - -321,211,-211,16
+  - 310,-211,111,16
+  - -211,130,111,16
