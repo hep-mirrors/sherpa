@@ -42,6 +42,11 @@ namespace BEAM {
     /// Nominal (mean) beam energy, as opposed to Energy(), which is the maximum.
     double NominalEnergy() const { return m_energy * m_x0; }
     const double& Spread() const { return m_spread; }
+    /// Centre and width of the x distribution and the truncation in sigma,
+    /// for the correlated two-beam density (Collider_Weight).
+    double X0() const { return m_x0; }
+    double SigmaX() const { return m_sigmax; }
+    double NSigma() const { return m_nsigma; }
   };
 }
 #endif

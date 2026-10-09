@@ -43,23 +43,7 @@ namespace Griffin {
   std::istream &operator>>(std::istream &str, griffinorder::code &sm);
   std::ostream &operator<<(std::ostream &str, const griffinorder::code &sm);
 
-  /*!
-    Everything Griffin needs to evaluate ONE registered process: the two
-    external PDG codes and the identical-particle normalisation. Built once,
-    by MakeProcess(), and owned by that process's Griffin_Born or
-    Griffin_Virtual -- NOT shared class-static state. Griffin is 2->2 only,
-    so the incoming pair is (initial_pdg, bar(initial_pdg)) and the outgoing
-    pair is (final_pdg, bar(final_pdg)).
 
-    This used to be three class-static members on Griffin_Interface
-    (m_inital, m_final, m_norm), overwritten by RegisterProcess() every time
-    a new process was constructed. With more than one Griffin-backed process
-    registered in the same run (e.g. e+e- -> mu+mu- and Bhabha together),
-    whichever process registered last silently won for ALL of them: every
-    other process's per-point evaluation read the wrong flavours. Moving
-    this into a per-process value, passed explicitly into every Evaluate*
-    call, makes that class of bug impossible to reintroduce.
-  */
   struct GriffinProcess {
     int    initial_pdg = 11;
     int    final_pdg   = 13;
@@ -68,20 +52,7 @@ namespace Griffin {
 
   /*!
     Sherpa-facing interface to the Griffin electroweak loop library
-    (https://arxiv.org/abs/2211.16272). Exactly one instance exists per run,
-    created by Sherpa's ME_Generator_Base factory when "Griffin" is named in
-    ME_GENERATORS; Initialize() fixes the electroweak input scheme once, from
-    the runcard, and every registered process evaluates against that one,
-    shared set of Standard Model inputs via Instance().
-
-    What stays shared vs what became per-process, and why:
-      - The SM inputs (m_griffin) and the requested order (m_order) describe
-        the ELECTROWEAK SCHEME for the whole run: there is exactly one
-        EW_SCHEME per Sherpa run, so these correctly stay here, as private
-        members of the single instance, reached through Instance().
-      - The two external flavours and any identical-particle normalisation
-        (GriffinProcess, above) describe ONE process and differ between
-        processes, so they are no longer members of this class at all.
+    (https://arxiv.org/abs/2211.16272). 
   */
   class Griffin_Interface: public PHASIC::ME_Generator_Base {
   public:
@@ -100,15 +71,8 @@ namespace Griffin {
     bool NewLibraries() override { return false; }
     void PrintLogo(std::ostream &s);
 
-    //! The one Griffin_Interface for this run. THROWs if called before
-    //! Sherpa's ME_Generator factory has constructed it (i.e. before
-    //! ME_GENERATORS: [..., Griffin, ...] has been processed).
     static Griffin_Interface &Instance();
 
-    //! Build the per-process context for a soon-to-be-constructed
-    //! Griffin_Born or Griffin_Virtual. Pure functions of their argument --
-    //! no shared state is read or written, so registering one process
-    //! cannot affect another's context.
     static GriffinProcess MakeProcess(const PHASIC::Process_Info &pi);
     static GriffinProcess MakeProcess(const PHASIC::External_ME_Args &args);
 
@@ -117,6 +81,13 @@ namespace Griffin {
     void EvaluateLoop(const ATOOLS::Vec4D_Vector &momenta,
                        const GriffinProcess &proc,
                        METOOLS::DivArrD &virt) const;
+    bool HigherOrderHelicity(const ATOOLS::Vec4D_Vector &momenta,
+                             const GriffinProcess &proc,
+                             std::vector<Complex> &a0, std::vector<Complex> &a1,
+                             std::vector<std::vector<int> > &hel) const;
+    void EvaluateHigherOrder(const ATOOLS::Vec4D_Vector &momenta,
+                             const GriffinProcess &proc,
+                             METOOLS::DivArrD &virt) const;
     void EvaluateBorn(const ATOOLS::Vec4D_Vector &momenta,
                        const GriffinProcess &proc,
                        double &born) const;
@@ -124,28 +95,19 @@ namespace Griffin {
   private:
     void RegisterDefaults();
 
-    //! s and cost = cos(theta) for a 2->2 point, in the convention every
-    //! Evaluate* below shares: t = (p0-p2)^2, cost = 1 + 2t/s. Factored out
-    //! so a future evaluator cannot independently reinvent (and get wrong)
-    //! this kinematic mapping -- exactly what happened once already, when
-    //! EvaluateBorn computed cost from an unrelated quantity. A named
-    //! struct rather than std::pair<double,double>: it self-documents
-    //! which field is which, and (unlike a structured binding) is capturable
-    //! by value or reference in every lambda below without relying on the
-    //! C++20 extension clang otherwise silently allows here.
     struct Kinematics { double s, cost; };
     static Kinematics KinVars(const ATOOLS::Vec4D_Vector &momenta);
 
-    //! Differential-cross-section term shared by the LO, NLO and NNLO
-    //! evaluators: build the vertex form factors and vector/axial-vector
-    //! matrix element in whichever concrete FA/SW/Mat classes are given,
-    //! and combine them into the standard helicity sum. Templated so the
-    //! physics differs only in which of Griffin's own classes are passed in
-    //! -- not in three independently-maintained copies of one formula.
     template <class FA, class SW, class Mat, class SM>
     static double DiffXSecTerm(int initial_pdg, int final_pdg,
                                 double s, double cost, const SM &gx);
 
+    //! the four vector/axial combinations (vv, av, va, aa) of one order
+    template <class FA, class SW, class Mat, class SM>
+    static void FormFactors(int initial_pdg, int final_pdg, double s, double cost,
+                            const SM &gx, Complex res[4]);
+    //! the axial sign conventions of HigherOrderHelicity (0: not yet fixed)
+    mutable int m_axsign_i = 0, m_axsign_f = 0;
     double EvaluateLO  (const ATOOLS::Vec4D_Vector &momenta, const GriffinProcess &proc) const;
     double EvaluateNLO (const ATOOLS::Vec4D_Vector &momenta, const GriffinProcess &proc) const;
     double EvaluateNLOE(const ATOOLS::Vec4D_Vector &momenta, const GriffinProcess &proc) const;

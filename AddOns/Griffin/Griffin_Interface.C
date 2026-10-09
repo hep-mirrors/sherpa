@@ -33,7 +33,14 @@ void Griffin::Griffin_Interface::RegisterDefaults()
 {
    Scoped_Settings s{ Settings::GetMainSettings()["GRIFFIN"] };
    s["Order"].SetDefault(griffinorder::nnlo);
-   s["Delta_Alpha"].SetDefault(0.06);
+   /*
+     Delta alpha(M_Z^2), leptonic + 5-flavour hadronic: 0.0314977 (three-loop
+     leptonic, Steinhauser, hep-ph/9803313) + 0.027643 (Jegerlehner hadr5x26,
+     the routine in MODEL/Main, +- 0.000150) = 0.0591407. It was 0.06, which
+     under YFS: EW_HIGHER_ORDER griffin put +1.3e-4 on the Z-pole mu mu sigma
+     (+2.7e-4 ee) and +1.2e-3 at 250 GeV (NOTES-hvp-design-2026-09-30.md).
+   */
+   s["Delta_Alpha"].SetDefault(0.0591407);
 }
 
 bool Griffin::Griffin_Interface::Initialize(MODEL::Model_Base *const model,
@@ -173,6 +180,87 @@ double Griffin::Griffin_Interface::DiffXSecTerm(int initial_pdg, int final_pdg,
               + 4.*cost * (resvv*conj(resaa) + resva*conj(resav)).real());
 }
 
+template <class FA, class SW, class Mat, class SM>
+void Griffin::Griffin_Interface::FormFactors(int initial_pdg, int final_pdg,
+                                             double s, double cost,
+                                             const SM &gx, Complex res[4])
+{
+  FA FAi(initial_pdg, gx), FAf(final_pdg, gx);
+  SW SWi(initial_pdg, gx), SWf(final_pdg, gx);
+  Mat M(initial_pdg, final_pdg, VEC, VEC,
+        FAi.result().real(), FAf.result().real(),
+        SWi.result().real(), SWf.result().real(),
+        s, cost, gx);
+  M.setkinvar(s, cost);
+  M.setform(VEC, VEC);   res[0] = M.result();
+  M.setform(AXV, VEC);   res[1] = M.result();
+  M.setform(VEC, AXV);   res[2] = M.result();
+  M.setform(AXV, AXV);   res[3] = M.result();
+}
+
+namespace {
+  //! M(l, l') of the vector/axial combinations res = (vv, av, va, aa)
+  Complex HelicityCombination(const Complex res[4], int l, int lp, int si, int sf)
+  {
+    return res[0] - double(si*l)*res[1] - double(sf*lp)*res[2]
+           + double(si*sf*l*lp)*res[3];
+  }
+}
+
+bool Griffin::Griffin_Interface::HigherOrderHelicity(const Vec4D_Vector &momenta,
+                                                     const GriffinProcess &proc,
+                                                     std::vector<Complex> &a0,
+                                                     std::vector<Complex> &a1,
+                                                     std::vector<std::vector<int> > &hel) const
+{
+  a0.clear(); a1.clear(); hel.clear();
+  if (momenta.size() != 4) return false;
+  const Kinematics kv = KinVars(momenta);
+  Complex lo[4], nlo[4], nnlo[4];
+  std::visit([&](auto &gx) {
+    FormFactors<FA_SMLO,   SW_SMLO,   matel>     (proc.initial_pdg, proc.final_pdg, kv.s, kv.cost, gx, lo);
+    FormFactors<FA_SMNLO,  SW_SMNLO,  mat_SMNLO> (proc.initial_pdg, proc.final_pdg, kv.s, kv.cost, gx, nlo);
+    FormFactors<FA_SMNNLO, SW_SMNNLO, mat_SMNNLO>(proc.initial_pdg, proc.final_pdg, kv.s, kv.cost, gx, nnlo);
+  }, m_griffin);
+  if (m_axsign_i == 0) {
+    // at the Z pole, the LO couplings alone: |M(-1, .)| > |M(+1, .)| fixes s_i
+    Complex z[4];
+    const double mz2(sqr(Flavour(kf_Z).Mass()));
+    std::visit([&](auto &gx) {
+      FormFactors<FA_SMLO, SW_SMLO, matel>(proc.initial_pdg, proc.final_pdg, mz2, 0., gx, z);
+    }, m_griffin);
+    auto side = [&](bool initial) {
+      double left(0.), right(0.);
+      for (int o : {-1, 1}) {
+        left  += std::norm(initial ? HelicityCombination(z, -1, o, 1, 1)
+                                   : HelicityCombination(z, o, -1, 1, 1));
+        right += std::norm(initial ? HelicityCombination(z, +1, o, 1, 1)
+                                   : HelicityCombination(z, o, +1, 1, 1));
+      }
+      return left >= right ? 1 : -1; };
+    m_axsign_i = side(true);
+    m_axsign_f = side(false);
+    msg_Info()<<"GRIFFIN: helicity-resolved NNLO - NLO, axial sign convention "
+              <<m_axsign_i<<" (initial) "<<m_axsign_f<<" (final)."<<std::endl;
+  }
+  for (int l : {-1, 1}) for (int lp : {-1, 1}) {
+    const Complex m0(HelicityCombination(lo,   l, lp, m_axsign_i, m_axsign_f));
+    const Complex m1(HelicityCombination(nlo,  l, lp, m_axsign_i, m_axsign_f));
+    const Complex m2(HelicityCombination(nnlo, l, lp, m_axsign_i, m_axsign_f));
+    /*
+      Relative to the NLO amplitude, not the LO one: GRIFFIN's LO and NLO
+      classes are not normalised alike
+    */
+    (void)m0;
+    const Complex amp(m1*(1. + l*lp*kv.cost));
+    const double delta(std::norm(m1) > 0. ? (std::norm(m2) - std::norm(m1))/std::norm(m1) : 0.);
+    a0.push_back(amp);
+    a1.push_back(0.5*delta*amp);
+    hel.push_back({l, -l, lp, -lp});
+  }
+  return true;
+}
+
 void Griffin::Griffin_Interface::EvaluateLoop(const Vec4D_Vector &momenta,
                                                const GriffinProcess &proc,
                                                METOOLS::DivArrD &virt) const
@@ -188,6 +276,17 @@ void Griffin::Griffin_Interface::EvaluateLoop(const Vec4D_Vector &momenta,
     default: THROW(not_implemented, "GRIFFIN: Order " + ToString(m_order));
   }
   virt.Finite() = higher - born;
+}
+
+void Griffin::Griffin_Interface::EvaluateHigherOrder(const Vec4D_Vector &momenta,
+                                                      const GriffinProcess &proc,
+                                                      METOOLS::DivArrD &virt) const
+{
+  // Independent of GRIFFIN: Order, which only selects what EvaluateLoop
+  // returns when GRIFFIN is the loop provider itself.
+  if (momenta.size() != 4)
+    THROW(fatal_error, "Griffin library is for 2->2 scattering only");
+  virt.Finite() = EvaluateNNLO(momenta, proc) - EvaluateNLO(momenta, proc);
 }
 
 double Griffin::Griffin_Interface::EvaluateLO(const Vec4D_Vector &momenta,

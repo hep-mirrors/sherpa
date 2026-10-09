@@ -796,7 +796,7 @@ else()
     CSMain CSCalculators CSShowers CSTools
     DireTools DireShower DireGauge DireLorentz DireMain
     PhasicScales Comix  ComixPhasespace ComixAmplitude
-    YFSCEEX  YFSMain YFSNLO
+    YFSACRAIC  YFSMain YFSNLO
     PhasicMain PhasicChannels PhasicProcess PhasicSelectors PhasicEnhance PhasicDecays
     Amegic DipoleSubtraction Amplitude AmegicPSGen
     String Zfunctions

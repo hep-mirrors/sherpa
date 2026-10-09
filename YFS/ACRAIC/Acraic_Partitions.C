@@ -1,4 +1,4 @@
-#include "YFS/CEEX/Ceex_Base.H"
+#include "YFS/ACRAIC/Acraic_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "METOOLS/Main/Spin_Structure.H"
 #include "PHASIC++/Process/Process_Base.H"
@@ -19,7 +19,7 @@
 using namespace YFS;
 
 
-bool Ceex_Base::BuildStages() {
+bool Acraic_Base::BuildStages() {
   /*
     Stages are the charge-neutral groups of legs that radiate coherently and
     whose propagators the partition sum moves: the initial state, and one
@@ -39,7 +39,7 @@ bool Ceex_Base::BuildStages() {
   m_stagemom.clear();
   m_resonances.clear();
   for (size_t i(0); i < m_flavs.size(); ++i)
-    m_stagemom.push_back(i < 2 ? m_bornmomenta[i] : m_pceex[i]);
+    m_stagemom.push_back(i < 2 ? m_bornmomenta[i] : m_pacraic[i]);
 
   /*
     The handler's groups in one form: the plain leg lists (SetStageGroups
@@ -72,7 +72,7 @@ bool Ceex_Base::BuildStages() {
       r.daughters = handed[g].resonanceDaughters;
       r.stagemomIndex = (int)m_stagemom.size();
       Vec4D pw;
-      for (size_t k(0); k < r.daughters.size(); ++k) pw += m_pceex[r.daughters[k]];
+      for (size_t k(0); k < r.daughters.size(); ++k) pw += m_pacraic[r.daughters[k]];
       m_stagemom.push_back(pw);
       m_resonances.push_back(r);
       grp.resonance = (int)m_resonances.size() - 1;
@@ -86,7 +86,7 @@ bool Ceex_Base::BuildStages() {
   if (groups.empty()) groups.push_back(FinalGroup());   // neutral final state
   /*
     A stage factor is gauge invariant only if the stage is separately
-    CHARGE-NEUTRAL. A dipole group that is not (a same-charge pair from the
+    charge-neutral. A dipole group that is not (a same-charge pair from the
     selector's fallback pass) is folded back into one flat final stage; if
     even that is charged the decomposition is refused, as before. A decay
     stage counts its resonance as an INCOMING leg: {mu+, W+ in} is neutral.
@@ -124,16 +124,16 @@ bool Ceex_Base::BuildStages() {
     m_stagelegs.push_back(st);
   }
   /*
-    The production stage: the beams, and every resonance as an OUTGOING
+    The production stage: the beams, and every resonance as an outgoing
     leg. With no resonance this is the initial stage as before. The W terms
     cancel between here and the decay stages in the total eikonal, so the
     closure below holds with any common W momentum.
   */
-  { std::vector<StageLeg> ini;
-    for (int i(0); i < 2; ++i) ini.push_back({i, -m_flavs[i].Charge()});
-    for (size_t r(0); r < m_resonances.size(); ++r)
-      ini.push_back({m_resonances[r].stagemomIndex, m_resonances[r].flav.Charge()});
-    m_stagelegs.push_back(ini); }
+  std::vector<StageLeg> ini;
+  for (int i(0); i < 2; ++i) ini.push_back({i, -m_flavs[i].Charge()});
+  for (size_t r(0); r < m_resonances.size(); ++r)
+    ini.push_back({m_resonances[r].stagemomIndex, m_resonances[r].flav.Charge()});
+  m_stagelegs.push_back(ini);
   m_initstage = (int)m_stagelegs.size() - 1;
   for (size_t g(0); g < m_stagelegs.size(); ++g) {
     double qsum(0.);
@@ -162,18 +162,22 @@ bool Ceex_Base::BuildStages() {
         for (size_t i(0); i < m_stagelegs[g].size(); ++i) {
           const int leg(m_stagelegs[g][i].leg);
           if (i) msg_Debugging()<<",";
-          if (IsResonanceLeg(leg))
+          // braced: msg_Debugging() is itself an if, and would take the else
+          if (IsResonanceLeg(leg)) {
             msg_Debugging()<<ResonanceOf(leg).flav
                            <<(m_stagelegs[g][i].w*ResonanceOf(leg).flav.Charge() < 0.
                               ? "(in)" : "(out)");
-          else msg_Debugging()<<leg;
+          }
+          else {
+            msg_Debugging()<<leg;
+          }
         }
         msg_Debugging()<<"}"<<(g==(size_t)m_initstage?"(production)":""); }
       msg_Debugging()<<"\n"; } }
   if (WStagesActive()) {
     static bool shown(false);
     if (!shown) { shown = true;
-      msg_Info()<<"CEEX: W stages active for "<<m_flavs.size()-2
+      msg_Info()<<"ACRAIC: W stages active for "<<m_flavs.size()-2
                 <<"-fermion final state: "<<m_nstages<<" stages (production with "
                 <<m_resonances.size()<<" W legs, one decay stage per W)."
                 <<std::endl; }
@@ -182,19 +186,19 @@ bool Ceex_Base::BuildStages() {
 }
 
 
-bool Ceex_Base::IsResonanceLeg(int leg) const
+bool Acraic_Base::IsResonanceLeg(int leg) const
 {
   return leg >= (int)m_flavs.size() && leg < (int)m_stagemom.size();
 }
 
-const Ceex_Base::Resonance &Ceex_Base::ResonanceOf(int leg) const
+const Acraic_Base::Resonance &Acraic_Base::ResonanceOf(int leg) const
 {
   for (size_t r(0); r < m_resonances.size(); ++r)
     if (m_resonances[r].stagemomIndex == leg) return m_resonances[r];
   THROW(fatal_error, "stage leg "+ToString(leg)+" names no resonance");
 }
 
-std::vector<int> Ceex_Base::StageExternalLegs(int stage) const
+std::vector<int> Acraic_Base::StageExternalLegs(int stage) const
 {
   std::vector<int> legs;
   if (stage < 0 || stage >= (int)m_stagelegs.size()) return legs;
@@ -212,34 +216,95 @@ std::vector<int> Ceex_Base::StageExternalLegs(int stage) const
   return legs;
 }
 
-size_t Ceex_Base::StageShiftMask(int stage) const
+size_t Acraic_Base::StageShiftMask(int stage) const
 {
   size_t mask(0);
   if (stage < 0 || stage >= (int)m_stagelegs.size()) return mask;
   if (stage == m_initstage) {
     for (size_t l(0); l < m_stagelegs[stage].size(); ++l) {
       const int leg(m_stagelegs[stage][l].leg);
-      if (leg >= 0 && leg < 2) mask |= ((size_t)1) << leg;
+      if (leg >= 0 && leg < 2) mask = AddLeg(mask, leg);
     }
     return mask;
   }
   const std::vector<int> legs(StageExternalLegs(stage));
   for (size_t l(0); l < legs.size(); ++l)
-    if (legs[l] >= 0 && legs[l] < (int)m_flavs.size()) mask |= ((size_t)1) << legs[l];
+    if (legs[l] >= 0 && legs[l] < (int)m_flavs.size()) mask = AddLeg(mask, legs[l]);
   return mask;
 }
 
-Vec4D Ceex_Base::StageSystemMomentum(int stage) const
+void Acraic_Base::AddPlacementVetoes(const std::vector<int> &photons,
+                                   PropShifts &sh) const
+{
+  if (m_stage.size() != m_allphotons.size()) return;
+  // every placement of the explicit photons: which of them sit on stage g
+  std::vector<std::vector<bool> > placements(1, std::vector<bool>(photons.size(), false));
+  for (size_t q(0); q < photons.size(); ++q) {
+    const size_t n(placements.size());
+    for (size_t a(0); a < n; ++a) {
+      std::vector<bool> on(placements[a]);
+      on[q] = true;
+      placements.push_back(on);
+    }
+  }
+  const size_t first(m_flavs.size());   // Comix leg of the first explicit photon
+  for (int g(0); g < m_nstages; ++g) {
+    if (g == m_initstage) continue;
+    const size_t stagelegs(StageShiftMask(g));
+    if (stagelegs == 0) continue;
+    std::vector<bool> actual(photons.size(), false);
+    for (size_t q(0); q < photons.size(); ++q)
+      actual[q] = (m_stage[photons[q]] == g);
+    for (size_t a(0); a < placements.size(); ++a) {
+      if (placements[a] == actual) continue;
+      size_t legs(stagelegs);
+      for (size_t q(0); q < photons.size(); ++q)
+        if (placements[a][q]) legs = AddLeg(legs, first + q);
+      sh.push_back(PHASIC::Process_Base::VetoEntry(legs));
+    }
+  }
+}
+
+std::string Acraic_Base::NoIFIRefusal()
+{
+  if (!HasFSR()) return "";   // nothing to interfere with
+  if (m_nstages != 2)
+    return "it needs exactly one initial and one final stage (e+e- -> f fbar), "
+           "this process has "+ToString(m_nstages)+" stages";
+  if (m_bhabha || m_tchannel != 0 || BornHasExchangeLine())
+    return "the Born has a t-channel exchange line; the split by emitting "
+           "stage is not gauge invariant there";
+  if (WStagesActive()) return "W stages are active";
+  if (ResonanceExponentiation())
+    return "ACRAIC: RESONANCE_EXPONENTIATION exponentiates an initial-final "
+           "logarithm";
+  static const beta1legs::code legsmode(Settings::GetMainSettings()["ACRAIC"]
+                                        ["BETA1_LEGS"].Get<beta1legs::code>());
+  if (legsmode == beta1legs::balanced)
+    return "ACRAIC: BETA1_LEGS balanced evaluates M_1 without propagator "
+           "shifts, which carry the placement vetoes";
+  if (m_hasvirtual && m_acraicvirtsrc != acraicvirt::acraic
+      && m_acraicvirtsrc != acraicvirt::none)
+    msg_Error()<<"YFS: IFI false with an external virtual: its initial-final "
+               <<"boxes (IR-subtracted) stay in both columns. For no IFI at "
+               <<"all use YFS: ACRAIC_Virtual: acraic (vertices only)."<<std::endl;
+  msg_Info()<<"YFS: IFI false - no initial-final interference: incoherent "
+            <<"partitions, M_1/M_2 split by emitting stage, no IF form factor, "
+            <<"no IF boxes in ACRAIC's own virtual."<<std::endl;
+  return "";
+}
+
+Vec4D Acraic_Base::StageSystemMomentum(int stage) const
 {
   Vec4D q;
   if (stage < 0 || stage >= (int)m_stagelegs.size()) return q;
   const std::vector<int> legs(StageExternalLegs(stage));
   for (size_t l(0); l < legs.size(); ++l)
-    if (legs[l] >= 0 && legs[l] < (int)m_pceex.size()) q += m_pceex[legs[l]];
+    if (legs[l] >= 0 && legs[l] < (int)m_pacraic.size()) q += m_pacraic[legs[l]];
   return q;
 }
 
-Vec4D Ceex_Base::StagePhotonSum(int stage, int iphot, int lphot) const
+Vec4D Acraic_Base::StagePhotonSum(int stage, int iphot, int lphot) const
 {
   Vec4D K;
   if (m_stage.size() != m_allphotons.size()) return K;
@@ -249,8 +314,8 @@ Vec4D Ceex_Base::StagePhotonSum(int stage, int iphot, int lphot) const
   return K;
 }
 
-Ceex_Base::LegMomentum
-Ceex_Base::StageLegMomentum(const StageLeg &l, int iphot,
+Acraic_Base::LegMomentum
+Acraic_Base::StageLegMomentum(const StageLeg &l, int iphot,
                             const Vec4D_Vector &p) const
 {
   LegMomentum m;
@@ -267,7 +332,7 @@ Ceex_Base::StageLegMomentum(const StageLeg &l, int iphot,
   return m;
 }
 
-Complex Ceex_Base::StageCurrent(int stage, int iphot, const Vec4D &k, int hel,
+Complex Acraic_Base::StageCurrent(int stage, int iphot, const Vec4D &k, int hel,
                                 const Vec4D_Vector &p)
 {
   Complex tot(0., 0.);
@@ -281,7 +346,7 @@ Complex Ceex_Base::StageCurrent(int stage, int iphot, const Vec4D &k, int hel,
   return tot;
 }
 
-void Ceex_Base::RecomputeResonanceSfactors()
+void Acraic_Base::RecomputeResonanceSfactors()
 {
   if (!WStagesActive() || m_weikonal == weikonal::daughters) return;
   if ((int)m_Sfac.size() != m_nstages) return;
@@ -291,12 +356,12 @@ void Ceex_Base::RecomputeResonanceSfactors()
       if (IsResonanceLeg(m_stagelegs[g][l].leg)) hasres = true;
     if (!hasres) continue;
     for (size_t i(0); i < m_allphotons.size() && i < m_Sfac[g].size(); ++i)
-      m_Sfac[g][i] = StageCurrent(g, (int)i, m_allphotons[i], m_PhoHel[i], m_pceex);
+      m_Sfac[g][i] = StageCurrent(g, (int)i, m_allphotons[i], m_PhoHel[i], m_pacraic);
   }
 }
 
 
-void Ceex_Base::CalculateSfactors() {
+void Acraic_Base::CalculateSfactors() {
   if (!BuildStages()) { m_Sfac.clear(); return; }
   m_Sfac.assign(m_nstages, std::vector<Complex>());
   for (size_t i(0); i < m_allphotons.size(); ++i)
@@ -351,59 +416,24 @@ void Ceex_Base::CalculateSfactors() {
 
 /*
   Exact momentum conservation of what Comix is handed.
-
-  Comix's Berends-Giele recursion builds every internal line from the legs on
-  the non-root side. For the beam-electron (root) emission line in M_1 that
-  is the COMPLEMENT of {e-, gamma}: the sum of the positron, every final leg
-  and - through the partition shifts - every other photon. That sum equals
-  p_e - k only if the set conserves momentum exactly, and the collinear
-  virtuality it has to reproduce is E_k E (theta^2 + m^2/E^2): 1e-8 GeV^2
-  for a 0.2 GeV photon at 25 microradians. The event as handed to CEEX
-  balances to 1e-9 GeV at the median and 3e-7 at the 90th percentile
-  (four-fermion final states at 250 GeV; the FSR mapping's tolerance, not
-  rounding), which is a 1e-6..1e-4 GeV^2 error on that line - larger than
-  the line itself. Comix's own ProjectWideMomenta would fix it, but the CEEX
-  entry points switch it off, rightly: their leg set is missing the other
-  photons on purpose and the projection would move the legs by THEIR
-  momenta.
-
-  Measured (four-fermion, 250 GeV, 470 beam-collinear enumerated photons):
-  |M_1|/|s B| on the POSITRON side, whose emission line is the direct sum
-  {e+, gamma}, is 1.00 at every angle down to 3e-5 rad; on the electron side
-  it is 0.99 when the event's residual is below 1e-12 GeV and 0.02 when it is
-  1e-8..1e-6, median 0.25 below 3e-5 rad. Each such photon then contributes
-  beta_1 = M_1 - s B = -s B and cancels the whole Born: 3.6% of events had
-  rho_1/rho_0 < 0.1, 16% a CEEX factor below 0.2. Same in mu mu nu nu and
-  in 2 -> 2.
-
-  So the set is projected here, once per event, before the eikonals, the
-  partition Borns and M_1 read it: minimise sum |delta_i|^2 (Euclidean, over
-  the final legs and every photon; the beams stay as they are, exact and on
-  axis) subject to sum delta_i = R and 2 p_i.delta_i = m_i^2 - p_i^2, the
-  same problem ProjectWideMomenta solves, as a 4 x 4 linear system for the
-  Lagrange vector, two Newton passes (the mass-shell constraint is
-  quadratic; after the first pass it is violated by |delta|^2 ~ 1e-14 GeV^2,
-  after the second by 1e-28). Corrections are the residual's size, 1e-7 GeV
-  at most: nothing physical moves, and a point that already balances to
-  rounding is returned unchanged to rounding.
 */
-bool Ceex_Base::RepairMomentumBalance()
+bool Acraic_Base::RepairMomentumBalance()
 {
-  static const bool on(ATOOLS::Settings::GetMainSettings()["CEEX"]
+  static const bool on(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
                       ["MOMENTUM_REPAIR"].Get<bool>());
   m_repairresid = -1.;
-  if (!on || m_pceex.size() < 3) return false;
+  if (!on || m_pacraic.size() < 3) return false;
   std::vector<Vec4D*> v;
   std::vector<double> m2;
-  for (size_t i(2); i < m_pceex.size(); ++i) {
-    v.push_back(&m_pceex[i]);
+  for (size_t i(2); i < m_pacraic.size(); ++i) {
+    v.push_back(&m_pacraic[i]);
     m2.push_back(sqr(i < m_flavs.size() ? m_flavs[i].Mass() : 0.));
   }
   for (size_t i(0); i < m_isrphotons.size(); ++i) { v.push_back(&m_isrphotons[i]); m2.push_back(0.); }
   for (size_t i(0); i < m_fsrphotons.size(); ++i) { v.push_back(&m_fsrphotons[i]); m2.push_back(0.); }
   const size_t n(v.size());
   if (n < 2) return false;
-  const Vec4D P(m_pceex[0] + m_pceex[1]);
+  const Vec4D P(m_pacraic[0] + m_pacraic[1]);
   const double scale(P[0] > 0. ? P[0] : 1.);
   for (int pass(0); pass < 3; ++pass) {
     Vec4D R(P);
@@ -437,26 +467,26 @@ bool Ceex_Base::RepairMomentumBalance()
     }
     // Gaussian elimination with partial pivoting
     double L[4] = {0., 0., 0., 0.};
-    { int piv[4] = {0, 1, 2, 3};
-      for (int c(0); c < 4; ++c) {
-        int best(c);
-        for (int a(c + 1); a < 4; ++a)
-          if (dabs(A[piv[a]][c]) > dabs(A[piv[best]][c])) best = a;
-        std::swap(piv[c], piv[best]);
-        const double d(A[piv[c]][c]);
-        if (d == 0.) return false;
-        for (int a(c + 1); a < 4; ++a) {
-          const double f(A[piv[a]][c]/d);
-          if (f == 0.) continue;
-          for (int cc(c); cc < 4; ++cc) A[piv[a]][cc] -= f*A[piv[c]][cc];
-          b[piv[a]] -= f*b[piv[c]];
-        }
+    int piv[4] = {0, 1, 2, 3};
+    for (int c(0); c < 4; ++c) {
+      int best(c);
+      for (int a(c + 1); a < 4; ++a)
+        if (dabs(A[piv[a]][c]) > dabs(A[piv[best]][c])) best = a;
+      std::swap(piv[c], piv[best]);
+      const double d(A[piv[c]][c]);
+      if (d == 0.) return false;
+      for (int a(c + 1); a < 4; ++a) {
+        const double f(A[piv[a]][c]/d);
+        if (f == 0.) continue;
+        for (int cc(c); cc < 4; ++cc) A[piv[a]][cc] -= f*A[piv[c]][cc];
+        b[piv[a]] -= f*b[piv[c]];
       }
-      for (int c(3); c >= 0; --c) {
-        double x(b[piv[c]]);
-        for (int cc(c + 1); cc < 4; ++cc) x -= A[piv[c]][cc]*L[cc];
-        L[c] = x/A[piv[c]][c];
-      } }
+    }
+    for (int c(3); c >= 0; --c) {
+      double x(b[piv[c]]);
+      for (int cc(c + 1); cc < 4; ++cc) x -= A[piv[c]][cc]*L[cc];
+      L[c] = x/A[piv[c]][c];
+    }
     for (size_t i(0); i < n; ++i) {
       Vec4D &p(*v[i]);
       const double u[4] = {p[0], -p[1], -p[2], -p[3]};
@@ -468,17 +498,20 @@ bool Ceex_Base::RepairMomentumBalance()
 }
 
 
-void Ceex_Base::PartitionStart(int &last) {
+void Acraic_Base::PartitionStart(int &last) {
   const bool fsr(HasFSR());
-  static const double softcut(ATOOLS::Settings::GetMainSettings()["CEEX"]
+  static const double softcut(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
                               ["SOFT_PARTITION_CUT"].Get<double>());
+  // YFS: IFI false: no collapse - a collapsed photon carries the coherent
+  // total eikonal, i.e. its soft initial-final interference
+  const double cut(m_ifi ? softcut : 0.);
   const size_t n(m_allphotons.size());
   m_stage.assign(n, fsr ? 0 : m_initstage);
   m_fixedstage.assign(n, 0);
   size_t nfree(0);
   for (size_t i(0); i < n; ++i) {
     const double x(m_s > 0. ? 2.*m_allphotons[i][0]/sqrt(m_s) : 1.);
-    if (fsr && x >= softcut && (int)m_Sfac.size() == m_nstages) { ++nfree; continue; }
+    if (fsr && x >= cut && (int)m_Sfac.size() == m_nstages) { ++nfree; continue; }
     // fixed: the stage with the largest eikonal is its natural emitter
     m_fixedstage[i] = 1;
     int best(m_initstage); double bmax(-1.);
@@ -492,10 +525,10 @@ void Ceex_Base::PartitionStart(int &last) {
 }
 
 
-void Ceex_Base::PartitionPlus(int &last) {
+void Acraic_Base::PartitionPlus(int &last) {
   const size_t n(m_stage.size());
   if (n == 0) { last = 2; return; }
-  // Odometer in base m_nstages over the ENUMERATED photons only, least
+  // Odometer in base m_nstages over the enumerated photons only, least
   // significant photon first. At m_nstages = 2 with every photon enumerated
   // this visits partitions in the same order as the original ISR/FSR
   // increment it replaces.
@@ -516,21 +549,21 @@ void Ceex_Base::PartitionPlus(int &last) {
 }
 
 
-void Ceex_Base::PrintKinematics(std::ostream &o) const
+void Acraic_Base::PrintKinematics(std::ostream &o) const
 {
   o<<std::setprecision(6)<<"HEAVY legs:";
-  for (size_t i(0); i < m_pceex.size(); ++i)
-    o<<" ["<<i<<"] "<<m_flavs[i]<<" E="<<m_pceex[i][0]
-     <<" th="<<m_pceex[i].Theta()<<" m="<<m_pceex[i].Mass();
+  for (size_t i(0); i < m_pacraic.size(); ++i)
+    o<<" ["<<i<<"] "<<m_flavs[i]<<" E="<<m_pacraic[i][0]
+     <<" th="<<m_pacraic[i].Theta()<<" m="<<m_pacraic[i].Mass();
   o<<std::endl;
   const double rs(m_s > 0. ? sqrt(m_s) : 1.);
   for (size_t j(0); j < m_allphotons.size(); ++j) {
     const Vec4D &k(m_allphotons[j]);
     double thmin(M_PI);
-    for (size_t i(2); i < m_pceex.size(); ++i)
+    for (size_t i(2); i < m_pacraic.size(); ++i)
       if (m_flavs[i].Charge() != 0.) {
-        const double c(Vec3D(k)*Vec3D(m_pceex[i])
-                       /(Vec3D(k).Abs()*Vec3D(m_pceex[i]).Abs()));
+        const double c(Vec3D(k)*Vec3D(m_pacraic[i])
+                       /(Vec3D(k).Abs()*Vec3D(m_pacraic[i]).Abs()));
         thmin = Min(thmin, acos(Max(-1., Min(1., c))));
       }
     o<<"HEAVY photon "<<j<<" E="<<k[0]<<" x="<<2.*k[0]/rs
@@ -549,12 +582,8 @@ void Ceex_Base::PrintKinematics(std::ostream &o) const
 }
 
 
-void Ceex_Base::MakePhotonHel() {
-  // CEEX_PIN_PHOTON_HEL pins the helicity for validation. The random number is
-  // still drawn, so the RNG stream - and therefore the phase-space sequence - is
-  // identical to an unpinned run. That is what lets two runs be summed point by
-  // point to recover the helicity sum.
-  static const int pinned(ATOOLS::Settings::GetMainSettings()["CEEX"]["PIN_PHOTON_HEL"].Get<int>());
+void Acraic_Base::MakePhotonHel() {
+  static const int pinned(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["PIN_PHOTON_HEL"].Get<int>());
   m_PhoHel.clear();
   for (size_t i(0); i < m_allphotons.size(); ++i) {
     const int h(ran->Get() < 0.5 ? 1 : -1);
@@ -563,13 +592,13 @@ void Ceex_Base::MakePhotonHel() {
 }
 
 
-Ceex_Base::StageTableSwap::StageTableSwap(Ceex_Base &cb) :
+Acraic_Base::StageTableSwap::StageTableSwap(Acraic_Base &cb) :
   c(cb), legs(cb.m_stagelegs), mom(cb.m_stagemom), res(cb.m_resonances),
   sfac(cb.m_Sfac), stage(cb.m_stage), fixed(cb.m_fixedstage),
   reduces(cb.m_stagereduces), wgroups(cb.m_wgroups), groups(cb.m_groups),
   initstage(cb.m_initstage), nstages(cb.m_nstages) {}
 
-Ceex_Base::StageTableSwap::~StageTableSwap()
+Acraic_Base::StageTableSwap::~StageTableSwap()
 {
   c.m_stagelegs = legs; c.m_stagemom = mom; c.m_resonances = res;
   c.m_Sfac = sfac; c.m_stage = stage; c.m_fixedstage = fixed;
@@ -577,14 +606,63 @@ Ceex_Base::StageTableSwap::~StageTableSwap()
   c.m_initstage = initstage; c.m_nstages = nstages;
 }
 
-double Ceex_Base::CrudeFromGenerator()
+/*
+  Whether photon j is below the beta_1 threshold in EVERY partition. The cut
+  (ComixInfraredSubtracted_1_0) is on y = 2k.S/S^2 with S the beams less the
+  other initial-state photons, so the largest y is with all of them on the
+  initial stage. A photon whose cut depends on the partition is left alone:
+  the next-to-soft flux below is then neither added nor double counted.
+*/
+bool Acraic_Base::Beta1NeverEvaluated(size_t j) const
 {
-  static const bool crudeborn(ATOOLS::Settings::GetMainSettings()["CEEX"]
+  static const double xcut(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
+                           ["BETA1_XCUT"].Get<double>());
+  if (j >= m_allphotons.size() || m_pacraic.size() < 2 || WStagesActive())
+    return false;
+  Vec4D S(m_pacraic[0] + m_pacraic[1]);
+  for (size_t i(0); i < m_allphotons.size(); ++i)
+    if (i != j) S -= m_allphotons[i];
+  const double S2(S.Abs2());
+  if (!(S2 > 0.)) return false;
+  return !(2.*(m_allphotons[j]*S)/S2 > xcut);
+}
+
+/*
+  The next-to-soft flux of photon j on the stage this partition puts it on.
+  beta_1 = M_1 - s beta_0 carries the photon's recoil on the Born; a photon
+  without beta_1 has the eikonal alone, and the exact one-photon weight is
+  the soft factor times (1 - x) for initial- and final-state photons alike.
+  The initial stage: (X)^2/(X + k)^2 with X the beams less the partition's
+  initial-state photons, i.e. s'/s. A final stage: (q + K)^2/(q + K - k)^2,
+  this photon's share of the stage pseudoflux, which rho_1 does not carry
+  (NO_PSEUDOFLUX rho0_only) while the crude does.
+*/
+double Acraic_Base::NextToSoftFlux(size_t j) const
+{
+  if (j >= m_allphotons.size() || j >= m_stage.size()) return 1.;
+  const int g(m_stage[j]);
+  const Vec4D &k(m_allphotons[j]);
+  Vec4D with, without;
+  if (g == m_initstage) {
+    with = m_pacraic[0] + m_pacraic[1] - StagePhotonSum(g, -1);
+    without = with + k;
+  } else {
+    if (g < 0 || g >= (int)m_stagelegs.size() || m_stagelegs[g].empty()) return 1.;
+    without = StageSystemMomentum(g) + StagePhotonSum(g, (int)j);
+    with = without + k;
+  }
+  const double a(with.Abs2()), b(without.Abs2());
+  return (a > 0. && b > 0.) ? a/b : 1.;
+}
+
+double Acraic_Base::CrudeFromGenerator()
+{
+  static const bool crudeborn(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
                              ["CRUDE_BORN"].SetDefault(true).Get<bool>());
-  static const pseudoflux::code pfmode(ATOOLS::Settings::GetMainSettings()["CEEX"]
+  static const pseudoflux::code pfmode(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
                           ["NO_PSEUDOFLUX"].Get<pseudoflux::code>());
   if (!crudeborn || !m_comixborn || !m_cxbalignok
-      || m_pceex.size() != m_flavs.size() || m_flavs.size() < 4) return -1.;
+      || m_pacraic.size() != m_flavs.size() || m_flavs.size() < 4) return -1.;
   if (m_flavs.size() > 4 && m_prefsr.size() != m_flavs.size()) return -1.;
   if (m_PhoHel.size() != m_allphotons.size()) return -1.;
   StageTableSwap keep(*this);
@@ -597,10 +675,10 @@ double Ceex_Base::CrudeFromGenerator()
     return -1.;
   int last(0);
   PartitionStartCollapsed(last);
-  const int nhel(Amplitude::NHel()), fmaskr(Amplitude::NHel() - 1);
+  const int nhel(Amplitude::NHel());
   double rho(0.);
   for (;;) {
-    Vec4D PX(m_pceex[0] + m_pceex[1]);
+    Vec4D PX(m_pacraic[0] + m_pacraic[1]);
     Complex sProd(1., 0.);
     double crudeprod(1.);
     bool crudefixed(false);
@@ -640,7 +718,7 @@ double Ceex_Base::CrudeFromGenerator()
       double rc(0.);
       for (int f(0); f < nhel; ++f)
         rc += crudered * std::norm(m_cxbalign.m_A[f]
-                                   * Cred.m_A[f ^ (m_comixflip & fmaskr)]);
+                                   * Cred.m_A[FlipLegs(f, ComixLegFlips(Amplitude::s_nlegs))]);
       rho += rc/4.;
     }
     if (last == 1) break;
@@ -652,12 +730,12 @@ double Ceex_Base::CrudeFromGenerator()
 
 /*
   PartitionStart, with the softest photons collapsed onto a fixed stage
-  when more than CEEX: MAX_PARTITION_PHOTONS would be enumerated. The
+  when more than ACRAIC: MAX_PARTITION_PHOTONS would be enumerated. The
   numerator partition sum and the generator-side crude (CrudeFromGenerator)
   both start from this, on their own stage tables.
 */
-void Ceex_Base::PartitionStartCollapsed(int &last) {
-  static const size_t maxphot(Settings::GetMainSettings()["CEEX"]["MAX_PARTITION_PHOTONS"]
+void Acraic_Base::PartitionStartCollapsed(int &last) {
+  static const size_t maxphot(Settings::GetMainSettings()["ACRAIC"]["MAX_PARTITION_PHOTONS"]
                               .SetDefault(100).Get<int>());
   if (m_allphotons.size() > maxphot) {
     static bool warned(false);
@@ -665,20 +743,13 @@ void Ceex_Base::PartitionStartCollapsed(int &last) {
       warned = true;
       msg_Error()<<METHOD<<"(): "<<m_allphotons.size()<<" photons would need "
                  <<m_nstages<<"^"<<m_allphotons.size()<<" partitions. Above "
-                 <<"CEEX: MAX_PARTITION_PHOTONS = "<<maxphot<<" the softest "
+                 <<"ACRAIC: MAX_PARTITION_PHOTONS = "<<maxphot<<" the softest "
                  <<"photons are collapsed (fixed stage, total eikonal, as "
                  <<"below SOFT_PARTITION_CUT) until that many are left to "
-                 <<"enumerate. Reported once."<<std::endl;
+                 <<"enumerate. Reported once."
+                 <<(m_ifi ? "" : " With YFS: IFI false a collapsed photon "
+                    "keeps its soft initial-final interference.")<<std::endl;
     }
-    /*
-      The earlier fallback put EVERY photon on the initial stage. For a hard
-      photon collinear to a final-state lepton that leaves the final-state
-      emission part of M_1 unsubtracted against a Born off the resonance:
-      measured |beta_1| = 790 |A_0| on a 15-photon event at 250 GeV with a
-      28 GeV photon 6 mrad from the muon, a weight of 4e5 times the crude.
-      Collapsing the softest photons instead is the same approximation the
-      soft cut makes, applied adaptively, and keeps the hard ones enumerated.
-    */
     PartitionStart(last);
     size_t nfree(0);
     for (size_t j(0); j < m_allphotons.size(); ++j)
@@ -703,8 +774,8 @@ void Ceex_Base::PartitionStartCollapsed(int &last) {
   }
 }
 
-void Ceex_Base::Calculate() {
-  // Lab copies first: everything below boosts into the CEEX frame.
+void Acraic_Base::Calculate() {
+  // Lab copies first: everything below boosts into the ACRAIC frame.
   m_allphotons_lab = m_isrphotons;
   m_allphotons_lab.insert(m_allphotons_lab.end(),
                           m_fsrphotons.begin(), m_fsrphotons.end());
@@ -714,177 +785,55 @@ void Ceex_Base::Calculate() {
 
   m_justdumped = false;
   m_rhocrud = 0.0;
-  { static const bool coh(Settings::GetMainSettings()["CEEX"]["IFI"]
-                          .SetDefault(true).Get<bool>());
-    m_ifi_coherent = coh || m_order == 2; }
+  m_resexp.clear();
+  m_resexpdv = 0.;
+  m_resexpdh.clear();
+  static const bool coh(Settings::GetMainSettings()["ACRAIC"]["IFI"]
+                        .SetDefault(true).Get<bool>());
+  m_ifi_coherent = coh || m_order == 2;
+  /*
+    YFS: IFI false: incoherent partitions at every order, each partition with
+    its own placement of the photons in M_1 and M_2 (AddPlacementVetoes).
+  */
+  if (!m_ifi) {
+    static const std::string why(NoIFIRefusal());
+    if (!why.empty()) THROW(fatal_error, "YFS: IFI false is not available: "+why);
+    m_ifi_coherent = false;
+  }
   m_inc00 = m_inc11 = m_inc01 = 0.;
+  m_inc22 = m_inc12 = m_inc02 = m_incbv = m_incbo = 0.;
   m_b1n = 0; m_b1min = m_b1max = m_b1sum = m_b1sq = 0.;  // beta_1 spread, per event
   m_beta10 = 0.0;
   m_beta01 = 0.0;
   m_beta00 = 0.0;
-  BuildCeexMomenta();
+  BuildAcraicMomenta();
   RepairMomentumBalance();
-  /*
-    Born-configuration probe (env SHERPA_CEEX_BORNNORM), once per event.
-
-  */
-  { static const bool bn(ATOOLS::Settings::GetMainSettings()["CEEX"]["BORNNORM_CHECK"].Get<int>() != 0);
-    if (bn && m_bornmomenta.size() >= 4 && m_pceex.size() >= 4) {
-      const Vec4D Qb(m_bornmomenta[m_if1] + m_bornmomenta[m_if2]);
-      const Vec4D Qp(m_pceex[m_if1] + m_pceex[m_if2]);
-      Vec4D q2(m_pceex[m_if1]), b0(m_pceex[0]);
-      Poincare cm(Qp);
-      cm.Boost(q2); cm.Boost(b0);
-      const double n1(Vec3D(q2).Abs()), n2(Vec3D(b0).Abs());
-      const double cth(n1 > 0. && n2 > 0. ? (Vec3D(q2)*Vec3D(b0))/(n1*n2) : 0.);
-      const double sp_save(m_sp);
-      m_sp = Qp.Abs2();
-      MakeProp();
-      Amplitude AB;
-      BornAmplitude(m_pceex, AB, -1., -1., -1);
-      double sum(0.);
-      const int nh(Amplitude::NHel());
-      for (int f = 0; f < nh; ++f) {
-        const Complex a(m_e * m_e * AB.m_A[f]);
-        sum += std::real(a * conj(a));
-      }
-      m_sp = sp_save;
-      MakeProp();
-      const double avg(sum / 4.);
-      std::cerr << "@@@ BORNANG m_born=" << m_born
-                << " sphys=" << Qp.Abs2() << " sborn=" << Qb.Abs2()
-                << " cth=" << cth
-                << " ceexborn=" << avg
-                << " ratio=" << (m_born != 0. ? avg/m_born : 0.) << std::endl;
-    } }
+  CheckBornNorm();
   ZerAmplit();
   m_allphotons = m_isrphotons;
   m_allphotons.insert(m_allphotons.end(),
                       m_fsrphotons.begin(), m_fsrphotons.end());
   MakePhotonHel();
-  /*
-    Frame probe (CEEX: FRAME_PROBE): does what CEEX is handed balance? Beams
-    minus final legs minus every photon, and the same with ISR or FSR photons
-    only, so a frame mismatch between the legs and one photon family shows
-    up as a residual of the size of that family's momentum. Also the angle
-    of each FSR photon to its nearest final lepton, to be compared with the
-    same angle in the event record.
-  */
-  { static const int fp(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                        ["FRAME_PROBE"].SetDefault(0).Get<int>());
-    static int nfp(0);
-    // FRAME_PROBE: 1 prints the first 40 events, N > 1 the first N
-    if (fp && nfp < (fp > 1 ? fp : 40) && m_pceex.size() >= 4) {
-      ++nfp;
-      Vec4D P(m_pceex[0] + m_pceex[1]), KI, KF;
-      for (size_t i(2); i < m_pceex.size(); ++i) P -= m_pceex[i];
-      for (const Vec4D &k : m_isrphotons) KI += k;
-      for (const Vec4D &k : m_fsrphotons) KF += k;
-      const Vec4D r(P - KI - KF);
-      std::cerr<<std::setprecision(5)<<"@@@ FRAME nI="<<m_isrphotons.size()
-               <<" nF="<<m_fsrphotons.size()
-               <<" |KI|="<<KI[0]<<" |KF|="<<KF[0]
-               <<" resid=("<<r[0]<<","<<r[1]<<","<<r[2]<<","<<r[3]<<")"
-               <<" resid_noF3="<<(P-KI)[3]<<" resid_noI3="<<(P-KF)[3]
-               <<" Pfin3="<<(m_pceex[0]+m_pceex[1]-P)[3]
-               <<" KI3="<<KI[3]<<" KF3="<<KF[3]<<std::endl;
-      /*
-        How far off its nominal mass shell is each leg Comix will be handed?
-        Comix rebuilds every leaf exactly on the flavour's shell (SetPWide)
-        and, in the CEEX entry points, does NOT project the set back onto
-        momentum conservation; a leg off shell by dm2 moves by dm2/(2p) and
-        the complement-route propagators inherit that as an ABSOLUTE
-        virtuality error, fatal for a photon inside sqrt(E/E_k) m/E of a
-        beam.
-      */
-      std::cerr<<std::setprecision(3)<<"@@@ FRAME shell";
-      for (size_t i(0); i < m_pceex.size(); ++i)
-        std::cerr<<" ["<<i<<"] "<<(m_pceex[i].Abs2() - sqr(m_flavs[i].Mass()));
-      for (const Vec4D &k : m_isrphotons) std::cerr<<" I "<<k.Abs2();
-      for (const Vec4D &k : m_fsrphotons) std::cerr<<" F "<<k.Abs2();
-      std::cerr<<" |resid|="<<std::setprecision(3)
-               <<sqrt(sqr(r[0])+sqr(r[1])+sqr(r[2])+sqr(r[3]))
-               <<" before_repair="<<m_repairresid<<std::endl;
-      /*
-        At one photon: the generator's Born point (m_bornmomenta) against the
-        reduced legs CEEX builds for the same partition (BornLegsAt(P - k)).
-        The crude Born the fixed-order weight divides by sits at the former;
-        the partition crude at the latter.
-      */
-      if (m_isrphotons.size() + m_fsrphotons.size() == 1 && m_bornmomenta.size() >= 4) {
-        Vec4D_Vector pb;
-        const Vec4D k(m_isrphotons.empty() ? m_fsrphotons[0] : m_isrphotons[0]);
-        if (BornLegsAt(m_pceex[0] + m_pceex[1] - k, pb)) {
-          std::cerr<<std::setprecision(6)<<"@@@ FRAME born1";
-          for (size_t i(0); i < 4 && i < pb.size(); ++i)
-            std::cerr<<" gen["<<i<<"]="<<m_bornmomenta[i]<<" red["<<i<<"]="<<pb[i];
-          std::cerr<<std::endl;
-          // the Comix Born squared at both points, against the fixed-order
-          // crude Born m_born the handler divides by
-          Amplitude Ag, Ar;
-          Vec4D_Vector pg(m_bornmomenta.begin(), m_bornmomenta.begin() + Min(m_bornmomenta.size(), m_pceex.size()));
-          double ng(0.), nr(0.);
-          if (pg.size() == m_pceex.size() && ComixBornAmplitude(pg, Ag, NULL, -1., -1.))
-            for (int f(0); f < Amplitude::NHel(); ++f) ng += std::norm(Ag.m_A[f]);
-          if (ComixBornAmplitude(pb, Ar, NULL, -1., -1.))
-            for (int f(0); f < Amplitude::NHel(); ++f) nr += std::norm(Ar.m_A[f]);
-          const double x(2.*k[0]/sqrt(m_s));
-          // and at the generator's own s' point, m_plabmom (lab frame; the
-          // Born is Lorentz invariant, so no boost is needed for the norm)
-          double np(-1.);
-          if (m_plabmom.size() == m_pceex.size()) {
-            Amplitude Ap;
-            if (ComixBornAmplitude(m_plabmom, Ap, NULL, -1., -1.)) {
-              np = 0.; for (int f(0); f < Amplitude::NHel(); ++f) np += std::norm(Ap.m_A[f]); }
-            std::cerr<<"@@@ FRAME plab";
-            for (size_t i(0); i < m_plabmom.size(); ++i) std::cerr<<" ["<<i<<"]="<<m_plabmom[i];
-            std::cerr<<std::endl;
-          }
-          std::cerr<<"@@@ FRAME bornsq x="<<x<<" m_born="<<m_born
-                   <<" B2plab/m_born="<<(m_born!=0.?np/m_born:-1.)
-                   <<" B2gen="<<ng<<" B2red="<<nr
-                   <<" B2gen/m_born="<<(m_born!=0.?ng/m_born:-1.)
-                   <<" B2red/m_born="<<(m_born!=0.?nr/m_born:-1.)
-                   <<" B2red/m_born*(1-x)="<<(m_born!=0.?nr/m_born*(1.-x):-1.)<<std::endl;
-        }
-      }
-    } }
+  ProbeFrames();
   CalculateSfactors();
   /*
     CalculateSfactors clears m_Sfac when BuildStages rejects the decomposition
     (a stage carrying net charge, so gauge dependent). Bail here rather than
-    index an empty table below: the event then contributes no CEEX weight,
-    which YFS_Handler already treats as "CEEX produced nothing".
+    index an empty table below: the event then contributes no ACRAIC weight,
+    which YFS_Handler already treats as "ACRAIC produced nothing".
   */
   if ((int)m_Sfac.size() != m_nstages
       || (!m_allphotons.empty() && m_Sfac[0].size() != m_allphotons.size())) {
     m_nparts = 0;
     return;
   }
+  BuildResonanceExponents();   // ACRAIC: RESONANCE_EXPONENTIATION
   m_spincache.resize(1 + 4*m_allphotons.size());
   m_spinvalid.assign(m_spincache.size(), 0);
   m_realphot.assign(m_allphotons.size(), Amplitude());
-  m_realphotM1.assign(RealVirtualMode() == ceexrv::averaged ? m_allphotons.size() : 0,
+  m_realphotM1.assign(RealVirtualMode() == acraicrv::averaged ? m_allphotons.size() : 0,
                       Amplitude());
-  /*
-    Trace the beta_1 pieces on the event the CHECK_XS dump will write - the
-    same gate the dump uses, evaluated before the partition loop so the loop
-    can print as it goes. One event, so a 2^n fan-out is affordable.
-  */
-  { static const bool tr(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                         ["BETA1_TRACE"].Get<int>() != 0);
-    static const double dx(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                           ["DUMP_XMIN"].Get<double>());
-    static const size_t dn(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                           ["DUMP_NPHOT"].Get<int>());
-    const double xg(!m_allphotons.empty() && m_momenta.size() >= 2 ?
-                    2.*m_allphotons[0][0]/(m_momenta[0]+m_momenta[1]).Mass()
-                    : 0.);
-    static const double heavy(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                              ["TRACE_FACTOR_ABOVE"].Get<double>());
-    m_b1trace = (tr && m_checkxs && !m_ceexdumped
-                 && m_allphotons.size() == dn && xg > dx)
-                || (heavy > 0. && !m_allphotons.empty()); }
+  SetBeta1Trace();
   /*
     The invariant of the outgoing FERMION pair, not of legs 2 and 3. With
     anything else in the final state those are not the same: for
@@ -894,60 +843,40 @@ void Ceex_Base::Calculate() {
     load bearing, and being wrong there is silent - it is a perfectly good
     invariant, just not the one the decay propagator sits at.
   */
-  m_svarQ = (m_pceex[m_if1] + m_pceex[m_if2]).Abs2();
+  m_svarQ = (m_pacraic[m_if1] + m_pacraic[m_if2]).Abs2();
   m_sQ    = m_svarQ;
-  MakePropT(m_pceex);
+  MakePropT(m_pacraic);
 
   
   // One Comix/hand ratio per photon, before the partition loop: inside it the
   // soft weights are in scope but the photon's TOTAL amplitude is not.
-  { static const bool bs(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                         ["BETA1_SCAN"].Get<int>() != 0);
-    if (bs) Beta1Scan(); }
+  RunBeta1Scan();
   BuildComixBornAlignment();
+  BuildResonanceBornDelta();   // after the alignment: it uses m_comixflip
   BuildComixPhotonRatios();
-  // CEEX: TCHANNEL_REDUCED_BORN (tristate, see Ceex_Base::RegisterDefaults)
-  { static const tristate::code rb(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                                   ["TCHANNEL_REDUCED_BORN"].Get<tristate::code>());
-    /*
-      auto needs a single radiating stage as well as an exchange line.
-      ComixBeta1At subtracts ONE reduced Born, times the soft factors of all
-      stages, while the partition sum puts a different reduced Born (at that
-      partition's X) on each stage, so rho_1 = |M_1|^2 at one photon holds
-      only when there is one stage. e+e- -> gamma gamma has one; Bhabha has a
-      final-state stage too. Measured on Bhabha at the Z pole, Born+real,
-      2026-09-26: with 1, CEEX/YFS.NLO = 0.992 (one ISR photon), 1.055 (one
-      FSR photon), 1.145 (two or more), column +10.6%; with 0, 0.992, 0.997,
-      0.991, column +0.3%.
-    */
-    // Radiating stages only: a neutral final state still gets an EMPTY
-    // placeholder stage (BuildStages), so gamma gamma has m_nstages = 2.
-    int nrad(0);
-    for (size_t g(0); g < m_stagelegs.size(); ++g)
-      if (!m_stagelegs[g].empty()) ++nrad;
-    m_redborn = rb == tristate::on || (rb == tristate::automatic && m_comixborn && nrad == 1
-                           && BornHasExchangeLine());
-    // the reduced point is LegsAt's 2 -> 2 construction; with W stages the
-    // partition Born stays the shifted physical-spinor one
-    if (WStagesActive() && m_redborn) {
-      static bool warned(false);
-      if (!warned) { warned = true;
-        msg_Error()<<METHOD<<"(): CEEX: TCHANNEL_REDUCED_BORN is not defined "
-                   <<"with W stages; ignored."<<std::endl; }
-      m_redborn = false;
-    } }
+  // ACRAIC: TCHANNEL_REDUCED_BORN (tristate, see Acraic_Base::RegisterDefaults)
+  ResolveReducedBorn();
 
   int last(0), nparts(0);
   PartitionStartCollapsed(last);
   if (m_allphotons.size() > m_maxnphot) m_maxnphot = m_allphotons.size();
-  // CEEX: ORDER 2 - which photons can form beta_2 pairs (after the collapse)
+  // ACRAIC: ORDER 2 - which photons can form beta_2 pairs (after the collapse)
   const bool dobeta2(m_order == 2 && PrepareBeta2());
   if (dobeta2) ++m_b2events;
-  Amplitude snap0, snap1;
+  Amplitude snap0, snap1, snap2, snapbv, snapbo;
+  // ACRAIC: NEXT_TO_SOFT_FLUX - which photons carry their next-to-soft flux
+  static const bool nexttosoft(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
+                               ["NEXT_TO_SOFT_FLUX"].Get<bool>());
+  std::vector<char> nextsoft(m_allphotons.size(), 0);
+  if (nexttosoft)
+    for (size_t j(0); j < m_allphotons.size(); ++j) nextsoft[j] = Beta1NeverEvaluated(j);
   for (;;) {
     ++nparts;
-    if (!m_ifi_coherent) { snap0 = m_AmpExpo0; snap1 = m_AmpExpo1; }
-    Vec4D PX(m_pceex[0] + m_pceex[1]);
+    if (!m_ifi_coherent) {
+      snap0 = m_AmpExpo0; snap1 = m_AmpExpo1;
+      snap2 = m_AmpBeta2; snapbv = m_AmpBornVirt; snapbo = m_AmpBornOnly;
+    }
+    Vec4D PX(m_pacraic[0] + m_pacraic[1]);
     Complex sProd(1., 0.);
     double crudeprod(1.);
     bool crudefixed(false);
@@ -969,6 +898,8 @@ void Ceex_Base::Calculate() {
         Sactu[j] = m_Sfac[m_stage[j]][j];
         crudeprod *= std::norm(Sactu[j]);
       }
+      // after the crude: it is the generator's density, not the amplitude
+      if (nextsoft[j]) Sactu[j] *= sqrt(NextToSoftFlux(j));
       sProd   *= Sactu[j];
       if (m_stagereduces[m_stage[j]]) PX -= m_allphotons[j];
     }
@@ -995,6 +926,7 @@ void Ceex_Base::Calculate() {
           Sactu[j] = m_Sfac[m_stage[j]][j];
           crudeprod *= std::norm(Sactu[j]);
         }
+        if (nextsoft[j]) Sactu[j] *= sqrt(NextToSoftFlux(j));
         sProd *= Sactu[j];
       }
       m_sactu = Sactu;
@@ -1015,66 +947,17 @@ void Ceex_Base::Calculate() {
     }
     m_sp   = svarX;
     m_Sprod = sProd;
-    /*
-      The pseudo-flux factor relates the invariant flowing INTO the radiating
-      final-state system to that system's own invariant, m_svarQ. KKMC writes
-      it as svarX/svarQ (KKceex.cxx:395) and hep-ph/0006359 eq.(42) fixes the
-      meaning: it "disappears in the in-space situation p_a+p_b = p_c+p_d" and
-      "really matters if at least one hard FSR photon is present" - i.e. it is
-      1 when there is no FSR photon.
 
-      svarX is the whole X system. At 2 -> 2 that IS the radiating system
-      (X = q_c + q_d + sum_FSR k by momentum conservation), so svarX/svarQ is
-      1 + O(x_gamma) and cancels against the FSR (1-CKine) term below, which is
-      what KKMC designed it to do ("Contribution -svarX/svarQ from HERE cancels
-      exactly with svarX/svarQ in beta0", KKceex.cxx:1499).
-
-      Past 2 -> 2 the two part company: for e+e- -> H mu+ mu- the numerator
-      carries the Higgs and the denominator does not, so the ratio is s/m_ll^2
-      ~ 7.5 with NO photon at all. Squared that is 56.5, which is exactly the
-      factor by which the Comix real was observed to suppress the CEEX weight -
-      the real carries no m_cfac while m_rhocrud carries m_cfac^2.
-
-      So subtract the final legs that are NOT the radiating pair. At 2 -> 2 the
-      loop body never runs, PY is PX itself and svarY is bit-for-bit svarX, so
-      the 2 -> 2 stream is untouched by construction rather than by rounding.
-    */
     Vec4D PY(PX);
-    for (size_t i(2); i < m_pceex.size(); ++i)
-      if (i != m_if1 && i != m_if2) PY -= m_pceex[i];
+    for (size_t i(2); i < m_pacraic.size(); ++i)
+      if (i != m_if1 && i != m_if2) PY -= m_pacraic[i];
     const double svarY(PY.Abs2());
     m_svarY = svarY;          // the decay line's own partition-shifted scale
     m_PXvec = PX;             // and the momentum that realises m_sp
-    /*
-      The pseudo-flux is KKMC bookkeeping, not physics on its own: it exists so
-      that svarX/svarQ in beta_0 cancels the (1-CKine) term in the hand-coded
-      FSR beta_1 (KKceex.cxx:1499, and the comment above). A beta_1 taken
-      straight from the amplitude has no CKine term for it to cancel against,
-      so the factor is left dangling on beta_0 alone. NO_PSEUDOFLUX drops it
-      from both sides at once, which is the only self-consistent way to have it
-      off.
-    */
-    /*
-      NO_PSEUDOFLUX: 0 = svarY/svarQ on beta_0 in both rho_0 and rho_1 (KKMC's
-      beta_0); 1 = on neither; 2 = on rho_0 only. KKMC's O(alpha^1) AMPLITUDE
-      is flux-free up to 2k_i.k_j/Q^2 - it adds sProd(1-CKine)B per
-      final-state photon (KKceex.cxx:1552,1569) against the flux on beta_0 -
-      while its RhoExp0 keeps the flux, so 2 is KKMC's own rho_1/rho_0.
-      Measured on the seed-11 n=2 point: rho_1 with the flux off agrees with
-      KKMC's to 0.04%; with it on, A1 loses 0.26 A0 in every helicity.
-    */
-    static const pseudoflux::code pfmode(ATOOLS::Settings::GetMainSettings()["CEEX"]
+    
+    static const pseudoflux::code pfmode(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
                             ["NO_PSEUDOFLUX"].Get<pseudoflux::code>());
-    /*
-      The pseudo-flux, generalised: one factor (q_g + K_g)^2 / q_g^2 per
-      final stage g, q_g the physical momentum of the stage's legs and K_g
-      the photons this partition assigns to it. At 2 -> 2 q + K_F = P - K_I
-      by conservation, so this is KKMC's svarX/svarQ to rounding; for H l l
-      it is the (X - p_H)^2 / m_ll^2 the code carried by hand; for two
-      resonances each gets its own. It stays in rho_0 only (mode 2): the
-      2 -> 2 comparison with KKMC fixes that, and for H mu mu dropping it
-      moved CEEX from -6.4% to +11.3% against Born+real.
-    */
+   
     m_pflux = 1.;
     if (pfmode != pseudoflux::neither)
       for (int g(0); g < m_nstages; ++g) {
@@ -1086,38 +969,19 @@ void Ceex_Base::Calculate() {
       }
     m_cfac = sProd * Complex(pfmode == pseudoflux::rho0_and_rho1 ? m_pflux : 1., 0.);   // rho_1 side
     MakeProp();
+    ResonanceProbe(nparts);
     // Electroweak form factors at THIS partition's scale, and the scattering
-    // angle the WW/ZZ boxes depend on. No-op unless CEEX: WEAK is set.
-    MakeEWFF(m_sp, cos(m_pceex[m_if1].Theta()));
+    // angle the WW/ZZ boxes depend on. No-op unless ACRAIC: WEAK is set.
+    MakeEWFF(m_sp, cos(m_pacraic[m_if1].Theta()));
     MakeBoxMandelstams(PX);
 
-    /*
-      Does Comix's beta_1 depend on the partition? If it does not, one
-      evaluation pair per photon serves all 2^n partitions and the per-photon
-      real is affordable; if it does, the cost is 2 x n x 2^n per event.
-    */
-    { static const bool b1chk(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                              ["BETA1_PARTITION_CHECK"].Get<int>() != 0);
-      if (b1chk && !m_allphotons.empty()) {
-        Amplitude B1;
-        if (ComixBeta1At(m_allphotons[0], m_PhoHel[0], m_sp, B1)) {
-          double n2(0.);
-          for (int f(0); f < Amplitude::NHel(); ++f) n2 += std::norm(B1.m_A[f]);
-          const double nb(sqrt(n2));
-          if (nb > 0.) {
-            if (m_b1n == 0) { m_b1min = m_b1max = nb; }
-            else { m_b1min = Min(m_b1min, nb); m_b1max = Max(m_b1max, nb); }
-            m_b1sum += nb; m_b1sq += nb*nb;
-            ++m_b1n;
-          }
-        }
-      } }
-    if (dobeta2) ResetBeta1Record();
+    AccumulateBeta1Partition();
+    if (dobeta2 || m_treeprobe) ResetBeta1Record();
     InfraredSubtractedME_0_0();
-    m_b1terms.clear();        // CEEX: TCHANNEL_MULTIPHOTON 2: this partition's
-    // Only when a virtual was asked for and CEEX is its source; see
-    // Ceex_Base::CeexOwnVirtual.
-    if (CeexOwnVirtual()) InfraredSubtractedME_0_1();
+    m_b1terms.clear();        // ACRAIC: TCHANNEL_MULTIPHOTON 2: this partition's
+    // Only when a virtual was asked for and ACRAIC is its source; see
+    // Acraic_Base::AcraicOwnVirtual.
+    if (AcraicOwnVirtual()) InfraredSubtractedME_0_1();
     for (size_t j(0); j < m_allphotons.size(); ++j) {
       if (m_checkxs && m_stagereduces[m_stage[j]]) {
         CheckSoftFactor(m_allphotons[j]);
@@ -1125,13 +989,7 @@ void Ceex_Base::Calculate() {
       }
       /*
         beta_1: Comix's one-photon amplitude with the eikonal subtracted off
-        it. There is no hand-coded fallback. The KKMC-shaped routines it
-        replaced are a formula for e+e- -> f fbar, not a method - they put the
-        photon's spinor index into a beam slot, which only means anything for a
-        single s-channel 2 -> 2 - and for e+e- -> nu nu they return a CEEX
-        cross section 3.1x the NLO. Falling back to them hides a wrong answer
-        behind a correct-looking one, so a failure here contributes nothing and
-        says so.
+        it.
       */
       if (!ComixInfraredSubtracted_1_0(m_allphotons[j], m_PhoHel[j],
                                        (int)j)) {
@@ -1143,36 +1001,16 @@ void Ceex_Base::Calculate() {
         }
       }
     }
-    // CEEX: TCHANNEL_MULTIPHOTON 2: the factorised remainder of the beta_1
+    // ACRAIC: TCHANNEL_MULTIPHOTON 2: the factorised remainder of the beta_1
     // terms just added (empty, so a no-op, in every other mode)
     AddFactorisedRemainder();
     /*
-      CEEX: ORDER 2 - beta_2 for every eligible pair, after the beta_1 loop
-      of the SAME partition, whose M_1 and eikonals it subtracts.
+      ACRAIC: ORDER 2 - the tree residuals beta_m, 2 <= m <= TREE_BETA_MAX, for
+      every eligible photon set (Acraic_Beta2.C), after the beta_1 loop of the
+      SAME partition, whose M_1 and eikonals they subtract.
     */
-    if (dobeta2)
-      for (size_t j(0); j < m_allphotons.size(); ++j)
-        for (size_t l(j + 1); l < m_allphotons.size(); ++l)
-          if (Beta2PairEligible((int)j, (int)l))
-            ComixInfraredSubtracted_2_0((int)j, (int)l);
-    { static const int kkflux(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                              ["KKMC_FLUX_EMULATION"].Get<int>());
-      if (kkflux && m_order == 2 && m_flavs.size() == 4) {
-        const Vec4D Q(m_pceex[m_if1] + m_pceex[m_if2]);
-        const double Q2(Q.Abs2());
-        double rall(0.), rsoft(0.);
-        for (size_t j(0); j < m_allphotons.size(); ++j)
-          for (size_t l(j + 1); l < m_allphotons.size(); ++l)
-            if (!m_stagereduces[m_stage[j]] && !m_stagereduces[m_stage[l]]) {
-              const double t(2.*(m_allphotons[j]*m_allphotons[l])/Q2);
-              rall += t;
-              if (!Beta2PairEligible((int)j, (int)l)) rsoft += t;
-            }
-        for (int f(0); f < Amplitude::NHel(); ++f) {
-          m_AmpFluxAll.m_A[f]  += m_Sprod*rall*m_partborn0.m_A[f];
-          m_AmpFluxSoft.m_A[f] += m_Sprod*rsoft*m_partborn0.m_A[f];
-        }
-      } }
+    if (dobeta2 || m_treeprobe) AddTreeBetas(dobeta2);
+    EmulateKKMCFlux();
 
     if (!m_ifi_coherent)   // this partition's own contribution, squared
       for (int f(0); f < Amplitude::NHel(); ++f) {
@@ -1180,15 +1018,23 @@ void Ceex_Base::Calculate() {
         const Complex d1(m_AmpExpo1.m_A[f] - snap1.m_A[f]);
         m_inc00 += std::norm(d0); m_inc11 += std::norm(d1);
         m_inc01 += std::real(std::conj(d0)*d1);
+        // ORDER 2 (A_2 = A_1 + beta_2) and the Born+virtual, YFS: IFI false
+        const Complex d2(d1 + m_AmpBeta2.m_A[f] - snap2.m_A[f]);
+        const Complex dbv(m_AmpBornVirt.m_A[f] - snapbv.m_A[f]);
+        m_inc22 += std::norm(d2);
+        m_inc12 += std::real(std::conj(d1)*d2);
+        m_inc02 += std::real(std::conj(d0)*d2);
+        m_incbv += std::norm(dbv);
+        m_incbo += std::norm(m_AmpBornOnly.m_A[f] - snapbo.m_A[f]);
       }
     if (last == 1) break;
     PartitionPlus(last);
     if (last == 2) break;
   }
   /*
-    CEEX: CRUDE_FROM_GENERATOR - the crude on the generator's own stages.
+    ACRAIC: CRUDE_FROM_GENERATOR - the crude on the generator's own stages.
     compare only prints it next to the per-partition one (the gate: the two
-    must agree wherever CEEX's stages are the generator's dipoles).
+    must agree wherever ACRAIC's stages are the generator's dipoles).
   */
   const crudegen::code cg(m_crudegen != crudegen::automatic ? m_crudegen
                           : (WStagesActive() ? crudegen::on : crudegen::off));
@@ -1205,7 +1051,7 @@ void Ceex_Base::Calculate() {
     else {
       static bool warned(false);
       if (!warned) { warned = true;
-        msg_Error()<<METHOD<<"(): CEEX: CRUDE_FROM_GENERATOR asked for but the "
+        msg_Error()<<METHOD<<"(): ACRAIC: CRUDE_FROM_GENERATOR asked for but the "
                    <<"generator crude could not be built; the per-partition "
                    <<"crude is used. Reported once."<<std::endl; }
     }
@@ -1238,108 +1084,10 @@ void Ceex_Base::Calculate() {
     }
     std::cerr<<std::endl;
   }
-  /*
-    Closure at one photon. The partition sum ought to return Comix's exact
-    one-photon amplitude, because the stage weights sum to one. It cannot be
-    exact: the I and F terms carry the propagator at X_I and X_F, and that
-    difference IS the split between photons off the initial and final legs -
-    the eikonal weights only approximate it. So this number is the size of
-    that approximation, measured against the exact amplitude rather than
-    against another reconstruction.
-  */
-  { static const bool cl(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                         ["CLOSURE_1PHOT"].Get<int>() != 0);
-    if (cl && m_allphotons.size() == 1 && m_cxbalignok) {
-      Amplitude Mex;
-      Vec4D_Vector pp(m_pceex);
-      pp.push_back(m_allphotons[0]);
-      const double rn(RealNorm());
-      if (rn > 0. && ComixRealAt(pp, m_PhoHel[0], Mex, -1.)) {
-        double nd(0.), ne(0.);
-        for (int f(0); f < Amplitude::NHel(); ++f) {
-          const Complex ex(m_cxbalign.m_A[f]*Mex.m_A[f]/rn);
-          nd += std::norm(m_AmpExpo1.m_A[f] - ex);
-          ne += std::norm(ex);
-        }
-        if (ne > 0.) {
-          double nb(0.), nr(0.), n1(0.), nbr(0.);
-          for (int f(0); f < Amplitude::NHel(); ++f) {
-            nb += std::norm(m_snapBorn.m_A[f]); nr += std::norm(m_snapReal.m_A[f]);
-            n1 += std::norm(m_AmpExpo1.m_A[f]);
-            nbr += std::norm(m_snapBorn.m_A[f] + m_snapReal.m_A[f]); }
-          std::cerr<<"@@@ CLOS1 xg="
-                   <<(m_s>0.?2.*m_allphotons[0][0]/sqrt(m_s):-1.)
-                   <<" rel="<<sqrt(nd/ne)
-                   <<" |Born|2="<<nb<<" |Real|2="<<nr<<" |Born+Real|2="<<nbr
-                   <<" |A1|2="<<n1<<" |Mex|2="<<ne<<" nparts="<<m_nparts<<std::endl; }
-      }
-    } }
-  { static const bool b1chk(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                            ["BETA1_PARTITION_CHECK"].Get<int>() != 0);
-    if (b1chk && m_b1n > 1 && m_b1min > 0.)
-      { const double mean(m_b1sum/m_b1n);
-        const double var(m_b1sq/m_b1n - mean*mean);
-        std::cerr<<"@@@ B1PART nphot="<<m_allphotons.size()
-                 <<" nparts="<<m_b1n
-                 <<" spread="<<(m_b1max/m_b1min)
-                 <<" maxovmean="<<(mean>0.?m_b1max/mean:-1.)
-                 <<" cv="<<(mean>0.?sqrt(var>0.?var:0.)/mean:-1.)
-                 <<std::endl; } }
-  /*
-    Comix's beta_1 against what the partition loop ACTUALLY accumulated for
-    each photon. m_realphot[j] is that object - the stage pieces with their
-    partition weights - whereas HandOnePhotonAmplitude is a standalone
-    reconstruction, and a reconstruction is not the reference: it produced
-    |beta_1| LARGER than the full amplitude on some photons, which cannot be.
-  */
-  { static const bool b1(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                         ["BETA1_CHECK"].Get<int>() != 0);
-    static int nd(0);
-    if (b1 && nd < 14)
-      for (size_t j(0); j < m_allphotons.size() && nd < 14; ++j) {
-        if (j >= m_cxratiook.size() || !m_cxratiook[j]) continue;
-        ++nd;
-        double nr(0.), ncs(0.);
-        const int nh(Amplitude::NHel());
-        for (int f = 0; f < nh; ++f) {
-          nr  += std::norm(m_realphot[j].m_A[f]);
-          ncs += std::norm(m_cxcsub[j].m_A[f]);
-        }
-        std::cerr<<"@@@ BETA1REF Ek="<<m_allphotons[j][0]
-                 <<" |realphot|="<<sqrt(nr)
-                 <<" |Csub|="<<sqrt(ncs)
-                 <<" ratio="<<(nr>0.? sqrt(ncs/nr) : -1.)<<std::endl;
-      } }
-  /*
-    Report the per-event spread of V(h) across partitions, then reset. Only
-    the helicities that carry weight are shown; the mass-suppressed ones have
-    a Born near zero and their ratio means nothing.
-  */
-  { static const bool vp(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                         ["VIRT_PARTITION_CHECK"].Get<int>() != 0);
-    static int nv(0);
-    if (vp && nv < 8 && !m_vpmin.empty()) {
-      ++nv;
-      double worst(0.); int nl(0);
-      for (size_t f(0); f < m_vpmin.size(); ++f) {
-        if (m_vpmax[f] < m_vpmin[f]) continue;
-        ++nl;
-        const double mid(0.5*(m_vpmax[f] + m_vpmin[f]));
-        if (mid > 0.) worst = Max(worst, (m_vpmax[f] - m_vpmin[f])/mid);
-      }
-      // the actual range, not just the relative spread: a spread of 2 means
-      // the minimum reached zero, which needs to be visible
-      double gmin(1e30), gmax(-1e30);
-      for (size_t f(0); f < m_vpmin.size(); ++f) {
-        if (m_vpmax[f] < m_vpmin[f]) continue;
-        gmin = Min(gmin, m_vpmin[f]); gmax = Max(gmax, m_vpmax[f]);
-      }
-      std::cerr<<"@@@ VIRTPART nparts="<<nparts<<" nphot="<<m_allphotons.size()
-               <<" nlive="<<nl<<" worst_spread="<<worst
-               <<" |V| in ["<<gmin<<","<<gmax<<"]"
-               <<" sQ="<<m_svarQ<<std::endl;
-    }
-    m_vpmin.clear(); m_vpmax.clear(); }
+  CheckClosureOnePhoton();
+  ReportBeta1Partitions();
+  CheckBeta1Ratio();
+  CheckVirtualPartitions(nparts);
   m_nparts = nparts;
   if (m_checkxs && nparts > 1 && m_pzmin > 0.) {
     const size_t n(Min(m_allphotons.size(), size_t(15)));
@@ -1349,7 +1097,7 @@ void Ceex_Base::Calculate() {
     const double ecm((m_momenta[0]+m_momenta[1]).Mass());
     for (int c(0); c < 4; ++c) {
       const double xcut(m_pzxcut[c]);
-      Vec4D Xhard(m_pceex[0] + m_pceex[1]), Xall(Xhard);
+      Vec4D Xhard(m_pacraic[0] + m_pacraic[1]), Xall(Xhard);
       size_t nsoft(0);
       for (size_t j(0); j < m_allphotons.size(); ++j) {
         const double x(2.*m_allphotons[j][0]/ecm);
@@ -1364,82 +1112,43 @@ void Ceex_Base::Calculate() {
       const double r(a > b ? a/b : b/a);
       m_pzsoft[c] = Max(m_pzsoft[c], r);
       m_pzsoftsum[c] += r; ++m_pzsoftn[c];
-      m_pzsoftsav[c] += double(1u << Min(nsoft, size_t(20)));
+      m_pzsoftsav[c] += double(NumLegSubsets<unsigned>(Min(nsoft, size_t(20))));
     }
   }
  
-  /*
-    Partition-count sanity check: m_nstages^(photons ENUMERATED). Photons
-    below SOFT_PARTITION_CUT, and the softest ones above the
-    MAX_PARTITION_PHOTONS cap, sit on a fixed stage (m_fixedstage) and are
-    not enumerated, so the count is not 2^n. The earlier form of this check
-    predated both the collapse and general stages and fired on every run
-    with a soft photon (e.g. "2 partitions for 3 photons, expected 8").
-  */
-  {
-    const size_t n(m_allphotons.size());
-    size_t nfree(0);
-    if (m_fixedstage.size() == n)
-      for (size_t j(0); j < n; ++j) if (!m_fixedstage[j]) ++nfree;
-    long want(1);
-    if (HasFSR() && m_nstages > 1) {
-      for (size_t j(0); j < nfree && want <= (1L << 40); ++j) want *= m_nstages;
-      if (want > (1L << 40)) want = nparts;       // overflow guard only
-    }
-    if (nparts != want) {
-      ++m_partbad;
-      static bool warned(false);
-      if (!warned) {
-        warned = true;
-        msg_Error()<<METHOD<<"(): partition counter enumerated "<<nparts
-                   <<" partitions for "<<n<<" photons ("<<nfree
-                   <<" enumerated over "<<m_nstages<<" stages), expected "
-                   <<want<<". Reported once."<<std::endl;
-      }
-    }
-    ++m_partn;
-  }
+  CheckPartitionCount(nparts);
 
-  // Comix-supplied O(alpha) real, if CEEX: COMIX_REAL asked for it. It
+  // Comix-supplied O(alpha) real, if ACRAIC: COMIX_REAL asked for it. It
   // OVERWRITES m_AmpExpo1 for one-photon events, so it has to run after the
   // partition loop has finished accumulating and before MakeRho squares.
   ApplyComixReal();
 
   MakeRho();
   if (m_order == 2) {
-    static const bool b2c(ATOOLS::Settings::GetMainSettings()["CEEX"]
+    static const bool b2c(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
                           ["BETA2_CLOSURE"].Get<int>() != 0);
-    static const bool b2s(ATOOLS::Settings::GetMainSettings()["CEEX"]
+    static const bool b2s(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
                           ["BETA2_SOFT_TEST"].Get<int>() != 0);
     if (b2c) Beta2Closure();
     if (b2s) Beta2SoftLimit();
+    if (m_treeprobe) TreeBetaClosure();   // ACRAIC: TREE_BETA_PROBE
   }
-  { static const bool bc(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                         ["BETA1_CLOSURE"].Get<int>() != 0);
-    if (bc) Beta1Closure(); }
-  { static const bool sl(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                         ["SOFT_LIMIT_TEST"].Get<int>() != 0);
-    if (sl) SoftLimitTest(); }
-  { static const bool sn(ATOOLS::Settings::GetMainSettings()["CEEX"]
-                         ["SOFT_NORM_CHECK"].Get<int>() != 0);
-    if (sn && !m_allphotons.empty()) {
-      size_t js(0);
-      for (size_t i(1); i < m_allphotons.size(); ++i)
-        if (m_allphotons[i][0] < m_allphotons[js][0]) js = i;
-      SoftNormCheck(m_allphotons[js]); } }
+  RunBeta1Closure();
+  RunSoftLimitTest();
+  RunSoftNormCheck();
 
-  static const double dumpxmin(ATOOLS::Settings::GetMainSettings()["CEEX"]["DUMP_XMIN"].Get<double>());
-  static const size_t dumpn(ATOOLS::Settings::GetMainSettings()["CEEX"]["DUMP_NPHOT"].Get<int>());
+  static const double dumpxmin(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["DUMP_XMIN"].Get<double>());
+  static const size_t dumpn(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["DUMP_NPHOT"].Get<int>());
   const double xgam(!m_allphotons.empty() && m_momenta.size() >= 2 ?
                     2.*m_allphotons[0][0]/(m_momenta[0]+m_momenta[1]).Mass() : 0.);
   // DUMP_XMIN_EACH: every photon above this x (a multi-hard-photon point)
-  static const double dumpxeach(ATOOLS::Settings::GetMainSettings()["CEEX"]["DUMP_XMIN_EACH"].Get<double>());
+  static const double dumpxeach(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["DUMP_XMIN_EACH"].Get<double>());
   bool dumpeach(true);
   if (dumpxeach > 0. && m_momenta.size() >= 2)
     for (size_t i(0); i < m_allphotons.size(); ++i)
       if (!(2.*m_allphotons[i][0]/(m_momenta[0]+m_momenta[1]).Mass() > dumpxeach))
         dumpeach = false;
-  if (m_checkxs && !m_ceexdumped && m_allphotons.size() == dumpn && dumpeach &&
+  if (m_checkxs && !m_acraicdumped && m_allphotons.size() == dumpn && dumpeach &&
       xgam > dumpxmin && m_momenta.size() >= 6 && m_result0 != 0.) {
     
     Vec4D bal(m_momenta[0] + m_momenta[1] - m_momenta[4] - m_momenta[5]);
@@ -1447,13 +1156,13 @@ void Ceex_Base::Calculate() {
     const double worst(Max(Max(dabs(bal[0]), dabs(bal[1])),
                            Max(dabs(bal[2]), dabs(bal[3]))));
     if (worst > 1e-6) {
-      msg_Error()<<METHOD<<"(): CEEX dump skipped, momentum imbalance "
+      msg_Error()<<METHOD<<"(): ACRAIC dump skipped, momentum imbalance "
                  <<worst<<std::endl;
       return;
     }
-    m_ceexdumped = true;
+    m_acraicdumped = true;
     m_justdumped = true;
-    std::ofstream pt("ceex_point.dat");
+    std::ofstream pt("acraic_point.dat");
     pt << std::setprecision(17);
     const int idx[5] = {0, 1, 4, 5, -1};
     for (int n(0); n < 4; ++n)
@@ -1468,83 +1177,81 @@ void Ceex_Base::Calculate() {
          << m_allphotons[i][2] << " " << m_allphotons[i][3] << " "
          << m_PhoHel[i] << "\n";
     
-    {
-      Amplitude bref;
-      BornAmplitude(m_pceex, bref);
-      msg_Error() << std::setprecision(10);
-      msg_Error() << "@@@ SHMASS nflav=" << m_flavs.size()
-                << " m1=" << (m_flavs.size()>0? m_flavs[0].Mass():-1.)
-                << " m2=" << (m_flavs.size()>1? m_flavs[1].Mass():-1.)
-                << " m3=" << (m_flavs.size()>2? m_flavs[2].Mass():-1.)
-                << " m4=" << (m_flavs.size()>3? m_flavs[3].Mass():-1.)
-                << " mass_I=" << m_mass_I << " mass_F=" << m_mass_F
+    Amplitude bref;
+    BornAmplitude(m_pacraic, bref);
+    msg_Error() << std::setprecision(10);
+    msg_Error() << "@@@ SHMASS nflav=" << m_flavs.size()
+              << " m1=" << (m_flavs.size()>0? m_flavs[0].Mass():-1.)
+              << " m2=" << (m_flavs.size()>1? m_flavs[1].Mass():-1.)
+              << " m3=" << (m_flavs.size()>2? m_flavs[2].Mass():-1.)
+              << " m4=" << (m_flavs.size()>3? m_flavs[3].Mass():-1.)
+              << " mass_I=" << m_mass_I << " mass_F=" << m_mass_F
+              << std::endl;
+
+    msg_Error() << std::setprecision(16) << "@@@ SHPMASS";
+    for (size_t i = 0; i < m_pacraic.size(); ++i)
+      msg_Error() << " p" << i << "=" << m_pacraic[i].Mass();
+    msg_Error() << std::setprecision(10) << std::endl;
+    msg_Error() << "@@@ SHCPL sin2tw=" << m_sin2tw << " norm=" << m_norm
+              << " ve=" << m_ve << " vf=" << m_vf
+              << " ae=" << m_ae << " af=" << m_af
+              << " qe=" << m_qe << " qf=" << m_qf
+              << " CZ1=" << CouplingZ(1., 1) << " CZ0=" << CouplingZ(1., 0)
+              << " CG=" << CouplingG() << std::endl;
+
+    msg_Error() << std::setprecision(16)
+              << "@@@ SHVIRT hasfsr=" << (HasFSR() ? 1 : 0)
+              << " s=" << m_Sc.real() << " t=" << m_Tc.real()
+              << " u=" << m_Uc.real() << " sQ=" << m_sQ
+              << " deltI=(" << m_vertexI.real() << "," << m_vertexI.imag() << ")"
+              << " deltF=(" << m_vertexF.real() << "," << m_vertexF.imag() << ")"
+              << " BoxGGtu=(" << m_BoxGGtu.real() << "," << m_BoxGGtu.imag() << ")"
+              << " BoxGZtu=(" << m_BoxGZtu.real() << "," << m_BoxGZtu.imag() << ")"
+              << " BoxGGut=(" << m_BoxGGut.real() << "," << m_BoxGGut.imag() << ")"
+              << " BoxGZut=(" << m_BoxGZut.real() << "," << m_BoxGZut.imag() << ")"
+              << " rawGG=(" << m_rawboxGG.real() << "," << m_rawboxGG.imag() << ")"
+              << " rawGZ=(" << m_rawboxGZ.real() << "," << m_rawboxGZ.imag() << ")"
+              << " rawSub=(" << m_rawboxSub.real() << "," << m_rawboxSub.imag() << ")"
+              << " coef=(" << m_rawcoef.real() << "," << m_rawcoef.imag() << ")"
+              << " alpha=" << m_alpha << " MZ=" << m_MZ << " GZ=" << m_gZ
+              << std::setprecision(10) << std::endl;
+    msg_Error() << "@@@ SHPROP sp=" << m_sp
+              << " propG=(" << m_propG.real() << "," << m_propG.imag() << ")"
+              << " propZ=(" << m_propZ.real() << "," << m_propZ.imag() << ")"
+              << std::endl;
+    for (int j = 0; j <= 1; ++j)
+      msg_Error() << "@@@ SHFF j=" << j
+                << " TC=(" << m_TC[j].real() << "," << m_TC[j].imag() << ")"
+                << " UC=(" << m_UC[j].real() << "," << m_UC[j].imag() << ")"
                 << std::endl;
-      
-      msg_Error() << std::setprecision(16) << "@@@ SHPMASS";
-      for (size_t i = 0; i < m_pceex.size(); ++i)
-        msg_Error() << " p" << i << "=" << m_pceex[i].Mass();
-      msg_Error() << std::setprecision(10) << std::endl;
-      msg_Error() << "@@@ SHCPL sin2tw=" << m_sin2tw << " norm=" << m_norm
-                << " ve=" << m_ve << " vf=" << m_vf
-                << " ae=" << m_ae << " af=" << m_af
-                << " qe=" << m_qe << " qf=" << m_qf
-                << " CZ1=" << CouplingZ(1., 1) << " CZ0=" << CouplingZ(1., 0)
-                << " CG=" << CouplingG() << std::endl;
-      
-      msg_Error() << std::setprecision(16)
-                << "@@@ SHVIRT hasfsr=" << (HasFSR() ? 1 : 0)
-                << " s=" << m_Sc.real() << " t=" << m_Tc.real()
-                << " u=" << m_Uc.real() << " sQ=" << m_sQ
-                << " deltI=(" << m_vertexI.real() << "," << m_vertexI.imag() << ")"
-                << " deltF=(" << m_vertexF.real() << "," << m_vertexF.imag() << ")"
-                << " BoxGGtu=(" << m_BoxGGtu.real() << "," << m_BoxGGtu.imag() << ")"
-                << " BoxGZtu=(" << m_BoxGZtu.real() << "," << m_BoxGZtu.imag() << ")"
-                << " BoxGGut=(" << m_BoxGGut.real() << "," << m_BoxGGut.imag() << ")"
-                << " BoxGZut=(" << m_BoxGZut.real() << "," << m_BoxGZut.imag() << ")"
-                << " rawGG=(" << m_rawboxGG.real() << "," << m_rawboxGG.imag() << ")"
-                << " rawGZ=(" << m_rawboxGZ.real() << "," << m_rawboxGZ.imag() << ")"
-                << " rawSub=(" << m_rawboxSub.real() << "," << m_rawboxSub.imag() << ")"
-                << " coef=(" << m_rawcoef.real() << "," << m_rawcoef.imag() << ")"
-                << " alpha=" << m_alpha << " MZ=" << m_MZ << " GZ=" << m_gZ
-                << std::setprecision(10) << std::endl;
-      msg_Error() << "@@@ SHPROP sp=" << m_sp
-                << " propG=(" << m_propG.real() << "," << m_propG.imag() << ")"
-                << " propZ=(" << m_propZ.real() << "," << m_propZ.imag() << ")"
-                << std::endl;
-      for (int j = 0; j <= 1; ++j)
-        msg_Error() << "@@@ SHFF j=" << j
-                  << " TC=(" << m_TC[j].real() << "," << m_TC[j].imag() << ")"
-                  << " UC=(" << m_UC[j].real() << "," << m_UC[j].imag() << ")"
-                  << std::endl;
-      
-      msg_Error() << "@@@ SHPHEL n=" << m_PhoHel.size()
-                << " hel0=" << (m_PhoHel.empty()? 0 : m_PhoHel[0])
-                << " nisr=" << m_isrphotons.size()
-                << " nfsr=" << m_fsrphotons.size()
-                << " nparts=" << m_nparts
-                << std::endl;
-      for (int h = 0; h <= 1; ++h) {
-        const Complex sf(Sfactor(m_pceex[0], m_pceex[1], m_allphotons[0],
-                                 h == 0 ? 1 : -1));
-        msg_Error() << "@@@ SHSINI h=" << h
-                  << " S=(" << sf.real() << "," << sf.imag() << ")"
-                  << " |S|=" << std::abs(sf) << std::endl;
-      }
-      for (int j1 = 0; j1 <= 1; ++j1)
-       for (int j2 = 0; j2 <= 1; ++j2)
-        for (int j3 = 0; j3 <= 1; ++j3)
-         for (int j4 = 0; j4 <= 1; ++j4) {
-           const Complex tt(m_Tamp[j1][j2][j3][j4]);
-           const Complex uu(m_Uamp[j1][j2][j3][j4]);
-           const Complex bc(bref.m_A[Idx(j1,j2,j3,j4)]);
-           if (std::abs(tt)==0. && std::abs(uu)==0. && std::abs(bc)==0.) continue;
-           msg_Error() << "@@@ SHSPIN " << j1 << j2 << j3 << j4
-                     << " TT=(" << tt.real() << "," << tt.imag() << ")"
-                     << " UU=(" << uu.real() << "," << uu.imag() << ")"
-                     << " Born=(" << bc.real() << "," << bc.imag() << ")"
-                     << std::endl;
-         }
+
+    msg_Error() << "@@@ SHPHEL n=" << m_PhoHel.size()
+              << " hel0=" << (m_PhoHel.empty()? 0 : m_PhoHel[0])
+              << " nisr=" << m_isrphotons.size()
+              << " nfsr=" << m_fsrphotons.size()
+              << " nparts=" << m_nparts
+              << std::endl;
+    for (int h = 0; h <= 1; ++h) {
+      const Complex sf(Sfactor(m_pacraic[0], m_pacraic[1], m_allphotons[0],
+                               h == 0 ? 1 : -1));
+      msg_Error() << "@@@ SHSINI h=" << h
+                << " S=(" << sf.real() << "," << sf.imag() << ")"
+                << " |S|=" << std::abs(sf) << std::endl;
     }
+    for (int j1 = 0; j1 <= 1; ++j1)
+     for (int j2 = 0; j2 <= 1; ++j2)
+      for (int j3 = 0; j3 <= 1; ++j3)
+       for (int j4 = 0; j4 <= 1; ++j4) {
+         const Complex tt(m_Tamp[j1][j2][j3][j4]);
+         const Complex uu(m_Uamp[j1][j2][j3][j4]);
+         const Complex bc(bref.m_A[Idx(j1,j2,j3,j4)]);
+         if (std::abs(tt)==0. && std::abs(uu)==0. && std::abs(bc)==0.) continue;
+         msg_Error() << "@@@ SHSPIN " << j1 << j2 << j3 << j4
+                   << " TT=(" << tt.real() << "," << tt.imag() << ")"
+                   << " UU=(" << uu.real() << "," << uu.imag() << ")"
+                   << " Born=(" << bc.real() << "," << bc.imag() << ")"
+                   << std::endl;
+       }
 
     
     msg_Error() << std::setprecision(10);
@@ -1572,7 +1279,7 @@ void Ceex_Base::Calculate() {
                       << "," << (std::abs(a0)>0.? (a1/a0).imag() : 0.) << ")"
                       << std::endl;
           }
-    msg_Out() << "=== Sherpa CEEX point written to ceex_point.dat ===\n"
+    msg_Out() << "=== Sherpa ACRAIC point written to acraic_point.dat ===\n"
               << "  rho0 (O(alpha^0)) = " << m_result0 << "\n"
               << "  rho1 (O(alpha^1)) = " << m_result1 << "\n"
               << "  rho1/rho0 - 1     = " << (m_result1/m_result0 - 1.) << "\n"
@@ -1584,21 +1291,21 @@ void Ceex_Base::Calculate() {
               << "  m_sp (propagator s used)  = " << m_sp << "\n"
               << "  (P-k)^2 = s-channel momentum for ISR = "
               << (m_momenta[4]+m_momenta[5]).Abs2()
-              << "   <-- CEEX eq.(one-photon): B(X) with X = P-k_1\n"
+              << "   <-- ACRAIC eq.(one-photon): B(X) with X = P-k_1\n"
               << "  photon x = 2E/sqrt(s) = " << xgam
               << ",  E_gamma = " << m_allphotons[0][0] << " GeV\n";
     if (m_order == 2) {
       /*
         The tree-level O(alpha^2) partner of the KKMC harness's mode 5
         (KKTREE2 line: rho1/rho0 and rho2/rho0 with no virtual anywhere). The
-        Sherpa side must be run without a CEEX-internal virtual
-        (YFS: CEEX_Virtual: external, which composes outside m_result).
+        Sherpa side must be run without a ACRAIC-internal virtual
+        (YFS: ACRAIC_Virtual: external, which composes outside m_result).
       */
       std::cerr<<std::setprecision(12)<<"@@@ SHTREE2 nphot="<<m_allphotons.size()
                <<" rho1/rho0="<<m_result1/m_result0
                <<" rho2/rho0="<<m_result2/m_result0
                <<" rho2/rho1="<<(m_result1 != 0. ? m_result2/m_result1 : 0.)
-               <<" ownvirt="<<(CeexOwnVirtual() ? 1 : 0)
+               <<" ownvirt="<<(AcraicOwnVirtual() ? 1 : 0)
                <<" nisr="<<m_isrphotons.size();
       for (size_t i(0); i < m_allphotons.size(); ++i)
         std::cerr<<" x"<<i<<"="<<2.*m_allphotons[i][0]/(m_momenta[0]+m_momenta[1]).Mass();
@@ -1606,12 +1313,12 @@ void Ceex_Base::Calculate() {
     }
   }
 
-  static const bool cxchk(ATOOLS::Settings::GetMainSettings()["CEEX"]["COMIX_CHECK"].Get<int>()!=0);
+  static const bool cxchk(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["COMIX_CHECK"].Get<int>()!=0);
   if (cxchk) {
     ComixCalib c;
     if (CalibrateComixMap(c))
       std::cerr<<std::setprecision(10)
-               <<"@@@ CEEXCMP sum_hand="<<c.sh<<" sum_comix="<<c.sc
+               <<"@@@ ACRAICCMP sum_hand="<<c.sh<<" sum_comix="<<c.sc
                <<" comix_me2="<<c.me2
                <<" sc_over_me2="<<(c.me2!=0.? c.sc/c.me2 : 0.)
                <<" N="<<c.N
@@ -1643,7 +1350,27 @@ void Ceex_Base::Calculate() {
           }
     m_sp = sp_save;
     MakeProp();
-    MakePropT(m_pceex);
+    MakePropT(m_pacraic);
     AccumulateBornShape(cos(bp[2].Theta()), sum / 4.);
+  }
+}
+
+void Acraic_Base::ResolveReducedBorn()
+{
+  static const tristate::code rb(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
+                                 ["TCHANNEL_REDUCED_BORN"].Get<tristate::code>());
+  int nrad(0);
+  for (size_t g(0); g < m_stagelegs.size(); ++g)
+    if (!m_stagelegs[g].empty()) ++nrad;
+  m_redborn = rb == tristate::on || (rb == tristate::automatic && m_comixborn && nrad == 1
+                         && BornHasExchangeLine());
+  // the reduced point is LegsAt's 2 -> 2 construction; with W stages the
+  // partition Born stays the shifted physical-spinor one
+  if (WStagesActive() && m_redborn) {
+    static bool warned(false);
+    if (!warned) { warned = true;
+      msg_Error()<<METHOD<<"(): ACRAIC: TCHANNEL_REDUCED_BORN is not defined "
+                 <<"with W stages; ignored."<<std::endl; }
+    m_redborn = false;
   }
 }

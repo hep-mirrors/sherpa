@@ -21,23 +21,9 @@ using namespace MODEL;
 using namespace YFS;
 
 
-// The EEX virtual dressing, one value per RADIATION SOURCE rather than per
-// dipole: deli is the initial-state 0.5*gamma, delf the final-state one.
-// CalculateGamma() below writes whichever of the two matches its own type, and
-// Dipole_EEX.C's Beta1/Beta2 read BOTH regardless of type - an ISR dipole's
-// beta_1 carries the FSR dressing and vice versa, which is the ISR (x) FSR
-// factorisation (see the comment in VirtualEEX). They are shared globals for
-// exactly that reason, so do NOT "fix" them into Dipole members: an initial
-// dipole would then see delf = 0 permanently and the cross term would vanish.
-//
-// The sharing does mean the values belong to the last dipole of each type to
-// run CalculateGamma(). Event-level state on Define_Dipoles/DipoleSet would
-// say that properly; these globals only work because every event rebuilds the
-// final-state dipoles and EEX() re-runs CalculateGamma() before using them.
 double delf = 0;
 double deli = 0;
 
-// Lambda (Kaellen function) now lives once in YFS/Tools/Dipole.H.
 
 
 Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, 
@@ -433,9 +419,22 @@ static double OneMinusBeta(const Vec4D &p, double m)
   return m2/(E*(E + P));
 }
 
+/*
+  gamma and gamma' of a FINAL-state dipole are Lorentz invariants of the
+  pair, so the velocities have to be taken in the pair's own rest frame.
+*/
 void Dipole::CalculateGamma(){
-  const double omb1(OneMinusBeta(m_bornmomenta[0], m_masses[0]));
-  const double omb2(OneMinusBeta(m_bornmomenta[1], m_masses[1]));
+  Vec4D q1(m_bornmomenta[0]), q2(m_bornmomenta[1]);
+  if (m_type == dipoletype::final) {
+    const Vec4D Q(q1 + q2);
+    if (Q.Abs2() > 0. && Q[0] > 0. && !IsZero(Q.PSpat()/Q[0], 1e-14)) {
+      Poincare rest(Q);
+      rest.Boost(q1);
+      rest.Boost(q2);
+    }
+  }
+  const double omb1(OneMinusBeta(q1, m_masses[0]));
+  const double omb2(OneMinusBeta(q2, m_masses[1]));
   m_b1 = 1. - omb1;
   m_b2 = 1. - omb2;
   double logarg = (1+m_b1)*(1+m_b2);

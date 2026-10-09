@@ -16,9 +16,9 @@ using namespace std;
 
 OpenLoops_Virtual::OpenLoops_Virtual(const Process_Info& pi,
                                      const Flavour_Vector& flavs,
-                                     int ol_id) :
+                                     int ol_id, bool masslesslegs) :
   Virtual_ME2_Base(pi, flavs), m_ol_id(ol_id), m_ismapped(false),
-  m_modebackup(m_mode),
+  m_modebackup(m_mode), m_masslesslegs(masslesslegs),
   m_ol_asscontribs(OpenLoops_Interface::ConvertAssociatedContributions(pi.m_fi.m_asscontribs))
 {
   DEBUG_FUNC("");
@@ -96,6 +96,35 @@ void OpenLoops_Virtual::Calc(const Vec4D_Vector& momenta)
   for (size_t i(0);i<m_ol_asscontribs;++i) m_asscontribs[i]/=factor;
 }
 
+bool OpenLoops_Virtual::MasslessLegConstant(double &c) const
+{
+  if (!m_masslesslegs) return false;
+  c = M_PI*M_PI/6.;
+  return true;
+}
+
+static bool ZeroMasslessLoopSpecies()
+{
+  static std::set<kf_code> done;
+  const std::set<kf_code> &kfs(Virtual_ME2_Base::MasslessLoopSpecies());
+  for (const kf_code kf : kfs) {
+    if (done.count(kf)) continue;
+    done.insert(kf);
+    // a process registered before would keep its massive library variant
+    // but run at zero mass (with massive momenta if the species is external)
+    if (!OpenLoops_Interface::s_procmap.empty())
+      THROW(fatal_error, "YFS: VIRTUAL_MASSIFICATION: "+Flavour(kf).IDName()+
+            " made massless after "+ToString(OpenLoops_Interface::s_procmap.size())+
+            " OpenLoops process(es) were registered (an OpenLoops Real_Generator"
+            " or RR_Generator, or a process without "+Flavour(kf).IDName()+
+            " first): take the trees from Comix");
+    OpenLoops_Interface::SetParameter("mass("+ToString(kf)+")", 0.);
+    msg_Info()<<"OpenLoops: "<<Flavour(kf)<<" massless in the loop provider"
+              <<" (YFS: VIRTUAL_MASSIFICATION)\n";
+  }
+  return !kfs.empty();
+}
+
 bool OpenLoops_Virtual::IsMappableTo(const PHASIC::Process_Info& pi)
 {
   Process_Info looppi(pi);
@@ -137,12 +166,13 @@ operator()(const PHASIC::Process_Info &pi) const
   OpenLoops_Interface::SetParameter
     ("coupling_ew_1", (int) pi.m_fi.m_nlocpl[1]);
 
+  const bool masslesslegs(ZeroMasslessLoopSpecies());
   int id = (pi.m_fi.m_nlotype==nlo_type::rvirt
             ? OpenLoops_Interface::RegisterRealVirtualProcess(pi.m_ii, pi.m_fi, 11)
             : OpenLoops_Interface::RegisterProcess(pi.m_ii, pi.m_fi, 11));
   if (id>0) {
     Flavour_Vector flavs = pi.ExtractFlavours();
-    return new OpenLoops_Virtual(pi, flavs, id);
+    return new OpenLoops_Virtual(pi, flavs, id, masslesslegs);
   }
   else {
     return NULL;

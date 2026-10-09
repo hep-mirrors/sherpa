@@ -330,6 +330,9 @@ void Beam_Parameters::RegisterGaussianDefaults()
 {
   m_settings["BEAM_SPREAD"].SetDefault(std::vector<double>{0.0, 0.0});
   m_settings["BEAM_SPREAD_NSIGMA"].SetDefault(4.0);
+  // Correlation rho of the two Gaussian beam energies (Collider_Weight);
+  // 0 = independent beams.
+  m_settings["BEAM_SPREAD_CORRELATION"].SetDefault(0.0);
 }
 
 void Beam_Parameters::RegisterLaserDefaults()

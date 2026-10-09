@@ -2,6 +2,8 @@
 #include "AddOns/OpenLoops/OpenLoops_Interface.H"
 
 #include "PHASIC++/Process/External_ME_Args.H"
+#include "PHASIC++/Process/Virtual_ME2_Base.H"
+#include "ATOOLS/Org/Exception.H"
 
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Message.H"
@@ -55,6 +57,15 @@ operator()(const External_ME_Args &args) const
 {
   if (!args.m_source.empty() && args.m_source != "OpenLoops")
     return NULL;
+  // YFS: VIRTUAL_MASSIFICATION makes these species massless in OpenLoops
+  for (const Flavour_Vector *fv : {&args.m_inflavs, &args.m_outflavs})
+    for (const Flavour &f : *fv)
+      if (Virtual_ME2_Base::MasslessLoopSpecies().count(f.Kfcode())) {
+        if (args.m_source.empty()) return NULL;
+        THROW(fatal_error, "YFS: VIRTUAL_MASSIFICATION makes "+f.IDName()+
+              " massless in OpenLoops; its trees (Real_Generator, RR_Generator)"
+              " must come from Comix");
+      }
 
   OpenLoops_Interface::SetParameter("coupling_qcd_0", (int) args.m_orders[0]);
   OpenLoops_Interface::SetParameter("coupling_qcd_1", 0);

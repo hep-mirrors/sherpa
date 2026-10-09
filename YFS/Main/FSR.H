@@ -19,6 +19,7 @@ namespace YFS {
     public:
       FSR();
       ~FSR();
+      void SetS(const double s) override;
       double m_u, m_fsrcut, m_Kmin, m_Kmax, m_sQ, m_sprim, m_dip_sp, m_sX, m_Emin, m_QF2, m_Q1, m_Q2;
       // m_mass2 removed: shadowed YFS_Base's double[2] with a scalar, unused;
       // that base member has since gone too. m_nbar below is FSR's own mean

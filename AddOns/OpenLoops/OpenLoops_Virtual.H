@@ -12,12 +12,13 @@ namespace OpenLoops {
     size_t m_ol_asscontribs;
 
     int m_modebackup;
+    bool m_masslesslegs;
 
   public:
 
     OpenLoops_Virtual(const PHASIC::Process_Info& pi,
                       const ATOOLS::Flavour_Vector& flavs,
-                      int ol_id);
+                      int ol_id, bool masslesslegs);
 
     ~OpenLoops_Virtual() {}
   
@@ -34,6 +35,10 @@ namespace OpenLoops {
     void Calc(const ATOOLS::Vec4D_Vector& momenta);
 
     bool IsMappableTo(const PHASIC::Process_Info& pi);
+
+    //! OpenLoops' 1/eps normalisation: delta_massive - delta_massless
+    //! - Z_EGSU = +zeta2 per leg (alpha/4pi), .
+    bool MasslessLegConstant(double &c) const;
   };
 
 }

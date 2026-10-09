@@ -42,6 +42,7 @@ namespace YFS {
 
   class Define_Dipoles : YFS_Base {
     public:
+    void SetS(const double s) override;
     std::vector<ParticleInfo> ExtractChargedParticles(
         const ATOOLS::Flavour_Vector& flavors,
         const ATOOLS::Vec4D_Vector& momenta,
@@ -133,6 +134,9 @@ namespace YFS {
       double CalculateRealSubIF(const Vec4D &k);
       double CalculateRealSubEEX(const Vec4D &k);
       double CalculateVirtualSub();
+      //! diagnostic (YFS: ACRAIC_Compare): CalculateVirtualSub's default branch
+      //! split by dipole type, initial / final / initial-final
+      void VirtualSubParts(double &ii, double &ff, double &ifi);
       //! The real-soft B-tilde of the dipoles CalculateVirtualSub sums, photon
       //! energies below K in the frame of the legs, in the IR regularisation
       //! of that subtraction (dim-reg finite part: lambda^2 = 4 pi mu^2/eps).
@@ -159,6 +163,10 @@ namespace YFS {
       //! that needs both gets them from one evaluation instead of two.
       double FormFactor(double form);
       double FormFactorSum();
+      //! FormFactorSum() without its initial-state (II) term: the final-
+      //! state, Coulomb, initial-final and decay pieces, on the legs the
+      //! dipoles were built with (RV_MODE remainder_own_legs)
+      double FormFactorSumFinalLegs();
       //! Just the initial-final term of FormFactorSum(), i.e. the piece
       //! IFI_Sub=1 adds and IFI_Sub=0 leaves out. Zero when IFI_Sub is off.
       //! Lets the IFI rung be undone exactly as exp(-FormFactorSumIF())

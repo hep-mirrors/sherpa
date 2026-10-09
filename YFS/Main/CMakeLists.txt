@@ -1,4 +1,6 @@
-set(YFSMain_SOURCES Coulomb.C
+set(YFSMain_SOURCES Beta0_2.C
+                 Coulomb.C
+                 Dyson_VP.C
                  Dipole.C
                  Dipole_EEX.C
                  DipoleSet.C
@@ -10,9 +12,12 @@ set(YFSMain_SOURCES Coulomb.C
                  YFS_FB_Analysis.C
                  YFS_Form_Factor.C
                  YFS_Handler.C
+                 YFS_Handler_Checks.C
                  YFS_Options.C)
 
-set(YFSMain_HEADERS Coulomb.H
+set(YFSMain_HEADERS Beta0_2.H
+                 Coulomb.H
+                 Dyson_VP.H
                  Dipole.H
                  DipoleSet.H
                  Photon.H

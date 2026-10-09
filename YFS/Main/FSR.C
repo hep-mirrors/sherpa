@@ -50,6 +50,21 @@ FSR::FSR()
   s["FSR_CUT"].SetDefault(1e-2*m_isrcut);
   m_fsrcut = s["FSR_CUT"].Get<double>();
   m_fsrcut /= sqrt(m_s);
+  /*
+    The Q-frame generation cut EminQ = EQQ*Delta must lie below the hiding
+    scale Emin = IR_CUTOFF/2: the Piatek pieces m_DelYFS - m_delvol in
+    YFS_FORM() swap the crude density for the exact one on the photons that
+    were generated and then hidden, (EminQ, Emin). With FSR_CUT >= IR_CUTOFF
+    (both GeV) that interval is reversed, nothing is hidden, and the same
+    expression multiplies by exp((gamma'-gamma) ln(EminQ/Emin)) instead of 1:
+  */
+  if (m_fsrcut >= m_isrcut) {
+    msg_Error()<<METHOD<<": FSR_CUT = "<<m_fsrcut*sqrt(m_s)
+               <<" GeV is not below IR_CUTOFF = "<<m_isrcut*sqrt(m_s)
+               <<" GeV, which the hidden-photon bookkeeping requires."
+               <<" Using the default "<<1e-2*m_isrcut<<" GeV instead.\n";
+    m_fsrcut = 1e-2*m_isrcut/sqrt(m_s);
+  }
   m_fsrcutF = s["FSR_FCUT"].Get<double>();
   m_nbar = s["FSR_NBAR"].Get<double>();
   m_use_massive_nbar = s["MASSIVE_NBAR"].Get<bool>();
@@ -60,6 +75,11 @@ FSR::FSR()
 }
 
 FSR::~FSR() = default;
+
+void FSR::SetS(const double s) {
+  YFS_Base::SetS(s);
+  p_fsrFormFact->SetS(s);
+}
 
 bool FSR::Initialize(YFS::Dipole &dipole) {
   p_dipole = &dipole;
@@ -224,7 +244,7 @@ void FSR::GenerateAngles() {
   // (1-am2/2) == (1+beta1*beta2)/2 for beta1==beta2), confirmed against
   // KKarFin::AngBre()/YFSfin() via a fixed-kinematics cross-check harness.
   m_fbarvec.push_back(1. / (del1 * del2) * (1. + m_beta1*m_beta2)/2.);
-  if(abs(m_c)>1){
+  if(std::abs(m_c)>1){
       msg_Error()<<"Photon angel out of bounds with cos(theta) = "<<m_c<<std::endl;
   }
 }
@@ -318,24 +338,17 @@ bool FSR::MakeFSR() {
       emission), where the photon energy is NOT bounded by sqrt(s_X): with
       s_X = s_Q + 2 sqrt(s_Q) E_K^Q + K^2 it grows like s_X/(2 sqrt(s_Q)) as
       s_Q -> 0. The old test E_K^Q < sqrt(s_X) therefore rejected every
-      m_ff < (sqrt(2)-1) sqrt(s_X) - 104 GeV at 250 GeV - removing the hard
-      collinear FSR in both YFS.NLO and CEEX (KKMC FSR-only ratio 0.02-0.2
-      below that mass, 2026-09-30, NOTES-kkmc250-mumu-dR-2026-09-30.md). In
-      the X frame E_K^X = K.X/sqrt(s_X) = (E_K^Q sqrt(s_Q) + K^2)/sqrt(s_X) is
-      below sqrt(s_X) for any physical point, so this only catches the
-      divergent rescale (m_xfact -> inf) it was introduced for (418eb2c6c).
+      m_ff < (sqrt(2)-1) sqrt(s_X) 
     */
-    {
-      const double rsX(sqrt(m_dip_sp)), rsQ(sqrt(m_dip_sp*m_yy));
-      const double EKX((m_photonSum[0]*rsQ + m_photonSum.Abs2())/rsX);
-      if (IsBad(EKX) || !(EKX < rsX)) {
-        msg_Debugging()<<METHOD<<"(): photon sum "<<EKX
-                       <<" GeV in the dipole frame exceeds the dipole mass "<<rsX
-                       <<" GeV; rescale factor was "<<m_xfact<<"\n";
-        RejectEvent();
-        m_cut = 4;
-        return false;
-      }
+    const double rsX(sqrt(m_dip_sp)), rsQ(sqrt(m_dip_sp*m_yy));
+    const double EKX((m_photonSum[0]*rsQ + m_photonSum.Abs2())/rsX);
+    if (IsBad(EKX) || !(EKX < rsX)) {
+      msg_Debugging()<<METHOD<<"(): photon sum "<<EKX
+                     <<" GeV in the dipole frame exceeds the dipole mass "<<rsX
+                     <<" GeV; rescale factor was "<<m_xfact<<"\n";
+      RejectEvent();
+      m_cut = 4;
+      return false;
     }
     m_sQ = m_dip_sp * m_yy;
     m_sX = m_sQ*(1.+m_photonSum[0]+0.25*m_photonSum*m_photonSum);
@@ -510,7 +523,7 @@ bool FSR::YFS_FORM(){
   double Eq2   = (m_sQ +m_mass[1]*m_mass[1] -m_mass[0]*m_mass[0])/(2*sqrt(m_sQ));
 
   m_bvrA = p_fsrFormFact->A(m_q1q2,m_mass[0],m_mass[1]);
-  double YFS_IR = -2.*m_alpi*abs(m_QF2)*(m_q1q2*p_fsrFormFact->A(m_dipole[0],m_dipole[1])-1.)*log(1/Delta);
+  double YFS_IR = -2.*m_alpi*std::abs(m_QF2)*(m_q1q2*p_fsrFormFact->A(m_dipole[0],m_dipole[1])-1.)*log(1/Delta);
 
   if (m_use_crude) {
     if(m_tchannel!=0){

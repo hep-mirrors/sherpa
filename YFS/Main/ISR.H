@@ -59,6 +59,8 @@ public:
 public:
   ISR();
   ~ISR();
+  //! This event's s, and the photon-energy bounds that follow from it.
+  void SetS(const double s) override;
   void GeneratePhotonMomentum();
   double Jacobian( double x);
   double GenerateV();

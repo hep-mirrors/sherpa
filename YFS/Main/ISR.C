@@ -29,6 +29,12 @@ ISR::ISR()
 ISR::~ISR() {
 }
 
+void ISR::SetS(const double s) {
+  YFS_Base::SetS(s);
+  m_Kmin = sqrt(m_s) * (m_isrcut) / 2.;
+  m_Kmax = sqrt(m_s * (1. - m_isrcut));
+}
+
 
 double ISR::CalculateBeta(const Vec4D& p) {
   return (Vec3D(p).Abs() / p[0]);
@@ -143,7 +149,7 @@ void ISR::GenerateAngles()
   m_del1.push_back(del1);
   m_del2.push_back(del2);
   m_cos.push_back(m_c);
-  if(abs(m_c)>1){
+  if(std::abs(m_c)>1){
       msg_Error()<<"Photon angel out of bounds with cos(theta) = "<<m_c<<std::endl;
   }
 }
