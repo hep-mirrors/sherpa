@@ -1,0 +1,43 @@
+# The same process as Sherpa.yaml with every coupling typed out, to show
+# what the model fills in when they are left off.
+#
+# For the electron and the muon, with sin^2(theta_W) = 0.2222:
+#
+#   photon   v = Q  = -1          a = 0
+#   Z        v = T3 - 2 Q sin^2   a = T3 = -0.5
+#
+# and the exchange's Coupling is the product of the two vertex
+# normalisations: e^2 for the photon, e^2/(4 sin^2 cos^2) for the Z.
+#
+# Typed this way the numbers are explicit, but they no longer track the
+# model: change the electroweak input and this card is silently stale,
+# whereas Sherpa.yaml is not. Prefer the defaults unless you are
+# deliberately reproducing someone else's fit.
+
+BEAMS: [11, -11]
+BEAM_ENERGIES: 100.0
+
+# Leptons are given their real masses. Sherpa's default is to treat them as
+# massless, which at these energies is numerically harmless -- (m_mu/sqrt(s))^2
+# is about 3e-7 here -- but it is an approximation, and the currents handle
+# the masses exactly, so there is no reason to take it.
+PARTICLE_DATA:
+  11: {Massive: true}
+  13: {Massive: true}
+
+ME_GENERATORS: [Internal]
+
+
+PROCESSES:
+- 11 -11 -> 13 -13:
+    Order: {QCD: 0, EW: 2}
+    Currents:
+      Exchange:
+      - Boson: 22
+        Coupling: 0.0951141
+        J1: {Type: VA_F_F, Indices: [1, 0], v: -1.0, a: 0.0}
+        J2: {Type: VA_F_F, Indices: [2, 3], v: -1.0, a: 0.0}
+      - Boson: 23
+        Coupling: 0.137213
+        J1: {Type: VA_F_F, Indices: [1, 0], v: -0.0539076, a: -0.5}
+        J2: {Type: VA_F_F, Indices: [2, 3], v: -0.0539076, a: -0.5}

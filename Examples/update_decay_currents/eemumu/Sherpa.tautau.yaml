@@ -1,0 +1,51 @@
+# e+ e- -> tau+ tau- with a MASSIVE tau.
+#
+# Same class as Sherpa.yaml and written the same way, with one physics
+# difference that makes it worth its own card: the tau is given its mass,
+# so the fermion current is no longer conserved and q.J is not zero.
+#
+# That switches on the second half of the massive vector propagator's
+# numerator,
+#
+#     -g^{mu nu} + q^mu q^nu / M^2 ,
+#
+# which vanishes identically for the massless leptons of the other cards.
+#
+# BOTH pairs are massive on purpose. The q^mu q^nu term is the PRODUCT
+# (J1.q)(J2.q)/M^2, so one conserved current is enough to kill it: with
+# massless electrons it is identically zero however heavy the final state
+# is. It takes non-conservation on both legs to switch on at all.
+#
+# Check it against the closed form, which handles both masses:
+#
+#   Sherpa -f Sherpa.tautau.yaml XS_CURRENTS_ANALYTIC=1
+#
+# and the reported maximum relative deviation should be at roundoff.
+#
+# NOT XS_CURRENTS_CHECK: the hardcoded XS_ee_ffbar it compares against
+# reads the final-state mass and then never uses it, so it is a massless
+# matrix element whatever the particle data says. It declines this card
+# rather than report a deviation that would say nothing about this code.
+#
+# Nothing in the C++ knows about taus. This card is the whole change.
+
+BEAMS: [11, -11]
+BEAM_ENERGIES: 100.0
+
+PARTICLE_DATA:
+  11: {Massive: true}
+  15: {Massive: true}
+
+ME_GENERATORS: [Internal]
+
+PROCESSES:
+- 11 -11 -> 15 -15:
+    Order: {QCD: 0, EW: 2}
+    Currents:
+      Exchange:
+      - Boson: 22
+        J1: {Type: VA_F_F, Indices: [1, 0]}
+        J2: {Type: VA_F_F, Indices: [2, 3]}
+      - Boson: 23
+        J1: {Type: VA_F_F, Indices: [1, 0]}
+        J2: {Type: VA_F_F, Indices: [2, 3]}

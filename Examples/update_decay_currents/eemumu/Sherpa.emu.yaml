@@ -1,0 +1,44 @@
+# e- mu- -> e- mu-, the t-channel partner of Sherpa.yaml.
+#
+# This is the same declaration with one change: each current now takes one
+# incoming and one outgoing leg of a single fermion line, rather than both
+# legs of an incoming or an outgoing pair.
+#
+#   Sherpa.yaml   J1 = [1, 0]  (e+, e-)        -> q = -(p0+p1), q^2 = s
+#   here          J1 = [2, 0]  (e- out, e- in) -> q =  p2-p0,   q^2 = t
+#
+# Nothing else differs, and there is no s-channel/t-channel switch in the
+# code: the invariant follows from the index assignment alone.
+#
+# The t-channel pole needs a cut, hence the selectors.
+#
+# Left massless on purpose, unlike the other cards. Giving these leptons
+# their masses makes Sherpa demand the initial state be reordered to
+# "13 11 -> 11 13", and with that ordering the electron line is {2,1}, so
+# the exchanged momentum p2-p1 equals p0-p3 -- the exchange carries u, not
+# t. XS_Currents classifies the invariant by whether J1 holds index 2 or 3,
+# which is only right when J1 also holds index 0. Fix that before making
+# this card massive; see the note in the project doc.
+
+BEAMS: [11, 13]
+BEAM_ENERGIES: 50.0
+
+
+ME_GENERATORS: [Internal]
+
+SELECTORS:
+- [PT, 11, 10.0, E_CMS]
+- [PT, 13, 10.0, E_CMS]
+
+
+PROCESSES:
+- 11 13 -> 11 13:
+    Order: {QCD: 0, EW: 2}
+    Currents:
+      Exchange:
+      - Boson: 22
+        J1: {Type: VA_F_F, Indices: [2, 0]}
+        J2: {Type: VA_F_F, Indices: [3, 1]}
+      - Boson: 23
+        J1: {Type: VA_F_F, Indices: [2, 0]}
+        J2: {Type: VA_F_F, Indices: [3, 1]}

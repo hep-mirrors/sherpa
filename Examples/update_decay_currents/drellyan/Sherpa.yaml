@@ -1,0 +1,33 @@
+# d dbar -> mu+ mu-: the same structure with the lines swapped, so the
+# COLOURED line is now the incoming one.
+#
+# That is the more searching colour test of the two. For an incoming line
+# the N_c from the colour sum has to be averaged back out, and the
+# framework already does that through m_symfac, which folds in
+# StrongCharge for the incoming legs. XS_Currents therefore applies N_c
+# once per strongly charged line regardless of direction, and the
+# averaging takes care of itself.
+#
+# Partonic beams with no PDF, so that this compares matrix elements rather
+# than parton luminosities.
+#
+#   Sherpa -f Sherpa.drellyan.yaml XS_CURRENTS_CHECK=1
+
+BEAMS: [1, -1]
+BEAM_ENERGIES: 100.0
+
+PDF_LIBRARY: None
+
+ME_GENERATORS: [Internal]
+
+PROCESSES:
+- 1 -1 -> 13 -13:
+    Order: {QCD: 0, EW: 2}
+    Currents:
+      Exchange:
+      - Boson: 22
+        J1: {Type: VA_F_F, Indices: [1, 0]}
+        J2: {Type: VA_F_F, Indices: [2, 3]}
+      - Boson: 23
+        J1: {Type: VA_F_F, Indices: [1, 0]}
+        J2: {Type: VA_F_F, Indices: [2, 3]}

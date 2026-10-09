@@ -1,0 +1,45 @@
+# e+ e- -> mu+ mu- at the Z pole, built from currents, compared against data.
+#
+# Same declaration as Sherpa.yaml, moved to sqrt(s) = 91.2 GeV because that
+# is where the measurement is.
+#
+# DELPHI_1994_I375963 (Z.Phys.C 65 (1995) 603) measures radiative muon pair
+# events: the photon energy spectrum and the angle between the photon and
+# the nearer muon. Its RunInfo line is literally "e+ e- > mu+ mu-, including
+# ISR", so the matrix element declared below is exactly what it wants, and
+# the photons come from Sherpa's QED radiation rather than from the hard ME.
+#
+# That makes it a more interesting test than a plain cross section: it is
+# sensitive to the radiation off the current, which is the part that matters
+# for putting YFS on top of currents later.
+#
+# It selects two prompt muons with E > 20 GeV in 20 < theta < 160 degrees,
+# and at least one prompt photon with E > 2 GeV inside the DELPHI
+# calorimeter acceptance and more than 5 degrees from either muon. Most
+# generated events therefore do not contribute, which is why the event count
+# is high.
+
+BEAMS: [11, -11]
+BEAM_ENERGIES: 45.6
+
+EVENTS: 200000
+
+ME_GENERATORS: [Internal]
+
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: eemumu_currents
+RIVET:
+  --analyses: [DELPHI_1994_I375963]
+
+
+PROCESSES:
+- 11 -11 -> 13 -13:
+    Order: {QCD: 0, EW: 2}
+    Currents:
+      Exchange:
+      - Boson: 22
+        J1: {Type: VA_F_F, Indices: [1, 0]}
+        J2: {Type: VA_F_F, Indices: [2, 3]}
+      - Boson: 23
+        J1: {Type: VA_F_F, Indices: [1, 0]}
+        J2: {Type: VA_F_F, Indices: [2, 3]}

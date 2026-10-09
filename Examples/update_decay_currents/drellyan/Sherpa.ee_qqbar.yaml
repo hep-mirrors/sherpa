@@ -1,0 +1,34 @@
+# e+ e- -> d dbar, built from the same two-current structure as the
+# leptonic cards. The only new ingredient is colour.
+#
+# A colour-singlet photon or Z leaves the quark current diagonal in colour,
+# so summing that index gives N_c = 3 for the quark line. XS_Currents
+# derives that from the flavours the card already names -- there is no
+# colour key in the schema and none is needed for singlet exchange.
+#
+# Without it this process came out at exactly 1/3 of the right answer, which
+# is worth knowing because nothing in the output looked wrong.
+#
+# Check against the hardcoded XS_ee_ffbar, which covers this final state:
+#
+#   Sherpa -f Sherpa.yaml XS_CURRENTS_CHECK=1
+#
+# A GLUON exchange is a different matter and is refused: an octet needs
+# colour algebra this structure cannot express.
+
+BEAMS: [11, -11]
+BEAM_ENERGIES: 100.0
+
+ME_GENERATORS: [Internal]
+
+PROCESSES:
+- 11 -11 -> 1 -1:
+    Order: {QCD: 0, EW: 2}
+    Currents:
+      Exchange:
+      - Boson: 22
+        J1: {Type: VA_F_F, Indices: [1, 0]}
+        J2: {Type: VA_F_F, Indices: [2, 3]}
+      - Boson: 23
+        J1: {Type: VA_F_F, Indices: [1, 0]}
+        J2: {Type: VA_F_F, Indices: [2, 3]}

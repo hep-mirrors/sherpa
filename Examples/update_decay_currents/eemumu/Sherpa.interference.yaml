@@ -1,0 +1,32 @@
+# e+ e- -> mu+ mu-, photon and Z, leptons DELIBERATELY MASSLESS.
+#
+# This card exists to keep one check alive. XS_CURRENTS_CHECK compares
+# against the hardcoded XS_ee_ffbar, which is the only reference we have
+# for the Z couplings and the gamma/Z interference: XS_CURRENTS_ANALYTIC
+# drops the Z and so cannot see them at all.
+#
+# XS_ee_ffbar reads the final-state mass and then never uses it, so it is a
+# massless matrix element. Every other card here now carries real lepton
+# masses, which makes that reference invalid and the comparison declines.
+# Without this card the interference would go unchecked.
+#
+#   Sherpa -f Sherpa.interference.yaml XS_CURRENTS_CHECK=1
+#
+# The deviation should be at roundoff.
+
+BEAMS: [11, -11]
+BEAM_ENERGIES: 100.0
+
+ME_GENERATORS: [Internal]
+
+PROCESSES:
+- 11 -11 -> 13 -13:
+    Order: {QCD: 0, EW: 2}
+    Currents:
+      Exchange:
+      - Boson: 22
+        J1: {Type: VA_F_F, Indices: [1, 0]}
+        J2: {Type: VA_F_F, Indices: [2, 3]}
+      - Boson: 23
+        J1: {Type: VA_F_F, Indices: [1, 0]}
+        J2: {Type: VA_F_F, Indices: [2, 3]}

@@ -1,0 +1,27 @@
+# The smallest useful declaration: one exchange, pure QED.
+#
+# Dropping the Z leaves a matrix element with a closed form,
+#
+#   <|M|^2> = 2 e^4 (t^2 + u^2) / s^2 ,
+#
+# which is what XS_CURRENTS_ANALYTIC=1 checks it against at every
+# phase-space point. Run as
+#
+#   Sherpa -f Sherpa.photon_only.yaml XS_CURRENTS_ANALYTIC=1
+#
+# and the reported maximum relative deviation should be at roundoff.
+
+BEAMS: [11, -11]
+BEAM_ENERGIES: 100.0
+
+ME_GENERATORS: [Internal]
+
+
+PROCESSES:
+- 11 -11 -> 13 -13:
+    Order: {QCD: 0, EW: 2}
+    Currents:
+      Exchange:
+      - Boson: 22
+        J1: {Type: VA_F_F, Indices: [1, 0]}
+        J2: {Type: VA_F_F, Indices: [2, 3]}
