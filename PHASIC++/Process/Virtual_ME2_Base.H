@@ -5,6 +5,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/NLO_Types.H"
 #include "MODEL/Main/Model_Base.H"
+#include <set>
 
 namespace PHASIC {
 
@@ -27,6 +28,7 @@ namespace PHASIC {
     const std::vector<size_t> *p_plist;
     bool m_calcass;
     std::vector<double> m_asscontribs;
+    static std::set<kf_code> s_masslessloop;
   public:
     Virtual_ME2_Base(const PHASIC::Process_Info& pi,
                   const ATOOLS::Flavour_Vector& flavs);
@@ -97,6 +99,21 @@ namespace PHASIC {
                                     std::vector<Complex> &a1,
                                     std::vector<std::vector<int> > &hel)
     { return false; }
+
+
+    static void AddMasslessLoopSpecies(const kf_code kf)
+    { s_masslessloop.insert(kf); }
+    static const std::set<kf_code> &MasslessLoopSpecies()
+    { return s_masslessloop; }
+    /*!
+      True if this provider evaluates the registered species massless; then c
+      is the per-leg constant of its 1/eps normalisation, in units of
+      alpha/4pi at the |M|^2 level:
+        delta_massive = delta_massless + sum_legs Q^2 [L^2 + L + 4 + zeta2 + c],
+      L = ln(mu_IR^2/m^2) (1811.06461).
+      False: the provider keeps the masses, the caller must not massify.
+    */
+    virtual bool MasslessLegConstant(double &c) const { return false; }
 
     static Virtual_ME2_Base* GetME2(const PHASIC::Process_Info& pi);
     static Virtual_ME2_Base* GetME2(const std::string& tag,

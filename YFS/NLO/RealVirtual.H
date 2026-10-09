@@ -5,6 +5,7 @@
 #include "PHASIC++/Process/Color_Correlated_ME2.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "YFS/Main/YFS_Base.H"
+#include "YFS/NLO/Massification.H"
 #include <memory>
 
 
@@ -21,6 +22,11 @@ namespace YFS{
         ~RealVirtual();
         double Calc(const ATOOLS::Vec4D_Vector &momenta, double b);    
         std::unique_ptr<PHASIC::Virtual_ME2_Base> p_loop_me;
+        //! YFS: VIRTUAL_MASSIFICATION (null when off); LoopOverTree only
+        std::unique_ptr<Massification> p_massif;
+        //! the provider's 1/eps coefficient (ME_E1 units) of the last call,
+        //! the massive one under massification
+        double E1() const;
         double Calc_V(const ATOOLS::Vec4D_Vector& p,
                     const double B,
                     const double mur);

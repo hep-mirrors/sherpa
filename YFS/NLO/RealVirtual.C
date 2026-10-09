@@ -21,9 +21,12 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info &pi) {
   rv_pi.m_maxcpl[0] = pi.m_maxcpl[0];
   rv_pi.m_mincpl[1] = pi.m_mincpl[1] + 1;
   rv_pi.m_maxcpl[1] = pi.m_maxcpl[1] + 1;
+  if (Massification::Enabled())
+    p_massif.reset(new Massification(rv_pi.ExtractFlavours(), "real-virtual"));
   p_loop_me.reset(PHASIC::Virtual_ME2_Base::GetME2(rv_pi));
   if (!p_loop_me)
     THROW(not_implemented, "Couldn't find RealVirtual ME for this process.");
+  if (p_massif) p_massif->Attach(p_loop_me.get());
   MODEL::s_model->GetCouplings(m_cpls);
   p_loop_me->SetSubType(ATOOLS::sbt::qed);
   /* Load color-correlated ME. TODO: orders */
@@ -51,21 +54,18 @@ double RealVirtual::Calc(const ATOOLS::Vec4D_Vector &momenta, double born) {\
 
 double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector &p, const double B,
                            const double mur) {
-  double V(0.0), run_corr(0.0), scale(0.0);
+  double V(0.0);
   m_failcut = false;
   if (m_nlocuts && !p_rvproc->Trigger(p)) {
     m_failcut = true;
     return 0;
   }
   // p_loop_me->SetRenScale(mur);
-  if (aqed->m_mode != vpmode::off) {
-    if (m_tchannel)
-      scale = -(p[0] - p[2]).Abs2();
-    else
-      scale = (p[0] + p[1]).Abs2();
-    const double dalpha = ((*aqed)(scale)-aqed->AqedThomson());
-    run_corr = 4. * dalpha * B;
-  }
+  // (the unused running-coupling term run_corr is removed: see Virtual.C)
+  // absolute value: needs the provider's massive tree, which a massless
+  // provider does not have
+  if (p_massif) THROW(not_implemented, "YFS: VIRTUAL_MASSIFICATION needs RV_MODE 1"
+                      " (the real-virtual as a ratio V/T)");
   p_loop_me->Calc(p);
   // const double gammaborn = p_loop_me->ME_Born() * p_loop_me->AlphaQED() * B / m_sym;// * p_loop_me->AlphaQED() / 2. / M_PI;
   const double gammaborn = p_loop_me->ME_Born();
@@ -105,8 +105,26 @@ bool RealVirtual::LoopOverTree(const ATOOLS::Vec4D_Vector &p,
   // its IR pole (charge renormalisation with massless light quarks), which
   // cancels in v_{n+1} - v only at a common scale
   p_loop_me->SetRenScale(mur2);
-  p_loop_me->Calc(peval);
+  if (p_massif) {
+    p_massif->Count(peval);
+    p_loop_me->Calc(p_massif->MasslessImage(peval));
+  }
+  else p_loop_me->Calc(peval);
   if (p_loop_me->Mode() != 0 || p_loop_me->ME_Born() == 0.) return false;
-  lt = m_factor * p_loop_me->ME_Finite();
+  // a loop of exactly zero over a nonzero tree is a provider failure, not
+  // physics: OpenLoops with qed 1 returns it for l+l- gamma at any nonzero
+  // Higgs width, which made RV = -B rho v_B (kkmc1005 gate, 2026-10-06)
+  if (p_loop_me->ME_Finite() == 0. && p_loop_me->ME_E1() == 0.)
+    THROW(fatal_error, "YFS: the real-virtual loop provider returned exactly 0"
+          " over a nonzero tree. With OpenLoops qed: 1 set OL_PARAMETERS"
+          " \"width(25)\": 0.");
+  lt = m_factor * (p_loop_me->ME_Finite()
+                   + (p_massif ? p_massif->Z(sqr(p_loop_me->IRscale())) : 0.));
   return !ATOOLS::IsBad(lt);
+}
+
+double RealVirtual::E1() const
+{
+  return p_loop_me->ME_E1()
+    + (p_massif ? p_massif->ZPole1(sqr(p_loop_me->IRscale())) : 0.);
 }

@@ -11,6 +11,8 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace MODEL;
 
+std::set<kf_code> Virtual_ME2_Base::s_masslessloop;
+
 Virtual_ME2_Base::Virtual_ME2_Base(const Process_Info& pi,
                              const Flavour_Vector& flavs) :
   m_name(""), m_pinfo(pi), m_flavs(flavs), m_stype(sbt::none),
