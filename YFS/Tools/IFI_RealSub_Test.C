@@ -182,19 +182,17 @@ int main(int argc, char* argv[]) {
   };
 
   // ---- single point ----
-  {
-    Vec4D k(0.01, 0.01*sin(1.1), 0., 0.01*cos(1.1));
-    auto v = line(k);
-    std::cout << "--- single photon k = " << k << " ---\n";
-    std::cout << "  CalculateRealSub    (coherent, code) = " << v[0] << "\n";
-    std::cout << "  reference -|J_i+J_f|^2 * a/4pi^2     = " << v[3]
-              << "    ratio = " << (v[3]!=0?v[0]/v[3]:0) << "\n";
-    std::cout << "  CalculateRealSubEEX (incoherent,code)= " << v[1] << "\n";
-    std::cout << "  reference incoherent                 = " << v[4]
-              << "    ratio = " << (v[4]!=0?v[1]/v[4]:0) << "\n";
-    std::cout << "  CalculateRealSubIF  (IF eikonals)    = " << v[2] << "\n";
-    std::cout << "  reference IFI = coh-incoh            = " << v[5] << "\n\n";
-  }
+  Vec4D k(0.01, 0.01*sin(1.1), 0., 0.01*cos(1.1));
+  auto v = line(k);
+  std::cout << "--- single photon k = " << k << " ---\n";
+  std::cout << "  CalculateRealSub    (coherent, code) = " << v[0] << "\n";
+  std::cout << "  reference -|J_i+J_f|^2 * a/4pi^2     = " << v[3]
+            << "    ratio = " << (v[3]!=0?v[0]/v[3]:0) << "\n";
+  std::cout << "  CalculateRealSubEEX (incoherent,code)= " << v[1] << "\n";
+  std::cout << "  reference incoherent                 = " << v[4]
+            << "    ratio = " << (v[4]!=0?v[1]/v[4]:0) << "\n";
+  std::cout << "  CalculateRealSubIF  (IF eikonals)    = " << v[2] << "\n";
+  std::cout << "  reference IFI = coh-incoh            = " << v[5] << "\n\n";
 
   // ---- angular scan: is the interference in the SHIPPING code odd? ----
   // Reflect the photon through the origin. With the final-state pair back to
@@ -229,35 +227,33 @@ int main(int argc, char* argv[]) {
             << std::setw(22) << "IFI(direct)"
             << std::setw(22) << "IFI(reflected)"
             << std::setw(16) << "sum (->0?)" << "\n";
-  {
-    // flavours stay put; the mu- takes the mu+'s momentum and vice versa.
-    // (Permuting flavours AND momenta together would be the identity.)
-    Vec4D_Vector   momSwap{pEm, pEp, pMp, pMm};
-    for (int i = 1; i <= 4; ++i) {
-      const double c = 0.2*i, s = sqrt(1.-c*c), w = 0.01;
-      Vec4D kp(w,  w*s, 0.,  w*c);
-      Vec4D km(w, -w*s, 0., -w*c); // parity image of kp
+  // flavours stay put; the mu- takes the mu+'s momentum and vice versa.
+  // (Permuting flavours AND momenta together would be the identity.)
+  Vec4D_Vector   momSwap{pEm, pEp, pMp, pMm};
+  for (int i = 1; i <= 4; ++i) {
+    const double c = 0.2*i, s = sqrt(1.-c*c), w = 0.01;
+    Vec4D kp(w,  w*s, 0.,  w*c);
+    Vec4D km(w, -w*s, 0., -w*c); // parity image of kp
 
-      dip.MakeDipolesII(fl, mom, mom);
-      dip.MakeDipolesIF(fl, mom, mom);
-      dip.MakeDipoles(fl, mom, mom);
-      const double ip = dip.CalculateRealSub(kp) - dip.CalculateRealSubEEX(kp);
-
-      dip.MakeDipolesII(fl, momSwap, momSwap);
-      dip.MakeDipolesIF(fl, momSwap, momSwap);
-      dip.MakeDipoles(fl, momSwap, momSwap);
-      const double im = dip.CalculateRealSub(km) - dip.CalculateRealSubEEX(km);
-
-      std::cout << std::setw(8) << c
-                << std::setw(22) << ip
-                << std::setw(22) << im
-                << std::setw(16) << ip+im << "\n";
-    }
-    // restore
     dip.MakeDipolesII(fl, mom, mom);
     dip.MakeDipolesIF(fl, mom, mom);
     dip.MakeDipoles(fl, mom, mom);
+    const double ip = dip.CalculateRealSub(kp) - dip.CalculateRealSubEEX(kp);
+
+    dip.MakeDipolesII(fl, momSwap, momSwap);
+    dip.MakeDipolesIF(fl, momSwap, momSwap);
+    dip.MakeDipoles(fl, momSwap, momSwap);
+    const double im = dip.CalculateRealSub(km) - dip.CalculateRealSubEEX(km);
+
+    std::cout << std::setw(8) << c
+              << std::setw(22) << ip
+              << std::setw(22) << im
+              << std::setw(16) << ip+im << "\n";
   }
+  // restore
+  dip.MakeDipolesII(fl, mom, mom);
+  dip.MakeDipolesIF(fl, mom, mom);
+  dip.MakeDipoles(fl, mom, mom);
 
   } catch (const ATOOLS::Exception &e) {
     std::cerr << "Sherpa exception: " << e << std::endl;

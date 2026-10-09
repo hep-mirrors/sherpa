@@ -77,6 +77,9 @@ public:
   double Calc_R(const ATOOLS::Vec4D_Vector &p);
   //! The external generator's matrix element, with the symmetry factor applied.
   double Calc_External(const ATOOLS::Vec4D_Vector &p);
+  //! YFS: IFI false: sum over photon placements of |M|^2 (no initial-final
+  //! interference) over the coherent |M|^2, from Comix at p
+  double NoIFIRatio(const ATOOLS::Vec4D_Vector &p);
 
   ATOOLS::Cluster_Amplitude *CreateAmplitude(const ATOOLS::Vec4D_Vector &p) const;
 
@@ -139,11 +142,11 @@ public:
     Comix's per-helicity amplitudes for the LAST point evaluated, cached when
     m_keepamps is set. Filled in Calc_R right after the Differential() that
     computes them, which is the only safe place: re-entering Differential()
-    from elsewhere in the event (e.g. from CEEX) segfaults.
+    from elsewhere in the event (e.g. from ACRAIC) segfaults.
 
     Measured to reproduce the matrix element exactly -
     Differential/SumSquare = 1/(4 n!) to the last bit over 5864 points - so
-    these are a drop-in source for the CEEX spin structure.
+    these are a drop-in source for the ACRAIC spin structure.
   */
   std::vector<METOOLS::Spin_Amplitudes> m_spinamps;
   bool m_keepamps = false;
@@ -154,9 +157,9 @@ public:
     evaluated on demand and cached in m_spinamps.
 
     This is the evaluate-then-FillAmplitudes pair of Calc_R, factored out so
-    that CEEX can obtain the spin amplitudes of the real process WITHOUT
+    that ACRAIC can obtain the spin amplitudes of the real process WITHOUT
     calling Process_Base::Differential() itself. That distinction is not
-    cosmetic: CEEX already runs inside the BORN process's Differential()
+    cosmetic: ACRAIC already runs inside the BORN process's Differential()
     (Single_Process::AddISR calls p_int->YFS()->GenerateWeight()), so a
     Differential() on the Born from there recurses without bound. The REAL
     process is safe because Single_Process::Differential short-circuits to

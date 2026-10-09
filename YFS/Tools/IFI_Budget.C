@@ -14,7 +14,7 @@
 //   WAS,+sign exp( sum +ChargeNorm * IFForFac(D, sqrt(D.Sprime())/2) )
 //   NOW       exp( sum +ChargeNorm * IFForFac(D, IFIOmega()) ), IFIOmega()
 //             being sqrt(s)/2 with IFI_Real off. This is the coefficient
-//             CalculateVirtualSub()/TFormFactor() use on the same dipoles.
+//             CalculateVirtualSub() uses on the same dipoles.
 //   YINT      exp( sum +ChargeNorm * IFForFac(D, Emin) )  == KKMC's Yint,
 //             which in KKMC is compensated by the real interference summed
 //             over generated photons; uncompensated here
@@ -286,53 +286,51 @@ int main(int argc, char* argv[]) {
   // the shift in Btilda between the same two cutoffs. If it does, reweighting
   // each generated photon by the IF eikonal makes the omega dependence drop
   // out and the cutoff stops being a tuning knob.
-  {
-    const double c = 0.5, om1 = 0.01, om2 = 0.05;
-    auto D = dipoles(c);
-    // int d^3k/k^0 = int k dk dOmega, at Born kinematics (soft approximation).
-    // "prod" is what CalculateRealSubIF() would hand over, i.e. through
-    // Dipole::Eikonal(k,p1,p2). "text" drops that overload's norm = -1 for
-    // like-charge pairs, which is the only difference between it and the
-    // Dipole::Eikonal(k) overload two functions below it in Dipole.C.
-    double real_prod(0.), real_text(0.);
-    const int NE = 400, NC = 200, NP = 64;
-    const double dlk = (log(om2)-log(om1))/NE;
-    for (int ie = 0; ie < NE; ++ie) {
-      const double k = exp(log(om1) + (ie+0.5)*dlk);
-      for (int ic = 0; ic < NC; ++ic) {
-        const double ck = -1. + (ic+0.5)*2./NC, sk = sqrt(1.-ck*ck);
-        for (int ip = 0; ip < NP; ++ip) {
-          const double ph = (ip+0.5)*2.*M_PI/NP;
-          const Vec4D kk(k, k*sk*cos(ph), k*sk*sin(ph), k*ck);
-          const double meas = k*k*dlk * (2./NC) * (2.*M_PI/NP);
-          for (auto &d : D) {
-            const Vec4D p1 = d.GetMomenta(0), p2 = d.GetMomenta(1);
-            real_prod += d.Eikonal(kk, p1, p2) * meas;
-            real_text += -d.ChargeNorm()*alpha/(4.*M_PI*M_PI)
-                         * (p1/(p1*kk) - p2/(p2*kk)).Abs2() * meas;
-          }
+  const double c = 0.5, om1 = 0.01, om2 = 0.05;
+  auto D = dipoles(c);
+  // int d^3k/k^0 = int k dk dOmega, at Born kinematics (soft approximation).
+  // "prod" is what CalculateRealSubIF() would hand over, i.e. through
+  // Dipole::Eikonal(k,p1,p2). "text" drops that overload's norm = -1 for
+  // like-charge pairs, which is the only difference between it and the
+  // Dipole::Eikonal(k) overload two functions below it in Dipole.C.
+  double real_prod(0.), real_text(0.);
+  const int NE = 400, NC = 200, NP = 64;
+  const double dlk = (log(om2)-log(om1))/NE;
+  for (int ie = 0; ie < NE; ++ie) {
+    const double k = exp(log(om1) + (ie+0.5)*dlk);
+    for (int ic = 0; ic < NC; ++ic) {
+      const double ck = -1. + (ic+0.5)*2./NC, sk = sqrt(1.-ck*ck);
+      for (int ip = 0; ip < NP; ++ip) {
+        const double ph = (ip+0.5)*2.*M_PI/NP;
+        const Vec4D kk(k, k*sk*cos(ph), k*sk*sin(ph), k*ck);
+        const double meas = k*k*dlk * (2./NC) * (2.*M_PI/NP);
+        for (auto &d : D) {
+          const Vec4D p1 = d.GetMomenta(0), p2 = d.GetMomenta(1);
+          real_prod += d.Eikonal(kk, p1, p2) * meas;
+          real_text += -d.ChargeNorm()*alpha/(4.*M_PI*M_PI)
+                       * (p1/(p1*kk) - p2/(p2*kk)).Abs2() * meas;
         }
       }
     }
-    double dB(0.);
-    for (auto &d : D) {
-      const Vec4D q1 = d.GetBornMomenta(1), q2 = d.GetBornMomenta(0);
-      dB += d.ChargeNorm()*(
-              ff.BVR_full(q1*q2, q1.E(), q2.E(), q1.Mass(), q2.Mass(),
-                          om2, ff.m_photonMass, 0)
-            - ff.BVR_full(q1*q2, q1.E(), q2.E(), q1.Mass(), q2.Mass(),
-                          om1, ff.m_photonMass, 0));
-    }
-    std::cout << "\n--- does the real IF eikonal cancel the cutoff? (cos = " << c
-              << ", " << om1 << " < E_gamma < " << om2 << ") ---\n"
-              << "  sum_IF ChargeNorm*[Btilda(w2)-Btilda(w1)] = " << dB << "\n"
-              << "  int, via Dipole::Eikonal(k,p1,p2)         = " << real_prod
-              << "   ratio " << real_prod/dB << "\n"
-              << "  int, same but without the norm=-1 flag    = " << real_text
-              << "   ratio " << real_text/dB << "\n"
-              << "  (ratio +1 => the real emission between the two cutoffs restores\n"
-              << "   exactly what raising omega took out of Btilda, so omega cancels)\n";
   }
+  double dB(0.);
+  for (auto &d : D) {
+    const Vec4D q1 = d.GetBornMomenta(1), q2 = d.GetBornMomenta(0);
+    dB += d.ChargeNorm()*(
+            ff.BVR_full(q1*q2, q1.E(), q2.E(), q1.Mass(), q2.Mass(),
+                        om2, ff.m_photonMass, 0)
+          - ff.BVR_full(q1*q2, q1.E(), q2.E(), q1.Mass(), q2.Mass(),
+                        om1, ff.m_photonMass, 0));
+  }
+  std::cout << "\n--- does the real IF eikonal cancel the cutoff? (cos = " << c
+            << ", " << om1 << " < E_gamma < " << om2 << ") ---\n"
+            << "  sum_IF ChargeNorm*[Btilda(w2)-Btilda(w1)] = " << dB << "\n"
+            << "  int, via Dipole::Eikonal(k,p1,p2)         = " << real_prod
+            << "   ratio " << real_prod/dB << "\n"
+            << "  int, same but without the norm=-1 flag    = " << real_text
+            << "   ratio " << real_text/dB << "\n"
+            << "  (ratio +1 => the real emission between the two cutoffs restores\n"
+            << "   exactly what raising omega took out of Btilda, so omega cancels)\n";
 
   std::cout << "\n--- exponent vs cos(theta) ---\n";
   std::cout << std::setw(8) << "cos" << std::setw(16) << "Y_was"

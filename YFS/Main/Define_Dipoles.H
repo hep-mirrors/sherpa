@@ -156,8 +156,6 @@ namespace YFS {
       double CalculateFlux(const Vec4D &k, const Vec4D &kk);
       double CalculateFlux(const Vec4D &k, const int &fsrmode);
       double Propagator(const double &s, int width=0);
-      double CalculateVirtualSubTchannel();
-      double CalculateVirtualSubTchannelEps();
       double FormFactor();
       //! FormFactor built from an already-computed FormFactorSum(), so a caller
       //! that needs both gets them from one evaluation instead of two.
@@ -224,7 +222,6 @@ namespace YFS {
       // YFS_Base is inherited privately, so expose what the handler reports.
       inline long   IFIClipped() const { return m_ifi_clipped; }
       inline double IFIRClip()   const { return m_ifi_rclip; }
-      double TFormFactor();
       double EEXRealVirtual(const Vec4D &k);
       void generate_pairings(std::vector<std::vector<int>>& pairings, std::vector<int>& curr_pairing, std::vector<int>& available_nums);
       void CleanUp();

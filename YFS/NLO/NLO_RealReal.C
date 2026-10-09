@@ -34,100 +34,41 @@ using namespace ATOOLS;
 using namespace std;
 
 /*
-  RR_MODE 1: the point pt (legs, then photons) with photon `which` (index
-  into pt) taken out and its momentum absorbed by the final state: the final
-  legs, in their rest frame, rescaled (masses kept) to the invariant mass
-  (Q_f + k)^2 and boosted onto Q_f + k. Beams and the other photons are
-  untouched. A soft reduction: as k -> 0 the result tends to pt without k.
+  RR_MODE exact / singles_product: the final-state pair (l, r) of ev rebuilt
+  the way the single real's point rebuilds it (MapMomentaFSRDipole): at
+  Q_D - K, Q_D the pair before it radiated (the generation legs m_plab) and
+  K the momentum of the photons kept at the point, back to back along the
+  event's decay axis (the post-emission legs in their own rest frame) in the
+  rest frame of Q_D - K. The dipole's other photons are absorbed by this.
 */
-static bool AbsorbPhoton(const Vec4D_Vector &pt, size_t nlegs, size_t which,
-                         Vec4D_Vector &out)
+static bool RebuildPairAlongDecayAxis(int l, int r, const Vec4D &K,
+                                      const Vec4D_Vector &plab, const Vec4D_Vector &postlab,
+                                      const ATOOLS::Flavour_Vector &fl, Vec4D_Vector &ev)
 {
-  if (which < nlegs || which >= pt.size() || nlegs < 3) return false;
-  const Vec4D k(pt[which]);
-  Vec4D Qf;
-  for (size_t i(2); i < nlegs; ++i) Qf += pt[i];
-  const Vec4D T(Qf + k);
-  const double MT2(T.Abs2());
-  if (!(MT2 > 0.) || !(Qf.Abs2() > 0.)) return false;
-  const double MT(sqrt(MT2));
-  Poincare rest(Qf);
-  Vec4D_Vector f;
-  std::vector<double> m2;
-  for (size_t i(2); i < nlegs; ++i) {
-    Vec4D v(pt[i]);
-    rest.Boost(v);
-    f.push_back(v);
-    m2.push_back(Max(0., v.Abs2()));
-  }
-  double msum(0.);
-  for (double m : m2) msum += sqrt(m);
-  if (!(MT > msum)) return false;
-  double xi(1.);
-  for (int it(0); it < 60; ++it) {
-    double E(0.), dE(0.);
-    for (size_t i(0); i < f.size(); ++i) {
-      const double p2(Vec3D(f[i]).Sqr()), e(sqrt(xi*xi*p2 + m2[i]));
-      E += e;
-      if (e > 0.) dE += xi*p2/e;
-    }
-    if (!(dE > 0.)) return false;
-    const double step((E - MT)/dE);
-    xi -= step;
-    if (std::abs(step) < 1e-15*Max(1., xi)) break;
-  }
-  if (!(xi > 0.)) return false;
-  out.assign(pt.begin(), pt.begin() + 2);
-  Poincare onto(T);
-  for (size_t i(0); i < f.size(); ++i) {
-    const Vec3D p3(xi*Vec3D(f[i]));
-    Vec4D v(sqrt(p3.Sqr() + m2[i]), p3);
-    onto.BoostBack(v);
-    out.push_back(v);
-  }
-  for (size_t i(nlegs); i < pt.size(); ++i) if (i != which) out.push_back(pt[i]);
-  return true;
-}
-
-/*
-  RR_MODE 1: the point pt with final-state photon `which` recombined with the
-  leg of its radiating pair it is closer to in angle (the emitter; the other
-  leg is the spectator): in the rest frame of emitter + spectator + photon
-  the two legs are rebuilt back to back along emitter + photon, on shell.
-  Only the pair changes, and the emitter keeps the direction of
-  emitter + photon, so the collinear structure of the OTHER photon is kept
-  (absorbing into the whole final state moved the legs by the hard photon's
-  recoil, and the eikonals of a collinear companion by factors of 50).
-*/
-static bool RecombineWithEmitter(const Vec4D_Vector &pt, size_t which, int l, int r,
-                                 const ATOOLS::Flavour_Vector &fl, Vec4D_Vector &out)
-{
-  if (which >= pt.size() || l < 2 || r < 2 || l == r
-      || l >= (int)fl.size() || r >= (int)fl.size()) return false;
-  const Vec4D k(pt[which]);
-  auto angle = [](const Vec4D &a, const Vec4D &b) {
-    return Vec3D(a)*Vec3D(b)/(Vec3D(a).Abs()*Vec3D(b).Abs()); };
-  const int e(angle(pt[l], k) >= angle(pt[r], k) ? l : r), sp(e == l ? r : l);
-  const Vec4D Q(pt[e] + pt[sp] + k);
-  const double Q2(Q.Abs2()), me(fl[e].Mass()), ms(fl[sp].Mass());
-  if (!(Q2 > sqr(me + ms)) || !(Q[0] > 0.)) return false;
-  Poincare rest(Q);
-  Vec4D q(pt[e] + k);
-  rest.Boost(q);
-  Vec3D n(q);
+  if (l < 2 || r < 2 || l == r || l >= (int)fl.size() || r >= (int)fl.size()
+      || plab.size() != fl.size() || postlab.size() != fl.size() || ev.size() < fl.size())
+    return false;
+  const Vec4D Qd(plab[l] + plab[r]);
+  const Vec4D Qp(Qd - K);
+  const double Mp2(Qp.Abs2());
+  if (!(Mp2 > 0.) || !(Qp[0] > 0.)) return false;
+  const double Mp(sqrt(Mp2));
+  const double m1(fl[l].Mass()), m2(fl[r].Mass());
+  if (m1 + m2 >= Mp) return false;
+  Vec4D q1(postlab[l]), q2(postlab[r]);
+  const Vec4D L(q1 + q2);
+  if (!(L.Abs2() > 0.) || !(L[0] > 0.)) return false;
+  Poincare boostL(L);
+  boostL.Boost(q1); boostL.Boost(q2);
+  Vec3D n(Vec3D(q1) - Vec3D(q2));
   if (!(n.Abs() > 0.)) return false;
   n = n/n.Abs();
-  const double pcm(0.5*sqrt(Lambda(Q2, me*me, ms*ms)/Q2));
-  Vec4D pe(sqrt(me*me + pcm*pcm), pcm*n), ps(sqrt(ms*ms + pcm*pcm), -pcm*n);
-  rest.BoostBack(pe);
-  rest.BoostBack(ps);
-  out.clear();
-  for (size_t i(0); i < pt.size(); ++i) {
-    if (i == which) continue;
-    if ((int)i == e) out.push_back(pe);
-    else if ((int)i == sp) out.push_back(ps);
-    else out.push_back(pt[i]);
-  }
+  const double pcm(0.5*sqrt(Lambda(Mp2, m1*m1, m2*m2)/Mp2));
+  Vec4D f1(sqrt(m1*m1 + pcm*pcm),  pcm*n);
+  Vec4D f2(sqrt(m2*m2 + pcm*pcm), -pcm*n);
+  Poincare boostQp(Qp);
+  boostQp.BoostBack(f1); boostQp.BoostBack(f2);
+  ev[l] = f1; ev[r] = f2;
   return true;
 }
 
@@ -222,75 +163,76 @@ static bool ScaleOutISR(const Vec4D_Vector &pt, size_t nlegs, const std::vector<
 }
 
 /*
-  RR_MODE 1: the (n+2)-body point of the pair (i, j) taken from the EVENT:
-  the full beams, the post-emission final legs and every photon, with the
-  photons other than i and j reduced away: each final-state one recombined
-  with its emitter, then the initial-state ones scaled out together
-  (ScaleOutISR, the single real's REAL_MAP 2 convention). For a two-photon
-  event it is the event itself, so the photons sit at the angles, relative
-  to the legs, the generator produced them at (the two-photon map rebuilt
-  the pair and put hard collinear photons deep into the dead cone of legs
-  they were not generated on). False when the event does not balance.
+  RR_MODE exact / singles_product: the (n+2)-body point of the pair (i, j)
+  on the single reals' chain: the photons other than i and j are taken out
+  the way each single real's point takes out its companions - a final-state
+  companion by rebuilding its dipole's pair at Q_D minus the pair's own
+  photons of that dipole along the event's decay axis
+  (RebuildPairAlongDecayAxis = MapMomentaFSRDipole), an initial-state one
+  by scaling it out together with the others (ScaleOutISR =
+  MapMomentaScaled, REAL_MAP 2). So as one photon of the pair goes soft the
+  point tends to the other photon's single-real point and rho_ij -> rho_i
+  rho_j. For a two-photon event it is the event itself (the pair rebuilt at
+  Q_D - k_i - k_j along the decay axis is the post-emission pair).
+  Until 2026-09-30 a final-state companion was recombined with its emitter
+  (the pair rebuilt along emitter + photon): that rotates the pair's axis
+  by the companion's recoil, and the Born at the rotated axis exceeds the
+  generation Born on average (1 + cos^2 theta is convex), so every soft pair
+  next to a hard final-state photon carried B(P)/B - 1 ~ +1% whatever the
+  soft photons' energies: Z-pole mu mu, +0.38% of sigma_fid from pairs with
+  x < 2e-4 in three-photon events, +9% at m_mumu 60-70 GeV
+  (NOTES-yfsnlo-rr-cutdep-2026-09-30.md). False when a pair photon has no
+  dipole or the reduction fails.
 */
 bool NLO_Base::EventPairPoint(size_t i, size_t j, Vec4D_Vector &P)
 {
   const size_t nl(m_flavs.size());
-  if (m_postlab.size() != nl || m_bornMomenta.size() < 2) return false;
+  if (m_postlab.size() != nl || m_plab.size() != nl || m_bornMomenta.size() < 2) return false;
+  if (p_dipoles && p_dipoles->PoleActive()) return false;
+  // the generation legs with the full beams
   Vec4D_Vector ev(m_bornMomenta.begin(), m_bornMomenta.begin() + 2);
-  for (size_t l(2); l < nl; ++l) ev.push_back(m_postlab[l]);
-  std::vector<size_t> ids;
-  for (size_t g(0); g < m_photons.size(); ++g) { ev.push_back(m_photons[g].K()); ids.push_back(g); }
-  /*
-    The event balances to ~1e-6 GeV (11% of Z-pole mu mu pairs fail
-    CheckMomentumConservation's tolerance: p_T up to 4e-6 GeV); the beams are
-    rebuilt on their axis in the rest frame of the outgoing momenta, a tilt
-    of ~1e-7 rad, far inside every dead cone (m_e/E ~ 1e-5). Larger
-    imbalances are not the event.
-  */
-  {
-    Vec4D bal(ev[0] + ev[1]);
-    for (size_t l(2); l < ev.size(); ++l) bal -= ev[l];
-    if (!(Max(Max(std::abs(bal[0]), std::abs(bal[1])), Max(std::abs(bal[2]), std::abs(bal[3])))
-          < 1e-6*sqrt(m_s)) || !BalanceOnBeams(ev, m_flavs)) return false;
+  for (size_t l(2); l < nl; ++l) ev.push_back(m_plab[l]);
+  // the pair's final-state photons: their dipole's pair rebuilt without
+  // them, which absorbs that dipole's other photons; a dipole with no pair
+  // photon keeps its generation legs, which absorbs all of its photons
+  std::map<std::pair<int,int>, Vec4D> ksel;
+  for (size_t g : {i, j}) {
+    const YFS::Photon &ph(m_photons[g]);
+    if (!ph.IsFSR()) continue;
+    if (ph.Dip() == nullptr) return false;
+    const int l(ph.Dip()->Left()), r(ph.Dip()->Right());
+    ksel[std::make_pair(std::min(l, r), std::max(l, r))] += ph.K();
   }
-  // the other final-state photons recombined with their emitters (last
-  // first so that indices stay valid), then the other initial-state photons
-  // scaled out together
-  for (size_t a(ids.size()); a-- > 0; ) {
-    const YFS::Photon &g(m_photons[ids[a]]);
-    if (ids[a] == i || ids[a] == j || !g.IsFSR()) continue;
-    Vec4D_Vector out;
-    bool ok(g.Dip() != nullptr
-            && RecombineWithEmitter(ev, nl + a, g.Dip()->Left(), g.Dip()->Right(), m_flavs, out));
-    if (!ok) ok = AbsorbPhoton(ev, nl, nl + a, out);
-    if (!ok) return false;
-    ev = out;
-    ids.erase(ids.begin() + a);
-  }
+  for (const auto &sel : ksel)
+    if (!RebuildPairAlongDecayAxis(sel.first.first, sel.first.second, sel.second,
+                                   m_plab, m_postlab, m_flavs, ev)) return false;
+  // the pair's photons and the initial-state companions, the latter to be
+  // scaled out
   std::vector<bool> isfsr;
   std::vector<size_t> drop;
-  for (size_t a(0); a < ids.size(); ++a) {
-    isfsr.push_back(m_photons[ids[a]].IsFSR());
-    if (ids[a] != i && ids[a] != j) drop.push_back(nl + a);
+  size_t pos_i(0), pos_j(0);
+  for (size_t g(0); g < m_photons.size(); ++g) {
+    const bool pair(g == i || g == j);
+    if (!pair && m_photons[g].IsFSR()) continue;
+    if (g == i) pos_i = ev.size();
+    if (g == j) pos_j = ev.size();
+    if (!pair) drop.push_back(ev.size());
+    isfsr.push_back(m_photons[g].IsFSR());
+    ev.push_back(m_photons[g].K());
   }
-  if (!drop.empty()) {
-    Vec4D_Vector out;
-    if (!ScaleOutISR(ev, nl, isfsr, drop, m_flavs, out)) return false;
-    ev = out;
-    std::vector<size_t> keep;
-    for (size_t id : ids) if (id == i || id == j) keep.push_back(id);
-    ids = keep;
-  }
-  if (ev.size() != nl + 2 || ids.size() != 2) return false;
-  P = ev;
-  if (ids[0] != i) std::swap(P[nl], P[nl + 1]);   // photon i first, j last
+  Vec4D_Vector out;
+  if (!ScaleOutISR(ev, nl, isfsr, drop, m_flavs, out)) return false;
+  if (out.size() != nl + 2) return false;
+  P = out;
+  if (pos_i > pos_j) std::swap(P[nl], P[nl + 1]);   // photon i first, j last
   return true;
 }
 
 /*
-  RR_MODE 1: the pair (i, j)'s exact remainder, see RRMode. P is the event's
-  pair point (EventPairPoint; the two-photon MapMomenta point when the event
-  does not balance); R_2 is an RR_Generator tree call.
+  RR_MODE exact / singles_product: the pair (i, j)'s remainder, see RRMode
+  (NLO_Base_Internal.H). P is the event's pair point (EventPairPoint; the
+  two-photon MapMomenta point when the event does not balance); R_2 is an
+  RR_Generator tree call.
 */
 double NLO_Base::RealRealRemainder(size_t i, size_t j)
 {
@@ -342,22 +284,26 @@ double NLO_Base::RealRealRemainder(size_t i, size_t j)
     for two photons. Other flux conventions keep F_i F_j.
   */
   double Fij(gi.flux*gj.flux);
-  {
-    if (m_flux_mode == fluxmode::event && RealFSRFlux() == realfsrflux::no_flux) {
-      const Vec4D Q(P[0] + P[1]);
-      Vec4D K;
-      if (!m_photons[i].IsFSR()) K += P[nl];
-      if (!m_photons[j].IsFSR()) K += P[nl + 1];
-      if (Q.Abs2() > 0.) Fij = (Q - K).Abs2()/Q.Abs2();
-    }
+  if (m_flux_mode == fluxmode::event && RealFSRFlux() == realfsrflux::no_flux) {
+    const Vec4D Q(P[0] + P[1]);
+    Vec4D K;
+    if (!m_photons[i].IsFSR()) K += P[nl];
+    if (!m_photons[j].IsFSR()) K += P[nl + 1];
+    if (Q.Abs2() > 0.) Fij = (Q - K).Abs2()/Q.Abs2();
   }
   const double kap(m_rescale_alpha);
   const double rhoij((RealAlpha0() ? kap*kap : 1.)*r2*Fij/(ci*cj*m_born));
   double others(1.);
   for (size_t k(0); k < m_rrphot.size(); ++k)
     if (k != i && k != j) others *= m_rrphot[k].factor;
-  const double rem(m_born*(rhoij - gi.factor*gj.factor)*others);
-  if (m_photons.size() == 2) m_rrExactPair = rhoij;
+  // what the pair's exact over crude is taken beyond: the product's factors
+  // (exact) or the singles' own exact over crude (singles_product)
+  const bool singles(RRMode() == rrmode::singles_product);
+  const double rem(singles ? m_born*(rhoij - gi.rho*gj.rho)*others
+                           : m_born*(rhoij - gi.factor*gj.factor)*others);
+  // the two-photon target of the RR_PROBE identity: product + RR
+  if (m_photons.size() == 2)
+    m_rrExactPair = singles ? rhoij + gi.factor*gj.factor - gi.rho*gj.rho : rhoij;
   static const int probe(ATOOLS::Settings::GetMainSettings()["YFS"]["RR_PROBE"]
                          .SetDefault(0).Get<int>());
   if (probe) {
@@ -366,9 +312,19 @@ double NLO_Base::RealRealRemainder(size_t i, size_t j)
      <<" xj="<<2.*m_photons[j].E()/sqrt(m_s)<<" fi="<<(m_photons[i].IsFSR()?1:0)
      <<" fj="<<(m_photons[j].IsFSR()?1:0)<<" nph="<<m_photons.size()
      <<" rem/B="<<rem/m_born<<" rhoij="<<rhoij<<" facti="<<gi.factor
-     <<" factj="<<gj.factor<<" others="<<others<<" ci/c="<<ci/gi.denom
+     <<" factj="<<gj.factor<<" rhoi="<<gi.rho<<" rhoj="<<gj.rho
+     <<" others="<<others<<" ci/c="<<ci/gi.denom
      <<" cj/c="<<cj/gj.denom<<" Fij/FiFj="<<Fij/(gi.flux*gj.flux)
      <<" evpt="<<(evpt?1:0);
+    // the s-channel mass at the pair point (final legs + the pair's photons that
+    // are FSR) against the generator's (pre-FSR system, all FSR photons)
+    {
+      Vec4D XP;
+      for (size_t l(2); l < nl; ++l) XP += P[l];
+      if (m_photons[i].IsFSR()) XP += P[nl];
+      if (m_photons[j].IsFSR()) XP += P[nl + 1];
+      o<<" XP="<<XP.Mass()<<" Xgen="<<PreFSRSystem().Mass();
+    }
     if (probe >= 2) {
       o<<std::setprecision(17)<<" P=";
       for (const Vec4D &q : P) o<<q<<" ";
@@ -383,6 +339,11 @@ double NLO_Base::RealRealRemainder(size_t i, size_t j)
   return rem;
 }
 
+bool NLO_Base::RRSinglesProduct() const
+{
+  return m_rrtool && RRMode() == rrmode::singles_product;
+}
+
 double NLO_Base::CalculateRealReal() {
   m_rrExactPair = std::numeric_limits<double>::quiet_NaN();
   if (!m_rrtool)
@@ -392,12 +353,22 @@ double NLO_Base::CalculateRealReal() {
     if (!checked) {
       checked = true;
       if (!(m_rr_soft_cut > 0.))
-        THROW(fatal_error, "YFS: RR_MODE 1 needs RR_SOFT_CUT > 0 (the lower edge of "
+        THROW(fatal_error, "YFS: RR_MODE exact needs RR_SOFT_CUT > 0 (the lower edge of "
               "the soft x hard form-factor difference in the real-virtual).");
-      if (!m_realvirt || RVMode() != rvmode::remainder)
-        msg_Error()<<"YFS: RR_MODE 1 without RV_MODE 1: the double real's soft x "
+      if (!m_realvirt || !RVIsRemainder())
+        msg_Error()<<"YFS: RR_MODE exact without RV_MODE remainder: the double real's soft x "
                    <<"hard log is not cancelled; the result depends on RR_SOFT_CUT."
                    <<std::endl;
+    }
+  }
+  if (RRMode() == rrmode::singles_product) {
+    static bool checked(false);
+    if (!checked) {
+      checked = true;
+      if (m_rr_soft_cut > 0.)
+        msg_Info()<<"YFS: RR_MODE singles_product with RR_SOFT_CUT "<<m_rr_soft_cut
+                  <<": pairs below it keep the product's factorised double real; "
+                  <<"0 takes every generated pair."<<std::endl;
     }
   }
   double rr(0);
@@ -410,7 +381,7 @@ double NLO_Base::CalculateRealReal() {
     if (!h1 || g.E() > h1->E())      { h2 = h1; h1 = &g; }
     else if (!h2 || g.E() > h2->E()) { h2 = &g; }
   }
-  if (RRMode() == rrmode::exact) {
+  if (RRFromSingles()) {
     for (size_t i(0); i < photons.size(); ++i)
       for (size_t j(i + 1); j < photons.size(); ++j) {
         const double contrib(RealRealRemainder(i, j));
@@ -429,7 +400,7 @@ double NLO_Base::CalculateRealReal() {
       double contrib = CalculateRealReal(k, kk);
       static const bool betacheck(ATOOLS::Settings::GetMainSettings()["YFS"]["BETA_RECURSION"].Get<int>()!=0);
       if (betacheck) {
-        const double gen(CalculateRealN((1u<<i) | (1u<<j)));
+        const double gen(CalculateRealN(LegUnion(LegBit<unsigned>(i), LegBit<unsigned>(j))));
         std::cerr<<"@@@ BETA2 hand="<<contrib<<" rec="<<gen
                  <<" dev="<<(contrib!=0. ? std::abs(gen/contrib-1.) : -1.)
                  <<std::endl;

@@ -172,12 +172,10 @@ int main(int argc, char* argv[]) {
     // yy = sQ/dip_sp by definition (m_sQ = m_dip_sp*m_yy always), and the
     // pre-rescale photon energy fraction is preE = photonSum.E()/ener with
     // ener = sqrt(sQ)/2 (RescalePhotons()'s own "ener" scale).
-    {
-      double yy = fsr.m_sQ / fsr.m_dip_sp;
-      double ener = sqrt(fsr.m_sQ)/2.;
-      double preE = ev.photons.empty() ? 0.0 : fsr.m_photonSum.E()/ener;
-      fsr.m_wt2 = ev.photons.empty() ? 1.0 : yy*(1.+preE);
-    }
+    double yy = fsr.m_sQ / fsr.m_dip_sp;
+    double ener = sqrt(fsr.m_sQ)/2.;
+    double preE = ev.photons.empty() ? 0.0 : fsr.m_photonSum.E()/ener;
+    fsr.m_wt2 = ev.photons.empty() ? 1.0 : yy*(1.+preE);
 
     // reconstruct m_cos[i]: the boost chain from the XFM (angle-generation)
     // frame to this (lab==CM, symmetric beams) frame is a pure rotation for

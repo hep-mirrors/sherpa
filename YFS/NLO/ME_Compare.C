@@ -82,6 +82,23 @@ ME_Compare::~ME_Compare()
   if(m_scatter.is_open()) m_scatter.close();
 }
 
+// the smallest opening angle between two photons of the point, -1 with fewer
+// than two photons
+static double SmallestPhotonPhotonAngle(const ATOOLS::Flavour_Vector &flavs,
+                                        const ATOOLS::Vec4D_Vector &p)
+{
+  double ggtheta(-1.);
+  std::vector<size_t> photons;
+  for(size_t i(0);i<flavs.size() && i<p.size();++i)
+    if(flavs[i].IsPhoton()) photons.push_back(i);
+  for(size_t a(0);a<photons.size();++a)
+    for(size_t b(a+1);b<photons.size();++b){
+      double theta = p[photons[a]].Theta(p[photons[b]]);
+      if(ggtheta<0. || theta<ggtheta) ggtheta = theta;
+    }
+  return ggtheta;
+}
+
 void ME_Compare::CheckAgreement(const ATOOLS::Vec4D_Vector &p, double test,
                                  double reference,
                                  const ATOOLS::Flavour_Vector &flavs,
@@ -124,17 +141,7 @@ void ME_Compare::CheckAgreement(const ATOOLS::Vec4D_Vector &p, double test,
     double t = p[softi].Theta();
     thetaz = std::min(t, M_PI-t);
   }
-  double ggtheta(-1.);
-  {
-    std::vector<size_t> photons;
-    for(size_t i(0);i<flavs.size() && i<p.size();++i)
-      if(flavs[i].IsPhoton()) photons.push_back(i);
-    for(size_t a(0);a<photons.size();++a)
-      for(size_t b(a+1);b<photons.size();++b){
-        double theta = p[photons[a]].Theta(p[photons[b]]);
-        if(ggtheta<0. || theta<ggtheta) ggtheta = theta;
-      }
-  }
+  const double ggtheta(SmallestPhotonPhotonAngle(flavs, p));
   if(softi>=0){
     const std::string suffix = bad?"_bad":"_ok";
     m_histograms1d["photon_logE"+suffix]->Insert(log10(Max(softe,1e-30)));

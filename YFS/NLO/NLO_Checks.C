@@ -1,4 +1,5 @@
 #include "YFS/NLO/NLO_Base.H"
+#include "YFS/NLO/NLO_Base_Internal.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 
@@ -461,16 +462,16 @@ void NLO_Base::RecordSubScatter(const Vec4D &k, double residual,
                << " " << residual << " " << eik << "\n";
 }
 
-void NLO_Base::CEEXComparePoint() {
-  if (!m_ceex_compare || m_ceex_done) return;
+void NLO_Base::ACRAICComparePoint() {
+  if (!m_acraic_compare || m_acraic_done) return;
   if (!m_realtool || !m_looptool) {
-    msg_Error() << METHOD << ": CEEX_Compare needs both a real and a loop "
+    msg_Error() << METHOD << ": ACRAIC_Compare needs both a real and a loop "
                 << "provider (NLO_Part: BVR); got real=" << m_realtool
                 << " loop=" << m_looptool << "\n";
-    m_ceex_done = true;
+    m_acraic_done = true;
     return;
   }
-  m_ceex_done = true;
+  m_acraic_done = true;
 
   Vec4D k = FixedTestPhoton();
   msg_Out() << std::setprecision(15)
@@ -529,41 +530,39 @@ void NLO_Base::CEEXComparePoint() {
     configuration sits above the nominal collider energy. It is a physical
     point, just at a different sqrt(s) - and KKMC has to be told which.
   */
-  {
-    const double sqrtsPoint((pmap[0] + pmap[1]).Mass());
-    double sin2tw(0.23155);
-    if (MODEL::s_model)
-      sin2tw = MODEL::s_model->ComplexConstant("csin2_thetaW").real();
-    const long kffin(m_flavs[2].Kfcode());
-    std::ofstream kp("ceex_kkmc.input");
-    kp << std::setprecision(17) << std::scientific;
-    kp << "BeginX  <- written by NLO_Base::CEEXComparePoint, do not edit\n";
-    kp << "*  Sherpa's inputs, overriding KKMCee_defaults and pro.input.\n";
-    kp << "    1  " << sqrtsPoint  << "  CMSene: sqrt(s) OF THIS POINT\n";
-    kp << "   30  " << 1./m_alpha  << "  Alfinv0 = 1/alpha(0)\n";
-    kp << "  502  " << Flavour(kf_Z).Mass()  << "  MZ\n";
-    kp << "  503  " << sin2tw                << "  swsq = sin^2(theta_W)\n";
-    kp << "  504  " << Flavour(kf_Z).Width() << "  GamZ\n";
-    kp << "   12  " << 0.0 << "  KeyELW: QED only, matching Sherpa's YFS\n";
-    kp << "   20  " << (HasISR() ? 1.0 : 0.0) << "  KeyISR\n";
-    kp << "   21  " << (HasFSR() ? 1.0 : 0.0) << "  KeyFSR\n";
-    kp << "   27  " << ((HasISR() && HasFSR()) ? 2.0 : 0.0) << "  KeyINT (IFI)\n";
-    // Final state: index 400+KF, one flag per channel, all others off.
-    for (long kf(1); kf <= 16; ++kf) {
-      if (kf > 6 && kf < 11) continue;             // no such channel
-      kp << "  " << (400 + kf) << "  " << (kf == kffin ? 1.0 : 0.0)
-         << "  KFfin " << kf << (kf == kffin ? "  <== selected" : "") << "\n";
-    }
-    kp << "EndX\n";
-    msg_Out() << "  wrote ceex_kkmc.input (KKMC ReaData format): sqrt(s)="
-              << sqrtsPoint << ", MZ=" << Flavour(kf_Z).Mass()
-              << ", GamZ=" << Flavour(kf_Z).Width() << ", swsq=" << sin2tw
-              << ", 1/alpha=" << 1./m_alpha << ", KFfin=" << kffin << "\n";
+  const double sqrtsPoint((pmap[0] + pmap[1]).Mass());
+  double sin2tw(0.23155);
+  if (MODEL::s_model)
+    sin2tw = MODEL::s_model->ComplexConstant("csin2_thetaW").real();
+  const long kffin(m_flavs[2].Kfcode());
+  std::ofstream kp("acraic_kkmc.input");
+  kp << std::setprecision(17) << std::scientific;
+  kp << "BeginX  <- written by NLO_Base::ACRAICComparePoint, do not edit\n";
+  kp << "*  Sherpa's inputs, overriding KKMCee_defaults and pro.input.\n";
+  kp << "    1  " << sqrtsPoint  << "  CMSene: sqrt(s) OF THIS POINT\n";
+  kp << "   30  " << 1./m_alpha  << "  Alfinv0 = 1/alpha(0)\n";
+  kp << "  502  " << Flavour(kf_Z).Mass()  << "  MZ\n";
+  kp << "  503  " << sin2tw                << "  swsq = sin^2(theta_W)\n";
+  kp << "  504  " << Flavour(kf_Z).Width() << "  GamZ\n";
+  kp << "   12  " << 0.0 << "  KeyELW: QED only, matching Sherpa's YFS\n";
+  kp << "   20  " << (HasISR() ? 1.0 : 0.0) << "  KeyISR\n";
+  kp << "   21  " << (HasFSR() ? 1.0 : 0.0) << "  KeyFSR\n";
+  kp << "   27  " << ((HasISR() && HasFSR()) ? 2.0 : 0.0) << "  KeyINT (IFI)\n";
+  // Final state: index 400+KF, one flag per channel, all others off.
+  for (long kf(1); kf <= 16; ++kf) {
+    if (kf > 6 && kf < 11) continue;             // no such channel
+    kp << "  " << (400 + kf) << "  " << (kf == kffin ? 1.0 : 0.0)
+       << "  KFfin " << kf << (kf == kffin ? "  <== selected" : "") << "\n";
   }
+  kp << "EndX\n";
+  msg_Out() << "  wrote acraic_kkmc.input (KKMC ReaData format): sqrt(s)="
+            << sqrtsPoint << ", MZ=" << Flavour(kf_Z).Mass()
+            << ", GamZ=" << Flavour(kf_Z).Width() << ", swsq=" << sin2tw
+            << ", 1/alpha=" << 1./m_alpha << ", KFfin=" << kffin << "\n";
 
   // Machine-readable copy so the KKMC driver can consume the point directly
   // instead of it being transcribed by hand.
-  std::ofstream pt("ceex_point.dat");
+  std::ofstream pt("acraic_point.dat");
   pt << std::setprecision(17);
   for (size_t i(0); i < pmap.size(); ++i)
     pt << pmap[i][0] << " " << pmap[i][1] << " "
@@ -582,14 +581,14 @@ void NLO_Base::CEEXComparePoint() {
             << "  virtual (CalculateVirtual)    = " << virt  << "\n"
             << "  beta_1  = real + virtual      = " << beta1 << "\n"
             << "  beta_0 + beta_1               = " << b0+beta1 << "\n"
-            << "\n  KKMC counterpart (kkmc_ceex_crosscheck):\n"
+            << "\n  KKMC counterpart (kkmc_acraic_crosscheck):\n"
             << "    beta_0        <-> RhoExp0\n"
             << "    beta_0+beta_1 <-> RhoExp1\n"
             << "    beta_1        <-> RhoExp1 - RhoExp0\n"
             << "    real  only    <-> the 'Born+real' row minus its RhoExp0\n"
             << "    virt  only    <-> the 'Born+virtual' row minus its RhoExp0\n"
             << "  NB both sides carry their own overall normalisation (Sherpa's\n"
-            << "  beta_0 is the Born ME, KKMC's RhoExp0 the CEEX distribution),\n"
+            << "  beta_0 is the Born ME, KKMC's RhoExp0 the ACRAIC distribution),\n"
             << "  so compare the RATIOS beta_1/beta_0 vs (RhoExp1-RhoExp0)/RhoExp0,\n"
             << "  not the absolute numbers.\n";
   msg_Out() << "  beta_1/beta_0 = " << (IsZero(b0) ? 0. : beta1/b0) << "\n\n";
@@ -735,4 +734,212 @@ Vec4D NLO_Base::FixedTestPhoton() const {
   pRot.Rotate(k);
   boostLab.BoostBack(k);
   return k;
+}
+
+/*
+    YFS: VIRTUAL_POLE_PROBE (diagnostic, default false; weights unchanged).
+    Per event: v = 1 - s'/s of the Born point the loop sees, the loop's
+    1/eps coefficient and the subtraction's (relative to the Born), their
+    sum dpole, and v_B = V_sub/B. The initial-state dipoles carry the full
+    beams (s) while the loop is at s', so dpole ~ ln(s/s'); with Dim_Reg the
+    dropped poles leave dpole ln(mu_IR^2) in the finite part.
+*/
+void NLO_Base::ProbeVirtualPoles(Define_Dipoles *vsub)
+{
+  static const bool probe(ATOOLS::Settings::GetMainSettings()["YFS"]
+                          ["VIRTUAL_POLE_PROBE"].SetDefault(false).Get<bool>());
+  if (probe && m_dim_reg && m_virt_sub && m_born != 0.) {
+    const double sp((m_plab[0] + m_plab[1]).Abs2());
+    const double e1l(p_virt->E1()*p_virt->m_factor);
+    const double e1s(vsub->Get_E1()/m_rescale_alpha);
+    std::ostringstream o;
+    o<<std::setprecision(12)<<"@@@ VPOLE v="<<1. - sp/m_s<<" lnss="<<log(m_s/sp)
+     <<" e1loop="<<e1l<<" e1sub="<<e1s<<" dpole="<<e1l + e1s
+     <<" vB="<<m_oneloop/m_born<<" mu="<<p_virt->p_loop_me->IRscale()<<"\n";
+    std::cerr<<o.str();
+  }
+}
+
+/*
+    YFS: VIRTUAL_PROBE_ABOVE x (diagnostic, 0 = off): for |v| = |V_sub/B| > x
+    print v, the provider's finite part, its Born against m_born, the
+    subtraction, the point, and the same loop re-evaluated in two other
+    frames (canonical beam frame; the point rotated about z by 1 rad) - a
+    stable loop gives the same number in all three.
+*/
+void NLO_Base::ProbeLargeVirtual(const double virt, const double sub)
+{
+  static const double vpa(ATOOLS::Settings::GetMainSettings()["YFS"]
+                          ["VIRTUAL_PROBE_ABOVE"].SetDefault(0.).Get<double>());
+  if (vpa > 0. && m_born != 0. && std::abs(m_oneloop/m_born) > vpa) {
+    const double fin(p_virt->p_loop_me->ME_Finite()), olb(p_virt->p_loop_me->ME_Born());
+    const double e1(p_virt->p_loop_me->ME_E1());
+    Vec4D_Vector rot(m_plab);
+    const double c(cos(1.)), s(sin(1.));
+    for (Vec4D &q : rot) { const double x(q[1]), y(q[2]); q[1] = c*x - s*y; q[2] = s*x + c*y; }
+    const double vcan(p_virt->CalcInFrame(m_plab, CanonicalBeamFrame(m_plab), m_born));
+    const double vrot(p_virt->CalcInFrame(m_plab, rot, m_born));
+    // restore the provider's state at the event point
+    p_virt->Calc(m_plab, m_born);
+    std::ostringstream o;
+    o<<std::setprecision(12)<<"@@@ VPROBE v="<<m_oneloop/m_born
+     <<" fin="<<fin<<" factor*fin="<<p_virt->m_factor*fin<<" sub="<<sub/m_rescale_alpha
+     <<" e1="<<e1<<" olborn/m_born="<<olb/m_born<<" m_born="<<m_born
+     <<" vcan/virt="<<vcan/virt<<" vrot/virt="<<vrot/virt;
+    for (size_t i(0); i < m_plab.size(); ++i) o<<" p"<<i<<"="<<m_plab[i];
+    std::cerr<<o.str()<<std::endl;
+  }
+}
+
+/*
+    YFS: RR_LOG_CHECK N (diagnostic): for the first N photons with x > 0.05,
+    the soft x hard log the form-factor difference must cancel: d/dlnK of
+    B~(pt; K) - B~(gen; K) at K = RR_SOFT_CUT sqrt(s), against the angular
+    integral at |k| = K of the soft factors the double real sees, the
+    coherent eikonal on this point's legs (exact R_2) minus the product's
+    (the crude on the generation legs plus their IF interference), both
+    also separately ("@@@ RRLOG"; the three ratios must be one constant).
+*/
+void NLO_Base::ProbeRRLog(const Vec4D &k, const Vec4D_Vector &legs, const double Keps)
+{
+  static int nlog(ATOOLS::Settings::GetMainSettings()["YFS"]["RR_LOG_CHECK"]
+                  .SetDefault(0).Get<int>());
+  if (nlog > 0 && 2.*k.E()/sqrt(m_s) > 0.05) {
+    --nlog;
+    auto bt = [&](double K, bool pt) {
+      if (pt) {
+        p_nlodipoles->MakeDipolesII(m_flavs, legs, legs);
+        p_nlodipoles->MakeDipoles(m_flavs, legs, legs);
+        p_nlodipoles->MakeDipolesIF(m_flavs, legs, legs);
+        p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me.get();
+        return p_nlodipoles->RealSoftSum(K);
+      }
+      p_dipoles->p_yfsFormFact->p_virt = p_virt->p_loop_me.get();
+      return p_dipoles->RealSoftSum(K); };
+    const double h(0.5);
+    const double dpt((bt(Keps*exp(h), true) - bt(Keps*exp(-h), true))/(2.*h));
+    const double dgen((bt(Keps*exp(h), false) - bt(Keps*exp(-h), false))/(2.*h));
+    p_nlodipoles->MakeDipolesII(m_flavs, legs, legs);
+    p_nlodipoles->MakeDipoles(m_flavs, legs, legs);
+    p_nlodipoles->MakeDipolesIF(m_flavs, legs, legs);
+    double ipt(0.), igen(0.);
+    const int N(20000);
+    for (int n(0); n < N; ++n) {
+      const double z(1. - (2.*n + 1.)/N), r(sqrt(Max(0., 1. - z*z)));
+      const double ph(n*M_PI*(3. - sqrt(5.)));
+      const Vec4D q(Keps, Keps*r*cos(ph), Keps*r*sin(ph), Keps*z);
+      ipt  += p_nlodipoles->CalculateRealSub(q);
+      igen += p_dipoles->CalculateRealSubEEX(q) + p_dipoles->CalculateRealSubIF(q);
+    }
+    Vec4D_Vector dirs;
+    for (int n(0); n < 4000; ++n) {
+      const double z(1. - (2.*n + 1.)/4000.), r(sqrt(Max(0., 1. - z*z)));
+      const double ph(n*M_PI*(3. - sqrt(5.)));
+      dirs.push_back(Vec4D(Keps, Keps*r*cos(ph), Keps*r*sin(ph), Keps*z)*(1./Keps));
+    }
+    p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me.get();
+    std::cerr<<"@@@ RRLOGPT"<<p_nlodipoles->RealSoftSumReport(Keps, dirs)<<"\n";
+    p_dipoles->p_yfsFormFact->p_virt = p_virt->p_loop_me.get();
+    std::cerr<<"@@@ RRLOGGEN"<<p_dipoles->RealSoftSumReport(Keps, dirs)<<"\n";
+    ipt *= 4.*M_PI*Keps*Keps/N;
+    igen *= 4.*M_PI*Keps*Keps/N;
+    std::ostringstream o;
+    o<<std::setprecision(8)<<"@@@ RRLOG x="<<2.*k.E()/sqrt(m_s)<<" fsr="<<(PhotonIsFSR(k)?1:0)
+     <<" nph="<<m_photons.size()<<" dBt/dlnK="<<dpt - dgen<<" Idiff="<<ipt - igen
+     <<" ratio="<<(dpt - dgen)/(ipt - igen)<<" ratio_pt="<<dpt/ipt<<" ratio_gen="<<dgen/igen
+     <<std::setprecision(15)<<" dpt="<<dpt<<" ipt="<<ipt<<" legs=";
+    for (const Vec4D &q : legs) o<<q<<" ";
+    o<<"\n";
+    std::cerr<<o.str();
+  }
+}
+
+// YFS: PHOTON_DUMP (diagnostic): each photon of the real loop, and the
+// energy balance of the event
+void NLO_Base::DumpPhoton(const YFS::Photon &g)
+{
+  static const bool dump(ATOOLS::Settings::GetMainSettings()["YFS"]["PHOTON_DUMP"].Get<int>()!=0);
+  if (!dump) return;
+  const Vec4D k(g.K());
+  ATOOLS::Vec4D tot; double eph(0.0);
+  for (const YFS::Photon &h : m_photons) { tot+=h.K(); eph+=h.K().E(); }
+  double elab(0.0);
+  for (size_t j(2);j<m_plab.size();++j) elab+=m_plab[j].E();
+  std::cerr<<"@@@ PHOT E="<<k.E()<<" isr="<<(g.IsISR()?1:0)
+           <<" sqrts="<<sqrt(m_s)<<" nph="<<m_photons.size()
+           <<" Ephtot="<<eph<<" Eout="<<elab
+           <<" Etot="<<(eph+elab)<<std::endl;
+}
+
+// YFS: PHOTON_DUMP (diagnostic): each photon's real contribution
+void NLO_Base::DumpPhotonContribution(const YFS::Photon &g, const double contrib)
+{
+  static const bool dump(ATOOLS::Settings::GetMainSettings()["YFS"]["PHOTON_DUMP"].Get<int>()!=0);
+  if (!dump) return;
+  std::cerr<<"@@@ PHC E="<<g.K().E()<<" isr="<<(g.IsISR()?1:0)
+           <<" contrib="<<contrib
+           <<" failcut="<<(p_real?(p_real->FailCut()?1:0):-1)
+           <<std::endl;
+}
+
+// the FSR map's momentum balance after the map (printed only when violated)
+void NLO_Base::ReportFSRMapResidual(const Vec4D_Vector &p, const Vec4D_Vector &k,
+                                    const Vec4D &Kall, const double xi,
+                                    const double Mp, const double msum)
+{
+  Vec4D res(p[0] + p[1]);
+  for (size_t i = 2; i < p.size(); ++i) res -= p[i];
+  for (const Vec4D &kj : k) res -= kj;
+  if (Vec3D(res).Abs() > 1e-9 || std::abs(res[0]) > 1e-9) {
+    Vec4D post; for (size_t i = 2; i < m_postlab.size(); ++i) post += m_postlab[i];
+    Vec4D pre;  for (size_t i = 2; i < m_plab.size(); ++i)    pre  += m_plab[i];
+    Vec4D isr;  for (const Vec4D &kj : m_ISRPhotons) isr += kj;
+    std::cerr<<std::setprecision(10)<<"@@@ FSRMAP residual="<<res
+             <<" xi="<<xi<<" Mp="<<Mp<<" msum="<<msum
+             <<" nFSR="<<m_FSRPhotons.size()<<" nk="<<k.size()
+             <<"\n   Kall(lab)="<<Kall<<" post(lab)="<<post<<" pre(lab)="<<pre
+             <<" isr(lab)="<<isr<<" P="<<(m_bornMomenta[0]+m_bornMomenta[1])
+             <<"\n   post+Kall+isr-P="<<(post+Kall+isr-m_bornMomenta[0]-m_bornMomenta[1])
+             <<" pre+isr-P="<<(pre+isr-m_bornMomenta[0]-m_bornMomenta[1])<<std::endl;
+  }
+}
+
+// RebuildBeamsAtPreFSR's momentum balance (printed only when violated)
+void NLO_Base::ReportMappingResidual(const Vec4D_Vector &p, const Vec4D_Vector &k,
+                                     const char *tag, const Vec4D &Q)
+{
+  Vec4D res(p[0] + p[1]);
+  for (size_t i = 2; i < p.size(); ++i) res -= p[i];
+  for (const Vec4D &kj : k) res -= kj;
+  const double scale(Max(1., p[0][0]));
+  if (Vec3D(res).Abs() > 1e-9*scale || std::abs(res[0]) > 1e-9*scale) {
+    static long nprint(0);
+    if (++nprint <= 20)
+      std::cerr<<std::setprecision(10)<<"@@@ "<<tag<<" residual="<<res
+               <<" nk="<<k.size()
+               <<" nFSR="<<m_FSRPhotons.size()<<" P="<<(m_bornMomenta[0]+m_bornMomenta[1])
+               <<" Q="<<Q<<std::endl;
+  }
+}
+
+// YFS: REAL_STAB (diagnostic): the mapped pair invariant of a real point
+void NLO_Base::DumpMapQ(const double sqrtsqq, const double eksum, const std::string &extra)
+{
+  std::cerr<<"@@@ MAPQ sqrt_sqq="<<sqrtsqq
+           <<" sqrt_s="<<sqrt(m_s)
+           <<" sqrt_sborn="<<(m_bornMomenta[2]+m_bornMomenta[3]).Mass()
+           <<" Eksum="<<eksum<<extra<<std::endl;
+}
+
+// YFS: VIRTUAL_CHECK: the loops checked in a second frame and dropped
+void NLO_Base::ReportVirtualCheck()
+{
+  static const bool vchk(ATOOLS::Settings::GetMainSettings()["YFS"]
+                         ["VIRTUAL_CHECK"].SetDefault(false).Get<bool>());
+  if (vchk)
+    msg_Out()<<"YFS: VIRTUAL_CHECK (this rank): Born-level loops checked in a second "
+             <<"frame "<<m_vLoopChecked<<", dropped as unstable "<<m_vLoopUnstable
+             <<" (their share of the sum of m_born: "
+             <<(m_vLoopBornSum > 0. ? m_vLoopUnstableBorn/m_vLoopBornSum : 0.)
+             <<")"<<std::endl;
 }

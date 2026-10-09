@@ -80,7 +80,6 @@ double YFS_Form_Factor::BVR_full(double p1p2, double E1, double E2,
 }
 
 DivArrD YFS_Form_Factor::BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode) {
-  // if(m_tchannel==2) return BVirtTEps(d,Kmax);
   Vec4D p1,p2;
   d.LegsBeforeRadiation(p1, p2);
   const double p1p2 = p1*p2;
@@ -188,7 +187,32 @@ double YFS_Form_Factor::BVR_full(YFS::Dipole &d, double omega) {
   double R, V;
   Vec4D p1,p2;
   d.LegsBeforeRadiation(p1, p2);
-  R =  BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), omega, m_photonMass, 0);
+  /*
+    The real B-tilde is frame dependent: it integrates the eikonal over photon
+    energies below omega in the frame whose leg energies it is given. A final
+    pair's omega is sqrt(s')/2, its own rest-frame limit, and the FSR weight
+    (FSR::YFS_FORM, YFS_IR + DelYFS = B~_lab(Emin) - B~_Q(EQQ)) is built to
+    sit on top of B~ in that rest frame. The legs come from m_plab, i.e. the
+    LAB after ISR, so for a pair recoiling against hard ISR the lab energies
+    were combined with a rest-frame omega: at the 250 GeV Z return (gamma 1.55)
+    exp(B~_lab - B~_rest) = 0.976 at cos theta* = 0 and 0.990 at |cos| = 0.9,
+    the cutoff-independent O(alpha^0) ISR x FSR deficit against KKMC (2026-10-07,
+    ACRAIC_O0/CEEX0 and YFS.LO/EEX0 0.979 at the return, zero with FSR alone).
+    The virtual is Lorentz invariant. YFS: FF_FORMFACTOR_REST_FRAME: false
+    restores the lab evaluation.
+  */
+  static const bool ffrest(Settings::GetMainSettings()["YFS"]
+                           ["FF_FORMFACTOR_REST_FRAME"].SetDefault(true).Get<bool>());
+  Vec4D r1(p1), r2(p2);
+  if (ffrest && d.Type() == dipoletype::final) {
+    const Vec4D P(p1 + p2);
+    if (P.Abs2() > 0. && !IsZero(P.PSpat()/P[0], 1e-14)) {
+      Poincare rest(P);
+      rest.Boost(r1);
+      rest.Boost(r2);
+    }
+  }
+  R =  BVR_full(r1 * r2, r1.E(), r2.E(), p1.Mass(), p2.Mass(), omega, m_photonMass, 0);
   // R = BVR_full_eps(d, omega, 0).Finite();
   V =  BVirtGeneralEps(d,omega).Finite();
   double Vold =  BVV_full(p1, p2, m_photonMass, omega, 0);
@@ -472,7 +496,6 @@ DivArrD YFS_Form_Factor::BVV_full_eps(YFS::Dipole &d, double Kmax, int mode){
   t3 -= DiLog(zeta1) + DiLog(zeta2);
   t3 += sqr(M_PI);
   t3 /= rho;
-  // if(m_tchannel==1) return m_alpi * (t1 + t2 + t3) + BVirtTEps(d);
   return m_alpi * (t1 + t2 + t3);
 }
 
@@ -658,7 +681,7 @@ double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax){
       // log(m/M), NOT log(m1/m2): this term is antisymmetric under exchanging
       // the two legs, and KKMC's TBvirt (SRCee/KKbvir.cxx:296) documents its
       // m1 as "assumed to be very small", i.e. the LIGHT leg first. IFForFac()
-      // calls this with GetBornMomenta(1) then (0) to match R1()'s ordering,
+      // calls this with GetBornMomenta(1) then (0),
       // which for an initial-final dipole puts the heavy (final-state) leg
       // first - so log(m1/m2) came out with the wrong sign. Using min/max
       // makes the term independent of the caller's ordering and reproduces
@@ -672,105 +695,6 @@ double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax){
   return TBvirt;
 }
 
-
-double YFS_Form_Factor::BVirtT(YFS::Dipole &d, double kmax){
- Vec4D p1,p2;
- d.LegsBeforeRadiation(p1, p2);
-  double m1 = d.GetMass(0);
-  double m2 = d.GetMass(1);
-  if(IsZero(kmax)) kmax=m1*m2;
-  double M = m1>=m2 ? m1 : m2;
-  double m = m1>=m2 ? m2 : m1;
-  double p1p2 = p1*p2;
-  double t  = (p1-p2).Abs2();
-  double ta = fabs(t);
-  double zeta = 1 + M*M/ta;
-  double TBvirt, Bv;
-  double rho = sqrt(1. - sqr(m1*m2 / (p1*p2)));
-  TBvirt = m_alpi*(
-    // (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) *log(pow(m_photonMass, 2)/(kmax)) 
-       (log(2*p1p2/(m1*m2))-1.0)*log(m_photonMass*m_photonMass/(m1*m2))
-      +0.5*zeta*log(ta*zeta/(m1*m2))
-      -0.5*log(ta/m1/m1)*log(ta/m2/m2)
-      +DiLog(1./zeta) -1.0
-      // log(m/M) rather than log(m1/m2) - see the note in the Vec4D overload.
-      +0.5*(zeta -1.0)*log(m/M)
-      -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
-       );
-  #ifdef USING__LOOPTOOLS
-    Complex form;
-    Flavour fl1 = d.GetFlav(0);
-    Flavour fl2 = d.GetFlav(1);
-    double s = (p1+p2).Abs2();
-    double crossterm = ((d.m_thetai*p1+d.m_thetaj*p2).Abs2());
-    if(fl1==fl2){
-      form = 1./8.*B0(s, m1*m1, m2*m2);
-      // form += -8.*(m1*m1)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
-    //   // PRINT_VAR(C0(m1*m1, 0, m1*m1,0, m1*m1, m1*m1));
-    }
-    else{
-      form = 2*(p1*p2)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
-      form += 0.25*B0(s, m1*m1, m2*m2);
-    }
-    form*=m_alpi;
-    // // PRINT_VAR(fl1);
-    // // PRINT_VAR(fl2);
-    // TBvirt+=form.real();
-    clearcache();
-  #endif
-  return TBvirt;
-}
-
-DivArrD YFS_Form_Factor::BVirtTEps(YFS::Dipole &d, double kmax){
-   Vec4D p1,p2;
-   d.LegsBeforeRadiation(p1, p2);
-  double m1 = d.GetMass(0);
-  double m2 = d.GetMass(1);
-  if(IsZero(kmax)) kmax=m1*m2;
-  double M = m1>=m2 ? m1 : m2;
-  double m = m1>=m2 ? m2 : m1;
-  double p1p2 = p1*p2;
-  double t  = (p1-p2).Abs2();
-  double ta = fabs(t);
-  double zeta = 1 + M*M/ta;
-  DivArrD TBvirt, Bv;
-  double rho = sqrt(1. - sqr(m1*m2 / (p1*p2)));
-  DivArrD massph(0,-1,0,0,0,0);
-  double irloop = p_virt->IRscale();
-  double epsloop = p_virt->Eps_Scheme_Factor({p1,p2});
-  // (massph-log(4.*M_PI*sqr(irloop)/4./Kmax/epsloop));
-  TBvirt = m_alpi*(
-    (log(p1p2 * (1. + rho) / (m1*m2)) / rho - 1) * -1.*(-massph-log(4.*M_PI*sqr(irloop)/m1/m2/epsloop)) 
-    // (log(2*p1p2/(m1*m2))-1.0) * -1.*(-massph-log(4.*M_PI*sqr(irloop)/m1/m2/epsloop)) 
-       +0.5*zeta*log(ta*zeta/(m1*m2))
-        -0.5*log(ta/m1/m1)*log(ta/m2/m2)
-      +DiLog(1./zeta) -1.0
-      +0.5*(zeta -1.0)*log(m1/m2)
-      -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
-       );
-  #ifdef USING__LOOPTOOLS
-    Complex form;
-    Flavour fl1 = d.GetFlav(0);
-    Flavour fl2 = d.GetFlav(1);
-    double s = (p1+p2).Abs2();
-    double crossterm = ((d.m_thetai*p1+d.m_thetaj*p2).Abs2());
-    if(fl1==fl2){
-      form = 1./8.*B0(s, m1*m1, m2*m2);
-      // form += -8.*(m1*m1)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
-    //   // PRINT_VAR(C0(m1*m1, 0, m1*m1,0, m1*m1, m1*m1));
-    }
-    else{
-      form = 2*(p1*p2)*C0(m1*m1, s, m2*m2,0,m1*m1,m2*m2);
-      form += 0.25*B0(s, m1*m1, m2*m2);
-    }
-    form*=m_alpi;
-    // // PRINT_VAR(fl1);
-    // // PRINT_VAR(fl2);
-    // TBvirt+=form.real();
-    clearcache();
-  #endif
-  return TBvirt;
-}
 
 double YFS_Form_Factor::IFForFac(YFS::Dipole &d, double omega){
   // KKMC's TForFac, for one initial-final dipole. KKceex.cxx assembles the
@@ -787,8 +711,7 @@ double YFS_Form_Factor::IFForFac(YFS::Dipole &d, double omega){
   // Btilda with NO virtual at all, which is why no rescaling of that term could
   // reproduce KKMC -- half the object was missing.
   //
-  // Momentum order follows R1(): for dipoletype::ifi it takes GetBornMomenta(1)
-  // then (0). Kept identical here so the two agree bin by bin.
+  // For dipoletype::ifi the momenta are GetBornMomenta(1) then (0).
   //
   // NB BVirtT(Vec4D,Vec4D,double) ignores its kmax argument -- it is read only by
   // an IsZero() default that is never used afterwards -- so the omega passed here
@@ -800,21 +723,6 @@ double YFS_Form_Factor::IFForFac(YFS::Dipole &d, double omega){
                           omega, m_photonMass, 0);
   double Bvirt = BVirtT(p1, p2, omega);
   return Breal + Bvirt;
-}
-
-
-double YFS_Form_Factor::R1(YFS::Dipole &d){
-  Vec4D p1,p2;
-  d.LegsBeforeRadiation(p1, p2);
-  double R = BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(), sqrt(m_s)/2., m_photonMass, 0);
-  double V = BVirtT(p1, p2, sqrt(m_s) / 2.);
-  if(m_tchannel==3) V = BVirtGeneral(d);
-  if(m_tchannel==1){
-    // add s channel 
-    double Vs = BVR_full(p1, p2, sqrt(m_s) / 2.);
-    return R+V-Vs;
-  }
-  return R+V;
 }
 
 
@@ -920,8 +828,6 @@ DivArrD YFS_Form_Factor::BVirtGeneralEps(YFS::Dipole &d, double Kmax){
 
 
 // Virtual YFS IR factor Y assembled from the master integrals (METOOLS/Loops),
-// following Carloni Calame et al. "Towards muon-electron scattering at NNLO"
-// arXiv:2007.01586 Eq.(3.3), LoopTools/COLLIER conventions:
 //
 //   off-diagonal (i!=j):  Y_ij = (a/pi) Qi Qj th_i th_j
 //        [ p_i.p_j C0(m_i^2, s_ij, m_j^2; lam^2, m_i^2, m_j^2)

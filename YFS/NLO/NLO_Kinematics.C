@@ -82,10 +82,10 @@ bool NLO_Base::MapMomentaFSR(Vec4D_Vector &p, Vec4D_Vector &k) {
     Start from the legs AFTER final-state emission, not before. With the
     pre-emission legs the photon-lepton angle of the point is not the event's,
     and the collinear structure of |M_1|^2 is off by large factors: on e+e- ->
-    mu mu at 0.7 GeV, single-FSR-photon events had r/rho_1(CEEX) spread over
+    mu mu at 0.7 GeV, single-FSR-photon events had r/rho_1(ACRAIC) spread over
     0.003-0.5 where single-ISR-photon events give 0.01613 on every event. The
     other FSR photons are absorbed into the pair below (their sum is added to
-    the target mass); with one FSR photon the point IS the event, as for CEEX.
+    the target mass); with one FSR photon the point IS the event, as for ACRAIC.
   */
   Vec4D Kall;
   for (const Vec4D &kj : m_FSRPhotons) Kall += kj;
@@ -103,12 +103,12 @@ bool NLO_Base::MapMomentaFSR(Vec4D_Vector &p, Vec4D_Vector &k) {
     tends to the crude configuration as k_j -> 0, and with one photon it is
     the generator's own post-emission point (same rescaling recipe).
   */
-  { if (RealFSRMap() == realfsrmap::pre_emission && m_plab.size() == p.size()) {
-      for (size_t i = 2; i < p.size(); ++i) p[i] = m_plab[i];
-      Kall = Vec4D();
-    } else if (m_postlab.size() == p.size()) {
-      for (size_t i = 2; i < p.size(); ++i) p[i] = m_postlab[i];
-    } else Kall = Vec4D(); }
+  if (RealFSRMap() == realfsrmap::pre_emission && m_plab.size() == p.size()) {
+    for (size_t i = 2; i < p.size(); ++i) p[i] = m_plab[i];
+    Kall = Vec4D();
+  } else if (m_postlab.size() == p.size()) {
+    for (size_t i = 2; i < p.size(); ++i) p[i] = m_postlab[i];
+  } else Kall = Vec4D();
   Vec4D Q;
   for (size_t i = 2; i < p.size(); ++i) Q += p[i];
   Q += Kall;
@@ -166,21 +166,7 @@ bool NLO_Base::MapMomentaFSR(Vec4D_Vector &p, Vec4D_Vector &k) {
   Poincare pRot2(m_bornMomenta[0], Vec4D(0., 0., 0, 1.));
   for (size_t i = 0; i < p.size(); ++i) { pRot2.Rotate(p[i]); boostLab.BoostBack(p[i]); }
   for (Vec4D &kj : k) { pRot2.Rotate(kj); boostLab.BoostBack(kj); }
-  { Vec4D res(p[0] + p[1]);
-    for (size_t i = 2; i < p.size(); ++i) res -= p[i];
-    for (const Vec4D &kj : k) res -= kj;
-    if (Vec3D(res).Abs() > 1e-9 || std::abs(res[0]) > 1e-9) {
-      Vec4D post; for (size_t i = 2; i < m_postlab.size(); ++i) post += m_postlab[i];
-      Vec4D pre;  for (size_t i = 2; i < m_plab.size(); ++i)    pre  += m_plab[i];
-      Vec4D isr;  for (const Vec4D &kj : m_ISRPhotons) isr += kj;
-      std::cerr<<std::setprecision(10)<<"@@@ FSRMAP residual="<<res
-               <<" xi="<<xi<<" Mp="<<Mp<<" msum="<<msum
-               <<" nFSR="<<m_FSRPhotons.size()<<" nk="<<k.size()
-               <<"\n   Kall(lab)="<<Kall<<" post(lab)="<<post<<" pre(lab)="<<pre
-               <<" isr(lab)="<<isr<<" P="<<(m_bornMomenta[0]+m_bornMomenta[1])
-               <<"\n   post+Kall+isr-P="<<(post+Kall+isr-m_bornMomenta[0]-m_bornMomenta[1])
-               <<" pre+isr-P="<<(pre+isr-m_bornMomenta[0]-m_bornMomenta[1])<<std::endl;
-    } }
+  ReportFSRMapResidual(p, k, Kall, xi, Mp, msum);   // diagnostic, NLO_Checks.C
   return true;
 }
 
@@ -200,13 +186,13 @@ bool NLO_Base::MapMomentaFSR(Vec4D_Vector &p, Vec4D_Vector &k) {
   of a fraction of Gamma_Z is a large factor, which is what the numbers show.
   e+e- -> mu mu tau tau at 250 GeV (doc/examples/YFS/zpole/br_table/
   250_eemumu, 8k events, mu-pair mass within 2 GeV of M_Z):
-      nfsr = 1: <BR>/<CEEX> = 0.987, median BR/CEEX = 1.06   (the event)
-      nfsr = 2: <BR>/<CEEX> = 0.21,  median 1.03 - the mean is a tail;
+      nfsr = 1: <BR>/<ACRAIC> = 0.987, median BR/ACRAIC = 1.06   (the event)
+      nfsr = 2: <BR>/<ACRAIC> = 0.21,  median 1.03 - the mean is a tail;
       nfsr = 3: 0.17;   nfsr >= 4: 0.12;
       a hard FSR photon (x > 0.05) with other FSR photons: median BR = -0.66,
-      <BR> = -3.5 against <CEEX> = 0.75.
+      <BR> = -3.5 against <ACRAIC> = 0.75.
   In the Rivet Z1_mass overlay the Born+real dipped 25% at the mu-pair peak
-  where LO, EEX and CEEX agree in shape.
+  where LO, EEX and ACRAIC agree in shape.
 
   Here every pair other than k_j's is put back at its pre-emission momentum
   (m_plab, its photons re-absorbed), and k_j's pair is rebuilt at
@@ -350,18 +336,7 @@ bool NLO_Base::RebuildBeamsAtPreFSR(Vec4D_Vector &p, Vec4D_Vector &k,
   Poincare pRot2(m_bornMomenta[0], Vec4D(0., 0., 0, 1.));
   for (size_t i = 0; i < p.size(); ++i) { pRot2.Rotate(p[i]); boostLab.BoostBack(p[i]); }
   for (Vec4D &kj : k) { pRot2.Rotate(kj); boostLab.BoostBack(kj); }
-  { Vec4D res(p[0] + p[1]);
-    for (size_t i = 2; i < p.size(); ++i) res -= p[i];
-    for (const Vec4D &kj : k) res -= kj;
-    const double scale(Max(1., p[0][0]));
-    if (Vec3D(res).Abs() > 1e-9*scale || std::abs(res[0]) > 1e-9*scale) {
-      static long nprint(0);
-      if (++nprint <= 20)
-        std::cerr<<std::setprecision(10)<<"@@@ "<<tag<<" residual="<<res
-                 <<" nk="<<k.size()
-                 <<" nFSR="<<m_FSRPhotons.size()<<" P="<<(m_bornMomenta[0]+m_bornMomenta[1])
-                 <<" Q="<<Q<<std::endl;
-    } }
+  ReportMappingResidual(p, k, tag, Q);   // diagnostic, NLO_Checks.C
   return true;
 }
 
@@ -461,11 +436,7 @@ bool NLO_Base::MapMomentaBeamAxis(Vec4D_Vector &p, const Vec4D_Vector &k) {
   p[0] = pa; p[1] = pb;
   for (size_t i(2); i < p.size(); ++i) p[i] = q[i-2];
   m_map_reduced = (K[0] > 1e-12*P[0]);
-  { static const bool dm(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_STAB"].Get<int>()!=0);
-    if (dm) std::cerr<<"@@@ MAPQ sqrt_sqq="<<sqrt(sj)
-                     <<" sqrt_s="<<sqrt(m_s)
-                     <<" sqrt_sborn="<<(m_bornMomenta[2]+m_bornMomenta[3]).Mass()
-                     <<" Eksum="<<ksel[0]<<" lambda="<<lambda<<" beamaxis=1"<<std::endl; }
+  if (RealStabDump()) DumpMapQ(sqrt(sj), ksel[0], " lambda=" + ToString(lambda) + " beamaxis=1");   // NLO_Checks.C
   return true;
 }
 
@@ -483,12 +454,12 @@ bool NLO_Base::MapMomentaBeamAxis(Vec4D_Vector &p, const Vec4D_Vector &k) {
       x_1 = x_2 = 0.44 : exact 0.34, KKMC 0.32, reduced beams 0.04
       x_1 = 0.8, x_2 = 0.05 : exact 0.45, KKMC 0.47, reduced beams 0.29
   so the KKMC convention is the better O(alpha) truncation (the remainder is
-  the genuine beta_2), and it is what YFS.EEX and CEEX effectively carry.
+  the genuine beta_2), and it is what YFS.EEX and ACRAIC effectively carry.
   Measured, 250 GeV nu nu, 50k events, same sample: the beam-axis reduction
-  gives YFS.BR 2.838 +- 0.3%, this construction 3.166 +- 0.2%, CEEX (no
+  gives YFS.BR 2.838 +- 0.3%, this construction 3.166 +- 0.2%, ACRAIC (no
   virtual) 3.272 +- 0.4%, EEX 3.513 (with its +7% virtual); the rest-frame
-  map gave 2.925 +- 10%. The remaining 3% to CEEX sits in the events where
-  two hard photons share the radiative return, where CEEX's coherent
+  map gave 2.925 +- 10%. The remaining 3% to ACRAIC sits in the events where
+  two hard photons share the radiative return, where ACRAIC's coherent
   amplitude-level sum carries an effective beta_2 that O(alpha) cannot.
 
   A momentum-conserving point with the full-beam a, b and the pair at s' is
@@ -551,11 +522,7 @@ bool NLO_Base::MapMomentaScaled(Vec4D_Vector &p, Vec4D_Vector &k, bool anylabel)
   for (size_t i(2); i < p.size(); ++i) p[i] = q[i-2];
   for (Vec4D &kj : k) kj = x*kj;
   m_map_reduced = (K[0] > 1e-12*P[0]);
-  { static const bool dm(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_STAB"].Get<int>()!=0);
-    if (dm) std::cerr<<"@@@ MAPQ sqrt_sqq="<<sqrt(sj)
-                     <<" sqrt_s="<<sqrt(m_s)
-                     <<" sqrt_sborn="<<(m_bornMomenta[2]+m_bornMomenta[3]).Mass()
-                     <<" Eksum="<<ksel[0]<<" x="<<x<<" scaled=1"<<std::endl; }
+  if (RealStabDump()) DumpMapQ(sqrt(sj), ksel[0], " x=" + ToString(x) + " scaled=1");   // NLO_Checks.C
   return true;
 }
 
@@ -566,14 +533,14 @@ bool NLO_Base::MapMomentaScaled(Vec4D_Vector &p, Vec4D_Vector &k, bool anylabel)
   has the diagrams with the photon radiated from the final state, whose Z
   propagator sits at exactly that invariant: with the Z-pole Born, moving it
   by a few GeV changes |M_1|^2 by orders of magnitude. Measured: 250 GeV
-  mu mu with REAL_MAP: 2 kept the central value (BR 3.21, CEEX 3.22) but a
+  mu mu with REAL_MAP: 2 kept the central value (BR 3.21, ACRAIC 3.22) but a
   5% error from 466 events with |BR| > 10, and the Z-pole mu mu Born+real
   moved by 0.5%.
 
   Here both are kept - and the measurement is the reason this is NOT the
   default: 250 GeV mu mu, 100k, REAL_MAP: 3 gives BR 4.98 +- 26% against
   3.21 +- 4.8% and 2.82 +- 5.4% (two versions of the denominator, same
-  seeds) for REAL_MAP: 2 (CEEX 3.22) - the 5% is a heavy tail, not a
+  seeds) for REAL_MAP: 2 (ACRAIC 3.22) - the 5% is a heavy tail, not a
   Gaussian error, and the central value moves with it. Keeping the invariant exactly
   puts more ISR-labelled events onto the Z pole of their final-state
   emission diagrams, where the full |M_1|^2 is shared between the I and F
@@ -670,12 +637,7 @@ bool NLO_Base::MapMomentaInvariant(Vec4D_Vector &p, Vec4D_Vector &k) {
   for (size_t i(2); i < p.size(); ++i) p[i] = q[i-2];
   for (Vec4D &kj : k) kj = kappa*kj;
   m_map_reduced = true;
-  { static const bool dm(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_STAB"].Get<int>()!=0);
-    if (dm) std::cerr<<"@@@ MAPQ sqrt_sqq="<<sqrt(sj)
-                     <<" sqrt_s="<<sqrt(m_s)
-                     <<" sqrt_sborn="<<(m_bornMomenta[2]+m_bornMomenta[3]).Mass()
-                     <<" Eksum="<<ksel[0]<<" kappa="<<kappa<<" xa="<<xa<<" xb="<<xb
-                     <<" invariant=1"<<std::endl; }
+  if (RealStabDump()) DumpMapQ(sqrt(sj), ksel[0], " kappa=" + ToString(kappa) + " xa=" + ToString(xa) + " xb=" + ToString(xb) + " invariant=1");   // NLO_Checks.C
   return true;
 }
 
@@ -687,12 +649,12 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D_Vector &k) {
   if (mapmode == realmap::beam_axis && MapMomentaBeamAxis(p, k)) return;
   if (mapmode == realmap::scaled && MapMomentaScaled(p, k)) return;
   if (mapmode == realmap::invariant && MapMomentaInvariant(p, k)) return;
-  { const realfsrmap::code fsrmap(RealFSRMap());
-    if (fsrmap == realfsrmap::dipole && MapMomentaFSRDipole(p, k)) return;
-    // dipole falls back to the common rescaling when the per-dipole
-    // construction does not apply (a photon without a dipole, a pair below
-    // threshold).
-    if (fsrmap != realfsrmap::rest_frame && MapMomentaFSR(p, k)) return; }
+  const realfsrmap::code fsrmap(RealFSRMap());
+  if (fsrmap == realfsrmap::dipole && MapMomentaFSRDipole(p, k)) return;
+  // dipole falls back to the common rescaling when the per-dipole
+  // construction does not apply (a photon without a dipole, a pair below
+  // threshold).
+  if (fsrmap != realfsrmap::rest_frame && MapMomentaFSR(p, k)) return;
   if (mapmode != realmap::rest_frame) {
     // Only initial-state photons are reduced by the new constructions; a
     // final-state photon (or an early exit) comes here by design. Counted so
@@ -731,11 +693,7 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D_Vector &k) {
     msg_Error() << "YFS Real mapping not conserving momentum in " << METHOD
                 << std::endl;
   }
-  { static const bool dm(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_STAB"].Get<int>()!=0);
-    if (dm) std::cerr<<"@@@ MAPQ sqrt_sqq="<<(sqq>0?sqrt(sqq):-1.)
-                     <<" sqrt_s="<<sqrt(m_s)
-                     <<" sqrt_sborn="<<(m_bornMomenta[2]+m_bornMomenta[3]).Mass()
-                     <<" Eksum="<<ksum[0]<<std::endl; }
+  if (RealStabDump()) DumpMapQ(sqq > 0 ? sqrt(sqq) : -1., ksum[0], "");   // NLO_Checks.C
   const double sign_z = (m_bornMomenta[0][3] < 0 ? -1 : 1);
   const double m1 = m_flavs[0].Mass();
   const double m2 = m_flavs[1].Mass();

@@ -119,18 +119,16 @@ static int RunPoint(const char *label, const Vec4D &pA, const Vec4D &pB,
   // this is reproducible run to run, just not hand-picked.
   fsr.GenerateAngles();
   double real_costh = fsr.m_c, real_sinth = fsr.m_st, real_fbar = fsr.m_fbarvec[0];
-  {
-    double am2r = sqr(fsr.m_mass[0]+fsr.m_mass[1]) / fsr.m_dip_sp;
-    // del1*del2 here, NOT 1-costh^2 - they only coincide when am2==0.
-    double del1r = 1. - fsr.m_beta1*real_costh;
-    double del2r = 1. + fsr.m_beta2*real_costh;
-    double dist0_for_real_costh = 1./(del1r*del2r) * (1.-am2r/2.);
-    std::cout << "--- rigorous check: actual GenerateAngles() output vs KKMC dist0 for that costh ---\n";
-    std::cout << "real costh = " << real_costh << "  real sinth = " << real_sinth << "\n";
-    std::cout << "real m_fbarvec[0] (from rebuilt FSR.C) = " << real_fbar << "\n";
-    std::cout << "KKMC dist0 for this SAME costh          = " << dist0_for_real_costh << "\n";
-    std::cout << "ratio (should be 1.0 after the fix)     = " << real_fbar/dist0_for_real_costh << "\n";
-  }
+  double am2r = sqr(fsr.m_mass[0]+fsr.m_mass[1]) / fsr.m_dip_sp;
+  // del1*del2 here, NOT 1-costh^2 - they only coincide when am2==0.
+  double del1r = 1. - fsr.m_beta1*real_costh;
+  double del2r = 1. + fsr.m_beta2*real_costh;
+  double dist0_for_real_costh = 1./(del1r*del2r) * (1.-am2r/2.);
+  std::cout << "--- rigorous check: actual GenerateAngles() output vs KKMC dist0 for that costh ---\n";
+  std::cout << "real costh = " << real_costh << "  real sinth = " << real_sinth << "\n";
+  std::cout << "real m_fbarvec[0] (from rebuilt FSR.C) = " << real_fbar << "\n";
+  std::cout << "KKMC dist0 for this SAME costh          = " << dist0_for_real_costh << "\n";
+  std::cout << "ratio (should be 1.0 after the fix)     = " << real_fbar/dist0_for_real_costh << "\n";
   fsr.m_cos.clear(); fsr.m_sin.clear(); fsr.m_fbarvec.clear(); fsr.m_MassWls.clear();
 
   // ---- inject TWO fixed photons instead of sampling them ----
@@ -270,14 +268,12 @@ static int RunPoint(const char *label, const Vec4D &pA, const Vec4D &pB,
   std::cout << "fsr.m_sQ     = " << fsr.m_sQ << "\n";
   std::cout << "fsr.m_Q      = " << fsr.m_Q << "\n";
   std::cout << "fsr.m_photonSum (post-YFS_FORM recompute) = " << fsr.m_photonSum << "\n";
-  {
-    double Eqq_check = 0.5*sqrt(fsr.m_sQ);
-    double QdotK = fsr.m_Q*fsr.m_photonSum;
-    double Delta_check = fsr.m_fsrcut*(1.+2.*QdotK/fsr.m_sQ);
-    std::cout << "Eqq_check = " << Eqq_check << "  Q.photonSum = " << QdotK
-               << "  Delta_check = " << Delta_check
-               << "  EminQ_check = " << Eqq_check*Delta_check << "\n";
-  }
+  double Eqq_check = 0.5*sqrt(fsr.m_sQ);
+  double QdotK = fsr.m_Q*fsr.m_photonSum;
+  double Delta_check = fsr.m_fsrcut*(1.+2.*QdotK/fsr.m_sQ);
+  std::cout << "Eqq_check = " << Eqq_check << "  Q.photonSum = " << QdotK
+             << "  Delta_check = " << Delta_check
+             << "  EminQ_check = " << Eqq_check*Delta_check << "\n";
 
   // ---- partial-variant test: does X or Q alone need to switch cru/full,
   // rather than both together (FSR_CRU)? YFS_IR_local/m_DelYFS/m_volmc don't
@@ -287,34 +283,32 @@ static int RunPoint(const char *label, const Vec4D &pA, const Vec4D &pB,
   // used - only the "-1" in BVR_full's log term survives the subtraction).
   // Back out YFS_IR_local from the already-computed, verified m_hideW rather
   // than re-deriving the formula by hand a second time. ----
-  {
-    double YFS_IR_local = log(fsr.m_hideW) - fsr.m_DelYFS - fsr.m_volmc + fsr.m_delvol;
-    double r1r2 = fsr.m_r1 * fsr.m_r2;
-    double BtiXcru_full = fsr.p_fsrFormFact->BVR_full(r1r2, fsr.m_r1[0], fsr.m_r2[0], fsr.m_r1.Mass(), fsr.m_r2.Mass(), fsr.m_Emin, fsr.m_photonMass, 0);
-    double BtiXcru_cru  = fsr.p_fsrFormFact->BVR_cru (r1r2, fsr.m_r1[0], fsr.m_r2[0], fsr.m_r1.Mass(), fsr.m_r2.Mass(), fsr.m_Emin);
-    double BtiQcru_full = fsr.p_fsrFormFact->BVR_full(r1r2, fsr.m_r1[0], fsr.m_r2[0], fsr.m_r1.Mass(), fsr.m_r2.Mass(), fsr.m_EminQ, fsr.m_photonMass, 0);
-    double BtiQcru_cru  = fsr.p_fsrFormFact->BVR_cru (r1r2, fsr.m_r1[0], fsr.m_r2[0], fsr.m_r1.Mass(), fsr.m_r2.Mass(), fsr.m_EminQ);
-    // KKMC's Piatek() uses EQQ=0.5*sqrt(svarQ) for BOTH particles' energy in
-    // the Q-scale crude evaluation (Btildc(...,EQQ,EQQ,...,EminQ,...)), not
-    // the ghosts' own post-boost energies - a second, separate discrepancy
-    // from the full/cru formula choice tested above.
-    double Eqq_val = 0.5*sqrt(fsr.m_sQ);
-    double BtiQcru_cru_Eqq  = fsr.p_fsrFormFact->BVR_cru (r1r2, Eqq_val, Eqq_val, fsr.m_r1.Mass(), fsr.m_r2.Mass(), fsr.m_EminQ);
-    std::cout << "--- partial-variant test (same YFS_IR/DelYFS/volmc, varying only the X/Q formula choice) ---\n";
-    struct Variant { const char* name; double delvol; };
-    Variant variants[5] = {
-      {"X=full,Q=full (current default, FSR_CRU=0)", BtiXcru_full - BtiQcru_full},
-      {"X=cru, Q=cru  (FSR_CRU=1)                  ", BtiXcru_cru  - BtiQcru_cru},
-      {"X=full,Q=cru                               ", BtiXcru_full - BtiQcru_cru},
-      {"X=cru, Q=full                               ", BtiXcru_cru  - BtiQcru_full},
-      {"X=cru, Q=cru with EQQ,EQQ (matches KKMC)   ", BtiXcru_cru  - BtiQcru_cru_Eqq},
-    };
-    for (auto &v : variants) {
-      double hideW = exp(YFS_IR_local + fsr.m_DelYFS + fsr.m_volmc - v.delvol);
-      std::cout << v.name << ": delvol=" << v.delvol
-                << "  hideW=" << hideW
-                << "  ratio_to_current_default=" << hideW/fsr.m_hideW << "\n";
-    }
+  double YFS_IR_local = log(fsr.m_hideW) - fsr.m_DelYFS - fsr.m_volmc + fsr.m_delvol;
+  double r1r2 = fsr.m_r1 * fsr.m_r2;
+  double BtiXcru_full = fsr.p_fsrFormFact->BVR_full(r1r2, fsr.m_r1[0], fsr.m_r2[0], fsr.m_r1.Mass(), fsr.m_r2.Mass(), fsr.m_Emin, fsr.m_photonMass, 0);
+  double BtiXcru_cru  = fsr.p_fsrFormFact->BVR_cru (r1r2, YFS::Leg(fsr.m_r1[0], fsr.m_r1.Mass()), YFS::Leg(fsr.m_r2[0], fsr.m_r2.Mass()), fsr.m_Emin);
+  double BtiQcru_full = fsr.p_fsrFormFact->BVR_full(r1r2, fsr.m_r1[0], fsr.m_r2[0], fsr.m_r1.Mass(), fsr.m_r2.Mass(), fsr.m_EminQ, fsr.m_photonMass, 0);
+  double BtiQcru_cru  = fsr.p_fsrFormFact->BVR_cru (r1r2, YFS::Leg(fsr.m_r1[0], fsr.m_r1.Mass()), YFS::Leg(fsr.m_r2[0], fsr.m_r2.Mass()), fsr.m_EminQ);
+  // KKMC's Piatek() uses EQQ=0.5*sqrt(svarQ) for BOTH particles' energy in
+  // the Q-scale crude evaluation (Btildc(...,EQQ,EQQ,...,EminQ,...)), not
+  // the ghosts' own post-boost energies - a second, separate discrepancy
+  // from the full/cru formula choice tested above.
+  double Eqq_val = 0.5*sqrt(fsr.m_sQ);
+  double BtiQcru_cru_Eqq  = fsr.p_fsrFormFact->BVR_cru (r1r2, YFS::Leg(Eqq_val, fsr.m_r1.Mass()), YFS::Leg(Eqq_val, fsr.m_r2.Mass()), fsr.m_EminQ);
+  std::cout << "--- partial-variant test (same YFS_IR/DelYFS/volmc, varying only the X/Q formula choice) ---\n";
+  struct Variant { const char* name; double delvol; };
+  Variant variants[5] = {
+    {"X=full,Q=full (current default, FSR_CRU=0)", BtiXcru_full - BtiQcru_full},
+    {"X=cru, Q=cru  (FSR_CRU=1)                  ", BtiXcru_cru  - BtiQcru_cru},
+    {"X=full,Q=cru                               ", BtiXcru_full - BtiQcru_cru},
+    {"X=cru, Q=full                               ", BtiXcru_cru  - BtiQcru_full},
+    {"X=cru, Q=cru with EQQ,EQQ (matches KKMC)   ", BtiXcru_cru  - BtiQcru_cru_Eqq},
+  };
+  for (auto &v : variants) {
+    double hideW = exp(YFS_IR_local + fsr.m_DelYFS + fsr.m_volmc - v.delvol);
+    std::cout << v.name << ": delvol=" << v.delvol
+              << "  hideW=" << hideW
+              << "  ratio_to_current_default=" << hideW/fsr.m_hideW << "\n";
   }
 
   std::cout << std::setprecision(10);
@@ -358,32 +352,30 @@ static int RunPoint(const char *label, const Vec4D &pA, const Vec4D &pB,
   // same role KKMC's m_Emin plays for Yisr, Yfsr and Yint alike - while
   // m_EminQ must. The leg-energy ratio is already off 1 at rest (the FSR
   // photons see to that) and simply grows.
-  {
-    const double sq  = fsr.m_sQ;
-    const double Eqq = 0.5*sqrt(sq);
-    const double Eq1 = (sq + sqr(fsr.m_mass[0]) - sqr(fsr.m_mass[1]))/(2.*sqrt(sq));
-    const double Eq2 = (sq + sqr(fsr.m_mass[1]) - sqr(fsr.m_mass[0]))/(2.*sqrt(sq));
-    const double nominal = sqrt(sqr(rpa->gen.Ecms()));
-    std::cout << "--- ISR-sensitive quantities (diff this block between the two points) ---\n";
-    std::cout << "leg energies entering m_btilStar (CMS)     = "
-              << dip.GetNewMomenta(0)[0] << ", " << dip.GetNewMomenta(1)[0] << "\n";
-    std::cout << "leg energies entering m_btil     (Q frame) = "
-              << Eq1 << ", " << Eq2 << "   (Eqq = " << Eqq << ")\n";
-    std::cout << "  ratio CMS/Q per leg                      = "
-              << dip.GetNewMomenta(0)[0]/Eq1 << ", "
-              << dip.GetNewMomenta(1)[0]/Eq2 << "\n";
-    // m_Emin is the single scale the Piatek term translates onto, so it must be
-    // the nominal-CMS soft cutoff and must NOT follow s'. Kept as a standing
-    // check against KKMC's own definition, CMSene/2 * vvmin (KKarFin.cxx:56),
-    // rather than against a value handed over from the Sherpa side - which is
-    // the only way the factor sqrt(s) this once carried could have been caught.
-    std::cout << "m_Emin  Sherpa  (FSR.C:89)                 = " << fsr.m_Emin << "\n";
-    std::cout << "m_Emin  KKMC    CMSene/2 * vvmin           = "
-              << 0.5*nominal*fsr.m_isrcut << "\n";
-    std::cout << "  ratio Sherpa/KKMC (must be 1)            = "
-              << fsr.m_Emin/(0.5*nominal*fsr.m_isrcut) << "\n";
-    std::cout << "m_EminQ (tracks s', as it should)          = " << fsr.m_EminQ << "\n";
-  }
+  const double sq  = fsr.m_sQ;
+  const double Eqq = 0.5*sqrt(sq);
+  const double Eq1 = (sq + sqr(fsr.m_mass[0]) - sqr(fsr.m_mass[1]))/(2.*sqrt(sq));
+  const double Eq2 = (sq + sqr(fsr.m_mass[1]) - sqr(fsr.m_mass[0]))/(2.*sqrt(sq));
+  const double nominal = sqrt(sqr(rpa->gen.Ecms()));
+  std::cout << "--- ISR-sensitive quantities (diff this block between the two points) ---\n";
+  std::cout << "leg energies entering m_btilStar (CMS)     = "
+            << dip.GetNewMomenta(0)[0] << ", " << dip.GetNewMomenta(1)[0] << "\n";
+  std::cout << "leg energies entering m_btil     (Q frame) = "
+            << Eq1 << ", " << Eq2 << "   (Eqq = " << Eqq << ")\n";
+  std::cout << "  ratio CMS/Q per leg                      = "
+            << dip.GetNewMomenta(0)[0]/Eq1 << ", "
+            << dip.GetNewMomenta(1)[0]/Eq2 << "\n";
+  // m_Emin is the single scale the Piatek term translates onto, so it must be
+  // the nominal-CMS soft cutoff and must NOT follow s'. Kept as a standing
+  // check against KKMC's own definition, CMSene/2 * vvmin (KKarFin.cxx:56),
+  // rather than against a value handed over from the Sherpa side - which is
+  // the only way the factor sqrt(s) this once carried could have been caught.
+  std::cout << "m_Emin  Sherpa  (FSR.C:89)                 = " << fsr.m_Emin << "\n";
+  std::cout << "m_Emin  KKMC    CMSene/2 * vvmin           = "
+            << 0.5*nominal*fsr.m_isrcut << "\n";
+  std::cout << "  ratio Sherpa/KKMC (must be 1)            = "
+            << fsr.m_Emin/(0.5*nominal*fsr.m_isrcut) << "\n";
+  std::cout << "m_EminQ (tracks s', as it should)          = " << fsr.m_EminQ << "\n";
 
   return 0;
 }
@@ -455,21 +447,19 @@ int main(int argc, char* argv[]) {
   //    against it. This is what YFS_Handler hands to MakeDipoles(): the FF
   //    dipole is built from m_plab[2..], i.e. the final state AFTER the ISR
   //    recoil, while m_s stays nominal.
-  {
-    const double v  = 0.30;
-    const double kz = v*sqrts/2.;
-    const Vec4D  Q(sqrts - kz, 0., 0., -kz);       // pi pair recoiling against k
-    const double sp = Q.Abs2();
-    const double pstar = sqrt(sp/4. - sqr(mpi));
-    const double ct = 0.6, st = sqrt(1.-ct*ct);
-    Vec4D q1(sqrt(sp)/2.,  pstar*st, 0.,  pstar*ct);
-    Vec4D q2(sqrt(sp)/2., -pstar*st, 0., -pstar*ct);
-    Poincare toCMS(Q);
-    toCMS.BoostBack(q1);
-    toCMS.BoostBack(q2);
-    if (RunPoint("ISR on : dipole recoiling, s' = (1-v) s, v = 0.30", q1, q2, mpi, alpha))
-      std::cerr << "ISR-on point failed\n";
-  }
+  const double v  = 0.30;
+  const double kz = v*sqrts/2.;
+  const Vec4D  Q(sqrts - kz, 0., 0., -kz);       // pi pair recoiling against k
+  const double sp = Q.Abs2();
+  const double pstar = sqrt(sp/4. - sqr(mpi));
+  const double ct = 0.6, st = sqrt(1.-ct*ct);
+  Vec4D q1(sqrt(sp)/2.,  pstar*st, 0.,  pstar*ct);
+  Vec4D q2(sqrt(sp)/2., -pstar*st, 0., -pstar*ct);
+  Poincare toCMS(Q);
+  toCMS.BoostBack(q1);
+  toCMS.BoostBack(q2);
+  if (RunPoint("ISR on : dipole recoiling, s' = (1-v) s, v = 0.30", q1, q2, mpi, alpha))
+    std::cerr << "ISR-on point failed\n";
 
   } catch (const ATOOLS::Exception& e) {
     std::cerr << "ATOOLS::Exception: " << e << std::endl;

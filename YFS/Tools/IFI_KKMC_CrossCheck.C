@@ -205,10 +205,8 @@ int main(int argc, char* argv[]) {
   std::cout << "\nIf Y_IF is to be cancelled by the real interference, the\n"
             << "log-slope below must match d/dlog(omega) of the integrated\n"
             << "real IF eikonal over the generated photons:\n";
-  {
-    const double y1 = report(0.01, false), y2 = report(0.02, false);
-    std::cout << "  dY_IF/dlog(omega) ~ " << (y2-y1)/log(2.) << "\n";
-  }
+  const double y1 = report(0.01, false), y2 = report(0.02, false);
+  std::cout << "  dY_IF/dlog(omega) ~ " << (y2-y1)/log(2.) << "\n";
 
   // ---- s-channel (II and FF) form factors ----
   // FormFactorSum() gives the II and FF dipoles BVR_full(D, omega), which for
@@ -221,22 +219,20 @@ int main(int argc, char* argv[]) {
             << std::setw(22) << "Breal(Btilda)"
             << std::setw(22) << "Bvirt(SBvirt)"
             << std::setw(22) << "sum" << "\n";
-  {
-    struct SPair { const char *name; Vec4D a, b; };
-    // II uses omega = sqrt(s)/2 (Define_Dipoles.C:603); FF uses
-    // sqrt(D.Sprime())/2, which for the Born configuration is also sqrt(s)/2.
-    std::vector<SPair> sp = {{"II (e-,e+)", pEm, pEp}, {"FF (mu-,mu+)", pMm, pMp}};
-    for (auto &pr : sp) {
-      const double p1p2 = pr.a * pr.b;
-      const double breal = ff.BVR_full(p1p2, pr.a.E(), pr.b.E(),
-                                       pr.a.Mass(), pr.b.Mass(),
-                                       omega_prod, ff.m_photonMass, 0);
-      const double bvirt = ff.BVV_full(pr.a, pr.b, ff.m_photonMass, omega_prod, 0);
-      std::cout << std::setw(18) << pr.name
-                << std::setw(22) << breal
-                << std::setw(22) << bvirt
-                << std::setw(22) << breal+bvirt << "\n";
-    }
+  struct SPair { const char *name; Vec4D a, b; };
+  // II uses omega = sqrt(s)/2 (Define_Dipoles.C:603); FF uses
+  // sqrt(D.Sprime())/2, which for the Born configuration is also sqrt(s)/2.
+  std::vector<SPair> sp = {{"II (e-,e+)", pEm, pEp}, {"FF (mu-,mu+)", pMm, pMp}};
+  for (auto &pr : sp) {
+    const double p1p2 = pr.a * pr.b;
+    const double breal = ff.BVR_full(p1p2, pr.a.E(), pr.b.E(),
+                                     pr.a.Mass(), pr.b.Mass(),
+                                     omega_prod, ff.m_photonMass, 0);
+    const double bvirt = ff.BVV_full(pr.a, pr.b, ff.m_photonMass, omega_prod, 0);
+    std::cout << std::setw(18) << pr.name
+              << std::setw(22) << breal
+              << std::setw(22) << bvirt
+              << std::setw(22) << breal+bvirt << "\n";
   }
 
   // ---- angular scan ----

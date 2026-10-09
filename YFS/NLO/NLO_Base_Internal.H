@@ -42,7 +42,25 @@ using namespace std;
       beta_0 (1 + v) + [R (1 + v_{n+1}) - S B (1 + v)]/crude
     is identically
       (1 + v)(1 + delta) + rho (v_{n+1} - v),
-    delta = (R - S B)/(crude B) the real's bracket.
+    delta = (R - S B)/(crude B) the real's bracket. Here v_{n+1} - v is
+    taken as lt - V/B, the (n+1) loop over tree minus the Born loop over
+    Born, i.e. both with the YFS subtraction on the generation legs.
+  remainder_own_legs (2): the same remainder with v_{n+1} the (n+1) loop
+    with the YFS subtraction on the (n+1)-body point's OWN legs (post-
+    emission legs for a final-state photon), v_{n+1} = lt - B(point legs),
+    plus the exponent's leg difference Y_FF+IF(point legs) - Y_FF+IF(
+    generation legs) at the exponent's own cutoffs (FormFactorSumFinalLegs).
+    That is the subtraction the exponent radiating from the event's legs
+    requires: the FSR generator's Sudakov (FSR::YFS_FORM, the log(1/Delta)
+    and B-tilde pieces) is on the post-emission legs, and only the handler's
+    Kmax-level Y_FF(sqrt(s')/2) and the IF form factor are on the generation
+    legs, so v_{n+1} must carry B(point legs) and the Kmax-level difference
+    (NOTES-yfsnlo-rr-cutdep-2026-09-30.md sec. 6). The two modes differ by
+    2 alpha [Re B(point legs) - Re B(generation legs)]: nothing for an
+    initial-state photon (same legs), about 8% of the real-virtual for a
+    hard final-state one (Z-pole mu mu, photon tagged). The ACRAIC averaged
+    real-virtual (ACRAIC: REAL_VIRTUAL averaged) has always used the own-legs
+    v_{n+1} (NLO_Base::m_rvdv).
 */
 /*
   YFS: RR_MODE - how the squared-level double real (NLO_Part with W) is built
@@ -73,23 +91,74 @@ using namespace std;
     channel weights (REAL_BORN_PHOTON_MULTICHANNEL) are not applied to R_2
     (e+e- -> gamma gamma needs them). RR_PROBE 1 prints "@@@ RRPAIR" per pair
     (2 adds P and the Born point) and "@@@ RRID" per two-photon event.
+    NOT for use with IFI_Real false (the paper scheme): there the single
+    real's bracket subtracts the coherent eikonal, i.e. the initial-final
+    interference of its photon, because the IF form factor at sqrt(s)/2
+    already holds it; f_i f_j therefore lacks the IF interference of both
+    photons while R_2 has it, and rho_ij - f_i f_j puts the exponentiated IF
+    interference back for every pair (O(1) per pair for a wide-angle soft
+    photon: Z-pole mu mu, soft pairs, rms 0.4-0.6 B per pair, all noise).
+  singles_product (2): the pair's exact over crude beyond the product of the
+    singles' exact over crude,
+        RR_ij = B (rho_ij - rho_i rho_j) prod_{k != i,j} f_k,
+    rho_k = kappa r_k F_k/(c_k B) the single real's own ratio (RRPhotonInfo::rho,
+    without its IF subtraction a_k = rho_k - f_k). With two photons the real
+    weight is then rho_ij - a_j rho_i - a_i rho_j + a_i a_j: R_2 with the IF
+    eikonal of each photon times the other photon's single real taken out,
+    which is what the exponentiated IF interference (IFI_Real false) plus the
+    one-photon events' brackets already supply; with IFI_Real true a_k = 0
+    and this is rho_ij, so the value is right in both schemes. As one photon
+    goes soft the remainder tends to rho_i times the difference of the
+    coherence ratios S~_coh/S~_crude on the event's legs and on the single's
+    point legs, which is O(alpha) times the hard photon's recoil, so the
+    single-soft limits hold to the accuracy of the single real's point
+    convention; the RR is taken over every generated pair (RR_SOFT_CUT 0),
+    so no cut separates a product region from the exact one.
+    v x RR and v x R_n are O(alpha^3) and are left out of the squared-level
+    weight (YFS_Handler::CalculateNLO); the O(alpha) columns of a W run are
+    then those of the same run without W.
 */
 inline rrmode::code RRMode() {
   static const rrmode::code m(ATOOLS::Settings::GetMainSettings()["YFS"]["RR_MODE"]
-                              .SetDefault(rrmode::legacy).Get<rrmode::code>());
+                              .SetDefault(rrmode::singles_product).Get<rrmode::code>());
+  return m;
+}
+
+//! RR_MODE exact and singles_product: the remainder is built from the
+//! single reals' RRPhotonInfo and sits on top of REAL_COMBINE's product
+inline bool RRFromSingles() {
+  return RRMode() == rrmode::exact || RRMode() == rrmode::singles_product;
+}
+
+// YFS: REAL_STAB (diagnostic): dump the real's mapped invariants (DumpMapQ)
+inline bool RealStabDump() {
+  static const bool on(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_STAB"].Get<int>() != 0);
+  return on;
+}
+
+// YFS: REAL_COMBINE, documented where CalculateNLO's real uses it
+inline realcombine::code RealCombineMode() {
+  static const realcombine::code m(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_COMBINE"]
+                                   .SetDefault(realcombine::product).Get<realcombine::code>());
   return m;
 }
 
 inline rvmode::code RVMode() {
   static const rvmode::code m(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_MODE"]
-                              .SetDefault(rvmode::legacy).Get<rvmode::code>());
+                              .SetDefault(rvmode::remainder).Get<rvmode::code>());
   return m;
+}
+
+//! RV_MODE remainder and remainder_own_legs: the real-virtual as the
+//! remainder beyond (1 + v) x real, on the real's own point
+inline bool RVIsRemainder() {
+  return RVMode() == rvmode::remainder || RVMode() == rvmode::remainder_own_legs;
 }
 
 // YFS: RV_LOOP_FRAME, documented at RVLoopPoint
 inline rvloopframe::code RVLoopFrame() {
   static const rvloopframe::code m(ATOOLS::Settings::GetMainSettings()["YFS"]
-    ["RV_LOOP_FRAME"].SetDefault(rvloopframe::canonical).Get<rvloopframe::code>());
+    ["RV_LOOP_FRAME"].SetDefault(rvloopframe::tilted).Get<rvloopframe::code>());
   return m;
 }
 
@@ -169,6 +238,24 @@ inline Vec4D_Vector CanonicalBeamFrame(const Vec4D_Vector &p)
   // fixed generic rotation (z-y-z Euler angles 0.3, 0.7, 1.1)
   static const double ca(cos(0.3)), sa(sin(0.3)), cb(cos(0.7)), sb(sin(0.7)),
                       cc(cos(1.1)), sc(sin(1.1));
+  for (Vec4D &v : q) {
+    double x(v[1]), y(v[2]), z(v[3]);
+    double x1(ca*x - sa*y), y1(sa*x + ca*y);
+    double x2(cb*x1 + sb*z), z2(-sb*x1 + cb*z);
+    v = Vec4D(v[0], cc*x2 - sc*y1, sc*x2 + cc*y1, z2);
+  }
+  return q;
+}
+
+/*
+  YFS: VIRTUAL_CHECK's second frame: BeamRestFrameOnZ under a fixed generic
+  rotation different from CanonicalBeamFrame's (z-y-z Euler 1.9, 2.3, 0.4).
+*/
+inline Vec4D_Vector VirtualCheckFrame(const Vec4D_Vector &p)
+{
+  Vec4D_Vector q(BeamRestFrameOnZ(p));
+  static const double ca(cos(1.9)), sa(sin(1.9)), cb(cos(2.3)), sb(sin(2.3)),
+                      cc(cos(0.4)), sc(sin(0.4));
   for (Vec4D &v : q) {
     double x(v[1]), y(v[2]), z(v[3]);
     double x1(ca*x - sa*y), y1(sa*x + ca*y);

@@ -43,14 +43,11 @@ public:
     double BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Vec4D_Vector k, const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax);
     double WW_t(double t, double m, double M, double k);
     double WW_s(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2);
-    double BVirtT(YFS::Dipole &d, double kmax=0);
-    DivArrD BVirtTEps(YFS::Dipole &d, double kmax=0);
     double BVirtT(Vec4D p1, Vec4D p2,  double kmax=0);
     // YFS exponent for an INITIAL-FINAL (t-channel-like) dipole: Btilda plus the
     // T-CHANNEL virtual. This is KKMC's TForFac (SRCee/KKceex.cxx), which builds
     // its interference form factor Yint out of exactly exp(Btilda + TBvirt).
     double IFForFac(YFS::Dipole &d, double omega);
-    double R1(YFS::Dipole &d);
     double  BVirtGeneral(YFS::Dipole &d, double kmax=0);
     DivArrD BVirtGeneralEps(YFS::Dipole &d, double kmax=0);
     // Virtual YFS B factor built from the dim-reg master integrals
@@ -73,10 +70,22 @@ public:
     PHASIC::Virtual_ME2_Base *p_virt = nullptr;
     double m_xx1, m_xx2, m_m1, m_m2;
     // m_use_model_alpha removed: shadowed YFS_Base's and was never read here.
+    /*!
+      The couplings for a pair of charge product ch (FSR::Initialize, once per
+      dipole and event). SETS them relative to the unit-charge values. They
+      used to be multiplied in place, so any ch != 1 compounded every event: a
+      like-charge pair (ch = -1) flipped the sign of every FSR form-factor
+      piece from one event to the next, and a quark pair (ch = 1/9, 4/9)
+      drove alpha to zero within a few events (the Piatek DelYFS and the
+      crude DelVol of FSR::YFS_FORM then vanished for every quark event).
+    */
     inline void SetCharge(double ch) {
-        m_alpha = m_alpha * ch;
-        m_alpi = m_alpi * ch;
+        if (!m_unitcharge) { m_alpha_unit = m_alpha; m_alpi_unit = m_alpi; m_unitcharge = true; }
+        m_alpha = m_alpha_unit * ch;
+        m_alpi = m_alpi_unit * ch;
     }
+    bool   m_unitcharge = false;
+    double m_alpha_unit = 0., m_alpi_unit = 0.;
     inline void SetCoulomb(int c) {m_useCoulomb = c;}
 };
 

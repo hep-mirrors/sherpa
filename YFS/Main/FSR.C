@@ -92,9 +92,19 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
   m_dipoleFl.push_back(p_dipole->GetFlav(0));
   m_dipoleFl.push_back(p_dipole->GetFlav(1));
   m_QFrame = m_dipole[0] + m_dipole[1];
+  BoostToXFM();
+  /*
+    The leg velocities in the pair rest frame, where GenerateAngles() draws
+    the photons. They were taken before BoostToXFM(), i.e. in the lab: for a
+    pair boosted by hard ISR the crude density m_fbarvec then used the lab
+    beta1 != beta2 while the angle was drawn from the symmetric pair-frame
+    density, so the mass weight f/fbar divided by the wrong density. Zero at
+    rest (FSR alone agreed with KKMC); -2% at the 250 GeV Z return with ISR
+    (ACRAIC_O0/KKMC CEEX0, IFI off, 2026-10-07; FSR_KKMC_CrossCheck.C's
+    "rigorous check" read 0.988 for the recoiling dipole).
+  */
   m_beta1 = CalculateBeta(m_dipole[0]);
   m_beta2 = CalculateBeta(m_dipole[1]);
-  BoostToXFM();
   p_dipole->SetEikMomentum(0, m_dipole[0]);
   p_dipole->SetEikMomentum(1, m_dipole[1]);
 
@@ -526,33 +536,21 @@ bool FSR::YFS_FORM(){
   double YFS_IR = -2.*m_alpi*std::abs(m_QF2)*(m_q1q2*p_fsrFormFact->A(m_dipole[0],m_dipole[1])-1.)*log(1/Delta);
 
   if (m_use_crude) {
-    if(m_tchannel!=0){
-      m_BtiXcru = p_fsrFormFact->BVirtT(m_r1, m_r2);
-      m_BtiQcru = p_fsrFormFact->BVirtT(m_r1, m_r2);
-    } 
-    else{
-      m_BtiXcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, YFS::Leg(m_r1), YFS::Leg(m_r2), m_Emin);
-      // Jadach always uses the symmetric EQQ=0.5*sqrt(svarQ) for
-      // BOTH particles' energy in the Q-scale crude evaluation, not the
-      // ghosts' own (recoil-asymmetric) energies - confirmed via
-      // YFS/Tools/FSR_KKMC_CrossCheck.C: using m_r1[0]/m_r2[0] here matched
-      // KKMC to only ~1.8e-6 at soft-photon kinematics, growing to ~6.3e-5 at
-      // harder/more asymmetric photon configurations, while Eqq,Eqq matches
-      // to 9 sig figs at both (2026-08-05).
-      m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, YFS::Leg(Er1, mr1), YFS::Leg(Er2, mr2), m_EminQ);
-    }
+    m_BtiXcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, YFS::Leg(m_r1), YFS::Leg(m_r2), m_Emin);
+    // Jadach always uses the symmetric EQQ=0.5*sqrt(svarQ) for
+    // BOTH particles' energy in the Q-scale crude evaluation, not the
+    // ghosts' own (recoil-asymmetric) energies - confirmed via
+    // YFS/Tools/FSR_KKMC_CrossCheck.C: using m_r1[0]/m_r2[0] here matched
+    // KKMC to only ~1.8e-6 at soft-photon kinematics, growing to ~6.3e-5 at
+    // harder/more asymmetric photon configurations, while Eqq,Eqq matches
+    // to 9 sig figs at both (2026-08-05).
+    m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, YFS::Leg(Er1, mr1), YFS::Leg(Er2, mr2), m_EminQ);
   }
   else {
-     if(m_tchannel){
-      m_BtiXcru = p_fsrFormFact->BVirtT(m_r1, m_r2);
-      m_BtiQcru = p_fsrFormFact->BVirtT(m_r1, m_r2);
-    }
-    else{
-      m_BtiXcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin, m_photonMass, 0);
-      // Same EQQ,EQQ convention fix as the BVR_cru branch above - see its comment.
-      // Same Eq1/Eq2 reasoning as the BVR_cru branch above.
-      m_BtiQcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, Er1, Er2, mr1, mr2, m_EminQ, m_photonMass, 0);
-    }
+    m_BtiXcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin, m_photonMass, 0);
+    // Same EQQ,EQQ convention fix as the BVR_cru branch above - see its comment.
+    // Same Eq1/Eq2 reasoning as the BVR_cru branch above.
+    m_BtiQcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, Er1, Er2, mr1, mr2, m_EminQ, m_photonMass, 0);
   }
   m_volmc = m_gammapFF*log(1./m_fsrcut);
   // Reset before the branch. m_DelYFS and m_delvol are only assigned inside
@@ -563,15 +561,9 @@ bool FSR::YFS_FORM(){
   // which applies exp(YFS_IRfin) with no DelYFS at all (KKceex.cxx:294-298).
   m_DelYFS = 0.;
   m_delvol = 0.;
-   if (m_hidephotons) {
-    if(m_tchannel){
-      m_btilStar = p_fsrFormFact->BVirtT(m_dipole[0],m_dipole[1],m_Emin*m_Emin);
-      m_btil     = p_fsrFormFact->BVirtT(m_dipole[0],m_dipole[1],m_EminQ*m_EminQ);
-    }
-    else{
-      m_btilStar = p_fsrFormFact->BVR_full(m_q1q2,m_dipole[0][0], m_dipole[1][0],m_mass[0],m_mass[1], m_Emin, m_photonMass, 0);
-      m_btil     = p_fsrFormFact->BVR_full(m_q1q2,Eq1,Eq2,m_mass[0],m_mass[1], m_EminQ, m_photonMass,0);
-    }
+  if (m_hidephotons) {
+    m_btilStar = p_fsrFormFact->BVR_full(m_q1q2,m_dipole[0][0], m_dipole[1][0],m_mass[0],m_mass[1], m_Emin, m_photonMass, 0);
+    m_btil     = p_fsrFormFact->BVR_full(m_q1q2,Eq1,Eq2,m_mass[0],m_mass[1], m_EminQ, m_photonMass,0);
     m_DelYFS = m_btilStar - m_btil;
     m_delvol = m_BtiXcru  - m_BtiQcru;
     m_hideW = exp(YFS_IR + m_DelYFS + m_volmc - m_delvol);

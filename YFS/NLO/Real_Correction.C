@@ -1,4 +1,5 @@
 #include "YFS/NLO/Real_Correction.H"
+#include "YFS/Main/Leg_Set.H"
 
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Poincare.H"
@@ -200,9 +201,9 @@ double Real_Correction::Calc_R(const ATOOLS::Vec4D_Vector& p)
                                 *ExternalFormFactor(p,m_flavs);
         if(m_check) p_cmp->CheckAgreement(p, external_real2, external_real,
                                            m_flavs, p_proc->NIn());
-        return external_real;
+        return m_ifi ? external_real : external_real*NoIFIRatio(p);
       }
-      if(!m_check) return external_real;
+      if(!m_check) return m_ifi ? external_real : external_real*NoIFIRatio(p);
     }
     METOOLS::Cancel_Probe::Reset();
     p_ampl=CreateAmplitude(p);
@@ -222,9 +223,9 @@ double Real_Correction::Calc_R(const ATOOLS::Vec4D_Vector& p)
       flux and symmetry factors - a CONSTANT. Constant across phase space is
       the validation; drift means the two are not the same object.
 
-      The point of this is CEEX: Ceex_Base hand-codes ~600 lines of spinor
+      The point of this is ACRAIC: Acraic_Base hand-codes ~600 lines of spinor
       products and coupling assembly to build exactly these amplitudes, and
-      every CEEX bug found so far lived in that layer. If Comix can supply
+      every ACRAIC bug found so far lived in that layer. If Comix can supply
       them, that layer goes away.
     */
     static const bool campchk(ATOOLS::Settings::GetMainSettings()["YFS"]["COMIX_AMPS"].Get<int>()!=0);
@@ -349,8 +350,72 @@ double Real_Correction::Calc_R(const ATOOLS::Vec4D_Vector& p)
     }
     if(m_check) p_cmp->CheckAgreement(p, iR.Nominal(), external_real,
                                        m_flavs, p_proc->NIn());
-    return iR.Nominal();
+    return m_ifi ? iR.Nominal() : iR.Nominal()*NoIFIRatio(p);
   }
+
+/*
+  YFS: IFI false. The matrix element without initial-final interference,
+  sum over the placements of the photons on the two stages of
+  |M(placement)|^2, as a ratio to the coherent |M|^2 - both from Comix at
+  this point, so the ratio carries no normalisation and applies to whichever
+  generator supplied the value.
+
+  M(placement) keeps only the diagrams in which exactly the photons of the
+  placement come off the final fermion pair: every other set of the pair
+  plus photons is vetoed as a line (PHASIC::Process_Base::s_propshiftveto),
+  so its s-channel propagator is zero. For a neutral s-channel each
+  placement is separately gauge invariant. Needs the Born to be one charged
+  final pair (e+e- -> f fbar); anything else is refused.
+*/
+double Real_Correction::NoIFIRatio(const ATOOLS::Vec4D_Vector &p)
+{
+  const size_t nin(p_proc->NIn()), nall(m_flavs.size());
+  if (p.size() != nall || nall < nin + 2 + m_nphotons)
+    THROW(fatal_error, "YFS: IFI false: unexpected leg count in the real.");
+  std::vector<size_t> pair, photons;
+  for (size_t i(nin); i < nall - m_nphotons; ++i) pair.push_back(i);
+  for (size_t i(nall - m_nphotons); i < nall; ++i) photons.push_back(i);
+  if (pair.size() != 2 || !m_flavs[pair[0]].Charge() || !m_flavs[pair[1]].Charge())
+    THROW(fatal_error, "YFS: IFI false needs a Born with one charged final "
+                       "pair (e+e- -> f fbar).");
+  // the leg set "the pair plus these photons" as a Comix current id
+  auto pairwith = [&](const std::vector<bool> &onfinal) {
+    size_t legs(LegUnion(LegBit(pair[0]), LegBit(pair[1])));
+    for (size_t j(0); j < photons.size(); ++j)
+      if (onfinal[j]) legs = AddLeg(legs, photons[j]);
+    return legs;
+  };
+  // every placement: which photons sit on the final pair
+  std::vector<std::vector<bool> > placements(1, std::vector<bool>(photons.size(), false));
+  for (size_t j(0); j < photons.size(); ++j) {
+    const size_t n(placements.size());
+    for (size_t a(0); a < n; ++a) {
+      std::vector<bool> on(placements[a]);
+      on[j] = true;
+      placements.push_back(on);
+    }
+  }
+  auto sumsquare = [&](const PHASIC::Process_Base::Prop_Shifts &sh) {
+    const std::vector<METOOLS::Spin_Amplitudes> *amps(ComixAmplitudesShifts(p, sh));
+    if (amps == NULL)
+      THROW(fatal_error, "YFS: IFI false needs Comix spin amplitudes for the "
+                         "real (the internal ME generator must be Comix).");
+    double ss(0.);
+    for (size_t a(0); a < amps->size(); ++a) ss += (*amps)[a].SumSquare();
+    return ss;
+  };
+  const double full(sumsquare(PHASIC::Process_Base::Prop_Shifts()));
+  if (!(full > 0.)) return 1.;
+  double incoherent(0.);
+  for (size_t a(0); a < placements.size(); ++a) {
+    PHASIC::Process_Base::Prop_Shifts vetoes;
+    for (size_t b(0); b < placements.size(); ++b)
+      if (b != a)
+        vetoes.push_back(PHASIC::Process_Base::VetoEntry(pairwith(placements[b])));
+    incoherent += sumsquare(vetoes);
+  }
+  return incoherent/full;
+}
 
 double Real_Correction::Calc_External(const ATOOLS::Vec4D_Vector &p){
   if(m_dump){
@@ -485,6 +550,19 @@ Cluster_Amplitude *Real_Correction::CreateAmplitude(const ATOOLS::Vec4D_Vector &
   return ampl;
 }
 
+// the largest component change between a point and the amplitude built from it
+static double MaxMomentumChange(const Vec4D_Vector &pn, Cluster_Amplitude *a,
+                                const size_t nin)
+{
+  double dmax(0.0);
+  for (size_t j(0);j<pn.size();++j) {
+    const Vec4D back(j<nin?-a->Leg(j)->Mom():a->Leg(j)->Mom());
+    for (int c(0);c<4;++c)
+      dmax=Max(dmax,std::abs(back[c]-pn[j][c]));
+  }
+  return dmax;
+}
+
 void Real_Correction::SoftScan(const ATOOLS::Vec4D_Vector &p)
 {
   using namespace ATOOLS;
@@ -531,14 +609,9 @@ void Real_Correction::SoftScan(const ATOOLS::Vec4D_Vector &p)
     Cluster_Amplitude *a(CreateAmplitude(pn));
     const double cx(p_proc->Differential
                     (*a,Variations_Mode::nominal_only,128+2+1).Nominal());
-    { double dmax(0.0);
-      for (size_t j(0);j<pn.size();++j) {
-        const Vec4D back(j<p_proc->NIn()?-a->Leg(j)->Mom():a->Leg(j)->Mom());
-        for (int c(0);c<4;++c)
-          dmax=Max(dmax,std::abs(back[c]-pn[j][c]));
-      }
-      if (dmax>0.0)
-        std::cerr<<"@@@ MOMCHANGE thr="<<th/mth<<" max|dp|="<<dmax<<std::endl; }
+    const double dmax(MaxMomentumChange(pn, a, p_proc->NIn()));
+    if (dmax>0.0)
+      std::cerr<<"@@@ MOMCHANGE thr="<<th/mth<<" max|dp|="<<dmax<<std::endl;
     a->Delete();
     // Same event, rigidly rotated off the beam axis. The physics is invariant,
     // but the light-cone decomposition p[0] +- p[3] is no longer a

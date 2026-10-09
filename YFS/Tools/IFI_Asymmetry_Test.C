@@ -179,17 +179,15 @@ int main(int argc, char* argv[]) {
     std::cout << "  " << std::setw(5) << c << std::setw(13) << a << std::setw(13) << b
               << std::setw(13) << (a-b) << std::setw(13) << (am-bm) << "\n";
   }
-  {
-    double F=0., B=0.; const int N=220;
-    for (int i=0;i<N;++i) {
-      double c = -0.55 + (i+0.5)*1.10/N;
-      double born = 1.+c*c;
-      double w = 1. + (IFvirt(c,0) - IFvirt(c,1));  // O(alpha) residual
-      if (c>0) F += born*w; else B += born*w;
-    }
-    std::cout << "  -> AFB induced by the exp'd-minus-subtracted IF virtual mismatch: "
-              << std::showpos << (F-B)/(F+B) << std::noshowpos << "\n";
+  double F=0., B=0.; const int N=220;
+  for (int i=0;i<N;++i) {
+    double c = -0.55 + (i+0.5)*1.10/N;
+    double born = 1.+c*c;
+    double w = 1. + (IFvirt(c,0) - IFvirt(c,1));  // O(alpha) residual
+    if (c>0) F += born*w; else B += born*w;
   }
+  std::cout << "  -> AFB induced by the exp'd-minus-subtracted IF virtual mismatch: "
+            << std::showpos << (F-B)/(F+B) << std::noshowpos << "\n";
 
   } catch (const ATOOLS::Exception& e) {
     std::cerr << "ATOOLS::Exception: " << e << std::endl;
