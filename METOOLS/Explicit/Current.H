@@ -169,32 +169,17 @@ namespace METOOLS {
 
     inline double P2() const { return (double)m_p2; }
 
-    /*!
-      Override for the POLE of this current's propagator, and for nothing
-      else. CEEX's partition Born is the Born with the spinors at the physical
-      momenta and the propagator at the partition's reduced scale - the two are
-      independent there, which is why no momentum configuration realises it and
-      why it has had to be hand coded. Setting this makes that object
-      reachable from the recursion, which already carries the propagator as a
-      separate factor.
-
-      The transverse projector deliberately keeps the true p^2: only the pole
-      moves, matching what the partition sum asks for.
-
-      <= 0 (the default) means "use the current's own p^2", i.e. no override.
-    */
+  
     double m_p2prop = -1.0;
     inline void SetPropScale(const double &s) { m_p2prop = s; }
     inline double PropScale() const { return m_p2prop; }
     /*!
-      A momentum SHIFT for the pole instead of a scalar: p^2 -> (p + d)^2 with
-      p this current's own all-outgoing momentum. This is what a CEEX
+      A momentum shift for the pole: p^2 -> (p + d)^2 with
+      p this current's own all-outgoing momentum. This is what a ACRAIC
       partition needs when the external legs do not balance: the photons the
       partition counts as initial-state are added to every initial-side
       current, the final-state ones to every final-side current, and each
-      s-channel line then sits at ITS partition invariant - in a one-photon
-      amplitude the initial- and final-attachment lines at two different ones,
-      which no single scalar can express. m_p2prop takes precedence if set.
+      s-channel line then sits at the partition invariant
     */
     ATOOLS::Vec4D m_pshift;
     bool m_haveshift = false;
@@ -202,6 +187,30 @@ namespace METOOLS {
     { m_pshift = d; m_haveshift = (d[0]!=0.||d[1]!=0.||d[2]!=0.||d[3]!=0.); }
     inline const ATOOLS::Vec4D &PropShift() const { return m_pshift; }
     inline bool HavePropShift() const { return m_haveshift; }
+    /*!
+      ACRAIC: RESONANCE_EXPONENTIATION. With a non-zero coefficient a the
+      propagator of this (resonant) current is multiplied by
+      exp(a ln((M~^2 - q^2)/M~^2)), M~^2 = M^2 - i M Gamma its own complex
+      mass and q^2 the momentum its pole sits at (shift and scale included):
+      the resonant initial-final big log of Greco, Pancheri and Srivastava,
+      exponentiated. Set by COMIX::Amplitude::SetPropShifts from a resonance
+      entry (PHASIC::Process_Base::s_propshiftresonance); 0 = no factor.
+    */
+    double m_resexp = 0.;
+    //! the linear 1 + a ln(...) instead of the exponential (the O(alpha)
+    //! part of the factor, which ACRAIC needs to take the log out of a virtual)
+    bool m_reslinear = false;
+    inline void SetResonanceExponent(const double a, const bool linear = false)
+    { m_resexp = a; m_reslinear = linear; }
+    inline double ResonanceExponent() const { return m_resexp; }
+    /*!
+      YFS: IFI false. A vetoed current's propagator is zero: the diagrams
+      through it drop out. Set by COMIX::Amplitude::SetPropShifts from a veto
+      entry (PHASIC::Process_Base::s_propshiftveto); false = untouched.
+    */
+    bool m_propveto = false;
+    inline void SetPropVeto(const bool v) { m_propveto = v; }
+    inline bool PropVeto() const { return m_propveto; }
 
     inline const ATOOLS::Vec4<ATOOLS::DDouble> &PH() const { return m_ph; }
 

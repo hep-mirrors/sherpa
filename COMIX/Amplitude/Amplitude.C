@@ -1978,7 +1978,8 @@ void Amplitude::SetPropShift(const Vec4D &dini, const Vec4D &dfin,
   // the two-stage special case of SetPropShifts: initial state and the
   // final fermion pair
   Prop_Shifts st;
-  st.push_back(std::make_pair((size_t)((1ull<<m_nin)-1), dini));
+  // the incoming legs, {0, ..., m_nin-1}, as one current id
+  st.push_back(std::make_pair((size_t)((1<<m_nin)-1), dini));
   if (ffmask) st.push_back(std::make_pair(ffmask, dfin));
   SetPropShifts(st);
 }
@@ -1990,101 +1991,110 @@ Amplitude::Scoped_Prop_Shifts::Scoped_Prop_Shifts
 Amplitude::Scoped_Prop_Shifts::~Scoped_Prop_Shifts()
 { if (p_amp != NULL) p_amp->SetPropShifts(Prop_Shifts()); }
 
-void Amplitude::SetPropShifts(const Prop_Shifts &shifts)
+void Amplitude::SetPropShifts(const Prop_Shifts &shiftsin)
 {
   /*
     Classify every internal current by its leg content and give it the
     momentum shift the partition wants for its pole. The momenta are all
-    outgoing, so ADDING a stage's photons to a current that holds all of that
+    outgoing, so adding a stage's photons to a current that holds all of that
     stage's legs puts its pole at the partition invariant: for the initial
     state (P - sum_I k)^2, for a resonance's decay products
-    (q_1 + q_2 + sum_R k)^2. Berends-Giele builds a given line from whichever
-    side does not hold the root; the two descriptions agree on the invariant
-    once every photon is accounted for on one side or the other, which is
-    what the containment rule does.
+    (q_1 + q_2 + sum_R k)^2.
 
-    (a) Time-like lines - a current holding both initial legs, or a whole
+    (a) Time-like lines: A current holding both initial legs, or a whole
         final stage, or neither initial leg: the stage rule. A stage only
-        PARTLY inside a current cannot be placed by the partition (an
+        partly inside a current cannot be placed by the partition (an
         initial-state photon came from a or from b) and the choice matters
         only where the line is singular: the fermion propagator next to the
         emission, which must be the external fermion plus the photon. That
-        is the current with the SMALLER complement, and it takes the whole
-        imbalance; measured, without it the 1/k pole of the emission off the
-        root-side leg is lost (soft-theorem residual 0.37 instead of 0.02).
+        is the current with the smaller complement, and it takes the whole
+        imbalance
 
-    (b) Space-like exchange lines - a current holding exactly ONE initial
+    (b) Space-like exchange lines:  A current holding exactly ONE initial
         leg together with a proper, non-empty subset of the Born final legs
         and no whole final stage: Bhabha's t-channel boson {1,3}, the t- and
         u-channel electrons {1,2}, {1,3} of e+e- -> gamma gamma, the
-        t-channel neutrino of W pair production. No stage can place these:
-        {1,3} and its complement {0,2} are the same size, so the stage rule
-        left the line at the unreduced (p_1 - p_3)^2 in every partition -
-        right when the photons come off the electron, wrong by 2 k.p_3 =
-        O(x s) when a hard photon comes off the positron (Z-pole Bhabha:
-        weights 20-700 over the crude, all with a positron-collinear hard
-        ISR photon) - while M_1's {1,3,gamma} took the whole initial-state
-        shift. Their pole goes to the partition's REDUCED invariant: the
-        caller passes, as LEG entries (PHASIC::Process_Base::s_propshiftleg),
+        t-channel neutrino of W pair production. No stage can place these
+        Their pole goes to the partition's reduced invariant that the
+        caller passes, as leg entries (PHASIC::Process_Base::s_propshiftleg),
         the difference between each Born leg's reduced and physical momentum
-        (beams rebuilt back to back at X_wp, the radiating pair at Y_wp -
-        the construction the crude Born momenta come from), and the line's
-        shift is the sum over its Born legs. In M_1 the emitted photon is
-        not a Born leg and contributes nothing, so {1,3,gamma_j} takes the
-        same shift as {1,3}: with the reduced legs conserving momentum
-        together with k_j, -p~_1 + p~_3 + k_j is the reduced
-        positron-emission t. At one photon the reduced legs are the
-        physical ones and every leg entry is zero.
-
-        Two currents that also hold one initial leg are NOT exchange lines
-        and keep the stage rule: {a, gamma_j} (no Born final leg) and
-        {a, every final leg} (the other beam's emission line, momentum
-        p_b - k_j). Both are the collinear emission propagators, whose
-        virtuality is E_k E (theta^2 + m^2/E^2); a reduced-leg shift there
-        would tilt them by the other photons' transverse recoil and destroy
-        them - the same failure a momentum imbalance of 1e-7 GeV produced
-        before Ceex_Base::RepairMomentumBalance.
-
+        In M_1 the emitted photon is  not a Born leg and contributes nothing, so {1,3,gamma_j} takes the
+        same shift as {1,3}: 
+  
     Stage entries are applied exactly as before, and a process without
     exchange lines (every s-channel process) gets bit for bit the old
     shifts whether or not leg entries are passed.
   */
-  const size_t all((1ull<<m_n)-1);
+  // every external leg: the id of the whole amplitude
+  const size_t all((1<<m_n)-1);
+  /*
+    Resonance entries (ACRAIC: RESONANCE_EXPONENTIATION) move no pole: they
+    are set aside here, and everything below sees only the pole shifts, in
+    their original order.
+  */
+  Prop_Shifts shifts;
+  Prop_Shifts resonances;
+  Prop_Shifts vetoes;
+  for (size_t g(0); g < shiftsin.size(); ++g) {
+    // flag bit set: a resonance entry, exponentiated rather than shifted
+    if (shiftsin[g].first & PHASIC::Process_Base::s_propshiftresonance)
+      resonances.push_back(shiftsin[g]);
+    // flag bit set: a veto entry, a line whose propagator is switched off
+    else if (shiftsin[g].first & PHASIC::Process_Base::s_propshiftveto)
+      vetoes.push_back(shiftsin[g]);
+    else shifts.push_back(shiftsin[g]);
+  }
+  SetResonanceExponents(resonances);
+  SetLineVetoes(vetoes);
   const size_t lineflag(PHASIC::Process_Base::s_propshiftline);
   const size_t legflag(PHASIC::Process_Base::s_propshiftleg);
-  const size_t inimask((1ull<<m_nin)-1);
+  // the incoming legs, {0, ..., m_nin-1}
+  const size_t inimask((1<<m_nin)-1);
   bool any(false), anyleg(false);
   size_t bornlegs(0);
   std::vector<Vec4D> legd(m_n, Vec4D());
   for (size_t g(0); g < shifts.size(); ++g) {
     const Vec4D &d(shifts[g].second);
     if (d[0]!=0.||d[1]!=0.||d[2]!=0.||d[3]!=0.) any = true;
+    // flag bit set: a leg entry, the shift of individual external legs
     if (shifts[g].first & legflag) {
+      // the entry's legs, flag bits removed
       const size_t m(shifts[g].first & all);
       anyleg = true;
+      // collect every leg that carries its own shift
       bornlegs |= m;
-      for (size_t i(0); i < m_n; ++i) if (m & (1ull<<i)) legd[i] += d;
+      // add the entry's shift to each of its legs
+      for (size_t i(0); i < m_n; ++i) if (m & (1<<i)) legd[i] += d;
     }
   }
+  // the shifted legs on the final-state side
   const size_t bornfin(bornlegs & ~inimask);
   size_t phomask(0);
   for (size_t i(0); i < m_n && i < m_fl.size(); ++i)
-    if (m_fl[i].Kfcode() == kf_photon) phomask |= (1ull<<i);
+    // collect the photon legs
+    if (m_fl[i].Kfcode() == kf_photon) phomask |= (1<<i);
   auto apply = [&](METOOLS::Current *c) {
     if (!any) { c->SetPropShift(Vec4D()); return; }
+    // the external legs this current is built from
     const size_t id(c->CId() & all);
     if (anyleg) {
+      // the shifted final-state legs inside this current
       const size_t fin(id & bornfin);
-      const bool oneini(__builtin_popcountll(id & inimask) == 1);
+      // exactly one incoming leg inside this current
+      const bool oneini(IdCount(id & inimask) == 1);
       bool wholestage(false);
       for (size_t g(0); g < shifts.size() && !wholestage; ++g) {
+        // stage entries only: skip leg and line entries
         if (shifts[g].first & (legflag | lineflag)) continue;
+        // the stage's final-state legs: flag bits and incoming legs removed
         const size_t m(shifts[g].first & all & ~inimask);
+        // this current contains the whole stage
         if (m != 0 && (id & m) == m) wholestage = true;
       }
       if (oneini && fin != 0 && fin != bornfin && !wholestage) {
         Vec4D sh;
-        for (size_t i(0); i < m_n; ++i) if (id & bornlegs & (1ull<<i)) sh += legd[i];
+        // sum the shifts of the shifted legs inside this current
+        for (size_t i(0); i < m_n; ++i) if (id & bornlegs & (1<<i)) sh += legd[i];
         c->SetPropShift(sh);
         return;
       }
@@ -2095,19 +2105,96 @@ void Amplitude::SetPropShifts(const Prop_Shifts &shifts)
       its complement, and must take the whole imbalance. With one explicit
       photon that complement is always the smaller side.
     */
-    bool smaller(__builtin_popcountll(all ^ id) < __builtin_popcountll(id));
-    if (!smaller && __builtin_popcountll(all ^ id) == __builtin_popcountll(id)
-        && (id & phomask) == 0 && __builtin_popcountll((all ^ id) & phomask) >= 2)
+
+    // this current is one non-photon leg plus photons (an emission line)
+    const bool idemission(IdCount(id & ~phomask) == 1);
+    // so is the other side of the line (all ^ id)
+    const bool complementemission(IdCount((all ^ id) & ~phomask) == 1);
+    // the other side of the line has fewer legs
+    bool smaller(IdCount(all ^ id) < IdCount(id));
+    // equal sides: no photon on this side, two or more on the other
+    if (!smaller && IdCount(all ^ id) == IdCount(id)
+        && (id & phomask) == 0 && IdCount((all ^ id) & phomask) >= 2)
       smaller = true;
+    if (idemission != complementemission) smaller = complementemission;
     Vec4D sh;
     for (size_t g(0); g < shifts.size(); ++g) {
+      // stage entries only: skip leg and line entries
       if (shifts[g].first & (lineflag | legflag)) continue;
+      // the stage's legs, flag bits removed
       const size_t m(shifts[g].first & all);
       if (m == 0) continue;
+      // the stage lies inside this current, or partly on its root side
       if ((id & m) == m) sh += shifts[g].second;            // stage inside
       else if ((id & m) != 0 && smaller) sh += shifts[g].second; // partly, root side
     }
     c->SetPropShift(sh);
+  };
+  for (size_t j(2);j<m_cur.size();++j)
+    for (size_t i(0);i<m_cur[j].size();++i) apply(m_cur[j][i]);
+  for (size_t i(0);i<m_scur.size();++i) apply(m_scur[i]);
+}
+
+/*
+  ACRAIC: RESONANCE_EXPONENTIATION. Each entry is a resonance entry of the
+  shift list (PHASIC::Process_Base::s_propshiftresonance): the legs of one
+  radiating stage, its coefficient a, and the form.
+*/
+void Amplitude::SetResonanceExponents(const Prop_Shifts &resonances)
+{
+  // every external leg, and the incoming ones
+  const size_t all((1<<m_n)-1), inimask((1<<m_nin)-1);
+  size_t phomask(0);
+  for (size_t i(0); i < m_n && i < m_fl.size(); ++i)
+    // collect the photon legs
+    if (m_fl[i].Kfcode() == kf_photon) phomask |= (1<<i);
+  auto apply = [&](METOOLS::Current *c) {
+    double a(0.);
+    bool linear(false);
+    if (!resonances.empty() && c->Width() > 0.) {
+      // the external legs this current is built from
+      const size_t id(c->CId() & all);
+      size_t finalside(0);
+      bool resonant(false);
+      // no incoming leg inside: this current is the final-state side
+      if ((id & inimask) == 0) { finalside = id; resonant = true; }
+      // no incoming leg on the other side: that side (all ^ id) is
+      else if (((all ^ id) & inimask) == 0) { finalside = all ^ id; resonant = true; }
+      if (resonant) {
+        // the final-state side with its photons removed
+        const size_t legs(finalside & ~phomask);
+        for (size_t g(0); g < resonances.size(); ++g)
+          // the resonance entry's legs, flag bits removed
+          if (legs == (resonances[g].first & all)) {
+            a = PHASIC::Process_Base::ResonanceCoefficient(resonances[g]);
+            linear = PHASIC::Process_Base::ResonanceLinear(resonances[g]);
+          }
+      }
+    }
+    c->SetResonanceExponent(a, linear);
+  };
+  for (size_t j(2);j<m_cur.size();++j)
+    for (size_t i(0);i<m_cur[j].size();++i) apply(m_cur[j][i]);
+  for (size_t i(0);i<m_scur.size();++i) apply(m_scur[i]);
+}
+
+void Amplitude::SetLineVetoes(const Prop_Shifts &vetoes)
+{
+  // For testing. Disables IFI contributions.
+
+  // every external leg: the id of the whole amplitude
+  const size_t all((1<<m_n)-1);
+  auto apply = [&](METOOLS::Current *c) {
+    bool veto(false);
+    // the external legs this current is built from
+    const size_t id(c->CId() & all);
+    for (size_t g(0); g < vetoes.size() && !veto; ++g) {
+      // the vetoed leg set, flag bits removed
+      const size_t legs(vetoes[g].first & all);
+      // the vetoed line, whichever side Comix built it from
+      veto = (id == legs || (all ^ id) == legs);
+    }
+    c->SetPropVeto(veto);
   };
   for (size_t j(2);j<m_cur.size();++j)
     for (size_t i(0);i<m_cur[j].size();++i) apply(m_cur[j][i]);
@@ -2121,25 +2208,6 @@ void Amplitude::SetPropScale(const double &s, const double &sdec,
     Only the S-CHANNEL line takes the imposed scale - the current carrying the
     whole final state, equivalently the whole initial state.
 
-    This used to pin EVERY internal current to s. At 2 -> 2 that is the same
-    thing, because the one internal line IS the full final state, which is why
-    the behaviour there is unchanged to the last bit. Past 2 -> 2 it is not:
-    e+e- -> H mu+ mu- also has a Z -> mu mu line, and pinning that to the
-    production scale drags it off the dilepton pole. Measured against the
-    hand-coded Born event by event, that produced a median ratio of 1.198 with
-    p95 = 28275 - and the damage sat precisely where the coherent partition sum
-    cancels, which is what a displaced resonance does.
-
-    The caller asks for a scale on the line whose invariant its sum runs over;
-    every other propagator keeps its own p^2.
-  */
-  /*
-    A RESTORE clears every current, not just the ones this call would have
-    selected. The decay line is pinned through a different branch below, and
-    resetting only the s-channel left its m_p2prop frozen at the last
-    partition's svarY for every later evaluation in the process - including the
-    real ME behind the nominal weight, which turned the Hll BR column NEGATIVE
-    (-0.0916 against +0.005973). Whatever is set here has to be unset here.
   */
   if (!(s>0.0)) {
     for (size_t j(2);j<m_cur.size();++j)
@@ -2147,62 +2215,63 @@ void Amplitude::SetPropScale(const double &s, const double &sdec,
     for (size_t i(0);i<m_scur.size();++i) m_scur[i]->SetPropScale(-1.0);
     return;
   }
-  /*
-    PROP_SCALE_ALL restores the old blanket behaviour, so the claim that the
-    selection is a no-op at 2 -> 2 can be MEASURED rather than asserted.
-  */
   static const bool all_(ATOOLS::Settings::GetMainSettings()["COMIX"]
                          ["PROP_SCALE_ALL"].SetDefault(0).Get<int>()!=0);
-  const size_t all((1ull<<m_n)-1), fin(all^((1ull<<m_nin)-1));
+  // every external leg, and the final-state ones (all but the incoming)
+  const size_t all((1<<m_n)-1), fin(all^((1<<m_nin)-1));
   for (size_t j(2);j<m_cur.size();++j)
     for (size_t i(0);i<m_cur[j].size();++i) {
       const size_t c(m_cur[j][i]->CId());
+      // the s-channel line, built from either side
       if (all_ || c==fin || c==(all^fin)) m_cur[j][i]->SetPropScale(s);
     }
   for (size_t i(0);i<m_scur.size();++i) {
     const size_t c(m_scur[i]->CId());
+    // the s-channel line, built from either side
     if (all_ || c==fin || c==(all^fin)) m_scur[i]->SetPropScale(s);
   }
   /*
-    The DECAY line. CEEX's partition sum gives every resonant propagator in the
+    The DECAY line. ACRAIC's partition sum gives every resonant propagator in the
     chain its own shifted invariant - hep-ph/0006359 after eq.(29) for the
     s-channel, arXiv:1906.09071 eqs.(4.10)-(4.11) for the general multi-stage
     case, YFSWW3 (hep-ph/0007012) per resonance. Pinning only the s-channel and
     leaving the decay at its physical p^2 freezes the propagator that is ON the
     pole while moving the one that is far off it, which is backwards.
 
-    Matched on CId and its complement, like the s-channel above: Berends-Giele
-    builds the same internal line from either side. At 2 -> 2 deccid is the
-    whole final state, so this re-sets the line the s-channel branch just set,
-    with svarY == svarX - a no-op, which is why the 2 -> 2 stream is untouched.
   */
   if (sdec>0.0 && deccid) {
     for (size_t j(2);j<m_cur.size();++j)
       for (size_t i(0);i<m_cur[j].size();++i) {
         const size_t c(m_cur[j][i]->CId());
+        // the decay line, built from either side
         if (c==deccid || c==(all^deccid)) m_cur[j][i]->SetPropScale(sdec);
       }
     for (size_t i(0);i<m_scur.size();++i) {
       const size_t c(m_scur[i]->CId());
+      // the decay line, built from either side
       if (c==deccid || c==(all^deccid)) m_scur[i]->SetPropScale(sdec);
     }
   }
-  { static const bool ck(ATOOLS::Settings::GetMainSettings()["COMIX"]
-                         ["PROP_SCALE_CHECK"].SetDefault(0).Get<int>()!=0);
-    static bool done(false);
-    if (ck && !done) { done=true;
-      size_t nt(0), nh(0);
-      for (size_t j(2);j<m_cur.size();++j)
-        for (size_t i(0);i<m_cur[j].size();++i) {
-          ++nt; const size_t c(m_cur[j][i]->CId());
-          if (c==fin || c==(all^fin)) ++nh;
-        }
-      for (size_t i(0);i<m_scur.size();++i) {
-        ++nt; const size_t c(m_scur[i]->CId());
+  static const bool ck(ATOOLS::Settings::GetMainSettings()["COMIX"]
+                       ["PROP_SCALE_CHECK"].SetDefault(0).Get<int>()!=0);
+  static bool done(false);
+  if (ck && !done) {
+    done=true;
+    size_t nt(0), nh(0);
+    for (size_t j(2);j<m_cur.size();++j)
+      for (size_t i(0);i<m_cur[j].size();++i) {
+        ++nt; const size_t c(m_cur[j][i]->CId());
+        // the s-channel line, built from either side
         if (c==fin || c==(all^fin)) ++nh;
       }
-      msg_Error()<<"PROPSCALE n="<<m_n<<" nin="<<m_nin<<" finmask="<<fin
-               <<" currents="<<nt<<" overridden="<<nh<<std::endl; } }
+    for (size_t i(0);i<m_scur.size();++i) {
+      ++nt; const size_t c(m_scur[i]->CId());
+      // the s-channel line, built from either side
+      if (c==fin || c==(all^fin)) ++nh;
+    }
+    msg_Error()<<"PROPSCALE n="<<m_n<<" nin="<<m_nin<<" finmask="<<fin
+             <<" currents="<<nt<<" overridden="<<nh<<std::endl;
+  }
 }
 
 void Amplitude::SetGauge(const size_t &n)

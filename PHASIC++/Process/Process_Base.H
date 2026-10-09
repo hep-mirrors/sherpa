@@ -294,7 +294,7 @@ namespace PHASIC {
       \param propscale > 0 moves the pole of every internal propagator to this
              value, leaving the spinors at p. That combination is not an
              S-matrix element at any momentum configuration - it is what the
-             CEEX partition sum asks for, and the recursion can supply it
+             ACRAIC partition sum asks for, and the recursion can supply it
              because it carries the propagator as a separate factor.
     */
     /*!
@@ -365,6 +365,43 @@ namespace PHASIC {
       sums them over the legs of every space-like exchange line.
     */
     static const size_t s_propshiftleg  = ((size_t)1) << (8*sizeof(size_t) - 2);
+    /*
+      A RESONANCE entry (ACRAIC: RESONANCE_EXPONENTIATION): mask = the legs of
+      one radiating stage plus this flag. It moves no pole. Every internal
+      current with a width whose final-side legs, photons aside, are exactly
+      the stage's legs multiplies its propagator by exp(a L), or by the
+      linear 1 + a L, with L = ln((M~^2 - q^2)/M~^2), M~^2 = M^2 - i M Gamma
+      and q^2 the (shifted) momentum its pole sits at. The vector carries no
+      momentum: its energy component is a, its x component 1 for the linear
+      form and 0 for the exponential. Build and read entries only through
+      ResonanceEntry(), ResonanceCoefficient() and ResonanceLinear().
+    */
+    static const size_t s_propshiftresonance = ((size_t)1) << (8*sizeof(size_t) - 3);
+    static inline std::pair<size_t, ATOOLS::Vec4D>
+    ResonanceEntry(const size_t stagelegs, const double a,
+                   const bool linear = false)
+    { return std::make_pair(stagelegs | s_propshiftresonance,
+                            ATOOLS::Vec4D(a, linear ? 1. : 0., 0., 0.)); }
+    static inline double
+    ResonanceCoefficient(const std::pair<size_t, ATOOLS::Vec4D> &entry)
+    { return entry.second[0]; }
+    static inline bool
+    ResonanceLinear(const std::pair<size_t, ATOOLS::Vec4D> &entry)
+    { return entry.second[1] != 0.; }
+    /*
+      A VETO entry (YFS: IFI false): mask = a set of legs plus this flag. It
+      moves no pole. Every internal current whose leg content is exactly the
+      mask, or exactly its complement, gets a zero propagator, so every
+      diagram through that line drops out of the amplitude. With the mask
+      the final fermion pair (with or without the photon), this keeps only
+      the initial-state (or only the final-state) emission of e+e- -> f fbar
+      gamma, each gauge invariant for a neutral s-channel. The vector is
+      unused. Build entries only through VetoEntry().
+    */
+    static const size_t s_propshiftveto = ((size_t)1) << (8*sizeof(size_t) - 4);
+    static inline std::pair<size_t, ATOOLS::Vec4D>
+    VetoEntry(const size_t legs)
+    { return std::make_pair(legs | s_propshiftveto, ATOOLS::Vec4D()); }
     virtual ATOOLS::Weights_Map DifferentialWithPropShifts
     (const ATOOLS::Cluster_Amplitude &ampl,
      ATOOLS::Variations_Mode varmode, int mode, const Prop_Shifts &shifts)

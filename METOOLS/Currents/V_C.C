@@ -252,7 +252,14 @@ void CV<SType>::AddPropagator()
                        ? SComplex(SType((this->m_p + this->m_pshift).Abs2()))
                        : p2);
   SComplex prop(-M_I/(pp2-m_cmass2));
+  // ACRAIC: RESONANCE_EXPONENTIATION, see Current::m_resexp
+  if (this->m_resexp != 0.0) {
+    const SComplex il(SType(this->m_resexp)*log((m_cmass2-pp2)/m_cmass2));
+    prop*=(this->m_reslinear ? SComplex(SType(1.0))+il : exp(il));
+  }
   if (this->m_osd) prop=SComplex(M_I);
+  // YFS: IFI false, see Current::m_propveto
+  if (this->m_propveto) prop=SComplex(SType(0.0));
 #ifdef DEBUG__BG
   msg_Debugging()<<"propagator: "<<prop<<"\n";
 #endif

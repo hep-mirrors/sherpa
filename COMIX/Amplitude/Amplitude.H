@@ -183,20 +183,7 @@ namespace COMIX {
 		       size_t &ng,std::set<std::string> &cvs) const;
 
   public:
-    /*
-      The ONLY way to impose a propagator scale. The mutator itself is private
-      because an imposed pole that outlives its scope silently mis-evaluates
-      every later call on this amplitude - which is not hypothetical: a reset
-      that skipped one branch left a decay line frozen at the last imposed
-      value and turned a downstream cross section negative. Construct the
-      guard, evaluate, let it go out of scope.
 
-      s goes on the S-CHANNEL line - the current carrying the whole final
-      state, equivalently the whole initial state. sdec, when positive, goes on
-      the line whose CId() is deccid or its complement; for CEEX that is the
-      resonance in the DECAY, which carries its own partition-shifted
-      invariant. s <= 0 puts every current back on its own p^2.
-    */
     class Scoped_Prop_Scale {
     private:
       Amplitude *p_amp;
@@ -224,7 +211,7 @@ namespace COMIX {
       Scoped_Prop_Shift &operator=(const Scoped_Prop_Shift &) = delete;
     };
     /*!
-      The general form: a list of STAGES, each a mask of external legs that
+      The general form: a list of stages, each a mask of external legs that
       radiate coherently (the initial state; the decay products of one
       resonance; ...) with the summed momentum of the photons the current
       partition assigns to it. Every internal current whose legs contain a
@@ -233,12 +220,12 @@ namespace COMIX {
       also takes the photons of the stages it contains only partly (the
       fermion line next to an emission is the external fermion plus the
       photon, whatever the recursion built it from). Two stages, initial and
-      final, reproduce Scoped_Prop_Shift exactly.
+      final.
     */
     typedef std::vector<std::pair<size_t, ATOOLS::Vec4D> > Prop_Shifts;
     /*!
       Switch ProjectWideMomenta off for the evaluations inside the scope.
-      CEEX hands Comix legs that do not balance by construction (the other
+      ACRAIC hands Comix legs that do not balance by construction (the other
       photons of the event are elsewhere in the partition sum), and the
       projection would move them; every other evaluation in the run keeps
       the projection, which is Comix's collinear-stability fix for the real
@@ -270,6 +257,14 @@ namespace COMIX {
     void SetPropShift(const ATOOLS::Vec4D &dini, const ATOOLS::Vec4D &dfin,
                       const size_t ffmask);
     void SetPropShifts(const Prop_Shifts &shifts);
+    //! ACRAIC: RESONANCE_EXPONENTIATION - the resonance entries of a shift
+    //! list (see PHASIC::Process_Base::s_propshiftresonance); called by
+    //! SetPropShifts, an empty list clears every current
+    void SetResonanceExponents(const Prop_Shifts &resonances);
+    //! YFS: IFI false - the veto entries of a shift list (see
+    //! PHASIC::Process_Base::s_propshiftveto); called by SetPropShifts, an
+    //! empty list clears every current
+    void SetLineVetoes(const Prop_Shifts &vetoes);
 
     /*!
       Move the pole of every INTERNAL current's propagator to s, or back to
