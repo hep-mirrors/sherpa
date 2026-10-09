@@ -1,4 +1,5 @@
 #include "EXTRA_XS/Main/Single_Process.H"
+#include "ATOOLS/Org/Settings.H"
 
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -72,8 +73,38 @@ bool Single_Process::Initialize()
   else if (m_nlotype==nlo_type::lo || m_nlotype==nlo_type::born ||
            m_nlotype==nlo_type::real || m_nlotype==nlo_type::rsub) {
     DEBUG_INFO("searching tree process");
-    p_born_me2=dynamic_cast<ME2_Base*>
-      (PHASIC::Tree_ME2_Base::GetME2(m_pinfo));
+    // Tree_ME2_Base::GetME2(pi) takes the FIRST getter that accepts the
+    // flavours, and GetGetters walks the registry in REVERSE ALPHABETICAL
+    // order of tag, so "XS_ee_ffbar" is tried before "XS_Currents" purely
+    // on spelling. A hardcoded ME therefore wins the race for exactly the
+    // processes we want built from currents, silently and with no way to
+    // tell from the output. So ask for the current-built ME BY NAME.
+    PHASIC::Tree_ME2_Base * me2(NULL);
+    const bool hascurrents = m_pinfo.m_hascurrents;
+    if (hascurrents) {
+      PHASIC::External_ME_Args cargs(m_pinfo.m_ii.GetExternal(),
+                                     m_pinfo.m_fi.GetExternal(),
+                                     m_pinfo.m_maxcpl,
+                                     m_pinfo.m_loopgenerator.length()?
+                                     m_pinfo.m_loopgenerator:
+                                     m_pinfo.m_megenerator,
+                                     m_pinfo.m_currents,hascurrents);
+      me2 = ATOOLS::Getter_Function<PHASIC::Tree_ME2_Base,
+                                    PHASIC::External_ME_Args>::
+            GetObject(s_currents_tag,cargs);
+      // A process that declared a Currents: block gets that matrix element
+      // or none. Falling through to the flavour search here would quietly
+      // hand back a hardcoded ME for a process the user explicitly asked to
+      // build from currents -- a plausible number computed from something
+      // other than what the card says, which is the worst failure this
+      // whole mechanism exists to avoid.
+      if (me2==NULL && hascurrents)
+        THROW(fatal_error,"Process declares a Currents: block but no "
+              "current-built matrix element could be made for it. Refusing "
+              "to fall back to a hardcoded process getter.");
+    }
+    if (me2==NULL) me2 = PHASIC::Tree_ME2_Base::GetME2(m_pinfo);
+    p_born_me2=dynamic_cast<ME2_Base*>(me2);
     msg_Out()<<METHOD<<": trying my luck with |"<<p_born_me2<<"|\n";
     if (p_born_me2!=NULL) {
       DEBUG_INFO("found");

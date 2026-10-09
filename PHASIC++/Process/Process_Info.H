@@ -31,6 +31,16 @@ namespace PHASIC {
     std::string m_integrator, m_rsintegrator;
 
     ATOOLS::Scoped_Settings m_selectors;
+    // Currents: sub-block of this process' declaration, if it has one.
+    // Its presence is what tells EXTRA_XS to build the matrix element as a
+    // sum over exchanged bosons joining two currents, instead of searching
+    // the hardcoded getters for one that happens to accept the flavours.
+    ATOOLS::Scoped_Settings m_currents;
+    // Set only where the run card is read. A default-constructed
+    // Scoped_Settings resolves to the settings ROOT, not to an empty node,
+    // so "does m_currents have keys" is true for every Process_Info built
+    // anywhere else and cannot be used to detect a declared block.
+    bool m_hascurrents;
 
     ME_Generators* p_gens;
 
@@ -46,7 +56,7 @@ namespace PHASIC {
       m_amegicmhv(1), m_ntchan(0), m_mtchan(99), m_sort(3),
       m_nlomode(ATOOLS::nlo_mode::none),
       m_scale("VAR"), m_kfactor("None"), m_loopgenerator("Internal"),
-      p_gens(NULL) {}
+      m_hascurrents(false), p_gens(NULL) {}
 
     ATOOLS::Flavour_Vector ExtractFlavours() const;
     bool Has(ATOOLS::nlo_type::code nlotype) const;

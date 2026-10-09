@@ -58,11 +58,14 @@ namespace SHERPA {
       MPIV_Map m_vnmaxq, m_vnminq, m_vamegicmhv, m_vcls, m_vhls,
 	m_vntchan, m_vmtchan, m_vitmin, m_vrsitmin;
       ATOOLS::Scoped_Settings m_selectors;
+      ATOOLS::Scoped_Settings m_currents;
+      bool m_hascurrents;
 
       std::string m_gycut;
       int m_cutcore;
       size_t m_sort;
-      inline Processblock_Info(): m_cutcore(0), m_sort(3) {}
+      inline Processblock_Info():
+        m_hascurrents(false), m_cutcore(0), m_sort(3) {}
     };// end of struct Processblock_Info
 
   private :

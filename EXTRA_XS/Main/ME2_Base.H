@@ -7,6 +7,14 @@
 
 namespace EXTRAXS {
 
+  // Getter tag of the matrix element that builds itself from a process'
+  // Currents: block. Defined once because Single_Process looks it up BY
+  // NAME -- the getter search is ordered by tag spelling, so a hardcoded
+  // ME would otherwise answer first for exactly the processes we want
+  // built from currents. Two copies of this string that drift apart would
+  // reintroduce that silently.
+  constexpr const char * s_currents_tag = "XS_Currents";
+
   class ME2_Base: public PHASIC::Tree_ME2_Base {
   protected:
     std::vector<std::vector<int> > m_colours;

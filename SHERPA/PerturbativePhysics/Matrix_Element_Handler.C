@@ -723,6 +723,8 @@ void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
   args.pbi.m_cutcore = proc["Cut_Core"].Get<int>();
   args.pbi.m_sort=proc["Sort_Flavors"].Get<size_t>();
   args.pbi.m_selectors = proc["Selectors"];
+  args.pbi.m_currents = proc["Currents"];
+  args.pbi.m_hascurrents = proc["Currents"].GetKeys().size()>0;
 
   // make modifications for multi-jet merging
   std::string ckkw{ proc["CKKW"].Get<std::string>() };
@@ -785,6 +787,7 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     // ignore certain settings that are not to be handled by ExtractMPvalues
     // below
     if (subkey == "Selectors"
+        || subkey == "Currents"
         || subkey == "Cut_Core"
         || subkey == "Sort_Flavors"
         || subkey == "Decay"
@@ -1015,6 +1018,8 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	if (GetMPvalue(args.pbi.m_vcoupl,nfs,pnid,ds)) cpi.m_coupling=ds;
 	if (GetMPvalue(args.pbi.m_vkfac,nfs,pnid,ds)) cpi.m_kfactor=ds;
         cpi.m_selectors = args.pbi.m_selectors;
+        cpi.m_currents = args.pbi.m_currents;
+        cpi.m_hascurrents = args.pbi.m_hascurrents;
 	if (GetMPvalue(args.pbi.m_vnmaxq,nfs,pnid,di)) cpi.m_nmaxq=di;
 	if (GetMPvalue(args.pbi.m_vnminq,nfs,pnid,di)) cpi.m_nminq=di;
 	if (GetMPvalue(args.pbi.m_vcls,nfs,pnid,di)) cpi.m_cls=(cls::scheme)di;

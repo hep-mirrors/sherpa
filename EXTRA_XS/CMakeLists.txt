@@ -1,4 +1,5 @@
 add_subdirectory(Main)
+add_subdirectory(Currents)
 add_subdirectory(NLO)
 add_subdirectory(One2Three)
 add_subdirectory(One2Two)
