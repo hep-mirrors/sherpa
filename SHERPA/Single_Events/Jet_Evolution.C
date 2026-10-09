@@ -144,7 +144,8 @@ Return_Value::code Jet_Evolution::Treat(Blob_List *bloblist) {
 	meblob->Type()==btp::Soft_Collision ||
 	meblob->Type()==btp::Signal_Process) {
       REMNANTS::Remnant_Handler * remnants = piIter->second->RemnantHandler();
-      if (!remnants->ExtractShowerInitiators(showerblob))
+      if (!ExtractYFSInitiators(bloblist, remnants) ||
+          !remnants->ExtractShowerInitiators(showerblob))
         return Return_Value::New_Event;
     }
     return Return_Value::Success;
@@ -324,7 +325,37 @@ bool Jet_Evolution::AftermathOfNoShower(Blob *blob, Blob_List *bloblist) {
   bloblist->push_back(noshowerblob);
   blob->SetStatus(blob_status::inactive);
   return (!noshowerblob->Has(blob_status::needs_beams) ? true :
+	  ExtractYFSInitiators(bloblist, p_remnants) &&
 	  p_remnants->ExtractShowerInitiators(noshowerblob));
+}
+
+bool Jet_Evolution::ExtractYFSInitiators(Blob_List *bloblist,
+                                         REMNANTS::Remnant_Handler *remnants) {
+  Blob *isrblob(bloblist->FindFirst(btp::YFS_Initial));
+  if (isrblob == NULL || remnants == NULL) return true;
+  // linked already: its outgoing leptons are set once per event
+  for (int i = 0; i < isrblob->NOutP(); ++i)
+    if (!isrblob->OutParticle(i)->Flav().IsPhoton()) return true;
+  // the shower initiators: incoming particles of shower blobs that no blob
+  // produced yet (the reduced legs, after the YFS photons)
+  Particle_Vector initiators;
+  for (Blob *blob : *bloblist) {
+    if (blob->Type() != btp::Shower) continue;
+    for (int i = 0; i < blob->NInP(); ++i) {
+      Particle *part(blob->InParticle(i));
+      if (part->ProductionBlob() == NULL && !part->Flav().IsPhoton())
+        initiators.push_back(part);
+    }
+  }
+  if (initiators.size() != 2) {
+    msg_Error() << METHOD << "(): " << initiators.size()
+                << " shower initiators for the YFS initial-state blob,"
+                << " expected 2. New event.\n";
+    return false;
+  }
+  for (Particle *part : initiators) isrblob->AddToOutParticles(part);
+  // the full-energy leptons leave the beams as they are
+  return remnants->ExtractShowerInitiators(isrblob);
 }
 
 bool Jet_Evolution::AftermathOfSuccessfulShower(Blob *blob, Blob_List *bloblist,
@@ -340,7 +371,8 @@ bool Jet_Evolution::AftermathOfSuccessfulShower(Blob *blob, Blob_List *bloblist,
      bloblist->FindLast(btp::Shower));
   if (showerblob==NULL || blob->Type()== btp::Hadron_Decay) return true;
   showerblob->AddStatus(blob_status::needs_reconnections);
-  return p_remnants->ExtractShowerInitiators(showerblob);
+  return ExtractYFSInitiators(bloblist, p_remnants) &&
+         p_remnants->ExtractShowerInitiators(showerblob);
 }
 
 ATOOLS::Blob *Jet_Evolution::CreateMockShowerBlobs(Blob *const meblob,

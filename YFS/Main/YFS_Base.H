@@ -38,29 +38,29 @@ struct wwscheme {
 };
 
 /*!
-  Where CEEX's O(alpha) VIRTUAL comes from. It used to be decided implicitly -
-  CEEX supplied its own if and only if no loop provider happened to exist -
-  which is how e+e- -> H l+ l- silently took CEEX's 2 -> 2 vertex and boxes and
+  Where ACRAIC's O(alpha) VIRTUAL comes from. It used to be decided implicitly -
+  ACRAIC supplied its own if and only if no loop provider happened to exist -
+  which is how e+e- -> H l+ l- silently took ACRAIC's 2 -> 2 vertex and boxes and
   reported a +2200% correction with nothing to say so.
 
   The three are genuinely different physics, not implementations:
 
-    ceex      CEEX's own hand-coded vertex and boxes, per helicity. Amplitude
-              level, which is what CEEX is for - and 2 -> 2 ONLY, because the
+    acraic      ACRAIC's own hand-coded vertex and boxes, per helicity. Amplitude
+              level, which is what ACRAIC is for - and 2 -> 2 ONLY, because the
               expressions are.
     external  the loop provider's helicity-SUMMED virtual through
               Virtual_ME2_Base, applied to |A|^2. Works for any process today.
               The helicity dependence of the boxes is then averaged over, which
-              is exactly the coherence CEEX exists to keep, so this is a
+              is exactly the coherence ACRAIC exists to keep, so this is a
               deliberate trade and not a free one.
     helicity  the provider's virtual resolved BY HELICITY, so amplitude-level
               matching survives at any multiplicity (ACRAIC). Needs
               Loop_Generator: Recola (get_amplitude_r1_rcl, no extra loop
               call); delta^h = A1^h/A0^h - alpha B_4 per helicity at the Born
-              point, sum_h |A_1 + delta^h A_0|^2 in the CEEX weight. Falls
+              point, sum_h |A_1 + delta^h A_0|^2 in the ACRAIC weight. Falls
               back to v/2 (= external) where the provider cannot resolve a
-              helicity. YFS/NLO/NLO_LoopHelicity.C, Ceex_LoopHelicity.C.
-    none      no virtual in the CEEX column at all: Born + real only, whatever
+              helicity. YFS/NLO/NLO_LoopHelicity.C, Acraic_LoopHelicity.C.
+    none      no virtual in the ACRAIC column at all: Born + real only, whatever
               NLO_Part says. This is what `external` silently was until
               2026-09-25 (the value was read and never consumed), kept as a
               named choice so Born+real comparisons stay reproducible.
@@ -68,11 +68,11 @@ struct wwscheme {
 /*
     auto      (default) external when a loop provider supplies the virtual
               (NLO_Part with V and a Loop_Generator), no virtual otherwise;
-              CEEX's own 2 -> 2 virtual only when asked for with ceex.
+              ACRAIC's own 2 -> 2 virtual only when asked for with acraic.
 */
-struct ceexvirt {
+struct acraicvirt {
   enum code {
-    ceex     = 0,
+    acraic     = 0,
     external = 1,
     helicity = 2,
     none     = 3,
@@ -103,8 +103,8 @@ struct fixed_order {
 
 
 std::istream &operator>>(std::istream &str, wwscheme::code &sm);
-std::istream &operator>>(std::istream &str, ceexvirt::code &sm);
-std::ostream &operator<<(std::ostream &str, const ceexvirt::code &sm);
+std::istream &operator>>(std::istream &str, acraicvirt::code &sm);
+std::ostream &operator<<(std::ostream &str, const acraicvirt::code &sm);
 std::ostream &operator<<(std::ostream &str, const wwscheme::code &sm);
 std::istream &operator>>(std::istream &str, submode::code &sm);
 std::istream &operator>>(std::istream &str, yfsmode::code &sm);
@@ -140,10 +140,26 @@ public:
                             const ATOOLS::Flavour_Vector &fl,
                             const size_t &nin=2);
 
+  /*
+    m_s is this event's s = (p_beam1 + p_beam2)^2. Every YFS object keeps its
+    own copy, sqr(Ecms) from construction. With a beam spectrum
+    (BEAM_SPECTRA: Gaussian) s moves event by event, and Ecms is not even its
+    mean (the Gaussian builds its beams at the maximum energy), so
+    YFS_Handler::SetEventS hands every object the event's value through
+    SetS. The dimensionless cuts derived from m_s at construction (m_isrcut,
+    m_vmax) stay fixed. Owners of further YFS objects forward.
+  */
+  virtual void SetS(const double s) {
+    m_s = s;
+    if (m_ifiomega_is_emin) m_ifiomega = 0.5*sqrt(m_s)*m_isrcut;
+  }
+
   double m_s,m_irscale;
   double m_v, m_vmax, m_isrcut, m_sp;
+  //! YFS: EXCHANGE_T_MIN, GeV^2
+  double m_exchange_tmin;
   double m_alpha, m_alpi, m_hardmin, m_gp, m_g;
-  bool m_CalForm, m_fillblob, m_isr_debug, m_fsr_debug, m_coulomb;
+  bool m_CalForm, m_isr_debug, m_fsr_debug, m_coulomb;
   double m_photonMass, m_oneloop, m_born, m_isrWeight, m_fsrWeight, m_rescale_alpha;
   // m_nbar is deliberately NOT here. ISR and FSR each have their own photon
   // multiplicity and each declares it; a shared base copy meant ISR silently
@@ -179,20 +195,26 @@ public:
 
   int  m_order, m_betaorder, m_fullform;
   bool m_formWW, m_ifisub;
+  //! YFS: IFI - initial-final interference in both columns (false: none,
+  //! see YFS_Base.C; IFI_Sub and IFI_Real are then false as well)
+  bool m_ifi = true;
   wwscheme::code m_wwscheme;
   bool m_wwonshell, m_wwpoleemission;
   // Emission-side IFI: reweight generated photons by the IF radiation function
   // and drop the IF form factor's cutoff to m_ifiomega. Both or neither.
   bool   m_ifireal;
   double m_ifiomega;
+  //! IFI_Omega left to its default, FSR's m_Emin = sqrt(s)/2 * m_isrcut:
+  //! then it follows s (SetS), as m_Emin does.
+  bool   m_ifiomega_is_emin = false;
   // Per-photon IF reweight factors outside [m_ifi_rclip, 1/m_ifi_rclip] are
   // dropped, and counted here so the rate is reportable rather than silent.
   double m_ifi_rclip;
   long   m_ifi_clipped;
   // One-shot beta_0/beta_1 dump at a fixed phase-space point, for the
   // number-for-number comparison against KKMC's CEEX. See
-  // NLO_Base::CEEXComparePoint().
-  int  m_ceex_compare;
+  // NLO_Base::ACRAICComparePoint().
+  int  m_acraic_compare;
   // Scale at which Delta_alpha is evaluated for the vacuum-polarisation
   // double-counting subtraction in Virtual/RealVirtual/VirtualVirtual.
   // 0 = photon virtuality (s' or t) - the scale the loop ME itself uses for the
@@ -230,7 +252,7 @@ public:
   int m_dump_dipoles;
   //! YFS: CHECK_INVARIANTS - run YFS_Handler::CheckInvariants each event.
   bool m_check_invariants;
-  int m_check_real_sub, m_check_rr_sub, m_tchannel, m_check_virt_born;
+  int m_check_real_sub, m_check_rr_sub, m_check_virt_born;
   bool m_no_born, m_no_subtraction, m_noflux, m_massless_sub;
   //! Meaning of the YFS: Check_Real_Sub runcard integer (m_check_real_sub).
   //! See NLO_Checks.C for what each check actually does.
@@ -243,13 +265,13 @@ public:
   
   bool m_looptool, m_virtual_only, m_real_only, m_use_model_alpha,m_failcut,m_nlocuts;
   /*!
-    CEEX_WEIGHT, resolved: take the O(alpha) correction factor from CEEX
-    rather than from the EEX beta expansion (the card's auto follows CEEX).
+    ACRAIC_WEIGHT, resolved: take the O(alpha) correction factor from ACRAIC
+    rather than from the EEX beta expansion (the card's auto follows ACRAIC).
   */
-  bool m_ceex_weight = false;
+  bool m_acraic_weight = false;
   /*!
     NLO_FSR_FROM_EVENT: take the final-state photons for the fixed-order real
-    correction from the EVENT RECORD (Dipole::GetPhotons(), what CEEX is
+    correction from the EVENT RECORD (Dipole::GetPhotons(), what ACRAIC is
     given) rather than from Dipole::GetMEPhotons().
 
     The two are not the same photons. GetMEPhotons() is captured in
@@ -264,7 +286,7 @@ public:
     Card default true (YFS_Base::RegisterDefaults).
   */
   bool m_nlo_fsr_from_event = false;
-  bool m_isrinital, m_realtool, m_useceex, m_coll_real, m_dim_reg;
+  bool m_isrinital, m_realtool, m_useacraic, m_coll_real, m_dim_reg;
   /*
     Which NNLO tools exist. Only NLO_Base assigns these (from its p_realvirt,
     p_realreal and p_vv); every other YFS_Base - YFS_Handler, Real_Correction,
@@ -285,10 +307,10 @@ public:
   std::string m_name, m_type, m_debugDIR_ISR, m_debugDIR_FSR, m_debugDIR_NLO;
   Vec4D m_beam1, m_beam2;
 
-  ceexvirt::code m_ceexvirtsrc = ceexvirt::ceex;
-  //! MODE was not set and CEEX: 1 implied it; YFS_Handler::SetFlavours
+  acraicvirt::code m_acraicvirtsrc = acraicvirt::acraic;
+  //! MODE was not set and ACRAIC: 1 implied it; YFS_Handler::SetFlavours
   //! then picks ISRFSR or, without charged final-state particles, ISR
-  bool m_mode_from_ceex = false;
+  bool m_mode_from_acraic = false;
   submode::code m_submode;
   yfsmode::code m_mode;
   fixed_order::code m_fixedOrder;

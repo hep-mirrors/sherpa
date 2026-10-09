@@ -23,6 +23,7 @@ namespace SHERPA {
     bool m_setcolors, m_adddocumentation;
 
     bool FillBlob(ATOOLS::Blob_List *const bl,ATOOLS::Blob *const b);
+    void FillYFSBlobs(ATOOLS::Blob_List *const bl,ATOOLS::Blob *const b);
 
   public:
 

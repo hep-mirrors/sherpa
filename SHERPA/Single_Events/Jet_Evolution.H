@@ -40,6 +40,10 @@ namespace SHERPA {
     bool DefineInitialConditions(const ATOOLS::Blob *,const ATOOLS::Blob_List *,
                                  Perturbative_Interface *);
     bool AftermathOfNoShower(ATOOLS::Blob *,ATOOLS::Blob_List *);
+    // YFS initial-state radiation: the shower initiators become the outgoing
+    // leptons of the YFS_Initial blob, whose full-energy leptons the remnants
+    // then extract (Signal_Processes::FillYFSBlobs)
+    bool ExtractYFSInitiators(ATOOLS::Blob_List *,REMNANTS::Remnant_Handler *);
     bool AftermathOfSuccessfulShower(ATOOLS::Blob *,ATOOLS::Blob_List *,
 				     Perturbative_Interface *);
     ATOOLS::Blob * CreateMockShowerBlobs(ATOOLS::Blob * const meblob,

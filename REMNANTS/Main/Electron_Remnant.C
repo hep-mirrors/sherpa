@@ -27,8 +27,30 @@ Remnant_Base(yfs->GetInFlav(beam),beam,tag),p_pdfbase(nullptr),p_yfs(yfs)
   m_constituents.push_back(Flavour(kf_photon));
 }
 
+bool Electron_Remnant::Extract(Particle* parton, Colour_Generator* colours,
+                               const double& spair)
+{
+  const bool wholebeam(parton->Flav() == m_beamflav &&
+                       IsEqual(parton->Momentum(), IncomingMomentum(), 1.e-8));
+  const bool ok(Remnant_Base::Extract(parton, colours, spair));
+  if (ok && wholebeam) p_wholebeam = parton;
+  return ok;
+}
+
+void Electron_Remnant::Reset(const bool& resc, const bool& DIS)
+{
+  p_wholebeam = nullptr;
+  Remnant_Base::Reset(resc, DIS);
+}
+
 bool Electron_Remnant::FillBlob(Colour_Generator* colours, ParticleMomMap* ktmap, const bool& copy)
 {
+  // The lepton took the whole beam (no ISR photon on this side): it leaves the
+  // beam blob as it is, with nothing left over for a photon remnant.
+  if (m_extracted.empty() && p_wholebeam != nullptr) {
+    p_beamblob->AddToOutParticles(p_wholebeam);
+    return true;
+  }
   if (m_extracted.size() != 1) {
     THROW(critical_error, "None or too many particles extracted from intact beam.");
   }

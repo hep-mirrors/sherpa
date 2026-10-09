@@ -175,7 +175,11 @@ bool Remnant_Handler::ExtractShowerInitiators(Blob *const showerblob) {
   // Make sure only shower blobs with exactly two initiators are treated,
   // and only once.
   // (Shower blob with more initiators are typically from hadron decays.)
-  if (showerblob->Type() != btp::Shower ||
+  // (A YFS_Initial blob - YFS initial-state radiation, see
+  // SHERPA::Signal_Processes::FillYFSBlobs - stands between the beams and the
+  // shower initiators: its two incoming leptons are what the beams give up.)
+  if ((showerblob->Type() != btp::Shower &&
+       showerblob->Type() != btp::YFS_Initial) ||
       m_treatedshowerblobs.find(showerblob) != m_treatedshowerblobs.end())
     return true;
   size_t countIn = 0;
@@ -211,6 +215,17 @@ bool Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
 
 Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
 						  const bool & isrescatter) {
+  // A retried event arrives  here with nothing extracted. Try extract the initiators again, the YFS
+  // initial-state blob first. A no-op for blobs already treated in
+  // this attempt.\
+  if (!isrescatter) {
+    for (Blob *blob : *bloblist)
+      if (blob->Type() == btp::YFS_Initial && !ExtractShowerInitiators(blob))
+        return Return_Value::New_Event;
+    for (Blob *blob : *bloblist)
+      if (blob->Type() == btp::Shower && !ExtractShowerInitiators(blob))
+        return Return_Value::New_Event;
+  }
   // Adding the blobs related to the breakup of incident beams: one for each
   // beam, plus, potentially a third one to balance transverse momenta.
   InitBeamAndSoftBlobs(bloblist,isrescatter);

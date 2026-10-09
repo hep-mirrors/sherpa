@@ -12,6 +12,10 @@ namespace REMNANTS {
     FlavourList     m_constituents;
     PDF::PDF_Base * p_pdfbase;
     YFS::YFS_Handler * p_yfs;
+    // The lepton of a whole-beam extraction: it enters the hard process with
+    // exactly the beam momentum (YFS, no ISR photon on this side), which
+    // Remnant_Base::Extract accepts without putting it in m_extracted.
+    ATOOLS::Particle * p_wholebeam = nullptr;
   public:
     Electron_Remnant(PDF::PDF_Base * pdf,const unsigned int & beam,
 		     const unsigned int & tag=0);
@@ -23,6 +27,9 @@ namespace REMNANTS {
                   const bool& copy = true) override;
     bool TestExtract(const ATOOLS::Flavour& flav, const ATOOLS::Vec4D& mom,
                      const double& spair) override;
+    bool Extract(ATOOLS::Particle* parton, Colour_Generator* colours,
+                 const double& spair) override;
+    void Reset(const bool& resc = false, const bool& DIS = false) override;
   };
 }
 

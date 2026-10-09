@@ -195,50 +195,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       if (nlos) (*nlos) *= weightfactor;
     }
   }
-  if(p_yfshandler->HasFSR()!=0){
-    // Add the fsr corrected final states
-      Particle_Vector out = blob->GetOutParticles();
-      Particle_Vector yfsout = p_yfshandler->Particles();
-      ATOOLS::ParticleMomMap yfsoutMap = p_yfshandler->GetOutParticles();
-      if(out.size()!=(yfsout.size()-2)){
-        msg_Error()<<METHOD<<" Missmatch in outparitcles for YFS"<<std::endl
-                            <<"Born Out size = "<< out.size()<<std::endl
-                            <<"YFS Out size = "<< yfsout.size()<<std::endl;
-      }
-      for(int i=0; i<out.size(); i++){
-        Vec4D preFSR = blob->OutParticle(i)->Momentum();
-        Vec4D postFSR = yfsoutMap[yfsout[i+2]];
-        blob->OutParticle(i)->SetMomentum(postFSR); // remove born momenta
-      }
-    }
-  if (p_yfshandler->Mode()!=YFS::yfsmode::off) {
-    // blob->SetStatus(blob_status::needs_yfs);
-    ATOOLS::Vec4D_Vector isrphotons = p_yfshandler->GetISRPhotons();
-    ATOOLS::Vec4D_Vector fsrphotons;
-    Particle *particle;
-    if (p_yfshandler->HasFSR()) {
-      fsrphotons = p_yfshandler->GetFSRPhotons();
-    }
-    if (p_yfshandler->FillBlob()) {
-      for (int i = 0; i < isrphotons.size(); ++i)
-      {
-        particle = new Particle(-1, Flavour(22),
-                                isrphotons[i]);
-        particle->SetNumber(0);
-        particle->SetInfo('S');
-        blob->AddToOutParticles(particle);
-      }
-      for (int i = 0; i < fsrphotons.size(); ++i)
-      {
-        particle = new Particle(-1, Flavour(22),
-                                fsrphotons[i]);
-        particle->SetNumber(0);
-        particle->SetInfo('S');
-        blob->AddToOutParticles(particle);
-      }
-    }
-    p_yfshandler->SplitPhotons(blob);
-  }
+  if (p_yfshandler->Mode()!=YFS::yfsmode::off) FillYFSBlobs(bloblist,blob);
 
   blob->AddData("WeightsMap",new Blob_Data<Weights_Map>(winfo.m_weightsmap));
   blob->AddData("MEWeight",new Blob_Data<double>(winfo.m_dxs));
@@ -310,6 +267,120 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     p_yfshandler->YFSDebug(p_mehandler->Sum()*rpa->Picobarn());
   }
   return success;
+}
+
+/*
+  YFS photons in blobs of their own, so that every blob conserves
+  four-momentum by itself (Sherpa's convention, as PHOTONS++ does for FSR):
+
+    YFS_Initial    full-energy e+ e-  ->  the reduced legs + the ISR photons
+    Signal_Process the reduced legs   ->  the pre-FSR final state
+    QED_Radiation  the pre-FSR charged legs that radiated
+                                      ->  their post-FSR momenta + the FSR photons
+*/
+void Signal_Processes::FillYFSBlobs(Blob_List *const bloblist,Blob *const blob)
+{
+  const size_t nin(blob->NInP()), nout(blob->NOutP());
+  if (nin!=2)
+    THROW(fatal_error, "YFS event record: "+ToString(nin)+" incoming particles,"
+          " only 2 -> n is supported.");
+  const bool isr(p_yfshandler->Mode()!=YFS::yfsmode::fsr);
+  const bool fsr(p_yfshandler->HasFSR());
+  // all checks before anything is changed
+  const Vec4D_Vector beams(p_yfshandler->BornMomenta());
+  const Vec4D_Vector legs(p_yfshandler->GetMomenta());
+  if (isr && (beams.size()<2 || legs.size()<2))
+    THROW(fatal_error, "YFS event record: no beam or reduced-leg momenta.");
+  Vec4D_Vector pre, post;
+  if (fsr) {
+    pre = p_yfshandler->PreFSRMomenta();
+    const Particle_Vector &yfsp(p_yfshandler->Particles());
+    const ParticleMomMap outmap(p_yfshandler->GetOutParticles());
+    if (pre.size()!=nin+nout || yfsp.size()!=nin+nout)
+      THROW(fatal_error, "YFS event record: "+ToString(pre.size())+" pre-FSR and "
+            +ToString(yfsp.size())+" YFS particles for a "+ToString(nin)+" -> "
+            +ToString(nout)+" process.");
+    for (size_t i(0);i<nout;++i) {
+      const ParticleMomMap::const_iterator it(outmap.find(yfsp[nin+i]));
+      if (it==outmap.end())
+        THROW(fatal_error, "YFS event record: no post-FSR momentum for an"
+              " outgoing particle.");
+      post.push_back(it->second);
+    }
+  }
+  // ISR: full-energy leptons -> reduced legs + photons
+  if (isr) {
+    Blob *isrblob(bloblist->AddBlob(btp::YFS_Initial));
+    isrblob->SetTypeSpec("YFS_ISR");
+    isrblob->SetStatus(blob_status::inactive);
+    for (size_t i(0);i<2;++i) {
+      Particle *full(new Particle(0,blob->InParticle(i)->Flav(),beams[i]));
+      full->SetNumber(0);
+      full->SetStatus(part_status::decayed);
+      full->SetInfo('G');
+      full->SetBeam(i);
+      isrblob->AddToInParticles(full);
+      blob->InParticle(i)->SetMomentum(legs[i]);
+    }
+    for (const Vec4D &k : p_yfshandler->GetISRPhotons()) {
+      Particle *photon(new Particle(-1,Flavour(kf_photon),k));
+      photon->SetNumber(0);
+      photon->SetStatus(part_status::active);
+      photon->SetInfo('S');
+      isrblob->AddToOutParticles(photon);
+    }
+  }
+  if (!fsr) return;
+  // FSR: the signal blob ends at the pre-FSR final state
+  std::vector<size_t> radiated;
+  bool coloured(false);
+  for (size_t i(0);i<nout;++i) {
+    // a particle that did not radiate keeps exactly its final momentum (the
+    // pre-FSR one agrees to rounding; m_ff = sqrt(s) events sit on a
+    // histogram edge, and rounding must not move them)
+    if (IsEqual(post[i],pre[nin+i],1.e-12)) {
+      blob->OutParticle(i)->SetMomentum(post[i]);
+      continue;
+    }
+    blob->OutParticle(i)->SetMomentum(pre[nin+i]);
+    radiated.push_back(i);
+    if (blob->OutParticle(i)->Flav().Strong()) coloured = true;
+  }
+  const Vec4D_Vector fsrphotons(p_yfshandler->GetFSRPhotons());
+  if (coloured) {
+    for (size_t i(0);i<nout;++i) blob->OutParticle(i)->SetMomentum(post[i]);
+    for (const Vec4D &k : fsrphotons) {
+      Particle *photon(new Particle(-1,Flavour(kf_photon),k));
+      photon->SetNumber(0);
+      photon->SetInfo('S');
+      blob->AddToOutParticles(photon);
+    }
+    return;
+  }
+  if (radiated.empty() && fsrphotons.empty()) return;
+  Blob *qedblob(bloblist->AddBlob(btp::QED_Radiation));
+  qedblob->SetTypeSpec("YFS_FSR");
+  for (size_t i : radiated) {
+    Particle *in(blob->OutParticle(i));
+    in->SetStatus(part_status::decayed);
+    in->SetInfo('H');
+    qedblob->AddToInParticles(in);
+    Particle *out(new Particle(-1,in->Flav(),post[i],'F'));
+    out->SetNumber(0);
+    out->SetStatus(part_status::active);
+    out->SetOriginalPart(in);
+    out->SetFinalMass(in->FinalMass());
+    qedblob->AddToOutParticles(out);
+  }
+  for (const Vec4D &k : fsrphotons) {
+    Particle *photon(new Particle(-1,Flavour(kf_photon),k));
+    photon->SetNumber(0);
+    photon->SetStatus(part_status::active);
+    photon->SetInfo('S');
+    qedblob->AddToOutParticles(photon);
+  }
+  qedblob->SetStatus(blob_status::needs_reconnections);
+  return;
 }
 
 void Signal_Processes::CleanUp(const size_t& mode)
