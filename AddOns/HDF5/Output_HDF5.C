@@ -308,8 +308,11 @@ namespace SHERPA {
       const bool unweighted
 	(ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"))!=0 ||
 	 m_unweight);
-      idata.push_back(unweighted?3:1);
       const PHASIC::Process_Vector procs(p_me->AllProcesses());
+      // as in the Les Houches Accord, a negative weighting strategy signals
+      // that weights can be negative, which can never be ruled out, e.g. for
+      // PDFs with negative values, even at LO
+      idata.push_back(unweighted?-3:-1);
       // unweighting needs the maximum weight, which weighted input lacks
       if (m_unweight)
 	for (const auto proc : procs)
