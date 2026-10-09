@@ -1,19 +1,12 @@
 /*!
-  \file Ceex_Real.C
+  \file Acraic_Real.C
 
-  The contractions that fold the emission matrices U and V into a Born.
-
-  This file used to hold beta_1^0 as well, transcribed from KKMC's HiniPlus
-  and HfinPlus. Those are gone: they are a formula for e+e- -> f fbar rather
-  than a method - the photon's spinor index goes into a beam slot, which only
-  means anything for a single s-channel 2 -> 2 - and they gave a CEEX cross
-  section 3.1x the NLO for e+e- -> nu nu. beta_1 now comes from Comix's own
-  one-photon amplitude with the eikonal subtracted, in
-  Ceex_Base::ComixInfraredSubtracted_1_0. The contractions below are still
-  used by beta_2 and by the Comix alignment.
+  The contractions that fold the emission matrices U and V into a Born,
+  used by beta_2 and by the Comix alignment. beta_1 comes from Comix, see
+  Acraic_Base::ComixInfraredSubtracted_1_0.
 */
 
-#include "YFS/CEEX/Ceex_Base.H"
+#include "YFS/ACRAIC/Acraic_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "METOOLS/Main/Spin_Structure.H"
 #include "PHASIC++/Process/Process_Base.H"
@@ -32,7 +25,7 @@
 using namespace YFS;
 
 
-void Ceex_Base::AddU(Complex &sum, const Amplitude &Born, const Amplitude &U, const Complex fac) {
+void Acraic_Base::AddU(Complex &sum, const Amplitude &Born, const Amplitude &U, const Complex fac) {
   for (int h0 = 0; h0 <= 1; ++h0) {
     for (int h1 = 0; h1 <= 1; ++h1) {
       for (int h2 = 0; h2 <= 1; ++h2) {
@@ -49,7 +42,7 @@ void Ceex_Base::AddU(Complex &sum, const Amplitude &Born, const Amplitude &U, co
 }
 
 
-void Ceex_Base::AddU(Amplitude &out, const Amplitude &Born,
+void Acraic_Base::AddU(Amplitude &out, const Amplitude &Born,
                      const Amplitude &U, const Complex fac) {
   for (int h0 = 0; h0 <= 1; ++h0)
     for (int h1 = 0; h1 <= 1; ++h1)
@@ -64,7 +57,7 @@ void Ceex_Base::AddU(Amplitude &out, const Amplitude &Born,
 
 
 
-void Ceex_Base::AddV(Complex &sum, const Amplitude &Born, const Amplitude &V, const Complex fac) {
+void Acraic_Base::AddV(Complex &sum, const Amplitude &Born, const Amplitude &V, const Complex fac) {
   for (int h0 = 0; h0 <= 1; ++h0) {
     for (int h1 = 0; h1 <= 1; ++h1) {
       for (int h2 = 0; h2 <= 1; ++h2) {
@@ -81,7 +74,7 @@ void Ceex_Base::AddV(Complex &sum, const Amplitude &Born, const Amplitude &V, co
 }
 
 
-void Ceex_Base::AddV(Amplitude &out, const Amplitude &Born,
+void Acraic_Base::AddV(Amplitude &out, const Amplitude &Born,
                      const Amplitude &V, const Complex fac) {
   for (int h0 = 0; h0 <= 1; ++h0)
     for (int h1 = 0; h1 <= 1; ++h1)
@@ -94,7 +87,7 @@ void Ceex_Base::AddV(Amplitude &out, const Amplitude &Born,
         }
 }
 
-void Ceex_Base::AddUF(Amplitude &out, const Amplitude &U,
+void Acraic_Base::AddUF(Amplitude &out, const Amplitude &U,
                       const Amplitude &Born, const Complex fac) {
   for (int h0 = 0; h0 <= 1; ++h0)
     for (int h1 = 0; h1 <= 1; ++h1)
@@ -108,7 +101,7 @@ void Ceex_Base::AddUF(Amplitude &out, const Amplitude &U,
 }
 
 
-void Ceex_Base::AddVF(Amplitude &out, const Amplitude &Born,
+void Acraic_Base::AddVF(Amplitude &out, const Amplitude &Born,
                       const Amplitude &V, const Complex fac) {
   for (int h0 = 0; h0 <= 1; ++h0)
     for (int h1 = 0; h1 <= 1; ++h1)
@@ -124,7 +117,7 @@ void Ceex_Base::AddVF(Amplitude &out, const Amplitude &Born,
 
 
 
-void Ceex_Base::SumAmplitude(Complex &sum, const Amplitude &Amp, const Complex fac) {
+void Acraic_Base::SumAmplitude(Complex &sum, const Amplitude &Amp, const Complex fac) {
   for (int h0 = 0; h0 <= 1; ++h0) {
     for (int h1 = 0; h1 <= 1; ++h1) {
       for (int h2 = 0; h2 <= 1; ++h2) {
@@ -138,7 +131,7 @@ void Ceex_Base::SumAmplitude(Complex &sum, const Amplitude &Amp, const Complex f
 
 
 
-void Ceex_Base::SumAmplitude(Complex &sum, const Amplitude &Amp1, const Amplitude &Amp2, const Complex fac) {
+void Acraic_Base::SumAmplitude(Complex &sum, const Amplitude &Amp1, const Amplitude &Amp2, const Complex fac) {
   for (int h0 = 0; h0 <= 1; ++h0) {
     for (int h1 = 0; h1 <= 1; ++h1) {
       for (int h2 = 0; h2 <= 1; ++h2) {

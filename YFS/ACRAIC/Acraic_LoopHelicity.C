@@ -1,21 +1,17 @@
 /*!
-  \file Ceex_LoopHelicity.C
+  \file Acraic_LoopHelicity.C
 
-  YFS: CEEX_Virtual: helicity (ACRAIC). The loop provider's per-helicity
-  virtual factor delta^h (built in YFS/NLO/NLO_LoopHelicity.C) put on CEEX's
-  coherent Born-level amplitude:
+  YFS: ACRAIC_Virtual: helicity. The loop provider's per-helicity virtual
+  factor delta^h (YFS/NLO/NLO_LoopHelicity.C) on ACRAIC's coherent amplitude,
 
       rho_V = 1/4 sum_h | A_1^h + delta^h A_0^h |^2 ,
 
-  the helicity-resolved generalisation of CEEX_Virtual: external, which is
-  the case delta^h = v/2 for every h. delta^h is computed once per event at
-  the Born point and applied to every partition (Recola cannot shift the
-  propagators per partition; the partition spread of the virtual factor
-  bounds this at ~0.3% of the virtual, see
-  ceex-virtual-factor-partition-independent).
+  which is ACRAIC_Virtual: external for delta^h = v/2. delta^h is computed
+  once per event at the Born point and applied to every partition.
 */
 
-#include "YFS/CEEX/Ceex_Base.H"
+#include "YFS/ACRAIC/Acraic_Base.H"
+#include "YFS/Main/Dyson_VP.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -27,7 +23,13 @@ using namespace YFS;
 using namespace ATOOLS;
 
 
-bool Ceex_Base::LoopHelicityToCeex(const std::vector<std::vector<int> > &hel,
+/*
+  Maps the provider's delta (physical labels hel, trees a0) to ACRAIC's d[f],
+  unfilled entries keep vhalf. The leg-flip map is derived from the |a0|
+  pattern against Comix's Born over the first ACRAIC: VIRT_HEL_NCAL events
+  (ACRAIC: VIRT_HEL_MASK >= 0 overrides).
+*/
+bool Acraic_Base::LoopHelicityToAcraic(const std::vector<std::vector<int> > &hel,
                                    const std::vector<Complex> &a0,
                                    const std::vector<Complex> &delta,
                                    const Vec4D_Vector &p, Complex vhalf,
@@ -38,12 +40,8 @@ bool Ceex_Base::LoopHelicityToCeex(const std::vector<std::vector<int> > &hel,
   if (hel.empty() || hel.size() != a0.size() || hel.size() != delta.size())
     return false;
   const size_t nl(m_flavs.size());
-  /*
-    The provider's labels as a packed CEEX-style index: bit Bit(i) of leg i
-    set for helicity -1, clear for +1 (0 -> +1, 1 -> -1, the convention CEEX
-    and Comix share). A leg with one spin state has no bit and must carry 0;
-    a massive vector's longitudinal state has no place in the container.
-  */
+  // Provider labels packed as an ACRAIC index: bit Bit(i) set for helicity -1.
+  // Legs with one spin state have no bit and must carry 0.
   std::vector<int> base(hel.size(), 0);
   for (size_t c(0); c < hel.size(); ++c) {
     if (hel[c].size() != nl) return false;
@@ -52,25 +50,20 @@ bool Ceex_Base::LoopHelicityToCeex(const std::vector<std::vector<int> > &hel,
       const int bit(Amplitude::Bit(i));
       if (bit < 0) { if (hel[c][i] != 0) return false; continue; }
       if (hel[c][i] == 0) return false;
-      if (hel[c][i] < 0) b |= (1 << bit);
+      if (hel[c][i] < 0) b = AddLeg(b, bit);
     }
     if (b >= nh) return false;
     base[c] = b;
   }
   if (m_comixflip < 0) return false;
-  static const int maskset(Settings::GetMainSettings()["CEEX"]["VIRT_HEL_MASK"]
+  static const int maskset(Settings::GetMainSettings()["ACRAIC"]["VIRT_HEL_MASK"]
                            .SetDefault(-1).Get<int>());
-  static const int ncal(Settings::GetMainSettings()["CEEX"]["VIRT_HEL_NCAL"]
+  static const int ncal(Settings::GetMainSettings()["ACRAIC"]["VIRT_HEL_NCAL"]
                         .SetDefault(3).Get<int>());
   if (maskset >= 0) m_loopmask = maskset;
   else if (m_loopcal < ncal) {
-    /*
-      Born-level calibration, the DeriveComixMap argument: without a photon
-      only a relabelling of legs (and a normalisation) can differ between the
-      provider's tree and Comix's, and both are visible in the moduli. Both
-      patterns are normalised to unit sum first, so the mask does not depend
-      on the normalisation.
-    */
+    // At the Born only a leg relabelling and a normalisation can differ, so
+    // match the unit-normalised moduli.
     Amplitude C;
     if (!ComixBornAmplitude(p, C)) { ++m_lh_mapbad; return m_loopmask >= 0 ? true : false; }
     double sa(0.), sc(0.);
@@ -83,17 +76,16 @@ bool Ceex_Base::LoopHelicityToCeex(const std::vector<std::vector<int> > &hel,
     for (int m = 0; m < nh; ++m) {
       double met(0.);
       for (size_t c(0); c < a0.size(); ++c)
-        met += sqr(std::abs(a0[c])*ra - std::abs(C.m_A[base[c] ^ m])*rc);
+        met += sqr(std::abs(a0[c])*ra - std::abs(C.m_A[FlipLegs(base[c], m)])*rc);
       met = sqrt(met);
       if (best < 0 || met < bmet) { nmet = bmet; bmet = met; best = m; }
       else if (nmet < 0. || met < nmet) nmet = met;
     }
-    // the modulus ratio over live helicities: constant iff the two codes use
-    // the same spin basis (the massive-leg caveat of the design notes)
+    // modulus ratio over live helicities: constant iff both use the same spin basis
     double rmin(0.), rmax(0.);
     int nlive(0);
     for (size_t c(0); c < a0.size(); ++c) {
-      const Complex A(a0[c]), B(C.m_A[base[c] ^ best]);
+      const Complex A(a0[c]), B(C.m_A[FlipLegs(base[c], best)]);
       if (std::abs(A) > 1e-3/ra && std::abs(B) > 1e-3/rc) {
         const double r(std::abs(A/B)*sqrt(sc/sa));
         if (nlive++ == 0) rmin = rmax = r;
@@ -105,7 +97,7 @@ bool Ceex_Base::LoopHelicityToCeex(const std::vector<std::vector<int> > &hel,
       ++m_lh_mapbad;
       msg_Error()<<METHOD<<"(): provider -> Comix helicity map not decisive:"
                  <<" best mask "<<best<<" metric "<<bmet<<", runner-up "<<nmet
-                 <<". Set CEEX: VIRT_HEL_MASK by hand.\n";
+                 <<". Set ACRAIC: VIRT_HEL_MASK by hand.\n";
       if (m_loopmask < 0) return false;
     }
     else if (m_loopmask >= 0 && best != m_loopmask) {
@@ -115,10 +107,10 @@ bool Ceex_Base::LoopHelicityToCeex(const std::vector<std::vector<int> > &hel,
     }
     else {
       if (m_loopmask < 0)
-        msg_Info()<<"CEEX_Virtual: helicity - provider -> Comix leg-flip mask "
+        msg_Info()<<"ACRAIC_Virtual: helicity - provider -> Comix leg-flip mask "
                   <<best<<" (metric "<<bmet<<", runner-up "<<nmet<<"),"
-                  <<" provider -> CEEX index mask "
-                  <<(best ^ (m_comixflip & (nh-1)))
+                  <<" provider -> ACRAIC index mask "
+                  <<FlipLegs(best, ComixLegFlips(Amplitude::s_nlegs))
                   <<"; |A0_provider/A0_Comix| over "<<nlive
                   <<" live helicities in ["<<rmin<<", "<<rmax
                   <<"] (normalised to the sums).\n";
@@ -129,29 +121,29 @@ bool Ceex_Base::LoopHelicityToCeex(const std::vector<std::vector<int> > &hel,
     ++m_loopcal;
   }
   if (m_loopmask < 0) return false;
-  const int fm(m_comixflip & (nh - 1));
+  const int fm(ComixLegFlips(Amplitude::s_nlegs));
   for (size_t c(0); c < delta.size(); ++c)
-    d[(base[c] ^ m_loopmask) ^ fm] = delta[c];
+    d[FlipLegs(FlipLegs(base[c], m_loopmask), fm)] = delta[c];
   return true;
 }
 
 
-int Ceex_Base::PhysicalHelicity(int f, size_t i) const
+int Acraic_Base::PhysicalHelicity(int f, size_t i) const
 {
   const int bit(Amplitude::Bit(i));
   if (bit < 0) return 0;
-  // CEEX index -> provider (physical) labels: f = base ^ m_loopmask ^ fm.
-  // Before a map exists only f fbar is known: its CEEX labels are KKMC's
-  // physical ones (derived mask 0 whenever it was measured).
+  // ACRAIC index -> physical labels; without a map only f fbar is known
   int inv(0);
   if (m_loopmask >= 0 && m_comixflip >= 0)
-    inv = m_loopmask ^ (m_comixflip & (Amplitude::NHel() - 1));
+    inv = FlipLegs(m_loopmask, ComixLegFlips(Amplitude::s_nlegs));
   else if (!m_ffbar) return 0;
-  return (((f ^ inv) >> bit) & 1) ? -1 : +1;
+  return LegHelicity(FlipLegs(f, inv), bit);
 }
 
 
-double Ceex_Base::HelicityVirtualRho(const std::vector<Complex> &d,
+// 1/4 sum_f |A_1[f] + d[f] A_0[f]|^2 with A_0 = m_AmpExpo0 (partition-summed
+// Born); d[f] = v/2 reproduces the external form.
+double Acraic_Base::HelicityVirtualRho(const std::vector<Complex> &d,
                                      double P1, double P2) const
 {
   const int nh(Amplitude::NHel());
@@ -170,7 +162,71 @@ double Ceex_Base::HelicityVirtualRho(const std::vector<Complex> &d,
 }
 
 
-void Ceex_Base::HelicityVirtualSplit(const std::vector<Complex> &d, double vhalf,
+double Acraic_Base::A0InsertionRho(const std::vector<Complex> &e, double vhalf,
+                                 bool vonbeta1) const
+{
+  const int nh(Amplitude::NHel());
+  const Amplitude &ax(m_order == 2 ? m_AmpExpo2 : m_AmpExpo1);
+  const Amplitude &av(vonbeta1 ? m_AmpExpo1 : m_AmpExpo0);
+  double sum(0.);
+  for (int f = 0; f < nh && f < (int)e.size(); ++f)
+    sum += std::norm(ax.m_A[f] + vhalf*av.m_A[f] + e[f]*m_AmpExpo0.m_A[f]);
+  return sum/4.;
+}
+
+
+std::vector<Complex> Acraic_Base::HelicityShares(const VP_Factors &vp) const
+{
+  const int nh(Amplitude::NHel());
+  std::vector<Complex> r(nh, vp.rbar);
+  if (Amplitude::s_nlegs != 4) return r;
+  for (int f = 0; f < nh; ++f) {
+    int l[4];
+    bool known(true);
+    for (size_t i(0); i < 4; ++i) {
+      l[i] = PhysicalHelicity(f, i);
+      if (l[i] == 0) known = false;
+    }
+    if (known) r[f] = vp.Share(l[0], l[1], l[2], l[3]);
+  }
+  return r;
+}
+
+
+std::vector<Complex> Acraic_Base::PhysicalLabelsToAcraic(const std::vector<std::vector<int> > &hel,
+                                                     const std::vector<Complex> &val,
+                                                     const Complex &fallback) const
+{
+  const int nh(Amplitude::NHel());
+  const size_t nl(m_flavs.size());
+  std::vector<Complex> r(nh, fallback);
+  for (int f = 0; f < nh; ++f) {
+    std::vector<int> l(nl, 0);
+    bool known(true);
+    for (size_t i(0); i < nl; ++i) {
+      l[i] = PhysicalHelicity(f, i);
+      if (l[i] == 0 && Amplitude::Bit(i) >= 0) known = false;
+    }
+    if (!known) continue;
+    for (size_t c(0); c < hel.size() && c < val.size(); ++c)
+      if (hel[c] == l) { r[f] = val[c]; break; }
+  }
+  return r;
+}
+
+
+double Acraic_Base::A0WeightedTwoRe(const std::vector<Complex> &e) const
+{
+  double num(0.), den(0.);
+  for (int f = 0; f < Amplitude::NHel() && f < (int)e.size(); ++f) {
+    num += 2.*e[f].real()*std::norm(m_AmpExpo0.m_A[f]);
+    den += std::norm(m_AmpExpo0.m_A[f]);
+  }
+  return den > 0. ? num/den : 0.;
+}
+
+
+void Acraic_Base::HelicityVirtualSplit(const std::vector<Complex> &d, double vhalf,
                                      double split[3]) const
 {
   split[0] = split[1] = split[2] = 0.;
@@ -186,7 +242,7 @@ void Ceex_Base::HelicityVirtualSplit(const std::vector<Complex> &d, double vhalf
 }
 
 
-void Ceex_Base::AccumulateLoopHelicity(bool ok, double addhel, double addext,
+void Acraic_Base::AccumulateLoopHelicity(bool ok, double addhel, double addext,
                                        double reg, const double split[3])
 {
   m_lh_regmax = Max(m_lh_regmax, reg);
@@ -201,10 +257,10 @@ void Ceex_Base::AccumulateLoopHelicity(bool ok, double addhel, double addext,
 }
 
 
-void Ceex_Base::ReportLoopHelicity()
+void Acraic_Base::ReportLoopHelicity()
 {
   // same decision on every rank, so the reductions below stay matched
-  if (!m_useceex || m_ceexvirtsrc != ceexvirt::helicity) return;
+  if (!m_useacraic || m_acraicvirtsrc != acraicvirt::helicity) return;
   double buf[10] = {(double)m_lh_n, (double)m_lh_fail, (double)m_lh_mapbad,
                     m_lh_sumhel, m_lh_sumext, m_lh_sumd, m_lh_sumd2,
                     m_lh_split[0], m_lh_split[1], m_lh_split[2]};
@@ -219,7 +275,7 @@ void Ceex_Base::ReportLoopHelicity()
   const double n(buf[0] > 0. ? buf[0] : 1.);
   const double dm(buf[5]/n), drms(sqrt(Max(0., buf[6]/n - dm*dm)));
   msg_Out()<<std::setprecision(6)
-           <<"CEEX rho_V (CEEX_Virtual: helicity): "<<(long)buf[0]
+           <<"ACRAIC rho_V (ACRAIC_Virtual: helicity): "<<(long)buf[0]
            <<" events helicity-resolved, "<<(long)buf[1]<<" at delta = v/2,"
            <<" "<<(long)buf[2]<<" map calibration problems; map mask "
            <<m_loopmask<<" (metric "<<m_loopmet<<", runner-up "<<m_loopnext<<")\n"

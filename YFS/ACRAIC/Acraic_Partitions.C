@@ -19,33 +19,22 @@
 using namespace YFS;
 
 
+/*
+  Derive the emission stages: one group per YFS radiating-dipole group in
+  the final state, leftover charged final legs as one more, and the initial
+  state last. Each stage must be charge-neutral, sum_{i in g} Q_i theta_i = 0,
+  or the decomposition is refused. Stage legs index m_stagemom: the external
+  legs, then any reconstructed resonance (ACRAIC: W_STAGES).
+*/
 bool Acraic_Base::BuildStages() {
-  /*
-    Stages are the charge-neutral groups of legs that radiate coherently and
-    whose propagators the partition sum moves: the initial state, and one
-    group per resonance in the final state. The final groups come from YFS's
-    radiating dipoles (SetStageGroups); charged final legs in no group form
-    one extra group; the initial state is appended LAST, so with a single
-    final group this is leg for leg the old (final = 0, initial = 1) split
-    and the partition enumeration order is unchanged. With no groups given
-    every charged final leg goes into one flat final stage, which is valid
-    for any N but resums initial-final interference through the production
-    line only.
-
-    theta = -1 incoming, +1 outgoing, so w = Q*theta reproduces the weights
-    Sfactor applies implicitly.
-  */
+  // theta = -1 incoming, +1 outgoing: w = Q*theta are Sfactor's weights
   if (m_flavs.size() < 4) return false;
   m_stagemom.clear();
   m_resonances.clear();
   for (size_t i(0); i < m_flavs.size(); ++i)
     m_stagemom.push_back(i < 2 ? m_bornmomenta[i] : m_pacraic[i]);
 
-  /*
-    The handler's groups in one form: the plain leg lists (SetStageGroups
-    with leg indices, every process so far) become StageGroups without a
-    resonance, so the code below is the same for both.
-  */
+  // plain leg lists become StageGroups without a resonance
   std::vector<StageGroup> handed(m_wgroups);
   for (size_t g(0); g < m_groups.size(); ++g) {
     StageGroup sg;
@@ -53,8 +42,8 @@ bool Acraic_Base::BuildStages() {
     handed.push_back(sg);
   }
 
-  // one final group per handed group: its charged, unused external legs and
-  // - for a decay stage - its resonance, registered as a new m_stagemom entry
+  // per handed group: its charged, unused legs and, for a decay stage, its
+  // resonance as a new m_stagemom entry
   struct FinalGroup { std::vector<int> legs; int resonance = -1; };
   std::vector<FinalGroup> groups;
   std::vector<char> used(m_flavs.size(), 0);
@@ -84,13 +73,9 @@ bool Acraic_Base::BuildStages() {
     if (!used[l] && m_flavs[l].Charge() != 0.) rest.legs.push_back((int)l);
   if (!rest.legs.empty()) groups.push_back(rest);
   if (groups.empty()) groups.push_back(FinalGroup());   // neutral final state
-  /*
-    A stage factor is gauge invariant only if the stage is separately
-    charge-neutral. A dipole group that is not (a same-charge pair from the
-    selector's fallback pass) is folded back into one flat final stage; if
-    even that is charged the decomposition is refused, as before. A decay
-    stage counts its resonance as an INCOMING leg: {mu+, W+ in} is neutral.
-  */
+  // A charged group (e.g. a same-charge pair from the dipole selector's
+  // fallback) folds everything into one flat final stage. A decay stage
+  // counts its resonance as incoming: {mu+, W+ in} is neutral.
   auto charge = [&](const FinalGroup &g) {
     double q(0.);
     for (size_t k(0); k < g.legs.size(); ++k) q += m_flavs[g.legs[k]].Charge();
@@ -123,12 +108,8 @@ bool Acraic_Base::BuildStages() {
     }
     m_stagelegs.push_back(st);
   }
-  /*
-    The production stage: the beams, and every resonance as an outgoing
-    leg. With no resonance this is the initial stage as before. The W terms
-    cancel between here and the decay stages in the total eikonal, so the
-    closure below holds with any common W momentum.
-  */
+  // The production stage: the beams and every resonance as an outgoing leg.
+  // The W terms cancel against the decay stages in the total eikonal.
   std::vector<StageLeg> ini;
   for (int i(0); i < 2; ++i) ini.push_back({i, -m_flavs[i].Charge()});
   for (size_t r(0); r < m_resonances.size(); ++r)
@@ -154,6 +135,24 @@ bool Acraic_Base::BuildStages() {
   m_nstages = (int)m_stagelegs.size();
   m_stagereduces.assign(m_nstages, 0);
   m_stagereduces[m_initstage] = 1;   // only initial-stage photons reduce X
+  // YFS: MODE ISR with a charged final state: ISR only (see m_isronly)
+  m_isronly = false;
+  if (!HasFSR())
+    for (int g(0); g < m_nstages; ++g)
+      if (g != m_initstage && !m_stagelegs[g].empty()) m_isronly = true;
+  if (m_isronly) {
+    // the final current does not radiate: its eikonal weights vanish, so the
+    // crude, the partition sum and collapsed soft photons carry the initial
+    // current alone; the legs stay for propagator shifts and vetoes
+    for (int g(0); g < m_nstages; ++g)
+      if (g != m_initstage)
+        for (size_t l(0); l < m_stagelegs[g].size(); ++l) m_stagelegs[g][l].w = 0.;
+    static bool shown(false);
+    if (!shown) { shown = true;
+      msg_Info()<<"ACRAIC: YFS MODE ISR with a charged final state - ISR only: "
+                <<"final-state emission vetoed in M_1/M_2, no initial-final "
+                <<"boxes or resonance exponentiation."<<std::endl; }
+  }
   { static bool shown(false);
     if (!shown) { shown = true;
       msg_Debugging()<<METHOD<<"(): "<<m_nstages<<" stages:";
@@ -203,9 +202,8 @@ std::vector<int> Acraic_Base::StageExternalLegs(int stage) const
   std::vector<int> legs;
   if (stage < 0 || stage >= (int)m_stagelegs.size()) return legs;
   const std::vector<StageLeg> &L(m_stagelegs[stage]);
-  // insertion order, each leg once: the momentum sums built from this list
-  // then add in the same order as before, which the bit-identity of the
-  // no-resonance case depends on
+  // insertion order, each leg once: keeps the momentum sums bit-identical
+  // to the no-resonance ordering
   auto add = [&](int leg) {
     if (std::find(legs.begin(), legs.end(), leg) == legs.end()) legs.push_back(leg); };
   for (size_t l(0); l < L.size(); ++l) {
@@ -216,6 +214,8 @@ std::vector<int> Acraic_Base::StageExternalLegs(int stage) const
   return legs;
 }
 
+// Comix mask of a stage's shift entry: the beams for the production stage
+// (a final-leg mask would also shift the W lines), else the external legs.
 size_t Acraic_Base::StageShiftMask(int stage) const
 {
   size_t mask(0);
@@ -233,6 +233,8 @@ size_t Acraic_Base::StageShiftMask(int stage) const
   return mask;
 }
 
+// YFS: IFI false. Vetoes keeping only the Comix diagrams in which each
+// explicit photon is emitted from the stage this partition puts it on.
 void Acraic_Base::AddPlacementVetoes(const std::vector<int> &photons,
                                    PropShifts &sh) const
 {
@@ -271,7 +273,7 @@ std::string Acraic_Base::NoIFIRefusal()
   if (m_nstages != 2)
     return "it needs exactly one initial and one final stage (e+e- -> f fbar), "
            "this process has "+ToString(m_nstages)+" stages";
-  if (m_bhabha || m_tchannel != 0 || BornHasExchangeLine())
+  if (m_bhabha || BornHasExchangeLine())
     return "the Born has a t-channel exchange line; the split by emitting "
            "stage is not gauge invariant there";
   if (WStagesActive()) return "W stages are active";
@@ -366,13 +368,7 @@ void Acraic_Base::CalculateSfactors() {
   m_Sfac.assign(m_nstages, std::vector<Complex>());
   for (size_t i(0); i < m_allphotons.size(); ++i)
     for (int g(0); g < m_nstages; ++g) {
-      /*
-        The stage's eikonal current, summed over its own legs against their
-        weights w = Q*theta.
-        
-        Legs name entries of m_stagemom, which holds the external legs first
-        and any reconstructed resonance after them.
-      */
+      // the stage's eikonal current, sum_l w_l S(p_l, k), w = Q*theta
       const std::vector<StageLeg> &L(m_stagelegs[g]);
       Complex sg(0., 0.);
       for (size_t l(0); l < L.size(); ++l)
@@ -380,17 +376,12 @@ void Acraic_Base::CalculateSfactors() {
                                   m_PhoHel[i]);
       m_Sfac[g].push_back(sg);
     }
-  // a resonance leg sits at its daughters here (no partition yet); under
-  // W_EIKONAL 1 the partition loop moves its pole per partition
+  // a resonance leg sits at its daughters here; under W_EIKONAL 1 the
+  // partition loop moves its pole per partition
 
-  /*
-    Closure the stage currents must sum to the TOTAL eikonal,
-
-        sum_g s_g(k)  =  s(k)  =  sum_{all legs i} w_i * SfactorLeg(p_i,k)
-
-    which is the statement that every emitter is counted exactly once. 
-  */
-  if (m_checkxs) {
+  // closure: sum_g s_g(k) = sum_{all legs i} w_i S(p_i,k), every emitter once
+  // (ISR only: the final legs carry weight 0 on purpose)
+  if (m_checkxs && !m_isronly) {
     for (size_t i(0); i < m_allphotons.size(); ++i) {
       Complex tot(0., 0.), sum(0., 0.);
       for (size_t l(0); l < m_flavs.size() && l < m_stagemom.size(); ++l) {
@@ -414,9 +405,7 @@ void Acraic_Base::CalculateSfactors() {
 }
 
 
-/*
-  Exact momentum conservation of what Comix is handed.
-*/
+// Exact momentum conservation of what Comix is handed (ACRAIC: MOMENTUM_REPAIR).
 bool Acraic_Base::RepairMomentumBalance()
 {
   static const bool on(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
@@ -528,10 +517,8 @@ void Acraic_Base::PartitionStart(int &last) {
 void Acraic_Base::PartitionPlus(int &last) {
   const size_t n(m_stage.size());
   if (n == 0) { last = 2; return; }
-  // Odometer in base m_nstages over the enumerated photons only, least
-  // significant photon first. At m_nstages = 2 with every photon enumerated
-  // this visits partitions in the same order as the original ISR/FSR
-  // increment it replaces.
+  // odometer in base m_nstages over the enumerated photons, least
+  // significant photon first
   size_t i(0);
   for (; i < n; ++i) {
     if (m_fixedstage.size() == n && m_fixedstage[i]) continue;
@@ -539,7 +526,7 @@ void Acraic_Base::PartitionPlus(int &last) {
     m_stage[i] = 0;
   }
   if (i == n) { last = 2; return; }   // carried off the top: enumeration done
-  // last = 1 marks the final partition, so the caller processes it and stops.
+  // last = 1: final partition, the caller processes it and stops
   bool atmax(true);
   for (size_t j(0); j < n; ++j) {
     if (m_fixedstage.size() == n && m_fixedstage[j]) continue;
@@ -606,13 +593,8 @@ Acraic_Base::StageTableSwap::~StageTableSwap()
   c.m_initstage = initstage; c.m_nstages = nstages;
 }
 
-/*
-  Whether photon j is below the beta_1 threshold in EVERY partition. The cut
-  (ComixInfraredSubtracted_1_0) is on y = 2k.S/S^2 with S the beams less the
-  other initial-state photons, so the largest y is with all of them on the
-  initial stage. A photon whose cut depends on the partition is left alone:
-  the next-to-soft flux below is then neither added nor double counted.
-*/
+// Whether photon j is below the beta_1 cut y = 2k.S/S^2 in every partition
+// (largest y: all other photons on the initial stage).
 bool Acraic_Base::Beta1NeverEvaluated(size_t j) const
 {
   static const double xcut(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
@@ -628,14 +610,9 @@ bool Acraic_Base::Beta1NeverEvaluated(size_t j) const
 }
 
 /*
-  The next-to-soft flux of photon j on the stage this partition puts it on.
-  beta_1 = M_1 - s beta_0 carries the photon's recoil on the Born; a photon
-  without beta_1 has the eikonal alone, and the exact one-photon weight is
-  the soft factor times (1 - x) for initial- and final-state photons alike.
-  The initial stage: (X)^2/(X + k)^2 with X the beams less the partition's
-  initial-state photons, i.e. s'/s. A final stage: (q + K)^2/(q + K - k)^2,
-  this photon's share of the stage pseudoflux, which rho_1 does not carry
-  (NO_PSEUDOFLUX rho0_only) while the crude does.
+  The next-to-soft flux of photon j on its stage in this partition, for a
+  photon without beta_1: X^2/(X + k)^2 on the initial stage (X the beams
+  less its photons), (q + K)^2/(q + K - k)^2 on a final stage.
 */
 double Acraic_Base::NextToSoftFlux(size_t j) const
 {
@@ -655,6 +632,12 @@ double Acraic_Base::NextToSoftFlux(size_t j) const
   return (a > 0. && b > 0.) ? a/b : 1.;
 }
 
+/*
+  ACRAIC: CRUDE_FROM_GENERATOR. The crude on the generator's flat dipole
+  groups rather than ACRAIC's stages (they differ with W stages), since
+  rho_crude must be the generator's density. Same expression as
+  InfraredSubtractedME_0_0. Returns < 0 if it cannot be built.
+*/
 double Acraic_Base::CrudeFromGenerator()
 {
   static const bool crudeborn(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
@@ -729,10 +712,11 @@ double Acraic_Base::CrudeFromGenerator()
 }
 
 /*
-  PartitionStart, with the softest photons collapsed onto a fixed stage
-  when more than ACRAIC: MAX_PARTITION_PHOTONS would be enumerated. The
-  numerator partition sum and the generator-side crude (CrudeFromGenerator)
-  both start from this, on their own stage tables.
+  Photons below SOFT_PARTITION_CUT, and the softest beyond
+  MAX_PARTITION_PHOTONS, are not enumerated: they keep a fixed stage
+  (largest eikonal) and carry the total eikonal s_tot(k) (m_sactu). Such a
+  photon can still be above BETA1_XCUT and gets its beta_1 against
+  s_tot(k) beta_0(X_fixed).
 */
 void Acraic_Base::PartitionStartCollapsed(int &last) {
   static const size_t maxphot(Settings::GetMainSettings()["ACRAIC"]["MAX_PARTITION_PHOTONS"]
@@ -775,7 +759,7 @@ void Acraic_Base::PartitionStartCollapsed(int &last) {
 }
 
 void Acraic_Base::Calculate() {
-  // Lab copies first: everything below boosts into the ACRAIC frame.
+  // lab copies first: everything below boosts into the ACRAIC frame
   m_allphotons_lab = m_isrphotons;
   m_allphotons_lab.insert(m_allphotons_lab.end(),
                           m_fsrphotons.begin(), m_fsrphotons.end());
@@ -788,13 +772,12 @@ void Acraic_Base::Calculate() {
   m_resexp.clear();
   m_resexpdv = 0.;
   m_resexpdh.clear();
+  // ACRAIC: IFI 0 sums the partitions incoherently, sum_p |A_p|^2 (KKMC
+  // KeyINT = 0), at ORDER 1; collapsed soft photons stay coherent.
   static const bool coh(Settings::GetMainSettings()["ACRAIC"]["IFI"]
                         .SetDefault(true).Get<bool>());
   m_ifi_coherent = coh || m_order == 2;
-  /*
-    YFS: IFI false: incoherent partitions at every order, each partition with
-    its own placement of the photons in M_1 and M_2 (AddPlacementVetoes).
-  */
+  // YFS: IFI false: incoherent at every order, with placement vetoes in M_1, M_2
   if (!m_ifi) {
     static const std::string why(NoIFIRefusal());
     if (!why.empty()) THROW(fatal_error, "YFS: IFI false is not available: "+why);
@@ -816,12 +799,7 @@ void Acraic_Base::Calculate() {
   MakePhotonHel();
   ProbeFrames();
   CalculateSfactors();
-  /*
-    CalculateSfactors clears m_Sfac when BuildStages rejects the decomposition
-    (a stage carrying net charge, so gauge dependent). Bail here rather than
-    index an empty table below: the event then contributes no ACRAIC weight,
-    which YFS_Handler already treats as "ACRAIC produced nothing".
-  */
+  // stage decomposition refused (charged stage): no ACRAIC weight
   if ((int)m_Sfac.size() != m_nstages
       || (!m_allphotons.empty() && m_Sfac[0].size() != m_allphotons.size())) {
     m_nparts = 0;
@@ -831,30 +809,22 @@ void Acraic_Base::Calculate() {
   m_spincache.resize(1 + 4*m_allphotons.size());
   m_spinvalid.assign(m_spincache.size(), 0);
   m_realphot.assign(m_allphotons.size(), Amplitude());
-  m_realphotM1.assign(RealVirtualMode() == acraicrv::averaged ? m_allphotons.size() : 0,
+  m_realphotM1.assign(RealVirtualMode() == acraicrv::averaged ||
+                     RealVirtualMode() == acraicrv::helicity ? m_allphotons.size() : 0,
                       Amplitude());
   SetBeta1Trace();
-  /*
-    The invariant of the outgoing FERMION pair, not of legs 2 and 3. With
-    anything else in the final state those are not the same: for
-    e+e- -> H l+ l- leg 2 is the Higgs, so this was (p_H + p_l-)^2 rather than
-    the dilepton mass. m_svarQ is the denominator of the pseudo-flux factor
-    m_cfac = sProd*(svarX/m_svarQ) and feeds the FSR kinematic term, so it is
-    load bearing, and being wrong there is silent - it is a perfectly good
-    invariant, just not the one the decay propagator sits at.
-  */
+  // the outgoing fermion pair's invariant, not legs 2 and 3 (e.g. H l+ l-)
   m_svarQ = (m_pacraic[m_if1] + m_pacraic[m_if2]).Abs2();
   m_sQ    = m_svarQ;
   MakePropT(m_pacraic);
 
   
-  // One Comix/hand ratio per photon, before the partition loop: inside it the
-  // soft weights are in scope but the photon's TOTAL amplitude is not.
+  // per-photon Comix/hand ratios need the total amplitude: before the loop
   RunBeta1Scan();
   BuildComixBornAlignment();
   BuildResonanceBornDelta();   // after the alignment: it uses m_comixflip
   BuildComixPhotonRatios();
-  // ACRAIC: TCHANNEL_REDUCED_BORN (tristate, see Acraic_Base::RegisterDefaults)
+  // ACRAIC: TCHANNEL_REDUCED_BORN
   ResolveReducedBorn();
 
   int last(0), nparts(0);
@@ -882,8 +852,7 @@ void Acraic_Base::Calculate() {
     bool crudefixed(false);
     std::vector<Complex> Sactu(m_allphotons.size(), Complex(1., 0.));
     for (size_t j(0); j < m_allphotons.size(); ++j) {
-      // an enumerated photon carries its stage's eikonal, a fixed (soft)
-      // one the total: its sum over stages has been done
+      // enumerated photon: its stage's eikonal; collapsed one: the total
       if (m_fixedstage.size() == m_allphotons.size() && m_fixedstage[j]) {
         Sactu[j] = Complex(0., 0.);
         double inc(0.);
@@ -891,27 +860,24 @@ void Acraic_Base::Calculate() {
           Sactu[j] += m_Sfac[g][j];
           inc += std::norm(m_Sfac[g][j]);
         }
-        // the crude is the generator's density: incoherent over the labels
         crudeprod *= inc;
         crudefixed = true;
       } else {
         Sactu[j] = m_Sfac[m_stage[j]][j];
         crudeprod *= std::norm(Sactu[j]);
       }
-      // after the crude: it is the generator's density, not the amplitude
+      // after the crude, which is the generator's density
       if (nextsoft[j]) Sactu[j] *= sqrt(NextToSoftFlux(j));
       sProd   *= Sactu[j];
       if (m_stagereduces[m_stage[j]]) PX -= m_allphotons[j];
     }
+    // The crude's soft-factor product is incoherent per photon, sum_g |s_g|^2,
+    // never |s_I + s_F|^2: the generator labels each photon initial or final.
     m_sactu = Sactu;
     m_crudeprod = crudeprod;
     m_crudefixed = crudefixed;
-    /*
-      W_EIKONAL 1: the resonance stages' soft factors depend on THIS
-      partition (the W's pole momentum carries the partition's decay
-      photons), so they are rebuilt here and the products above redone
-      with them. No-op without W stages.
-    */
+    // W_EIKONAL 1: the W pole carries this partition's decay photons, so the
+    // resonance stages' soft factors and the products are redone
     if (WStagesActive() && m_weikonal == weikonal::partition) {
       RecomputeResonanceSfactors();
       sProd = Complex(1., 0.); crudeprod = 1.;
@@ -970,27 +936,21 @@ void Acraic_Base::Calculate() {
     m_cfac = sProd * Complex(pfmode == pseudoflux::rho0_and_rho1 ? m_pflux : 1., 0.);   // rho_1 side
     MakeProp();
     ResonanceProbe(nparts);
-    // Electroweak form factors at THIS partition's scale, and the scattering
-    // angle the WW/ZZ boxes depend on. No-op unless ACRAIC: WEAK is set.
+    // ACRAIC: WEAK form factors at this partition's scale
     MakeEWFF(m_sp, cos(m_pacraic[m_if1].Theta()));
     MakeBoxMandelstams(PX);
 
     AccumulateBeta1Partition();
     if (dobeta2 || m_treeprobe) ResetBeta1Record();
     InfraredSubtractedME_0_0();
-    m_b1terms.clear();        // ACRAIC: TCHANNEL_MULTIPHOTON 2: this partition's
-    // Only when a virtual was asked for and ACRAIC is its source; see
-    // Acraic_Base::AcraicOwnVirtual.
+    m_b1terms.clear();        // TCHANNEL_MULTIPHOTON 2: this partition's beta_1 terms
     if (AcraicOwnVirtual()) InfraredSubtractedME_0_1();
     for (size_t j(0); j < m_allphotons.size(); ++j) {
       if (m_checkxs && m_stagereduces[m_stage[j]]) {
         CheckSoftFactor(m_allphotons[j]);
         CheckUVDiagonality(m_allphotons[j]);
       }
-      /*
-        beta_1: Comix's one-photon amplitude with the eikonal subtracted off
-        it.
-      */
+      // beta_1: Comix's one-photon amplitude less the eikonal
       if (!ComixInfraredSubtracted_1_0(m_allphotons[j], m_PhoHel[j],
                                        (int)j)) {
         static bool warned(false);
@@ -1001,14 +961,10 @@ void Acraic_Base::Calculate() {
         }
       }
     }
-    // ACRAIC: TCHANNEL_MULTIPHOTON 2: the factorised remainder of the beta_1
-    // terms just added (empty, so a no-op, in every other mode)
+    // ACRAIC: TCHANNEL_MULTIPHOTON 2: factorised remainder of the beta_1 terms
     AddFactorisedRemainder();
-    /*
-      ACRAIC: ORDER 2 - the tree residuals beta_m, 2 <= m <= TREE_BETA_MAX, for
-      every eligible photon set (Acraic_Beta2.C), after the beta_1 loop of the
-      SAME partition, whose M_1 and eikonals they subtract.
-    */
+    // ACRAIC: ORDER 2: tree residuals beta_m, 2 <= m <= TREE_BETA_MAX; after
+    // this partition's beta_1 loop, whose M_1 and eikonals they subtract
     if (dobeta2 || m_treeprobe) AddTreeBetas(dobeta2);
     EmulateKKMCFlux();
 
@@ -1031,11 +987,8 @@ void Acraic_Base::Calculate() {
     PartitionPlus(last);
     if (last == 2) break;
   }
-  /*
-    ACRAIC: CRUDE_FROM_GENERATOR - the crude on the generator's own stages.
-    compare only prints it next to the per-partition one (the gate: the two
-    must agree wherever ACRAIC's stages are the generator's dipoles).
-  */
+  // ACRAIC: CRUDE_FROM_GENERATOR; compare only prints it beside the
+  // per-partition crude
   const crudegen::code cg(m_crudegen != crudegen::automatic ? m_crudegen
                           : (WStagesActive() ? crudegen::on : crudegen::off));
   if (cg != crudegen::off) {
@@ -1118,9 +1071,8 @@ void Acraic_Base::Calculate() {
  
   CheckPartitionCount(nparts);
 
-  // Comix-supplied O(alpha) real, if ACRAIC: COMIX_REAL asked for it. It
-  // OVERWRITES m_AmpExpo1 for one-photon events, so it has to run after the
-  // partition loop has finished accumulating and before MakeRho squares.
+  // ACRAIC: COMIX_REAL overwrites m_AmpExpo1 for one-photon events: after
+  // the partition loop, before MakeRho
   ApplyComixReal();
 
   MakeRho();
@@ -1295,12 +1247,8 @@ void Acraic_Base::Calculate() {
               << "  photon x = 2E/sqrt(s) = " << xgam
               << ",  E_gamma = " << m_allphotons[0][0] << " GeV\n";
     if (m_order == 2) {
-      /*
-        The tree-level O(alpha^2) partner of the KKMC harness's mode 5
-        (KKTREE2 line: rho1/rho0 and rho2/rho0 with no virtual anywhere). The
-        Sherpa side must be run without a ACRAIC-internal virtual
-        (YFS: ACRAIC_Virtual: external, which composes outside m_result).
-      */
+      // tree-level partner of the KKMC harness's KKTREE2 line; run with
+      // YFS: ACRAIC_Virtual: external
       std::cerr<<std::setprecision(12)<<"@@@ SHTREE2 nphot="<<m_allphotons.size()
                <<" rho1/rho0="<<m_result1/m_result0
                <<" rho2/rho0="<<m_result2/m_result0
@@ -1364,8 +1312,7 @@ void Acraic_Base::ResolveReducedBorn()
     if (!m_stagelegs[g].empty()) ++nrad;
   m_redborn = rb == tristate::on || (rb == tristate::automatic && m_comixborn && nrad == 1
                          && BornHasExchangeLine());
-  // the reduced point is LegsAt's 2 -> 2 construction; with W stages the
-  // partition Born stays the shifted physical-spinor one
+  // the reduced point is a 2 -> 2 construction: not with W stages
   if (WStagesActive() && m_redborn) {
     static bool warned(false);
     if (!warned) { warned = true;

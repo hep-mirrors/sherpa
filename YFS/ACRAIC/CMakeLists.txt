@@ -1,19 +1,23 @@
-set(CEEX_SOURCES Ceex_Base.C
-                 Ceex_Spinors.C
-                 Ceex_Born.C
-                 Ceex_Virtual.C
-                 Ceex_Real.C
-                 Ceex_Partitions.C
-                 Ceex_Comix.C
-                 Ceex_Checks.C
-                 Ceex_Beta2.C
-                 Ceex_LoopHelicity.C)
+set(ACRAIC_SOURCES Acraic_Amplitude.C
+                 Acraic_Base.C
+                 Acraic_Spinors.C
+                 Acraic_Born.C
+                 Acraic_Virtual.C
+                 Acraic_Real.C
+                 Acraic_Partitions.C
+                 Acraic_Comix.C
+                 Acraic_Checks.C
+                 Acraic_Beta2.C
+                 Acraic_LoopHelicity.C
+                 Acraic_RealVirtualHelicity.C
+                 Acraic_Resonance.C)
 
-set(CEEX_HEADERS Ceex_Base.H)
+set(ACRAIC_HEADERS Acraic_Amplitude.H
+                   Acraic_Base.H)
 
 
-sherpa_create_git_info(CEEX ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+sherpa_create_git_info(ACRAIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  
-add_library(YFSCEEX ${SHERPA_SUBLIB_TYPE} ${CEEX_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
-sherpa_handle_shared_library(YFSCEEX YFSCEEX)
-add_dependencies(YFSCEEX CEEX_Git_Info)
+add_library(YFSACRAIC ${SHERPA_SUBLIB_TYPE} ${ACRAIC_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/Git_Info.C )
+sherpa_handle_shared_library(YFSACRAIC YFSACRAIC)
+add_dependencies(YFSACRAIC ACRAIC_Git_Info)
