@@ -64,7 +64,6 @@ namespace PHASIC {
   };
    class E_Selector : public Selector_Base {
     double  m_emin, m_emax;
-    bool m_labframe;
     ATOOLS::Flavour m_flav;
   public:
     E_Selector(Process_Base *const);
@@ -72,11 +71,9 @@ namespace PHASIC {
     void     SetRange(ATOOLS::Flavour,double,double);
     bool     Trigger(ATOOLS::Selector_List &);
     void     BuildCuts(Cut_Data *);
-    inline void SetLabframe(const bool &lab) {m_labframe=lab;}
   };
   class Polar_Angle_Selector : public Selector_Base {
     double  m_angmin, m_angmax, m_use_radians;
-    bool m_labframe;
     ATOOLS::Flavour m_flav;
   public:
     Polar_Angle_Selector(Process_Base *const);
@@ -85,7 +82,6 @@ namespace PHASIC {
     bool     Trigger(ATOOLS::Selector_List &);
     void     BuildCuts(Cut_Data *);
     inline void UseRadians(int radians) {m_use_radians = radians;}
-    inline void SetLabframe(const bool &lab) {m_labframe=lab;}
   };
   // -----------------------------
   // two particle selectors
@@ -223,7 +219,6 @@ namespace PHASIC {
 
   class Apoll_Selector : public Selector_Base {
     double  m_apmin, m_apmax;
-    bool m_labframe;
     ATOOLS::Flavour m_flav1,m_flav2;
   public:
     Apoll_Selector(Process_Base *const);
@@ -231,7 +226,6 @@ namespace PHASIC {
     void     SetRange(ATOOLS::Flavour,ATOOLS::Flavour,double,double);
     bool     Trigger(ATOOLS::Selector_List &);
     void     BuildCuts(Cut_Data *);
-    inline void SetLabframe(const bool &lab) {m_labframe=lab;}
   };
 
   // -----------------------------
@@ -600,9 +594,7 @@ bool E_Selector::Trigger(Selector_List &sl)
   if (!m_on) return true;
   for (size_t i=m_nin;i<sl.size();i++) {
     if (m_flav.Includes(sl[i].Flavour())) {
-      Vec4D mom = sl[i].Momentum(); 
-      if(m_labframe) p_proc->Integrator()->Beam()->BoostBackLab(mom);
-      double E = mom.E();
+      const double E = sl[i].Momentum().E();
       if (!m_sel_log->CountingIdentity( ((E>=m_emin) && (E<=m_emax)) )) return false;
     }
   }
@@ -633,18 +625,14 @@ operator()(const Selector_Key &key) const
 {
   Scoped_Settings s{ key.m_settings };
   const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
-  if (parameters.size() != 4 && parameters.size() != 5)
+  if (parameters.size() != 4)
     THROW(critical_error, "Invalid syntax");
-  bool labframe;
-  if(parameters.size()==5) labframe = s.Interprete<int>(parameters[4]);
-  else labframe = false;
   const auto kf = s.Interprete<int>(parameters[1]);
   const auto min = s.Interprete<double>(parameters[2]);
   const auto max = s.Interprete<double>(parameters[3]);
   Flavour flav = Flavour((kf_code)abs(kf),kf<0);
   E_Selector *sel = new E_Selector(key.p_proc);
   sel->SetRange(flav,min,max);
-  sel->SetLabframe(labframe);
   return sel;
 }
 
@@ -677,9 +665,7 @@ bool Polar_Angle_Selector::Trigger(Selector_List &sl)
   if (!m_on) return true;
   for (size_t i=m_nin;i<sl.size();i++) {
     if (m_flav.Includes(sl[i].Flavour())) {
-      Vec4D mom = sl[i].Momentum();
-      if(m_labframe) p_proc->Integrator()->Beam()->BoostBackLab(mom);
-      double ang = mom.Theta(Vec4D::ZVEC);
+      double ang = sl[i].Momentum().Theta(Vec4D::ZVEC);
       if(!m_use_radians) ang *= 180./M_PI;
       if (!m_sel_log->CountingIdentity( ((ang>=m_angmin) && (ang<=m_angmax)) )) return false;
     }
@@ -711,7 +697,7 @@ operator()(const Selector_Key &key) const
 {
   Scoped_Settings s{ key.m_settings };
   const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
-  if (parameters.size() < 4 || parameters.size() > 6)
+  if (parameters.size() < 4 || parameters.size() > 5)
     THROW(critical_error, "Invalid syntax");
   const auto kf = s.Interprete<int>(parameters[1]);
   const auto min = s.Interprete<double>(parameters[2]);
@@ -720,13 +706,10 @@ operator()(const Selector_Key &key) const
   if(parameters.size()==5){
     radians = s.Interprete<int>(parameters[4]);
   }
-  bool labframe = false;
-  if(parameters.size()==6) labframe = s.Interprete<int>(parameters[5]);
   Flavour flav = Flavour((kf_code)abs(kf),kf<0);
   Polar_Angle_Selector *sel = new Polar_Angle_Selector(key.p_proc);
   sel->SetRange(flav,min,max);
   sel->UseRadians(radians);
-  sel->SetLabframe(labframe);
   return sel;
 }
 
@@ -1191,13 +1174,7 @@ bool Apoll_Selector::Trigger(Selector_List &sl)
            (m_flav1.Includes(sl[j].Flavour()) &&
             m_flav2.Includes(sl[i].Flavour())) ) {
         // double ptij = (sl[i].Momentum()+sl[j].Momentum()).PPerp();
-        Vec4D mom1 = sl[i].Momentum();
-        Vec4D mom2 = sl[j].Momentum();
-        if(m_labframe){
-          p_proc->Integrator()->Beam()->BoostBackLab(mom1);
-          p_proc->Integrator()->Beam()->BoostBackLab(mom2);
-        }
-        double azdiff = mom1.Phi()-mom2.Phi();
+        double azdiff = sl[i].Momentum().Phi()-sl[j].Momentum().Phi();
         double apoll = fabs(fabs(azdiff)-M_PI);
         if (!m_sel_log->CountingIdentity( ((apoll>=m_apmin) && (apoll<=m_apmax)) )) return false;
       }
@@ -1235,11 +1212,8 @@ operator()(const Selector_Key &key) const
   Scoped_Settings s{ key.m_settings };
   const auto parameters = s.SetDefault<std::string>({}).GetVector<std::string>();
   assert(parameters[0] == "Acoplanarity");
-  if (parameters.size() != 5 && parameters.size() != 6)
+  if (parameters.size() != 5)
     THROW(critical_error, "Invalid syntax");
-  bool labframe;
-  if(parameters.size()==6) labframe = s.Interprete<int>(parameters[5]);
-  else labframe = false;
   const auto kf1 = s.Interprete<int>(parameters[1]);
   const auto kf2 = s.Interprete<int>(parameters[2]);
   const auto min = s.Interprete<double>(parameters[3]);
@@ -1248,7 +1222,6 @@ operator()(const Selector_Key &key) const
   Flavour flav2 = Flavour((kf_code)abs(kf2),kf2<0);
   Apoll_Selector *sel = new Apoll_Selector(key.p_proc);
   sel->SetRange(flav1,flav2,min,max);
-  sel->SetLabframe(labframe);
   return sel;
 }
 
@@ -2353,23 +2326,6 @@ bool T_Selector::Trigger(Selector_List &sl)
 
 void T_Selector::BuildCuts(Cut_Data * cuts)
 {
-  // Hand the t bound to the phase space instead of only vetoing on it after
-  // the point has been generated.
-  //
-  // Indices are 0 and 2 to match Trigger(), which measures
-  // t = (sl[0] - sl[2])^2. The two must agree: a bound applied to a different
-  // pair than the one being tested would shape the phase space around a cut
-  // that is not the one enforced.
-  if (!m_on) return;
-  // Only an upper bound on t constrains anything -- t is negative, so a
-  // non-negative m_tmax excludes nothing and is exactly the "unconstrained"
-  // value the slot already holds.
-  if (m_tmax >= 0.0) return;
-  if (m_nin < 1 || m_n < 3) return;
-  // Min, not Max: t is negative and more negative is the tighter bound, and the
-  // slot starts at 0.0.
-  cuts->scut[0][2] = cuts->scut[2][0] =
-    ATOOLS::Min(cuts->scut[0][2], m_tmax);
 }
 
 void T_Selector::SetRange(Flavour f1, Flavour f2, double min,double max)
