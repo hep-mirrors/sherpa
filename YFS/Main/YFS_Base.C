@@ -44,20 +44,22 @@ void YFS_Base::RegisterDefaults(){
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   s["MODE"].ResetDefault().SetDefault(yfsmode::off);
   // 2026-09-27: the validated paper settings are the defaults, so that a
-  // card needs only CEEX: 1 (see RegisterSettings for MODE)
+  // card needs only ACRAIC: 1 (see RegisterSettings for MODE)
   s["BETA"].SetDefault(1);
   s["VMAX"].SetDefault(0);
-  s["IR_CUTOFF"].ResetDefault().SetDefault(1e-6);
+  // lower bound on |t| of the exchange lines, GeV^2 (0: off);
+  // see YFS_Handler::ExchangeLinesPassTMin
+  s["EXCHANGE_T_MIN"].SetDefault(0.);
+  // the paper value (2026-10-06); results are cutoff independent
+  s["IR_CUTOFF"].ResetDefault().SetDefault(1e-5);
   s["DELTA"].SetDefault(1e-2);
   s["PHOTON_MAX"].SetDefault(100);
   s["LOOP_TOOL"].SetDefault(false);
-  s["FILL_BLOB"].SetDefault(true);
   s["FSR_DEBUG"].SetDefault(false);
   s["ISR_DEBUG"].SetDefault(false);
   s["DEBUG_DIR_ISR"].SetDefault("ISR_DEBUG");
   s["DEBUG_DIR_FSR"].SetDefault("FSR_DEBUG");
   s["DEBUG_DIR_NLO"].SetDefault("YFS_NLO_Hist");
-  s["TChannel-Cut"].SetDefault(0);
   s["COULOMB"].SetDefault(false);
   s["HIDE_PHOTONS"].SetDefault(true);
   s["FULL_FORM"].SetDefault(1);
@@ -85,13 +87,16 @@ void YFS_Base::RegisterDefaults(){
   s["CHECK_REAL"].SetDefault(0);
   s["CHECK_RV"].SetDefault(0);
   s["RV_Hard_Photon"].SetDefault(0);
-  s["CEEX_Compare"].SetDefault(0);
+  s["ACRAIC_Compare"].SetDefault(0);
+  // diagnostic: per-event ingredients of ACRAIC and YFS.NLO_EW as named
+  // columns YFS.DB_* (YFS_Handler::BuildNamedWeights); off = bit-identical
+  s["DIFF_BUDGET_STREAMS"].SetDefault(false);
   s["VV_Approx_Uncertainty"].SetDefault(1.0);
   s["RV_TEST_PHOTON_X"].SetDefault(0.3);
   s["RV_TEST_PHOTON_THETA"].SetDefault(M_PI / 2.);
   s["RV_TEST_PHOTON_PHI"].SetDefault(0.);
-  s["RV_SOFT_CUT"].SetDefault(0.);
-  s["RR_SOFT_CUT"].SetDefault(0.);
+  s["RV_SOFT_CUT"].SetDefault(1e-4);
+  s["RR_SOFT_CUT"].SetDefault(1e-5);
   s["RV_CANCEL_EPS"].SetDefault(0.);
   s["RV_CANCEL_HIST"].SetDefault(0);
   s["RV_ME_MAX_RATIO"].SetDefault(0.);
@@ -105,24 +110,26 @@ void YFS_Base::RegisterDefaults(){
   s["WEIGHT_MODE"].SetDefault(wgt::full);
   s["HARD_MIN"].SetDefault(0.);
   s["PHOTON_MASS"].SetDefault(0.1);
-  s["CEEX"].SetDefault(false);
+  // ACRAIC is the nominal weight wherever YFS is on. The default
+  // does NOT switch YFS on: only an explicit ACRAIC: true implies MODE (below).
+  s["ACRAIC"].SetDefault(true);
   /*
     Which O(alpha) correction the event carries as its NOMINAL weight
     (tristate, or the old -1/0/1):
-      auto (-1, default): follow CEEX - with CEEX on, ACRAIC (the
-        amplitude-level CEEX weight) is the nominal and YFS.NLO (squared
-        level) becomes the named column YFS.NLO_EW; with CEEX off, YFS.NLO as
+      auto (-1, default): follow ACRAIC - with ACRAIC on, ACRAIC (the
+        amplitude-level ACRAIC weight) is the nominal and YFS.NLO (squared
+        level) becomes the named column YFS.NLO_EW; with ACRAIC off, YFS.NLO as
         before.
       on (1) / off (0): force ACRAIC / YFS.NLO.
     Every other named column keeps its absolute weight either way.
   */
-  s["CEEX_WEIGHT"].SetDefault(tristate::automatic);
+  s["ACRAIC_WEIGHT"].SetDefault(tristate::automatic);
   /*
-    Where CEEX's virtual comes from. The default reproduces what the code did
-    implicitly - CEEX's own when no loop provider exists - but now says so, and
+    Where ACRAIC's virtual comes from. The default reproduces what the code did
+    implicitly - ACRAIC's own when no loop provider exists - but now says so, and
     refuses rather than proceeding when that choice cannot be right.
   */
-  s["CEEX_Virtual"].SetDefault(ceexvirt::automatic);
+  s["ACRAIC_Virtual"].SetDefault(acraicvirt::automatic);
   s["Collinear_Real"].SetDefault(false);
   s["CLUSTERING_THRESHOLD"].SetDefault(10);
   // End-of-run counts of why CalculateFSR returned false or set a zero
@@ -131,14 +138,63 @@ void YFS_Base::RegisterDefaults(){
   // Pole scheme: subtract the decay dipoles' virtual B from the loop
   // (Define_Dipoles::DecayVirtualSubtraction). false (default), unvalidated.
   s["WW_DECAY_VIRTUAL_SUB"].SetDefault(false);
-  s["TChannel"].SetDefault(0);
+  /*
+    The photonic two-loop beta_0^(2) at LL+NLL (YFS/Main/Beta0_2.H,
+    YFS/NLO/NLO_Beta02.C). YFS: BETA0_2 switches it on in YFS.NLO, ACRAIC:
+    BETA0_2 in ACRAIC; none|ll|llnll|exp, default none (off). The other
+    keys are shared by both columns:
+      BETA0_2_PAIRS        all|same_side - the pairs whose K_ij form delta_f
+      BETA0_2_CROSS        the products between pairs in (1/2) delta_f^2
+                           (false: KKMC's CEEX2/CEEX1 step, diagnostic only)
+      BETA0_2_WEAK_PRODUCT the delta_f w product (false: like-for-like KKMC)
+      BETA0_2_ALPHA        alpha0|loop - the coupling of delta_f and the NLL
+      BETA0_2_PROBE        @@@ B02 lines (first n events, and the ACRAIC dump)
+      BETA0_2_BOXES        with two_loop: the non-factorisable photonic two-loop
+                           boxes (Beta0_2_Boxes.H); false keeps only the exact
+                           vertex constant, to measure the boxes on their own
+      BETA0_2_DIPHOTON     with two_loop, e+e- -> gamma gamma Borns: the exact
+                           photonic two-loop hard function of hep-ph/0201274
+                           (EXTRA_XS/NNLO/ee_aa_QED_TwoLoop.H) on top of the
+                           vertex skeleton; false: the vertex constant alone
+                           (no other process is affected either way)
+      BETA0_2_DIPHOTON_POWER_CUT (1e-3): no hard function where
+                           m_e^2/min(|t|,|u|) of the Born point exceeds it
+                           (beyond its leading power; counted at the end)
+    With YFS: BETA0_2 on, the EEX estimate VV_EEX/NNLO_VV* is retired.
+  */
+  s["BETA0_2"].SetDefault(beta02::none);
+  s["BETA0_2_PAIRS"].SetDefault(beta02pairs::all);
+  s["BETA0_2_CROSS"].SetDefault(true);
+  s["BETA0_2_WEAK_PRODUCT"].SetDefault(true);
+  s["BETA0_2_ALPHA"].SetDefault(beta02alpha::alpha0);
+  s["BETA0_2_PROBE"].SetDefault(0);
+  s["BETA0_2_BOXES"].SetDefault(true);
+  s["BETA0_2_DIPHOTON"].SetDefault(true);
+  Settings::GetMainSettings()["ACRAIC"]["BETA0_2"].SetDefault(beta02::none);
+  /*
+    YFS: DYSON_VP none|resummed|complete (none): the Dyson resummation of
+    the photon vacuum polarisation on the Born-level amplitude of both
+    columns (YFS/Main/Dyson_VP.H): resummed beyond a full-EW provider's first
+    order, complete for a provider without the photon self-energy.
+    DYSON_VP_PROBE: @@@ DYSONVP lines for the first n events.
+  */
+  s["DYSON_VP"].SetDefault(dysonvp::none);
+  s["DYSON_VP_PROBE"].SetDefault(0);
+  /*
+    Target 3 of the two-loop review (NOTES-beta0-2-2026-10-01.md):
+    YFS: M1_SQUARE averaged|helicity - the |m_1|^2 of YFS.NLO's beta_0^(2);
+    ACRAIC: EW_HIGHER_ORDER_HELICITY none|averaged|helicity - EW_HIGHER_ORDER
+    (GRIFFIN NNLO - NLO) in ACRAIC's helicity virtual. Defaults: the old code.
+  */
+  s["M1_SQUARE"].SetDefault(m1square::averaged);
+  Settings::GetMainSettings()["ACRAIC"]["EW_HIGHER_ORDER_HELICITY"].SetDefault(ewhohel::none);
   s["NLO_Weight_Breakdown"].SetDefault(false);
   s["Ladder_Weights"].SetDefault(false);
   s["Dump_Dipoles"].SetDefault(0);
   s["CHECK_INVARIANTS"].SetDefault(false);
   /*
     NLO diagnostics. Off by default, read through Settings rather than the
-    environment for the same reason as the CEEX ones: a run has to be
+    environment for the same reason as the ACRAIC ones: a run has to be
     reproducible from its card alone.
   */
   s["REAL_STAB"].SetDefault(0);        // @@@ RSTAB / @@@ MAPQ
@@ -186,50 +242,19 @@ void YFS_Base::RegisterDefaults(){
         treats it as event).
   */
   s["Flux_Mode"].SetDefault(fluxmode::mapped);
-  s["IFI_Sub"].SetDefault(true);
-  // Emission-side initial-final interference. Off by default: with it off the
-  // IF form factor holds the whole soft integral (omega = sqrt(s)/2) and is
-  // cutoff-independent, which is the safe inclusive approximation. With it on,
-  // Define_Dipoles::RealIFWeight() reweights every generated photon by the IF
-  // radiation function and the form factor's cutoff drops to IFI_Omega, so the
-  // two must be switched together - see Define_Dipoles::IFIOmega().
-  s["IFI_Real"].SetDefault(true);
-  // Soft cutoff shared by the IF form factor and the photon reweighting, in
-  // GeV. Only read when IFI_Real is on.
-  //
-  // ISR and FSR generate against different cutoffs (v > IR_CUTOFF/sqrt(s) in
-  // the CMS vs FSR_CUT in the dipole rest frame), but that is not a mismatch
-  // to work around: FSR::YFS_FORM() carries the Piatek translation
-  // m_DelYFS = Btilda(dipole, m_Emin) - Btilda(Q frame, m_EminQ) (FSR.C:488),
-  // exactly as KKMC does in KKarFin/KKceex.cxx:288-296, which moves the FSR
-  // bookkeeping onto the single scale m_Emin. KKMC then uses that one Emin for
-  // Yisr, Yfsr AND Yint alike, so the IF cutoff belongs on the same scale.
-  //
-  // 0 therefore means "use FSR::Initialize()'s m_Emin", which is IR_CUTOFF/2.
   /*
-    0 is a SENTINEL, not the omega -> 0 limit: it selects a different branch in
-    the IF form factor. Measured on small-angle Bhabha at the Z pole, which is
-    the case that exposes it because the initial and final electron are nearly
-    collinear so the IF dipole invariant is t:
-
-        IFI_Omega   0      sigma 783240   (analytic 4 pi alpha^2/t_min: 869377)
-                    1e-5         2.85e6
-                    5e-4         2.05e6
-
-    i.e. NOT monotonic in omega - 0 is off the curve entirely. The default had
-    been changed from 0. to 1e-5 without a note, which inflated small-angle
-    Bhabha by a factor 3.6. It went unnoticed because every other card in the
-    tree pins IFI_Omega explicitly.
+    YFS: IFI (default true): initial-final interference at all
   */
+  s["IFI"].SetDefault(true);
+  s["IFI_Sub"].SetDefault(true);
+  s["IFI_Real"].SetDefault(true);
   s["IFI_Omega"].SetDefault(0.);
-  // Diagnostic clamp on the per-photon IF reweight, OFF by default (<= 0).
-  // RealIFWeight cancels against beta_1 exactly, so clamping is not a safety
-  // net - it injects a residue exactly where it fires. Only for bisecting.
+
   s["IFI_RClip"].SetDefault(0.);
   s["Massless_Sub"].SetDefault(false);
   s["Check_Real_Sub"].SetDefault(0);
   s["Check_RR_Sub"].SetDefault(0);
-  s["Integrate_NLO"].SetDefault(true);
+  s["Integrate_NLO"].SetDefault(false);
   s["Collinear_Virtual"].SetDefault(false);
   s["Virtual_Sub"].SetDefault(true);
   s["Dim_Reg"].SetDefault(true);
@@ -238,35 +263,47 @@ void YFS_Base::RegisterDefaults(){
   s["Fixed_Order"].SetDefault(fixed_order::full);
   s["SKIP_NEG_WEIGHTS"].SetDefault(false);
   s["NLO_FSR_PHOTONS"].SetDefault(true);
-  // Default 1 since 2026-09-25: the fixed-order real for a final-state photon
-  // is evaluated on the event's post-emission legs (REAL_FSR_MAP), which are
-  // in the lab, and GetMEPhotons() is captured before Dipole::Boost(), in the
-  // pair frame. Mixing the two put |M_1|^2 at a point that was not the event:
-  // r/rho_1(CEEX) spread over 0.005-0.4 on single-FSR-photon events where the
-  // event-record photons give 0.01613 on every event. The photons hidden as
-  // unresolved are below the resolution threshold and carry no beta_1 worth
-  // the frame error; set false to correct them anyway (then REAL_FSR_MAP:
-  // rest_frame).
+
   s["NLO_FSR_FROM_EVENT"].SetDefault(true);
   s["MIN_PHOTON"].SetDefault<int>(-1);
   s["FB_Analysis"].SetDefault(false);
   s["FB_Analysis_KF"].SetDefault<int>(0);
 }
 
+
+static void RefuseOldAcraicKeys()
+{
+  const std::string old("CE" "EX");
+  Settings &main(Settings::GetMainSettings());
+  std::vector<std::string> bad;
+  if (!main[old].GetKeys().empty() || main[old].IsSetExplicitly())
+    bad.push_back(old + ":");
+  for (const std::string &k : main["YFS"].GetKeys())
+    if (k.compare(0, old.size(), old) == 0) bad.push_back("YFS: " + k);
+  if (bad.empty()) return;
+  std::string list;
+  for (const std::string &b : bad) list += (list.empty() ? "" : ", ") + b;
+  THROW(fatal_error, "the " + old + " settings were renamed to ACRAIC on "
+        "2026-10-06; this card still has: " + list + ". Write ACRAIC in "
+        "place of " + old + " in these keys (the block, YFS: ACRAIC, "
+        "YFS: ACRAIC_*).");
+}
+
 void YFS_Base::RegisterSettings(){
+  RefuseOldAcraicKeys();
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   m_betaorder = s["BETA"].Get<int>();
   m_mode = s["MODE"].Get<yfsmode::code>();
-  // CEEX: 1 alone switches YFS on: ISRFSR here, narrowed to ISR in
+  // ACRAIC: 1 alone switches YFS on: ISRFSR here, narrowed to ISR in
   // YFS_Handler::SetFlavours when no final-state particle is charged. An
   // explicit MODE always wins, including MODE: off.
   if (!s["MODE"].IsSetExplicitly() && m_mode == yfsmode::off &&
-      s["CEEX"].Get<bool>()) { m_mode = yfsmode::isrfsr; m_mode_from_ceex = true; }
+      s["ACRAIC"].IsSetExplicitly() && s["ACRAIC"].Get<bool>()) { m_mode = yfsmode::isrfsr; m_mode_from_acraic = true; }
   m_isrcut   = s["IR_CUTOFF"].Get<double>();
   m_isrcut = m_isrcut/sqrt(m_s); // dimensionless units
   m_vmax = s["VMAX"].Get<double>();
   m_vmax = 1.-sqr(m_vmax)/m_s;
-  m_fillblob  = s["FILL_BLOB"].Get<bool>();
+  m_exchange_tmin = s["EXCHANGE_T_MIN"].Get<double>();
   m_looptool  = s["LOOP_TOOL"].Get<bool>();
   m_debugDIR_ISR = s["DEBUG_DIR_ISR"].Get<std::string>();
   m_debugDIR_FSR = s["DEBUG_DIR_FSR"].Get<std::string>();
@@ -288,7 +325,7 @@ void YFS_Base::RegisterSettings(){
   m_check_rr = s["CHECK_REAL_REAL"].Get<int>();
   m_check_rv = s["CHECK_RV"].Get<int>();
   m_rv_hard_photon = s["RV_Hard_Photon"].Get<int>();
-  m_ceex_compare = s["CEEX_Compare"].Get<int>();
+  m_acraic_compare = s["ACRAIC_Compare"].Get<int>();
   // Parse once. 16 tags is comfortably above any YFS multiplicity (2 -> n + a
   // few photons); unused ones cost nothing.
   m_vv_approx_unc = s["VV_Approx_Uncertainty"].Get<double>();
@@ -314,11 +351,11 @@ void YFS_Base::RegisterSettings(){
   m_fixed_weight = s["WEIGHT_MODE"].Get<wgt::code>();
   m_hardmin = s["HARD_MIN"].Get<double>();
   m_photonMass = s["PHOTON_MASS"].Get<double>();
-  m_useceex = s["CEEX"].Get<bool>();
-  const tristate::code ceexweight(s["CEEX_WEIGHT"].Get<tristate::code>());
-  m_ceex_weight = (ceexweight == tristate::automatic ? m_useceex
-                                                     : ceexweight == tristate::on);
-  m_ceexvirtsrc = s["CEEX_Virtual"].Get<ceexvirt::code>();
+  m_useacraic = m_mode != yfsmode::off && s["ACRAIC"].Get<bool>();
+  const tristate::code acraicweight(s["ACRAIC_WEIGHT"].Get<tristate::code>());
+  m_acraic_weight = (acraicweight == tristate::automatic ? m_useacraic
+                                                     : acraicweight == tristate::on);
+  m_acraicvirtsrc = s["ACRAIC_Virtual"].Get<acraicvirt::code>();
   m_coll_real = s["Collinear_Real"].Get<bool>();
   m_resonace_max = s["CLUSTERING_THRESHOLD"].Get<double>();
   m_nlo_weight_breakdown = s["NLO_Weight_Breakdown"].Get<bool>();
@@ -329,18 +366,19 @@ void YFS_Base::RegisterSettings(){
   m_no_born = m_no_born_setting;
   m_no_subtraction = s["No_Sub"].Get<bool>();
   m_submode = s["Sub_Mode"].Get<submode::code>();
-  m_tchannel = s["TChannel"].Get<int>();
   m_noflux = s["No_Flux"].Get<bool>();
   m_flux_mode = s["Flux_Mode"].Get<fluxmode::code>();
-  m_ifisub = s["IFI_Sub"].Get<bool>();
-  m_ifireal = s["IFI_Real"].Get<bool>();
+  m_ifi = s["IFI"].Get<bool>();
+  m_ifisub = m_ifi && s["IFI_Sub"].Get<bool>();
+  m_ifireal = m_ifi && s["IFI_Real"].Get<bool>();
   m_ifiomega = s["IFI_Omega"].Get<double>();
   // Default to FSR::Initialize()'s m_Emin, the scale the Piatek term m_DelYFS
   // translates the FSR bookkeeping onto. Kept as the same expression, not a
   // rederived one, so the two cannot drift apart.
   // Only defaulted when IFI_Real is on; an explicit IFI_Omega is honoured
   // either way so the exponent and the restoration can be varied separately.
-  if (m_ifireal && m_ifiomega <= 0.) m_ifiomega = 0.5*sqrt(m_s)*m_isrcut;
+  m_ifiomega_is_emin = (m_ifireal && m_ifiomega <= 0.);
+  if (m_ifiomega_is_emin) m_ifiomega = 0.5*sqrt(m_s)*m_isrcut;
   m_ifi_rclip = s["IFI_RClip"].Get<double>();
   m_ifi_clipped = 0;
   m_massless_sub = s["Massless_Sub"].Get<bool>();
@@ -377,28 +415,28 @@ void YFS_Base::RegisterSettings(){
   m_alpi = m_alpha/M_PI;
 }
 
-std::istream &YFS::operator>>(std::istream &str, ceexvirt::code &sc)
+std::istream &YFS::operator>>(std::istream &str, acraicvirt::code &sc)
 {
   std::string tag;
   str>>tag;
-  if      (tag=="ceex"     || tag=="CEEX"     || tag=="0") sc=ceexvirt::ceex;
-  else if (tag=="external" || tag=="External" || tag=="1") sc=ceexvirt::external;
-  else if (tag=="helicity" || tag=="Helicity" || tag=="2") sc=ceexvirt::helicity;
-  else if (tag=="none"     || tag=="None"     || tag=="3") sc=ceexvirt::none;
-  else if (tag=="auto"     || tag=="Auto"     || tag=="4") sc=ceexvirt::automatic;
-  else THROW(fatal_error, "Unknown YFS CEEX_Virtual '"+tag
-                          +"'; use ceex, external, helicity or none.");
+  if      (tag=="acraic"     || tag=="ACRAIC"     || tag=="0") sc=acraicvirt::acraic;
+  else if (tag=="external" || tag=="External" || tag=="1") sc=acraicvirt::external;
+  else if (tag=="helicity" || tag=="Helicity" || tag=="2") sc=acraicvirt::helicity;
+  else if (tag=="none"     || tag=="None"     || tag=="3") sc=acraicvirt::none;
+  else if (tag=="auto"     || tag=="Auto"     || tag=="4") sc=acraicvirt::automatic;
+  else THROW(fatal_error, "Unknown YFS ACRAIC_Virtual '"+tag
+                          +"'; use acraic, external, helicity or none.");
   return str;
 }
 
-std::ostream &YFS::operator<<(std::ostream &str, const ceexvirt::code &sc)
+std::ostream &YFS::operator<<(std::ostream &str, const acraicvirt::code &sc)
 {
   switch (sc) {
-  case ceexvirt::ceex:     return str<<"ceex";
-  case ceexvirt::external: return str<<"external";
-  case ceexvirt::helicity: return str<<"helicity";
-  case ceexvirt::none:     return str<<"none";
-  case ceexvirt::automatic: return str<<"auto";
+  case acraicvirt::acraic:     return str<<"acraic";
+  case acraicvirt::external: return str<<"external";
+  case acraicvirt::helicity: return str<<"helicity";
+  case acraicvirt::none:     return str<<"none";
+  case acraicvirt::automatic: return str<<"auto";
   }
   return str<<"unknown";
 }
