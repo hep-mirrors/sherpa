@@ -364,6 +364,40 @@ const double FixedBreitWigner::Normalised2(const double & s) {
   return norm((*this)(s));
 }
 
+///////////////////////////////////////////////////////////////////////////
+//
+// Gauge_Propagator. See Propagator.H for why this does not follow the
+// D(0) = 1 convention the rest of this file uses.
+//
+///////////////////////////////////////////////////////////////////////////
+
+Gauge_Propagator::Gauge_Propagator(const double & M,const double & Gamma,
+                                   const ATOOLS::Flavour & flav) :
+  Propagator_Base(NULL,resonance_type::gauge),
+  m_Gamma(Gamma), m_flav(flav) {
+  m_M  = M;
+  m_M2 = M*M;
+}
+
+const Complex Gauge_Propagator::operator()(const double & s) {
+  // For the photon (M = Gamma = 0) this is -1/s, which is what the
+  // spacelike region of a t-channel exchange wants; the only point it
+  // cannot represent is s = 0 exactly, where the amplitude genuinely
+  // diverges and the caller must have cut.
+  const Complex den(m_M2-s,-m_M*m_Gamma);
+  if (std::abs(den)<1.e-30) return Complex(0.,0.);
+  return 1./den;
+}
+
+const Complex Gauge_Propagator::Normalised(const double & s) {
+  return (*this)(s);
+}
+
+const double Gauge_Propagator::Normalised2(const double & s) {
+  return norm((*this)(s));
+}
+
+
 GounarisSakuraiM::GounarisSakuraiM(const Flavour & flav,const double & mpi) :
   Propagator_Base(NULL,resonance_type::GS),
   m_G0(flav.Width()), m_mpi(mpi), m_mpi2(sqr(mpi))

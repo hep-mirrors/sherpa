@@ -32,6 +32,9 @@ namespace METOOLS {
     // produces the characteristic cusp. A running-width BW has no
     // mechanism for it, and a complex pole has no threshold at all.
     flatte       = 4,
+    // Gauge-boson exchange. Not a resonance in a form factor at all:
+    // see Gauge_Propagator below for why it needs its own convention.
+    gauge        = 5,
     bespoke      = 99
   };
 
@@ -469,6 +472,38 @@ namespace METOOLS {
     // deriving a decay coupling gets something meaningful.
     virtual double OnShellWidth() const;
     virtual Complex PoleNumerator() const { return Complex(m_M2,0.); }
+    ATOOLS::Flavour Flav() const { return m_flav; }
+  };
+
+  // Gauge-boson exchange,
+  //     D(q^2) = 1 / (M^2 - q^2 - i M Gamma),
+  // i.e. the BARE pole, with PoleNumerator() = 1.
+  //
+  // This deliberately breaks the D(0) = 1 convention that BreitWigner and
+  // everything else in this file follows. That convention exists so a sum
+  // of resonances in a form factor can carry unit weight; a gauge
+  // propagator is dimensionful and, for a massless boson, divergent at
+  // q^2 = 0, so there is nothing to normalise it against. The couplings
+  // therefore live entirely in the currents and in the exchange that owns
+  // this object, never here.
+  //
+  // The photon is (M, Gamma) = (0, 0), giving D = -1/q^2, which is finite
+  // and positive in the spacelike region a t-channel exchange needs. The Z
+  // takes a FIXED width, which is the scheme its on-shell input parameters
+  // are fitted in; a running width here would be a different renormalisation
+  // of the same data, not a refinement of it.
+  class Gauge_Propagator : public Propagator_Base {
+  private:
+    double          m_Gamma;
+    ATOOLS::Flavour m_flav;
+  public:
+    Gauge_Propagator(const double & M,const double & Gamma,
+                     const ATOOLS::Flavour & flav=ATOOLS::Flavour(kf_none));
+    const Complex operator()(const double & s);
+    const Complex Normalised(const double & s);
+    const double  Normalised2(const double & s);
+    virtual double OnShellWidth() const { return m_Gamma; }
+    virtual Complex PoleNumerator() const { return Complex(1.,0.); }
     ATOOLS::Flavour Flav() const { return m_flav; }
   };
 
