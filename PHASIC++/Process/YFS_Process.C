@@ -38,8 +38,8 @@ using namespace std;
 
 YFS_Process::YFS_Process
 (ME_Generators& gens, NLOTypeStringProcessMap_Map *pmap):
-  m_gens(gens), p_bornproc(NULL), p_realproc(NULL), p_realrealproc(NULL),
-  p_realvirtproc(NULL),
+  m_gens(gens), p_bornproc(NULL), p_realproc(NULL), p_virtproc(NULL),
+  p_realvirtproc(NULL), p_realrealproc(NULL), p_vv(NULL),
   p_yfsvirt(NULL), p_yfsreal(NULL), p_yfsrealvirt(NULL), p_yfsrealreal(NULL),
   p_yfsvv(NULL)
 {
@@ -116,6 +116,12 @@ void YFS_Process::Init(const Process_Info &pi,
     }
     rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
     p_realproc = InitProcess(rpi, nlo_type::real, false);
+    // The real correction evaluates p_realproc directly, never one of its
+    // partonic subprocesses, so a container (e.g. 93 93) segfaults per event
+    if (p_realproc->IsGroup() && p_realproc->Size() > 1)
+      THROW(not_implemented, "YFS real corrections need explicit final-state "
+            "flavours, not containers like 93: list the processes one by one "
+            "(e.g. 11 -11 -> 1 -1, 11 -11 -> 2 -2, ...).");
     // p_realproc->SetLookUp(false);
     p_realproc->SetParent(this);
     // p_realproc->FillProcessMap(p_apmap);
@@ -138,6 +144,33 @@ void YFS_Process::Init(const Process_Info &pi,
     // card; anything else is a real external provider the user asked for.
     const bool extloop(vpi.m_loopgenerator != "" &&
                        vpi.m_loopgenerator != "Internal");
+    /*
+      A single-emitter YFS: MODE builds only that side's dipoles (in ISR mode
+      YFS_Handler::CalculateFSR returns before MakeDipoles: no FF, no IF), so
+      the virtual subtraction removes only that side's IR structure, while an
+      external provider's one-loop amplitude has both vertices and the
+      initial-final boxes. Refused: the O(alpha) virtual would carry
+      unsubtracted final- (or initial-) state pieces. ACRAIC's own virtual
+      (ACRAIC_Virtual: acraic, no Loop_Generator) follows the mode.
+    */
+    // only when the switched-off side is charged: MODE ISR is the right
+    // physics for a neutral final state (nu nu, gamma gamma, H nu nu)
+    const Flavour_Vector vfl(vpi.ExtractFlavours());
+    const size_t vnin(vpi.m_ii.NExternal());
+    bool chargedin(false), chargedout(false);
+    for (size_t i(0); i < vfl.size(); ++i)
+      if (vfl[i].Charge() != 0.) (i < vnin ? chargedin : chargedout) = true;
+    if (extloop && ((p_yfs->Mode() == YFS::yfsmode::isr && chargedout) ||
+                    (p_yfs->Mode() == YFS::yfsmode::fsr && chargedin)))
+      THROW(fatal_error, std::string("YFS: MODE ") +
+            (p_yfs->Mode() == YFS::yfsmode::isr ? "ISR" : "FSR") +
+            " with Loop_Generator " + vpi.m_loopgenerator + ": the loop "
+            "provider computes the full one-loop amplitude (both vertices and "
+            "the initial-final boxes) but only the " +
+            (p_yfs->Mode() == YFS::yfsmode::isr ? "initial" : "final") +
+            "-state dipoles are subtracted. Use MODE ISRFSR, or drop the "
+            "Loop_Generator and use ACRAIC's own virtual (ACRAIC_Virtual: acraic).");
+    p_yfs->EnsureNLO()->SetVirtualRequested(true);
     if (p_yfs->EnsureNLO()->NeedsVirtualProvider(extloop)) {
       p_yfsvirt = new YFS::Virtual(vpi);
       p_yfsvirt->SetProc(p_bornproc);
@@ -191,7 +224,8 @@ void YFS_Process::Init(const Process_Info &pi,
       builds and integrates - so the ceiling here is cost and numerical
       conditioning, not availability.
     */
-    const size_t nmax(YFS::NLO_Base::RequestedMaxRealPhotons());
+    // ACRAIC: TREE_BETA_MAX can ask for more than YFS.NLO's R_n uses
+    const size_t nmax(YFS::NLO_Base::RequestedMaxProviderPhotons());
     m_yfsrealn.resize(nmax+1, NULL);
     m_realnprocs.resize(nmax+1, NULL);
     for (size_t n(3); n <= nmax; ++n) {
@@ -223,8 +257,11 @@ void YFS_Process::Init(const Process_Info &pi,
       vvpi.m_maxacpl[i] += vvpi.m_fi.m_nlocpl[i]+vvpi.m_fi.m_nlocpl[i];
       vvpi.m_mincpl[i] += vvpi.m_fi.m_nlocpl[i]+vvpi.m_fi.m_nlocpl[i];
     }
-    p_vv = InitProcess(vvpi, nlo_type::vv, false);
+    // no process of its own: the double virtual lives on the Born
+    // kinematics, so the Born process supplies the cuts (a separate Comix
+    // process of type vv at the doubled couplings does not exist)
     p_yfsvv = new YFS::VirtualVirtual(vvpi);
+    p_yfsvv->SetProc(p_bornproc);
   }
   p_bornproc->SetLookUp(false);
   // p_bornproc->SetParent(p_bornproc);
@@ -245,9 +282,9 @@ void YFS_Process::MakeActive()
   p_yfs->SetFlavours(Flavours());
   p_yfs->EnsureNLO()->SetProviders(p_yfsvirt, p_yfsreal, p_yfsrealvirt,
                              p_yfsrealreal, p_yfsvv);
-  // Processes whose Comix amplitudes CEEX can use instead of hand-coding the
-  // spin structure (see Ceex_Base::ComixBornAmplitude).
-  p_yfs->SetCeexProcs(p_bornproc, p_realproc);
+  // Processes whose Comix amplitudes ACRAIC can use instead of hand-coding the
+  // spin structure (see Acraic_Base::ComixBornAmplitude).
+  p_yfs->SetAcraicProcs(p_bornproc, p_realproc);
   for (size_t n(3); n < m_yfsrealn.size(); ++n)
     p_yfs->EnsureNLO()->SetRealProvider(n, m_yfsrealn[n]);
   p_yfs->SetNoBorn(m_noborn);
@@ -259,7 +296,7 @@ Process_Base* YFS_Process::InitProcess
 {
   Process_Info cpi(pi);
   cpi.m_fi.SetNLOType(nlotype);
-  Process_Base* proc = m_gens.InitializeProcess(pi, false);
+  Process_Base* proc = m_gens.InitializeProcess(cpi, false);
   if (!proc)
   {
     std::stringstream msg;
