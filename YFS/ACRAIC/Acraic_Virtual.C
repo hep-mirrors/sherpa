@@ -1,15 +1,12 @@
 /*!
-  \file Ceex_Virtual.C
+  \file Acraic_Virtual.C
 
-  beta_0^1: the O(alpha) virtual. The initial- and final-state vertex form
-  factors (CnuA, exact in the masses) and the gamma-gamma / gamma-Z boxes
-  that carry the virtual initial-final interference.
-
-  Split out of Ceex_Base.C, which had reached 1867 lines. The pieces are
-  grouped by what they compute, not by call order.
+  beta_0^1: the O(alpha) virtual. ISR/FSR vertex form factors (CnuA, exact
+  in the masses) and the gamma-gamma / gamma-Z boxes (virtual IFI).
 */
 
-#include "YFS/CEEX/Ceex_Base.H"
+#include "YFS/ACRAIC/Acraic_Base.H"
+#include "YFS/Main/Beta0_2.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "METOOLS/Main/Spin_Structure.H"
 #include "PHASIC++/Process/Process_Base.H"
@@ -30,7 +27,7 @@ using namespace YFS;
 
 
 
-Complex Ceex_Base::BoxGG() {
+Complex Acraic_Base::BoxGG() {
   const Complex MG(1e-30, 0.);
   const Complex L(log(-m_Tc / m_Sc));
   const Complex t1(log(m_Tc / m_Uc) * (log(MG * MG / m_Sc) + m_I * M_PI));
@@ -41,7 +38,7 @@ Complex Ceex_Base::BoxGG() {
 }
 
 
-Complex Ceex_Base::BoxGZ() {
+Complex Acraic_Base::BoxGZ() {
   Complex MG = 1e-30;
   Complex mb2 = Complex(sqr(m_MZ), -m_MZ * m_gZ);
   Complex t1 = log(m_Tc / m_Uc) * (log(MG * MG / sqrt(m_Tc * m_Uc)));
@@ -60,7 +57,7 @@ Complex Ceex_Base::BoxGZ() {
 
 
 
-Complex Ceex_Base::BoxSubtract() {
+Complex Acraic_Base::BoxSubtract() {
   Complex MG = 1e-30;
   Complex sub = log(m_Tc / m_Uc) * log(MG * MG / sqrt(m_Uc * m_Tc))
                 + 0.5 * log(m_Tc / m_Uc);
@@ -68,12 +65,12 @@ Complex Ceex_Base::BoxSubtract() {
 }
 
 
-void Ceex_Base::MakeBoxMandelstams(const Vec4D &PX)
+void Acraic_Base::MakeBoxMandelstams(const Vec4D &PX)
 {
-  if (m_pceex.size() < 4) return;
+  if (m_pacraic.size() < 4) return;
   const double S(PX.Abs2());
   if (S <= 0.) return;
-  Vec4D pd(m_pceex[0] - m_pceex[1]), qd(m_pceex[2] - m_pceex[3]);
+  Vec4D pd(m_pacraic[0] - m_pacraic[1]), qd(m_pacraic[2] - m_pacraic[3]);
   pd = pd - ((PX*pd)/S) * PX;
   qd = qd - ((PX*qd)/S) * PX;
   const double a(pd.Abs2()), b(qd.Abs2());
@@ -88,7 +85,7 @@ void Ceex_Base::MakeBoxMandelstams(const Vec4D &PX)
 }
 
 
-Complex Ceex_Base::CnuA(double svar, double m1, double m2) const
+Complex Acraic_Base::CnuA(double svar, double m1, double m2) const
 {
   const double mm(m1*m2);
   if (std::abs(mm) < 1e-10)
@@ -105,14 +102,15 @@ Complex Ceex_Base::CnuA(double svar, double m1, double m2) const
 }
 
 
-void Ceex_Base::InfraredSubtractedME_0_1() {
-  // m_Sc/m_Tc/m_Uc are set per PARTITION by the caller, from that partition's
-  // X = P - sum(ISR k) - they are not event constants.
+void Acraic_Base::InfraredSubtractedME_0_1() {
+  // m_Sc/m_Tc/m_Uc are set per partition by the caller from X = P - sum(ISR k).
   
-  static const bool useboxes(Settings::GetMainSettings()["CEEX"]["BOXES"]
-                             .SetDefault(true).Get<bool>());
+  static const bool useboxessetting(Settings::GetMainSettings()["ACRAIC"]["BOXES"]
+                                    .SetDefault(true).Get<bool>());
+  // the boxes are the virtual IFI: none with YFS: IFI false or ISR only
+  const bool useboxes(useboxessetting && m_ifi && !m_isronly);
 
-  // Boxes first. The ut combination is the tu one with t and u swapped.
+  // The ut boxes are the tu ones with t and u swapped.
   const Complex coef(m_alpha * m_qe * m_qf / M_PI);
   
   
@@ -125,10 +123,18 @@ void Ceex_Base::InfraredSubtractedME_0_1() {
     }
     m_BoxGGtu = coef * BoxGG() - SubBox;
     m_BoxGZtu = coef * BoxGZ() - SubBox;
+    // ACRAIC: RESONANCE_EXPONENTIATION: the resonant log sits in every Z
+    // propagator, so remove it from the box (KKMC KeyINT 2, IntReson).
+    Complex intreson(0., 0.);
+    if (ResonanceExponentiation()) {
+      const Complex mb2(sqr(m_MZ), -m_MZ * m_gZ);
+      intreson = coef * (-2. * log(m_Tc / m_Uc) * log((mb2 - m_Sc) / mb2));
+    }
+    m_BoxGZtu -= intreson;
     const Complex t1(m_Tc), u1(m_Uc);
     m_Tc = u1; m_Uc = t1;
     m_BoxGGut = coef * (-BoxGG()) - SubBox;
-    m_BoxGZut = coef * (-BoxGZ()) - SubBox;
+    m_BoxGZut = coef * (-BoxGZ()) - SubBox - intreson;
     m_Tc = t1; m_Uc = u1;
   }
 
@@ -140,19 +146,14 @@ void Ceex_Base::InfraredSubtractedME_0_1() {
                                : Complex(0., 0.));
   m_vertexI = deltI;
   m_vertexF = deltF;
-  // Bhabha t-channel vertex. Both vertices of the exchange diagram sit on an
-  // electron line at spacelike momentum transfer t - the (p1,p3) line and the
-  // (p2,p4) line - so each takes the SAME form factor evaluated at t. CnuA is
-  // valid there: KKMC's BVR_CnuA header states it is "appropriate for s and
-  // t-chanels" with no small-mass approximation, and the port keeps its
-  // sign-of-svar stability branch.
+  // Bhabha t-channel: both exchange vertices take the form factor at t
   const Complex deltT(m_bhabha
       ? 0.5 * sqr(m_qe) * m_alpha / Complex(M_PI, 0)
         * (CnuA(m_tinv, m_mass_I, m_mass_I) - 1.)
       : Complex(0., 0.));
 
   Amplitude born;
-  BornAmplitude(m_pceex, born, -1., -1., 0);
+  BornAmplitude(m_pacraic, born, -1., -1., 0);
 
   Complex TG[2], TZ[2], UG[2], UZ[2];
   for (int j = 0; j <= 1; ++j) {
@@ -161,12 +162,22 @@ void Ceex_Base::InfraredSubtractedME_0_1() {
     UG[j] = CouplingG() * m_propG;  UZ[j] = CouplingZ(h, 0) * m_propZ;
   }
 
-  const Complex vert((1. + deltI) * (1. + deltF) - 1.);
-  // The s-channel factorisation does not carry over to Bhabha: the s-channel
-  // Born takes its corrections at s and sQ, the t-channel Born takes both at t.
-  // So the two Born pieces must be dressed separately rather than one
-  // multiplicative factor being applied to their sum.
-  const Complex vertT((1. + deltT) * (1. + deltT) - 1.);
+  /*
+    ACRAIC: BETA0_2: two-loop vertex factors (KKMC MakeF1ini/MakeF1fin),
+    F1_2 = F1_1 + F1_1^2/2 + 2 c_NLL (alpha/pi) Q^2 F1_1 (llnll), applied as
+    (1 + F_ini)(1 + F_fin). The boxes are not dressed.
+  */
+  static const beta02::code b02(Settings::GetMainSettings()["ACRAIC"]["BETA0_2"]
+                                .Get<beta02::code>());
+  const Complex FI(b02 == beta02::none ? deltI
+                   : Beta02VertexFactor(deltI, m_alpha, sqr(m_qe), b02));
+  const Complex FF(b02 == beta02::none || !HasFSR() ? deltF
+                   : Beta02VertexFactor(deltF, m_alpha, sqr(m_qf), b02));
+  const Complex FT(b02 == beta02::none || !m_bhabha ? deltT
+                   : Beta02VertexFactor(deltT, m_alpha, sqr(m_qe), b02));
+  const Complex vert((1. + FI) * (1. + FF) - 1.);
+  // Bhabha: s-channel Born dressed at s and sQ, t-channel Born at t
+  const Complex vertT((1. + FT) * (1. + FT) - 1.);
   const Complex fac(m_e * m_e * m_cfac);
   for (int j1 = 0; j1 <= 1; ++j1)
     for (int j2 = 0; j2 <= 1; ++j2)
@@ -179,8 +190,7 @@ void Ceex_Base::InfraredSubtractedME_0_1() {
                            ? m_Tamp[j1][j2][j3][j4]*(TG[j1]*bgg + TZ[j1]*bgz)
                            + m_Uamp[j1][j2][j3][j4]*(UG[j1]*bgg + UZ[j1]*bgz)
                            : Complex(0., 0.));
-          // Split the Born back into its s- and t-channel parts (the same
-          // decomposition BornAmplitude assembled) so each gets its own vertex.
+          // Split the Born into its s- and t-channel parts (as in BornAmplitude).
           const Complex mt(m_bhabha
               ? m_TCt[j1]*m_Tampt[j1][j2][j3][j4]
               + m_UCt[j1]*m_Uampt[j1][j2][j3][j4]
@@ -191,38 +201,17 @@ void Ceex_Base::InfraredSubtractedME_0_1() {
           m_AmpBornVirt.m_A[Idx(j1,j2,j3,j4)] += corr;
           m_snapVirt.m_A[Idx(j1,j2,j3,j4)] = corr;   // the beta_0^1 increment
           m_beta01 += corr;   // scalar, for the diagnostics only
-          /*
-            The virtual FACTOR for this partition and helicity,
-            V = 1 + corr/born. Both sides must be the PARTITION's values -
-            taking the accumulated m_AmpBornVirt - m_AmpExpo0 against a single
-            partition's Born gives a spread of exactly 2, which is the
-            signature of the minimum hitting zero rather than a measurement.
-
-            The spread of V over an event's partitions decides how a provider's
-            virtual can be taken: flat means one evaluation per event suffices,
-            varying means one per partition, i.e. 2^n.
-          */
+          // V = 1 + corr/born per partition and helicity, for the spread check
+          // (both sides must be this partition's values)
           if (m_vpon) {
             const int f(Idx(j1,j2,j3,j4));
             if ((int)m_vpmin.size() <= f) { m_vpmin.resize(f+1, 1e30);
                                             m_vpmax.resize(f+1, -1e30); }
-            /*
-              Only helicities carrying real weight. With a massive electron
-              the flip configurations are non-zero at the m_e/E level, and a
-              ratio there is a mass-suppression artefact, not a measurement -
-              the same trap that made the Born calibration read a spread of 2.
-            */
+            // live helicities only: in mass-suppressed ones V is an artefact
             double bmax(0.);
             for (int g = 0; g < Amplitude::NHel(); ++g)
               bmax = Max(bmax, std::abs(born.m_A[g]));
-            /*
-              Divide by the WEIGHTED Born, fac*born, which is what
-              InfraredSubtractedME_0_0 actually adds - corr carries the same
-              fac (the soft-factor product sProd times svarX/svarQ), and
-              dividing it by the bare amplitude leaves that weight in the
-              ratio. Measured that way |V| ran to 1e22, which is the soft
-              factors, not a virtual correction.
-            */
+            // divide by fac*born, since corr carries the same soft-factor fac
             const Complex b0(fac*born.m_A[f]);
             if (std::abs(b0) > 1e-3*std::abs(fac)*bmax) {
               const double v(std::abs(1. + corr/b0));
