@@ -20,7 +20,6 @@
 #include "ATOOLS/Phys/Weights.H"
 #include <set>
 #include <memory>
-#include "PHOTONS++/PhotonSplitter/Photon_Splitter.H"
 
 
 // #include <iostream>
@@ -212,7 +211,6 @@ namespace YFS {
         ATOOLS::Momenta_Stretcher m_stretcher;
         //! Not owned: handed in by SetBeam, lives in Beam_Spectra_Handler.
         BEAM::Beam_Spectra_Handler *p_beams = nullptr;
-        std::unique_ptr<PHOTONS::Photon_Splitter> p_splitter;
         std::unique_ptr<YFS::ISR> p_isr;
         std::unique_ptr<YFS::Debug> p_debug;
         // born unless YFS_Process (NLO_Mode YFS) says otherwise: a plain LO
@@ -397,9 +395,6 @@ namespace YFS {
         inline yfsmode::code  Mode()   const {return m_mode; }
 
         inline bool UsingLoopTool()   const {return m_looptool; }
-        inline bool FillBlob()   const {return m_fillblob; }
-        //! YFS: PHOTON_SPLITTER_MODE on (photons are split into pairs in the record)
-        inline bool SplitsPhotons() const { return m_photon_split != 0; }
         // Undo the incoming-pair-rest-frame boost that SetBornMomenta applied
         // (m_ev.m_cmsboost: lab->COM), returning the blob-facing momenta to the
         // original lab frame. m_ev.m_cmsboost is the identity when no boost was
@@ -481,7 +476,6 @@ namespace YFS {
         void CalculateCoulomb();
         void CalculateWWForm();
         void YFSDebug(double W);
-        void SplitPhotons(ATOOLS::Blob * blob);
         void CheckResonance();
     };// end of class YFS_Handler
 

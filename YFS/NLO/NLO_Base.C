@@ -61,7 +61,7 @@ NLO_Base::NLO_Base() {
   m_real_hard2 = 0.;
   m_rv_hard2 = 0.;
   m_zero_real_amp = 0;
-  m_ceex_done = false;
+  m_acraic_done = false;
   m_softRV = 0;
   m_softRR = 0;
   m_rvUnstable = 0;
@@ -72,6 +72,7 @@ NLO_Base::NLO_Base() {
   m_rvBlowupSoft = 0;
   m_rvBlowupHardWide = 0;
   BookHistograms();
+  InitBeta02();
   if (m_check_poles == 1) {
     if (!ATOOLS::DirectoryExists(m_debugDIR_NLO))
       ATOOLS::MakeDir(m_debugDIR_NLO);
@@ -102,8 +103,17 @@ NLO_Base::NLO_Base() {
   }
 }
 
+void NLO_Base::SetS(const double s) {
+  YFS_Base::SetS(s);
+  p_nlodipoles->SetS(s);
+  p_yfsFormFact->SetS(s);
+}
+
 NLO_Base::~NLO_Base() {
   WriteHistograms();
+  ReportBeta02();
+  if (p_virt && p_virt->p_massif) p_virt->p_massif->Report();
+  if (p_realvirt && p_realvirt->p_massif) p_realvirt->p_massif->Report();
   msg_Out()<<"Total zero V: "<<m_zeroV<<std::endl;
   msg_Out()<<"Total zero RV: "<<m_zeroRV<<std::endl;
   msg_Out()<<"Total zero RR: "<<m_zeroRR<<std::endl;
@@ -120,7 +130,7 @@ NLO_Base::~NLO_Base() {
 #endif
   msg_Out()<<"Total soft RV skipped: "<<m_softRV<<std::endl;
   msg_Out()<<"Total unstable-ME RV skipped (RV_ME_MAX_RATIO): "<<m_rvUnstable<<std::endl;
-  if (RVMode() == rvmode::remainder && m_realvirt) {
+  if (RVIsRemainder() && m_realvirt) {
 #ifdef USING__MPI
     if (mpi->Size() > 1) {
       int rb[2] = {m_rvPoleFail, m_rvNoVirt};
@@ -133,8 +143,10 @@ NLO_Base::~NLO_Base() {
              <<", photons without a Born virtual: "<<m_rvNoVirt<<std::endl;
     msg_Out()<<"RV_MODE 1 (this rank): loop frame "<<RVLoopFrame()
              <<", two-frame checks "<<m_rvLoopChecked<<", dropped as unstable "
-             <<m_rvLoopUnstable<<std::endl;
+             <<m_rvLoopUnstable<<", skipped in the beam cone (RV_BEAM_CONE) "
+             <<m_rvBeamCone<<std::endl;
   }
+  ReportVirtualCheck();
   msg_Out()<<"Total soft RR pairs skipped: "<<m_softRR<<std::endl;
   if (m_rv_cancel_hist) {
 #ifdef USING__MPI
@@ -168,6 +180,8 @@ NLO_Base::~NLO_Base() {
   msg_Out()<<"Total zero real amplitudes: "<<m_zero_real_amp<<std::endl;
   msg_Out()<<"Total events : "<<m_evts<<std::endl;
   ReportLoopHelicity();
+  ReportRealVirtualHelicity();
+  ReportVVPoles();
 }
 
 void NLO_Base::SetProviders(YFS::Virtual *virt, YFS::Real *real,
@@ -227,4 +241,16 @@ size_t NLO_Base::RequestedMaxRealPhotons()
     (ATOOLS::Settings::GetMainSettings()["YFS"]["NLO_MAX_PHOTONS"]
      .SetDefault(2).Get<int>());
   return n < 1 ? 1 : (size_t)n;
+}
+
+size_t NLO_Base::RequestedMaxProviderPhotons()
+{
+  ATOOLS::Settings &s(ATOOLS::Settings::GetMainSettings());
+  size_t n(RequestedMaxRealPhotons());
+  if (s["YFS"]["ACRAIC"].SetDefault(true).Get<bool>()
+      && s["ACRAIC"]["ORDER"].SetDefault(1).Get<int>() == 2) {
+    const int t(s["ACRAIC"]["TREE_BETA_MAX"].SetDefault(-1).Get<int>());
+    if (t > (int)n) n = (size_t)t;
+  }
+  return n;
 }

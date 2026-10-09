@@ -3,6 +3,7 @@
 
 #include "YFS/Main/YFS_Base.H"
 #include "YFS/Main/FSR.H"
+#include "YFS/Main/Leg_Set.H"
 #include "YFS/NLO/Virtual.H"
 #include "YFS/NLO/Real_Correction.H"
 #include "YFS/NLO/RealVirtual.H"
@@ -10,6 +11,9 @@
 #include "YFS/Main/YFS_Form_Factor.H"
 #include "YFS/Main/Photon.H"
 #include "YFS/Main/Define_Dipoles.H"
+#include "YFS/Main/Beta0_2.H"
+#include "YFS/Main/Beta0_2_Boxes.H"
+#include "YFS/Main/Dyson_VP.H"
 #include "ATOOLS/Math/Histogram_2D.H"
 #include <fstream>
 #include <sstream>
@@ -29,14 +33,42 @@ namespace YFS {
 typedef std::map<std::string, std::unique_ptr<ATOOLS::Histogram_2D> > histograms2d;
 typedef std::map<std::string, std::unique_ptr<ATOOLS::Histogram> > histograms1d;
 
+/*!
+  ACRAIC: REAL_VIRTUAL helicity - one RV photon's per-helicity remainder,
+  from the (n+1)-point loop call of RV_MODE remainder
+  (NLO_Base::BuildRealVirtualHelicityFactors), read by ACRAIC
+  (Acraic_Base::RealVirtualHelicityToAcraic).
+*/
+struct RVHelicityFactors {
+  ATOOLS::Vec4D k;                          //!< the lab photon
+  double dv = 0.;                           //!< v_{n+1} + c - v_B (squared level)
+  bool ok = false;                          //!< rem/a0/hel are filled
+  std::vector<std::vector<int> > hel;       //!< provider labels, photon last
+  std::vector<Complex> a0;                  //!< provider tree amplitudes
+  std::vector<Complex> rem;                 //!< per-helicity remainder
+  ATOOLS::Vec4D_Vector plab;                //!< the (n+1)-point in the lab
+};
+
 class NLO_Base : YFS_Base {
 public:
+  //! This event's s, forwarded to the dipoles and form factor NLO_Base owns.
+  void SetS(const double s) override;
   // subloc/subb seen by the IFI_Real restoration, accumulated so the tail that
   // drives the MC error is reportable instead of inferred from sigma.
   long   m_ifi_n = 0;
   double m_ifi_sum = 0., m_ifi_min = 1e300, m_ifi_max = -1e300, m_ifi_sum2 = 0.;
   // prod_i subloc(k_i)/subb(k_i) over one event's photons.
   double m_ifi_prod = 1.;
+  // B (m_ifi_prod - 1), left by the last CalculateReal(): what the IF ratios
+  // add to the real sum (0 without IFI_Real). The breakdown columns that are
+  // not built from the full real sum add it back, see YFS_Handler.
+  double m_real_ifi_soft = 0.;
+  // Photons of the real sum above IFIOmega(), and those that never reached
+  // IFIRealRatio, so their IF factor stayed 1: below PhotonEminNLO(), failed
+  // momentum conservation, a zero or bad real ME, or a ratio IFIRealRatio
+  // refused.
+  long m_ifi_eligible = 0, m_ifi_skip_emin = 0, m_ifi_skip_momcons = 0,
+       m_ifi_skip_unusable = 0, m_ifi_skip_other = 0;
   // Profiled in photon energy fraction x = E_gamma/sqrt(s), 5 bins of 0.1.
   // m_ifi_x_r  : the reweight actually applied, 1 + S_IF/S_crude at BORN momenta
   // m_ifi_x_e  : the "exact-cancellation" ratio subloc/subb, at MAPPED momenta
@@ -156,7 +188,7 @@ public:
    * Null arguments are allowed and simply mean "this process has no such
    * correction". Ownership is never taken.
    */
-  double m_ceexvirt = 1.;
+  double m_acraicvirt = 1.;
   void SetProviders(YFS::Virtual *virt, YFS::Real *real,
                     YFS::RealVirtual *realvirt, YFS::RealReal *realreal,
                     YFS::VirtualVirtual *vv);
@@ -167,48 +199,48 @@ public:
     external loop ME:
       - an external provider (Loop_Generator: OpenLoops, ...),
       - the EEX collinear virtual (YFS: Collinear_Virtual),
-      - CEEX's beta_0^1 - the two vertex form factors and the IFI boxes -
-        which is internal and exact, so with CEEX on and no Loop_Generator
+      - ACRAIC's beta_0^1 - the two vertex form factors and the IFI boxes -
+        which is internal and exact, so with ACRAIC on and no Loop_Generator
         named there is nothing to look up. Without this, NLO_Part: BVR with
-        CEEX: 1 and no Loop_Generator died on "Couldn't find virtual ME for
+        ACRAIC: 1 and no Loop_Generator died on "Couldn't find virtual ME for
         this process" while holding a perfectly good virtual of its own.
 
     \param ext true if the card named a real external loop generator. When it
-    did, the provider is built even with CEEX on: both are then evaluated and
-    CEEX goes out as its own named weight rather than replacing anything.
+    did, the provider is built even with ACRAIC on: both are then evaluated and
+    ACRAIC goes out as its own named weight rather than replacing anything.
   */
   inline bool NeedsVirtualProvider(bool ext=true) const
-  { return !m_eex_virt && (ext || !m_useceex); }
-  /// whether CEEX is the thing supplying the virtual on this run
+  { return !m_eex_virt && (ext || !m_useacraic); }
+  /// whether ACRAIC is the thing supplying the virtual on this run
   /*!
-    Whether CEEX's OWN virtual is used, rather than the provider's.
+    Whether ACRAIC's OWN virtual is used, rather than the provider's.
 
-    The condition used to be `!m_looptool` - CEEX supplied it exactly when no
+    The condition used to be `!m_looptool` - ACRAIC supplied it exactly when no
     loop provider happened to exist. That is an accident of the card, not a
-    choice, and it is how e+e- -> H l+ l- came to use CEEX's 2 -> 2 vertex and
-    boxes: no V in NLO_Part, so no loop tool, so CEEX's own, reporting +2200%
+    choice, and it is how e+e- -> H l+ l- came to use ACRAIC's 2 -> 2 vertex and
+    boxes: no V in NLO_Part, so no loop tool, so ACRAIC's own, reporting +2200%
     with nothing to flag it. The source is now stated
-    (YFS: CEEX_Virtual), and `ceex` still needs a provider to be absent,
+    (YFS: ACRAIC_Virtual), and `acraic` still needs a provider to be absent,
     since the two would otherwise both be applied.
   */
-  inline bool CeexSuppliesVirtual() const
-  { return m_useceex && !m_eex_virt && !m_looptool
-           && m_ceexvirtsrc == ceexvirt::ceex; }
+  inline bool AcraicSuppliesVirtual() const
+  { return m_useacraic && !m_eex_virt && !m_looptool
+           && m_acraicvirtsrc == acraicvirt::acraic; }
   /*!
-    The O(alpha) virtual factor from CEEX, rho(Born+virtual)/rho(Born), pushed
-    in by YFS_Handler after MakeCEEX() has run. Only consulted when
-    CeexSuppliesVirtual(); it is 1 until CEEX has produced a number, so an
-    event where CEEX bailed contributes no virtual rather than a garbage one.
+    The O(alpha) virtual factor from ACRAIC, rho(Born+virtual)/rho(Born), pushed
+    in by YFS_Handler after MakeACRAIC() has run. Only consulted when
+    AcraicSuppliesVirtual(); it is 1 until ACRAIC has produced a number, so an
+    event where ACRAIC bailed contributes no virtual rather than a garbage one.
   */
-  inline void SetCeexVirtual(double f) { m_ceexvirt = f; }
+  inline void SetAcraicVirtual(double f) { m_acraicvirt = f; }
   /*!
-    The two halves of the external virtual, kept so CEEX_Compare can test the
+    The two halves of the external virtual, kept so ACRAIC_Compare can test the
     identity that has to hold if the two are in the same scheme:
 
         virt/Born - sub  ==  2 Re(deltI + deltF)
 
     virt is the RAW one-loop from the provider, sub the YFS virtual form
-    factor B that is subtracted out of it and put into exp(Y) instead. CEEX's
+    factor B that is subtracted out of it and put into exp(Y) instead. ACRAIC's
     deltI/deltF are the same remainder by construction (KKMC's F1ini/F1fin are
     "IR subtracted"), so a mismatch localises to one side of that equation
     rather than to "the virtual disagrees".
@@ -216,8 +248,20 @@ public:
   //! NB not m_virt_sub - that name is already the Virtual_Sub SETTING on
   //! YFS_Base, and shadowing it here silently switched the subtraction off.
   double m_virt_raw = 0., m_virt_subval = 0.;
+  //! diagnostic (YFS: ACRAIC_Compare): m_virt_subval split by dipole type,
+  //! evaluated in CalculateVirtual on the same dipoles as sub
+  double m_virt_sub_ii = 0., m_virt_sub_ff = 0., m_virt_sub_if = 0.;
+  //! diagnostic (YFS: ACRAIC_Compare): the last photon's real terms, from
+  //! CalculateReal - |M_1|^2 in the Born's normalisation, flux, subtraction
+  //! eikonal, crude density, beta_1/S~
+  double m_dbg_r = 0., m_dbg_flux = 0., m_dbg_subloc = 0., m_dbg_subb = 0., m_dbg_tot = 0.;
+  double m_dbg_dk = 0., m_dbg_dp = 0.;   //!< how far the point moved the photon / the legs
+  //! FSR photon (ACRAIC_Compare): X^2 of its M_1 point (final legs + photon) and of the generator (pre-FSR system)
+  double m_dbg_x2pt = 0., m_dbg_x2gen = 0.;
+  //! ISR photon (ACRAIC_Compare): invariant mass^2 of the final legs at its M_1 point, and its factor
+  double m_dbg_x2isr = 0., m_dbg_facisr = 0., m_dbg_facfsr = 0.;
   /*!
-    YFS: CEEX_Virtual: helicity. The IR-finite, complex virtual factor per
+    YFS: ACRAIC_Virtual: helicity. The IR-finite, complex virtual factor per
     helicity configuration of the loop provider, at the Born point m_plab
     where CalculateVirtual evaluated the loop:
 
@@ -230,17 +274,25 @@ public:
     lambda <-> mu_IR matches the loop's), and Im alpha B_4 fixed so that the
     common imaginary part of delta is KKMC's IR-subtracted form factors (see
     LoopHelicityIR). By construction the Born-weighted average of
-    2 Re delta^h is v = m_oneloop/m_born, the value CEEX_Virtual: external
+    2 Re delta^h is v = m_oneloop/m_born, the value ACRAIC_Virtual: external
     uses; with delta^h = v/2 the helicity form IS external.
 
-    Labels are the provider's (physical helicity per leg); Ceex_Base maps
-    them to its own index (Ceex_Base::LoopHelicityToCeex).
+    Labels are the provider's (physical helicity per leg); Acraic_Base maps
+    them to its own index (Acraic_Base::LoopHelicityToAcraic).
   */
   bool m_lhelok = false;
   std::vector<std::vector<int> > m_lhel;
   std::vector<Complex> m_la0, m_ldelta;
   ATOOLS::Vec4D_Vector m_lhelmom;
   double m_lhelv = 0.;
+  //! the raw per-helicity loop over tree A1^h/A0^h of the Born point (0 and
+  //! m_lratio_ok false where the tree is below VIRT_HEL_MINBORN), and the
+  //! uniform running-alpha correction and Im part delta^h was built with:
+  //! the helicity real-virtual rebuilds the Born's delta^h on the Born
+  //! point's own legs from these (BuildRealVirtualHelicityFactors)
+  std::vector<Complex> m_lratio;
+  std::vector<char> m_lratio_ok;
+  double m_lrun = 0., m_limsh = 0.;
   //! run statistics of the per-event identity check and the fallbacks
   long   m_lhel_n = 0, m_lhel_fail = 0, m_lhel_nfall = 0, m_lhel_ncfg = 0;
   double m_lhel_res_max = 0., m_lhel_res_sum = 0., m_lhel_res_sq = 0.;
@@ -256,10 +308,15 @@ public:
     every h (verified against Recola 2.3.0 to 1e-7). imsh is the lambda-free
     imaginary part of K ln(mu^2/lambda^2) + alpha B_4(lambda),
       imsh = sum_{i<j} Im K_ij ln(mu_IR^2 e^c / |s_ij|),
-    c = CEEX: VIRT_HEL_IM_C (1/2 gives KKMC's Im F1 for a vertex pair).
+    c = ACRAIC: VIRT_HEL_IM_C (1/2 gives KKMC's Im F1 for a vertex pair).
     False if a charged leg is massless.
   */
   bool LoopHelicityIR(const ATOOLS::Vec4D_Vector &p, double alpha, double mu2,
+                      Complex &K, double &imsh) const;
+  //! the same over the legs flavs (the (n+1)-point: its photon is neutral
+  //! and drops out)
+  bool LoopHelicityIR(const ATOOLS::Flavour_Vector &flavs,
+                      const ATOOLS::Vec4D_Vector &p, double alpha, double mu2,
                       Complex &K, double &imsh) const;
   //! photon-mass YFS virtual subtraction (all dipoles), for the IR diagnostic
   double VirtualSubPhotonMass();
@@ -295,6 +352,10 @@ public:
   //! Runcard ceiling on the fixed-order photon multiplicity, NLO_MAX_PHOTONS.
   //! Defaults to 2, so a run that does not ask for more behaves as before.
   static size_t RequestedMaxRealPhotons();
+  //! Highest multiplicity to BUILD a provider for: NLO_MAX_PHOTONS, or
+  //! ACRAIC: TREE_BETA_MAX when ACRAIC is on at ORDER 2 and asks for more. The
+  //! fixed-order R_n of YFS.NLO still stops at RequestedMaxRealPhotons().
+  static size_t RequestedMaxProviderPhotons();
 
   /*!
     Matrix element times flux for the photons selected by `mask`, evaluated in
@@ -361,26 +422,81 @@ public:
   //! v = V_sub/B of this event (CalculateVirtual's return over the Born)
   bool m_vborn_ok = false;
   double m_vborn = 0.;
+  //! EW_HIGHER_ORDER's part of m_oneloop/m_born (0 without it)
+  double m_vewho = 0.;
+  //! BETA0_2: the event's photonic factors and the two columns' settings
+  YFS::Photonic_Factors m_b02;
+  YFS::Beta02_Config m_b02acraic, m_b02nlo;
+  long m_b02_n = 0, m_b02_fail = 0;
+  std::unique_ptr<YFS::Dyson_VP> p_dysonvp;
+  YFS::VP_Factors m_vp;
+  long m_vp_n = 0, m_vp_fail = 0;
+  YFS::ewhohel::code  m_ewhohel = YFS::ewhohel::none;
+  YFS::m1square::code m_m1sq = YFS::m1square::averaged;
+  long m_ghel_n = 0, m_ghel_fail = 0;
+  mutable long m_m1sq_hel = 0, m_m1sq_avg = 0;
   int m_rvPoleFail = 0, m_rvNoVirt = 0;
   long m_rvLoopChecked = 0, m_rvLoopUnstable = 0;
-  //! v with the subtraction on the Born point's own legs (RV_MODE 1)
+  //! YFS: RV_BEAM_CONE: photons whose real-virtual was skipped for lying
+  //! within the cone of a beam (NLO_RealVirtual.C, RVInBeamCone)
+  long m_rvBeamCone = 0;
+  bool RVInBeamCone(const ATOOLS::Vec4D_Vector &p) const;
+  //! YFS: VIRTUAL_CHECK - Born-level loops checked in a second frame / dropped
+  long m_vLoopChecked = 0, m_vLoopUnstable = 0;
+  double m_vLoopUnstableBorn = 0., m_vLoopBornSum = 0.;
+  //! v with the subtraction on the Born point's own legs (RV_MODE 1), and
+  //! that subtraction itself (loop coupling units)
   bool m_vborn_own_ok = false;
-  double m_vborn_own = 0.;
+  double m_vborn_own = 0., m_vborn_own_sub = 0.;
   bool BornVirtualOnOwnLegs(double &vb);
   //! RV_PHOTON_CT: the external photon's alpha(0) counterterm on v_{n+1}
   bool m_rvct_done = false;
   double m_rvct = 0.;
   void CalibratePhotonCounterterm();
   //! RV_PHOTON_CT 2: the counterterm from the model's parameters
-  //! (Photon_Counterterm.C), per external photon
-  double AnalyticPhotonCounterterm() const;
+  //! (Photon_Counterterm.C), per external photon, in the real-virtual
+  //! provider's convention (OpenLoops' or Recola's); cim receives the
+  //! amplitude-level imaginary part (2 Im c_amp/2), used only per helicity
+  double AnalyticPhotonCounterterm(double &cim) const;
+  double m_rvct_im = 0.;
   //! RV_MODE 1 with a real-virtual provider (YFS_Handler keeps v x real)
   bool RVRemainder() const;
   //! RV_MODE 1: (lab photon, v_{n+1} - v_B) for every photon whose RV was
-  //! evaluated this event - read by CEEX: REAL_VIRTUAL 2
+  //! evaluated this event - read by ACRAIC: REAL_VIRTUAL 2
   std::vector<std::pair<ATOOLS::Vec4D, double> > m_rvdv;
-  //! the last RealVirtualFactor's loop over tree, before its subtraction
-  double m_rvLastLt = 0.;
+  //! the last RealVirtualFactor's loop over tree, before its subtraction,
+  //! that subtraction (B~/kappa on the point's legs), and the point in the
+  //! loop frame
+  double m_rvLastLt = 0., m_rvLastSub = 0.;
+  ATOOLS::Vec4D_Vector m_rvLastLoop;
+  /*!
+    ACRAIC: REAL_VIRTUAL helicity. The (n+1)-point provider's per-helicity
+    amplitudes, read after photon i's RealVirtualFactor call (the same loop
+    call, no extra cost), as the per-helicity remainder of RVHelicityFactors:
+        delta_{n+1}^c = A1^c/A0^c - (1/2) B~(point legs)/kappa
+                        - i imsh(point) + c_photon/2 ,
+        delta_B^c'    = A1^c'/A0^c' (Born point) - run/2
+                        - (1/2) B~(Born's own legs)/kappa - i imsh(Born) ,
+        rem^c = delta_{n+1}^c - delta_B^c' ,
+    c' the Born configuration with the same fermion labels (photon last).
+    The (n+1)-tree-weighted average of 2 Re delta_{n+1}^c is v_{n+1} + c by
+    construction (checked per photon, m_rvhel_res*); the same average of
+    2 Re rem^c differs from the squared-level dv by v_B -
+    <2 Re delta_B>_{(n+1) tree}, the Born virtual's helicity dependence
+    resolved on the real's helicity mix (m_rvhel_dv*, -> 0 in the soft
+    limit). Configurations below VIRT_HEL_MINBORN keep rem = dv/2; a Born
+    configuration below it keeps delta_B = v_B/2.
+  */
+  std::vector<RVHelicityFactors> m_rvhel;
+  bool RealVirtualHelicityRequested() const;
+  bool BuildRealVirtualHelicityFactors(const Vec4D &k, double dv,
+                                       const ATOOLS::Vec4D_Vector &plab,
+                                       RVHelicityFactors &out);
+  long   m_rvhel_n = 0, m_rvhel_fail = 0, m_rvhel_nfall = 0, m_rvhel_ncfg = 0;
+  long   m_rvhel_nbornfall = 0;
+  double m_rvhel_res_max = 0., m_rvhel_res_sum = 0., m_rvhel_res_sq = 0.;
+  double m_rvhel_dv_max = 0., m_rvhel_dv_sum = 0., m_rvhel_dv_sq = 0.;
+  void ReportRealVirtualHelicity();
   //! each photon's factor in REAL_COMBINE's product (1 if not evaluated)
   std::vector<double> m_prodfac;
 
@@ -403,6 +519,8 @@ public:
   std::vector<RRPhotonInfo> m_rrphot;
   RRPhotonInfo m_lastrrinfo;
   double RealRealRemainder(size_t i, size_t j);
+  //! YFS: RR_MODE singles_product (v x RR is then left out of the weight)
+  bool RRSinglesProduct() const;
   //! RR_MODE 1, two-photon events: rho_ij, the exact two-photon weight the
   //! product plus RR must equal (read by YFS_Handler's RR_PROBE identity line)
   double m_rrExactPair = 0.;
@@ -419,6 +537,25 @@ public:
                         double r, double rtree, double subloc, double eikloc,
                         double flux, double subb, double tot);
   double CalculateVV();
+  /*!
+    YFS: VV_POLE_CHECK (default true). With a double-virtual provider that
+    reports its massive Laurent series (VV_Generator: Internal for
+    e+e- -> gamma gamma, EXTRA_XS/NNLO/ee_aa_QED_VV.H), check per event that
+    YFS's own subtraction cancels the two-loop soft poles:
+      m1m_-1 = sigma_-1,  m2m_-2 = sigma_-1^2/2,  m2m_-1 = sigma_-1 m1m_0,
+    sigma = 2 B/(alpha/pi) of this event's dipoles (BVV_full_eps, shifted to
+    mu^2 = s), m1m/m2m the provider's massified one- and two-loop series per
+    Born (alpha/2pi units, its own one loop). Diagnostic only: no weight
+    changes. YFS: VV_POLE_PROBE n prints the first n events (@@@ VVPOLE).
+  */
+  void CheckVVPoles();
+  void ReportVVPoles();
+  //! YFS: BETA0_2_DIPHOTON: Born points with the provider, and those skipped
+  //! for BETA0_2_DIPHOTON_POWER_CUT
+  long m_b02aa_n = 0, m_b02aa_skip = 0;
+  long   m_vvp_n = 0, m_vvp_fail = 0;
+  double m_vvp_max[3] = {0., 0., 0.};
+  long   m_vvp_digits[3][17] = {{0}};
   //! Assert that the mapped hard system balances the total photon momentum.
   //! Multiplicity-agnostic: pass the summed photon momentum.
   void CheckMappingRecoil(const ATOOLS::Vec4D_Vector &p,
@@ -448,7 +585,7 @@ public:
     The Born process (Comix), for the Born at momenta other than the event's.
     Needed by REAL_SUB_EIK 6: the crude a photon could have been generated
     with carries the Born of EACH assignment, S~_II B(s' with the photon
-    removed) + S~_FF B(pre-emission pair), as CEEX's rho_crude does.
+    removed) + S~_FF B(pre-emission pair), as ACRAIC's rho_crude does.
   */
   PHASIC::Process_Base *p_bornproc = nullptr;
   double m_me2born = -1.;     // Comix |M_0|^2 at m_bornMomenta, cached per event
@@ -510,6 +647,7 @@ public:
   double m_me2pre = -1.;
   double m_sub8[4] = {-1., -1., -1., -1.};   // SUB8_TRACE scratch
   bool   PreFSRBornRatio(const ATOOLS::Vec4D &R, double &bratio);
+  bool   GeneratorReaches(const ATOOLS::Vec4D_Vector &p);
   bool   PreFSRBornPoint(const ATOOLS::Vec4D &R, ATOOLS::Vec4D_Vector &p) const;
   ATOOLS::Vec4D PreFSRSystem() const;
   //! Final-state photons: Q fixed, the final legs recoil (YFS: REAL_FSR_MAP).
@@ -550,7 +688,7 @@ public:
   bool m_map_reduced = false;
   /*
     Same construction with the Born reference passed in rather than read from
-    m_bornMomenta. CEEX needs this: MakeCEEX runs BEFORE CalculateNLO, so
+    m_bornMomenta. ACRAIC needs this: MakeACRAIC runs BEFORE CalculateNLO, so
     NLO's member still holds the previous event and the rotation would be
     taken against the wrong axis.
   */
@@ -563,6 +701,31 @@ public:
   void BookHistograms();
   void WriteHistograms();
   void CheckMassReg();
+  //! YFS: VIRTUAL_POLE_PROBE: the loop's and the subtraction's 1/eps per event
+  void ProbeVirtualPoles(Define_Dipoles *vsub);
+  //! YFS: VIRTUAL_PROBE_ABOVE: large |V/B| re-evaluated in two more frames
+  void ProbeLargeVirtual(const double virt, const double sub);
+  //! YFS: VIRTUAL_CHECK: the loop in a second frame; unstable -> no virtual
+  void CheckVirtualStability(double &virt, const double sub, const bool vcanon);
+  //! YFS: RR_LOG_CHECK: the double real's soft x hard log against B~(pt) - B~(gen)
+  void ProbeRRLog(const Vec4D &k, const Vec4D_Vector &legs, const double Keps);
+  //! YFS: PHOTON_DUMP: a photon of the real loop and its contribution
+  void DumpPhoton(const YFS::Photon &g);
+  void DumpPhotonContribution(const YFS::Photon &g, const double contrib);
+  //! momentum-balance reports of the real's mappings (printed when violated)
+  void ReportFSRMapResidual(const Vec4D_Vector &p, const Vec4D_Vector &k,
+                            const Vec4D &Kall, const double xi,
+                            const double Mp, const double msum);
+  void ReportMappingResidual(const Vec4D_Vector &p, const Vec4D_Vector &k,
+                             const char *tag, const Vec4D &Q);
+  //! YFS: REAL_STAB: the mapped pair invariant of a real point
+  void DumpMapQ(const double sqrtsqq, const double eksum, const std::string &extra);
+  //! YFS: VIRTUAL_CHECK: end-of-run counts
+  void ReportVirtualCheck();
+  //! B~(K) and the final-leg form factor on the point's and the generation legs
+  void SoftSumsOnBothLegs(const Vec4D_Vector &legs, const double K,
+                          double &bt_pt, double &bt_gen,
+                          double &dY_pt, double &dY_gen);
   bool CheckPhotonForReal(const Vec4D &k);
   bool CheckPhotonForReal(const Vec4D &k, const Vec4D_Vector &p);
   void CheckMasses(Vec4D_Vector &p, int realmode=0);
@@ -586,11 +749,65 @@ public:
   inline void SetMomentum(Vec4D_Vector &p) { m_plab = p;}
   inline void SetFSR(YFS::FSR *p) {p_fsr = p;}
   inline bool HasVirtual() {return m_looptool;}
+  /*!
+    Whether the card asked for the virtual at all (V in NLO_Part), set by
+    PHASIC::YFS_Process whether or not a loop provider exists. With
+    YFS: ACRAIC_Virtual: acraic and no provider, HasVirtual() is false although
+    the virtual was requested, and ACRAIC then added none of its own while
+    YFS.NLO took ACRAIC's (virtual-free) factor: no virtual in either column
+    (audit 2026-09-23, D3). YFS_Handler tells ACRAIC with this instead.
+  */
+  bool m_virtrequested = false;
+  inline void SetVirtualRequested(bool r) { m_virtrequested = r; }
+  inline bool VirtualRequested() const { return m_virtrequested; }
   inline bool HasReal() {return m_realtool;}
   inline bool HasRR() {return m_rrtool;}
   //! An exact double-virtual provider (p_vv); without one YFS_Handler
   //! estimates the VV from the EEX series (VV_EEX, NNLO_VV*).
   inline bool HasVV() {return m_vvtool;}
+  //! YFS: EW_HIGHER_ORDER - see NLO_Virtual.C
+  void AddEWHigherOrder();
+  /*!
+    YFS: BETA0_2 / ACRAIC: BETA0_2 - the photonic two-loop beta_0^(2) at
+    LL+NLL (YFS/Main/Beta0_2.H for the formulas, NLO_Beta02.C). BuildBeta02
+    runs at the end of CalculateVirtual, on the Born point m_plab of the
+    loop, and keeps the event's analytic photonic factors; each column
+    composes them with its own one-loop delta (ACRAIC in
+    YFS_Handler::GenerateWeight, YFS.NLO in YFS_Handler::CalculateNLO).
+  */
+  void InitBeta02();
+  void BuildBeta02();
+  void ReportBeta02();
+  //! v of the loop provider alone: m_oneloop/m_born less EW_HIGHER_ORDER
+  double VOneLoop() const;
+  inline bool Beta02Ok() const { return m_b02.ok; }
+  inline const YFS::Photonic_Factors &Beta02Factors() const { return m_b02; }
+  inline const YFS::Beta02_Config &Beta02Acraic() const { return m_b02acraic; }
+  inline const YFS::Beta02_Config &Beta02Nlo()  const { return m_b02nlo; }
+  //! ACRAIC with an external virtual: the real delta^(2) of delta = v1/2
+  double Beta02External() const;
+  //! YFS.NLO, relative to the Born: (1 + v1/2 + d2)^2 - 1 - v1 with
+  //! d2 = delta^(2) of delta = v1/2 (the squared-level |1 + delta + d2|^2)
+  double Beta02SquaredLevel() const;
+  /*!
+    YFS: DYSON_VP - the Dyson-resummed photon vacuum polarisation beyond the
+    provider's first order (YFS/Main/Dyson_VP.H), both columns. Built with
+    beta_0^(2), at the end of CalculateVirtual, at the loop's Born point.
+  */
+  void BuildDysonVP();
+  /*!
+    ACRAIC: EW_HIGHER_ORDER_HELICITY - the EW_HIGHER_ORDER term per helicity
+    (Griffin_Interface::HigherOrderHelicity), labels and factors delta_G(h)
+    in the provider's physical labels, and its Born-weighted 2 Re = v_HO.
+  */
+  void BuildEWHigherOrderHelicity();
+  inline YFS::ewhohel::code EWHOHelicityMode() const { return m_ewhohel; }
+  inline double VEWHigherOrder() const { return m_vewho; }
+  bool m_ghelok = false;
+  std::vector<std::vector<int> > m_ghel;
+  std::vector<Complex> m_gdelta;
+  inline bool DysonVPOn() const { return p_dysonvp != nullptr; }
+  inline const YFS::VP_Factors &DysonVPFactors() const { return m_vp; }
   inline bool HasRealVirtual() {return m_realvirt;}
   inline bool HasNLO()  {return m_realtool || m_looptool;}
   inline bool HasNNLO() {return m_rrtool   || m_realvirt;}
@@ -598,11 +815,11 @@ public:
   Vec4D FixedTestPhoton() const;
   // One-shot dump of beta_0 and beta_1 on a single, fully specified phase-space
   // point, for the number-for-number comparison against KKMC's CEEX. Enabled
-  // with YFS: CEEX_Compare: 1. See Test/SherpaCompare/kkmc_ceex_crosscheck.cxx
+  // with YFS: ACRAIC_Compare: 1. See Test/SherpaCompare/kkmc_acraic_crosscheck.cxx
   // in the KKMC repo for the other half; the momenta printed here are meant to
   // be fed to it so both sides evaluate at exactly the same point.
-  void CEEXComparePoint();
-  bool m_ceex_done;
+  void ACRAICComparePoint();
+  bool m_acraic_done;
 
 private:
   /*
@@ -648,6 +865,13 @@ private:
   void   RealTrace(const RealTerms &rt);
   void   RealStabilityProbe(const RealTerms &rt);
   void   IFIRealRatio(const RealTerms &rt);
+  //! where the last CalculateReal(k) stopped, and whether IFIRealRatio
+  //! applied a ratio there; read by CountIFISkip
+  enum class real_exit { completed, momentum_conservation, unusable_me };
+  real_exit m_real_exit = real_exit::completed;
+  bool   m_ifi_applied = false;
+  //! IFI_Real bookkeeping for a photon whose IF ratio was not applied
+  void   CountIFISkip();
   void   ReportBadReal(const RealTerms &rt);
   void   FillRealHistograms(const RealTerms &rt);
   void   TrackRealAverage(double tot);

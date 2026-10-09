@@ -116,15 +116,50 @@ namespace {
     {"off", bornphotonmc::off}, {"on", bornphotonmc::on},
     {"report", bornphotonmc::report}};
 
+  const std::vector<Option_Name> s_ewhigherorder{
+    {"none", ewhigherorder::none}, {"griffin", ewhigherorder::griffin}};
+
+  const std::vector<Option_Name> s_beta02{
+    {"none", beta02::none}, {"ll", beta02::ll}, {"llnll", beta02::llnll},
+    {"exp", beta02::exp}, {"two_loop", beta02::two_loop}};
+
+  const std::vector<Option_Name> s_beta02pairs{
+    {"all", beta02pairs::all}, {"same_side", beta02pairs::same_side}};
+
+  const std::vector<Option_Name> s_beta02alpha{
+    {"alpha0", beta02alpha::alpha0}, {"loop", beta02alpha::loop}};
+
+  const std::vector<Option_Name> s_dysonvp{
+    {"none", dysonvp::none}, {"false", dysonvp::none},
+    {"resummed", dysonvp::resummed}, {"true", dysonvp::resummed},
+    {"complete", dysonvp::complete}};
+
+  const std::vector<Option_Name> s_m1square{
+    {"averaged", m1square::averaged}, {"helicity", m1square::helicity}};
+
+  const std::vector<Option_Name> s_ewhohel{
+    {"none", ewhohel::none}, {"averaged", ewhohel::averaged},
+    {"helicity", ewhohel::helicity}};
+
   const std::vector<Option_Name> s_rvmode{
-    {"legacy", rvmode::legacy}, {"remainder", rvmode::remainder}};
+    {"legacy", rvmode::legacy}, {"remainder", rvmode::remainder},
+    {"remainder_own_legs", rvmode::remainder_own_legs}};
 
   const std::vector<Option_Name> s_rrmode{
-    {"legacy", rrmode::legacy}, {"exact", rrmode::exact}};
+    {"legacy", rrmode::legacy}, {"exact", rrmode::exact},
+    {"singles_product", rrmode::singles_product}};
 
   const std::vector<Option_Name> s_rvloopframe{
     {"lab", rvloopframe::lab}, {"canonical", rvloopframe::canonical},
     {"tilted", rvloopframe::tilted}, {"beam_axis", rvloopframe::beam_axis}};
+
+  const std::vector<Option_Name> s_virtsublegs{
+    {"event", virtsublegs::event}, {"own", virtsublegs::own}};
+
+  const std::vector<Option_Name> s_virtmassif{
+    {"off", virtmassif::off}, {"electrons", virtmassif::electrons},
+    {"leptons", virtmassif::leptons}, {"light_fermions", virtmassif::light_fermions},
+    {"false", virtmassif::off}, {"true", virtmassif::leptons}};
 
   const std::vector<Option_Name> s_rvphotonct{
     {"none", rvphotonct::none}, {"calibrated", rvphotonct::calibrated},
@@ -147,15 +182,20 @@ namespace {
     {"rho0_and_rho1", pseudoflux::rho0_and_rho1},
     {"neither", pseudoflux::neither}, {"rho0_only", pseudoflux::rho0_only}};
 
-  const std::vector<Option_Name> s_ceexrv{
-    {"off", ceexrv::off}, {"factorisable", ceexrv::factorisable},
-    {"averaged", ceexrv::averaged}};
+  const std::vector<Option_Name> s_acraicrv{
+    {"off", acraicrv::off}, {"factorisable", acraicrv::factorisable},
+    {"averaged", acraicrv::averaged}, {"auto", acraicrv::automatic},
+    {"helicity", acraicrv::helicity}};
 
   const std::vector<Option_Name> s_beta1legs{
     {"physical", beta1legs::physical}, {"balanced", beta1legs::balanced}};
 
   const std::vector<Option_Name> s_weikonal{
     {"daughters", weikonal::daughters}, {"partition", weikonal::partition}};
+
+  const std::vector<Option_Name> s_acraicresexp{
+    {"none", acraicresexp::none}, {"greco", acraicresexp::greco},
+    {"auto", acraicresexp::automatic}};
 
   // RR_CONVENTIONS: the old integer mask's values of the four pieces
   const std::vector<Option_Name> s_rrconventions{
@@ -226,7 +266,7 @@ std::string YFS::RRConventionsNames(const rrconventions &c)
 }
 
 std::istream &YFS::operator>>(std::istream &s, tristate::code &c)
-{ return ReadOption(s, c, s_tristate, "a YFS/CEEX auto/off/on switch"); }
+{ return ReadOption(s, c, s_tristate, "a YFS/ACRAIC auto/off/on switch"); }
 std::ostream &YFS::operator<<(std::ostream &s, const tristate::code &c)
 { return WriteOption(s, c, s_tristate); }
 
@@ -275,6 +315,41 @@ std::istream &YFS::operator>>(std::istream &s, bornphotonmc::code &c)
 std::ostream &YFS::operator<<(std::ostream &s, const bornphotonmc::code &c)
 { return WriteOption(s, c, s_bornphotonmc); }
 
+std::istream &YFS::operator>>(std::istream &s, ewhigherorder::code &c)
+{ return ReadOption(s, c, s_ewhigherorder, "YFS: EW_HIGHER_ORDER"); }
+std::ostream &YFS::operator<<(std::ostream &s, const ewhigherorder::code &c)
+{ return WriteOption(s, c, s_ewhigherorder); }
+
+std::istream &YFS::operator>>(std::istream &s, beta02::code &c)
+{ return ReadOption(s, c, s_beta02, "YFS/ACRAIC: BETA0_2"); }
+std::ostream &YFS::operator<<(std::ostream &s, const beta02::code &c)
+{ return WriteOption(s, c, s_beta02); }
+
+std::istream &YFS::operator>>(std::istream &s, beta02pairs::code &c)
+{ return ReadOption(s, c, s_beta02pairs, "YFS: BETA0_2_PAIRS"); }
+std::ostream &YFS::operator<<(std::ostream &s, const beta02pairs::code &c)
+{ return WriteOption(s, c, s_beta02pairs); }
+
+std::istream &YFS::operator>>(std::istream &s, beta02alpha::code &c)
+{ return ReadOption(s, c, s_beta02alpha, "YFS: BETA0_2_ALPHA"); }
+std::ostream &YFS::operator<<(std::ostream &s, const beta02alpha::code &c)
+{ return WriteOption(s, c, s_beta02alpha); }
+
+std::istream &YFS::operator>>(std::istream &s, dysonvp::code &c)
+{ return ReadOption(s, c, s_dysonvp, "YFS: DYSON_VP"); }
+std::ostream &YFS::operator<<(std::ostream &s, const dysonvp::code &c)
+{ return WriteOption(s, c, s_dysonvp); }
+
+std::istream &YFS::operator>>(std::istream &s, m1square::code &c)
+{ return ReadOption(s, c, s_m1square, "YFS: M1_SQUARE"); }
+std::ostream &YFS::operator<<(std::ostream &s, const m1square::code &c)
+{ return WriteOption(s, c, s_m1square); }
+
+std::istream &YFS::operator>>(std::istream &s, ewhohel::code &c)
+{ return ReadOption(s, c, s_ewhohel, "ACRAIC: EW_HIGHER_ORDER_HELICITY"); }
+std::ostream &YFS::operator<<(std::ostream &s, const ewhohel::code &c)
+{ return WriteOption(s, c, s_ewhohel); }
+
 std::istream &YFS::operator>>(std::istream &s, rvmode::code &c)
 { return ReadOption(s, c, s_rvmode, "YFS: RV_MODE"); }
 std::ostream &YFS::operator<<(std::ostream &s, const rvmode::code &c)
@@ -290,6 +365,16 @@ std::istream &YFS::operator>>(std::istream &s, rvloopframe::code &c)
 std::ostream &YFS::operator<<(std::ostream &s, const rvloopframe::code &c)
 { return WriteOption(s, c, s_rvloopframe); }
 
+std::istream &YFS::operator>>(std::istream &s, virtsublegs::code &c)
+{ return ReadOption(s, c, s_virtsublegs, "YFS: VIRTUAL_SUB_LEGS"); }
+std::ostream &YFS::operator<<(std::ostream &s, const virtsublegs::code &c)
+{ return WriteOption(s, c, s_virtsublegs); }
+
+std::istream &YFS::operator>>(std::istream &s, virtmassif::code &c)
+{ return ReadOption(s, c, s_virtmassif, "YFS: VIRTUAL_MASSIFICATION"); }
+std::ostream &YFS::operator<<(std::ostream &s, const virtmassif::code &c)
+{ return WriteOption(s, c, s_virtmassif); }
+
 std::istream &YFS::operator>>(std::istream &s, rvphotonct::code &c)
 { return ReadOption(s, c, s_rvphotonct, "YFS: RV_PHOTON_CT"); }
 std::ostream &YFS::operator<<(std::ostream &s, const rvphotonct::code &c)
@@ -301,31 +386,36 @@ std::ostream &YFS::operator<<(std::ostream &s, const fluxmode::code &c)
 { return WriteOption(s, c, s_fluxmode); }
 
 std::istream &YFS::operator>>(std::istream &s, crudegen::code &c)
-{ return ReadOption(s, c, s_crudegen, "CEEX: CRUDE_FROM_GENERATOR"); }
+{ return ReadOption(s, c, s_crudegen, "ACRAIC: CRUDE_FROM_GENERATOR"); }
 std::ostream &YFS::operator<<(std::ostream &s, const crudegen::code &c)
 { return WriteOption(s, c, s_crudegen); }
 
 std::istream &YFS::operator>>(std::istream &s, tchmultiphoton::code &c)
-{ return ReadOption(s, c, s_tchmultiphoton, "CEEX: TCHANNEL_MULTIPHOTON"); }
+{ return ReadOption(s, c, s_tchmultiphoton, "ACRAIC: TCHANNEL_MULTIPHOTON"); }
 std::ostream &YFS::operator<<(std::ostream &s, const tchmultiphoton::code &c)
 { return WriteOption(s, c, s_tchmultiphoton); }
 
 std::istream &YFS::operator>>(std::istream &s, pseudoflux::code &c)
-{ return ReadOption(s, c, s_pseudoflux, "CEEX: NO_PSEUDOFLUX"); }
+{ return ReadOption(s, c, s_pseudoflux, "ACRAIC: NO_PSEUDOFLUX"); }
 std::ostream &YFS::operator<<(std::ostream &s, const pseudoflux::code &c)
 { return WriteOption(s, c, s_pseudoflux); }
 
-std::istream &YFS::operator>>(std::istream &s, ceexrv::code &c)
-{ return ReadOption(s, c, s_ceexrv, "CEEX: REAL_VIRTUAL"); }
-std::ostream &YFS::operator<<(std::ostream &s, const ceexrv::code &c)
-{ return WriteOption(s, c, s_ceexrv); }
+std::istream &YFS::operator>>(std::istream &s, acraicrv::code &c)
+{ return ReadOption(s, c, s_acraicrv, "ACRAIC: REAL_VIRTUAL"); }
+std::ostream &YFS::operator<<(std::ostream &s, const acraicrv::code &c)
+{ return WriteOption(s, c, s_acraicrv); }
 
 std::istream &YFS::operator>>(std::istream &s, beta1legs::code &c)
-{ return ReadOption(s, c, s_beta1legs, "CEEX: BETA1_LEGS"); }
+{ return ReadOption(s, c, s_beta1legs, "ACRAIC: BETA1_LEGS"); }
 std::ostream &YFS::operator<<(std::ostream &s, const beta1legs::code &c)
 { return WriteOption(s, c, s_beta1legs); }
 
 std::istream &YFS::operator>>(std::istream &s, weikonal::code &c)
-{ return ReadOption(s, c, s_weikonal, "CEEX: W_EIKONAL"); }
+{ return ReadOption(s, c, s_weikonal, "ACRAIC: W_EIKONAL"); }
 std::ostream &YFS::operator<<(std::ostream &s, const weikonal::code &c)
 { return WriteOption(s, c, s_weikonal); }
+
+std::istream &YFS::operator>>(std::istream &s, acraicresexp::code &c)
+{ return ReadOption(s, c, s_acraicresexp, "ACRAIC: RESONANCE_EXPONENTIATION"); }
+std::ostream &YFS::operator<<(std::ostream &s, const acraicresexp::code &c)
+{ return WriteOption(s, c, s_acraicresexp); }

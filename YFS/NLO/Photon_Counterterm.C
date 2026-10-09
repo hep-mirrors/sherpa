@@ -141,6 +141,15 @@ namespace {
   struct Lepton { double m2; C B00, B0Z, B000, dB000, B0W0, dB0W0, dB0Z; };
 }
 
+namespace {
+  //! the light-fermion pieces OnShellPhotonCounterterm builds, for the
+  //! provider conversion below (units alpha_in/4pi)
+  struct LightPieces { C PiAAlightZ_over_MZ2; double dAlpha;
+                       //! 2 Im[-(sw/cw) SiAZ0/MZ2 - dZeGmu + dSiAAheavy0/2]
+                       double twoim; };
+  LightPieces s_lastlight;
+}
+
 double YFS::OnShellPhotonCounterterm(const Photon_CT_Input &in,
                                      photon_ct_scheme scheme, std::string &log)
 {
@@ -258,9 +267,57 @@ double YFS::OnShellPhotonCounterterm(const Photon_CT_Input &in,
   const C dZeGmu(dsw/sw - 1./sw/cw*SiAZ0/MZ2 - 0.5/sw2*(6. + (7. - 4.*sw2)/(2.*sw2)*std::log(cw2))
                  + 0.5*(dZMW2 - SiW0)/MW2);
   const double c(2.*(dZe0.real() - dZeGmu.real())*in.alpha_in/(4.*pi));
+  s_lastlight = LightPieces{PiAAlightZ/rMZ2, dAlpha,
+                            2.*(-sw/cw*SiAZ0/MZ2 - dZeGmu + 0.5*dSiAAheavy0).imag()
+                            *in.alpha_in/(4.*pi)};
   std::ostringstream o;
   o<<std::setprecision(8)<<"G_mu scheme: c = "<<c<<" (1 - alpha(0)/alpha_in = "
    <<1. - in.alpha0/in.alpha_in<<", the rest of Delta r "<<c - (1. - in.alpha0/in.alpha_in)<<")";
   log = o.str();
   return c;
+}
+
+
+double YFS::RecolaPhotonCounterterm(const Photon_CT_Input &in,
+                                    photon_ct_scheme scheme, std::string &log)
+{
+  // alpha(0): dZe(alpha0) + dZ_AA/2 has no dZ_AA left, in either provider
+  if (scheme == photon_ct_scheme::alpha0) { log = "alpha(0) scheme: no counterterm"; return 0.; }
+  if (scheme != photon_ct_scheme::Gmu) {
+    log = "alpha(M_Z) scheme: Recola's dalZ_QED2 conversion not derived; no counterterm";
+    return 0.;
+  }
+  const double col(OnShellPhotonCounterterm(in, scheme, log));
+  const double rMZ2(sqr(in.MZ)), pi(M_PI);
+  // the light fermions of OpenLoops' nreg set with Recola's masses (0 ->
+  // regulated by mu_IR): charge^2 times colour
+  struct F { double m, nq2; };
+  const F fs[8] = {{in.me, 1.}, {in.mmu, 1.}, {in.mtau, 1.},
+                   {in.mu, 3.*4./9.}, {in.md, 3./9.}, {in.ms, 3./9.},
+                   {in.mc, 3.*4./9.}, {in.mb, 3./9.}};
+  double rec(0.);
+  for (const F &f : fs) {
+    const double mreg(f.m > 0. ? f.m : in.mu_ir);
+    rec += -4./3.*f.nq2*std::log(mreg*mreg/rMZ2);
+  }
+  // dZ_AA^nreg - dZ_AA^Recola = -(Pi_light/M_Z^2 + Delta alpha) + dSiAA0_light^Recola
+  const double dc((-s_lastlight.PiAAlightZ_over_MZ2.real() - s_lastlight.dAlpha + rec)
+                  *in.alpha_in/(4.*pi));
+  std::ostringstream o;
+  o<<std::setprecision(8)<<"Recola: c = c_OpenLoops + dc = "<<col<<" + "<<dc<<" = "<<col + dc
+   <<" (dZ_AA light-fermion parts, alpha_in/4pi units: OpenLoops nreg "
+   <<(-s_lastlight.PiAAlightZ_over_MZ2.real() - s_lastlight.dAlpha)<<", Recola "<<rec
+   <<"; massless fermions regulated at mu_IR = "<<in.mu_ir<<" GeV); OpenLoops: "<<log;
+  log = o.str();
+  return col + dc;
+}
+
+
+double YFS::PhotonCountertermImaginary(const Photon_CT_Input &in,
+                                       photon_ct_scheme scheme)
+{
+  if (scheme != photon_ct_scheme::Gmu) return 0.;
+  std::string log;
+  OnShellPhotonCounterterm(in, scheme, log);
+  return s_lastlight.twoim;
 }
