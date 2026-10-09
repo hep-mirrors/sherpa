@@ -241,7 +241,6 @@ double Define_Dipoles::CalculateRealSubIF(const Vec4D &k) {
 
 double Define_Dipoles::CalculateVirtualSub() {
   double sub(0);
-  if(m_tchannel>=2) return CalculateVirtualSubTchannel();
   if(m_dim_reg==1) return CalculateVirtualSubEps();
   for (auto &D : m_set.ByType(dipoletype::initial)) {
     sub += D.ChargeNorm()*p_yfsFormFact->BVirtGeneral(D, sqrt(m_s) / 2.);
@@ -306,7 +305,6 @@ bool Define_Dipoles::DecayVirtualSubtraction() const {
   / eps_scheme, so that B(virtual, finite) + B-tilde is the lambda-free Y.
 */
 double Define_Dipoles::RealSoftSum(double K) {
-  if (m_tchannel >= 2) return std::numeric_limits<double>::quiet_NaN();
   auto one = [&](YFS::Dipole &D) {
     Vec4D p1, p2;
     D.LegsBeforeRadiation(p1, p2);
@@ -425,7 +423,11 @@ double Define_Dipoles::CalculateVVSubEps() {
     sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
   }
   m_vvSub=0.5*sub*sub;
-  return (0.5*sub*sub).Finite();
+  // Divergence_Array's operator* writes the diagonal IR*IR and finite*finite
+  // products twice (cross terms are right); take the extra halves off
+  m_vvSub.IR2() -= 0.5*0.5*sqr(sub.IR());
+  m_vvSub.Finite() -= 0.5*0.5*sqr(sub.Finite());
+  return m_vvSub.Finite();
 }
 
 double Define_Dipoles::CalculateRealVirtualSubEps(const Vec4D &k) {
@@ -435,7 +437,6 @@ double Define_Dipoles::CalculateRealVirtualSubEps(const Vec4D &k) {
   // emission ME, with the identical finite convention as the Born virtual —
   // otherwise beta_1^1 does not vanish in the soft limit.
   DivArrD sub(0);
-  if(m_tchannel>=2) return CalculateVirtualSubTchannel();
   for (auto &D : m_set.ByType(dipoletype::initial)) {
     sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
   }
@@ -698,81 +699,6 @@ double Define_Dipoles::FormFactor(double form){
   return exp(form);
 }
 
-
-double Define_Dipoles::TFormFactor(){
-  double form = 0;
-  for(auto &D: m_set.ByType(dipoletype::initial)){
-    form+= D.ChargeNorm()*p_yfsFormFact->R1(D);
-  }
-    for(auto &D: m_set.FF()){
-      form += D.ChargeNorm()*p_yfsFormFact->R1(D);
-  }
-  if (m_ifisub) {
-    for(auto &D: m_set.IF()){
-      form += D.ChargeNorm()*p_yfsFormFact->IFForFac(D, IFIOmega());
-    }
-  }
-  if(FixedOrder()==fixed_order::nlo){
-    return 1.+form;
-  }
-  return exp(form);
-}
-
-double Define_Dipoles::CalculateVirtualSubTchannel(){
-  if(m_dim_reg) return CalculateVirtualSubTchannelEps();
-  double sub(0);
-  for (auto &D : m_set.ByType(dipoletype::initial)){
-    sub += D.ChargeNorm()*p_yfsFormFact->BVirtT(D,sqrt(m_s) / 2.);
-  }
-  for (auto &D : m_set.FF()){
-    sub += D.ChargeNorm()*p_yfsFormFact->BVirtT(D,sqrt(m_s) / 2.);
-  }
-  for (auto &D : m_set.IF()){
-    sub += D.ChargeNorm()*p_yfsFormFact->BVirtT(D,sqrt(m_s) / 2.);
-  }
-  return sub;
-}
-
-double Define_Dipoles::CalculateVirtualSubTchannelEps() {
-  DivArrD sub(0);
-  DivArrD massph(0,-1.,0,0,0,0);
-  for (auto &D : m_set.ByType(dipoletype::initial)) {
-    sub += D.ChargeNorm()*p_yfsFormFact->BVirtTEps(D,sqrt(m_s) / 2.);
-    #ifdef USING__LOOPTOOLS
-      //ii term
-      Vec4D p1 = D.GetBornMomenta(0);
-      Vec4D p2 = D.GetBornMomenta(1);
-      double m1 = D.GetMass(0);
-      double m2 = D.GetMass(1);
-      double irloop = p_yfsFormFact->p_virt->IRscale();
-      double epsloop = p_yfsFormFact->p_virt->Eps_Scheme_Factor({p1,p1});
-      DivArrD c0 = (-massph-log(4.*M_PI*sqr(irloop)/m1/m2/epsloop));
-    #endif
-  }
-  for (auto &D : m_set.FF()) {
-    if(m_mode==yfsmode::fsr) sub += -D.m_QiQj*p_yfsFormFact->BVirtTEps(D,sqrt(m_s) / 2.);
-    else sub += D.ChargeNorm()*p_yfsFormFact->BVirtTEps(D,sqrt(m_s) / 2.);
-  }
-
-  for (auto &D : m_set.IF()){
-    // change to + for IFI terms
-    // Note Born momenta are redifined
-    // for IFI terms.
-    sub += D.ChargeNorm()*p_yfsFormFact->BVirtTEps(D,sqrt(m_s) / 2.);
-    #ifdef USING__LOOPTOOLS
-      //ii term
-      Vec4D p1 = D.GetBornMomenta(0);
-      Vec4D p2 = D.GetBornMomenta(1);
-      double m1 = D.GetMass(0);
-      double m2 = D.GetMass(1);
-      double irloop = p_yfsFormFact->p_virt->IRscale();
-      double epsloop = p_yfsFormFact->p_virt->Eps_Scheme_Factor({p1,p1});
-      DivArrD c0 = (-massph-log(4.*M_PI*sqr(irloop)/m1/m2/epsloop));
-    #endif
-  }
-  m_virtSub=sub;
-  return sub.Finite();
-}
 
 double Define_Dipoles::CalculateRealVirtualSub(const Vec4D & k) {
   double sub(0);
