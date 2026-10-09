@@ -11,7 +11,6 @@ namespace PHASIC {
     double ** scut_save;
     double *  energymin_save;
     std::map<size_t,double> m_smin_map;
-    double sijminfac;
     char GetIndexID(int id);
     double Getscut(std::vector<int>,std::vector<int>,int,int,int);
   public:

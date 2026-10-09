@@ -1,10 +1,8 @@
 #include "PHASIC++/Selectors/Cut_Data.H"
 
-#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -27,7 +25,6 @@ Cut_Data::Cut_Data() {
   etmin = 0;
   scut      = 0;
   ncut      = 0;
-  sijminfac = 0.;
 }
 
 Cut_Data::~Cut_Data() {
@@ -67,8 +64,7 @@ void Cut_Data::Init(int _nin,const Flavour_Vector &_fl) {
 
   for (int i=0;i<ncut;i++) {
     for (int j=i;j<ncut;j++) {
-      scut[i][j] = scut[j][i] = scut_save[i][j] =
-              (i<nin)^(j<nin)?0.0:sijminfac*sqr(rpa->gen.Ecms());
+      scut[i][j] = scut[j][i] = scut_save[i][j] = 0.0;
     }
   }
 }
