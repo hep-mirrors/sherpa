@@ -157,7 +157,20 @@ void Dipole::Boost() {
     m_sp = (m_newmomenta[0]+m_newmomenta[1]).Abs2();
   }
   else if (Type() == dipoletype::final) {
-    if (m_dipolePhotons.size() == 0) return;
+    if (m_dipolePhotons.size() == 0) {
+      // The legs keep their lab momenta (m_newmomenta), but the ghosts were
+      // made in the pair rest frame and FSR::YFS_FORM reads them as lab
+      // vectors for the crude B~ at the lab Emin. Left there, the exact
+      // (lab) and crude (rest) Piatek terms no longer cancel and every
+      // zero-photon event of a boosted pair carries exp(B~_lab - B~_rest),
+      // ~0.98 at the 250 GeV Z return.
+      if (m_ghost.size() != 0) {
+        p_Pboost.emplace(m_momenta[0] + m_momenta[1]);
+        for (auto &r : m_ghost) Boost(r);
+        p_Pboost.reset();
+      }
+      return;
+    }
     if (m_dipolePhotons.size() != m_Nphotons){
       msg_Error()<<"Wrong Photon multiplicity in Boost \n"
                  <<"Photon vector size: "<<m_dipolePhotons.size()<<std::endl
