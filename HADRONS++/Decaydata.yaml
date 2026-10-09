@@ -633,8 +633,8 @@ HADRON_DECAYS:
               Weight: 0.25
           - TwoResonances_a(1)(1260)+_3_rho(1450)+_12:
               Weight: 0.25
-        AlwaysIntegrate: 1
-        IntResults: [2.0335e-13, 2.0226e-16, 8.6285e-12]
+        AlwaysIntegrate: 0
+        IntResults: [2.0396e-13, 2.028e-16, 8.6285e-12]
 
     #
     # tau- -> nu_tau pi- pi- pi+ (a1 -> rho pi cascade, same model as
@@ -673,8 +673,8 @@ HADRON_DECAYS:
               Weight: 0.25
           - TwoResonances_a(1)(1260)+_3_rho(1450)+_12:
               Weight: 0.25
-        AlwaysIntegrate: 1
-        IntResults: [2.0213e-13, 2.0124e-16, 1.0484e-11]
+        AlwaysIntegrate: 0
+        IntResults: [2.0155e-13, 2.012e-16, 1.0484e-11]
 
     #
     # tau- -> nu_tau K- pi0 pi0 (pi0_pi0_KM mode, FM95 Tab.I/II row 6,
@@ -723,7 +723,7 @@ HADRON_DECAYS:
               Weight: 0.125
           - TwoResonances_K(1)(1270)+_3_K*(1410)+_12:
               Weight: 0.125
-        AlwaysIntegrate: 1
+        AlwaysIntegrate: 0
 
     ##### K pi pi #####
     #
@@ -761,7 +761,7 @@ HADRON_DECAYS:
     #         new f0 variants.
     # Reference: FM95 (hep-ph/9503474) for 100; CLEO/TAUOLA for 102/104.
     ######################################################
-        IntResults: [3.641e-15, 2.9301e-18, 1.2738e-13]
+        IntResults: [3.6442e-15, 2.9146e-18, 1.2738e-13]
       -321,211,-211,16:
         BR: [0.0, 0.0] # [0.00342, 0.00342]
         ME:
@@ -791,7 +791,7 @@ HADRON_DECAYS:
               Weight: 0.166667
           - TwoResonances_K(1)(1270)+_1_f(0)(600)+_23:
               Weight: 0.166667
-        AlwaysIntegrate: 1
+        AlwaysIntegrate: 0
 
     #
     # tau- -> nu_tau K_S pi- pi0 (piM_K0bar_pi0 mode, K_S recognised
@@ -814,7 +814,7 @@ HADRON_DECAYS:
     #         K-pi+pi- entry above) - active choice here.
     # Reference: FM95 (hep-ph/9503474), row 8.
     #
-        IntResults: [3.7671e-15, 3.7669e-18, 3.3345e-13]
+        IntResults: [9.9123e-15, 9.9089e-18, 2.388e-12]
       310,-211,111,16:
         BR: [0.0, 0.0] # [0.00185, 0.00185]
         ME:
@@ -849,7 +849,7 @@ HADRON_DECAYS:
               Weight: 0.166667
           - TwoResonances_K(1)(1400)+_2_K*(1410)+_13:
               Weight: 0.166667
-        AlwaysIntegrate: 1
+        AlwaysIntegrate: 0
 
     #
     # tau- -> nu_tau pi- K_L pi0 (piM_K0bar_pi0 mode via K_L, same
@@ -862,7 +862,7 @@ HADRON_DECAYS:
     #   K* region A: pi-(idx1)+K_L(idx2), spectator=pi0(idx3)
     #   K* region B: K_L(idx2)+pi0(idx3), spectator=pi-(idx1)
     #
-        IntResults: [1.1144e-14, 1.0274e-17, 6.3481e-13]
+        IntResults: [1.1153e-14, 1.0141e-17, 7.9669e-13]
       -211,130,111,16:
         BR: [0.0, 0.0] # [0.00185, 0.00185]
         ME:
@@ -892,7 +892,7 @@ HADRON_DECAYS:
               Weight: 0.166667
           - TwoResonances_K(1)(1400)+_1_K*(1410)+_23:
               Weight: 0.166667
-        AlwaysIntegrate: 1
+        AlwaysIntegrate: 0
 
     ##### K K pi (charged-charged only) #####
     #
@@ -923,7 +923,7 @@ HADRON_DECAYS:
     # Reference: Finkemeier & Mirkes hep-ph/9503474 Tabs.I/II row 1;
     # RChL2012 as cited in FF_0_PPP.C's F1_0_KKPi/F5_0_KKPi.
     ######################################################
-        IntResults: [1.115e-14, 1.0245e-17, 7.247e-13]
+        IntResults: [1.1133e-14, 9.9309e-18, 7.247e-13]
       321,-321,-211,16:
         BR: [0.0, 0.0] # [0.0932, 0.0932]
         ME:
@@ -957,7 +957,7 @@ HADRON_DECAYS:
               Weight: 0.166667
           - TwoResonances_a(1)(1260)+_1_K*(1410)+_23:
               Weight: 0.166667
-        AlwaysIntegrate: 1
+        AlwaysIntegrate: 0
 
     ##### K Kbar pi0 (K^- pi^0 K0bar, FM95 Tab.I/II row 5 = KM_pi0_K0) #####
     #
@@ -979,7 +979,7 @@ HADRON_DECAYS:
     #   100 = KS (FM95): only model implemented for this mode.
     # Reference: FM95 (hep-ph/9503474), row 5.
     ######################################################
-        IntResults: [4.6352e-15, 4.6009e-18, 2.1711e-13]
+        IntResults: [3.7554e-15, 3.4152e-18, 2.6323e-13]
       -321,310,111,16:
         BR: [0.0, 0.0]
         ME:
@@ -1011,14 +1011,14 @@ HADRON_DECAYS:
               Weight: 0.166667
           - TwoResonances_a(1)(1260)+_1_K*(1410)+_23:
               Weight: 0.166667
-        AlwaysIntegrate: 1
+        AlwaysIntegrate: 0
 
     #
     # tau- -> nu_tau K- K_L pi0 - identical raw index layout to the
     # K_S entry above (just K_L instead of K_S) - same PhaseSpace block
     # applies verbatim.
     #
-        IntResults: [1.5113e-15, 1.5032e-18, 6.741e-14]
+        IntResults: [1.5111e-15, 1.5048e-18, 6.741e-14]
       -321,130,111,16:
         BR: [0.0, 0.0]
         ME:
@@ -1046,7 +1046,7 @@ HADRON_DECAYS:
               Weight: 0.166667
           - TwoResonances_a(1)(1260)+_1_K*(1410)+_23:
               Weight: 0.166667
-        AlwaysIntegrate: 1
+        AlwaysIntegrate: 0
 
     #
     # tau- -> nu_tau K_S pi- K_L (KS_piM_KL mode - K_S/K_L recognised
@@ -1058,7 +1058,7 @@ HADRON_DECAYS:
     #   100 = KS (FM95): only model implemented.
     # Reference: FM95 (hep-ph/9503474), Eq.50-52 family.
     #
-        IntResults: [1.5116e-15, 1.5095e-18, 6.1586e-14]
+        IntResults: [1.5137e-15, 1.5075e-18, 6.3976e-14]
       310,-211,130,16:
         BR: [0.0, 0.0] # [0.00055, 0.00055]
         ME:
@@ -1090,7 +1090,7 @@ HADRON_DECAYS:
               Weight: 0.166667
           - TwoResonances_a(1)(1260)+_1_K*(1410)+_23:
               Weight: 0.166667
-        AlwaysIntegrate: 1
+        AlwaysIntegrate: 0
 
     #
     # tau- -> nu_tau K_S K_S pi- (KS_piM_KS mode - pion listed LAST in
@@ -1104,7 +1104,7 @@ HADRON_DECAYS:
     #   100 = KS (FM95): only model implemented.
     # Reference: FM95 (hep-ph/9503474), Eq.52.
     #
-        IntResults: [1.6886e-15, 1.6332e-18, 8.6607e-14]
+        IntResults: [1.6922e-15, 1.6443e-18, 8.6607e-14]
       310,310,-211,16:
         BR: [0.0, 0.0] # [0.00024, 0.00024]
         ME:
@@ -1130,7 +1130,7 @@ HADRON_DECAYS:
               Weight: 0.25
           - TwoResonances_a(1)(1260)+_1_K*(1410)+_23:
               Weight: 0.25
-        AlwaysIntegrate: 1
+        AlwaysIntegrate: 0
 
     #
     # tau- -> nu_tau pi- K_L K_L (KL_piM_KL mode = -KS_piM_KS, pion
@@ -1143,7 +1143,7 @@ HADRON_DECAYS:
     # Available FORM_FACTOR options:
     #   100 = KS (FM95): only model implemented.
     #
-        IntResults: [8.8771e-16, 8.8129e-19, 2.5547e-14]
+        IntResults: [8.87e-16, 8.7966e-19, 2.5547e-14]
       -211,130,130,16:
         BR: [0.0, 0.0] # [0.00024, 0.00024]
         ME:
@@ -1167,7 +1167,7 @@ HADRON_DECAYS:
               Weight: 0.25
           - TwoResonances_a(1)(1260)+_2_K*(1410)+_13:
               Weight: 0.25
-        AlwaysIntegrate: 1
+        AlwaysIntegrate: 0
 
     ##### K K K #####
     #
@@ -1183,7 +1183,7 @@ HADRON_DECAYS:
     #
     # Available FORM_FACTOR options: none - no dedicated current exists.
     ######################################################
-        IntResults: [8.861e-16, 8.8391e-19, 2.543e-14]
+        IntResults: [8.8602e-16, 8.8123e-19, 2.6146e-14]
       321,-321,-321,16:
         BR: [0.0, 0.0] # [3.7e-05, 3.7e-05]
         ME:
@@ -1198,7 +1198,7 @@ HADRON_DECAYS:
                 Indices: [1, 2, 3]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 100
-        AlwaysIntegrate: 1
+        AlwaysIntegrate: 0
 
     ##### eta pi pi #####
     #
@@ -1249,7 +1249,7 @@ HADRON_DECAYS:
               Weight: 0.166667
           - TwoResonances_rho(1700)+_1_rho(1450)+_23:
               Weight: 0.166667
-        AlwaysIntegrate: 1
+        AlwaysIntegrate: 0
 
     ##### eta eta pi #####
     #
@@ -1261,7 +1261,7 @@ HADRON_DECAYS:
     #
     # Available FORM_FACTOR options: none - no dedicated current exists.
     ######################################################
-        IntResults: [3.41626e-15, 3.04616e-18, 1.74292e-13]
+        IntResults: [3.4161e-15, 3.0723e-18, 1.7635e-13]
       221,221,-211,16:
         BR: [0.0, 0.0] # [0.0001, 0.0001]
         ME:
@@ -1276,7 +1276,7 @@ HADRON_DECAYS:
                 Indices: [1, 2, 3]
                 RUNNING_WIDTH: 1
                 FORM_FACTOR: 100
-        AlwaysIntegrate: 1
+        AlwaysIntegrate: 0
     ######################################################
     # Four pseudoscalars
     ######################################################
@@ -1334,7 +1334,8 @@ HADRON_DECAYS:
               J2:
                 Type: VA_0_KOmega3Pi
                 Indices: [1, 2, 3, 4]
-        AlwaysIntegrate: 1
+        AlwaysIntegrate: 0
+        IntResults: [8.4715e-16, 8.4713e-19, 1.7015e-12]
 
     #
     # tau- -> nu_tau pi- pi0 pi0 pi0 and tau- -> nu_tau pi- pi- pi+ pi0
@@ -1382,8 +1383,8 @@ HADRON_DECAYS:
               J2:
                 Type: VA_0_Novosibirsk4Pi
                 Indices: [1, 2, 3, 4]
-        AlwaysIntegrate: 1
-        IntResults: [2.6034e-14, 2.6031e-17, 3.1638e-12]
+        AlwaysIntegrate: 0
+        IntResults: [2.6063e-14, 2.6052e-17, 3.2238e-12]
 
       -211,-211,211,111,16:
         BR: [0.33333333, 0.33333333]
@@ -1397,8 +1398,8 @@ HADRON_DECAYS:
               J2:
                 Type: VA_0_Novosibirsk4Pi
                 Indices: [1, 2, 3, 4]
-        AlwaysIntegrate: 1
-        IntResults: [1.0112e-13, 1.0112e-16, 7.3573e-11]
+        AlwaysIntegrate: 0
+        IntResults: [1.0138e-13, 1.0137e-16, 7.9814e-11]
 
 
     221:
@@ -1636,6 +1637,7 @@ HADRON_DECAYS:
                 Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3170
+        IntResults: [5.6434e-14, 5.6327e-17, 5.1738e-13]
 
       -321,14,-13:
         BR: [0.2787907357, 0.001582527306]
@@ -1657,6 +1659,7 @@ HADRON_DECAYS:
                 Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3170
+        IntResults: [5.5345e-14, 5.5271e-17, 4.9966e-13]
 
     #
     # =====================================================
@@ -1753,6 +1756,7 @@ HADRON_DECAYS:
                 Dwave_TYPE0:     1
                 AMP_D:           1.0
                 PHASE_D:         0.0
+        IntResults: [2.2038e-14, 2.2034e-17, 2.4253e-12]
 
       -311,-211,14,-13:
         BR: [0.1142030015, 0.003262942899]
@@ -1819,6 +1823,7 @@ HADRON_DECAYS:
                 Dwave_TYPE0:     1
                 AMP_D:           1.0
                 PHASE_D:         0.0
+        IntResults: [2.0796e-14, 2.0795e-17, 2.2168e-12]
 
       -321,111,12,-11:
         BR: [0.05791723646, 0.001713045022]
@@ -1885,6 +1890,7 @@ HADRON_DECAYS:
                 Dwave_TYPE0:     1
                 AMP_D:           1.0
                 PHASE_D:         0.0
+        IntResults: [1.1014e-14, 1.1014e-17, 1.2433e-12]
 
       -321,111,14,-13:
         BR: [0.05791723646, 0.001713045022]
@@ -1951,6 +1957,7 @@ HADRON_DECAYS:
                 Dwave_TYPE0:     1
                 AMP_D:           1.0
                 PHASE_D:         0.0
+        IntResults: [1.0413e-14, 1.0411e-17, 1.1366e-12]
 
     #
     # =====================================================
@@ -1984,6 +1991,7 @@ HADRON_DECAYS:
                 V2_MPOLE:        2.1
                 V0_SHAPE:        2           # SHAPE only - V0(0) from Eq.(V0constraint)
                 V0_MPOLE:        2.317
+        IntResults: [1.5269e-15, 1.5245e-18, 1.4778e-14]
 
       -10323,14,-13:
         BR: [0.006108955113, 0.0009707255126]
@@ -2009,6 +2017,7 @@ HADRON_DECAYS:
                 V2_MPOLE:        2.1
                 V0_SHAPE:        2           # SHAPE only - V0(0) from Eq.(V0constraint)
                 V0_MPOLE:        2.317
+        IntResults: [1.2917e-15, 1.2887e-18, 1.3113e-14]
 
     #
     # =====================================================
@@ -2037,6 +2046,7 @@ HADRON_DECAYS:
                 Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3000
+        IntResults: [4.6881e-15, 4.6728e-18, 2.9214e-14]
 
       -211,14,-13:
         BR: [0.02181220227, 0.0009462534408]
@@ -2058,6 +2068,7 @@ HADRON_DECAYS:
                 Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3000
+        IntResults: [4.6284e-15, 4.611e-18, 2.8664e-14]
 
     #
     # =====================================================
@@ -2133,6 +2144,7 @@ HADRON_DECAYS:
                 Pwave_MODEL:     1
                 Pwave_KF0:       213         # rho(770)+
                 Pwave_TYPE0:     2           # Gounaris-Sakurai, from Rho_Decays
+        IntResults: [2.3088e-15, 2.3081e-18, 1.4129e-13]
 
       -211,111,14,-13:
         BR: [0.01101243229, 0.001060456442]
@@ -2181,6 +2193,7 @@ HADRON_DECAYS:
                 Pwave_MODEL:     1
                 Pwave_KF0:       213         # rho(770)+
                 Pwave_TYPE0:     2           # Gounaris-Sakurai, from Rho_Decays
+        IntResults: [2.2139e-15, 2.2131e-18, 1.3422e-13]
 
     #
     # =====================================================
@@ -2230,6 +2243,7 @@ HADRON_DECAYS:
                 Swave_G20:       0.2560      # coupling to the second channel
                 Swave_MA20:      0.493677
                 Swave_MB20:      0.497611
+        IntResults: [1.3751e-16, 1.3746e-19, 1.0814e-14]
 
       221,-211,14,-13:
         BR: [0.0006623774086, 0.0001386750732]
@@ -2263,6 +2277,7 @@ HADRON_DECAYS:
                 Swave_G20:       0.2560      # coupling to the second channel
                 Swave_MA20:      0.493677
                 Swave_MB20:      0.497611
+        IntResults: [1.3014e-16, 1.3012e-19, 9.9457e-15]
 
     #
     # =====================================================
@@ -2304,6 +2319,7 @@ HADRON_DECAYS:
                 Swave_MODEL:     1
                 Swave_KF0:       10321
                 Swave_TYPE0:     1           # 1 running BW, 3 complex pole
+        IntResults: [1.2786e-16, 1.2783e-19, 5.2465e-15]
 
       -321,221,14,-13:
         BR: [0.0005498058786, 0.0002773501465]
@@ -2332,6 +2348,7 @@ HADRON_DECAYS:
                 Swave_MODEL:     1
                 Swave_KF0:       10321
                 Swave_TYPE0:     1           # 1 running BW, 3 complex pole
+        IntResults: [1.0817e-16, 1.0811e-19, 4.1543e-15]
 
     411:
     #
@@ -2360,6 +2377,7 @@ HADRON_DECAYS:
                 Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3170
+        IntResults: [5.6936e-14, 5.6903e-17, 5.2307e-13]
 
       -311,14,-13:
         BR: [0.2793507311, 0.003084450166]
@@ -2381,6 +2399,7 @@ HADRON_DECAYS:
                 Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3170
+        IntResults: [5.5719e-14, 5.5604e-17, 5.0526e-13]
 
     #
     # =====================================================
@@ -2477,6 +2496,7 @@ HADRON_DECAYS:
                 Dwave_TYPE0:     1
                 AMP_D:           1.0
                 PHASE_D:         0.0
+        IntResults: [2.2112e-14, 2.2108e-17, 2.4802e-12]
 
       -321,211,14,-13:
         BR: [0.1165522923, 0.01062493272]
@@ -2543,6 +2563,7 @@ HADRON_DECAYS:
                 Dwave_TYPE0:     1
                 AMP_D:           1.0
                 PHASE_D:         0.0
+        IntResults: [2.0881e-14, 2.088e-17, 2.2914e-12]
 
       -311,111,12,-11:
         BR: [0.06072310034, 0.001030296506]
@@ -2609,6 +2630,7 @@ HADRON_DECAYS:
                 Dwave_TYPE0:     1
                 AMP_D:           1.0
                 PHASE_D:         0.0
+        IntResults: [1.1066e-14, 1.1065e-17, 1.2484e-12]
 
       -311,111,14,-13:
         BR: [0.05769660435, 0.001223477101]
@@ -2675,6 +2697,7 @@ HADRON_DECAYS:
                 Dwave_TYPE0:     1
                 AMP_D:           1.0
                 PHASE_D:         0.0
+        IntResults: [1.0473e-14, 1.0472e-17, 1.1582e-12]
 
     #
     # =====================================================
@@ -2704,6 +2727,7 @@ HADRON_DECAYS:
                 V2_MPOLE:        2.1
                 V0_SHAPE:        2           # SHAPE only - V0(0) from Eq.(V0constraint)
                 V0_MPOLE:        2.317
+        IntResults: [1.6067e-15, 1.6058e-18, 1.5538e-14]
 
       -10313,14,-13:
         BR: [0.007195816177, 0.0008081388221]
@@ -2729,6 +2753,7 @@ HADRON_DECAYS:
                 V2_MPOLE:        2.1
                 V0_SHAPE:        2           # SHAPE only - V0(0) from Eq.(V0constraint)
                 V0_MPOLE:        2.317
+        IntResults: [1.3606e-15, 1.3581e-18, 1.3812e-14]
 
     #
     # =====================================================
@@ -2759,6 +2784,7 @@ HADRON_DECAYS:
                 Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3000
+        IntResults: [2.2877e-15, 2.2769e-18, 1.4192e-14]
 
       111,14,-13:
         BR: [0.01126886804, 0.0004797318107]
@@ -2781,6 +2807,7 @@ HADRON_DECAYS:
                 Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3000
+        IntResults: [2.2569e-15, 2.2485e-18, 1.3934e-14]
 
     #
     # =====================================================
@@ -2856,6 +2883,7 @@ HADRON_DECAYS:
                 Pwave_MODEL:     1
                 Pwave_KF0:       113         # rho(770)0
                 Pwave_TYPE0:     2           # Gounaris-Sakurai, from Rho_Decays
+        IntResults: [1.5675e-15, 1.5668e-18, 7.7863e-14]
 
       -211,211,14,-13:
         BR: [0.007598436734, 0.0007083288481]
@@ -2904,6 +2932,7 @@ HADRON_DECAYS:
                 Pwave_MODEL:     1
                 Pwave_KF0:       113         # rho(770)0
                 Pwave_TYPE0:     2           # Gounaris-Sakurai, from Rho_Decays
+        IntResults: [1.5138e-15, 1.5132e-18, 7.3157e-14]
 
       221,111,12,-11:
         BR: [0.000547345019, 0.0002575741266]
@@ -2937,6 +2966,7 @@ HADRON_DECAYS:
                 Swave_G20:       0.2560      # coupling to the second channel
                 Swave_MA20:      0.493677
                 Swave_MB20:      0.493677
+        IntResults: [7.3239e-17, 7.3227e-20, 5.7503e-15]
 
       221,111,14,-13:
         BR: [0.0005183679297, 0.0002446954202]
@@ -2970,6 +3000,7 @@ HADRON_DECAYS:
                 Swave_G20:       0.2560      # coupling to the second channel
                 Swave_MA20:      0.493677
                 Swave_MB20:      0.493677
+        IntResults: [6.9211e-17, 6.9195e-20, 5.3428e-15]
 
     #
     # =====================================================
@@ -3011,6 +3042,7 @@ HADRON_DECAYS:
                 Swave_MODEL:     1
                 Swave_KF0:       10311
                 Swave_TYPE0:     1           # 1 running BW, 3 complex pole
+        IntResults: [1.3198e-16, 1.3196e-19, 5.3714e-15]
 
       -311,221,14,-13:
         BR: [0.000546379116, 0.0002736725095]
@@ -3039,6 +3071,7 @@ HADRON_DECAYS:
                 Swave_MODEL:     1
                 Swave_KF0:       10311
                 Swave_TYPE0:     1           # 1 running BW, 3 complex pole
+        IntResults: [1.1153e-16, 1.1149e-19, 4.2578e-15]
 
     #
     # =====================================================
@@ -3069,6 +3102,7 @@ HADRON_DECAYS:
                 Indices: [0]
                 fP:              0.2067      # f_D [GeV]
                 Vxx:             0.22486
+        IntResults: [2.3948e-16, 0, 8.9531e-16]
 
       16,-15:
         BR: [0.003187479816, 0.0003863611898]
@@ -3083,6 +3117,7 @@ HADRON_DECAYS:
                 Indices: [0]
                 fP:              0.2067
                 Vxx:             0.22486
+        IntResults: [6.4032e-16, 0, 2.3939e-15]
 
     #
     # =====================================================
@@ -3115,6 +3150,7 @@ HADRON_DECAYS:
                 A2_MPOLE:        2.42000
                 A0_SHAPE:        2           # SHAPE only - A0(0) is fixed by Eq.(A0constraint)
                 A0_MPOLE:        1.86966
+        IntResults: [1.0783e-15, 1.0736e-18, 6.9854e-15]
 
       223,14,-13:
         BR: [0.005702304801, 0.0006793517588]
@@ -3140,6 +3176,7 @@ HADRON_DECAYS:
                 A2_MPOLE:        2.42000
                 A0_SHAPE:        2           # SHAPE only - A0(0) is fixed by Eq.(A0constraint)
                 A0_MPOLE:        1.86966
+        IntResults: [1.0349e-15, 1.0335e-18, 6.4338e-15]
 
     #
     # =====================================================
@@ -3168,6 +3205,7 @@ HADRON_DECAYS:
                 Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3000
+        IntResults: [1.1714e-16, 1.1699e-19, 1.131e-15]
 
       331,14,-13:
         BR: [0.0006181779038, 9.369258854e-05]
@@ -3189,6 +3227,7 @@ HADRON_DECAYS:
                 Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3000
+        IntResults: [1.105e-16, 1.1046e-19, 1.0717e-15]
 
     431:
     #
@@ -3220,6 +3259,7 @@ HADRON_DECAYS:
                 A2_MPOLE:        2.28000
                 A0_SHAPE:        2           # SHAPE only - A0(0) is fixed by Eq.(A0constraint)
                 A0_MPOLE:        1.96835
+        IntResults: [3.4398e-14, 3.424e-17, 2.2958e-13]
 
       333,14,-13:
         BR: [0.123572601, 0.006187856586]
@@ -3244,6 +3284,7 @@ HADRON_DECAYS:
                 A2_MPOLE:        2.28000
                 A0_SHAPE:        2           # SHAPE only - A0(0) is fixed by Eq.(A0constraint)
                 A0_MPOLE:        1.96835
+        IntResults: [3.2459e-14, 3.2422e-17, 2.1125e-13]
 
     #
     # =====================================================
@@ -3270,6 +3311,7 @@ HADRON_DECAYS:
                 Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3170
+        IntResults: [2.9402e-14, 2.9387e-17, 2.7239e-13]
 
       221,14,-13:
         BR: [0.1237179051, 0.003977907805]
@@ -3291,6 +3333,7 @@ HADRON_DECAYS:
                 Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3170
+        IntResults: [2.8809e-14, 2.8792e-17, 2.6414e-13]
 
     #
     # =====================================================
@@ -3317,6 +3360,7 @@ HADRON_DECAYS:
                 Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3170
+        IntResults: [1.068e-14, 1.0667e-17, 1.4277e-13]
 
       331,14,-13:
         BR: [0.04443571637, 0.003386746506]
@@ -3338,6 +3382,7 @@ HADRON_DECAYS:
                 Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3170
+        IntResults: [1.0201e-14, 1.0191e-17, 1.3531e-13]
 
     #
     # =====================================================
@@ -3367,6 +3412,7 @@ HADRON_DECAYS:
                 Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3000
+        IntResults: [3.8417e-15, 3.8316e-18, 2.9043e-14]
 
       311,14,-13:
         BR: [0.01592654837, 0.001419892092]
@@ -3388,6 +3434,7 @@ HADRON_DECAYS:
                 Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
                 Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
                 Fzero_MPOLE:     2.3000
+        IntResults: [3.7718e-15, 3.7588e-18, 2.8386e-14]
 
     #
     # =====================================================
@@ -3418,6 +3465,7 @@ HADRON_DECAYS:
                 Indices: [0]
                 fP:              0.260       # f_Ds [GeV]
                 Vxx:             0.97349
+        IntResults: [7.4834e-15, 0, 2.9462e-14]
 
       16,-15:
         BR: [0.2977905982, 0.004972384756]
@@ -3432,6 +3480,7 @@ HADRON_DECAYS:
                 Indices: [0]
                 fP:              0.260
                 Vxx:             0.97349
+        IntResults: [7.3856e-14, 0, 2.9077e-13]
 
     #
     # =====================================================
@@ -3518,6 +3567,7 @@ HADRON_DECAYS:
                 Dwave_TYPE0:     1
                 AMP_D:           1.0
                 PHASE_D:         0.0
+        IntResults: [1.7041e-15, 1.704e-18, 2.1319e-13]
 
       321,-211,14,-13:
         BR: [0.007690621756, 0.0007734820732]
@@ -3584,6 +3634,7 @@ HADRON_DECAYS:
                 Dwave_TYPE0:     1
                 AMP_D:           1.0
                 PHASE_D:         0.0
+        IntResults: [1.6265e-15, 1.6265e-18, 1.9883e-13]
 
       311,111,12,-11:
         BR: [0.004016581909, 0.0003922659086]
@@ -3650,6 +3701,7 @@ HADRON_DECAYS:
                 Dwave_TYPE0:     1
                 AMP_D:           1.0
                 PHASE_D:         0.0
+        IntResults: [8.5264e-16, 8.5247e-19, 1.08e-13]
 
       311,111,14,-13:
         BR: [0.003845310878, 0.0003922659086]
@@ -3716,6 +3768,7 @@ HADRON_DECAYS:
                 Dwave_TYPE0:     1
                 AMP_D:           1.0
                 PHASE_D:         0.0
+        IntResults: [8.1387e-16, 8.138e-19, 1.0066e-13]
 
     #
     # =====================================================
@@ -3767,6 +3820,7 @@ HADRON_DECAYS:
                 Swave_G20:       0.6950      # coupling to the second channel
                 Swave_MA20:      0.493677
                 Swave_MB20:      0.493677
+        IntResults: [2.1476e-15, 2.1476e-18, 3.1029e-13]
 
       211,-211,14,-13:
         BR: [0.008712723067, 0.0006906089939]
@@ -3800,6 +3854,7 @@ HADRON_DECAYS:
                 Swave_G20:       0.6950      # coupling to the second channel
                 Swave_MA20:      0.493677
                 Swave_MB20:      0.493677
+        IntResults: [2.0581e-15, 2.0579e-18, 2.8978e-13]
 
       111,111,12,-11:
         BR: [0.004364648842, 0.0008287307927]
@@ -3833,6 +3888,7 @@ HADRON_DECAYS:
                 Swave_G20:       0.6950      # coupling to the second channel
                 Swave_MA20:      0.493677
                 Swave_MB20:      0.493677
+        IntResults: [1.0751e-15, 1.075e-18, 1.5498e-13]
 
       111,111,14,-13:
         BR: [0.004193377811, 0.000795581561]
@@ -3866,6 +3922,7 @@ HADRON_DECAYS:
                 Swave_G20:       0.6950      # coupling to the second channel
                 Swave_MA20:      0.493677
                 Swave_MB20:      0.493677
+        IntResults: [1.0308e-15, 1.0307e-18, 1.4503e-13]
 
 
   ######################################################################
@@ -3895,32 +3952,39 @@ HADRON_DECAYS:
       211,-211:
         BR: [1.0, 0.0]
         Origin: 100% simplification requested
+        IntResults: [0.0041335, 0, 0.0063655]
 
     213:
       211,111:
         BR: [1.0, 0.0]
         Origin: 100% simplification requested
+        IntResults: [0.0041639, 0, 0.0064124]
 
     313:
       321,-211:
         BR: [0.666667, 0.0]
         Origin: 100% simplification requested, isospin 2/3
+        IntResults: [0.0016316, 0, 0.0029242]
       311,111:
         BR: [0.333333, 0.0]
         Origin: 100% simplification requested, isospin 1/3
+        IntResults: [0.001614, 0, 0.0028926]
 
     323:
       311,211:
         BR: [0.666667, 0.0]
         Origin: 100% simplification requested, isospin 2/3
+        IntResults: [0.0015543, 0, 0.0027717]
       321,111:
         BR: [0.333333, 0.0]
         Origin: 100% simplification requested, isospin 1/3
+        IntResults: [0.0016183, 0, 0.0028859]
 
     223:
       211,-211,111:
         BR: [1.0, 0.0]
         Origin: 100% simplification requested
+        IntResults: [3.5456e-09, 3.5436e-12, 1.4563e-08]
 
     10313:
       321,-213:
