@@ -225,7 +225,6 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
     for (Blob *blob : *bloblist)
       if (blob->Type() == btp::Shower && !ExtractShowerInitiators(blob))
         return Return_Value::New_Event;
-  }
   // Adding the blobs related to the breakup of incident beams: one for each
   // beam, plus, potentially a third one to balance transverse momenta.
   InitBeamAndSoftBlobs(bloblist,isrescatter);
