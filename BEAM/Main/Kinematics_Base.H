@@ -9,6 +9,20 @@
 #include <array>
 
 namespace BEAM {
+  // Light-like pp and pm along pa and pb, with pa = pp + pa^2/s pm and
+  // pb = pm + pb^2/s pp. Returns s = 2 pp.pm, to which the momentum fractions
+  // x_a of pp and x_b of pm refer through tau = x_a x_b.
+  inline double LightCone(const ATOOLS::Vec4D& pa, const ATOOLS::Vec4D& pb,
+                          ATOOLS::Vec4D& pp, ATOOLS::Vec4D& pm)
+  {
+    const double ma2 = pa.Abs2(), mb2 = pb.Abs2();
+    const double gam = pa * pb + std::sqrt(ATOOLS::sqr(pa * pb) - ma2 * mb2);
+    const double bet = 1.0 / (1.0 - ma2 / gam * mb2 / gam);
+    pp = bet * (pa - ma2 / gam * pb);
+    pm = bet * (pb - mb2 / gam * pa);
+    return 2.0 * pp * pm;
+  }
+
   class Kinematics_Base {
   protected:
     std::array<Beam_Base*, 2> p_beams;

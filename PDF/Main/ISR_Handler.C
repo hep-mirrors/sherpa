@@ -8,6 +8,7 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "BEAM/Main/Beam_Base.H"
+#include "BEAM/Main/Kinematics_Base.H"
 #include "PDF/Main/ISR_Base.H"
 #include "REMNANTS/Main/Remnant_Base.H"
 
@@ -106,7 +107,6 @@ void ISR_Handler::Init() {
 
   m_splimits[0] = 0.;
   m_splimits[1] = ATOOLS::Min(s, s * Upper1() * Upper2());
-  m_splimits[2] = s;
   m_fixed_smin = m_splimits[0];
   m_fixed_smax = m_splimits[1];
   m_ylimits[0] = -10.;
@@ -191,13 +191,9 @@ bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D_Vector &p,
                 << std::endl;
     return false;
   }
-  Vec4D p0 = p_beam[0]->OutMomentum();
-  Vec4D p1 = p_beam[1]->OutMomentum();
-  double gam = p0 * p1 + sqrt(sqr(p0 * p1) - p0.Abs2() * p1.Abs2());
-  double bet = 1.0 / (1.0 - p0.Abs2() / gam * p1.Abs2() / gam);
-  Vec4D pp = bet * (p0 - p0.Abs2() / gam * p1),
-        pm = bet * (p1 - p1.Abs2() / gam * p0);
-  double s = 2.0 * pp * pm;
+  const Vec4D &p0 = p_beam[0]->OutMomentum(), &p1 = p_beam[1]->OutMomentum();
+  Vec4D pp, pm;
+  double s = BEAM::LightCone(p0, p1, pp, pm);
   double tau = 0.5 / s * (sp - m_mass2[0] - m_mass2[1]);
   if (tau * tau < m_mass2[0] * m_mass2[1] / (s * s)) {
     msg_Error() << METHOD << "(): s' out of range." << std::endl;
@@ -287,6 +283,11 @@ void ISR_Handler::AssignKeys(Integration_Info *const info) {
 }
 
 void ISR_Handler::SetLimits(double beamy) {
+  // The channels map s' onto tau = s'/m_splimits[2], which must therefore be
+  // the s that MakeISR uses.
+  Vec4D pp, pm;
+  m_splimits[2] = BEAM::LightCone(p_beam[0]->OutMomentum(),
+                                  p_beam[1]->OutMomentum(), pp, pm);
   for (short int i = 0; i < 3; ++i) {
     m_sprimekey[i] = m_splimits[i];
     if (i < 2)

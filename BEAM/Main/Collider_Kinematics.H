@@ -10,6 +10,9 @@ private:
 
   double m_ymin, m_ymax;
   ATOOLS::Info_Key m_sprimekey, m_ykey, m_xkey;
+  // light-cone momenta of the beams and S_lc = 2 p_+ p_-, see LightCone
+  ATOOLS::Vec4D m_pplus, m_pminus;
+  double m_Slc;
 
   void InitSystem();
   void InitIntegration() override;
