@@ -26,6 +26,7 @@ Threshold_Uniform::Threshold_Uniform(const double mass, const double sexp,
   m_rannum = 2;
   p_vegas = new Vegas(m_rannum, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void Threshold_Uniform::GeneratePoint(const double *rns) {
@@ -93,6 +94,7 @@ Threshold_Forward::Threshold_Forward(const double mass, const double sexp,
   m_rannum = 2;
   p_vegas = new Vegas(2, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void Threshold_Forward::GeneratePoint(const double *rns) {
@@ -162,6 +164,7 @@ Threshold_Backward::Threshold_Backward(const double mass, const double sexp,
   m_rannum = 2;
   p_vegas = new Vegas(2, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void Threshold_Backward::GeneratePoint(const double *rns) {
@@ -228,6 +231,7 @@ Threshold_Central::Threshold_Central(const double mass, const double sexp,
   m_rannum = 2;
   p_vegas = new Vegas(m_rannum, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void Threshold_Central::GeneratePoint(const double *rns) {
