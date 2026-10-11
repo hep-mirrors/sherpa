@@ -66,6 +66,7 @@ namespace PDF {
     bool m_freezePDFforLowQ;
 
     void FixType();
+    double LightCone(ATOOLS::Vec4D &pp, ATOOLS::Vec4D &pm) const;
 
   public:
     ISR_Handler(std::array<ISR_Base *, 2> isrbase,const isr::id & id=isr::hard_process);
@@ -114,7 +115,6 @@ namespace PDF {
     inline void SetSprimeMax(const double spmax) { m_splimits[1]=ATOOLS::Min(m_fixed_smax,spmax); }
     inline void SetFixedSprimeMin(const double spmin) { m_fixed_smin = m_splimits[0] = spmin; }
     inline void SetFixedSprimeMax(const double spmax) { m_fixed_smax = m_splimits[1] = spmax; }
-    inline void SetPole(const double pole)      { m_splimits[2] = pole; }
     inline void SetYMin(const double ymin)      { m_ylimits[0]  = ymin; }
     inline void SetYMax(const double ymax)      { m_ylimits[1]  = ymax; }
     inline void SetName(const std::string& name) { m_name = name;        }
@@ -238,7 +238,8 @@ namespace PDF {
     \f$s'\f$-limits and characteristics:
     m_splimits[0,1] = \f$s'_{\rm min, max}\f$
     and
-    m_splimits[2] = \f$s_{\rm beams}\f$.
+    m_splimits[2] = \f$2p_+p_-\f$, the light-cone \f$s\f$ of the bunches that
+    \f$\tau=x_1x_2\f$ refers to, updated in SetLimits.
   */
   /*!
     \var ISR_Handler::m_ylimits[2]

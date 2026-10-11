@@ -191,13 +191,9 @@ bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D_Vector &p,
                 << std::endl;
     return false;
   }
-  Vec4D p0 = p_beam[0]->OutMomentum();
-  Vec4D p1 = p_beam[1]->OutMomentum();
-  double gam = p0 * p1 + sqrt(sqr(p0 * p1) - p0.Abs2() * p1.Abs2());
-  double bet = 1.0 / (1.0 - p0.Abs2() / gam * p1.Abs2() / gam);
-  Vec4D pp = bet * (p0 - p0.Abs2() / gam * p1),
-        pm = bet * (p1 - p1.Abs2() / gam * p0);
-  double s = 2.0 * pp * pm;
+  const Vec4D &p0 = p_beam[0]->OutMomentum(), &p1 = p_beam[1]->OutMomentum();
+  Vec4D pp, pm;
+  double s = LightCone(pp, pm);
   double tau = 0.5 / s * (sp - m_mass2[0] - m_mass2[1]);
   if (tau * tau < m_mass2[0] * m_mass2[1] / (s * s)) {
     msg_Error() << METHOD << "(): s' out of range." << std::endl;
@@ -236,6 +232,17 @@ bool ISR_Handler::MakeISR(const double &sp, const double &y, Vec4D_Vector &p,
   if (m_x[1] >= 1.0)
     m_x[1] = 1.0 - 1.0e-12;
   return true;
+}
+
+double ISR_Handler::LightCone(Vec4D &pp, Vec4D &pm) const {
+  // Light-like momenta along the two bunches; the partons carry the fractions
+  // x_0 of pp and x_1 of pm, so tau = x_0 x_1 refers to the returned 2 pp.pm.
+  const Vec4D &p0 = p_beam[0]->OutMomentum(), &p1 = p_beam[1]->OutMomentum();
+  double gam = p0 * p1 + sqrt(sqr(p0 * p1) - p0.Abs2() * p1.Abs2());
+  double bet = 1.0 / (1.0 - p0.Abs2() / gam * p1.Abs2() / gam);
+  pp = bet * (p0 - p0.Abs2() / gam * p1);
+  pm = bet * (p1 - p1.Abs2() / gam * p0);
+  return 2.0 * pp * pm;
 }
 
 bool ISR_Handler::GenerateSwap(const ATOOLS::Flavour &f1,
@@ -287,6 +294,10 @@ void ISR_Handler::AssignKeys(Integration_Info *const info) {
 }
 
 void ISR_Handler::SetLimits(double beamy) {
+  // The channels map s' onto tau = s'/m_splimits[2], which must therefore be
+  // the s that MakeISR uses.
+  Vec4D pp, pm;
+  m_splimits[2] = LightCone(pp, pm);
   for (short int i = 0; i < 3; ++i) {
     m_sprimekey[i] = m_splimits[i];
     if (i < 2)
