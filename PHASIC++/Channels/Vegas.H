@@ -51,7 +51,10 @@ namespace PHASIC {
     void Reset();
     void Optimize();
     void EndOptimize();
-    void ConstChannel(int i) { p_opt[i]=0; m_const|=(1<<i); }
+    // Dimension i is never optimised and keeps its flat grid, also when ReadIn
+    // finds an adapted one, so that its density factor in GenerateWeight is one
+    // whatever the coordinate.
+    void ConstChannel(int i) { p_opt[i]=0; m_const|=(1ul<<i); }
 
     void InitBinInfo();
     void Refine();

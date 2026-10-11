@@ -30,6 +30,7 @@ Leading_Log_Uniform::Leading_Log_Uniform(const double beta, const double factor,
   m_rannum = 2;
   p_vegas = new Vegas(2, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void Leading_Log_Uniform::GeneratePoint(const double *rns) {
@@ -106,6 +107,7 @@ Leading_Log_Forward::Leading_Log_Forward(const double beta, const double factor,
   m_rannum = 2;
   p_vegas = new Vegas(2, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void Leading_Log_Forward::GeneratePoint(const double *rns) {
@@ -178,6 +180,7 @@ Leading_Log_Backward::Leading_Log_Backward(
   m_rannum = 2;
   p_vegas = new Vegas(2, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void Leading_Log_Backward::GeneratePoint(const double *rns) {
@@ -253,6 +256,7 @@ Leading_Log_Central::Leading_Log_Central(const double beta, const double factor,
   m_rannum = 2;
   p_vegas = new Vegas(m_rannum, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void Leading_Log_Central::GeneratePoint(const double *rns) {

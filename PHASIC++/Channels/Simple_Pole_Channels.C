@@ -124,6 +124,7 @@ Simple_Pole_Uniform::Simple_Pole_Uniform(const double exponent,
   m_rannum = 2;
   p_vegas = new Vegas(2, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void Simple_Pole_Uniform::GeneratePoint(const double *rns) {
@@ -191,6 +192,7 @@ Simple_Pole_Forward::Simple_Pole_Forward(const double sexponent,
   m_rannum = 2;
   p_vegas = new Vegas(2, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void Simple_Pole_Forward::GeneratePoint(const double *rns) {
@@ -260,6 +262,7 @@ Simple_Pole_Backward::Simple_Pole_Backward(const double sexponent,
   m_rannum = 2;
   p_vegas = new Vegas(2, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void Simple_Pole_Backward::GeneratePoint(const double *rns) {
@@ -326,6 +329,7 @@ Simple_Pole_Central::Simple_Pole_Central(const double exponent,
   m_rannum = 2;
   p_vegas = new Vegas(m_rannum, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void Simple_Pole_Central::GeneratePoint(const double *rns) {

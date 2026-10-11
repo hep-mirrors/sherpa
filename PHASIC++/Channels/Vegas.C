@@ -684,6 +684,13 @@ void Vegas::ReadIn(const std::string &pid) {
       buffer = buffer.substr(c + 1);
     }
   }
+  // constant dimensions keep their flat grid, see ConstChannel
+  for (int i = 0; i < m_dim; ++i) {
+    if (!(m_const & (1ul << i))) continue;
+    p_opt[i] = 0;
+    for (int j = 0; j < m_nd; ++j)
+      p_xi[i][j] = p_bestxi[i][j] = (j + 1) / double(m_nd);
+  }
 }
 
 bool Vegas::Finished() {

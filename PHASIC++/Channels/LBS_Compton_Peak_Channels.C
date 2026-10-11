@@ -33,6 +33,7 @@ LBS_Compton_Peak_Uniform::LBS_Compton_Peak_Uniform(
   m_rannum = 2;
   p_vegas = new Vegas(2, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void LBS_Compton_Peak_Uniform::GeneratePoint(const double *rns) {
@@ -83,7 +84,8 @@ void LBS_Compton_Peak_Uniform::GenerateWeight(const int &mode) {
     }
   }
   p_rans[0] = m_sgridkey[0];
-  p_rans[1] = m_ygridkey[0];
+  if (m_mode == 3)
+    p_rans[1] = m_ygridkey[0];
   double pw = p_vegas->GenerateWeight(p_rans);
   m_weight = pw * m_spkey.Weight() * m_ykey.Weight() / m_spkey[2];
 }
@@ -113,6 +115,7 @@ LBS_Compton_Peak_Forward::LBS_Compton_Peak_Forward(
   m_rannum = 2;
   p_vegas = new Vegas(2, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void LBS_Compton_Peak_Forward::GeneratePoint(const double *rns) {
@@ -165,7 +168,8 @@ void LBS_Compton_Peak_Forward::GenerateWeight(const int &mode) {
     }
   }
   p_rans[0] = m_sgridkey[0];
-  p_rans[1] = m_ygridkey[0];
+  if (m_mode == 3)
+    p_rans[1] = m_ygridkey[0];
   double pw = p_vegas->GenerateWeight(p_rans);
   m_weight = pw * m_spkey.Weight() * m_ykey.Weight() / m_spkey[2];
 }
@@ -195,6 +199,7 @@ LBS_Compton_Peak_Backward::LBS_Compton_Peak_Backward(
   m_rannum = 2;
   p_vegas = new Vegas(2, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void LBS_Compton_Peak_Backward::GeneratePoint(const double *rns) {
@@ -247,7 +252,8 @@ void LBS_Compton_Peak_Backward::GenerateWeight(const int &mode) {
     }
   }
   p_rans[0] = m_sgridkey[0];
-  p_rans[1] = m_ygridkey[0];
+  if (m_mode == 3)
+    p_rans[1] = m_ygridkey[0];
   double pw = p_vegas->GenerateWeight(p_rans);
   m_weight = pw * m_spkey.Weight() * m_ykey.Weight() / m_spkey[2];
 }
@@ -276,6 +282,7 @@ LBS_Compton_Peak_Central::LBS_Compton_Peak_Central(
   m_rannum = 2;
   p_vegas = new Vegas(m_rannum, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void LBS_Compton_Peak_Central::GeneratePoint(const double *rns) {
@@ -326,7 +333,8 @@ void LBS_Compton_Peak_Central::GenerateWeight(const int &mode) {
     }
   }
   p_rans[0] = m_sgridkey[0];
-  p_rans[1] = m_ygridkey[0];
+  if (m_mode == 3)
+    p_rans[1] = m_ygridkey[0];
   double pw = p_vegas->GenerateWeight(p_rans);
   m_weight = pw * m_spkey.Weight() * m_ykey.Weight() / m_spkey[2];
 }
