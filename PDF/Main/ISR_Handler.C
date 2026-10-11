@@ -106,7 +106,6 @@ void ISR_Handler::Init() {
 
   m_splimits[0] = 0.;
   m_splimits[1] = ATOOLS::Min(s, s * Upper1() * Upper2());
-  m_splimits[2] = s;
   m_fixed_smin = m_splimits[0];
   m_fixed_smax = m_splimits[1];
   m_ylimits[0] = -10.;
