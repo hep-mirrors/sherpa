@@ -129,6 +129,7 @@ Resonance_Uniform::Resonance_Uniform(const double mass, const double width,
   m_rannum = 2;
   p_vegas = new Vegas(m_rannum, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void Resonance_Uniform::GeneratePoint(const double *rns) {
@@ -197,6 +198,7 @@ Resonance_Forward::Resonance_Forward(const double mass, const double width,
   m_rannum = 2;
   p_vegas = new Vegas(2, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void Resonance_Forward::GeneratePoint(const double *rns) {
@@ -267,6 +269,7 @@ Resonance_Backward::Resonance_Backward(const double mass, const double width,
   m_rannum = 2;
   p_vegas = new Vegas(2, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void Resonance_Backward::GeneratePoint(const double *rns) {
@@ -334,6 +337,7 @@ Resonance_Central::Resonance_Central(const double mass, const double width,
   m_rannum = 2;
   p_vegas = new Vegas(m_rannum, 100, m_name);
   p_rans = new double[2];
+  if (m_mode != 3) p_vegas->ConstChannel(1);
 }
 
 void Resonance_Central::GeneratePoint(const double *rns) {
