@@ -36,6 +36,13 @@ void Collider_Kinematics::InitSystem() {
   }
   m_LabBoost = Poincare(p_beams[0]->InMomentum()  + p_beams[1]->InMomentum());
   m_CMSBoost = Poincare(p_beams[0]->OutMomentum() + p_beams[1]->OutMomentum());
+  const Vec4D& pa = p_beams[0]->InMomentum();
+  const Vec4D& pb = p_beams[1]->InMomentum();
+  const double gam = pa * pb + sqrt(sqr(pa * pb) - pa.Abs2() * pb.Abs2());
+  const double bet = 1.0 / (1.0 - pa.Abs2() / gam * pb.Abs2() / gam);
+  m_pplus  = bet * (pa - pa.Abs2() / gam * pb);
+  m_pminus = bet * (pb - pb.Abs2() / gam * pa);
+  m_Slc    = 2. * m_pplus * m_pminus;
 }
 
 void Collider_Kinematics::InitIntegration() {
@@ -58,31 +65,25 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D_Vector& moms) {
   }
   if (m_mode == collidermode::monochromatic)
     return true;
-  const Vec4D& pa = p_beams[0]->InMomentum();
-  const Vec4D& pb = p_beams[1]->InMomentum();
-  const double gam = pa * pb + sqrt(sqr(pa * pb) - pa.Abs2() * pb.Abs2());
-  const double bet = 1.0 / (1.0 - pa.Abs2() / gam * pb.Abs2() / gam);
-  Vec4D pPlus = bet * (pa - pa.Abs2() / gam * pb);
-  Vec4D pMinus = bet * (pb - pb.Abs2() / gam * pa);
   const double tau = CalculateTau();
   if (tau < 0.) return false;
   if (m_mode == collidermode::spectral_1) {
-    m_x[1] = m_xkey[5] = p_beams[1]->InMomentum().PMinus() / pMinus.PMinus();
+    m_x[1] = m_xkey[5] = p_beams[1]->InMomentum().PMinus() / m_pminus.PMinus();
     m_x[0] = m_xkey[4] = tau / m_x[1];
   } else if (m_mode == collidermode::spectral_2) {
-    m_x[0] = m_xkey[4] = p_beams[0]->InMomentum().PPlus() / pPlus.PPlus();
+    m_x[0] = m_xkey[4] = p_beams[0]->InMomentum().PPlus() / m_pplus.PPlus();
     m_x[1] = m_xkey[5] = tau / m_x[0];
   } else if (m_mode == collidermode::both_spectral) {
-    double yt =
-        exp(m_ykey[2] - 0.5 * log((tau + m_m2[1] / m_S) / (tau + m_m2[0] / m_S )));
+    double yt = exp(m_ykey[2] - 0.5 * log((tau + m_m2[1] / m_Slc) /
+                                          (tau + m_m2[0] / m_Slc)));
     m_x[0] = m_xkey[4] = sqrt(tau) * yt;
     m_x[1] = m_xkey[5] = sqrt(tau) / yt;
   } else
     return false;
   if (m_x[0] > 1. || m_x[1] > 1.)
     return false;
-  moms[0] = m_xkey[4] * pPlus + m_m2[0] / m_S / m_xkey[4] * pMinus;
-  moms[1] = m_xkey[5] * pMinus + m_m2[1] / m_S / m_xkey[5] * pPlus;
+  moms[0] = m_xkey[4] * m_pplus + m_m2[0] / m_Slc / m_xkey[4] * m_pminus;
+  moms[1] = m_xkey[5] * m_pminus + m_m2[1] / m_Slc / m_xkey[5] * m_pplus;
   for (size_t i = 0; i < 2; ++i) {
     p_beams[i]->SetOutMomentum(moms[i]);
     rpa->gen.SetPBunch(i, moms[i]);
@@ -92,20 +93,20 @@ bool Collider_Kinematics::operator()(ATOOLS::Vec4D_Vector& moms) {
 }
 
 double Collider_Kinematics::CalculateTau() const {
-  double tau = (m_sprimekey[3] - m_m2[0] - m_m2[1]) / m_S / 2.;
-  if (tau * tau < m_m2[0] * m_m2[1] / (m_S * m_S)) {
+  double tau = (m_sprimekey[3] - m_m2[0] - m_m2[1]) / m_Slc / 2.;
+  if (tau * tau < m_m2[0] * m_m2[1] / (m_Slc * m_Slc)) {
     msg_Error() << METHOD << "(): s' out of range." << std::endl;
     return -1.;
   }
-  tau += sqrt(tau * tau - m_m2[0] * m_m2[1] / (m_S * m_S));
+  tau += sqrt(tau * tau - m_m2[0] * m_m2[1] / (m_Slc * m_Slc));
   return tau;
 }
 
 double Collider_Kinematics::SprimeFromTau(const double tau) const {
   // Inverse of CalculateTau(), which is monotonic above the threshold
-  // s' = (m_0 + m_1)^2, reached at tau = m_0 m_1/S.
-  if (tau <= m_m[0] * m_m[1] / m_S) return sqr(m_m[0] + m_m[1]);
-  return m_S * tau + m_m2[0] + m_m2[1] + m_m2[0] * m_m2[1] / (m_S * tau);
+  // s' = (m_0 + m_1)^2, reached at tau = m_0 m_1/m_Slc.
+  if (tau <= m_m[0] * m_m[1] / m_Slc) return sqr(m_m[0] + m_m[1]);
+  return m_Slc * tau + m_m2[0] + m_m2[1] + m_m2[0] * m_m2[1] / (m_Slc * tau);
 }
 
 void Collider_Kinematics::AssignKeys(Integration_Info *const info) {
@@ -118,7 +119,7 @@ void Collider_Kinematics::AssignKeys(Integration_Info *const info) {
   m_xkey.Assign(m_keyid + std::string("x"), 6, 0, info);
   m_sprimekey[0] = Max(m_smin, m_sminPS);
   m_sprimekey[1] = m_smax;
-  m_sprimekey[2] = m_S;
+  m_sprimekey[2] = m_Slc;
   m_sprimekey[3] = m_S;
   m_sprimekey[4] = -m_S;
   m_ykey[0] = m_ymin;
