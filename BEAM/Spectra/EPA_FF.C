@@ -309,7 +309,7 @@ EPA_Point::EPA_Point(const ATOOLS::Flavour& beam, const int dir,
   // with the Compton wavelength lambda_l
   m_b = rpa->hBar_c() / m_mass / (2. * M_PI / 137.);
   // Maximal transverse momentum of the scattered lepton, entering Q2max().
-  m_pt2max = sqr(energy * s["ThetaMax"].GetTwoVector<double>()[b]);
+  m_pt2max = sqr(energy * Max(0., s["ThetaMax"].GetTwoVector<double>()[b]));
 }
 
 double EPA_Point::N(const double& x, const double& ran)
@@ -341,7 +341,7 @@ EPA_PointApprox::EPA_PointApprox(const ATOOLS::Flavour& beam, const int dir,
   // with the Compton wavelength lambda_l
   m_b = rpa->hBar_c() / m_mass / (2. * M_PI / 137.);
   // Maximal transverse momentum of the scattered lepton, entering Q2max().
-  m_pt2max = sqr(energy * s["ThetaMax"].GetTwoVector<double>()[b]);
+  m_pt2max = sqr(energy * Max(0., s["ThetaMax"].GetTwoVector<double>()[b]));
 }
 
 double EPA_PointApprox::N(const double& x, const double& ran)

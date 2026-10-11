@@ -448,7 +448,8 @@ EPA Parameters
 :option:`ThetaMax`
   Maximum lepton scattering angle in radians, sets
   :math:`p^2_{T,\mathrm{max}}=E^2\theta^2_\mathrm{max}` used to
-  determine :math:`Q^2_\text{max}`. Defaults to ``0.3``.
+  determine :math:`Q^2_\text{max}`. A value :math:`\le 0` disables the
+  angular cap, leaving ``Q2Max`` as the only upper limit. Defaults to ``0.3``.
 
 :option:`bMin`
   Minimum impact parameter **relative to the emitter's radius**. Defaults to ``0.3``.
