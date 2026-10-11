@@ -39,8 +39,8 @@ void Collider_Kinematics::InitSystem() {
 }
 
 void Collider_Kinematics::InitIntegration() {
-  m_smin        = m_S * p_beams[0]->Xmin() * p_beams[1]->Xmin();
-  m_smax        = m_S * p_beams[0]->Xmax() * p_beams[1]->Xmax();
+  m_smin        = SprimeFromTau(p_beams[0]->Xmin() * p_beams[1]->Xmin());
+  m_smax        = SprimeFromTau(p_beams[0]->Xmax() * p_beams[1]->Xmax());
   m_ymin        = -10.;
   m_ymax        = 10.;
   m_exponent[0] = .5;
@@ -101,6 +101,13 @@ double Collider_Kinematics::CalculateTau() const {
   return tau;
 }
 
+double Collider_Kinematics::SprimeFromTau(const double tau) const {
+  // Inverse of CalculateTau(), which is monotonic above the threshold
+  // s' = (m_0 + m_1)^2, reached at tau = m_0 m_1/S.
+  if (tau <= m_m[0] * m_m[1] / m_S) return sqr(m_m[0] + m_m[1]);
+  return m_S * tau + m_m2[0] + m_m2[1] + m_m2[0] * m_m2[1] / (m_S * tau);
+}
+
 void Collider_Kinematics::AssignKeys(Integration_Info *const info) {
   m_sprimekey.Assign(m_keyid + std::string("s'"), 5, 0, info);
   m_ykey.Assign(m_keyid + std::string("y"), 3, 0, info);
@@ -148,11 +155,11 @@ void Collider_Kinematics::SetLimits() {
                             (e / p * (1.0 + sqrt(1.0 - sqr(m_m[i] / e))))));
     m_xkey[i + 4] = 0.;
   }
-  // sprime's with masses - still need to check for masses
-  double sprimemin = Max(m_sprimekey[0], m_S * exp(m_xkey[0] + m_xkey[1]));
-  if (sprimemin > sqr(m_m[0] + m_m[1]))
-    m_sprimekey[0] = sprimemin;
-  double sprimemax = Min(m_sprimekey[1], m_S * exp(m_xkey[2] + m_xkey[3]));
+  // s' limits from the x limits, including the bunch masses
+  m_sprimekey[0] =
+      Max(m_sprimekey[0], SprimeFromTau(exp(m_xkey[0] + m_xkey[1])));
+  double sprimemax =
+      Min(m_sprimekey[1], SprimeFromTau(exp(m_xkey[2] + m_xkey[3])));
   if (sprimemax > sqr(m_m[0] + m_m[1]))
     m_sprimekey[1] = sprimemax;
 }
