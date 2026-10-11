@@ -36,13 +36,8 @@ void Collider_Kinematics::InitSystem() {
   }
   m_LabBoost = Poincare(p_beams[0]->InMomentum()  + p_beams[1]->InMomentum());
   m_CMSBoost = Poincare(p_beams[0]->OutMomentum() + p_beams[1]->OutMomentum());
-  const Vec4D& pa = p_beams[0]->InMomentum();
-  const Vec4D& pb = p_beams[1]->InMomentum();
-  const double gam = pa * pb + sqrt(sqr(pa * pb) - pa.Abs2() * pb.Abs2());
-  const double bet = 1.0 / (1.0 - pa.Abs2() / gam * pb.Abs2() / gam);
-  m_pplus  = bet * (pa - pa.Abs2() / gam * pb);
-  m_pminus = bet * (pb - pb.Abs2() / gam * pa);
-  m_Slc    = 2. * m_pplus * m_pminus;
+  m_Slc = LightCone(p_beams[0]->InMomentum(), p_beams[1]->InMomentum(),
+                    m_pplus, m_pminus);
 }
 
 void Collider_Kinematics::InitIntegration() {

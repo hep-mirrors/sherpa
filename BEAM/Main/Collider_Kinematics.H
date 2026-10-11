@@ -10,8 +10,7 @@ private:
 
   double m_ymin, m_ymax;
   ATOOLS::Info_Key m_sprimekey, m_ykey, m_xkey;
-  // light-like momenta along the beams and their S_lc = 2 p_+ p_-, to which
-  // tau = x_0 x_1 refers
+  // light-cone momenta of the beams and S_lc = 2 p_+ p_-, see LightCone
   ATOOLS::Vec4D m_pplus, m_pminus;
   double m_Slc;
 

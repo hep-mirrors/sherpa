@@ -66,7 +66,6 @@ namespace PDF {
     bool m_freezePDFforLowQ;
 
     void FixType();
-    double LightCone(ATOOLS::Vec4D &pp, ATOOLS::Vec4D &pm) const;
 
   public:
     ISR_Handler(std::array<ISR_Base *, 2> isrbase,const isr::id & id=isr::hard_process);
