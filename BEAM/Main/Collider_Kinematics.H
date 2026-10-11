@@ -14,6 +14,7 @@ private:
   void InitSystem();
   void InitIntegration() override;
   double CalculateTau() const;
+  double SprimeFromTau(const double tau) const;
 
 public:
   Collider_Kinematics(std::array<Beam_Base*, 2> beams);
