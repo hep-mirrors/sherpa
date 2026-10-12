@@ -83,19 +83,15 @@ namespace LHEH5 {
     }
     return s<<"}"; }
 
-  // The column names of an LHEH5 dataset. They are stored in an attribute
-  // called "properties" since LHEH5 version 2.1.0, while earlier versions
-  // named some of these attributes after their datasets instead.
+  // The column names of an LHEH5 dataset, stored in its "properties"
+  // attribute.
   inline std::vector<std::string> ColumnNames(const HighFive::DataSet &ds)
   {
-    const std::vector<std::string> keys(ds.listAttributeNames());
-    if (keys.empty())
+    if (!ds.hasAttribute("properties"))
       throw std::runtime_error("LHEH5 dataset \""+ds.getPath()+
 			       "\" does not name its columns.");
-    std::string key(keys.front());
-    for (const auto& k : keys) if (k=="properties") key=k;
     std::vector<std::string> names;
-    ds.getAttribute(key).read(names);
+    ds.getAttribute("properties").read(names);
     return names;
   }
 
