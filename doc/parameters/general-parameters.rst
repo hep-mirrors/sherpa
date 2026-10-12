@@ -553,7 +553,8 @@ The following formats are currently available:
   in a separate run, see :ref:`Event_Files`.
 
   The files are written according to version 2.7.0 of the format,
-  as described in the manual of the Pepper event generator.
+  as described in the `LHEH5 event file format section of the Pepper manual
+  <https://spice-mc.gitlab.io/pepper/reference/lheh5_format.html>`_.
   Next to the nominal event weight, the ``events`` dataset holds
   its matrix-element and phase-space components
   ``EXTRA__MEWeight`` and ``EXTRA__PSWeight``,
