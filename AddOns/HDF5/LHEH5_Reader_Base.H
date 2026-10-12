@@ -61,8 +61,6 @@ namespace LHEH5 {
     {
       m_totalxs=file.TotalXS();
       m_unitwgt=file.UnitWeight();
-      if (file.Version()==std::vector<int>{2,0,0})
-	m_unitwgt*=ATOOLS::rpa->Picobarn();
       m_hasmaxwgt=file.HasMaxWeight();
       if (!m_hasmaxwgt &&
 	  ATOOLS::ToType<int>
@@ -77,9 +75,6 @@ namespace LHEH5 {
     {
       const LHEFile &file(CurrentFile());
       Event e(file.GetEvent(m_ievt));
-      if (file.Version()[0]==2 &&
-	  file.Version()[1]==0 &&
-	  file.Version()[2]==0) e.pinfo.unitwgt*=ATOOLS::rpa->Picobarn();
       msg_Debugging()<<e<<"\n";
       if (e.empty()) {
 	m_trials+=e.trials;
