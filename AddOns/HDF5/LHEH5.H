@@ -273,6 +273,15 @@ namespace LHEH5 {
                     = HighFive::DataTransferProps{})
     {
       file.getDataSet("version").read(version,xfer_props);
+      // Files written with LHEH5 versions before 2.1.0 are not supported,
+      // since they do not name their columns uniformly.
+      if (version<std::vector<int>{2,1,0}) {
+	std::string v;
+	for (size_t i(0);i<version.size();++i)
+	  v+=(i?".":"")+std::to_string(version[i]);
+	throw std::runtime_error("LHEH5 file has format version "+v+", but "
+				 "at least version 2.1.0 is required.");
+      }
       HighFive::DataSet procinfo(file.getDataSet("procInfo"));
       pinfo=ReadColumns
 	(procinfo,0,procinfo.getSpace().getDimensions()[0],

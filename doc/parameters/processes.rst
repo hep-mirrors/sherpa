@@ -821,7 +821,8 @@ Event_Files
 Specification of the type and the path
 to a single or to several parton-level event files
 with the syntax ``<Type>[path_1,path_2,...]``.
-The only supported type so far is ``HDF5``.
+The only supported type so far is ``HDF5``,
+which reads LHEH5 files of format version 2.1.0 or later.
 Here is an example for reading in parton-level events
 for the first jet multiplicity
 in Drell-Yan production
