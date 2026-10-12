@@ -131,14 +131,21 @@ namespace LHEH5 {
     return rows;
   }
 
-  // The columns are located by name, and stored in the order given here,
-  // such that the reader does not depend on the order they are written in.
+  // The columns of the LHEH5 datasets that the reader needs, in the order in
+  // which it stores them. They are located by name, such that the reader
+  // does not depend on the order they are written in. Columns of the format
+  // specification that the reader does not use are left out, and are thus
+  // not required to be present.
+
+  // Leaves out numRandomNumbers.
   inline const std::vector<std::string> &ProcInfoColumns()
   {
     static const std::vector<std::string> names
       {"procId","npLO","npNLO","xSection","error","unitWeight"};
     return names;
   }
+  // Leaves out the weights, which LHEFile::ReadHeader appends by itself,
+  // since their number and names depend on the file.
   inline const std::vector<std::string> &EventColumns()
   {
     static const std::vector<std::string> names
@@ -146,6 +153,7 @@ namespace LHEH5 {
        "scale","fscale","rscale","aqed","aqcd"};
     return names;
   }
+  // Leaves out lifetime and spin.
   inline const std::vector<std::string> &ParticleColumns()
   {
     static const std::vector<std::string> names
