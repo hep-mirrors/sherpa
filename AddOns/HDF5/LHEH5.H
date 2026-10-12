@@ -293,10 +293,10 @@ namespace LHEH5 {
 	(ColumnIndices(inames,{"weightingStrategy"},"init").front());
       wstrategy=std::lround(idata[iwgt]);
       // Since LHEH5 version 2.0.2, the particles dataset is optional, but
-      // events can not be reconstructed without it.
+      // events cannot be reconstructed without it.
       if (!file.exist("particles"))
 	throw std::runtime_error("LHEH5 file has no \"particles\" dataset, "
-				 "hence its events can not be read in.");
+				 "hence its events cannot be read in.");
       HighFive::DataSet events(file.getDataSet("events"));
       const std::vector<std::string> enames(ColumnNames(events));
       ecols=ColumnIndices(enames,EventColumns(),"events");

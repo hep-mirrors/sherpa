@@ -96,7 +96,7 @@ namespace SHERPA {
       bool m_printmpixs {s["PRINT_MPI_XS"].Get<bool>()};
       if (m_printmpixs && mpi->MySize() > 1) {
         THROW(invalid_input,
-              "`PRINT_MPI_XS: true` can not be used when writing parton-level "
+              "`PRINT_MPI_XS: true` cannot be used when writing parton-level "
               "events to an HDF5 file. Please use `PRINT_MPI_XS: false`.");
       }
     }
@@ -318,7 +318,7 @@ namespace SHERPA {
 	for (const auto proc : procs)
 	  if (proc->EventReader() && !proc->EventReader()->HasMaxWeight())
 	    THROW(invalid_input,
-		  "`HDF5_UNWEIGHT` can not be used for events read in from an "
+		  "`HDF5_UNWEIGHT` cannot be used for events read in from an "
 		  "LHEH5 source that does not provide their maximum weight.");
       inames.push_back("numProcesses");
       idata.push_back(procs.size());

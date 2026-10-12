@@ -55,7 +55,7 @@ namespace LHEH5 {
     virtual std::string ExhaustionMessage() const = 0;
 
     // Take over the total cross section and the unit weight of `file`. If
-    // the latter is not the maximum weight of the events, they can not be
+    // the latter is not the maximum weight of the events, they cannot be
     // unweighted, and m_sourcedesc describes their source in the error.
     void SetXSAndUnitWeight(const LHEFile &file)
     {
@@ -157,7 +157,7 @@ namespace LHEH5 {
       // to break in MPI runs, such that the entire run stalls.
       if (s["PRINT_MPI_XS"].Get<bool>() && ATOOLS::mpi->MySize() > 1) {
         THROW(invalid_input,
-              "`PRINT_MPI_XS: true` can not be used when reading parton-level "
+              "`PRINT_MPI_XS: true` cannot be used when reading parton-level "
               "events from " + sourcedesc
               + ". Please use `PRINT_MPI_XS: false`.");
       }
