@@ -136,9 +136,106 @@ const double  GounarisSakurai::Normalised2(const double & s) {
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// Compound propagators, needed, e.g. for form factors 
+// Compound propagators
 //
 ///////////////////////////////////////////////////////////////////////////
+
+Conformal_Polynomial::Conformal_Polynomial(const std::vector<double> & c,
+					   const double & s_inel,
+					   const double & s1) :
+  Propagator_Base(NULL,resonance_type::bespoke),
+  m_c(c), m_sinel(s_inel), m_s1(s1)
+{
+  if (m_sinel<=m_s1)
+    THROW(fatal_error,"Conformal_Polynomial needs s_inel > s_1 so that the "
+	  "outer root sqrt(s_inel - s_1) is real.");
+  if (m_sinel<=0.)
+    THROW(fatal_error,"Conformal_Polynomial needs s_inel > 0 so that the "
+	  "subtraction point z(0) is real.");
+  m_outer = sqrt(m_sinel-m_s1);
+  const double in0 = sqrt(m_sinel);
+  m_z0 = (m_outer-in0)/(m_outer+in0);
+  // Not a resonance: there is no pole mass to report, and leaving m_M at a
+  // stale value would make it look like one to anything that inspects it.
+  m_M = 0.; m_M2 = 0.;
+}
+
+Complex Conformal_Polynomial::Z(const double & s) const {
+  // sqrt(s_inel - s), with the physical-sheet branch above s_inel:
+  // s -> s + i eps sends sqrt(s_inel - s - i eps) to -i sqrt(s - s_inel),
+  // which puts Im z > 0 just above the inelastic threshold.  The other branch
+  // is the complex conjugate and flips the sign of Im C_p.
+  const Complex inner = (s<=m_sinel) ? Complex(sqrt(m_sinel-s),0.)
+                                     : Complex(0.,-sqrt(s-m_sinel));
+  return (m_outer-inner)/(m_outer+inner);
+}
+
+const Complex Conformal_Polynomial::operator()(const double & s) {
+  const Complex z = Z(s);
+  Complex zi(1.,0.), res(0.,0.);
+  double  z0i(1.);
+  // The sum runs from i = 1, so step both powers before using them.
+  for (size_t i(0);i<m_c.size();++i) {
+    zi *= z; z0i *= m_z0;
+    res += m_c[i]*(zi-z0i);
+  }
+  return res;
+}
+
+const Complex Conformal_Polynomial::Normalised(const double & s) {
+  return (*this)(s);
+}
+
+const double Conformal_Polynomial::Normalised2(const double & s) {
+  return norm((*this)(s));
+}
+
+double Conformal_Polynomial::AtInfinity() const {
+  double res(0.), z0i(1.), zi(1.);
+  for (size_t i(0);i<m_c.size();++i) {
+    zi *= -1.; z0i *= m_z0;
+    res += m_c[i]*(zi-z0i);
+  }
+  return res;
+}
+
+void Conformal_Polynomial::SetCoefficient(const size_t & i,const double & c) {
+  if (i>=m_c.size())
+    THROW(fatal_error,"Conformal_Polynomial::SetCoefficient: index "+
+	  std::to_string(i)+" but only "+std::to_string(m_c.size())+
+	  " coefficients.");
+  m_c[i] = c;
+}
+
+Subtracted_Propagator::Subtracted_Propagator(const Complex & c0) :
+  Propagator_Base(NULL), m_c0(c0) {}
+
+Subtracted_Propagator::~Subtracted_Propagator() {
+  while (!m_terms.empty()) { delete m_terms.back().p_prop; m_terms.pop_back(); }
+}
+
+void Subtracted_Propagator::Add(Propagator_Base * prop,const Complex & weight) {
+  if (prop==NULL) return;
+  // Evaluate the subtraction point now, once.  It is 1 for a Breit-Wigner but
+  // not for Gounaris-Sakurai, so it must be measured rather than assumed.
+  Term t; t.p_prop = prop; t.m_weight = weight; t.m_atzero = (*prop)(0.);
+  m_terms.push_back(t);
+}
+
+const Complex Subtracted_Propagator::operator()(const double & s) {
+  Complex res(m_c0);
+  for (size_t i(0);i<m_terms.size();++i)
+    res += m_terms[i].m_weight*((*m_terms[i].p_prop)(s)-m_terms[i].m_atzero);
+  return res;
+}
+
+const Complex Subtracted_Propagator::Normalised(const double & s) {
+  return (*this)(s);
+}
+
+const double Subtracted_Propagator::Normalised2(const double & s) {
+  return norm((*this)(s));
+}
 
 Summed_Propagator::Summed_Propagator(const bool & normalise) :
   Propagator_Base(NULL),
@@ -165,6 +262,7 @@ const Complex Summed_Propagator::operator()(const double & s) {
        pit!=m_props.end();pit++) {
     result += pit->second*(*pit->first)(s);
   }
+  if (m_normalise && std::abs(m_norm)<1.e-14) return result;
   return m_normalise?result/m_norm:result;
 }
 
