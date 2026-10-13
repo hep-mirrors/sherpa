@@ -1,4 +1,5 @@
 #include "AddOns/Griffin/Griffin_Interface.H"
+#include "deltar.h"
 
 #include <iostream>
 
@@ -286,7 +287,42 @@ void Griffin::Griffin_Interface::EvaluateHigherOrder(const Vec4D_Vector &momenta
   // returns when GRIFFIN is the loop provider itself.
   if (momenta.size() != 4)
     THROW(fatal_error, "Griffin library is for 2->2 scattering only");
-  virt.Finite() = EvaluateNNLO(momenta, proc) - EvaluateNLO(momenta, proc);
+  /*
+    GRIFFIN: HIGHER_ORDER_SCHEME (YFS: EW_HIGHER_ORDER griffin)
+      gmu (default): the electroweak correction beyond a G_mu-scheme NLO.
+        GRIFFIN's G_mu-M_W-M_Z input set derives alpha = alpha_Gmu/(1 + Dr)
+        (Dr at NNLO, SMvalGMwMz.cc) and expands around an LO built on it, so
+        its NNLO - NLO also re-adds the higher-order Dr / Delta-alpha terms
+        that a G_mu Born already contains. Re-expressed
+        in G_mu: LO_Gmu = (1 + Dr)^2 LO, NLO_Gmu = (1 + Dr)^2 [NLOE - 2 Dr^(1) LO]
+  */
+  static const std::string homode(ATOOLS::Settings::GetMainSettings()["GRIFFIN"]
+                                  ["HIGHER_ORDER_SCHEME"].SetDefault("gmu").Get<std::string>());
+  if (homode == "naive") {
+    virt.Finite() = EvaluateNNLO(momenta, proc) - EvaluateNLO(momenta, proc);
+    return;
+  }
+  if (homode != "gmu")
+    THROW(fatal_error, "GRIFFIN: HIGHER_ORDER_SCHEME must be gmu or naive, not " + homode);
+  // ew_scheme::Gmu (3); GRIFFIN #defines Gmu as a parameter index
+  if (m_ewscheme != static_cast<ew_scheme::code>(3))
+    THROW(fatal_error, "GRIFFIN: HIGHER_ORDER_SCHEME gmu needs EW_SCHEME Gmu "
+          "(the step is re-expressed relative to a G_mu NLO)");
+  const Kinematics kv = KinVars(momenta);
+  const double nlo_e(EvaluateNLOE(momenta, proc));
+  virt.Finite() = std::visit([&](auto &gx) {
+    const double lo(DiffXSecTerm<FA_SMLO, SW_SMLO, matel>(
+        proc.initial_pdg, proc.final_pdg, kv.s, kv.cost, gx));
+    const double nnlo(DiffXSecTerm<FA_SMNNLO, SW_SMNNLO, mat_SMNNLO>(
+        proc.initial_pdg, proc.final_pdg, kv.s, kv.cost, gx));
+    // alpha_Gmu with the complex-pole masses, exactly as SMvalGMwMz.cc
+    const double mws(sqr(gx.get(MWc))), mzs(sqr(gx.get(MZc)));
+    const double agmu(0.4501581580785531*gx.get(Gmu)*mws*(1. - mws/mzs));
+    const double r2(sqr(agmu/gx.get(al)));            // (1 + Dr)^2
+    griffin::dr_SMNLO dr1(gx);                         // Dr^(1)
+    const double nlo_gmu(r2*(nlo_e - 2.*real(dr1.result())*lo));
+    return nnlo - nlo_gmu;
+  }, m_griffin);
 }
 
 double Griffin::Griffin_Interface::EvaluateLO(const Vec4D_Vector &momenta,
@@ -329,19 +365,24 @@ double Griffin::Griffin_Interface::EvaluateNLOE(const Vec4D_Vector &momenta,
   // amplitudes rather than squaring one amplitude), so it keeps its own
   // formula rather than going through DiffXSecTerm.
   const Kinematics kv = KinVars(momenta);
-  const double sw = s_model->ComplexConstant("csin2_thetaW").real();
+  /*
+    As GRIFFIN's examples/testmat2.cc: the LO matrix element with the LO
+    effective couplings (FA/SW_SMLO), the exact-NLO one with the NLO ones
+    (FA/SW_SMNLO, sin^2 theta_eff), both passed as objects. Until 2026-10-09
+    both got the model's on-shell sin^2 theta_W, which mismatched the vector
+    couplings 1 - 4|Q| sin^2 between LO, NLOE and NNLO (a +-2-6% odd-in-cos
+    residue in NNLO - NLOE at the Z).
+  */
   return std::visit([&](auto &gx) {
       FA_SMLO FAi0(proc.initial_pdg, gx), FAf0(proc.final_pdg, gx);
       SW_SMLO SWi0(proc.initial_pdg, gx), SWf0(proc.final_pdg, gx);
       matel M0(proc.initial_pdg, proc.final_pdg, VEC, VEC,
-               FAi0.result().real(), FAf0.result().real(),
-               sw, sw, kv.s, kv.cost, gx);
+               FAi0, FAf0, SWi0, SWf0, kv.s, kv.cost, gx);
 
       FA_SMNLO FAi(proc.initial_pdg, gx), FAf(proc.final_pdg, gx);
       SW_SMNLO SWi(proc.initial_pdg, gx), SWf(proc.final_pdg, gx);
       mat_SMeNLO M(proc.initial_pdg, proc.final_pdg, VEC, VEC,
-                    FAi.result().real(), FAf.result().real(),
-                    sw, sw, kv.s, kv.cost, gx);
+                    FAi, FAf, SWi, SWf, kv.s, kv.cost, gx);
 
       M0.setkinvar(kv.s, kv.cost);
       M.setkinvar(kv.s, kv.cost);
