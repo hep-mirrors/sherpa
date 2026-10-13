@@ -172,6 +172,10 @@ namespace YFS {
       double FormFactorSumIF();
       //! The same sum with the soft cutoff at omega instead of IFIOmega().
       double FormFactorSumIF(double omega);
+      //! The initial and final real B-tilde terms of FormFactorSum() moved
+      //! from their exponent regions to the common generation region (photon
+      //! energy below emin in the beams' rest frame). ACRAIC: FIXED_ORDER_STREAM
+      double FormFactorShiftToRegion(double emin);
       //! The decay-stage term of the WW pole expansion. Zero in the flat
       //! scheme.
       double FormFactorSumDecay();

@@ -4,6 +4,7 @@
 #include "YFS/Main/YFS_Base.H"
 #include "YFS/Main/Dipole.H"
 #include "YFS/Main/Leg.H"
+#include "YFS/Main/Soft_Region.H"
 #include "YFS/NLO/Virtual.H"
 #include "METOOLS/Loops/Divergence_Array.H"
 
@@ -19,6 +20,20 @@ public:
                     double Mas1, double Mas2, double Kmax, double MasPhot, int mode);
     double BVR_full(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2,  double Kmax, double MasPhot, int mode);
     double BVR_full(YFS::Dipole &d, double omega);
+    /*!
+      The region-explicit forms (Soft_Region.H): the leg energies are taken in
+      the region's frame by the region, not by the caller. The energy-based
+      overloads above stay public for the standalone YFS/Tools checks.
+    */
+    double BVR_full(const SoftRegion &R, const ATOOLS::Vec4D &p1, const ATOOLS::Vec4D &p2,
+                    double Mas1, double Mas2, double MasPhot, int mode);
+    double BVR_cru(const SoftRegion &R, const ATOOLS::Vec4D &p1, const ATOOLS::Vec4D &p2,
+                   double Mas1, double Mas2);
+    //! real B-tilde over R plus the dipole's virtual (the FormFactorSum term)
+    double BVR_full(YFS::Dipole &d, const SoftRegion &R);
+    //! the exponent region of a II/FF dipole at cutoff omega: a final pair in
+    //! its own rest frame (FF_FORMFACTOR_REST_FRAME), everything else in P
+    SoftRegion ExponentRegion(const YFS::Dipole &d, double omega) const;
     double BVR_decay(double M, double ml, double ks);
 
     DivArrD BVR_full_eps(YFS::Dipole &d,  double Kmax, int mode);
@@ -48,6 +63,7 @@ public:
     // T-CHANNEL virtual. This is KKMC's TForFac (SRCee/KKceex.cxx), which builds
     // its interference form factor Yint out of exactly exp(Btilda + TBvirt).
     double IFForFac(YFS::Dipole &d, double omega);
+    double IFForFac(YFS::Dipole &d, const SoftRegion &R);
     double  BVirtGeneral(YFS::Dipole &d, double kmax=0);
     DivArrD BVirtGeneralEps(YFS::Dipole &d, double kmax=0);
     // Virtual YFS B factor built from the dim-reg master integrals

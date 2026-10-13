@@ -61,6 +61,9 @@ void Define_Dipoles::MakeDipolesII(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec
   m_set.BuildInitial(fl, mom, born, m_alpha);
   // BuildInitial leaves no dipole if the initial state carries no charge.
   if (m_set.HasII()) { m_g = m_set.II().m_gamma; m_gp = m_set.II().m_gammap; }
+  // the ISR crude's region: photons kept above IR_CUTOFF/2 in P (ISR.C)
+  if (m_set.HasII())
+    m_set.II().SetGenRegion(SoftRegion::Lab(0.5*sqrt(m_s)*m_isrcut, "P"));
 }
 
 
@@ -600,6 +603,12 @@ void Define_Dipoles::DumpDipoles(){
                << "  omega=" << omega << " GeV"
                << "  Y=" << y
                << std::endl;
+    // the region ledger: exponent region (FormFactorSum) and generated region
+    msg_Info() << "        exponent: "
+               << (D.HasExpRegion() ? D.ExpRegion().Describe() : std::string("-"))
+               << "   generated: "
+               << (D.HasGenRegion() ? D.GenRegion().Describe() : std::string("-"))
+               << std::endl;
   };
 
   msg_Info() << "YFS dipole set (YFS: Dump_Dipoles), " << m_set.size()
@@ -639,6 +648,35 @@ double Define_Dipoles::FormFactorSumIF(){
     form += D.ChargeNorm()*p_yfsFormFact->IFForFac(D, IFIOmega());
   }
   return form;
+}
+
+
+/*
+  The exponent the sampled photon multiplicities belong to. FormFactorSum()
+  integrates each initial dipole's eikonal up to sqrt(s)/2 and each final one
+  up to sqrt(s')/2 in its own rest frame, while every generated (visible)
+  photon has energy above emin = IR_CUTOFF/2 in the beams' rest frame: the
+  event weight exp(FormFactorSum()) times the sampled photons stands for
+  exp(Y(emin)) prod S~(k) with Y(emin) = FormFactorSum() + this shift. Only the
+  real B-tilde moves; the virtual is the same on both sides and drops out.
+  Read-only on the dipoles (the low-level BVR_full, not the one that records
+  the region on the dipole).
+*/
+double Define_Dipoles::FormFactorShiftToRegion(double emin){
+  const SoftRegion gen(SoftRegion::Lab(emin, "P-gen"));
+  auto real = [this](const YFS::Dipole &D, const SoftRegion &reg) {
+    Vec4D p1, p2;
+    D.LegsBeforeRadiation(p1, p2);
+    return p_yfsFormFact->BVR_full(reg, p1, p2, p1.Mass(), p2.Mass(), m_photonMass, 0);
+  };
+  double shift(0.);
+  for (auto &D : m_set.ByType(dipoletype::initial))
+    shift += D.ChargeNorm()*(real(D, gen)
+             - real(D, p_yfsFormFact->ExponentRegion(D, sqrt(m_s)/2)));
+  for (auto &D : m_set.FF())
+    shift += D.ChargeNorm()*(real(D, gen)
+             - real(D, p_yfsFormFact->ExponentRegion(D, sqrt(D.Sprime())/2)));
+  return shift;
 }
 
 

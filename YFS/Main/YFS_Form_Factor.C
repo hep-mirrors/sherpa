@@ -184,40 +184,59 @@ double YFS_Form_Factor::BVR_full(YFS::Dipole &d, double omega) {
     DivArrD Y = Yvref + Yr;
     return Y.Finite();
   }
-  double R, V;
-  Vec4D p1,p2;
-  d.LegsBeforeRadiation(p1, p2);
-  /*
-    The real B-tilde is frame dependent: it integrates the eikonal over photon
-    energies below omega in the frame whose leg energies it is given. A final
-    pair's omega is sqrt(s')/2, its own rest-frame limit, and the FSR weight
-    (FSR::YFS_FORM, YFS_IR + DelYFS = B~_lab(Emin) - B~_Q(EQQ)) is built to
-    sit on top of B~ in that rest frame. The legs come from m_plab, i.e. the
-    LAB after ISR, so for a pair recoiling against hard ISR the lab energies
-    were combined with a rest-frame omega: at the 250 GeV Z return (gamma 1.55)
-    exp(B~_lab - B~_rest) = 0.976 at cos theta* = 0 and 0.990 at |cos| = 0.9,
-    the cutoff-independent O(alpha^0) ISR x FSR deficit against KKMC (2026-10-07,
-    ACRAIC_O0/CEEX0 and YFS.LO/EEX0 0.979 at the return, zero with FSR alone).
-    The virtual is Lorentz invariant. YFS: FF_FORMFACTOR_REST_FRAME: false
-    restores the lab evaluation.
-  */
+  return BVR_full(d, ExponentRegion(d, omega));
+}
+
+/*
+  The exponent region of a dipole at cutoff omega. The real B-tilde is the
+  eikonal integrated over photon energies below omega in the region's frame. A
+  final pair's omega is sqrt(s')/2, its own rest-frame limit, and the FSR weight
+  (FSR::YFS_FORM, YFS_IR + DelYFS = B~_P(Emin) - B~_Q(EQQ)) is built to sit on
+  top of B~ in that rest frame. The legs come from m_plab, i.e. the P frame
+  after ISR, so for a pair recoiling against hard ISR the P-frame energies were
+  combined with a rest-frame omega: at the 250 GeV Z return (gamma 1.55)
+  exp(B~_P - B~_rest) = 0.976 at cos theta* = 0 and 0.990 at |cos| = 0.9, the
+  cutoff-independent O(alpha^0) ISR x FSR deficit against KKMC (2026-10-07,
+  ACRAIC_O0/CEEX0 and YFS.LO/EEX0 0.979 at the return, zero with FSR alone).
+  The virtual is Lorentz invariant. YFS: FF_FORMFACTOR_REST_FRAME: false
+  restores the P-frame evaluation.
+*/
+SoftRegion YFS_Form_Factor::ExponentRegion(const YFS::Dipole &d, double omega) const
+{
   static const bool ffrest(Settings::GetMainSettings()["YFS"]
                            ["FF_FORMFACTOR_REST_FRAME"].SetDefault(true).Get<bool>());
-  Vec4D r1(p1), r2(p2);
   if (ffrest && d.Type() == dipoletype::final) {
-    const Vec4D P(p1 + p2);
-    if (P.Abs2() > 0. && !IsZero(P.PSpat()/P[0], 1e-14)) {
-      Poincare rest(P);
-      rest.Boost(r1);
-      rest.Boost(r2);
-    }
+    Vec4D p1, p2;
+    d.LegsBeforeRadiation(p1, p2);
+    return SoftRegion::RestOf(p1 + p2, omega, "pair-X");
   }
-  R =  BVR_full(r1 * r2, r1.E(), r2.E(), p1.Mass(), p2.Mass(), omega, m_photonMass, 0);
-  // R = BVR_full_eps(d, omega, 0).Finite();
-  V =  BVirtGeneralEps(d,omega).Finite();
-  double Vold =  BVV_full(p1, p2, m_photonMass, omega, 0);
-  if(m_fullform>=2) return (R+V);
-  return (R+Vold);
+  return SoftRegion::Lab(omega, "P");
+}
+
+double YFS_Form_Factor::BVR_full(YFS::Dipole &d, const SoftRegion &reg) {
+  Vec4D p1, p2;
+  d.LegsBeforeRadiation(p1, p2);
+  d.SetExpRegion(reg);
+  const double omega(reg.Emin());
+  const double R(BVR_full(reg, p1, p2, p1.Mass(), p2.Mass(), m_photonMass, 0));
+  const double V(BVirtGeneralEps(d, omega).Finite());
+  const double Vold(BVV_full(p1, p2, m_photonMass, omega, 0));
+  if (m_fullform >= 2) return (R + V);
+  return (R + Vold);
+}
+
+double YFS_Form_Factor::BVR_full(const SoftRegion &reg, const Vec4D &p1, const Vec4D &p2,
+                                 double Mas1, double Mas2, double MasPhot, int mode) {
+  double p1p2, E1, E2;
+  reg.Legs(p1, p2, Mas1, Mas2, p1p2, E1, E2);
+  return BVR_full(p1p2, E1, E2, Mas1, Mas2, reg.Emin(), MasPhot, mode);
+}
+
+double YFS_Form_Factor::BVR_cru(const SoftRegion &reg, const Vec4D &p1, const Vec4D &p2,
+                                double Mas1, double Mas2) {
+  double p1p2, E1, E2;
+  reg.Legs(p1, p2, Mas1, Mas2, p1p2, E1, E2);
+  return BVR_cru(p1p2, Leg(E1, Mas1), Leg(E2, Mas2), reg.Emin());
 }
 
 double YFS_Form_Factor::BVR_full(Vec4D p1, Vec4D p2, double omega) {
@@ -717,11 +736,15 @@ double YFS_Form_Factor::IFForFac(YFS::Dipole &d, double omega){
   // an IsZero() default that is never used afterwards -- so the omega passed here
   // affects the Btilda part alone. That is deliberate: it is the soft-real piece
   // that carries the cutoff, exactly as in KKMC's Btilda(...,Emin).
+  return IFForFac(d, SoftRegion::Lab(omega, "P"));
+}
+
+double YFS_Form_Factor::IFForFac(YFS::Dipole &d, const SoftRegion &reg){
   ATOOLS::Vec4D p1 = d.GetBornMomenta(1);
   ATOOLS::Vec4D p2 = d.GetBornMomenta(0);
-  double Breal = BVR_full(p1 * p2, p1.E(), p2.E(), p1.Mass(), p2.Mass(),
-                          omega, m_photonMass, 0);
-  double Bvirt = BVirtT(p1, p2, omega);
+  d.SetExpRegion(reg);
+  double Breal = BVR_full(reg, p1, p2, p1.Mass(), p2.Mass(), m_photonMass, 0);
+  double Bvirt = BVirtT(p1, p2, reg.Emin());
   return Breal + Bvirt;
 }
 

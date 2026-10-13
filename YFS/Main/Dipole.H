@@ -7,6 +7,7 @@
 #include <optional>
 #include "METOOLS/Loops/Divergence_Array.H"
 #include "YFS/NLO/Virtual.H"
+#include "YFS/Main/Soft_Region.H"
 #include <vector>
 #include <cmath>
 
@@ -52,6 +53,8 @@ namespace YFS{
         Vec4D_Vector m_dipolePhotons, m_dipolePhotonsEEX;
         std::vector<std::string> m_names;
         double m_QiQj, m_Qi, m_Qj, m_thetai, m_thetaj, m_thetaij, m_sp, m_b1, m_b2, m_gamma, m_gammap, m_alp, m_alpi,m_rescale_alpha;
+        SoftRegion m_genregion, m_expregion;
+        bool m_hasgenregion = false, m_hasexpregion = false;
         bool m_sameflav, m_irfinite, m_isduplicate;
         // m_real_only and m_resonance are read by CalculateGamma() and
         // IsResonance(), both reachable before any setter runs - the
@@ -171,6 +174,19 @@ namespace YFS{
         inline dipoletype::code Type() const {return m_type;}
         inline void AddPhotonsSumToDipole(Vec4D k) {m_photonSum = k;}
         inline double Sprime() const {return m_sp;}
+        /*!
+          The region ledger (Soft_Region.H): the soft region this dipole's
+          photons were generated outside of (ISR: the beam-CMS sphere of
+          IR_CUTOFF/2; FSR: the Q-frame sphere of EminQ) and the region of its
+          exponent (FormFactorSum, plus FSR's Piatek term when photons are
+          hidden). Filled where they are evaluated; printed by DumpDipoles.
+        */
+        inline void SetGenRegion(const SoftRegion &r) { m_genregion = r; m_hasgenregion = true; }
+        inline void SetExpRegion(const SoftRegion &r) { m_expregion = r; m_hasexpregion = true; }
+        inline bool HasGenRegion() const { return m_hasgenregion; }
+        inline bool HasExpRegion() const { return m_hasexpregion; }
+        inline const SoftRegion &GenRegion() const { return m_genregion; }
+        inline const SoftRegion &ExpRegion() const { return m_expregion; }
         inline void SetAlpha(double alp) { m_alp=alp; m_alpi=alp/M_PI;}
         inline void SetNPhoton(int N) {m_Nphotons = N; }
         inline void SetBorn(double B) {m_born = B; }
