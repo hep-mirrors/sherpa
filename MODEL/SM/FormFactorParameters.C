@@ -107,14 +107,20 @@ DEFINE_PARAM(K_rho1700,   "KAON_FORM_FACTOR", "rho(1700)",     "rho(1700)",  1.8
 DEFINE_PARAM(K_rho2150,   "KAON_FORM_FACTOR", "rho(2150)",     "rho(2150)",  2.2645,  0.11327, -4.22045e-3,0.0,     ResonanceType::GounarisSakurai, kf_rho_2150);
 DEFINE_PARAM(K_omega,     "KAON_FORM_FACTOR", "omega(782)",    "omega(782)", 0.78248, 0.00855,  1.195,     0.0,     ResonanceType::FixedBreitWigner, kf_omega_782);
 DEFINE_PARAM(K_omega1420, "KAON_FORM_FACTOR", "omega(1420)",   "omega(1420)",1.410,   0.290,   -0.112,    M_PI,    ResonanceType::FixedBreitWigner, kf_omega_1420);
-// DEFINE_PARAM(K_omega1650, "KAON_FORM_FACTOR", "omega(1650)",   "omega(1650)",1.67,    0.315,    1-1.195+0.112, M_PI, ResonanceType::FixedBreitWigner, kf_omega_1650);
+DEFINE_PARAM(K_omega1650, "KAON_FORM_FACTOR", "omega(1650)",   "omega(1650)",1.67,    0.315,    1-1.195+0.112, M_PI, ResonanceType::FixedBreitWigner, kf_omega_1600);
 DEFINE_PARAM(K_phi,       "KAON_FORM_FACTOR", "phi(1020)",     "phi(1020)",  1.01947, 0.00434,  1.018,     0.0,     ResonanceType::FixedBreitWigner, kf_phi_1020);
 DEFINE_PARAM(K_phi1680,   "KAON_FORM_FACTOR", "phi(1680)",     "phi(1680)",  1.680,   0.150,    1 - 1.018, M_PI,    ResonanceType::FixedBreitWigner, kf_phi_1680);
 
 // ---------- Three-pion form factor ----------
-DEFINE_PARAM(v_omega782,  "THREE_PION_FORM_FACTOR", "omega(782)", "omega(782)", 0.78266,  0.00868, 1.0,    0.0,   ResonanceType::FixedBreitWigner, kf_omega_782);
-DEFINE_PARAM(v_phi1020,   "THREE_PION_FORM_FACTOR", "phi(1020)",  "phi(1020)",  1.019461, 0.004249,0.042,  M_PI,  ResonanceType::FixedBreitWigner, kf_phi_1020);
-DEFINE_PARAM(v_jpsi,      "THREE_PION_FORM_FACTOR", "J/psi",      "J/psi",      3.0969,   0.0000926,0.001, 0.0,   ResonanceType::FixedBreitWigner, kf_J_psi_1S);
+// sub="" (not the resonance name) - a non-empty sub requires a doubly-nested
+// YAML block (THREE_PION_FORM_FACTOR: <sub>: <tag>: {...}), which none of
+// this project's example cards write, so a non-empty sub here silently
+// discards every card-level override. Same bug, same fix, as the
+// KAON_FORM_FACTOR sector earlier this session - see
+// lowenergy-kaonff-nesting-and-sign-bugs memory note.
+DEFINE_PARAM(v_omega782,  "THREE_PION_FORM_FACTOR", "", "omega(782)", 0.78266,  0.00868, 1.0,    0.0,   ResonanceType::FixedBreitWigner, kf_omega_782);
+DEFINE_PARAM(v_phi1020,   "THREE_PION_FORM_FACTOR", "", "phi(1020)",  1.019461, 0.004249,0.042,  M_PI,  ResonanceType::FixedBreitWigner, kf_phi_1020);
+DEFINE_PARAM(v_jpsi,      "THREE_PION_FORM_FACTOR", "", "J/psi",      3.0969,   0.0000926,0.001, 0.0,   ResonanceType::FixedBreitWigner, kf_J_psi_1S);
 // The two higher isoscalars of hep-ph/0512180 Eq. (10), which carry the
 // structure between roughly 1.1 and 2 GeV - without them the three-pion form
 // factor has nothing above the phi until the J/psi.
@@ -123,8 +129,12 @@ DEFINE_PARAM(v_jpsi,      "THREE_PION_FORM_FACTOR", "J/psi",      "J/psi",      
 // are PDG's omega(1420) and omega(1650), whose kf codes are kf_omega_1420 and
 // kf_omega_1600 (30223 - registered in Hadron_Init.C under the name
 // "omega(1650)"; the symbol is the older omega(1600) spelling). The kaon
-// sector's own omega(1650) line above is commented out because it reaches for
-// a kf_omega_1650 that does not exist - kf_omega_1600 is the one to use.
+// sector's own omega(1650) line above uses the same kf_omega_1600 - an
+// earlier version reached for a kf_omega_1650 that does not exist, which is
+// commented-out dead code declaring KaonFF::Omega1650() with no definition;
+// KaonFF::ReadAll() called it anyway, an undefined-symbol call that only
+// failed at runtime (segfault) since this builds as a dynamically loaded
+// plugin, not at link time.
 //
 // The flavour is only a label here: these are built as
 // FixedBreitWigner(NULL, m, Gamma), so the mass and width come from this table
@@ -142,8 +152,11 @@ DEFINE_PARAM(v_jpsi,      "THREE_PION_FORM_FACTOR", "J/psi",      "J/psi",      
 // Sanity check on the convention: the same reduction applied to that paper's
 // B gives B/A = -0.87/18.20 = -0.0478 for phi(1020), against the 0.042 tuned
 // here - so the two normalisations do line up.
-DEFINE_PARAM(v_omega1375, "THREE_PION_FORM_FACTOR", "omega(1375)","omega(1375)",1.3750,   0.2500,  0.042308, M_PI, ResonanceType::FixedBreitWigner, kf_omega_1420);
-DEFINE_PARAM(v_omega1631, "THREE_PION_FORM_FACTOR", "omega(1631)","omega(1631)",1.6310,   0.2450,  0.061538, M_PI, ResonanceType::FixedBreitWigner, kf_omega_1600);
+DEFINE_PARAM(v_omega1375, "THREE_PION_FORM_FACTOR", "","omega(1375)",1.3750,   0.2500,  0.042308, M_PI, ResonanceType::FixedBreitWigner, kf_omega_1420);
+DEFINE_PARAM(v_omega1631, "THREE_PION_FORM_FACTOR", "","omega(1631)",1.6310,   0.2450,  0.061538, M_PI, ResonanceType::FixedBreitWigner, kf_omega_1600);
+
+DEFINE_PARAM(v_phi1020_rhoE,   "THREE_PION_FORM_FACTOR", "", "phi(1020)-rho(1450)",  1.019461, 0.004249, 0.039560, M_PI, ResonanceType::FixedBreitWigner, kf_phi_1020);
+DEFINE_PARAM(v_omega1631_rhoF, "THREE_PION_FORM_FACTOR", "", "omega(1631)-rho(1700)",1.6310,   0.2450,   0.032418, M_PI, ResonanceType::FixedBreitWigner, kf_omega_1600);
 
 // ---------- Two-photon transition ----------
 // pi0
@@ -214,7 +227,7 @@ DEFINE_PARAM(Delta1600,"BARYON_FORM_FACTOR", "Δ(1600)",      "Δ(1600)",   1.60
     ResonanceParameters& Rho2150() { return s_K_rho2150; }
     ResonanceParameters& Omega() { return s_K_omega; }
     ResonanceParameters& Omega1420() { return s_K_omega1420; }
-    // ResonanceParameters& Omega1650() { return s_K_omega1650; }
+    ResonanceParameters& Omega1650() { return s_K_omega1650; }
     ResonanceParameters& Phi() { return s_K_phi; }
     ResonanceParameters& Phi1680() { return s_K_phi1680; }
     void ReadAll()
@@ -223,11 +236,11 @@ DEFINE_PARAM(Delta1600,"BARYON_FORM_FACTOR", "Δ(1600)",      "Δ(1600)",   1.60
       Rho1450().Read();
       Rho1700().Read();
       Rho2150().Read();
-      Omega().Read();
-      Omega1420().Read();
-      Omega1650().Read();
-      Phi().Read();
-      Phi1680().Read();
+      // Omega().Read();
+      // Omega1420().Read();
+      // Omega1650().Read();
+      // Phi().Read();
+      // Phi1680().Read();
     }
   } // namespace KaonFF
 
@@ -238,6 +251,8 @@ DEFINE_PARAM(Delta1600,"BARYON_FORM_FACTOR", "Δ(1600)",      "Δ(1600)",   1.60
     ResonanceParameters& Jpsi() { return s_v_jpsi; }
     ResonanceParameters& Omega1375() { return s_v_omega1375; }
     ResonanceParameters& Omega1631() { return s_v_omega1631; }
+    ResonanceParameters& Phi1020RhoE() { return s_v_phi1020_rhoE; }
+    ResonanceParameters& Omega1631RhoF() { return s_v_omega1631_rhoF; }
     void ReadAll()
     {
       Omega782().Read();
@@ -245,6 +260,8 @@ DEFINE_PARAM(Delta1600,"BARYON_FORM_FACTOR", "Δ(1600)",      "Δ(1600)",   1.60
       Jpsi().Read();
       Omega1375().Read();
       Omega1631().Read();
+      Phi1020RhoE().Read();
+      Omega1631RhoF().Read();
     }
   } // namespace ThreePionFF
 

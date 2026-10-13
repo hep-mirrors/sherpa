@@ -136,6 +136,13 @@ namespace METOOLS {
     ResonanceParameters& Jpsi();
     ResonanceParameters& Omega1375();
     ResonanceParameters& Omega1631();
+    // hep-ph/0512180 Eq. (10) E and F: phi(1020) x rho(1450) and
+    // omega(1631) x rho(1700), each carried by its OWN production vertex
+    // (see LowEnergy_Model::InitThreePionVertices) rather than folded into
+    // the shared isoscalar sum above - see the note by Omega1375/Omega1631
+    // in FormFactorParameters.C for why that sum cannot express them.
+    ResonanceParameters& Phi1020RhoE();
+    ResonanceParameters& Omega1631RhoF();
     void ReadAll();
   } // namespace ThreePionFF
 

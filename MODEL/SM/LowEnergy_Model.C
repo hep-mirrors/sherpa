@@ -295,10 +295,38 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
 
  
   ////////////////////////////////////////////////////////////////////
+  // g_gammarhopi from the CHIRAL ANOMALY, not from a fit.
+  //
+  // The Wess-Zumino-Witten low-energy theorem PREDICTS the gamma* -> 3 pi
+  // amplitude at threshold, so this coupling is not free.  Writing the
+  // isoscalar amplitude the way arXiv:1907.01556 eq. (2.13) does,
+  //     alpha_A = F_3pi/3 * 1.066,   F_3pi = 1/(4 pi^2 F_pi^3),
+  // and matching our two-vertex chain to it: the AVVP vertex supplies the
+  // bare epsilon contraction (AVVP_LC.C), the internal rho line supplies
+  // -i/(p^2-m^2+i m Gamma) = (i/m_rho^2) BW (V_C.C:243), the SSV decay
+  // supplies (p_a-p_b)^mu (SSV_LC.C), and folding the SSV momentum
+  // difference into the AVVP epsilon slot gives a factor 2 relative to
+  // eps(e,p_+,p_-,p_0) - measured, exactly 2.  Hence
+  //     2 g_gammarhopi g_rhopipi / m_rho^2 = alpha_A
+  // =>  g_gammarhopi = alpha_A m_rho^2 / (2 g_rhopipi) = 0.5598 /GeV
+  // with F_pi = 0.1307/sqrt(2), the same value InitTwoPhotonVertices uses.
+  //
+  // This replaces a hand-set 0.773 that had no derivation behind it (the
+  // VMD estimate on the line below was computed and then not used).  The
+  // predicted value is a factor 0.724 smaller in amplitude, 0.52 in cross
+  // section.  Overriding it with g_gammarhopi: in the runcard is putting a
+  // fudge factor on a theorem - if the rate is off, the physics is
+  // elsewhere.
+  //
   // const double ee(sqrt(4.*M_PI*m_alpha));
   // const double ggrp_vmd(ee*14.0/17.0);   // 0.25 /GeV, for reference
-  const double ggrp_def(0.773);
+  const double fpi_wzw(s["F_pi"].SetDefault(0.1307).Get<double>()/sqrt(2.));
+  const double F3pi(1./(4.*sqr(M_PI)*pow(fpi_wzw,3.)));
+  const double alphaA(F3pi/3.*1.066);
+  const double ggrp_def(alphaA*sqr(mrho)/(2.*grpp));
   const double ggrp(s["g_gammarhopi"].SetDefault(ggrp_def).Get<double>());
+  msg_Out()<<METHOD<<": alpha_A = "<<alphaA<<" GeV^-3 (WZW anomaly, F_pi = "
+	   <<fpi_wzw<<"), predicting g_gammarhopi = "<<ggrp_def<<" /GeV\n";
 
   msg_Out()<<METHOD<<": g_rhopipi = "<<grpp
 	   <<", g_gammarhopi = "<<ggrp<<" /GeV\n";
@@ -307,11 +335,74 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
   const Kabbala cpl_rpp("g_{\\rho\\pi\\pi}",
 			grpp*Complex(0.,1.));
 
+  ////////////////////////////////////////////////////////////////////
+  // THREE_PION_FORM_FACTOR: {Contact: true} replaces the whole
+  // gamma->rho pi -> pi pi pi chain below with a single four-leg contact
+  // current, gamma pi+ pi- pi0, following arXiv:1907.01556 as implemented in
+  // tau-decays-in-sherpa.  The epsilon structure lives in VPPP_LC.C and the
+  // dynamics - anomaly-normalised isoscalar times an all-plus rho sum over
+  // the three two-pion sub-masses - in FFVMD's ee3pi mode.
+  //
+  // The rho->pi pi vertices are still built below, unconditionally: the rho
+  // remains a real particle needed by other final states (four-pion, etc.).
+  // Only the gamma->rho pi production vertices are replaced, which is what
+  // removes the double route to pi+ pi- pi0.
+  ////////////////////////////////////////////////////////////////////
+  const bool contact3pi(s["Contact"].SetDefault(false).Get<bool>());
+  if (contact3pi) {
+    msg_Out()<<METHOD<<": three-pion contact current (VPPP) active; "
+	     <<"gamma-rho-pi production vertices disabled.\n";
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle(photon);
+    m_v.back().AddParticle(pip);
+    m_v.back().AddParticle(pim);
+    m_v.back().AddParticle(pi0);
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("VPPP");
+    m_v.back().FormFactor.push_back("VMD");
+    // The anomaly normalisation sits in the form factor (its F(0) matches the
+    // Wess-Zumino-Witten theorem's 9.7 GeV^-3 to 1.066, checked), so the
+    // coupling is the bare electric charge: one photon leg, no free parameter.
+    //
+    // NB an earlier sqrt(2) here was WRONG and has been removed.  Measured
+    // against BELLE_2024_I2775022 the required correction is NOT flat: ~2 in
+    // sigma through the resonance region (0.9-1.4 GeV) but ~1 in the tail
+    // (>1.7 GeV).  A vertex coupling is energy-independent and so lifts the
+    // tail it should not; the deficit is resonant, so any correction belongs
+    // on the isoscalar resonance weights, which are large at the peaks and
+    // vanish at high q^2 - see the note in ConstructEE3PiFormFactor.
+    m_v.back().cpl.push_back(cpl);
+    m_v.back().order[1]=1;
+  }
+
   // gamma rho pi, anomalous.  Charges have to add up to zero: all legs are
   // read as incoming.
+  //
+  // ISOSPIN FACTORS.  The three charge channels do NOT enter with equal
+  // weight, and getting this wrong is a coherent error, not a normalisation
+  // one.  Contracting the AVVP epsilon structure with the SSV momentum
+  // difference of the paired decay below gives, per channel and relative to
+  // eps(e,p_+,p_-,p_0):
+  //     rho0 pi0  ->  +2      rho+ pi-  ->  -1      rho- pi+  ->  +1
+  // measured directly and constant to machine precision over independent
+  // phase-space points.  An I = 0 three-pion state is totally antisymmetric
+  // in isospin and the momentum epsilon is totally antisymmetric, so |A|^2
+  // must come out totally symmetric under permuting the pions - i.e. the
+  // three channels have to sum ALL-PLUS with equal weight.  The factors
+  // below restore that: (1/2, -1, +1) against the measured (+2, -1, +1).
+  //
+  // The same statement, and the same measurement, appear in
+  // tau-decays-in-sherpa (METOOLS-hadron-currents),
+  // FF_0_Isoscalar3Pi::BuildChains(), which carries isospin factors
+  // (-1,+1,-1) for its own channel ordering and notes the momentum epsilon
+  // alone gives (-,+,-).  Without these the charged channels partially
+  // cancel instead of adding, which distorts the Dalitz distribution and so
+  // shows up as an ENERGY-DEPENDENT discrepancy - not something any overall
+  // coupling can absorb.
   const Flavour rhos[3] = { rho0, rhop, rhom };
   const Flavour pis [3] = { pi0 , pim , pip  };
-  for (size_t i(0);i<3;++i) {
+  const double  iso [3] = { 0.5 , -1.  , 1.   };
+  for (size_t i(0);i<3 && !contact3pi;++i) {
     m_v.push_back(Single_Vertex());
     m_v.back().AddParticle(photon);
     m_v.back().AddParticle(rhos[i]);
@@ -319,7 +410,7 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("AVVP");
     m_v.back().FormFactor.push_back("VMD");
-    m_v.back().cpl.push_back(cpl_grp);
+    m_v.back().cpl.push_back(cpl_grp*iso[i]);
     m_v.back().order[1]=1;
   }
   // rho -> pi pi.  Vector first, as for the photon vertices above.
@@ -334,6 +425,98 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("SSV");
     m_v.back().cpl.push_back(cpl_rpp);
+    m_v.back().order[1]=1;
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // hep-ph/0512180 Eq. (10) terms E and F: gamma -> rho(1450) pi and
+  // gamma -> rho(1700) pi, each carrying ONLY its partner isoscalar pole
+  // (phi(1020) for E, omega(1631) for F) through its own VMD form factor -
+  // see FFVMD::ConstructVectorPionFormFactorRhoE/F in Meson_FormFactors.C
+  // and the ThreePionFF::Phi1020RhoE()/Omega1631RhoF() note in
+  // FormFactorParameters.C for why these cannot be folded into the existing
+  // V_pi (rho(770)) production vertex above.
+  //
+  // Same production coupling cpl_grp as rho(770) - Eq. (10)'s overall scale
+  // A is already the anchor for v_omega782's Amplitude = 1.0, so the E/F
+  // magnitude (relative to A) lives entirely in Phi1020RhoE()/
+  // Omega1631RhoF()'s Amplitude/Phase, exactly as C and D do for the
+  // existing omega(1375)/omega(1631) terms in V_pi.
+  //
+  // rho(1450)/rho(1700) -> pi pi couplings are read back from their
+  // particle-table widths with the SAME formula as g_rhopipi above -
+  // Gamma = g^2 p^3/(6 pi M^2) makes no assumption about which rho it is.
+  ////////////////////////////////////////////////////////////////////
+  const Flavour rho1450_0(kf_rho_1450);
+  const Flavour rho1450_p(Flavour(kf_rho_1450_plus));
+  const Flavour rho1450_m(Flavour(kf_rho_1450_plus).Bar());
+  const Flavour rho1700_0(kf_rho_1700);
+  const Flavour rho1700_p(Flavour(kf_rho_1700_plus));
+  const Flavour rho1700_m(Flavour(kf_rho_1700_plus).Bar());
+
+  const double mrho1450(rho1450_0.Mass()), wrho1450(rho1450_0.Width(true));
+  const double prho1450(sqrt(Max(0.25*sqr(mrho1450)-sqr(mpi),1.e-12)));
+  const double grpp1450_def(sqrt(6.*M_PI*sqr(mrho1450)*wrho1450/pow(prho1450,3)));
+  const double grpp1450(s["g_rho1450pipi"].SetDefault(grpp1450_def).Get<double>());
+  const Kabbala cpl_rpp1450("g_{\\rho(1450)\\pi\\pi}",grpp1450*Complex(0.,1.));
+
+  const double mrho1700(rho1700_0.Mass()), wrho1700(rho1700_0.Width(true));
+  const double prho1700(sqrt(Max(0.25*sqr(mrho1700)-sqr(mpi),1.e-12)));
+  const double grpp1700_def(sqrt(6.*M_PI*sqr(mrho1700)*wrho1700/pow(prho1700,3)));
+  const double grpp1700(s["g_rho1700pipi"].SetDefault(grpp1700_def).Get<double>());
+  const Kabbala cpl_rpp1700("g_{\\rho(1700)\\pi\\pi}",grpp1700*Complex(0.,1.));
+
+  msg_Out()<<METHOD<<": g_rho1450pipi = "<<grpp1450
+	   <<", g_rho1700pipi = "<<grpp1700<<"\n";
+
+  // Skipped in contact mode: these are gamma -> rho(1450)/rho(1700) pi
+  // PRODUCTION vertices, so leaving them on would open a second route to
+  // pi+ pi- pi0 alongside the contact current and double count.  The
+  // rho(1450)/rho(1700) -> pi pi decay vertices below stay, like the
+  // rho(770) ones, because those resonances are still needed elsewhere.
+  const Flavour rhosE[3] = { rho1450_0, rho1450_p, rho1450_m };
+  const Flavour rhosF[3] = { rho1700_0, rho1700_p, rho1700_m };
+  for (size_t i(0);i<3 && !contact3pi;++i) {
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle(photon);
+    m_v.back().AddParticle(rhosE[i]);
+    m_v.back().AddParticle(pis[i]);
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("AVVP");
+    m_v.back().FormFactor.push_back("VMD");
+    m_v.back().cpl.push_back(cpl_grp);
+    m_v.back().order[1]=1;
+
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle(photon);
+    m_v.back().AddParticle(rhosF[i]);
+    m_v.back().AddParticle(pis[i]);
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("AVVP");
+    m_v.back().FormFactor.push_back("VMD");
+    m_v.back().cpl.push_back(cpl_grp);
+    m_v.back().order[1]=1;
+  }
+
+  const Flavour rho1450_2[3] = { rho1450_0, rho1450_p, rho1450_m };
+  const Flavour rho1700_2[3] = { rho1700_0, rho1700_p, rho1700_m };
+  for (size_t i(0);i<3;++i) {
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle(rho1450_2[i]);
+    m_v.back().AddParticle(pa[i]);
+    m_v.back().AddParticle(pb[i]);
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("SSV");
+    m_v.back().cpl.push_back(cpl_rpp1450);
+    m_v.back().order[1]=1;
+
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle(rho1700_2[i]);
+    m_v.back().AddParticle(pa[i]);
+    m_v.back().AddParticle(pb[i]);
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("SSV");
+    m_v.back().cpl.push_back(cpl_rpp1700);
     m_v.back().order[1]=1;
   }
 }

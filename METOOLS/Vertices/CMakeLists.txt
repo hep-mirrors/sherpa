@@ -8,6 +8,7 @@ set(Vertices_SOURCES FFV_DLC.C
                      VVV_LC.C
                      VVP_LC.C
                      AVVP_LC.C
+                     VPPP_LC.C
                      SSSS_LC.C
                      SSVV_LC.C
                      VVVV_LC.C)
