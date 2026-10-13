@@ -4,6 +4,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "YFS/Main/Define_Dipoles.H"
 #include "YFS/Main/Coulomb.H"
+#include <complex>
 
 
 using namespace MODEL;
@@ -58,4 +59,79 @@ void Coulomb::Calculate(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2){
 void Coulomb::Subtract(){
   m_weight-= sqrt(m_s)*m_alpha/(2*m_p)*M_PI;
   // m_weight-= 0;
+}
+
+
+namespace {
+  typedef std::complex<double> cplx;
+  //! Gauss-Legendre nodes/weights on [0,1] (n = 48), built once
+  struct GL {
+    std::vector<double> x, w;
+    GL(int n) {
+      for (int i(1); i <= n; ++i) {
+        double z(cos(M_PI*(i - 0.25)/(n + 0.5))), pp(0.);
+        for (int it(0); it < 100; ++it) {
+          double p1(1.), p2(0.);
+          for (int j(1); j <= n; ++j) { const double p3(p2); p2 = p1; p1 = ((2.*j - 1.)*z*p2 - (j - 1.)*p3)/j; }
+          pp = n*(z*p1 - p2)/(z*z - 1.);
+          const double dz(p1/pp); z -= dz;
+          if (std::abs(dz) < 1e-15) break;
+        }
+        x.push_back(0.5*(1. - z)); w.push_back(1./((1. - z*z)*pp*pp));
+      }
+    }
+  };
+  const GL &Gauss() { static const GL g(48); return g; }
+
+  //! FKMS kinematics: p, kappa = p1 - i p2 (eqs. 3-6)
+  bool Kin(double s, double s1, double s2, double MW, double GW, double &p, cplx &kappa)
+  {
+    const double pp((sqr(s) - 2.*s*(s1 + s2) + sqr(s1 - s2))/(4.*s));
+    if (!(pp > 0.) || !(s > 0.)) return false;
+    p = sqrt(pp);
+    const double E((s - 4.*sqr(MW))/(4.*MW)), r(sqrt(sqr(E) + sqr(GW)));
+    kappa = cplx(sqrt(0.5*MW*(r - E)), -sqrt(0.5*MW*(r + E)));
+    return true;
+  }
+}
+
+double Coulomb::FirstOrder(double s, double s1, double s2) const
+{
+  double p; cplx kappa;
+  if (!Kin(s, s1, s2, m_MW, m_GW, p, kappa)) return 0.;
+  // eq. (9); Re(kappa) = p1
+  return m_alpha*sqrt(s)/(4.*p)*(M_PI - 2.*atan((std::norm(kappa) - sqr(p))/(2.*p*kappa.real())));
+}
+
+double Coulomb::HigherOrderWeight(double s, double s1, double s2, int order) const
+{
+  double p; cplx kappa;
+  if (!Kin(s, s1, s2, m_MW, m_GW, p, kappa)) return 1.;
+  const cplx I(0., 1.);
+  const double rs(sqrt(s)), d1(FirstOrder(s, s1, s2));
+  const GL &g(Gauss());
+  if (order == 1) {
+    // eq. (7): f = 1 + f1 + f2, |f|^2 - 1 - 2 Re f1 = 2 Re f2 + |f1|^2
+    const cplx D((kappa + I*p)/(kappa - I*p));
+    const cplx f1(m_alpha*rs/(4.*I*p)*std::log(D));
+    cplx J(0.);
+    for (size_t i(0); i < g.x.size(); ++i) {
+      const double x(g.x[i]);
+      J += g.w[i]*std::log((1. + x*D)/(1. + x/D))/x;
+    }
+    const cplx f2(sqr(m_alpha)*s/(16.*I*p*kappa)*J);
+    return 1. + 2.*f2.real() + std::norm(f1);
+  }
+  // eq. (2), all orders: f = 1 + alpha sqrt(s) kappa int_0^1 dx x^(-a) /
+  // (kappa^2 (1+x)^2 + p^2 (1-x)^2), a = alpha sqrt(s)/(4 kappa); x = t^2
+  // tames the integrable x^(-a) at x -> 0 (Re a > 0, |a| << 1)
+  const cplx a(m_alpha*rs/(4.*kappa));
+  cplx J(0.);
+  for (size_t i(0); i < g.x.size(); ++i) {
+    const double t(g.x[i]), x(t*t);
+    if (x <= 0.) continue;
+    J += g.w[i]*2.*t*std::exp(-a*log(x))/(kappa*kappa*sqr(1. + x) + sqr(p)*sqr(1. - x));
+  }
+  const cplx f(1. + m_alpha*rs*kappa*J);
+  return std::norm(f) - d1;
 }

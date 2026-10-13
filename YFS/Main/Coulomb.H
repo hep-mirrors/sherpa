@@ -22,6 +22,17 @@ namespace YFS{
     inline double GetWeight() { return m_weight; }
     inline void SetAlphaQED(double alp) { m_alpha = alp; }
     void Subtract();
+    /*!
+      The W-pair Coulomb factor beyond one loop, 1 + delta_C - delta_C^(1),
+      for a provider whose one-loop virtual already contains delta_C^(1)
+      (flat four-fermion scheme). s: the W-pair invariant mass squared (the
+      ISR-reduced s'), s1, s2: the W virtualities. order 1: O(alpha^2), eq. (7)
+      of hep-ph/9507422 (Fadin, Khoze, Martin, Stirling); order 2: all orders,
+      the non-relativistic factor |f|^2 of eq. (2). delta_C^(1) is eq. (9).
+    */
+    double HigherOrderWeight(double s, double s1, double s2, int order) const;
+    //! eq. (9): the one-loop Coulomb correction delta_C^(1)
+    double FirstOrder(double s, double s1, double s2) const;
   };
 }
 
