@@ -114,6 +114,11 @@ NLO_Base::~NLO_Base() {
   ReportBeta02();
   if (p_virt && p_virt->p_massif) p_virt->p_massif->Report();
   if (p_realvirt && p_realvirt->p_massif) p_realvirt->p_massif->Report();
+  if (m_loopn_calls > 0 || m_loopn_fail > 0)
+    msg_Info()<<"ACRAIC: LOOP_BETA_PROBE (this rank): "<<m_loopn_calls
+              <<" two-photon loop calls, "<<m_loopn_fail<<" failed, "<<m_loopn_soft
+              <<" below LOOP_SOFT_FLOOR; mean "
+              <<(m_loopn_calls > 0 ? 1e3*m_loopn_time/m_loopn_calls : 0.)<<" ms/call"<<std::endl;
   msg_Out()<<"Total zero V: "<<m_zeroV<<std::endl;
   msg_Out()<<"Total zero RV: "<<m_zeroRV<<std::endl;
   msg_Out()<<"Total zero RR: "<<m_zeroRR<<std::endl;
@@ -146,6 +151,13 @@ NLO_Base::~NLO_Base() {
              <<m_rvLoopUnstable<<", skipped in the beam cone (RV_BEAM_CONE) "
              <<m_rvBeamCone<<std::endl;
   }
+  if (m_lnh_n + m_lnh_fail > 0)
+    msg_Out()<<"ACRAIC: LOOP_BETA_MAX (this rank): photon-pair records "<<m_lnh_n
+             <<", failed "<<m_lnh_fail<<" (of these: in RV_BEAM_CONE "<<m_lnh_cone
+             <<", unstable in two frames "<<m_lnh_unstable<<" of "<<m_lnh_checked
+             <<" checked); pole mismatches "<<m_lnh_polefail<<", helicities on the "
+             <<"averaged fallback "<<m_lnh_nfall<<"; (n+2)-point identity residual mean "
+             <<(m_lnh_n > 0 ? m_lnh_res_sum/m_lnh_n : 0.)<<" max "<<m_lnh_res_max<<std::endl;
   ReportVirtualCheck();
   msg_Out()<<"Total soft RR pairs skipped: "<<m_softRR<<std::endl;
   if (m_rv_cancel_hist) {
@@ -223,6 +235,28 @@ void NLO_Base::SetRealProvider(size_t nphotons, YFS::Real_Correction *prov)
 {
   if (m_realprov.size() <= nphotons) m_realprov.resize(nphotons+1, NULL);
   m_realprov[nphotons] = prov;
+}
+
+YFS::RealVirtual *NLO_Base::RealVirtualProvider(size_t nphotons) const
+{
+  if (nphotons == 1) return p_realvirt;
+  if (nphotons < m_rvprov.size()) return m_rvprov[nphotons];
+  return NULL;
+}
+
+void NLO_Base::SetRealVirtualProvider(size_t nphotons, YFS::RealVirtual *prov)
+{
+  if (m_rvprov.size() <= nphotons) m_rvprov.resize(nphotons+1, NULL);
+  m_rvprov[nphotons] = prov;
+}
+
+size_t NLO_Base::RequestedMaxLoopPhotons()
+{
+  ATOOLS::Settings &s(ATOOLS::Settings::GetMainSettings());
+  if (!s["YFS"]["ACRAIC"].SetDefault(true).Get<bool>()
+      || s["ACRAIC"]["ORDER"].SetDefault(1).Get<int>() != 2) return 1;
+  const int n(s["ACRAIC"]["LOOP_BETA_MAX"].SetDefault(1).Get<int>());
+  return n < 1 ? 1 : (size_t)n;
 }
 
 size_t NLO_Base::MaxRealPhotons() const

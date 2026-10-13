@@ -1,3 +1,4 @@
+#include <chrono>
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Vector.H"
@@ -105,15 +106,29 @@ static Vec4D_Vector RVLoopPoint(const Vec4D_Vector &p, rvloopframe::code frame)
   such photons is O(1e-3 .. 1e-2) of |M_1|^2 at most; OpenLoops' value there
   can be O(1e4) in one frame.
 */
-static bool RVLoopCheckNeeded(const Vec4D_Vector &p)
+/*
+  YFS: RV_LOOP_CHECK_FINAL (default true since 2026-10-11). Also check photons
+  within RV_LOOP_CHECK_ANGLE of an OUTGOING charged leg (flavours given, p =
+  legs + photon). Bhabha at the Z pole: OpenLoops' e+e- -> e+e- gamma loop
+  returns dv = O(1..10) for photons ~1e-6 rad from a final electron, which the
+  beam-only check never saw (the O(alpha^2) heavy tail of eeb02); the two
+  frames disagree there, so the check drops them (10 of 11 in a 24k-event
+  probe). false restores the beam-only check.
+*/
+static bool RVLoopCheckNeeded(const Vec4D_Vector &p, const Flavour_Vector *fl = NULL)
 {
   static const bool on(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_LOOP_CHECK"]
                        .SetDefault(true).Get<bool>());
   static const double amax(ATOOLS::Settings::GetMainSettings()["YFS"]
                            ["RV_LOOP_CHECK_ANGLE"].SetDefault(1e-4).Get<double>());
+  static const bool fin(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_LOOP_CHECK_FINAL"]
+                        .SetDefault(true).Get<bool>());
   if (!on || p.size() < 3) return false;
   const Vec4D &k(p.back());
-  for (size_t i(0); i < 2; ++i) {
+  size_t n(2);
+  if (fin && fl && fl->size() + 1 == p.size()) n = fl->size();
+  for (size_t i(0); i < n; ++i) {
+    if (i >= 2 && (*fl)[i].Charge() == 0.) continue;
     const double c(Vec3D(p[i])*Vec3D(k)/(Vec3D(p[i]).Abs()*Vec3D(k).Abs()));
     if (acos(Max(-1., Min(1., c))) < amax) return true;
   }
@@ -153,7 +168,7 @@ bool NLO_Base::RealVirtualFactor(const Vec4D_Vector &pin, double &v1) {
   if (m_looptool && p_virt->p_loop_me->IRscale() > 0.)
     mur2 = sqr(p_virt->p_loop_me->IRscale());
   double lt(0.);
-  if (RVLoopCheckNeeded(pin)) {
+  if (RVLoopCheckNeeded(pin, &m_flavs)) {
     static const double tol(ATOOLS::Settings::GetMainSettings()["YFS"]
                             ["RV_LOOP_CHECK_TOL"].SetDefault(1e-3).Get<double>());
     double lt2(0.);
@@ -526,6 +541,7 @@ double NLO_Base::CalculateRealVirtual() {
     double rv(0.);
     m_rvdv.clear();
     m_rvhel.clear();
+    m_loopnhel.clear();
     m_vborn_own_ok = m_vborn_ok && BornVirtualOnOwnLegs(m_vborn_own);
     if (m_vborn_own_ok && !m_rvct_done) CalibratePhotonCounterterm();
     for (size_t i(0); i < m_photons.size(); ++i) {
@@ -536,6 +552,7 @@ double NLO_Base::CalculateRealVirtual() {
     }
     HardestBetas(m_photons, [](const YFS::Photon &g) { return g.beta11(); },
                  m_rv_hard1, m_rv_hard2);
+    BuildLoopNPairs();   // ACRAIC: LOOP_BETA_MAX >= 2 (no effect otherwise)
     if (RVProbeOn() && m_born != 0.) {
       double xmax(0.);
       for (const YFS::Photon &g : m_photons) xmax = Max(xmax, 2.*g.E()/sqrt(m_s));
@@ -770,4 +787,230 @@ double NLO_Base::CalculateRealVirtual(Vec4D k) {
   if (IsZero(tot)) m_zeroRV++;
   else m_nonZeroRV++;
   return tot;
+}
+
+
+/*
+  ACRAIC: LOOP_BETA_PROBE (step 2 of the one-loop N-photon matching): the
+  two-photon one-loop provider at the double real's pair point P (lab; the
+  Born legs, then the two photons), in the same loop frame as the one-photon
+  real-virtual. Prints @@@ LOOPN on std::cerr: the photon energy fractions, the
+  provider's loop over tree lt = (alpha/2pi) V_fin/T, its tree and pole
+  coefficients, and the helicity amplitudes' sums (sum |a0|^2 and the
+  tree-weighted loop 2 Re(a0^* a1)/|a0|^2, which step 3 uses per helicity),
+  with the time per call. Changes no weight.
+*/
+void NLO_Base::ProbeLoopN(const Vec4D_Vector &P)
+{
+  static const int nprobe(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
+                          ["LOOP_BETA_PROBE"].SetDefault(0).Get<int>());
+  if (nprobe <= 0) return;
+  YFS::RealVirtual *rv(RealVirtualProvider(2));
+  if (rv == NULL || P.size() < 4) return;
+  if (m_loopn_calls + m_loopn_fail >= nprobe) return;   // soft pairs do not use up the probe
+  static const double sfloor(ATOOLS::Settings::GetMainSettings()["YFS"]
+                             ["LOOP_SOFT_FLOOR"].SetDefault(1e-4).Get<double>());
+  static double xcut(-1.);
+  if (xcut < 0.) {
+    ATOOLS::Settings &s(ATOOLS::Settings::GetMainSettings());
+    xcut = s["ACRAIC"]["LOOP_BETA_XCUT"].SetDefault(-1.).Get<double>();
+    if (xcut < 0.) xcut = s["ACRAIC"]["BETA2_XCUT"].SetDefault(0.05).Get<double>();
+  }
+  const size_t n(P.size());
+  const double rs(sqrt((P[0] + P[1]).Abs2()));
+  const double x1(2.*P[n-2][0]/rs), x2(2.*P[n-1][0]/rs);
+  if (Min(x1, x2) < sfloor) { ++m_loopn_soft; return; }
+  if (Min(x1, x2) < xcut) return;          // not an eligible set: not probed
+  const Vec4D_Vector q(RVLoopPoint(P, RVLoopFrame()));
+  double mur2(sqr(rpa->gen.Ecms()));
+  if (m_looptool && p_virt && p_virt->p_loop_me->IRscale() > 0.)
+    mur2 = sqr(p_virt->p_loop_me->IRscale());
+  const auto t0(std::chrono::steady_clock::now());
+  double lt(0.);
+  const bool ok(rv->LoopOverTree(P, q, mur2, lt));
+  const double dt(std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count());
+  std::vector<Complex> a0, a1;
+  std::vector<std::vector<int> > hel;
+  const bool hok(ok && rv->p_loop_me->HelicityAmplitudes(a0, a1, hel)
+                 && !a0.empty() && a0.size() == a1.size());
+  double s0(0.), s1(0.);
+  if (hok) for (size_t i(0); i < a0.size(); ++i) {
+    s0 += std::norm(a0[i]);
+    s1 += 2.*std::real(std::conj(a0[i])*a1[i]);
+  }
+  std::cerr<<"@@@ LOOPN n=2 x1="<<x1<<" x2="<<x2<<" ok="<<ok<<" lt="<<lt
+           <<" tree="<<rv->p_loop_me->ME_Born()<<" fin="<<rv->p_loop_me->ME_Finite()
+           <<" e1="<<rv->p_loop_me->ME_E1()<<" e2="<<rv->p_loop_me->ME_E2()
+           <<" nhel="<<a0.size()<<" sum|a0|^2="<<s0
+           <<" 2Re(a0*a1)/|a0|^2="<<(s0 > 0. ? s1/s0 : 0.)
+           <<" ms="<<1e3*dt<<"\n";
+  if (ok) { ++m_loopn_calls; m_loopn_time += dt; }
+  else ++m_loopn_fail;
+}
+
+
+/*
+  ACRAIC: LOOP_BETA_MAX 2 (step 3 of NOTES-acraic-oneloop-nphoton.md): the
+  two-photon one-loop record of every photon pair with both x = 2E/sqrt(s)
+  above LOOP_BETA_XCUT (and BETA2_XCUT, LOOP_SOFT_FLOOR). Needs REAL_VIRTUAL
+  helicity (the one-photon records and the Born's per-helicity factors). The
+  pair point gets the one-photon real-virtual's guards, per photon: none in
+  RV_BEAM_CONE, and the RV_LOOP_CHECK two-frame comparison of loop/tree for a
+  photon within RV_LOOP_CHECK_ANGLE of a beam. Nothing beyond those: making
+  the loop stable is the provider's job.
+*/
+void NLO_Base::BuildLoopNPairs()
+{
+  if (RequestedMaxLoopPhotons() < 2 || !RealVirtualHelicityRequested()
+      || RealVirtualProvider(2) == NULL) return;
+  static double xcut(-1.), sfloor(-1.);
+  if (xcut < 0.) {
+    xcut = ATOOLS::Settings::GetMainSettings()["ACRAIC"]["LOOP_BETA_XCUT"].SetDefault(-1.).Get<double>();
+    // ACRAIC uses a pair only above BETA2_XCUT (its tree beta_2)
+    xcut = Max(xcut, ATOOLS::Settings::GetMainSettings()["ACRAIC"]["BETA2_XCUT"].SetDefault(0.05).Get<double>());
+    sfloor = ATOOLS::Settings::GetMainSettings()["YFS"]["LOOP_SOFT_FLOOR"].SetDefault(1e-4).Get<double>();
+  }
+  const double rs(sqrt(m_s)), xmin(Max(xcut, sfloor));
+  for (size_t i(0); i < m_photons.size(); ++i) {
+    if (2.*m_photons[i].E()/rs <= xmin) continue;
+    for (size_t j(i + 1); j < m_photons.size(); ++j) {
+      if (2.*m_photons[j].E()/rs <= xmin) continue;
+      LoopNHelicityFactors f;
+      if (BuildLoopNHelicityFactors(i, j, f)) m_loopnhel.push_back(f);
+      else ++m_lnh_fail;
+    }
+  }
+  /*
+    ACRAIC: LOOP_LADDER_PROBE with LOOP_BETA_MAX >= 3: on events with exactly
+    three photons, all above the cut, the three-photon record as well (the
+    one-loop ladder's n = 3; no weight uses it)
+  */
+  static const int ladder(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["LOOP_LADDER_PROBE"]
+                          .SetDefault(0).Get<int>());
+  if (ladder > 0 && RequestedMaxLoopPhotons() >= 3 && RealVirtualProvider(3) != NULL
+      && m_photons.size() == 3) {
+    bool all(true);
+    for (size_t g(0); g < 3; ++g) all = all && 2.*m_photons[g].E()/rs > xmin;
+    if (all) {
+      LoopNHelicityFactors f;
+      if (BuildLoopNSetFactors(std::vector<size_t>{0, 1, 2}, f)) m_loopnhel.push_back(f);
+      else ++m_lnh_fail;
+    }
+  }
+  // the form factor's loop provider back to the one-photon one (as the
+  // per-photon real-virtual leaves it)
+  if (p_realvirt) p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me.get();
+}
+
+
+bool NLO_Base::BuildLoopNHelicityFactors(size_t i, size_t j, LoopNHelicityFactors &out)
+{
+  return BuildLoopNSetFactors(std::vector<size_t>{i, j}, out);
+}
+
+bool NLO_Base::BuildLoopNSetFactors(const std::vector<size_t> &S, LoopNHelicityFactors &out)
+{
+  out = LoopNHelicityFactors();
+  const size_t np(S.size());
+  YFS::RealVirtual *rv(RealVirtualProvider(np));
+  if (np < 2 || rv == NULL || !m_lhelok || !m_vborn_own_ok) return false;
+  for (size_t g : S) out.ks.push_back(m_photons[g].K());
+  out.k1 = out.ks[0]; out.k2 = out.ks[1];
+  const Vec4D ki(out.k1), kj(out.k2);
+  // the set's (n+|S|)-point in the lab: the double real's (EventSetPoint,
+  // balanced on the beams); a set it cannot build gets no record
+  Vec4D_Vector P;
+  if (!EventSetPoint(S, P) || !CheckMomentumConservation(P)) return false;
+  // the one-photon guards, per photon (P: lab, beams first)
+  std::vector<Vec4D_Vector> pk;
+  for (const Vec4D &k : out.ks) pk.push_back(Vec4D_Vector{P[0], P[1], k});
+  for (const Vec4D_Vector &x : pk) if (RVInBeamCone(x)) { ++m_lnh_cone; return false; }
+  const Vec4D_Vector q(RVLoopPoint(P, RVLoopFrame()));
+  double mur2(sqr(rpa->gen.Ecms()));
+  if (m_looptool && p_virt && p_virt->p_loop_me->IRscale() > 0.)
+    mur2 = sqr(p_virt->p_loop_me->IRscale());
+  double lt(0.);
+  bool needcheck(false);
+  for (const Vec4D_Vector &x : pk) needcheck = needcheck || RVLoopCheckNeeded(x);
+  if (needcheck) {
+    static const double tol(ATOOLS::Settings::GetMainSettings()["YFS"]
+                            ["RV_LOOP_CHECK_TOL"].SetDefault(1e-3).Get<double>());
+    double lt2(0.);
+    const Vec4D_Vector q2(RVLoopPoint(P, RVLoopFrame() == rvloopframe::beam_axis
+                                         ? rvloopframe::tilted : rvloopframe::beam_axis));
+    if (!rv->LoopOverTree(P, q2, mur2, lt2)) return false;
+    ++m_lnh_checked;
+    // the frame used last: HelicityAmplitudes reads the provider's last point
+    if (!rv->LoopOverTree(P, q, mur2, lt)) return false;
+    if (!(std::abs(lt - lt2) <= tol)) { ++m_lnh_unstable; return false; }
+  }
+  else if (!rv->LoopOverTree(P, q, mur2, lt)) return false;
+  // the YFS virtual subtraction on the point's own charged legs
+  Vec4D_Vector legs(q.begin(), q.end() - np);
+  p_nlodipoles->MakeDipolesII(m_flavs, legs, legs);
+  p_nlodipoles->MakeDipoles(m_flavs, legs, legs);
+  p_nlodipoles->MakeDipolesIF(m_flavs, legs, legs);
+  p_nlodipoles->p_yfsFormFact->p_virt = rv->p_loop_me.get();
+  const double sub(p_nlodipoles->CalculateVirtualSub()/m_rescale_alpha);
+  if (IsBad(sub)) return false;
+  const double e1l(rv->E1()*rv->m_factor), e1s(p_nlodipoles->Get_E1()/m_rescale_alpha);
+  const double poletol(rv->p_massif ? 1e-4 : 1e-6);
+  if (m_dim_reg && std::abs(e1l + e1s) > poletol*std::max(std::abs(e1l), 1e-3))
+    ++m_lnh_polefail;
+  PHASIC::Virtual_ME2_Base *lme(rv->p_loop_me.get());
+  const Flavour_Vector &flavs(rv->m_flavs);
+  if (flavs.size() != m_flavs.size() + np) return false;
+  std::vector<Complex> a0, a1;
+  std::vector<std::vector<int> > hel;
+  if (!lme->HelicityAmplitudes(a0, a1, hel) || a0.empty() || a0.size() != a1.size())
+    return false;
+  const double alpha(rv->m_factor*2.*M_PI);
+  const double mu(lme->IRscale()), mu2(mu*mu);
+  Complex K;
+  double imsh(0.);
+  if (!LoopHelicityIR(flavs, q, alpha, mu2, K, imsh)) return false;
+  static const double minborn(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["VIRT_HEL_MINBORN"].SetDefault(1e-3).Get<double>());
+  const double mshift(lt - rv->m_factor*lme->ME_Finite());
+  std::map<std::vector<int>, size_t> bornidx;
+  for (size_t c(0); c < m_lhel.size(); ++c) bornidx[m_lhel[c]] = c;
+  // the photon counterterm per external photon: |S| of them here
+  const double hnp(0.5*np);
+  const Complex commonB(-0.5*m_lrun - 0.5*m_vborn_own_sub, -m_limsh);
+  const Complex commonR(-0.5*sub + hnp*m_rvct + 0.5*mshift, -imsh + hnp*m_rvct_im);
+  const double v2(lt - sub + np*m_rvct);
+  double s0(0.), amax(0.), sd(0.);
+  for (size_t c(0); c < a0.size(); ++c) { s0 += std::norm(a0[c]); amax = Max(amax, std::abs(a0[c])); }
+  if (!(s0 > 0.)) return false;
+  std::vector<Complex> rem(a0.size());
+  for (size_t c(0); c < a0.size(); ++c) {
+    Complex d2;
+    if (std::abs(a0[c]) > minborn*amax) d2 = a1[c]/a0[c] + commonR;
+    else { d2 = Complex(0.5*v2, 0.); ++m_lnh_nfall; }
+    Complex d0(0.5*m_vborn_own, 0.);
+    const std::vector<int> hb(hel[c].begin(), hel[c].end() - np);
+    const std::map<std::vector<int>, size_t>::const_iterator it(bornidx.find(hb));
+    if (it != bornidx.end() && m_lratio_ok[it->second]) d0 = m_lratio[it->second] + commonB;
+    rem[c] = d2 - d0;
+    if (IsBad(rem[c].real()) || IsBad(rem[c].imag())) return false;
+    sd += std::norm(a0[c])*2.*d2.real();
+  }
+  // the (n+2)-point identity: <2 Re delta_S>_tree = v_{n+2} + 2c
+  const double res(sd/s0 - v2);
+  m_lnh_res_sum += res; m_lnh_res_sq += res*res;
+  m_lnh_res_max = Max(m_lnh_res_max, std::abs(res));
+  ++m_lnh_n;
+  out.v2 = v2;
+  out.hel.swap(hel); out.a0.swap(a0); out.rem.swap(rem);
+  out.ok = true;
+  static const int probe(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["LOOP_BETA_PROBE"].SetDefault(0).Get<int>());
+  static int nprobe(0);
+  if (probe > 0 && nprobe < probe) {
+    ++nprobe;
+    std::ostringstream o;
+    o<<std::setprecision(8)<<"@@@ LOOPNHEL x1="<<2.*ki.E()/sqrt(m_s)<<" x2="<<2.*kj.E()/sqrt(m_s)
+     <<" lt="<<lt<<" sub="<<sub<<" v2="<<v2<<" vB="<<m_vborn_own<<" identity="<<res
+     <<" E1loop="<<e1l<<" E1sub="<<e1s<<"\n";
+    std::cerr<<o.str();
+  }
+  return true;
 }

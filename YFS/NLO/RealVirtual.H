@@ -56,6 +56,8 @@ namespace YFS{
         inline std::string ActiveGenName() const { return m_gen.empty()?"none":m_gen; }
         inline void SetProc(PHASIC::Process_Base *realproc) {p_rvproc=realproc;}
         inline bool FailCut() {return m_failcut;}
+        //! LoopOverTree calls, and those whose loop was exactly 0
+        long m_ltcalls = 0, m_ltzero = 0;
     };
 }
 

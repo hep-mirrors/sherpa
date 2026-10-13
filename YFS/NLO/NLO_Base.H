@@ -49,6 +49,23 @@ struct RVHelicityFactors {
   ATOOLS::Vec4D_Vector plab;                //!< the (n+1)-point in the lab
 };
 
+/*!
+  ACRAIC: LOOP_BETA_MAX 2 (one-loop N-photon matching, step 3): one photon
+  pair's two-photon one-loop amplitude per helicity, on the remainder
+  convention of RVHelicityFactors: rem = delta_S - delta_0, delta_S the
+  IR-subtracted (n+2)-point loop over tree at the pair's point, delta_0 the
+  Born's. ACRAIC places it on the pair's partition-summed two-photon tree
+  ("ratio" placement).
+*/
+struct LoopNHelicityFactors {
+  ATOOLS::Vec4D k1, k2;                     //!< the lab photons (provider order)
+  std::vector<ATOOLS::Vec4D> ks;            //!< every photon of the set (provider order)
+  double v2 = 0.;                           //!< v_{n+2} + 2c (squared level)
+  bool ok = false;
+  std::vector<std::vector<int> > hel;       //!< provider labels, photons last
+  std::vector<Complex> a0, rem;             //!< tree; delta_S - delta_0
+};
+
 class NLO_Base : YFS_Base {
 public:
   //! This event's s, forwarded to the dipoles and form factor NLO_Base owns.
@@ -102,6 +119,12 @@ public:
   //! [1] aliases p_real and [2] p_realreal. Anything above that exists only if
   //! the runcard asked for it via NLO_MAX_PHOTONS.
   std::vector<YFS::Real_Correction*> m_realprov;
+  //! One-loop (real-virtual) providers by photon multiplicity: [1] aliases
+  //! p_realvirt, [n >= 2] exist if ACRAIC: LOOP_BETA_MAX asked for them.
+  std::vector<YFS::RealVirtual*> m_rvprov;
+  //! @@@ LOOPN probe counters (per rank; reported in the destructor)
+  long m_loopn_calls = 0, m_loopn_fail = 0, m_loopn_soft = 0;
+  double m_loopn_time = 0.;
   Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta;
   // m_ISRPhotons ++ m_FSRPhotons, each carrying the dipole it came from.
   YFS::Photon_Vector m_photons;
@@ -225,7 +248,12 @@ public:
   */
   inline bool AcraicSuppliesVirtual() const
   { return m_useacraic && !m_eex_virt && !m_looptool
-           && m_acraicvirtsrc == acraicvirt::acraic; }
+           && (m_acraicvirtsrc == acraicvirt::acraic ||
+               // auto: ACRAIC's own when V is requested and no external
+               // provider exists. It used to need `acraic` spelled out, so
+               // auto with no Loop_Generator ran with no virtual in either
+               // column, silently.
+               (m_acraicvirtsrc == acraicvirt::automatic && m_virtrequested)); }
   /*!
     The O(alpha) virtual factor from ACRAIC, rho(Born+virtual)/rho(Born), pushed
     in by YFS_Handler after MakeACRAIC() has run. Only consulted when
@@ -347,6 +375,29 @@ public:
   YFS::Real_Correction *RealProvider(size_t nphotons) const;
   //! Register the provider for `nphotons`, growing the table as needed.
   void SetRealProvider(size_t nphotons, YFS::Real_Correction *prov);
+  //! One-loop provider for `nphotons` real photons (1: p_realvirt), or NULL.
+  YFS::RealVirtual *RealVirtualProvider(size_t nphotons) const;
+  void SetRealVirtualProvider(size_t nphotons, YFS::RealVirtual *prov);
+  //! ACRAIC: LOOP_BETA_MAX when ACRAIC is on at ORDER 2, else 1: the highest
+  //! multiplicity to BUILD a one-loop provider for.
+  static size_t RequestedMaxLoopPhotons();
+  /*!
+    ACRAIC: LOOP_BETA_PROBE: evaluate the two-photon one-loop provider at the
+    double real's pair point P (lab, Born legs then the two photons) and print
+    @@@ LOOPN. No effect on any weight.
+  */
+  void ProbeLoopN(const Vec4D_Vector &P);
+  //! one record per eligible photon pair (filled by CalculateRealVirtual)
+  std::vector<LoopNHelicityFactors> m_loopnhel;
+  //! the pair (i, j) of m_photons; false (and !out.ok) if it cannot be built
+  bool BuildLoopNHelicityFactors(size_t i, size_t j, LoopNHelicityFactors &out);
+  //! the same for any photon set S of m_photons (|S| = 2: the pair record;
+  //! |S| = 3: ACRAIC: LOOP_LADDER_PROBE's three-photon record)
+  bool BuildLoopNSetFactors(const std::vector<size_t> &S, LoopNHelicityFactors &out);
+  void BuildLoopNPairs();
+  long m_lnh_n = 0, m_lnh_fail = 0, m_lnh_polefail = 0, m_lnh_nfall = 0;
+  long m_lnh_cone = 0, m_lnh_checked = 0, m_lnh_unstable = 0;
+  double m_lnh_res_sum = 0., m_lnh_res_sq = 0., m_lnh_res_max = 0.;
   //! Highest photon multiplicity a provider exists for (0 if none).
   size_t MaxRealPhotons() const;
   //! Runcard ceiling on the fixed-order photon multiplicity, NLO_MAX_PHOTONS.
@@ -528,6 +579,8 @@ public:
   double VBornEvent() const { return m_vborn; }
   //! the pair's (n+2)-body point from the event, the other photons reduced
   bool EventPairPoint(size_t i, size_t j, ATOOLS::Vec4D_Vector &P);
+  //! EventPairPoint for any photon set: Born legs, then the photons of S in S order
+  bool EventSetPoint(const std::vector<size_t> &S, ATOOLS::Vec4D_Vector &P);
   //! the incoherent crude S~_II + sum S~_FF of photon k on the legs of pt
   double CrudeOnLegs(const ATOOLS::Vec4D_Vector &pt, const Vec4D &k);
   //! v_{n+1} = V_fin/T - B~(point legs) at the (n+1)-body point p (photon

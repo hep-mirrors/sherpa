@@ -186,17 +186,23 @@ static bool ScaleOutISR(const Vec4D_Vector &pt, size_t nlegs, const std::vector<
 */
 bool NLO_Base::EventPairPoint(size_t i, size_t j, Vec4D_Vector &P)
 {
+  return EventSetPoint(std::vector<size_t>{i, j}, P);
+}
+
+bool NLO_Base::EventSetPoint(const std::vector<size_t> &S, Vec4D_Vector &P)
+{
   const size_t nl(m_flavs.size());
   if (m_postlab.size() != nl || m_plab.size() != nl || m_bornMomenta.size() < 2) return false;
   if (p_dipoles && p_dipoles->PoleActive()) return false;
+  auto inset = [&](size_t g) { return std::find(S.begin(), S.end(), g) != S.end(); };
   // the generation legs with the full beams
   Vec4D_Vector ev(m_bornMomenta.begin(), m_bornMomenta.begin() + 2);
   for (size_t l(2); l < nl; ++l) ev.push_back(m_plab[l]);
-  // the pair's final-state photons: their dipole's pair rebuilt without
-  // them, which absorbs that dipole's other photons; a dipole with no pair
+  // the set's final-state photons: their dipole's pair rebuilt without
+  // them, which absorbs that dipole's other photons; a dipole with no set
   // photon keeps its generation legs, which absorbs all of its photons
   std::map<std::pair<int,int>, Vec4D> ksel;
-  for (size_t g : {i, j}) {
+  for (size_t g : S) {
     const YFS::Photon &ph(m_photons[g]);
     if (!ph.IsFSR()) continue;
     if (ph.Dip() == nullptr) return false;
@@ -206,25 +212,25 @@ bool NLO_Base::EventPairPoint(size_t i, size_t j, Vec4D_Vector &P)
   for (const auto &sel : ksel)
     if (!RebuildPairAlongDecayAxis(sel.first.first, sel.first.second, sel.second,
                                    m_plab, m_postlab, m_flavs, ev)) return false;
-  // the pair's photons and the initial-state companions, the latter to be
-  // scaled out
+  // the set's photons and the initial-state companions, the latter to be
+  // scaled out; ordg: the set's photons in m_photons order
   std::vector<bool> isfsr;
-  std::vector<size_t> drop;
-  size_t pos_i(0), pos_j(0);
+  std::vector<size_t> drop, ordg;
   for (size_t g(0); g < m_photons.size(); ++g) {
-    const bool pair(g == i || g == j);
-    if (!pair && m_photons[g].IsFSR()) continue;
-    if (g == i) pos_i = ev.size();
-    if (g == j) pos_j = ev.size();
-    if (!pair) drop.push_back(ev.size());
+    const bool mem(inset(g));
+    if (!mem && m_photons[g].IsFSR()) continue;
+    if (mem) ordg.push_back(g);
+    if (!mem) drop.push_back(ev.size());
     isfsr.push_back(m_photons[g].IsFSR());
     ev.push_back(m_photons[g].K());
   }
   Vec4D_Vector out;
   if (!ScaleOutISR(ev, nl, isfsr, drop, m_flavs, out)) return false;
-  if (out.size() != nl + 2) return false;
-  P = out;
-  if (pos_i > pos_j) std::swap(P[nl], P[nl + 1]);   // photon i first, j last
+  if (out.size() != nl + S.size() || ordg.size() != S.size()) return false;
+  // out carries the set's photons in m_photons order; P in S order
+  P.assign(out.begin(), out.begin() + nl);
+  for (size_t g : S)
+    P.push_back(out[nl + (std::find(ordg.begin(), ordg.end(), g) - ordg.begin())]);
   return true;
 }
 
@@ -260,6 +266,7 @@ double NLO_Base::RealRealRemainder(size_t i, size_t j)
   if (!CheckMomentumConservation(P) || !BalanceOnBeams(P, m_flavs)) { m_zeroRR++; return 0.; }
   const double r2(p_realreal->Calc_R(P)/(2.*pow(2.*M_PI, 6))*BornPhotonSym(2));
   if (p_realreal->FailCut()) { m_failcut = true; return 0.; }
+  ProbeLoopN(P);    // ACRAIC: LOOP_BETA_PROBE (no effect on the weight)
   if (IsBad(r2)) { m_zeroRR++; return 0.; }
   /*
     Each photon's density c is that of its own single-real point: for an

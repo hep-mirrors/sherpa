@@ -2,6 +2,10 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "YFS/NLO/RealVirtual.H"
 
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+
 #include "EXTAMP/External_ME_Interface.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "PHASIC++/Process/External_ME_Args.H"
@@ -111,13 +115,29 @@ bool RealVirtual::LoopOverTree(const ATOOLS::Vec4D_Vector &p,
   }
   else p_loop_me->Calc(peval);
   if (p_loop_me->Mode() != 0 || p_loop_me->ME_Born() == 0.) return false;
-  // a loop of exactly zero over a nonzero tree is a provider failure, not
-  // physics: OpenLoops with qed 1 returns it for l+l- gamma at any nonzero
-  // Higgs width, which made RV = -B rho v_B (kkmc1005 gate, 2026-10-06)
-  if (p_loop_me->ME_Finite() == 0. && p_loop_me->ME_E1() == 0.)
-    THROW(fatal_error, "YFS: the real-virtual loop provider returned exactly 0"
-          " over a nonzero tree. With OpenLoops qed: 1 set OL_PARAMETERS"
-          " \"width(25)\": 0.");
+  /*
+    A loop of exactly zero over a nonzero tree is a provider failure, not
+    physics. Systematic (every call): OpenLoops with qed 1 returns it for
+    l+l- gamma at any nonzero Higgs width, which made RV = -B rho v_B
+    (kkmc1005 gate, 2026-10-06) - fatal above 5% of the calls. Occasional
+    (e+e- -> 3 gamma, 2026-10-13): the point is dropped like an unstable one.
+  */
+  ++m_ltcalls;
+  if (p_loop_me->ME_Finite() == 0. && p_loop_me->ME_E1() == 0.) {
+    ++m_ltzero;
+    if (m_ltzero <= 5) {
+      std::ostringstream o;
+      o<<std::setprecision(17)<<"@@@ RVZERO tree="<<p_loop_me->ME_Born()<<" p=";
+      for (const ATOOLS::Vec4D &q : peval) o<<q<<" ";
+      std::cerr<<o.str()<<"\n";
+    }
+    if (m_ltcalls >= 200 && m_ltzero > 0.05*m_ltcalls)
+      THROW(fatal_error, "YFS: the real-virtual loop provider returned exactly 0"
+            " over a nonzero tree on "+ATOOLS::ToString(m_ltzero)+" of "
+            +ATOOLS::ToString(m_ltcalls)+" calls. With OpenLoops qed: 1 set"
+            " OL_PARAMETERS \"width(25)\": 0.");
+    return false;
+  }
   lt = m_factor * (p_loop_me->ME_Finite()
                    + (p_massif ? p_massif->Z(sqr(p_loop_me->IRscale())) : 0.));
   return !ATOOLS::IsBad(lt);
