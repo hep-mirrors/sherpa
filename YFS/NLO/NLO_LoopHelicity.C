@@ -5,13 +5,6 @@
   the ACRAIC column resolved by helicity, from the loop provider's
   per-helicity amplitudes (Recola 2: get_amplitude_r1_rcl after the
   compute_process_rcl call YFS.NLO already makes, so no extra loop call).
-
-  This file builds the IR-finite complex factor delta^h per helicity
-  configuration of the provider, at the Born point of the virtual, and runs
-  the per-event identity check. The label map to ACRAIC's index and the
-  squared weight sum_h |A_1^h + delta^h A_0^h|^2 live in
-  YFS/ACRAIC/Acraic_LoopHelicity.C. Design and standalone checks:
-  NOTES-acraic-loop-helicity-2026-09-26.md.
 */
 
 #include "YFS/NLO/NLO_Base.H"
@@ -34,11 +27,6 @@ using namespace ATOOLS;
 
 namespace {
 
-  /*!
-    Acraic_Base::CnuA (KKMC KKbvir::CnuA), exact in the masses, s- and
-    t-channel. Duplicated because NLO_Base has no ACRAIC object to call; the
-    two must stay identical.
-  */
   Complex LoopCnuA(double svar, double m1, double m2)
   {
     const double mm(m1*m2);
@@ -445,3 +433,4 @@ void NLO_Base::ReportRealVirtualHelicity()
            <<" helicity mix) : mean "<<dmean<<"  rms "<<drms<<"  max |.| "<<mx[1]
            <<std::endl;
 }
+

@@ -307,13 +307,6 @@ namespace PHASIC {
       Evaluate with an imposed propagator scale and leave NOTHING set on the
       process afterwards.
 
-      This replaces a public SetPropagatorScale mutator that callers had to
-      pair with a restore by hand. That pattern cost a real bug: an incomplete
-      restore left a decay line's pole frozen at the last imposed value for
-      every later evaluation on the process, which silently turned a
-      downstream Born+real cross section negative. The scale is not state the
-      caller should be able to leave behind, so it is an argument, and the
-      generator that honours it owns the restore.
 
       The default ignores the scales, which is right for every generator that
       cannot separate the propagator pole from the rest of the amplitude.

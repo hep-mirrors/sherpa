@@ -12,10 +12,11 @@ namespace PHASIC { class Virtual_ME2_Base; }
 namespace YFS {
 
   /*!
-    YFS: VIRTUAL_MASSIFICATION (off, electrons, leptons, light_fermions;
-    default off). The one-loop provider is called with the external electrons
-    (electrons), electrons and muons (leptons), or electrons, muons and the
-    u, d, s quarks (light_fermions) massless, at the massless
+    YFS: VIRTUAL_MASSIFICATION (off, electrons, leptons, light_fermions,
+    light_fermions_charm; default off). The one-loop provider is called with
+    the external electrons (electrons), electrons and muons (leptons),
+    electrons, muons and the u, d, s quarks (light_fermions), or those and c
+    (light_fermions_charm) massless, at the massless
     image of the event's point, and the small-mass amplitude is rebuilt with
     the per-leg massification factor (Penin; Mitov, Moch; Becher, Melnikov;
     Engel, Gnendiger, Signer, Ulrich 1811.06461), at the |M|^2 level
@@ -84,6 +85,10 @@ namespace YFS {
     long m_n, m_nforward, m_ndeadcone;
     long m_ne2bad = 0;
     double m_e2worst = 0.;
+    //! the provider takes the small-mass limit itself (Recola light fermions):
+    //! the massless image is still passed (its light fermions are massless
+    //! kinematically), but no Z factor and no double-pole check
+    bool m_native = false;
   };
 
 }

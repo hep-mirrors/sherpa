@@ -114,6 +114,13 @@ namespace PHASIC {
       False: the provider keeps the masses, the caller must not massify.
     */
     virtual bool MasslessLegConstant(double &c) const { return false; }
+    /*!
+      True if this provider itself evaluates f in the small-mass limit (the
+      mass kept in the collinear logarithms only, Recola's light fermions),
+      which at one loop is what massification rebuilds: the caller then
+      leaves f massive at the provider and adds no Z factor.
+    */
+    virtual bool SmallMassLimit(const ATOOLS::Flavour &f) const { return false; }
 
     static Virtual_ME2_Base* GetME2(const PHASIC::Process_Info& pi);
     static Virtual_ME2_Base* GetME2(const std::string& tag,

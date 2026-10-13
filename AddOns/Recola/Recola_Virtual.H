@@ -39,6 +39,9 @@ namespace Recola {
                             std::vector<std::vector<int> > &hel);
 
     bool IsMappableTo(const PHASIC::Process_Info& pi);
+    //! Recola's light fermions: massive below RECOLA_LIGHT_FERMION_THRESHOLD,
+    //! the mass in the collinear logarithms only
+    bool SmallMassLimit(const ATOOLS::Flavour &f) const;
     
   };
 

@@ -116,6 +116,12 @@ bool Recola::Recola_Virtual::IsMappableTo(const PHASIC::Process_Info& pi){
   return false;
 }
 
+bool Recola::Recola_Virtual::SmallMassLimit(const ATOOLS::Flavour &f) const
+{
+  return f.IsFermion() && f.Mass() > 0. &&
+    f.Mass() < Recola_Interface::LightFermionThreshold();
+}
+
 using namespace Recola;
 
 DECLARE_VIRTUALME2_GETTER(Recola::Recola_Virtual,"Recola_Virtual")

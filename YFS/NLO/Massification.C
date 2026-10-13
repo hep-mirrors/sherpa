@@ -46,6 +46,9 @@ namespace {
     case virtmassif::leptons:        return kf == kf_e || kf == kf_mu;
     case virtmassif::light_fermions: return kf == kf_e || kf == kf_mu ||
                                             kf == kf_u || kf == kf_d || kf == kf_s;
+    case virtmassif::light_fermions_charm:
+                                     return kf == kf_e || kf == kf_mu || kf == kf_u ||
+                                            kf == kf_d || kf == kf_s || kf == kf_c;
     }
     return false;
   }
@@ -73,6 +76,20 @@ Massification::Massification(const Flavour_Vector &flavs, const std::string &wha
     m_legs.push_back(i);
     m_provmass[i] = 0.;
     PHASIC::Virtual_ME2_Base::AddMasslessLoopSpecies(kf);
+  }
+  // light_fermions(_charm): every species of the mode massless at the
+  // provider from the first process on, external or not. OpenLoops masses are
+  // global and fixed once a process is registered, so in a multi-process card
+  // a later process cannot add its species; and a closed c loop needs the
+  // massless-c library even where c is not external.
+  static bool s_registered(false);
+  const virtmassif::code mode(Mode());
+  if (!s_registered && (mode == virtmassif::light_fermions ||
+                        mode == virtmassif::light_fermions_charm)) {
+    for (const kf_code kf : {kf_e, kf_mu, kf_u, kf_d, kf_s, kf_c})
+      if (Massified(kf, mode) && Flavour(kf).Mass() > 0.)
+        PHASIC::Virtual_ME2_Base::AddMasslessLoopSpecies(kf);
+    s_registered = true;
   }
 }
 
@@ -102,11 +119,32 @@ void Massification::Report()
 void Massification::Attach(const PHASIC::Virtual_ME2_Base *me)
 {
   if (m_legs.empty()) return;
+  if (me && !me->MasslessLegConstant(m_c)) {
+    // a provider with its own small-mass limit (Recola's light fermions): the
+    // same at one loop. Its light fermions are massless KINEMATICALLY (Recola
+    // rescales massive momenta onto them and breaks momentum conservation:
+    // wwpilot2, 2026-10-10), so the massless image is still passed, but the
+    // mass logarithms are the provider's: no Z factor
+    bool native(true);
+    for (const size_t i : m_legs) native = native && me->SmallMassLimit(m_flavs[i]);
+    if (native) {
+      m_native = true;
+      static bool s_told(false);
+      if (!s_told) {
+        msg_Info()<<"YFS: VIRTUAL_MASSIFICATION: the provider evaluates the light"
+                  <<" fermions in its own small-mass limit (Recola light fermions,"
+                  <<" RECOLA_LIGHT_FERMION_THRESHOLD); no Z factor there\n";
+        s_told = true;
+      }
+      return;
+    }
+  }
   if (!me || !me->MasslessLegConstant(m_c))
     THROW(fatal_error, "YFS: VIRTUAL_MASSIFICATION: the " + m_what +
           " loop provider keeps the lepton masses (only OpenLoops implements"
-          " it; Recola treats fermions below RECOLA_LIGHT_FERMION_THRESHOLD"
-          " as light, mass in the logs only - the same at one loop)");
+          " it; for Recola set RECOLA_LIGHT_FERMION_THRESHOLD above the"
+          " massified masses: light fermions, mass in the logs only - the"
+          " same at one loop)");
   msg_Debugging()<<"YFS: VIRTUAL_MASSIFICATION ("<<m_what<<"): "<<m_legs.size()
             <<" massless legs, provider constant "<<m_c<<" per leg\n";
 }
@@ -153,6 +191,7 @@ Vec4D_Vector Massification::MasslessImage(const Vec4D_Vector &p) const
 double Massification::Z(const double muir2) const
 {
   // per leg Q^2 [L^2 + L + 4 + zeta2 + c] in alpha/4pi; /2 for alpha/2pi
+  if (m_native) return 0.;
   double z(0.);
   for (const size_t i : m_legs) {
     const double L(log(muir2/sqr(m_flavs[i].Mass())));
@@ -163,6 +202,7 @@ double Massification::Z(const double muir2) const
 
 double Massification::ZPole1(const double muir2) const
 {
+  if (m_native) return 0.;
   double z(0.);
   for (const size_t i : m_legs)
     z += sqr(m_flavs[i].Charge())*(2.*log(muir2/sqr(m_flavs[i].Mass())) + 1.);
@@ -171,6 +211,7 @@ double Massification::ZPole1(const double muir2) const
 
 double Massification::ZPole2() const
 {
+  if (m_native) return 0.;
   double z(0.);
   for (const size_t i : m_legs) z += sqr(m_flavs[i].Charge());
   return z;
@@ -178,7 +219,7 @@ double Massification::ZPole2() const
 
 void Massification::CheckDoublePole(const double providere2)
 {
-  if (m_legs.empty()) return;
+  if (m_legs.empty() || m_native) return;
   const double z(ZPole2());
   const double rel(std::abs(providere2 + z)/Max(std::abs(providere2), std::abs(z)));
   if (!(rel < s_double_pole_tolerance)) {

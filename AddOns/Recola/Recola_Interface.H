@@ -73,6 +73,8 @@ namespace Recola {
 
     //! Is POLARIZATIONS: PV_ASYMMETRY switched on?
     static bool   PolarisedOn()   { return s_polarised; }
+    //! RECOLA_LIGHT_FERMION_THRESHOLD: fermions lighter than this are light
+    static double LightFermionThreshold() { return s_light_fermion_threshold; }
     //! Born and one-loop-corrected PV asymmetry ratios from the last evaluation.
     static bool   PVAsymValid()   { return s_pvasym_valid; }
     static double PVAsymLO()      { return s_pvasym_lo; }
