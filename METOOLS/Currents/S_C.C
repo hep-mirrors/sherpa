@@ -219,3 +219,43 @@ PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"scalar current (double)";
 }
+
+// YFS: COMIX_STABLE_PROPAGATORS -- see METOOLS/Currents/YFS_Stable_Current.H
+#include "METOOLS/Currents/YFS_Stable_Current.H"
+
+namespace METOOLS {
+
+  //! The scalar current of the YFS real-emission processes: p^2 from StableLine.
+  template <typename SType>
+  class CS_YFS: public CS<SType>, public YFS_Stable_Current {
+  public:
+    CS_YFS(const Current_Key &key): CS<SType>(key) {}
+    void AddPropagator() override
+    {
+      typedef ATOOLS::DDouble DD;
+      DD p2; ATOOLS::Vec4<DD> ph; bool shifted(false);
+      if (!this->StableLine(*this,p2,ph,shifted)) { CS<SType>::AddPropagator(); return; }
+      const DD p2o(this->m_p2);
+      const bool sho(this->m_haveshift);
+      this->m_p2=p2; this->m_haveshift=false;
+      CS<SType>::AddPropagator();
+      this->m_p2=p2o; this->m_haveshift=sho;
+    }
+  };// end of class CS_YFS
+
+}// end of namespace METOOLS
+
+DECLARE_GETTER(CS_YFS<double>,"YS",Current,Current_Key);
+
+Current *ATOOLS::Getter<Current,Current_Key,CS_YFS<double> >::
+operator()(const Current_Key &key) const
+{
+  if (key.m_fl.IsScalar()) return new CS_YFS<double>(key);
+  return NULL;
+}
+
+void ATOOLS::Getter<Current,Current_Key,CS_YFS<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"scalar current, YFS stable propagators (double)";
+}

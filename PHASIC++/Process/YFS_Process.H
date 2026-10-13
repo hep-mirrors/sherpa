@@ -88,6 +88,9 @@ namespace PHASIC {
     //! and p_yfsrealreal). Populated up to YFS: NLO_MAX_PHOTONS.
     std::vector<YFS::Real_Correction*> m_yfsrealn;
     std::vector<Process_Base*>         m_realnprocs;
+    //! one-loop providers with n >= 2 photons (ACRAIC: LOOP_BETA_MAX)
+    std::vector<YFS::RealVirtual*>      m_yfsrealvirtn;
+    std::vector<Process_Base*>         m_realvirtnprocs;
     YFS::VirtualVirtual *p_yfsvv;
 
     //! Make this process the one the shared YFS handler is configured for.

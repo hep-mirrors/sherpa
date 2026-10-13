@@ -117,6 +117,8 @@ bool COMIX::Single_Process::Initialize
   p_model->GetCouplings(m_cpls);
   p_bg = new Amplitude();
   p_bg->SetCTS(p_cts);
+  // YFS: COMIX_STABLE_PROPAGATORS: the real-emission processes YFS marks
+  if (m_pinfo.m_special.find("YFSStable")!=std::string::npos) p_bg->SetYFSStable(true);
   double isf(m_pinfo.m_ii.ISSymmetryFactor());
   double fsf(m_pinfo.m_fi.FSSymmetryFactor());
   Subprocess_Info info(m_pinfo.m_ii);

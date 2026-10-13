@@ -102,8 +102,7 @@ void Amplitude::CleanUp()
 Current *Amplitude::CopyCurrent(Current *const c)
 {
   Current_Key ckey(c->Flav(),p_model,c->Id().size());
-  Current *cur(Current_Getter::GetObject
-	       (std::string(1,m_pmode)+ckey.Type(),ckey));
+  Current *cur(NewCurrent(ckey));
   if (cur==NULL) return NULL;
   cur->SetDirection(c->Direction());
   cur->SetCut(c->Cut());
@@ -426,8 +425,7 @@ Vertex *Amplitude::AddCurrent
     else {
       if (vkey.p_c->Order().size() ||
 	  vkey.p_c->NTChannel()>0 || vkey.p_c->Sub()!=sub)
-	vkey.p_c=Current_Getter::GetObject
-	  (std::string(1,m_pmode)+ckey.Type(),ckey);
+	vkey.p_c=NewCurrent(ckey);
       if (n<m_n-1) {
 	if (dec!=0) {
 	  vkey.p_c->SetCut(m_decid[dec-1]->m_nmax);
@@ -464,8 +462,7 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
   for (size_t i(0);i<ids.size();++i) cid|=1<<ids[i];
   std::map<std::string,Current*> curs;
   Current_Key ckey(dir>0?fl.Bar():fl,p_model,ids.size());
-  Current *cur(Current_Getter::GetObject
-	       (std::string(1,m_pmode)+ckey.Type(),ckey));
+  Current *cur(NewCurrent(ckey));
   if (cur==NULL) return;
   cur->SetDirection(dir);
   if (dec!=0) {
@@ -1315,6 +1312,92 @@ void Amplitude::ProjectWideMomenta()
   }
 }
 
+/*!
+  The current for a key: a "Y" current (YFS_Stable_Current.H) when YFS asked
+  for stable propagators and one exists for the type, else the usual one.
+*/
+Current *Amplitude::NewCurrent(const Current_Key &key) const
+{
+  if (m_yfsstable) {
+    Current *cur(Current_Getter::GetObject("Y"+key.Type(),key));
+    if (cur) return cur;
+  }
+  return Current_Getter::GetObject(std::string(1,m_pmode)+key.Type(),key);
+}
+
+/*!
+  YFS: COMIX_STABLE_PROPAGATORS: s_ab = 2 p_a.p_b of the external momenta
+  (all outgoing, m_p) without cancellation, arXiv:2406.07671 eqs. (1)-(5):
+  each momentum on its nominal mass shell with the direction its components
+  give, p = (p0, pbar v), pbar = p0 sqrt(1 - m^2/p0^2) (signed, so a crossed
+  incoming leg keeps its physical direction v), and
+
+    2 p.k = 2 p0 k0 (mu_p^2 + mu_k^2 - mu_p^2 mu_k^2)
+              / (1 + sqrt(1 - mu_p^2) sqrt(1 - mu_k^2))
+            + pbar kbar (v_p - v_k)^2 ,       mu^2 = m^2/p0^2 .
+
+  The small components of a nearly collinear pair, which the double momenta
+  hold to full relative precision, enter only through v_p - v_k.
+*/
+void Amplitude::FillInvariants()
+{
+  typedef ATOOLS::DDouble DD;
+  m_inv.m_valid=false;
+  if (!m_yfsstable) return;
+  if (!m_subs.empty() || m_n>8*sizeof(size_t)-1) {
+    static bool warned(false);
+    if (!warned) {
+      warned=true;
+      msg_Info()<<METHOD<<"(): YFS stable propagators not applied to an amplitude with "
+                <<m_subs.size()<<" subtraction terms / "<<m_n<<" legs\n";
+    }
+    return;
+  }
+  if (!m_invattached) {
+    size_t nyfs(0);
+    for (size_t l(0);l<m_cur.size();++l)
+      for (size_t i(0);i<m_cur[l].size();++i)
+        if (METOOLS::YFS_Stable_Current *y=dynamic_cast<METOOLS::YFS_Stable_Current*>(m_cur[l][i])) {
+          y->SetInvariantTable(&m_inv); ++nyfs;
+        }
+    m_invattached=true;
+    msg_Info()<<METHOD<<"(): YFS stable propagators on "<<nyfs<<" currents ("<<m_n<<" legs)\n";
+  }
+  const size_t n(m_n);
+  m_inv.m_n=n;
+  m_inv.m_m2.assign(n,DD(0.0));
+  m_inv.m_s.assign(n*n,DD(0.0));
+  m_inv.m_p.assign(m_p.begin(),m_p.begin()+n);
+  m_inv.m_R=Vec4D();
+  double emax(0.);
+  for (size_t a(0);a<n;++a) { m_inv.m_R+=m_p[a]; emax=std::max(emax,std::abs(m_p[a][0])); }
+  // balanced: to well below the smallest photon the partition legs omit
+  m_inv.m_tol=1.0e-9*emax;
+  std::vector<DD> p0(n), pb(n), mu2(n), sq(n);
+  std::vector<ATOOLS::Vec4<DD> > v(n);
+  for (size_t a(0);a<n;++a) {
+    const DD m(m_cur[1][a]->Mass());
+    m_inv.m_m2[a]=m*m;
+    p0[a]=DD(m_p[a][0]);
+    mu2[a]=p0[a]!=DD(0.0)?m_inv.m_m2[a]/(p0[a]*p0[a]):DD(0.0);
+    sq[a]=sqrt(DD(1.0)-mu2[a]);
+    pb[a]=p0[a]*sq[a];
+    const DD x(m_p[a][1]), y(m_p[a][2]), z(m_p[a][3]);
+    const DD r(sqrt(x*x+y*y+z*z));
+    // physical direction: the crossed (negative-energy) legs flip back
+    const DD f(r==DD(0.0)?DD(0.0):(p0[a]<DD(0.0)?-DD(1.0):DD(1.0))/r);
+    v[a]=ATOOLS::Vec4<DD>(DD(0.0),x*f,y*f,z*f);
+  }
+  for (size_t a(0);a<n;++a)
+    for (size_t b(a+1);b<n;++b) {
+      const DD dvx(v[a][1]-v[b][1]), dvy(v[a][2]-v[b][2]), dvz(v[a][3]-v[b][3]);
+      const DD mass(DD(2.0)*p0[a]*p0[b]*(mu2[a]+mu2[b]-mu2[a]*mu2[b])
+                    /(DD(1.0)+sq[a]*sq[b]));
+      m_inv.m_s[a*n+b]=mass+pb[a]*pb[b]*(dvx*dvx+dvy*dvy+dvz*dvz);
+    }
+  m_inv.m_valid=true;
+}
+
 bool Amplitude::SetMomenta(const Vec4D_Vector &moms)
 {
 #ifdef DEBUG__BG
@@ -1338,6 +1421,7 @@ bool Amplitude::SetMomenta(const Vec4D_Vector &moms)
   ProjectWideMomenta();
   for (size_t i(0);i<m_n && i<m_cur[1].size();++i)
     m_cur[1][i]->SetPWideExt(m_pw[i]);
+  FillInvariants();
   if (m_subs.empty()) return true;
   p_dinfo->SetStat(1);
   for (size_t i(0);i<m_cur[1].size();++i) m_cur[1][i]->SetP(m_p[i]);

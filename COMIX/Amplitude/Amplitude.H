@@ -1,6 +1,7 @@
 #ifndef COMIX_Amplitude_Amplitude_H
 #define COMIX_Amplitude_Amplitude_H
 
+#include "METOOLS/Currents/YFS_Stable_Current.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
@@ -86,6 +87,12 @@ namespace COMIX {
     ATOOLS::Vec4D_Vector   m_p;
     
     std::vector<ATOOLS::Vec4<ATOOLS::DDouble> > m_pw;
+    // YFS: COMIX_STABLE_PROPAGATORS (YFS_Stable_Current.H): "Y" currents
+    // and their invariant table, for the processes YFS marks YFSStable
+    METOOLS::Invariant_Table m_inv;
+    bool m_yfsstable=false, m_invattached=false;
+    void FillInvariants();
+    METOOLS::Current *NewCurrent(const METOOLS::Current_Key &key) const;
 
     ATOOLS::DecayInfo_Vector m_decid;
 
@@ -366,6 +373,8 @@ namespace COMIX {
     inline const ATOOLS::Flavour_Vector &Flavours() const { return m_fl; }
 
     inline const Current_Matrix &Currents() const { return m_cur; }
+    // before Initialize: build the YFS stable-propagator currents
+    inline void SetYFSStable(const bool on) { m_yfsstable=on; }
 
     inline void SetDecayInfos(const ATOOLS::DecayInfo_Vector &id) 
     { m_decid=id; m_dec=m_decid.size(); }

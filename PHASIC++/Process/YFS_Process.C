@@ -250,6 +250,44 @@ void YFS_Process::Init(const Process_Info &pi,
       msg_Info()<<METHOD<<"(): built the "<<n<<"-photon real correction.\n";
     }
   }
+  if (pi.Has(nlo_type::rvirt)) {
+    /*
+      ACRAIC: LOOP_BETA_MAX >= 2: the one-loop amplitude with n real photons,
+      by the same recipe (RealVirtual takes the photons from the
+      Process_Info and adds the loop order itself). Its process is for the
+      NLO cuts only; the value comes from RV_Generator (Recola in practice:
+      OpenLoops has no e+e- -> f fbar gamma gamma loop library).
+    */
+    const size_t nl(YFS::NLO_Base::RequestedMaxLoopPhotons());
+    m_yfsrealvirtn.resize(nl+1, NULL);
+    m_realvirtnprocs.resize(nl+1, NULL);
+    for (size_t n(2); n <= nl; ++n) {
+      Process_Info npi(pi);
+      for (size_t i(0); i < pi.m_fi.m_nlocpl.size(); ++i) {
+        npi.m_maxcpl[i] += n * npi.m_fi.m_nlocpl[i];
+        npi.m_mincpl[i] += n * npi.m_fi.m_nlocpl[i];
+      }
+      for (size_t j(0); j < n; ++j)
+        npi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
+      // the cuts process: the n-photon tree the double real (n = 2) or the
+      // real-n providers (n >= 3) already built, so that no new process is
+      // initialised - a new Comix process consumes random numbers and moved
+      // every later event (LOOP_BETA_MAX 2 vs 1 not bit-identical, 2026-10-10)
+      Process_Base *proc(n == 2 ? p_realrealproc
+                         : (n < m_realnprocs.size() ? m_realnprocs[n] : NULL));
+      const bool own(proc == NULL);
+      if (own) proc = InitProcess(npi, nlo_type::real, false);
+      if (proc == NULL)
+        THROW(fatal_error, "ACRAIC: LOOP_BETA_MAX "+ToString(nl)+": could not build the "
+              +ToString(n)+"-photon process for the one-loop provider's cuts.");
+      if (own) proc->SetParent(this);
+      m_realvirtnprocs[n] = proc;
+      m_yfsrealvirtn[n] = new YFS::RealVirtual(npi);   // throws if no provider
+      m_yfsrealvirtn[n]->SetProc(proc);
+      msg_Info()<<METHOD<<"(): built the "<<n<<"-photon one-loop provider ("
+                <<m_yfsrealvirtn[n]->ActiveGenName()<<").\n";
+    }
+  }
   if(pi.Has(nlo_type::vv)) {
     Process_Info vvpi(pi);
     for(size_t i=0;  i < pi.m_fi.m_nlocpl.size(); ++i)
@@ -287,6 +325,8 @@ void YFS_Process::MakeActive()
   p_yfs->SetAcraicProcs(p_bornproc, p_realproc);
   for (size_t n(3); n < m_yfsrealn.size(); ++n)
     p_yfs->EnsureNLO()->SetRealProvider(n, m_yfsrealn[n]);
+  for (size_t n(2); n < m_yfsrealvirtn.size(); ++n)
+    p_yfs->EnsureNLO()->SetRealVirtualProvider(n, m_yfsrealvirtn[n]);
   p_yfs->SetNoBorn(m_noborn);
 }
 
@@ -296,6 +336,15 @@ Process_Base* YFS_Process::InitProcess
 {
   Process_Info cpi(pi);
   cpi.m_fi.SetNLOType(nlotype);
+  /*
+    YFS: COMIX_STABLE_PROPAGATORS: the real-emission processes get Comix
+    currents whose propagators take their p^2 from cancellation-free external
+    invariants (METOOLS/Currents/YFS_Stable_Current.H, arXiv:2406.07671).
+    Default off: every process is then built exactly as before.
+  */
+  static const bool stable(Settings::GetMainSettings()["YFS"]
+                           ["COMIX_STABLE_PROPAGATORS"].SetDefault(false).Get<bool>());
+  if (stable && nlotype==nlo_type::real) cpi.m_special+=" YFSStable";
   Process_Base* proc = m_gens.InitializeProcess(cpi, false);
   if (!proc)
   {
@@ -323,6 +372,16 @@ bool YFS_Process::CalculateTotalXSec(const std::string &resultpath,
              // << m_name << "' (" << (p_gen ? p_gen->Name() : "") << ")" << std::endl;
              << m_name <<  std::endl;
   double totalxsborn(psh->Integrate() / rpa->Picobarn());
+  // With YFS: Integrate_NLO false (default) CalculateBeta() returns at once
+  // while integrating, so the number above is crude x e^Y (the YFS.LO level):
+  // no ACRAIC or YFS.NLO correction. Say so next to it.
+  if (p_yfs && p_yfs->Mode() != YFS::yfsmode::off && !p_yfs->IntegrateNLO())
+    msg_Info()<<METHOD<<"(): YFS: this integrated cross section is the crude "
+              <<"YFS level (crude x e^Y) without the ACRAIC / YFS.NLO "
+              <<"correction, which is applied in event generation "
+              <<"(YFS: Integrate_NLO false). The corrected cross section is "
+              <<"the mean event weight of the generated events."
+              <<std::endl;
   if (!IsEqual(totalxsborn, p_int->TotalResult())) {
     msg_Error() << "Result of PS-Integrator and summation do not coincide!\n"
                 << "  '" << m_name << "': " << totalxsborn

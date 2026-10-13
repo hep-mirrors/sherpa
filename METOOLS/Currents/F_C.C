@@ -342,3 +342,61 @@ PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"fermion current (double)";
 }
+
+// YFS: COMIX_STABLE_PROPAGATORS -- see METOOLS/Currents/YFS_Stable_Current.H
+#include "METOOLS/Currents/YFS_Stable_Current.H"
+
+namespace METOOLS {
+
+  /*!
+    The fermion current of the YFS real-emission processes: CF with the
+    propagator's p^2 and, for a shifted line, its momentum from
+    YFS_Stable_Current::StableLine. The small light-cone component of a
+    shifted line is recovered from p+ p- = p^2 + pT^2. The base class does
+    the rest; its state is restored afterwards.
+  */
+  template <typename SType>
+  class CF_YFS: public CF<SType>, public YFS_Stable_Current {
+  public:
+    CF_YFS(const Current_Key &key): CF<SType>(key) {}
+    void AddPropagator() override
+    {
+      typedef ATOOLS::DDouble DD;
+      DD p2; ATOOLS::Vec4<DD> ph; bool shifted(false);
+      if (!this->StableLine(*this,p2,ph,shifted)) { CF<SType>::AddPropagator(); return; }
+      if (shifted) {
+        const size_t r1(ATOOLS::Spinor<SType>::R1()), r2(ATOOLS::Spinor<SType>::R2()),
+                     r3(ATOOLS::Spinor<SType>::R3());
+        DD pp(ph[0]+ph[r3]), pm(ph[0]-ph[r3]);
+        const DD pt2(ph[r1]*ph[r1]+ph[r2]*ph[r2]);
+        if (abs(pp)>abs(pm)) { if (pp!=DD(0.0)) pm=(p2+pt2)/pp; }
+        else                 { if (pm!=DD(0.0)) pp=(p2+pt2)/pm; }
+        DD c[4]={ph[0],ph[1],ph[2],ph[3]};
+        c[0]=DD(0.5)*(pp+pm); c[r3]=DD(0.5)*(pp-pm);
+        ph=ATOOLS::Vec4<DD>(c[0],c[1],c[2],c[3]);
+      }
+      const DD p2o(this->m_p2);
+      const ATOOLS::Vec4<DD> pho(this->m_ph);
+      const bool sho(this->m_haveshift);
+      this->m_p2=p2; this->m_ph=ph; this->m_haveshift=false;
+      CF<SType>::AddPropagator();
+      this->m_p2=p2o; this->m_ph=pho; this->m_haveshift=sho;
+    }
+  };// end of class CF_YFS
+
+}// end of namespace METOOLS
+
+DECLARE_GETTER(CF_YFS<double>,"YF",Current,Current_Key);
+
+Current *ATOOLS::Getter<Current,Current_Key,CF_YFS<double> >::
+operator()(const Current_Key &key) const
+{
+  if (key.m_fl.IsFermion()) return new CF_YFS<double>(key);
+  return NULL;
+}
+
+void ATOOLS::Getter<Current,Current_Key,CF_YFS<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"fermion current, YFS stable propagators (double)";
+}

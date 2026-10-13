@@ -378,3 +378,72 @@ PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"vector current (double)";
 }
+
+// YFS: COMIX_STABLE_PROPAGATORS -- see METOOLS/Currents/YFS_Stable_Current.H
+#include "METOOLS/Currents/YFS_Stable_Current.H"
+
+namespace METOOLS {
+
+  /*!
+    The vector current of the YFS real-emission processes: the pole of a
+    shifted line from YFS_Stable_Current::StableLine, and the current's own
+    p^2 (for the projection, and the pole of an unshifted line) from the
+    invariant table. The base class does the rest; its state is restored.
+  */
+  template <typename SType>
+  class CV_YFS: public CV<SType>, public YFS_Stable_Current {
+  public:
+    typedef typename CV<SType>::SComplex SComplex;
+    typedef typename CV<SType>::Vec4Type Vec4Type;
+    typedef typename CV<SType>::CVec4Type CVec4Type;
+    typedef typename CV<SType>::CVec4Type_Vector CVec4Type_Vector;
+    CV_YFS(const Current_Key &key): CV<SType>(key) {}
+    // CV::AddPropagator with p^2 (projection, unshifted pole) from the table
+    // and the shifted pole from StableLine
+    void AddPropagator() override
+    {
+      typedef ATOOLS::DDouble DD;
+      DD p2s; ATOOLS::Vec4<DD> ph; bool shifted(false);
+      if (!this->StableLine(*this,p2s,ph,shifted)) { CV<SType>::AddPropagator(); return; }
+      const SComplex p2(SType((double)p_inv->Virtuality(this->m_cid)));
+      const SComplex pp2(this->m_p2prop > 0.0 ? SComplex(SType(this->m_p2prop))
+                         : shifted ? SComplex(SType((double)p2s)) : p2);
+      SComplex prop(-M_I/(pp2-this->m_cmass2));
+      if (this->m_resexp != 0.0) {
+        const SComplex il(SType(this->m_resexp)*log((this->m_cmass2-pp2)/this->m_cmass2));
+        prop*=(this->m_reslinear ? SComplex(SType(1.0))+il : exp(il));
+      }
+      if (this->m_osd) prop=SComplex(M_I);
+      if (this->m_propveto) prop=SComplex(SType(0.0));
+      for (size_t i(0);i<this->m_j.size();++i) {
+        CVec4Type_Vector *j(this->m_j[i].template Get<CVec4Type>());
+        if (!this->m_fl.IsGluon()) {
+          if (!this->m_msv)
+            for (typename CVec4Type_Vector::iterator jit(j->begin());jit!=j->end();++jit)
+              **jit-=(**jit*Vec4Type(this->m_p))*CVec4Type(this->m_p)/p2;
+          else
+            for (typename CVec4Type_Vector::iterator jit(j->begin());jit!=j->end();++jit)
+              **jit-=(**jit*Vec4Type(this->m_p))*CVec4Type(this->m_p)/this->m_cmass2;
+        }
+        for (typename CVec4Type_Vector::iterator jit(j->begin());jit!=j->end();++jit)
+          **jit*=prop;
+      }
+    }
+  };// end of class CV_YFS
+
+}// end of namespace METOOLS
+
+DECLARE_GETTER(CV_YFS<double>,"YV",Current,Current_Key);
+
+Current *ATOOLS::Getter<Current,Current_Key,CV_YFS<double> >::
+operator()(const Current_Key &key) const
+{
+  if (key.m_fl.IsVector()) return new CV_YFS<double>(key);
+  return NULL;
+}
+
+void ATOOLS::Getter<Current,Current_Key,CV_YFS<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"vector current, YFS stable propagators (double)";
+}
