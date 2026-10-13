@@ -27,6 +27,7 @@ namespace YFS {
   class Real_Correction;
   struct VP_Factors;  // YFS/Main/Dyson_VP.H
   struct RVHelicityFactors;  // YFS/NLO/NLO_Base.H
+  struct LoopNHelicityFactors;  // YFS/NLO/NLO_Base.H
 
   typedef std::map<int,double> HelicityMap;
   typedef complex<double> dcmplx;
@@ -36,7 +37,7 @@ namespace YFS {
 
     Acraic_Base(const Flavour_Vector &flavs);
     virtual ~Acraic_Base() { ReportBornShape(); ReportComixReal(); ReportBeta2(); ReportLoopHelicity();
-                             ReportRealVirtualHelicity(); }
+                             ReportRealVirtualHelicity(); ReportLoopN(); ReportTnp(); }
 
     Flavour_Vector m_flavs;
     //! Sherpa processes supplying the Born and one-photon real spin amplitudes
@@ -69,8 +70,15 @@ namespace YFS {
     bool m_hasvirtual = false;
     inline void SetHasVirtual(bool h) { m_hasvirtual = h; }
    
+    //! YFS: ACRAIC_Virtual auto resolved to ACRAIC's own for the current
+    //! process (V requested, no external loop provider); set by YFS_Handler
+    bool m_autoownvirtual = false;
+    inline void SetAutoOwnVirtual(bool o) { m_autoownvirtual = o; }
+    inline bool IsFFbar() const { return m_ffbar; }
     inline bool AcraicOwnVirtual() const
-    { return m_hasvirtual && m_acraicvirtsrc == acraicvirt::acraic; }
+    { return m_hasvirtual && (m_acraicvirtsrc == acraicvirt::acraic ||
+                              (m_acraicvirtsrc == acraicvirt::automatic &&
+                               m_autoownvirtual)); }
 
     std::vector<YFS::Real_Correction*> m_realprov;
     //! not owned; for MapMomenta (beta_1(k_j) without the other photons)
@@ -262,7 +270,8 @@ namespace YFS {
     //! ACRAIC: RESONANCE_EXPONENTIATION_PROBE: stage invariants per partition
     void ResonanceProbe(int partition) const;
     //! the reduced legs as leg shift entries for the exchange lines (TCHANNEL_SHIFT)
-    void AddExchangeLineShifts(int iphot, PropShifts &sh) const;
+    void AddExchangeLineShifts(int iphot, PropShifts &sh,
+                               const ATOOLS::Vec4D_Vector *base = NULL) const;
     //! ACRAIC: TCHANNEL_SHIFT: 1 on, 0 off, -1 (default) on for 2 -> 2 only
     bool ExchangeLineShiftsOn() const;
     //! whether the Born has a space-like exchange line (TCHANNEL_REDUCED_BORN -1)
@@ -285,6 +294,16 @@ namespace YFS {
     bool TchannelMultiphotonActive() const
     { return m_redborn && m_allphotons.size() >= 2
              && TchannelMultiphotonMode() != tchmultiphoton::partition_legs; }
+    //! ACRAIC: BETA1_DRESSED_FSR: the final stage's two legs with that
+    //! stage's photons other than iphot absorbed (iphot < 0: all of them)
+    bool DressedStageLegs(int stage, int iphot, ATOOLS::Vec4D_Vector &legs) const;
+    //! ACRAIC: BETA1_DRESSED_FSR: StageShifts with stage `dressed` shifted by
+    //! `dshift` only (its other photons are inside the dressed legs), and the
+    //! space-like lines placed against `base`
+    PropShifts DressedStageShifts(int iphot, int dressed, const ATOOLS::Vec4D &dshift,
+                                  const ATOOLS::Vec4D_Vector &base) const;
+    bool Beta1DressedFsr() const;
+    long m_dressfail = 0;
     //! photon iphot's one-photon point (TCHANNEL_MULTIPHOTON >= 1)
     bool OnePhotonScaledLegs(int iphot, ATOOLS::Vec4D_Vector &legs,
                              ATOOLS::Vec4D &kpt) const;
@@ -394,6 +413,28 @@ namespace YFS {
     Amplitude  m_AmpBornOnly;
     double     m_resultbo = 0., m_incbo = 0.;
     Amplitude  m_AmpBornReal;
+    //! ACRAIC: TNP_STREAMS classes (see TnpTemplates)
+    enum TnpClass { tnp_b0 = 0, tnp_isr, tnp_fsr, tnp_multi,
+                    tnp_b2i, tnp_b2f, tnp_b2m, tnp_nclass };
+    //! ACRAIC: TNP_STREAMS - the class-tagged parts of A_1 and of the beta_2 sum
+    bool       m_tnp = false;
+    Amplitude  m_tnpamp[tnp_nclass];
+    //! sum over every added term of |term|, per helicity: the rounding scale
+    double     m_tnpabs[Amplitude::s_maxhel] = {};
+    inline void TnpAdd(int c, int f, const Complex &a)
+    { if (m_tnp) { m_tnpamp[c].m_A[f] += a; m_tnpabs[f] += std::abs(a); } }
+    //! isr for the production stage, fsr for every other stage
+    inline int TnpStageClass(int stage) const
+    { return stage == m_initstage ? tnp_isr : tnp_fsr; }
+    //! a photon's class: that of its larger stage eikonal, in every partition
+    int TnpPhotonClass(size_t iphot, bool fixed) const;
+    //! a beta_2 photon set: all initial, all final, or mixed
+    int TnpSetClass(const std::vector<int> &photons) const;
+    //! closure of the tagging: worst |sum_c B_c - A|/|A| and its count
+    mutable double m_tnpworst = 0.;
+    mutable long   m_tnpn = 0, m_tnpbad = 0;
+    mutable double m_tnpworstterm = 0.;
+    mutable long   m_tnpbadterm = 0;
 
     std::vector<Amplitude> m_realphot;
     //! ACRAIC: REAL_VIRTUAL 2: photon j's M_1 terms, partition summed
@@ -560,6 +601,10 @@ namespace YFS {
     //! sorted photon indices (tree residuals beta-hat_S)
     typedef std::vector<int> PhotonSet;
     int m_treebetamax = 1;            //!< ACRAIC: TREE_BETA_MAX resolved (1 or ORDER)
+    //! ACRAIC: LOOP_BETA_MAX / _PLACEMENT / _XCUT (one-loop N-photon matching)
+    int m_loopbetamax = 1;
+    loopbetaplace::code m_loopbetaplace = loopbetaplace::resonance_aware;
+    double m_loopbetaxcut = 0.05;
     int m_treebetacap = 0;            //!< this event's cap (providers, eligibility)
     std::map<PhotonSet, Amplitude> m_treebeta;   //!< this partition's beta_S, |S| >= 2
     std::vector<long> m_bnterms, m_bnamps;       //!< per |S|: terms, M_|S| evaluations
@@ -603,6 +648,15 @@ namespace YFS {
     bool ComixInfraredSubtracted_N_0(const PhotonSet &S);
     //! every beta_S of the current partition, 2 <= |S| <= cap, by size
     void AddTreeBetas(bool dobetan);
+    //! the event with only the photons of S, scaled as OnePhotonScaledLegs
+    //! (TCHANNEL_MULTIPHOTON factorised); kpt gets S's photons in order
+    bool SubsetScaledLegs(const PhotonSet &S, ATOOLS::Vec4D_Vector &legs,
+                          ATOOLS::Vec4D_Vector &kpt) const;
+    //! TCHANNEL_MULTIPHOTON factorised at ORDER 2: the pair terms, each from
+    //! M_2 at the pair's own scaled point (Acraic_Beta2.C)
+    void AddFactorisedBeta2();
+    //! beta_1(k_j) of this partition used photon j's one-photon point
+    std::vector<char> m_b2onept;
     //! the m = 0 and m = 1 rungs of the probe ladder for this partition
     void AddProbeLowOrders();
     //! @@@ BNCLOS: |A_N|^2 for N = 0..cap against |M_n|^2 (TREE_BETA_PROBE)
@@ -630,6 +684,32 @@ namespace YFS {
     //! Re<A_0, A_X>/4 and Re<A_0, A_v>/4 (ACRAIC: BETA0_2)
     inline double GetResult0X() const { return m_result0x; }
     inline double GetResult0V() const { return m_result0v; }
+    /*!
+      ACRAIC: TNP_STREAMS (Acraic_Tnp.C): theory-nuisance-parameter templates.
+      Every term of the coherent amplitude is tagged by the beta-hat class it
+      belongs to, so that A_1 = sum_c B_c (and the beta_2 sum likewise).
+      Rescaling one class, B_c -> (1 + eps) B_c, moves the weight by
+      eps T_c with T_c = 2 Re<B_c^F, F>/4, F the amplitude the nominal
+      squares; the T_c sum to 2|F|^2/4. Classes:
+        b0     the Born-level terms (soft products times the Born, own virtual)
+        isr    beta_1 of photons on the production stage
+        fsr    beta_1 of photons on any final (or decay) stage
+        multi  TCHANNEL_MULTIPHOTON factorised remainder (products of beta_1)
+        b2i, b2f, b2m  beta_2 sets with all photons initial, all final, mixed
+    */
+    //! TnpClass: declared with m_tnpamp above
+    static const char *TnpClassName(int c);
+    inline bool TnpOn() const { return m_tnp; }
+    /*!
+      The templates of the last event, per class, in |amplitude|^2/4 units
+      (divide by the crude as every rho). order 1: the O(alpha) composition
+      F = (1 + vhalf) A_1 (ACRAIC_O1V1, classes b0..multi); order 2: the
+      nominal ORDER 2 one, F = A_2 + vhalf A_v. False when the event has no
+      coherent amplitude (no templates).
+    */
+    bool TnpTemplates(int order, double vhalf, std::vector<double> &t) const;
+    //! end-of-run line: the per-event closure sum_c B_c = A_1, A_beta2
+    void ReportTnp() const;
     //! ACRAIC: REAL_VIRTUAL (Acraic_Base.C, RealVirtualMode)
     static acraicrv::code RealVirtualMode();
     //! ACRAIC: REAL_VIRTUAL 2: sum_j dv_j Re<A, M_1j>/4, A = A_1 (A_2 at
@@ -662,11 +742,51 @@ namespace YFS {
     void ReportRealVirtualHelicity();
     //! true when photon j carried an M_1 term in some partition
     bool PhotonHasM1(size_t j) const;
+    /*!
+      ACRAIC: LOOP_BETA_MAX 2 (Acraic_LoopN.C): per photon pair S = {j, l} the
+      partition sums of the two-photon tree and of the one-photon amplitudes
+      times the other photon's soft factor, filled by the beta_2 recursion,
+        P_S = sum_part W_S M_S,  Qa_S = sum_part W_S s_l M_1j,  Qb_S = ... s_j M_1l,
+      so that the one-loop residual beyond the factorisable and per-photon
+      real-virtual terms, X_S = (delta_S - delta_0) P_S - rem_j Qa_S - rem_l Qb_S,
+      is formed after the partition loop with partition-independent deltas
+      ("ratio" placement). rho += sum_S sum_h 2 Re[conj(A^h) X_S^h]/4.
+    */
+    std::map<std::vector<int>, Amplitude> m_lpP, m_lpQa, m_lpQb;
+    double LoopNRemainderRho(const std::vector<LoopNHelicityFactors> &pairs,
+                             const std::vector<std::vector<Complex> > &r1);
+    bool LoopNHelicityToAcraic(const LoopNHelicityFactors &f, int hela, int helb,
+                               std::vector<Complex> &d) const;
+    //! the same for any set: phel[q] the drawn helicity of the record's q-th photon
+    bool LoopNHelicityToAcraic(const LoopNHelicityFactors &f, const std::vector<int> &phel,
+                               std::vector<Complex> &d) const;
+    /*!
+      ACRAIC: LOOP_LADDER_PROBE (Acraic_LoopN.C): the one-loop analogue of
+      TREE_BETA_PROBE, on the physical legs without partitions or shifts.
+      The non-factorisable one-loop parts of the residuals,
+        rho_T = (delta_T - delta_0) M_T - sum_{U subset T} rho_U prod_{T\U} s ,
+      summed up to |T| <= J against the exact (delta_n - delta_0) M_n:
+        d_J = |sum_h 2 Re[conj(M_n) (L_J - (delta_n - delta_0) M_n)]| / sum_h |M_n|^2 ,
+      the error of the event's weight in units of its tree. J = 1 is
+      REAL_VIRTUAL helicity alone, J = n the closure.
+    */
+    void LoopLadderProbe(const std::vector<LoopNHelicityFactors> &pairs,
+                         const std::vector<std::vector<Complex> > &r1);
+    long   m_lpn_ev = 0, m_lpn_pairs = 0, m_lpn_nomatch = 0, m_lpn_nomap = 0;
+    double m_lpn_sum = 0., m_lpn_sum2 = 0., m_lpn_max = 0.;
+    void ReportLoopN();
     //! Per-photon soft factors, both attachments, at the drawn helicity.
     void CalculateSfactors();
     void MakePhotonHel();
     void MakeBoxMandelstams(const ATOOLS::Vec4D &PX);
     Complex CnuA(double svar, double m1, double m2) const;
+    /*!
+      2 Re[delta_I(s1) - delta_I(s2)]: the change of the IR-subtracted
+      initial-state vertex factor (as in InfraredSubtractedME_0_1) when its
+      scale moves from s2 to s1. ACRAIC: ISR_VERTEX_AT_S uses it to move the
+      external virtual's initial vertex from the post-ISR Born point to s.
+    */
+    double InitialVertexShift(double s1, double s2) const;
     Complex BoxGG();
     Complex BoxGZ();
     Complex BoxSubtract();

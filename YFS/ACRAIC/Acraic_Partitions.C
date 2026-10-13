@@ -285,7 +285,7 @@ std::string Acraic_Base::NoIFIRefusal()
   if (legsmode == beta1legs::balanced)
     return "ACRAIC: BETA1_LEGS balanced evaluates M_1 without propagator "
            "shifts, which carry the placement vetoes";
-  if (m_hasvirtual && m_acraicvirtsrc != acraicvirt::acraic
+  if (m_hasvirtual && !AcraicOwnVirtual()
       && m_acraicvirtsrc != acraicvirt::none)
     msg_Error()<<"YFS: IFI false with an external virtual: its initial-final "
                <<"boxes (IR-subtracted) stay in both columns. For no IFI at "

@@ -10,6 +10,8 @@ set(ACRAIC_SOURCES Acraic_Amplitude.C
                  Acraic_Beta2.C
                  Acraic_LoopHelicity.C
                  Acraic_RealVirtualHelicity.C
+                 Acraic_LoopN.C
+                 Acraic_Tnp.C
                  Acraic_Resonance.C)
 
 set(ACRAIC_HEADERS Acraic_Amplitude.H

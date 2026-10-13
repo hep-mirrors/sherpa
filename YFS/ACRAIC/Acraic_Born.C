@@ -305,7 +305,11 @@ void Acraic_Base::InfraredSubtractedME_0_0() {
                              ["CRUDE_BORN"].SetDefault(true).Get<bool>());
   // 2 -> 2: the Born at BornLegsAt(X_wp), which rebuilds the one pair;
   // beyond: the generator's point GeneratorBornAt(X_wp) from the pre-FSR legs.
-  bool usered(crudeborn && m_flavs.size() >= 4 && m_comixborn
+  // also with the hand-coded Born (COMIX_BORN false): the crude is the
+  // GENERATOR's density, whose Born is Comix's, and the alignment now exists
+  // on both paths (2026-10-11); before, the hand-coded path fell back to the
+  // shifted physical-spinor Born, which differs for hard photons
+  bool usered(crudeborn && m_flavs.size() >= 4
               && m_cxbalignok && !realpoint
               && (m_flavs.size() == 4 || m_prefsr.size() == m_flavs.size()));
   Amplitude Cred;
@@ -392,6 +396,7 @@ void Acraic_Base::InfraredSubtractedME_0_0() {
     m_AmpBornOnly.m_A[f] += a;
     m_AmpBornReal.m_A[f] += a;
     m_AmpExpo1.m_A[f] += a;
+    TnpAdd(tnp_b0, f, a);
   }
   m_rhocrud += rc / 4.;
   m_snapBorn = m_AmpExpo1;   // Born term only, before any correction
@@ -415,7 +420,15 @@ void Acraic_Base::BuildComixBornAlignment()
   m_cxbalignok = false;
   m_cxrnorm = -1.;
   if (p_bornproc == NULL || m_pacraic.size() < 4) return;
-  if (!m_comixborn && !m_comixreal) return;
+  /*
+    No early return for COMIX_BORN false (2026-10-11): beta_1's M_1 always
+    comes from Comix (the hand-coded beta_1 was removed), so it needs the
+    per-helicity alignment to the hand-coded Born as much as the Comix Born
+    does. Without it the hand-coded path paired an unaligned M_1 with the
+    hand-coded beta_0, beta_1 = M_1 - S beta_0 did not cancel, and rho_1 was
+    off by 1 + O(x): +39% on sigma_fid at 161 GeV (exact only at the Z pole,
+    where the stale alignment happened to fit).
+  */
   // No hand-coded Born beyond f fbar: Born, M_1 and eikonal (ComixPolarisation)
   // are all in Comix's convention, so unit alignment and normalisation.
   if (!m_ffbar) {
@@ -434,8 +447,6 @@ void Acraic_Base::BuildComixBornAlignment()
   if (m_comixflip < 0 || !(m_comixnorm > 0.)) return;
   // one Comix Born per event at the reference scale, for the alignment
   // (COMIX_BORN) and/or the real's per-event normalisation
-  const bool needrnorm(m_comixreal && !m_normexact);
-  if (!m_comixborn && !needrnorm) return;
 
   // m_cxbalign[f] = e^2 H[f]/C[f] at the reference scale m_svarQ carries only
   // the convention difference; Comix supplies the partition dependence, so H
@@ -461,7 +472,6 @@ void Acraic_Base::BuildComixBornAlignment()
   // per-event normalisation of the Comix real (0.5 identically at 2 -> 2,
   // where the exact constant is used instead)
   if (nhd > 0.) m_cxrnorm = nhd/nc;
-  if (!m_comixborn) return;
   // Meaningful only while e^2 H/C is a pure convention factor; where H lacks
   // structure Comix has (e.g. a decay Breit-Wigner) this forces Comix's Born
   // back onto H.

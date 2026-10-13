@@ -750,18 +750,80 @@ bool Acraic_Base::ExchangeLineShiftsOn() const
   (BornLegsAt(m_PXvec)); iphot >= 0: M_1 of that photon (PartitionLegs, all
   zero at n = 1).
 */
-void Acraic_Base::AddExchangeLineShifts(int iphot, PropShifts &sh) const
+void Acraic_Base::AddExchangeLineShifts(int iphot, PropShifts &sh,
+                                       const Vec4D_Vector *base) const
 {
   if (!ExchangeLineShiftsOn() || m_pacraic.size() < 4
       || m_flavs.size() != m_pacraic.size()) return;
   Vec4D_Vector pb;
   const bool ok(iphot < 0 ? BornLegsAt(m_PXvec, pb) : PartitionLegs(iphot, pb));
   if (!ok || pb.size() != m_pacraic.size()) return;
+  // base: the legs the amplitude is evaluated on (default the physical ones)
+  const Vec4D_Vector &b(base && base->size() == m_pacraic.size() ? *base : m_pacraic);
   for (size_t i(0); i < m_pacraic.size(); ++i) {
-    const Vec4D d((i < 2 ? -1. : 1.)*(pb[i] - m_pacraic[i]));
+    const Vec4D d((i < 2 ? -1. : 1.)*(pb[i] - b[i]));
     sh.push_back(std::make_pair(LegUnion(LegBit(i),
                                 PHASIC::Process_Base::s_propshiftleg), d));
   }
+}
+
+bool Acraic_Base::Beta1DressedFsr() const
+{
+  static const bool on(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
+                       ["BETA1_DRESSED_FSR"].Get<bool>());
+  return on;
+}
+
+/*
+  ACRAIC: BETA1_DRESSED_FSR. The two legs of final stage `stage` as they were
+  before the stage's other photons (all but iphot; iphot < 0: all) were
+  emitted: the pair is moved from Q to Q + K, the lepton directions kept in
+  the pair's rest frame, the momenta rescaled to (Q + K)^2. Beams and every
+  other leg unchanged. Two-leg final stages only.
+*/
+bool Acraic_Base::DressedStageLegs(int stage, int iphot, Vec4D_Vector &legs) const
+{
+  if (stage < 0 || stage >= (int)m_stagelegs.size() || m_stagereduces[stage]) return false;
+  const std::vector<int> sl(StageExternalLegs(stage));
+  if (sl.size() != 2 || sl[0] < 2 || sl[1] < 2 || sl[0] >= (int)m_pacraic.size()
+      || sl[1] >= (int)m_pacraic.size()) return false;
+  const Vec4D pa(m_pacraic[sl[0]]), pb(m_pacraic[sl[1]]);
+  const Vec4D Q(pa + pb), Qd(Q + StagePhotonSum(stage, iphot));
+  const double Q2(Q.Abs2()), Qd2(Qd.Abs2());
+  const double ma(m_flavs[sl[0]].Mass()), mb(m_flavs[sl[1]].Mass());
+  if (!(Q2 > 0.) || !(Q[0] > 0.) || !(Qd[0] > 0.) || !(Qd2 > sqr(ma + mb))) return false;
+  Poincare toQ(Q), toQd(Qd);
+  Vec4D a(pa);
+  toQ.Boost(a);
+  const Vec3D va(a);
+  const double na(va.Abs());
+  if (!(na > 0.)) return false;
+  const Vec3D n(va/na);
+  const double lam(0.5*sqrt(Max(0., sqr(Qd2 - ma*ma - mb*mb) - 4.*ma*ma*mb*mb)/Qd2));
+  Vec4D qa(sqrt(lam*lam + ma*ma), lam*n), qb(sqrt(lam*lam + mb*mb), -lam*n);
+  toQd.BoostBack(qa);
+  toQd.BoostBack(qb);
+  legs = m_pacraic;
+  legs[sl[0]] = qa;
+  legs[sl[1]] = qb;
+  return true;
+}
+
+Acraic_Base::PropShifts Acraic_Base::DressedStageShifts(int iphot, int dressed,
+                                                    const Vec4D &dshift,
+                                                    const Vec4D_Vector &base) const
+{
+  PropShifts sh;
+  if (m_stage.size() != m_allphotons.size()) return sh;
+  for (size_t g(0); g < m_stagelegs.size(); ++g) {
+    const size_t mask(StageShiftMask((int)g));
+    if (mask == 0) continue;
+    sh.push_back(std::make_pair(mask, (int)g == dressed ? dshift
+                                                       : StagePhotonSum((int)g, iphot)));
+  }
+  AddResonanceEntries(sh);
+  AddExchangeLineShifts(iphot, sh, &base);
+  return sh;
 }
 
 bool Acraic_Base::BornHasExchangeLine()
@@ -1227,6 +1289,7 @@ void Acraic_Base::AddFactorisedRemainder()
     if (IsBad(std::abs(d))) continue;
     m_AmpExpo1.m_A[f]    += d;
     m_AmpBornReal.m_A[f] += d;
+    TnpAdd(tnp_multi, f, d);
   }
 }
 
@@ -1391,6 +1454,96 @@ bool Acraic_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
                    <<"PartitionLegs."<<std::endl;
     }
   }
+  /*
+    ACRAIC: BETA1_DRESSED_FSR (2026-10-11). M_1(k_j) is computed once, in the
+    partition with photon j on the initial stage, and carries the emission
+    from the final pair too; the final pair it is handed is the physical one,
+    which has already given its energy to the photons this partition puts on
+    the final stage ("companions"). In deep radiative return Bhabha a lepton
+    that lost 95% of its energy to collinear companions puts the other photons
+    of the bunch inside its widened dead cone, where the helicity-flip part of
+    M_1 is large: beta_1/(s beta_0) up to 1.5e3, event weights to 1e5.
+    With companions, M_1 is taken at the final pair dressed with them
+    (DressedStageLegs: the pair before they were emitted), with its own
+    subtraction there, and the standard subtractions put back:
+        M_1,eff = M_1(pd) - s_I(pd) B^I(pd) - s_F(pd) B^F(pd)
+                  + s_I B_0^I + s_F B_0^F ,
+    B^{I,F} the Born with photon j's momentum on the initial / final side
+    lines (as m_partborn0 in the two partitions of j), s_{I,F} the stage
+    eikonals, unadorned = physical legs. The code subtracts s_I B_0^I here and
+    s_F B_0^F in the partner partition, so the net beta_1 is the dressed
+    point's own, M_1(pd) - s_I(pd) B^I(pd) - s_F(pd) B^F(pd): zero as k_j
+    goes soft, and the old one as the companions go soft (pd -> physical).
+    Two stages (initial + one two-leg final) only; no companions: unchanged.
+  */
+  bool dressed(false);
+  Amplitude M1fix;     // - s_I(pd) B^I(pd) - s_F(pd) B^F(pd) + s_F B_0^F (+ s_I B_0^I below)
+  int gF(-1);
+  if (addm1 && !rebuild && !fixed && m_ifi && Beta1DressedFsr() && !WStagesActive()
+      && m_nstages == 2 && m_stage[iphot] == m_initstage
+      && m_sactu.size() == m_allphotons.size()) {
+    gF = 1 - m_initstage;
+    bool companions(false);
+    for (size_t i(0); i < m_allphotons.size(); ++i)
+      if ((int)i != iphot && m_stage[i] == gF) { companions = true; break; }
+    Vec4D_Vector pd;
+    if (companions && DressedStageLegs(gF, iphot, pd)) {
+      static const pseudoflux::code pfmode(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
+                              ["NO_PSEUDOFLUX"].Get<pseudoflux::code>());
+      const double pf(pfmode == pseudoflux::rho0_and_rho1 ? m_pflux : 1.);
+      const Vec4D rinit(StagePhotonSum(m_initstage, iphot));   // companions on I, not j
+      const Vec4D rfin(StagePhotonSum(gF, iphot));             // the dressed-in ones
+      // Born shifts: initial side by ri, final side by rf, space-like lines
+      // at BornLegsAt(X) against the legs `base`
+      auto bornshifts = [&](const Vec4D &ri, const Vec4D &rf, const Vec4D &X,
+                            const Vec4D_Vector &base, PropShifts &sh) {
+        sh.clear();
+        for (size_t g(0); g < m_stagelegs.size(); ++g) {
+          const size_t mask(StageShiftMask((int)g));
+          if (mask == 0) continue;
+          sh.push_back(std::make_pair(mask, (int)g == m_initstage ? ri : rf));
+        }
+        AddResonanceEntries(sh);
+        Vec4D_Vector pbx;
+        if (ExchangeLineShiftsOn() && m_pacraic.size() >= 4
+            && m_flavs.size() == m_pacraic.size() && BornLegsAt(X, pbx)
+            && pbx.size() == m_pacraic.size())
+          for (size_t i(0); i < m_pacraic.size(); ++i)
+            sh.push_back(std::make_pair(LegUnion(LegBit(i), PHASIC::Process_Base::s_propshiftleg),
+                                        (i < 2 ? -1. : 1.)*(pbx[i] - base[i])));
+      };
+      const Vec4D XI(m_PXvec), XF(m_PXvec + k);   // j on I / on F
+      PropShifts shI, shF, shF0;
+      bornshifts(rinit + k, Vec4D(), XI, pd, shI);
+      bornshifts(rinit, k, XF, pd, shF);
+      bornshifts(rinit, rfin + k, XF, m_pacraic, shF0);
+      Amplitude CI, CF, CF0;
+      if (ComixBornShifted(pd, CI, shI) && ComixBornShifted(pd, CF, shF)
+          && ComixBornShifted(m_pacraic, CF0, shF0)) {
+        const Complex sIpd(StageEikonal(m_initstage, pd, k, hel, iphot));
+        const Complex sFpd(StageEikonal(gF, pd, k, hel, iphot));
+        const Complex sFph(StageEikonal(gF, m_pacraic, k, hel, iphot));
+        const auto fl(ComixLegFlips(Amplitude::s_nlegs));
+        for (int f(0); f < Amplitude::NHel(); ++f) {
+          const Complex a(pf*m_cxbalign.m_A[f]);
+          M1fix.m_A[f] = - sIpd*a*CI.m_A[FlipLegs(f, fl)] - sFpd*a*CF.m_A[FlipLegs(f, fl)]
+                         + sFph*a*CF0.m_A[FlipLegs(f, fl)];
+        }
+        pb = pd;
+        shifts = DressedStageShifts(iphot, gF, Vec4D(), pd);
+        dressed = true;
+      }
+    }
+    if (companions && !dressed) {
+      ++m_dressfail;
+      long d(1);
+      while (d*10 <= m_dressfail) d *= 10;
+      if (m_dressfail == d)
+        msg_Error()<<METHOD<<"(): ACRAIC: BETA1_DRESSED_FSR: no dressed point for "
+                   <<m_dressfail<<" photon(s) so far; those keep the physical legs."
+                   <<std::endl;
+    }
+  }
   Amplitude M1;
   if (addm1) {
     Vec4D_Vector pp(pb);
@@ -1417,27 +1570,34 @@ bool Acraic_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
   // subtraction (Acraic_Beta2.C).
   if (m_order == 2 && iphot < (int)m_b2on.size()) {
     m_b2on[iphot] = 1;
+    if (iphot < (int)m_b2onept.size()) m_b2onept[iphot] = onept ? 1 : 0;
     m_b2sj[iphot] = sj;
     m_b2hasM1[iphot] = addm1 ? 1 : 0;
     if (addm1)
       for (int f(0); f < nh; ++f)
-        m_b2M1[iphot].m_A[f] = rescale * m_cxbalign.m_A[f] * M1.m_A[f]/rn;
+        m_b2M1[iphot].m_A[f] = rescale * m_cxbalign.m_A[f] * M1.m_A[f]/rn
+          + (dressed ? M1fix.m_A[f] + sj*m_partborn0.m_A[f] : Complex(0., 0.));
   }
   double nsub(0.), nm1(0.), nv(0.);
   // TCHANNEL_MULTIPHOTON 2: this photon's term, for AddFactorisedRemainder
   const bool keepterm(onept && TchannelMultiphotonMode() == tchmultiphoton::factorised);
   if (keepterm) m_b1terms.push_back(Amplitude());
+  const int tnpclass(m_tnp ? TnpPhotonClass(iphot, fixed) : tnp_isr);
   for (int f(0); f < nh; ++f) {
     const Complex sub(w * sj * m_partborn0.m_A[f]);
     Complex v(-sub);
     if (addm1) {
-      const Complex m1(rescale * w * m_cxbalign.m_A[f] * M1.m_A[f]/rn);
+      // BETA1_DRESSED_FSR: + the dressed point's subtractions and the standard
+      // ones put back (sj = s_I on the physical legs here, B_0^I = m_partborn0)
+      const Complex m1(rescale * w * m_cxbalign.m_A[f] * M1.m_A[f]/rn
+                       + (dressed ? w*(M1fix.m_A[f] + sj*m_partborn0.m_A[f]) : Complex(0., 0.)));
       v += m1;
       nm1 += std::norm(m1);
       if (iphot < (int)m_realphotM1.size()) m_realphotM1[iphot].m_A[f] += m1;
     }
     nsub += std::norm(sub); nv += std::norm(v);
     m_AmpExpo1.m_A[f]    += v;
+    TnpAdd(tnpclass, f, v);
     m_AmpBornReal.m_A[f] += v;
     if (iphot < (int)m_realphot.size()) m_realphot[iphot].m_A[f] += v;
     m_snapReal.m_A[f]    += v;

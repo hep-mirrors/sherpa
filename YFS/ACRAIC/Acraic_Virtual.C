@@ -102,6 +102,14 @@ Complex Acraic_Base::CnuA(double svar, double m1, double m2) const
 }
 
 
+double Acraic_Base::InitialVertexShift(double s1, double s2) const
+{
+  if (!(s1 > 0.) || !(s2 > 0.)) return 0.;
+  const Complex d(0.5 * sqr(m_qe) * m_alpha / Complex(M_PI, 0)
+                  * (CnuA(s1, m_mass_I, m_mass_I) - CnuA(s2, m_mass_I, m_mass_I)));
+  return 2. * d.real();
+}
+
 void Acraic_Base::InfraredSubtractedME_0_1() {
   // m_Sc/m_Tc/m_Uc are set per partition by the caller from X = P - sum(ISR k).
   
@@ -198,6 +206,7 @@ void Acraic_Base::InfraredSubtractedME_0_1() {
           const Complex ms(born.m_A[Idx(j1,j2,j3,j4)] - mt);
           const Complex corr(fac * (ms*vert + mt*vertT + boxy));
           m_AmpExpo1.m_A[Idx(j1,j2,j3,j4)] += corr;
+          TnpAdd(tnp_b0, Idx(j1,j2,j3,j4), corr);
           m_AmpBornVirt.m_A[Idx(j1,j2,j3,j4)] += corr;
           m_snapVirt.m_A[Idx(j1,j2,j3,j4)] = corr;   // the beta_0^1 increment
           m_beta01 += corr;   // scalar, for the diagnostics only

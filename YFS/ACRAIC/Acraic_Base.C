@@ -36,6 +36,7 @@ Acraic_Base::Acraic_Base(const Flavour_Vector &flavs)
   m_comixnorm = s["COMIX_REAL_NORM"].Get<double>();
   m_comixphoflip = s["COMIX_REAL_PHOTON_FLIP"].Get<int>();
   m_perphoton    = s["COMIX_REAL_PER_PHOTON"].Get<bool>();
+  m_tnp          = s["TNP_STREAMS"].Get<bool>();
   m_comixborn    = s["COMIX_BORN"].Get<bool>();
   m_wstages      = s["W_STAGES"].Get<tristate::code>();
   m_weikonal     = s["W_EIKONAL"].Get<weikonal::code>();
@@ -83,6 +84,31 @@ Acraic_Base::Acraic_Base(const Flavour_Vector &flavs)
   if (m_treebetamax > 1 && m_order != 2)
     THROW(fatal_error, "ACRAIC: TREE_BETA_MAX > 1 needs ACRAIC: ORDER 2: the tree "
           "residuals beta_m, m >= 2, enter only the ORDER 2 amplitude A_2.");
+  m_loopbetamax = s["LOOP_BETA_MAX"].Get<int>();
+  m_loopbetaplace = s["LOOP_BETA_PLACEMENT"].Get<loopbetaplace::code>();
+  m_loopbetaxcut = s["LOOP_BETA_XCUT"].Get<double>();
+  // a pair below BETA2_XCUT has no tree beta_2 to carry the residual
+  m_loopbetaxcut = Max(m_loopbetaxcut, s["BETA2_XCUT"].Get<double>());
+  if (m_loopbetamax < 1) m_loopbetamax = 1;
+  if (m_loopbetamax > 1) {
+    if (m_order != 2)
+      THROW(fatal_error, "ACRAIC: LOOP_BETA_MAX > 1 needs ACRAIC: ORDER 2.");
+    if (m_loopbetamax > m_treebetamax)
+      THROW(fatal_error, "ACRAIC: LOOP_BETA_MAX > TREE_BETA_MAX: a one-loop "
+            "residual beta_m^[1] needs the tree beta_m of the same set.");
+    if (RealVirtualMode() != acraicrv::helicity)
+      THROW(fatal_error, "ACRAIC: LOOP_BETA_MAX > 1 needs ACRAIC: REAL_VIRTUAL helicity "
+            "(the per-photon one-loop remainders and the Born's per-helicity "
+            "factors enter the two-photon residual).");
+    if (m_loopbetamax > 3)
+      THROW(fatal_error, "ACRAIC: LOOP_BETA_MAX > 3: the four-photon one-loop "
+            "amplitude is out of reach (NOTES-acraic-oneloop-nphoton.md).");
+    msg_Info()<<"ACRAIC: LOOP_BETA_MAX "<<m_loopbetamax<<" - one-loop "
+              <<m_loopbetamax<<"-photon providers built (x > "<<m_loopbetaxcut
+              <<", placement "<<m_loopbetaplace<<"). The two-photon one-loop residual "
+              <<"enters the amplitude (ratio placement; resonance_aware and "
+              <<"exact_partition are not implemented yet and fall back to it)."<<std::endl;
+  }
   if (m_order == 2 && m_treebetamax != 2)
     msg_Info()<<"ACRAIC: TREE_BETA_MAX "<<m_treebetamax<<" - tree residuals "
               <<"beta_m for 2 <= m <= "<<m_treebetamax<<" from Comix m-photon "
@@ -236,6 +262,13 @@ void Acraic_Base::RegisterDefaults()
     needs only the one-photon process, which always exists.
   */
   s["COMIX_REAL_PER_PHOTON"].SetDefault(false);
+  /*
+    ACRAIC: TNP_STREAMS (default false): per-event theory-nuisance-parameter
+    templates, one named weight per beta-hat class (YFS_Handler:
+    ACRAIC_TNP1_* at O(alpha), ACRAIC_TNP2_* at ORDER 2; Acraic_Tnp.C). The
+    nominal weight is untouched.
+  */
+  s["TNP_STREAMS"].SetDefault(false);
   s["BETA1_PARTITION_CHECK"].SetDefault(0);  // @@@ B1PART
   s["BETA1_CLOSURE"].SetDefault(0);          // @@@ B1CLOSE
   s["CLOSURE_1PHOT"].SetDefault(0);          // @@@ CLOS1
@@ -372,6 +405,15 @@ void Acraic_Base::RegisterDefaults()
         at O(alpha^1), with the factorised beta_2 and higher added.
   */
   s["TCHANNEL_MULTIPHOTON"].SetDefault(tchmultiphoton::partition_legs);
+  /*
+    ACRAIC: BETA1_DRESSED_FSR (2026-10-11, default false while validated):
+    beta_1 of a photon on a two-leg final stage that has companions on the
+    same stage at the pair dressed with those companions, with its own Born
+    subtraction there (Acraic_Comix.C, ComixInfraredSubtracted_1_0). Cures
+    the deep-radiative-return Bhabha weights (BES-III, B e e). One photon per
+    stage: unchanged.
+  */
+  s["BETA1_DRESSED_FSR"].SetDefault(false);
   s["BETA1_BORNLEGS"].SetDefault(1);         // 1 = reduced, 0 = physical
 
   s["NO_PSEUDOFLUX"].SetDefault(pseudoflux::rho0_only);
@@ -399,6 +441,16 @@ void Acraic_Base::RegisterDefaults()
     the right amplitude at all. COMIX_BORN: false selects the hand-coded one.
   */
   s["COMIX_BORN"].SetDefault(true);
+  /*
+    ACRAIC: ISR_VERTEX_AT_S (default true, 2026-10-11). The external virtual
+    (one loop-provider call per event) is evaluated at the post-ISR Born point
+    s', so its initial-state vertex sits at s'. KKMC's CEEX, and ACRAIC's own
+    virtual, take the initial vertex at the full s in every partition (and the
+    final one at the partition's s_Q). With it on, the external v gets
+    2 Re[delta_I(s) - delta_I(s')]: about (alpha/pi) ln(s/s'), -2.6e-3 per
+    Z-return event at 161 GeV before (point harness against KKMC).
+  */
+  s["ISR_VERTEX_AT_S"].SetDefault(true);
   // @@@ BORNALIGN: is the Comix -> ACRAIC Born alignment scale independent?
   s["BORN_ALIGN_CHECK"].SetDefault(0);
   // @@@ BETA1: the Comix hard remainder against the hand-coded one, vs E_gamma
@@ -440,6 +492,31 @@ void Acraic_Base::RegisterDefaults()
     SOFT_PARTITION_CUT 0, TREE_BETA_MAX >= n.
   */
   s["TREE_BETA_PROBE"].SetDefault(0);
+  /*
+    One-loop N-photon matching (NOTES-acraic-oneloop-nphoton.md).
+    ACRAIC: LOOP_BETA_MAX (integer, default 1): the highest photon multiplicity
+    whose one-loop amplitude enters. 1 = the present real-virtual (REAL_VIRTUAL);
+    2 builds the two-photon one-loop provider (RV_Generator, Recola in practice),
+    needs ORDER 2 and <= TREE_BETA_MAX. STEP 2 (2026-10-10): the providers are
+    built and probed (LOOP_BETA_PROBE); STEP 3: the residual beta_2^[1] enters
+    A_2 (Acraic_LoopN.C).
+    ACRAIC: LOOP_BETA_XCUT (-1 = BETA2_XCUT, never below it): photons of a set
+    below it give the set no one-loop residual.
+    ACRAIC: LOOP_BETA_PLACEMENT ratio (default) | resonance_aware | exact_partition;
+    only ratio is implemented, the other two fall back to it.
+    ACRAIC: LOOP_BETA_PROBE N: the first N two-photon points of the double real
+    also call the two-photon loop (@@@ LOOPN: loop/tree, helicity sums, time).
+  */
+  s["LOOP_BETA_MAX"].SetDefault(1);
+  s["LOOP_BETA_XCUT"].SetDefault(-1.);
+  s["LOOP_BETA_PLACEMENT"].SetDefault(loopbetaplace::ratio);
+  s["LOOP_BETA_PROBE"].SetDefault(0);
+  /*
+    ACRAIC: LOOP_LADDER_PROBE N: the first N events with one or two photons,
+    every one with its one-loop record, print @@@ LLCLOS: the one-loop
+    truncation ladder on the physical legs (Acraic_LoopN.C, LoopLadderProbe).
+  */
+  s["LOOP_LADDER_PROBE"].SetDefault(0);
   /*
     External virtual at ORDER 2: false (default) keeps the O(alpha^1)
     composition sum_h |A_2 + (v/2) A_0|^2; true puts (1+v/2) on beta_0 AND
@@ -650,6 +727,8 @@ void Acraic_Base::ZerAmplit() {
     m_AmpFluxAll.m_A[f]  = Complex(0., 0.);
     m_AmpFluxSoft.m_A[f] = Complex(0., 0.);
     m_AmpExpo2.m_A[f]    = Complex(0., 0.);
+    for (int c(0); c < tnp_nclass; ++c) m_tnpamp[c].m_A[f] = Complex(0., 0.);
+    m_tnpabs[f] = 0.;
   }
 }
 

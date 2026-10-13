@@ -103,6 +103,7 @@ void Acraic_Base::ResetBeta1Record()
   if (m_b2M1.size() != n) m_b2M1.assign(n, Amplitude());
   m_b2hasM1.assign(n, 0);
   m_b2on.assign(n, 0);
+  m_b2onept.assign(n, 0);
   m_b2sj.assign(n, Complex(0., 0.));
 }
 
@@ -136,6 +137,7 @@ bool Acraic_Base::PrepareBeta2()
   const size_t n(m_allphotons.size());
   m_b2elig.assign(n, 0);
   m_treebetacap = 0;
+  m_lpP.clear(); m_lpQa.clear(); m_lpQb.clear();
   if (m_treeprobe) m_treeorder.assign(Max(m_treebetamax, 1) + 1, Amplitude());
   if (m_bnterms.size() < (size_t)Max(m_treebetamax, 2) + 1) {
     m_bnterms.resize(Max(m_treebetamax, 2) + 1, 0);
@@ -146,10 +148,27 @@ bool Acraic_Base::PrepareBeta2()
   static int provcap(2);
   if (state == 0) {
     std::string why(TreeProviderRefusal(RealProvider(2), m_flavs, 2));
-    for (size_t i(2); i < m_flavs.size() && why.empty(); ++i)
+    /*
+      ACRAIC: BETA2_BORN_PHOTONS (default false until validated): beta_m
+      for Borns with final-state photons. The m-photon amplitudes are the
+      full Comix ones (symmetric in all photons, no symmetry factor), and
+      the Born-pair multichannel weight (YFS: REAL_BORN_PHOTON_MULTICHANNEL,
+      rho_crude x G over all Born-pair choices) covers any number of ISR
+      photons, so the open question is only the helicity-slot alignment of
+      the extra photons next to the Born ones (BETA2_SOFT_TEST).
+    */
+    /*
+      With TCHANNEL_MULTIPHOTON factorised the pairs are not this recursion
+      but AddFactorisedBeta2, at each pair's own scaled point, whose total at
+      two photons is M_2 by construction: allowed without the switch.
+    */
+    static const bool bornphotons(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
+                                  ["BETA2_BORN_PHOTONS"].SetDefault(false).Get<bool>()
+                                  || TchannelMultiphotonMode() == tchmultiphoton::factorised);
+    for (size_t i(2); i < m_flavs.size() && why.empty() && !bornphotons; ++i)
       if (m_flavs[i].Kfcode() == kf_photon)
         why = "the Born has final-state photons (identical-photon helicity "
-              "slots not validated)";
+              "slots not validated; ACRAIC: BETA2_BORN_PHOTONS true to try)";
     if (!why.empty()) {
       msg_Error()<<METHOD<<"(): ACRAIC: ORDER 2 requested but beta_2 is OFF for "
                  <<"this run: "<<why<<". The ACRAIC column is O(alpha^1)."<<std::endl;
@@ -387,13 +406,27 @@ bool Acraic_Base::ComixInfraredSubtracted_N_0(const PhotonSet &S)
   const Complex w(SoftProduct(Without(PhotonRange(n), S)));
   Amplitude &beta(m_treebeta[S]);
   const int nh(Amplitude::NHel());
+  const int tnpclass(m_tnp ? TnpSetClass(S) : tnp_b2m);
+  // ACRAIC: LOOP_BETA_MAX 2: the pair's partition sums for its one-loop
+  // residual (Acraic_LoopN.C)
+  const bool loopacc(m_loopbetamax >= 2 && m == 2);
+  Amplitude *lpP(loopacc ? &m_lpP[S] : NULL), *lpQa(loopacc ? &m_lpQa[S] : NULL),
+            *lpQb(loopacc ? &m_lpQb[S] : NULL);
   double nv(0.), nm(0.), nss(0.);
   for (int f = 0; f < nh; ++f) {
+    if (loopacc) {
+      const Complex Mj(m_b2hasM1[S[0]] ? m_b2M1[S[0]].m_A[f] : Complex(0., 0.));
+      const Complex Ml(m_b2hasM1[S[1]] ? m_b2M1[S[1]].m_A[f] : Complex(0., 0.));
+      if (addm) lpP->m_A[f] += w*M.m_A[f];
+      lpQa->m_A[f] += w*m_sactu[S[1]]*Mj;
+      lpQb->m_A[f] += w*m_sactu[S[0]]*Ml;
+    }
     Complex v(addm ? M.m_A[f] : Complex(0., 0.));
     for (size_t a(0); a < lower.size(); ++a) v -= coef[a]*lower[a]->m_A[f];
     beta.m_A[f] = v;
     const Complex add(w*v);
     m_AmpBeta2.m_A[f] += add;
+    TnpAdd(tnpclass, f, add);
     if (m_treeprobe && m < m_treeorder.size()) m_treeorder[m].m_A[f] += add;
     nv += std::norm(add);
     if (addm) nm += std::norm(w*M.m_A[f]);
@@ -449,11 +482,167 @@ void Acraic_Base::AddTreeBetas(bool dobetan)
   }
   if (m_treeprobe) AddProbeLowOrders();
   if (!dobetan) return;
+  if (TchannelMultiphotonActive()
+      && TchannelMultiphotonMode() == tchmultiphoton::factorised) {
+    AddFactorisedBeta2();
+    return;
+  }
   const PhotonSet elig(TreeBetaPhotons());
   for (int m(2); m <= m_treebetacap; ++m) {
     const std::vector<PhotonSet> sets(SubsetsOfSize(elig, (size_t)m));
     for (size_t a(0); a < sets.size(); ++a) ComixInfraredSubtracted_N_0(sets[a]);
   }
+}
+
+
+/*
+  OnePhotonScaledLegs for a set of photons: the event with only the photons
+  of S, all scaled by x = sqrt(Q^2/(P - K_S)^2) in the P rest frame so the
+  final state keeps Q^2, and carried back by the generator's boost Poincare(Q).
+  At |S| = n it is the event itself; as a photon of S goes soft it becomes the
+  point of S without it.
+*/
+bool Acraic_Base::SubsetScaledLegs(const PhotonSet &S, Vec4D_Vector &legs,
+                                   Vec4D_Vector &kpt) const
+{
+  if (S.empty() || m_pacraic.size() != m_flavs.size() || m_pacraic.size() < 4)
+    return false;
+  for (size_t q(0); q < S.size(); ++q)
+    if (S[q] < 0 || S[q] >= (int)m_allphotons.size()) return false;
+  const Vec4D P(m_pacraic[0] + m_pacraic[1]);
+  Vec4D Q, K;
+  for (size_t i(2); i < m_pacraic.size(); ++i) Q += m_pacraic[i];
+  for (size_t q(0); q < S.size(); ++q) K += m_allphotons[S[q]];
+  const Vec4D R(P - K);
+  const double P2(P.Abs2()), Q2(Q.Abs2()), R2(R.Abs2());
+  if (!(P2 > 0.) || !(Q2 > 0.) || !(R2 > 0.) || !(Q[0] > 0.)) return false;
+  const double x(Min(1., sqrt(Q2/R2)));
+  const double ma(m_flavs[0].Mass()), mb(m_flavs[1].Mass());
+  const double sx(x*x*P2);
+  const double kal(sqr(sx - ma*ma - mb*mb) - 4.*ma*ma*mb*mb);
+  if (!(sx > sqr(ma + mb)) || !(kal > 0.)) return false;
+  Poincare toP(P), toQ(Q);
+  kpt.assign(S.size(), Vec4D());
+  Vec4D Kp;
+  for (size_t q(0); q < S.size(); ++q) {
+    Vec4D k(m_allphotons[S[q]]);
+    toP.Boost(k);
+    k *= x;
+    kpt[q] = k;
+    Kp += k;
+  }
+  const double pz(sqrt(kal)/(2.*sqrt(sx)));
+  const Vec4D pa(sqrt(pz*pz + ma*ma), 0., 0.,  pz);
+  const Vec4D pb(sqrt(pz*pz + mb*mb), 0., 0., -pz);
+  const Vec4D Qp(pa + pb - Kp);
+  if (!(Qp[0] > 0.) || !(Qp.Abs2() > 0.)) return false;
+  Poincare toQp(Qp);
+  legs = m_pacraic;
+  legs[0] = pa; legs[1] = pb;
+  for (size_t i(2); i < m_pacraic.size(); ++i) {
+    Vec4D p(m_pacraic[i]);
+    toQ.Boost(p);
+    toQp.BoostBack(p);
+    legs[i] = p;
+  }
+  for (Vec4D &l : legs) toQ.BoostBack(l);
+  for (Vec4D &k : kpt) toQ.BoostBack(k);
+  Vec4D bal(legs[0] + legs[1]);
+  for (size_t i(2); i < legs.size(); ++i) bal -= legs[i];
+  for (const Vec4D &k : kpt) bal -= k;
+  const double scale(Max(legs[0][0] + legs[1][0], 1.));
+  for (int mu(0); mu < 4; ++mu)
+    if (dabs(bal[mu]) > 1e-10*scale) return false;
+  return true;
+}
+
+
+/*
+  ACRAIC: TCHANNEL_MULTIPHOTON factorised at ORDER 2. In this mode photon j's
+  beta_1 is s_j (u_j - B_0), u_j = M_1/s_j at its one-photon point, and
+  AddFactorisedRemainder makes the beta_1 sum the factorised
+      T = W [ B_0 prod_j c_j + sum_j (u_j - c_j B_0) prod_{l != j} c_l ],
+  c_j = <B_0|u_j>/<B_0|B_0>, W = prod_i s_i (m_Sprod). T already contains a
+  second-order term, so the recursion's beta_2 = M_2 - ... would count it
+  twice. The pair term is instead taken against T, at the pair's own point:
+      Delta_jl = W [ u_jl - u_j c_l - u_l c_j + c_j c_l B_0 ] prod_{m != j,l} c_m,
+  u_jl = M_2/(s_j s_l) at SubsetScaledLegs({j, l}). With two photons the
+  total is W u_jl = M_2 (the point is the event); as either photon goes soft,
+  u_jl -> u_j or u_l and Delta_jl -> 0. Pairs only (beta_3 and higher are not
+  built in this mode).
+*/
+void Acraic_Base::AddFactorisedBeta2()
+{
+  const size_t n(m_allphotons.size());
+  if (n < 2 || m_b2on.size() != n || m_b2onept.size() != n
+      || m_sactu.size() != n || !m_cxbalignok) return;
+  const int nh(Amplitude::NHel());
+  const Amplitude &B0(m_partborn0);
+  double nb(0.);
+  for (int f(0); f < nh; ++f) nb += std::norm(B0.m_A[f]);
+  if (!(nb > 0.) || IsBad(nb)) return;
+  // u_j and c_j; a photon without a one-photon-point beta_1 has u_j = B_0, c_j = 1
+  std::vector<Amplitude> u(n, B0);
+  std::vector<Complex> c(n, Complex(1., 0.));
+  std::vector<char> ok(n, 0);
+  for (size_t j(0); j < n; ++j) {
+    if (!m_b2on[j] || !m_b2hasM1[j] || !m_b2onept[j] || !(std::abs(m_b2sj[j]) > 0.))
+      continue;
+    Complex proj(0., 0.);
+    for (int f(0); f < nh; ++f) {
+      u[j].m_A[f] = m_b2M1[j].m_A[f]/m_b2sj[j];
+      proj += std::conj(B0.m_A[f])*u[j].m_A[f];
+    }
+    c[j] = proj/nb;
+    ok[j] = 1;
+  }
+  static long nfail(0);
+  for (size_t j(0); j < n; ++j)
+    for (size_t l(j + 1); l < n; ++l) {
+      if (!ok[j] || !ok[l] || !Beta2PairEligible((int)j, (int)l)) continue;
+      const PhotonSet S{(int)j, (int)l};
+      Vec4D_Vector legs, kp;
+      Amplitude M2;
+      PropShifts none;
+      bool good(SubsetScaledLegs(S, legs, kp));
+      Complex sj(0., 0.), sl(0., 0.);
+      if (good) {
+        Vec4D_Vector pp(legs);
+        pp.push_back(kp[0]);
+        pp.push_back(kp[1]);
+        good = ComixRealNHel(pp, std::vector<int>{m_PhoHel[j], m_PhoHel[l]}, M2, none, true);
+        if (good) {
+          sj = StageEikonal(m_stage[j], legs, kp[0], m_PhoHel[j], (int)j);
+          sl = StageEikonal(m_stage[l], legs, kp[1], m_PhoHel[l], (int)l);
+          good = std::abs(sj) > 0. && std::abs(sl) > 0.;
+        }
+      }
+      if (!good) {
+        ++m_b2fail;
+        ++nfail;
+        long d(1);
+        while (d*10 <= nfail) d *= 10;
+        if (nfail == d)
+          msg_Error()<<METHOD<<"(): no two-photon point or amplitude for "<<nfail
+                     <<" pair(s) so far; their beta_2 is dropped."<<std::endl;
+        continue;
+      }
+      ++m_bnamps[2];
+      ++m_bnterms[2];
+      Complex rest(1., 0.);
+      for (size_t m(0); m < n; ++m) if (m != j && m != l) rest *= c[m];
+      const Complex w(m_Sprod*rest), ss(sj*sl);
+      const int tnpclass(m_tnp ? TnpSetClass(S) : tnp_b2m);
+      for (int f(0); f < nh; ++f) {
+        const Complex ujl(M2.m_A[f]/ss);
+        const Complex add(w*(ujl - u[j].m_A[f]*c[l] - u[l].m_A[f]*c[j]
+                             + c[j]*c[l]*B0.m_A[f]));
+        if (IsBad(std::abs(add))) continue;
+        m_AmpBeta2.m_A[f] += add;
+        TnpAdd(tnpclass, f, add);
+        if (m_treeprobe && m_treeorder.size() > 2) m_treeorder[2].m_A[f] += add;
+      }
+    }
 }
 
 
