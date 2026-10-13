@@ -119,6 +119,13 @@ namespace {
   const std::vector<Option_Name> s_ewhigherorder{
     {"none", ewhigherorder::none}, {"griffin", ewhigherorder::griffin}};
 
+  const std::vector<Option_Name> s_loopbetaplace{
+    {"ratio", loopbetaplace::ratio}, {"resonance_aware", loopbetaplace::resonance_aware},
+    {"exact_partition", loopbetaplace::exact_partition}};
+
+  const std::vector<Option_Name> s_coulombho{
+    {"none", coulombho::none}, {"second", coulombho::second}, {"all", coulombho::all}};
+
   const std::vector<Option_Name> s_beta02{
     {"none", beta02::none}, {"ll", beta02::ll}, {"llnll", beta02::llnll},
     {"exp", beta02::exp}, {"two_loop", beta02::two_loop}};
@@ -159,6 +166,7 @@ namespace {
   const std::vector<Option_Name> s_virtmassif{
     {"off", virtmassif::off}, {"electrons", virtmassif::electrons},
     {"leptons", virtmassif::leptons}, {"light_fermions", virtmassif::light_fermions},
+    {"light_fermions_charm", virtmassif::light_fermions_charm},
     {"false", virtmassif::off}, {"true", virtmassif::leptons}};
 
   const std::vector<Option_Name> s_rvphotonct{
@@ -319,6 +327,16 @@ std::istream &YFS::operator>>(std::istream &s, ewhigherorder::code &c)
 { return ReadOption(s, c, s_ewhigherorder, "YFS: EW_HIGHER_ORDER"); }
 std::ostream &YFS::operator<<(std::ostream &s, const ewhigherorder::code &c)
 { return WriteOption(s, c, s_ewhigherorder); }
+
+std::istream &YFS::operator>>(std::istream &s, loopbetaplace::code &c)
+{ return ReadOption(s, c, s_loopbetaplace, "ACRAIC: LOOP_BETA_PLACEMENT"); }
+std::ostream &YFS::operator<<(std::ostream &s, const loopbetaplace::code &c)
+{ return WriteOption(s, c, s_loopbetaplace); }
+
+std::istream &YFS::operator>>(std::istream &s, coulombho::code &c)
+{ return ReadOption(s, c, s_coulombho, "YFS: COULOMB_HIGHER_ORDER"); }
+std::ostream &YFS::operator<<(std::ostream &s, const coulombho::code &c)
+{ return WriteOption(s, c, s_coulombho); }
 
 std::istream &YFS::operator>>(std::istream &s, beta02::code &c)
 { return ReadOption(s, c, s_beta02, "YFS/ACRAIC: BETA0_2"); }

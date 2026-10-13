@@ -50,6 +50,14 @@ void YFS_Base::RegisterDefaults(){
   // lower bound on |t| of the exchange lines, GeV^2 (0: off);
   // see YFS_Handler::ExchangeLinesPassTMin
   s["EXCHANGE_T_MIN"].SetDefault(0.);
+  // lower bound on |t| of the exchange lines of the PHYSICAL event, GeV^2 (0:
+  // off): the full beams against the outgoing legs after all radiation, the
+  // momenta the analysis sees. EXCHANGE_T_MIN acts on the reduced Born (the
+  // frame of s'), whose |t| ~ s'(1 - cos)/2 is far below the physical one in
+  // radiative return: 0.1 GeV^2 there removed 17-21% of BES-III e e sigma_fid
+  // (2026-10-11). This one is a pure phase-space veto, safe below the
+  // fiducial |t|.
+  s["EXCHANGE_T_MIN_FINAL"].SetDefault(0.);
   // the paper value (2026-10-06); results are cutoff independent
   s["IR_CUTOFF"].ResetDefault().SetDefault(1e-5);
   s["DELTA"].SetDefault(1e-2);
@@ -61,6 +69,11 @@ void YFS_Base::RegisterDefaults(){
   s["DEBUG_DIR_FSR"].SetDefault("FSR_DEBUG");
   s["DEBUG_DIR_NLO"].SetDefault("YFS_NLO_Hist");
   s["COULOMB"].SetDefault(false);
+  s["COULOMB_HIGHER_ORDER"].SetDefault(coulombho::none);
+  // YFS: LOOP_SOFT_FLOOR (x = 2E/sqrt s): below it a photon set gets no
+  // multi-photon one-loop evaluation (the massive (n+2)-point loop loses
+  // precision there; NOTES-acraic-oneloop-nphoton.md section 3.3)
+  s["LOOP_SOFT_FLOOR"].SetDefault(1e-4);
   s["HIDE_PHOTONS"].SetDefault(true);
   s["FULL_FORM"].SetDefault(1);
   s["WW_FORM"].SetDefault(false);
@@ -125,9 +138,11 @@ void YFS_Base::RegisterDefaults(){
   */
   s["ACRAIC_WEIGHT"].SetDefault(tristate::automatic);
   /*
-    Where ACRAIC's virtual comes from. The default reproduces what the code did
-    implicitly - ACRAIC's own when no loop provider exists - but now says so, and
-    refuses rather than proceeding when that choice cannot be right.
+    Where ACRAIC's virtual comes from. auto (default), per process with V in
+    NLO_Part: the external loop provider when the process names a
+    Loop_Generator, else ACRAIC's own (e+e- -> f fbar only; refused for other
+    processes, YFS_Handler::MakeACRAIC). Without V in NLO_Part there is no
+    virtual whatever this says. acraic / external / helicity / none force it.
   */
   s["ACRAIC_Virtual"].SetDefault(acraicvirt::automatic);
   s["Collinear_Real"].SetDefault(false);
@@ -304,6 +319,7 @@ void YFS_Base::RegisterSettings(){
   m_vmax = s["VMAX"].Get<double>();
   m_vmax = 1.-sqr(m_vmax)/m_s;
   m_exchange_tmin = s["EXCHANGE_T_MIN"].Get<double>();
+  m_exchange_tmin_final = s["EXCHANGE_T_MIN_FINAL"].Get<double>();
   m_looptool  = s["LOOP_TOOL"].Get<bool>();
   m_debugDIR_ISR = s["DEBUG_DIR_ISR"].Get<std::string>();
   m_debugDIR_FSR = s["DEBUG_DIR_FSR"].Get<std::string>();
@@ -312,6 +328,10 @@ void YFS_Base::RegisterSettings(){
   m_isr_debug = s["ISR_DEBUG"].Get<bool>();
   m_deltacut = s["DELTA"].Get<double>()*m_isrcut;
   m_coulomb = s["COULOMB"].Get<bool>();
+  m_coulombho = s["COULOMB_HIGHER_ORDER"].Get<coulombho::code>();
+  if (m_coulomb && m_coulombho != coulombho::none)
+    THROW(fatal_error, "YFS: COULOMB (pole scheme, the whole Coulomb factor) and "
+          "COULOMB_HIGHER_ORDER (flat scheme, beyond the one-loop virtual) double count");
   m_hidephotons = s["HIDE_PHOTONS"].Get<bool>();
   m_fullform = s["FULL_FORM"].Get<int>();
   m_formWW = s["WW_FORM"].Get<bool>();
@@ -475,26 +495,24 @@ std::istream &YFS::operator>>(std::istream &str,submode::code &sub)
   return str;
 }
 
+// YFS: MODE. Names are matched whole and case-insensitively, and an unknown
+// value is an error: the old substring test switched YFS off silently for
+// e.g. "isrfsr", and read the "ISR+FSR" this printer used to write back as ISR.
+static const std::vector<YFS::Option_Name> s_yfsmode{
+  {"Off", yfsmode::off}, {"ISR", yfsmode::isr}, {"ISRFSR", yfsmode::isrfsr},
+  {"ISR+FSR", yfsmode::isrfsr}, {"FSR", yfsmode::fsr}};
+
 std::istream &YFS::operator>>(std::istream &str, yfsmode::code &mode)
 {
   std::string tag;
   str>>tag;
-  mode=yfsmode::off;
-  if      (tag.find("Off")!=std::string::npos)    mode=yfsmode::off;
-  else if (tag.find("ISRFSR")!=std::string::npos) mode=yfsmode::isrfsr;
-  else if (tag.find("ISR")!=std::string::npos)    mode=yfsmode::isr;
-  else if (tag.find("FSR")!=std::string::npos)    mode=yfsmode::fsr;
-  // else THROW(fatal_error, "Unknown YFS: MODE for Lepton Colliders")
+  mode=static_cast<yfsmode::code>(ParseOptionName(tag, s_yfsmode, "YFS: MODE"));
   return str;
 }
 
 std::ostream &YFS::operator<<(std::ostream &str,const yfsmode::code &ym)
 {
-  if      (ym==yfsmode::off)    return str<<"Off";
-  else if (ym==yfsmode::isr)    return str<<"ISR";
-  else if (ym==yfsmode::isrfsr) return str<<"ISR+FSR";
-  else if (ym==yfsmode::fsr)    return str<<"FSR";
-  return str<<"unknown";
+  return str<<OptionName(ym, s_yfsmode);
 }
 
 std::ostream &YFS::operator<<(std::ostream &str,const wgt::code &wm)
@@ -521,16 +539,30 @@ std::istream &YFS::operator>>(std::istream &str, wgt::code &mode)
   return str;
 }
 
+// YFS: Fixed_Order. The old substring test matched "NLO" inside "NNLO", so
+// NNLO could never be selected; LO and NNLO were never implemented.
+// NLO is refused too (2026-10-11): it was never confirmed to work, and it does
+// not - the total cross section depends on IR_CUTOFF at O(alpha) (Z-pole
+// mu mu: 1311, 1096, 690 pb at IR_CUTOFF 1e-5, 1e-3, 1e-1 GeV), because the ISR
+// spectrum keeps its resummed form gamma v^(gamma-1) while exp(Y) becomes 1+Y.
+// The fixed-order O(alpha) result is the named weight YFS.ACRAIC_FixedOrder
+// (ACRAIC: FIXED_ORDER_STREAM). The FixedOrder()==nlo branches in ISR.C,
+// FSR.C, Define_Dipoles.C and YFS_Handler.C are unreachable now and can be
+// removed.
 std::istream &YFS::operator>>(std::istream &str, fixed_order::code &mode)
 {
   std::string tag;
   str>>tag;
-  // mode=wgt::off;
-  if      (tag.find("Off")!=std::string::npos)    mode=fixed_order::off;
-  else if (tag.find("Full")!=std::string::npos)   mode=fixed_order::full;
-  else if (tag.find("NLO")!=std::string::npos) mode=fixed_order::nlo;
-  else if (tag.find("NNLO")!=std::string::npos) mode=fixed_order::nnlo;
-  else THROW(fatal_error, "Unknown YFS: Fixed_Order")
+  static const std::vector<YFS::Option_Name> names{
+    {"Off", fixed_order::off}, {"Full", fixed_order::full},
+    {"LO", fixed_order::lo}, {"NLO", fixed_order::nlo},
+    {"NNLO", fixed_order::nnlo}};
+  mode=static_cast<fixed_order::code>(ParseOptionName(tag, names, "YFS: Fixed_Order"));
+  if (mode==fixed_order::lo || mode==fixed_order::nnlo || mode==fixed_order::nlo)
+    THROW(not_implemented, "YFS: Fixed_Order "+tag+" is not available: NLO was"
+          " never validated and depends on IR_CUTOFF at O(alpha). For the"
+          " fixed-order O(alpha) result use the named weight"
+          " YFS.ACRAIC_FixedOrder (ACRAIC: {FIXED_ORDER_STREAM: true}).");
   return str;
 }
 

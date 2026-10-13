@@ -106,6 +106,22 @@ namespace YFS {
   //! two-loop beta_0^(2) (YFS/Main/Beta0_2.H). none: not included;
   //! ll: (1/2) delta_f^2 [+ delta_f w]; llnll: plus the per-leg NLL;
   //! exp: exp(delta_f) (1 + NLL) - 1 - delta_f [+ w (exp(delta_f)(1+NLL) - 1)].
+  //! YFS: COULOMB_HIGHER_ORDER - the W-pair Coulomb correction beyond one
+  //! loop, for the flat (four-fermion) scheme whose one-loop virtual already
+  //! has the O(alpha) Coulomb term: none, second (O(alpha^2), eq. (7) of
+  //! hep-ph/9507422) or all (the non-relativistic all-orders factor, eq. (2)),
+  //! each minus its O(alpha) term.
+  //! ACRAIC: LOOP_BETA_PLACEMENT - how the one-loop n-photon residual of a
+  //! set is placed on the partition amplitudes (step 3 of the N-photon
+  //! one-loop matching, NOTES-acraic-oneloop-nphoton.md): ratio (the loop
+  //! over tree delta_S times the shifted tree), resonance_aware (default),
+  //! exact_partition.
+  struct loopbetaplace {
+    enum code { ratio = 0, resonance_aware = 1, exact_partition = 2 };
+  };
+  struct coulombho {
+    enum code { none = 0, second = 1, all = 2 };
+  };
   struct beta02 {
     enum code { none = 0, ll = 1, llnll = 2, exp = 3, two_loop = 4 };
   };
@@ -163,7 +179,11 @@ namespace YFS {
   struct virtmassif {
     //! light_fermions: e, mu and the light quarks u, d, s (c and b stay
     //! massive: 4 m^2/s is above Massification's threshold at the Z pole)
-    enum code { off = 0, electrons = 1, leptons = 2, light_fermions = 3 };
+    //! light_fermions_charm: light_fermions and c, for W-pair energies and
+    //! above (OpenLoops has no library with a massive c in closed loops;
+    //! Massification's 4 m^2/s guard still applies)
+    enum code { off = 0, electrons = 1, leptons = 2, light_fermions = 3,
+                light_fermions_charm = 4 };
   };
   //! YFS: RV_PHOTON_CT - the emitted photon's charge counterterm in the RV.
   struct rvphotonct {
@@ -254,6 +274,10 @@ namespace YFS {
   std::ostream &operator<<(std::ostream &str, const bornphotonmc::code &c);
   std::istream &operator>>(std::istream &str, ewhigherorder::code &c);
   std::ostream &operator<<(std::ostream &str, const ewhigherorder::code &c);
+  std::istream &operator>>(std::istream &str, loopbetaplace::code &c);
+  std::ostream &operator<<(std::ostream &str, const loopbetaplace::code &c);
+  std::istream &operator>>(std::istream &str, coulombho::code &c);
+  std::ostream &operator<<(std::ostream &str, const coulombho::code &c);
   std::istream &operator>>(std::istream &str, beta02::code &c);
   std::ostream &operator<<(std::ostream &str, const beta02::code &c);
   std::istream &operator>>(std::istream &str, beta02pairs::code &c);

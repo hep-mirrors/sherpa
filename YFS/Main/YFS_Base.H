@@ -158,8 +158,12 @@ public:
   double m_v, m_vmax, m_isrcut, m_sp;
   //! YFS: EXCHANGE_T_MIN, GeV^2
   double m_exchange_tmin;
+  //! YFS: EXCHANGE_T_MIN_FINAL, GeV^2: the same bound on the physical event
+  double m_exchange_tmin_final = 0.;
   double m_alpha, m_alpi, m_hardmin, m_gp, m_g;
   bool m_CalForm, m_isr_debug, m_fsr_debug, m_coulomb;
+  //! YFS: COULOMB_HIGHER_ORDER (flat four-fermion W pairs, see YFS_Options.H)
+  coulombho::code m_coulombho;
   double m_photonMass, m_oneloop, m_born, m_isrWeight, m_fsrWeight, m_rescale_alpha;
   // m_nbar is deliberately NOT here. ISR and FSR each have their own photon
   // multiplicity and each declares it; a shared base copy meant ISR silently

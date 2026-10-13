@@ -93,6 +93,20 @@ YFS_Handler::~YFS_Handler()
     if(m_negskip!=0){
       msg_Out()<<"Total Events Skipped: "<<m_negskip<<std::endl;
     }
+    // non-finite weights (e.g. a loop provider's unstable point): zeroed in
+    // GenerateWeight; this rank's count, so the run can show how many it lost
+    if(m_regcheck_zero > 0)
+      msg_Out()<<"YFS: SOFT_REGION_CHECK (this rank): "<<m_regcheck_zero
+               <<" events skipped, ISR photon below K_min (weight zero)"<<std::endl;
+    for (int w(0); w < 2; ++w)
+      if(m_regcheck_n[w] > 0)
+        msg_Out()<<"YFS: SOFT_REGION_CHECK (this rank, "<<(w ? "FSR" : "ISR")<<"): "
+                 <<m_regcheck_bad[w]<<" of "<<m_regcheck_n[w]
+                 <<" photons handed to ACRAIC lie inside the common soft region (E_P < IR_CUTOFF/2);"
+                 <<" smallest E_P/Emin = "<<m_regcheck_min[w]<<std::endl;
+    if(m_nonfinite!=0)
+      msg_Out()<<"YFS (this rank): "<<m_nonfinite<<" events with a non-finite weight, "
+               <<"set to zero"<<std::endl;
     // The emission-side IF reweight is only trustworthy while the clamp is
     // rarely hit; a large count here means photons are being handed an
     // interference factor the soft approximation cannot support, and the rate
@@ -226,6 +240,17 @@ void YFS_Handler::SetFlavours(const ATOOLS::Flavour_Vector &flavs) {
     }
   }
   m_setparticles = true;
+  /*
+    The coherent partition sum needs ONE soft region for every photon (the
+    P-frame sphere of IR_CUTOFF/2; hep-ph/0006359 eqs. 36-38): ACRAIC's stage
+    factors, IF_FORMFACTOR_CUT and m_acraiclegs all assume it. HIDE_PHOTONS
+    false leaves each FSR pair in its own Q-frame region (KKMC KeyPia 0), which
+    is legitimate only at the squared level without IFI
+    (NOTES-lorentz-invariant-yfs-ff.md sec. 5.2).
+  */
+  if (m_useacraic && !m_hidephotons)
+    THROW(fatal_error, "YFS: HIDE_PHOTONS false is incompatible with ACRAIC: the "
+          "coherent sum needs one common soft region for all photons.");
   if (m_useacraic) InitializeACRAIC(m_flavs);
 }
 
@@ -255,7 +280,8 @@ void YFS_Handler::SetBornMomenta(const ATOOLS::Vec4D_Vector &p) {
   } else {
     m_ev.m_cmsboost = Poincare();
   }
-  if (m_formWW) MakeWWVecs(m_ev.m_bornMomenta);
+  // (the W momenta are built where they are used: CalculateWWForm and
+  //  CalculateCoulomb; this call read the previous event's m_plab)
   // AddFormFactor();
 }
 
@@ -411,6 +437,16 @@ void YFS_Handler::MakeACRAIC() {
       p_acraic->SetHasVirtual(p_nlo->HasVirtual() ||
                             (p_nlo->VirtualRequested() &&
                              p_nlo->AcraicSuppliesVirtual()));
+      // YFS: ACRAIC_Virtual auto, per process: the external provider when
+      // there is one, else ACRAIC's own, which exists for f fbar only
+      const bool autoown(m_acraicvirtsrc == acraicvirt::automatic &&
+                         p_nlo->AcraicSuppliesVirtual());
+      if (autoown && !p_acraic->IsFFbar())
+        THROW(fatal_error, "YFS: ACRAIC_Virtual auto with V in NLO_Part and no"
+              " Loop_Generator falls back to ACRAIC's own virtual, which is"
+              " e+e- -> f fbar only. Name a Loop_Generator (OpenLoops, Recola)"
+              " for this process, or drop V from NLO_Part.");
+      p_acraic->SetAutoOwnVirtual(autoown);
       p_acraic->SetNLO(p_nlo.get());
       if (m_acraicborn) p_nlo->SetBornProc(m_acraicborn);
     }
@@ -451,6 +487,32 @@ void YFS_Handler::MakeACRAIC() {
     p_acraic->SetPreFSRMomenta(m_ev.m_reallab);
     p_acraic->SetISRPhotons(m_ev.m_ISRPhotons);
     if (HasFSR()) p_acraic->SetFSRPhotons(m_ev.m_FSRPhotons);
+    /*
+      YFS: SOFT_REGION_CHECK (default false): the coherent sum assumes every
+      photon it is handed lies outside the common region, energy above
+      IR_CUTOFF/2 in the beams' rest frame. Checked in its invariant form,
+      k.P/sqrt(P^2) with P the beams' total momentum, so the check does not
+      depend on the frame the record is in; counted, reported at the end.
+    */
+    static const bool regcheck(Settings::GetMainSettings()["YFS"]["SOFT_REGION_CHECK"]
+                               .SetDefault(false).Get<bool>());
+    // an ISR photon at or below K_min zeroes the ISR weight (ISR.C, m_cut), so
+    // such an event carries no weight: counted apart, not as a violation
+    if (regcheck && p_isr && p_isr->GetCut() == 0) ++m_regcheck_zero;
+    else if (regcheck && m_ev.m_bornMomenta.size() >= 2) {
+      const SoftRegion common(SoftRegion::RestOf(m_ev.m_bornMomenta[0] + m_ev.m_bornMomenta[1],
+                                                 0.5*sqrt(m_s)*m_isrcut, "P"));
+      auto check = [&](const Vec4D_Vector &ks, int w) {
+        for (const Vec4D &k : ks) {
+          const double r(common.PhotonEnergy(k)/common.Emin());
+          ++m_regcheck_n[w];
+          m_regcheck_min[w] = std::min(m_regcheck_min[w], r);
+          if (r < 1. - 1e-9) ++m_regcheck_bad[w];
+        }
+      };
+      check(m_ev.m_ISRPhotons, 0);
+      if (HasFSR()) check(m_ev.m_FSRPhotons, 1);
+    }
     p_acraic->SetBornMomenta(m_ev.m_bornMomenta);
     p_acraic->SetISRFormFactor(m_ev.m_formfactor);
     /*
@@ -504,7 +566,10 @@ bool YFS_Handler::SetACRAICWStageGroups() {
 
 void YFS_Handler::CalculateWWForm() {
   if (m_formWW) {
-    MakeWWVecs(m_ev.m_bornMomenta);
+    if (!WPairMomenta(m_ev.m_plab, m_ev.m_Wp, m_ev.m_Wm)) {
+      m_ev.m_Wp *= 0.; m_ev.m_Wm *= 0.;
+      THROW(fatal_error, "YFS: WW_FORM needs a W+ W- final state or its four daughters");
+    }
     m_ev.m_ww_formfact = p_yfsFormFact->BVV_WW(m_ev.m_plab, m_ev.m_ISRPhotons, m_ev.m_Wp, m_ev.m_Wm,
                                           m_photonMass, sqrt(m_sp) / 2.);
     if (IsBad(m_ev.m_ww_formfact) || m_ev.m_ww_formfact < 0) {
@@ -769,6 +834,21 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     m_ev.m_acraiclegs = m_ev.m_plab;
     for (const auto &r : recordonly) m_ev.m_acraiclegs[r.first] = r.second;
   }
+  // YFS: EXCHANGE_T_MIN_FINAL: the physical |t|, full beams against the
+  // outgoing legs after all radiation as the record has them (hidden photons
+  // absorbed), all in the incoming pair's rest frame
+  if (m_exchange_tmin_final > 0. && m_ev.m_bornMomenta.size() >= 2) {
+    Vec4D_Vector phys(m_ev.m_acraiclegs.size() == m_ev.m_plab.size() ? m_ev.m_acraiclegs
+                                                                    : m_ev.m_plab);
+    phys[0] = m_ev.m_bornMomenta[0];
+    phys[1] = m_ev.m_bornMomenta[1];
+    if (!ExchangeLinesPassTMin(phys, m_exchange_tmin_final)) {
+      CountFSRFailure("CalculateFSR: physical |t| < EXCHANGE_T_MIN_FINAL");
+      m_ev.m_yfsweight = 0.0;
+      Reset();
+      return false;
+    }
+  }
   // get all photons
   m_ev.m_FSRPhotons.clear();
   m_ev.m_fsrphotonsforME.clear();
@@ -832,15 +912,36 @@ namespace {
                          ["WEIGHT_O0"].SetDefault(false).Get<bool>());
     return on;
   }
+  //! ACRAIC: FIXED_ORDER_STREAM - the strict O(alpha) truncation of ACRAIC as
+  //! the named weight ACRAIC_FixedOrder (see GenerateWeight)
+  /*
+    ACRAIC: STRICT_O1_STREAM (2026-10-11, referee M4): the O(alpha) ACRAIC
+    column as a strict truncation, the external virtual on C_0 only and no
+    (v/2)^2 term: (rho_1 + v Re<C_0, C_1>)/rho_crude, with the same IF
+    exponent swap as every ACRAIC column. Named weight ACRAIC_O1S, with an
+    external virtual only (ACRAIC's own virtual sits inside C_1).
+  */
+  bool AcraicStrictO1Stream()
+  {
+    static const bool on(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
+                         ["STRICT_O1_STREAM"].SetDefault(false).Get<bool>());
+    return on;
+  }
+  bool AcraicFixedOrderStream()
+  {
+    static const bool on(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
+                         ["FIXED_ORDER_STREAM"].SetDefault(false).Get<bool>());
+    return on;
+  }
 }
 
-bool YFS_Handler::ExchangeLinesPassTMin(const Vec4D_Vector &p) const {
-  if (m_exchange_tmin <= 0.) return true;
+bool YFS_Handler::ExchangeLinesPassTMin(const Vec4D_Vector &p, double tmin) const {
+  if (tmin <= 0.) return true;
   const size_t n(std::min(p.size(), m_flavs.size()));
   for (size_t i(0); i < 2 && i < n; ++i) {
     if (m_flavs[i].Charge() == 0.) continue;
     for (size_t j(2); j < n; ++j)
-      if (m_flavs[j] == m_flavs[i] && -(p[i] - p[j]).Abs2() < m_exchange_tmin)
+      if (m_flavs[j] == m_flavs[i] && -(p[i] - p[j]).Abs2() < tmin)
         return false;
   }
   return true;
@@ -852,37 +953,57 @@ void YFS_Handler::CountFSRFailure(const std::string &what) {
   if (on) ++m_fsrfail[what];
 }
 
-void YFS_Handler::MakeWWVecs(ATOOLS::Vec4D_Vector p) {
-  m_ev.m_Wm *= 0;
-  m_ev.m_Wp *= 0;
-  Flavour_Vector wp, wm;
-  for(size_t i = 2; i < p.size(); ++i)
-  {
-    if (m_flavs[i].IsAnti() && m_flavs[i].IntCharge()) {
-      m_ev.m_Wp += m_ev.m_plab[i];
-      wp.push_back(m_flavs[i]);
-    }
-    if (!m_flavs[i].IsAnti() && m_flavs[i].IntCharge()) {
-      m_ev.m_Wm += m_ev.m_plab[i];
-      wm.push_back(m_flavs[i]);
-    }
-    if (!m_flavs[i].IntCharge()) {
-      if (m_flavs[i].IsAnti()) {
-        m_ev.m_Wm += m_ev.m_plab[i];
-        wm.push_back(m_flavs[i]);
-      }
-      else {
-        m_ev.m_Wp += m_ev.m_plab[i];
-        wp.push_back(m_flavs[i]);
-      }
-    }
+bool YFS_Handler::WPairMomenta(const Vec4D_Vector &p, Vec4D &wp, Vec4D &wm) const {
+  // a W daughter pair: one fermion, one antifermion of the same SU(2) doublet
+  // (generation-diagonal), total charge +-1
+  auto partner = [](const Flavour &a, const Flavour &b) {
+    if (a.IsAnti() == b.IsAnti()) return false;
+    const kf_code ka(a.Kfcode()), kb(b.Kfcode());
+    const kf_code lo(std::min(ka, kb)), hi(std::max(ka, kb));
+    const bool lep(lo >= 11 && lo <= 15 && lo % 2 == 1 && hi == lo + 1);
+    const bool qrk((lo == 1 && hi == 2) || (lo == 3 && hi == 4) || (lo == 5 && hi == 6));
+    return lep || qrk;
+  };
+  // an on-shell W+ W- final state
+  int iwp(-1), iwm(-1);
+  for (size_t i(2); i < p.size() && i < m_flavs.size(); ++i) {
+    if (m_flavs[i].Kfcode() != kf_Wplus) continue;
+    (m_flavs[i].Charge() > 0. ? iwp : iwm) = i;
   }
+  if (iwp >= 0 && iwm >= 0) { wp = p[iwp]; wm = p[iwm]; return true; }
+  std::vector<size_t> fin;
+  for (size_t i(2); i < p.size() && i < m_flavs.size(); ++i)
+    if (m_flavs[i].IsFermion()) fin.push_back(i);
+  if (fin.size() != 4) return false;
+  // the three ways to split four fermions into two pairs
+  const int split[3][4] = {{0, 1, 2, 3}, {0, 2, 1, 3}, {0, 3, 1, 2}};
+  for (const auto &sp : split) {
+    const size_t a(fin[sp[0]]), b(fin[sp[1]]), c(fin[sp[2]]), d(fin[sp[3]]);
+    if (!partner(m_flavs[a], m_flavs[b]) || !partner(m_flavs[c], m_flavs[d])) continue;
+    const double q1(m_flavs[a].Charge() + m_flavs[b].Charge());
+    const double q2(m_flavs[c].Charge() + m_flavs[d].Charge());
+    if (std::abs(std::abs(q1) - 1.) > 1e-6 || std::abs(q1 + q2) > 1e-6) continue;
+    const Vec4D P1(p[a] + p[b]), P2(p[c] + p[d]);
+    wp = q1 > 0. ? P1 : P2;
+    wm = q1 > 0. ? P2 : P1;
+    return true;
+  }
+  return false;
 }
 
-
 void YFS_Handler::CalculateCoulomb() {
+  // flat scheme: the Coulomb factor beyond the one-loop virtual, at the
+  // ISR-reduced, pre-FSR hard point (m_plab[2..], all in one frame)
+  if (m_coulombho != coulombho::none) {
+    Vec4D wp, wm;
+    if (WPairMomenta(m_ev.m_plab, wp, wm))
+      m_ev.m_coulho = p_coulomb->HigherOrderWeight((wp + wm).Abs2(), wp.Abs2(), wm.Abs2(),
+                                                   m_coulombho == coulombho::second ? 1 : 2);
+    if (IsBad(m_ev.m_coulho)) m_ev.m_coulho = 1.;
+  }
   if (!m_coulomb) return;
-  MakeWWVecs(m_ev.m_bornMomenta);
+  if (!WPairMomenta(m_ev.m_plab, m_ev.m_Wp, m_ev.m_Wm))
+    THROW(fatal_error, "YFS: COULOMB needs a W+ W- final state or its four daughters");
   p_coulomb->Calculate(m_ev.m_Wp, m_ev.m_Wm);
   if (m_formWW) {
     // need to Subtract the Coulomb loop from virtual form factor
@@ -974,6 +1095,8 @@ void YFS_Handler::CalculateBeta() {
       const double r0(p_acraic->GetRhoCrude()), r1(p_acraic->GetResult());
       if (r0 > 0. && r1/r0 > heavy) {
         std::cerr<<"@@@ HEAVY factor="<<r1/r0<<" nphot="<<p_acraic->NPhot()
+                 <<" O0="<<p_acraic->GetResult0()/r0
+                 <<" O1="<<p_acraic->GetResult1()/r0
                  <<" BRfactor="<<m_ev.m_real<<std::endl;
         p_acraic->PrintKinematics(std::cerr);
         std::cerr<<tracebuf.str()<<"@@@ HEAVY end"<<std::endl;
@@ -1298,7 +1421,36 @@ double YFS_Handler::AcraicRealVirtualRemainder()
   const double r(p_acraic->RealVirtualRemainderRho(dv));
   static const bool probe(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_PROBE"]
                           .SetDefault(0).Get<int>() != 0);
-  if (probe) {
+  /*
+    YFS: RV_PROBE_MIN (default 0): print only events with |acrv| above it, and
+    then per photon its energy fraction, its smallest lab angle to a beam and
+    to an outgoing charged leg, and its dv (heavy real-virtual weights, Bhabha
+    O(alpha^2), 2026-10-11)
+  */
+  static const double probemin(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_PROBE_MIN"]
+                               .SetDefault(0.).Get<double>());
+  const double rcr0(p_acraic->GetRhoCrude());
+  if (probe && probemin > 0. && rcr0 > 0. && std::abs(r/rcr0) > probemin) {
+    const Vec4D_Vector pl(GetMomenta());
+    auto ang = [](const Vec4D &a, const Vec4D &b) {
+      const double c(Vec3D(a)*Vec3D(b)/(Vec3D(a).Abs()*Vec3D(b).Abs()));
+      return acos(Max(-1., Min(1., c)));
+    };
+    std::ostringstream o;
+    o<<std::setprecision(6)<<"@@@ ACRVBIG acrv="<<r/rcr0<<" nph="<<cph.size()
+     <<" nnlo="<<nd.size()<<" matched="<<nmatch;
+    for (size_t c(0); c < cph.size(); ++c) {
+      double tb(1e9), tf(1e9);
+      for (size_t i(0); i < pl.size(); ++i) {
+        if (i < 2) tb = Min(tb, ang(cph[c], pl[i]));
+        else if (m_flavs.size() > i && m_flavs[i].Charge() != 0.) tf = Min(tf, ang(cph[c], pl[i]));
+      }
+      o<<" | x="<<2.*cph[c].E()/sqrt(m_s)<<" thb="<<tb<<" thf="<<tf<<" dv="<<dv[c];
+    }
+    o<<"\n";
+    std::cerr<<o.str();
+  }
+  if (probe && !(probemin > 0.)) {
     const double rcr(p_acraic->GetRhoCrude());
     std::ostringstream o;
     o<<std::setprecision(10)<<"@@@ ACRV nph="<<cph.size()<<" nnlo="<<nd.size()
@@ -1354,7 +1506,10 @@ double YFS_Handler::AcraicRealVirtualHelicityRemainder()
     else anyhel = true;
   }
   ++m_acrv_n;
-  const double rhel(p_acraic->HelicityRealVirtualRemainderRho(r));
+  // ACRAIC: LOOP_BETA_MAX 2: the two-photon one-loop residual, built on the
+  // same per-photon remainders r (Acraic_LoopN.C); 0 otherwise
+  const double rloop(p_acraic->LoopNRemainderRho(p_nlo->m_loopnhel, r));
+  const double rhel(p_acraic->HelicityRealVirtualRemainderRho(r) + rloop);
   const double ravg(p_acraic->RealVirtualRemainderRho(dv));
   const double rcr(p_acraic->GetRhoCrude());
   if (rcr > 0.) p_acraic->AccumulateRealVirtualHelicity(anyhel, rhel/rcr, ravg/rcr);
@@ -1547,6 +1702,7 @@ void YFS_Handler::GenerateWeight() {
   else if (m_mode == yfsmode::fsr) m_ev.m_yfsweight = m_fsrWeight;
   else m_ev.m_yfsweight = m_isrWeight;
   if (m_coulomb) m_ev.m_yfsweight *= p_coulomb->GetWeight();
+  if (m_coulombho != coulombho::none) m_ev.m_yfsweight *= m_ev.m_coulho;
   if (m_formWW) m_ev.m_yfsweight *= m_ev.m_ww_formfact; //*exp(m_ev.m_coulSub);
   // YFS: LO_PROBE - the LO factors before CalculateBeta, to see whether the
   // NLO pieces modify them (w_lo is formed after it)
@@ -1646,6 +1802,14 @@ void YFS_Handler::GenerateWeight() {
   */
   const bool acraico2(p_acraic && p_acraic->Order() == 2);
   double corr_acraic_o1(0.), corr_acraic_v0(0.), corr_acraic_v1(0.);
+  // ACRAIC: TNP_STREAMS: the real v/2 the templates compose with (0 without
+  // an external virtual: ACRAIC's own virtual is then inside A_1)
+  double tnp_vhalf(0.);
+  // ACRAIC: FIXED_ORDER_STREAM: the external virtual v' and the IF exponent
+  // swap dy of this event (0 when not applied)
+  double vext_fo(0.), dyif_fo(0.);
+  // ACRAIC: STRICT_O1_STREAM
+  double corr_acraic_o1s(0.);
   // ACRAIC_O1V1: the O(alpha^1) column with (1+v/2) on the whole of A_1, the
   // O(alpha) composition of ACRAIC: REAL_VIRTUAL factorisable, on the same event
   double corr_acraic_o1v1(0.);
@@ -1697,7 +1861,34 @@ void YFS_Handler::GenerateWeight() {
       bit for bit, with none). Everything below - beta_0^(2), Dyson VP, the
       ORDER 2 streams - takes v'.
     */
-    const double v(m_ev.m_nlo_virtual/m_born - p_acraic->ResonanceBornDeltaV());
+    // ACRAIC: ISR_VERTEX_AT_S - the initial vertex from the post-ISR Born point
+    // (m_plab, where the provider's virtual was taken) to the full s
+    static const bool isrvs(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
+                            ["ISR_VERTEX_AT_S"].Get<bool>());
+    double dvisr(0.);
+    if (isrvs && m_ev.m_plab.size() >= 2)
+      dvisr = p_acraic->InitialVertexShift(m_s, (m_ev.m_plab[0] + m_ev.m_plab[1]).Abs2());
+    const double v(m_ev.m_nlo_virtual/m_born - p_acraic->ResonanceBornDeltaV() + dvisr);
+    tnp_vhalf = 0.5*v;
+    vext_fo = v;
+    if (AcraicStrictO1Stream() && rcr > 0.) {
+      const double s1((p_acraic->GetResult1() + v*p_acraic->GetResult01Order1())/rcr);
+      if (!IsBad(s1)) corr_acraic_o1s = s1;
+    }
+    // ACRAIC: CHECK_XS point harness (2026-10-11): the external virtual on the
+    // dumped point, for the KKMC beta_1/Born of the same point. The O(alpha)
+    // composition with the virtual on A_0, as KKMC's CEEX1:
+    //   rho/rho0 - 1 = (rho1 + v r01o1 + v^2/4 rho0)/rho0 - 1
+    if (p_acraic->JustDumped()) {
+      const double r0(p_acraic->GetResult0()), r1(p_acraic->GetResult1()),
+                   r01(p_acraic->GetResult01Order1());
+      std::ostringstream o;
+      o<<std::setprecision(10)<<"@@@ EXTVPT v="<<v<<" vres="<<p_acraic->ResonanceBornDeltaV()
+       <<" rho0="<<r0<<" rho1="<<r1<<" r01o1="<<r01
+       <<" real="<<(r0 != 0. ? r1/r0 - 1. : 0.)
+       <<" beta1ext="<<(r0 != 0. ? (r1 + v*r01 + 0.25*v*v*r0)/r0 - 1. : 0.)<<"\n";
+      std::cerr<<o.str();
+    }
     const double add(rcr > 0. ? (v*p_acraic->GetResult01()
                                  + 0.25*v*v*p_acraic->GetResultVV())/rcr : 0.);
     if (!IsBad(add)) corr_acraic += add;
@@ -1811,6 +2002,7 @@ void YFS_Handler::GenerateWeight() {
       and v' = v - dI_B is its Born-weighted 2 Re; with none both are zero.
     */
     const double v(vfull - p_acraic->ResonanceBornDeltaV());
+    tnp_vhalf = 0.5*v;
     if (p_acraic->ResonanceExponentiation()) {
       const std::vector<Complex> &dI(p_acraic->ResonanceBornDeltaHelicity());
       for (size_t f(0); f < d.size() && f < dI.size(); ++f) d[f] -= dI[f];
@@ -1953,6 +2145,14 @@ void YFS_Handler::GenerateWeight() {
     if (acraico2 && !IsBad(vp_v1)) corr_acraic_v1 += vp_v1;
   }
   double corr_acraic_v2(acraico2 && corr_acraic != 0. ? corr_acraic + dv2_acraic : 0.);
+  std::vector<double> tnp1, tnp2;
+  if (p_acraic && p_acraic->TnpOn() && corr_acraic != 0. && p_acraic->GetRhoCrude() > 0.) {
+    const double rcr(p_acraic->GetRhoCrude());
+    if (p_acraic->TnpTemplates(1, tnp_vhalf, tnp1)) for (double &x : tnp1) x /= rcr;
+    else tnp1.clear();
+    if (acraico2 && p_acraic->TnpTemplates(2, tnp_vhalf, tnp2)) for (double &x : tnp2) x /= rcr;
+    else tnp2.clear();
+  }
   static const bool ifcut(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
                           ["IF_FORMFACTOR_CUT"].SetDefault(true).Get<bool>());
   if (ifcut && corr_acraic != 0. && m_ifisub && m_fullform >= 1 &&
@@ -1960,10 +2160,50 @@ void YFS_Handler::GenerateWeight() {
     const double wgen(0.5*sqrt(m_s)*m_isrcut);
     const double dy(p_dipoles->FormFactorSumIF(wgen)
                     - p_dipoles->FormFactorSumIF());
-    if (!IsBad(dy)) { corr_acraic *= exp(dy); corr_acraic_o1 *= exp(dy); corr_acraic_o1v1 *= exp(dy);
+    if (!IsBad(dy)) { dyif_fo = dy; corr_acraic_o1s *= exp(dy);
+                      corr_acraic *= exp(dy); corr_acraic_o1 *= exp(dy); corr_acraic_o1v1 *= exp(dy);
                       corr_acraic_o0_ifcut *= exp(dy);
                       corr_acraic_v0 *= exp(dy); corr_acraic_v1 *= exp(dy); corr_acraic_v2 *= exp(dy);
-                      corr_acraic_nob02 *= exp(dy); corr_acraic_novp *= exp(dy); }
+                      corr_acraic_nob02 *= exp(dy); corr_acraic_novp *= exp(dy);
+                      for (double &x : tnp1) x *= exp(dy);
+                      for (double &x : tnp2) x *= exp(dy); }
+  }
+  /*
+    ACRAIC: FIXED_ORDER_STREAM (2026-10-11) - ACRAIC truncated to O(alpha), on
+    the resummed events, as the named weight ACRAIC_FixedOrder:
+      sigma_FO = B (1 + Y(emin) + v)   [no photon above emin]
+               + int_{k > emin} R      [one photon; R = rho_1, ACRAIC's exact
+                                        one-photon |A_1|^2, IFI included]
+    and nothing from two or more photons. emin = IR_CUTOFF/2 in the beams'
+    rest frame is the boundary every visible photon lies above. The ACRAIC
+    column, W_gen exp(Y) exp(dy) rho/rho_crude, stands for exp(Y(emin)) rho
+    with Y(emin) = Y + dy + shift (Define_Dipoles::FormFactorShiftToRegion),
+    so the truncation is W_gen exp(Y) exp(dy - Y(emin)) rho_FO/rho_crude.
+    With an external virtual rho_1 = rho_0 at n = 0 and v is v'; with
+    ACRAIC's own virtual, v sits inside rho_1 (|delta|^2 and the one-photon
+    delta x real are then O(alpha^2) left in). RESONANCE_EXPONENTIATION greco
+    leaves O(alpha^2) of its own: switch it off for a strict comparison.
+    Replaces YFS: Fixed_Order: NLO, which was never validated and is IR_CUTOFF
+    dependent at O(alpha) (measured 2026-10-11).
+  */
+  double corr_acraic_fo(0.);
+  if (AcraicFixedOrderStream() && p_acraic && corr_acraic != 0. && p_dipoles &&
+      p_acraic->GetRhoCrude() > 0.) {
+    if (m_fullform < 1 || m_fullform > 2 || m_coulomb ||
+        m_acraicvirtsrc == acraicvirt::helicity || p_dipoles->FormFactorSumDecay() != 0.)
+      THROW(not_implemented, "ACRAIC: FIXED_ORDER_STREAM needs FULL_FORM 1 or 2, "
+            "no Coulomb factor, no W decay stages and ACRAIC_Virtual other than "
+            "helicity.");
+    const size_t nphot(p_acraic->NPhot());
+    const double yfo(m_ev.m_formfactor_sum + dyif_fo
+                     + p_dipoles->FormFactorShiftToRegion(0.5*sqrt(m_s)*m_isrcut));
+    double rhofo(0.);
+    if (nphot == 0)
+      rhofo = p_acraic->GetResult1() + (vext_fo + yfo)*p_acraic->GetResult0();
+    else if (nphot == 1)
+      rhofo = p_acraic->GetResult1();
+    corr_acraic_fo = exp(dyif_fo - yfo)*rhofo/p_acraic->GetRhoCrude();
+    if (IsBad(corr_acraic_fo)) corr_acraic_fo = 0.;
   }
   const bool   acraic_nom (m_acraic_weight && corr_acraic != 0.);
   ProbeFinalWeights(corr_eex, corr_acraic, wif, acraico2, corr_acraic_o1, corr_acraic_v0, corr_acraic_v1);
@@ -1975,12 +2215,16 @@ void YFS_Handler::GenerateWeight() {
   m_ev.m_corr_eex     = corr_eex;
   m_ev.m_corr_acraic_o1 = corr_acraic_o1;
   m_ev.m_corr_acraic_o0 = corr_acraic_o0_ifcut;
+  m_ev.m_corr_acraic_fo = corr_acraic_fo;
+  m_ev.m_corr_acraic_o1s = corr_acraic_o1s;
   m_ev.m_corr_acraic_o1v1 = corr_acraic_o1v1;
   m_ev.m_corr_acraic_v0 = corr_acraic_v0;
   m_ev.m_corr_acraic_v1 = corr_acraic_v1;
   m_ev.m_corr_acraic_v2 = corr_acraic_v2;
   m_ev.m_corr_acraic_nob02 = corr_acraic_nob02;
   m_ev.m_corr_acraic_novp = corr_acraic_novp;
+  m_ev.m_tnp1.swap(tnp1);
+  m_ev.m_tnp2.swap(tnp2);
   CheckInvariants();
   // Captured before the IsBad/negative-weight clamps below, since the named
   // weights are ratios against the weight the event actually carries.
@@ -2011,6 +2255,7 @@ void YFS_Handler::GenerateWeight() {
              "  NLO  Correction = " << m_ev.m_real << "\n" <<
              "Total Weight = " << m_ev.m_yfsweight << "\n";
     m_ev.m_yfsweight = 0;
+    ++m_nonfinite;
   }
   if(m_ev.m_yfsweight < 0 && m_skipNegWeights){
     msg_Debugging()<<"Skipping negative Weight in YFS"<<std::endl;
@@ -2078,6 +2323,9 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
   if (m_useacraic && p_nlo && p_nlo->Beta02Acraic().On() &&
       m_acraicvirtsrc != acraicvirt::acraic)
     names.push_back("ACRAIC_NO_B02");
+  // COULOMB_HIGHER_ORDER: every column without the beyond-one-loop W-pair
+  // Coulomb factor, on the same event
+  if (m_coulombho != coulombho::none) names.push_back("NoCoulombHO");
   if (p_nlo && p_nlo->Beta02Nlo().On()) names.push_back("NLO_EW_NO_B02");
   if (p_nlo && p_nlo->DysonVPOn()) {
     if (m_useacraic && m_acraicvirtsrc != acraicvirt::acraic) names.push_back("ACRAIC_NO_VP");
@@ -2089,6 +2337,8 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
     for (const char *n : {"ACRAIC_EXTV","ACRAIC_L","ACRAIC_R","ACRAIC_EXTV_L","ACRAIC_EXTV_R"})
       names.push_back(n);
   if (m_useacraic && AcraicO0Stream()) names.push_back("ACRAIC_O0");
+  if (m_useacraic && AcraicFixedOrderStream()) names.push_back("ACRAIC_FixedOrder");
+  if (m_useacraic && AcraicStrictO1Stream()) names.push_back("ACRAIC_O1S");
   // ACRAIC: ORDER 2 also carries the O(alpha^1) ACRAIC column of each event
   if (m_useacraic && ATOOLS::Settings::GetMainSettings()["ACRAIC"]["ORDER"]
       .SetDefault(1).Get<int>() == 2) {
@@ -2098,6 +2348,16 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
     names.push_back("ACRAIC_O2V1");
     names.push_back("ACRAIC_O2V2");
   }
+  // ACRAIC: TNP_STREAMS - templates, 0 on events without an ACRAIC weight
+  std::vector<std::string> tnpnames;
+  if (m_useacraic && p_acraic && p_acraic->TnpOn()) {
+    for (int c(0); c <= YFS::Acraic_Base::tnp_multi; ++c)
+      tnpnames.push_back(std::string("ACRAIC_TNP1_") + YFS::Acraic_Base::TnpClassName(c));
+    if (p_acraic->Order() == 2)
+      for (int c(0); c < YFS::Acraic_Base::tnp_nclass; ++c)
+        tnpnames.push_back(std::string("ACRAIC_TNP2_") + YFS::Acraic_Base::TnpClassName(c));
+    names.insert(names.end(), tnpnames.begin(), tnpnames.end());
+  }
   if (m_ladder_weights) {
     if (m_coulomb && p_coulomb) names.push_back("NoCoulomb");
     if (m_ifisub && m_fullform >= 1 &&
@@ -2105,6 +2365,7 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
       names.push_back("NoIFI");
   }
   for (const std::string &n : names) wyfs[n] = 1.;
+  for (const std::string &n : tnpnames) wyfs[n] = 0.;
   if (!names.empty()) any = true;
   m_wnames.clear();
   m_wnames.insert(names.begin(), names.end());
@@ -2124,6 +2385,14 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
         if (!IsBad(ri)) wyfs[nm[i]] = ri;
       }
     }
+    if (m_wnames.count("ACRAIC_O1S") && m_ev.m_corr_acraic_o1s != 0.) {
+      const double ro1s(m_ev.m_corr_acraic_o1s/m_ev.m_corr_nominal);
+      if (!IsBad(ro1s)) wyfs["ACRAIC_O1S"] = ro1s;
+    }
+    if (m_wnames.count("ACRAIC_FixedOrder")) {
+      const double rfo(m_ev.m_corr_acraic_fo/m_ev.m_corr_nominal);
+      if (!IsBad(rfo)) wyfs["ACRAIC_FixedOrder"] = rfo;
+    }
     if (m_wnames.count("ACRAIC_O0")) {
       const double r0(m_ev.m_corr_acraic_o0/m_ev.m_corr_nominal);
       if (!IsBad(r0)) wyfs["ACRAIC_O0"] = r0;
@@ -2140,6 +2409,14 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
       const double rv2(m_ev.m_corr_acraic_v2/m_ev.m_corr_nominal);
       if (!IsBad(rv2) && m_ev.m_corr_acraic_v2 != 0.) wyfs["ACRAIC_O2V2"] = rv2;
     }
+  }
+  if (!tnpnames.empty() && !IsZero(m_ev.m_corr_nominal)) {
+    // the template contribution T_c of this event: nominal weight x T_c/corr
+    const size_t n1(YFS::Acraic_Base::tnp_multi + 1);
+    for (size_t c(0); c < m_ev.m_tnp1.size() && c < n1; ++c)
+      if (!IsBad(m_ev.m_tnp1[c])) wyfs[tnpnames[c]] = m_ev.m_tnp1[c]/m_ev.m_corr_nominal;
+    for (size_t c(0); c < m_ev.m_tnp2.size() && n1 + c < tnpnames.size(); ++c)
+      if (!IsBad(m_ev.m_tnp2[c])) wyfs[tnpnames[n1 + c]] = m_ev.m_tnp2[c]/m_ev.m_corr_nominal;
   }
   if (m_wnames.count("NLO_EW") && !IsZero(m_ev.m_corr_nominal)) {
     const double r(m_ev.m_corr_eex/m_ev.m_corr_nominal);
@@ -2210,6 +2487,8 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
     }
     for (const auto &kv : q) wyfs[kv.first] = IsBad(kv.second) ? 0. : kv.second;
   }
+  if (m_wnames.count("NoCoulombHO") && !IsZero(m_ev.m_coulho) && !IsBad(m_ev.m_coulho))
+    wyfs["NoCoulombHO"] = 1./m_ev.m_coulho;
   if (m_wnames.count("ACRAIC_NO_B02") && m_ev.m_corr_acraic != 0. &&
       !IsZero(m_ev.m_corr_nominal)) {
     const double r(m_ev.m_corr_acraic_nob02/m_ev.m_corr_nominal);
@@ -2257,6 +2536,11 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
       if (!IsBad(value)) wyfs[name] = value;
     };
 
+    // NB (2026-10-11): NLO_FixedOrder / NNLO_FixedOrder are not strict
+    // truncations: every event keeps its photons, the form factor becomes
+    // 1+Y, and multi-photon events still contribute with the hardest photon's
+    // real. Never compared with an independent fixed-order result; the strict
+    // O(alpha) truncation is ACRAIC_FixedOrder (ACRAIC: FIXED_ORDER_STREAM).
     const bool have_fixed_order_ff =
         m_fullform >= 1 && !IsZero(m_ev.m_formfactor);
     // The cached exponent, not a fresh FormFactorSum(): the two must be the

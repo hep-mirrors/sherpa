@@ -47,9 +47,17 @@ FSR::FSR()
   // with the photon mass); t-channel dipoles use BVirtT either way
   s["FSR_CRU"].SetDefault(true);
   s["FSR_NGAMMA"].SetDefault(-1);
-  s["FSR_CUT"].SetDefault(1e-2*m_isrcut);
-  m_fsrcut = s["FSR_CUT"].Get<double>();
-  m_fsrcut /= sqrt(m_s);
+  // FSR_CUT is in GeV, like IR_CUTOFF; m_fsrcut is it over the nominal
+  // sqrt(s), like m_isrcut. NB the default, 1e-2*m_isrcut read as GeV, is in
+  // effect 1e-2*IR_CUTOFF/sqrt(s) GeV, not the 1e-2*IR_CUTOFF GeV the comment
+  // below assumes. Kept as is (2026-10-11): the corrected default (applied
+  // and tested that day) left the cutoff-independent columns unchanged
+  // (YFS.LO 1332.22(43) vs 1332.24(42) pb, Z-pole mu mu) and gave no speed-up,
+  // but three of three ACRAIC runs with it had a heavy event in the nominal
+  // against none in one run with this one; unresolved, so not switched.
+  const double fsrcutdefault(1e-2*m_isrcut);
+  s["FSR_CUT"].SetDefault(fsrcutdefault);
+  m_fsrcut = s["FSR_CUT"].Get<double>()/sqrt(m_s);
   /*
     The Q-frame generation cut EminQ = EQQ*Delta must lie below the hiding
     scale Emin = IR_CUTOFF/2: the Piatek pieces m_DelYFS - m_delvol in
@@ -61,9 +69,10 @@ FSR::FSR()
   if (m_fsrcut >= m_isrcut) {
     msg_Error()<<METHOD<<": FSR_CUT = "<<m_fsrcut*sqrt(m_s)
                <<" GeV is not below IR_CUTOFF = "<<m_isrcut*sqrt(m_s)
-               <<" GeV, which the hidden-photon bookkeeping requires."
-               <<" Using the default "<<1e-2*m_isrcut<<" GeV instead.\n";
-    m_fsrcut = 1e-2*m_isrcut/sqrt(m_s);
+               <<" GeV, which the hidden-photon bookkeeping requires (the Q-frame"
+               <<" generation region must lie inside the common P-frame region)."
+               <<" Using the default "<<fsrcutdefault<<" GeV instead.\n";
+    m_fsrcut = fsrcutdefault/sqrt(m_s);
   }
   m_fsrcutF = s["FSR_FCUT"].Get<double>();
   m_nbar = s["FSR_NBAR"].Get<double>();
@@ -519,38 +528,42 @@ bool FSR::YFS_FORM(){
   // rest frame does not exist. That is the pre-existing behaviour and is at
   // least finite; a dipole with sQ < (m1+m2)^2 is a separate problem.
   const double mr1(m_r1.Mass()), mr2(m_r2.Mass());
-  double Er1(0.5*sqrt(m_sQ)), Er2(0.5*sqrt(m_sQ));
-  if (m_sQ > sqr(mr1 + mr2)) {
-    Er1 = (m_sQ + mr1*mr1 - mr2*mr2)/(2.*sqrt(m_sQ));
-    Er2 = (m_sQ + mr2*mr2 - mr1*mr1)/(2.*sqrt(m_sQ));
-  }
   CalculateBetaBar();
   m_q1q2 = m_dipole[0]*m_dipole[1];
   double Eqq = 0.5*sqrt(m_sQ);
   double Delta = m_fsrcut*(1.+2.*m_Q*m_photonSum/m_sQ);
   m_EminQ = Eqq*Delta;
-  double Eq1   = (m_sQ +m_mass[0]*m_mass[0] -m_mass[1]*m_mass[1])/(2*sqrt(m_sQ));
-  double Eq2   = (m_sQ +m_mass[1]*m_mass[1] -m_mass[0]*m_mass[0])/(2*sqrt(m_sQ));
+  /*
+    The two soft regions of the FSR bookkeeping
+      X  the P-frame sphere of Emin = IR_CUTOFF/2: the common region of ISR,
+         FSR and IFI, where photons are kept (below it they are hidden);
+      Q  the post-emission pair rest frame, sphere of EminQ = EQQ Delta: where
+         the FSR crude generated (KK2f eq. 69). Its leg energies are two-body
+         rest-frame energies: of the ghosts (falling back to sqrt(sQ)/2 below
+         their threshold) for the crude, of the flavour masses for the exact
+         B-tilde.
+  */
+  const SoftRegion regX(SoftRegion::Lab(m_Emin, "P"));
+  const SoftRegion regQghost(SoftRegion::PairRest(m_sQ, m_EminQ, true, "Q"));
+  const SoftRegion regQ(SoftRegion::PairRest(m_sQ, m_EminQ, false, "Q"));
+  p_dipole->SetGenRegion(regQghost);
+  p_dipole->SetExpRegion(m_hidephotons ? regX : regQ);
 
   m_bvrA = p_fsrFormFact->A(m_q1q2,m_mass[0],m_mass[1]);
   double YFS_IR = -2.*m_alpi*std::abs(m_QF2)*(m_q1q2*p_fsrFormFact->A(m_dipole[0],m_dipole[1])-1.)*log(1/Delta);
 
   if (m_use_crude) {
-    m_BtiXcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, YFS::Leg(m_r1), YFS::Leg(m_r2), m_Emin);
+    m_BtiXcru = p_fsrFormFact->BVR_cru(regX, m_r1, m_r2, m_r1.Mass(), m_r2.Mass());
     // Jadach always uses the symmetric EQQ=0.5*sqrt(svarQ) for
     // BOTH particles' energy in the Q-scale crude evaluation, not the
-    // ghosts' own (recoil-asymmetric) energies - confirmed via
-    // YFS/Tools/FSR_KKMC_CrossCheck.C: using m_r1[0]/m_r2[0] here matched
-    // KKMC to only ~1.8e-6 at soft-photon kinematics, growing to ~6.3e-5 at
-    // harder/more asymmetric photon configurations, while Eqq,Eqq matches
-    // to 9 sig figs at both (2026-08-05).
-    m_BtiQcru = p_fsrFormFact->BVR_cru(m_r1 * m_r2, YFS::Leg(Er1, mr1), YFS::Leg(Er2, mr2), m_EminQ);
+    // ghosts' own (recoil-asymmetric) energies 
+    m_BtiQcru = p_fsrFormFact->BVR_cru(regQghost, m_r1, m_r2, mr1, mr2);
   }
   else {
-    m_BtiXcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, m_r1[0], m_r2[0], m_r1.Mass(), m_r2.Mass(), m_Emin, m_photonMass, 0);
+    m_BtiXcru = p_fsrFormFact->BVR_full(regX, m_r1, m_r2, m_r1.Mass(), m_r2.Mass(), m_photonMass, 0);
     // Same EQQ,EQQ convention fix as the BVR_cru branch above - see its comment.
     // Same Eq1/Eq2 reasoning as the BVR_cru branch above.
-    m_BtiQcru = p_fsrFormFact->BVR_full(m_r1 * m_r2, Er1, Er2, mr1, mr2, m_EminQ, m_photonMass, 0);
+    m_BtiQcru = p_fsrFormFact->BVR_full(regQghost, m_r1, m_r2, mr1, mr2, m_photonMass, 0);
   }
   m_volmc = m_gammapFF*log(1./m_fsrcut);
   // Reset before the branch. m_DelYFS and m_delvol are only assigned inside
@@ -562,8 +575,8 @@ bool FSR::YFS_FORM(){
   m_DelYFS = 0.;
   m_delvol = 0.;
   if (m_hidephotons) {
-    m_btilStar = p_fsrFormFact->BVR_full(m_q1q2,m_dipole[0][0], m_dipole[1][0],m_mass[0],m_mass[1], m_Emin, m_photonMass, 0);
-    m_btil     = p_fsrFormFact->BVR_full(m_q1q2,Eq1,Eq2,m_mass[0],m_mass[1], m_EminQ, m_photonMass,0);
+    m_btilStar = p_fsrFormFact->BVR_full(regX, m_dipole[0], m_dipole[1], m_mass[0], m_mass[1], m_photonMass, 0);
+    m_btil     = p_fsrFormFact->BVR_full(regQ, m_dipole[0], m_dipole[1], m_mass[0], m_mass[1], m_photonMass, 0);
     m_DelYFS = m_btilStar - m_btil;
     m_delvol = m_BtiXcru  - m_BtiQcru;
     m_hideW = exp(YFS_IR + m_DelYFS + m_volmc - m_delvol);

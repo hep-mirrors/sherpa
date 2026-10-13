@@ -103,6 +103,9 @@ namespace YFS {
           //! same Y in numerator and denominator.
           double m_formfactor_sum = 0.;
           double m_coulSub = 0.;
+          //! YFS: COULOMB_HIGHER_ORDER: 1 + delta_C - delta_C^(1) of the W pair
+          //! (1 when off or when the final state has no W+W- pairing)
+          double m_coulho = 1.;
           double m_ww_formfact = 1.;
           double m_real = 1.;
           //! The EEX beta-expansion estimate, assigned in CalculateBeta only
@@ -155,7 +158,11 @@ namespace YFS {
           //! ACRAIC: ORDER 2 only - the O(alpha^1) ACRAIC correction of the
           //! same event (named weight ACRAIC_O1), composed exactly as ORDER 1
           double m_corr_acraic_o1 = 0.;
+          //! ACRAIC: STRICT_O1_STREAM, (rho_1 + v Re<C_0,C_1>)/rho_crude
+          double m_corr_acraic_o1s = 0.;
           double m_corr_acraic_o0 = 0.;   //!< ACRAIC: WEIGHT_O0, rho_0/rho_crude
+          //! ACRAIC: FIXED_ORDER_STREAM, the O(alpha) truncation (see GenerateWeight)
+          double m_corr_acraic_fo = 0.;
           //! ... and with (1+v/2) on the whole of A_1 (ACRAIC_O1V1)
           double m_corr_acraic_o1v1 = 0.;
           //! ORDER 2, both external-virtual compositions: (v/2) on A_0
@@ -168,6 +175,9 @@ namespace YFS {
           double m_corr_acraic_nob02 = 0.;
           //! YFS: DYSON_VP: the ACRAIC correction without the VP resummation (ACRAIC_NO_VP)
           double m_corr_acraic_novp = 0.;
+          //! ACRAIC: TNP_STREAMS: the class templates T_c/rho_crude (with the IF
+          //! cut) at O(alpha) (ACRAIC_TNP1_*) and at ORDER 2 (ACRAIC_TNP2_*)
+          std::vector<double> m_tnp1, m_tnp2;
         };
         YFS_Event m_ev;
 
@@ -190,6 +200,12 @@ namespace YFS {
         //! Y in numerator and denominator, whatever happens to the dipoles in
         //! between.
         int m_negskip;
+        //! events whose weight came out non-finite (zeroed, reported at the end)
+        long m_nonfinite = 0;
+        //! YFS: SOFT_REGION_CHECK counters (photons checked, inside the region, min E_P/Emin)
+        long m_regcheck_n[2] = {0, 0}, m_regcheck_bad[2] = {0, 0};   //!< [ISR, FSR]
+        double m_regcheck_min[2] = {1e300, 1e300};
+        long m_regcheck_zero = 0;
         std::unique_ptr<YFS::Coulomb> p_coulomb;
         /*!
           The externally visible view (SHERPA's Signal_Processes copies it as a
@@ -325,7 +341,9 @@ namespace YFS {
         std::map<std::string, long> m_fsrfail;
         long m_fsrtrials = 0;
         void CountFSRFailure(const std::string &what);
-        bool ExchangeLinesPassTMin(const ATOOLS::Vec4D_Vector &p) const;
+        bool ExchangeLinesPassTMin(const ATOOLS::Vec4D_Vector &p) const
+        { return ExchangeLinesPassTMin(p, m_exchange_tmin); }
+        bool ExchangeLinesPassTMin(const ATOOLS::Vec4D_Vector &p, double tmin) const;
         //! This event's s, handed to every YFS object the handler owns.
         void SetEventS(const double s);
         //! Whether the kept initial-initial dipole was built on this event's
@@ -393,6 +411,8 @@ namespace YFS {
         inline double GetBorn() { return m_born; }
 
         inline yfsmode::code  Mode()   const {return m_mode; }
+        //! YFS: Integrate_NLO - whether CalculateBeta() also runs while integrating
+        inline bool IntegrateNLO() const { return m_int_nlo != 0; }
 
         inline bool UsingLoopTool()   const {return m_looptool; }
         // Undo the incoming-pair-rest-frame boost that SetBornMomenta applied
@@ -470,7 +490,17 @@ namespace YFS {
         void CheckMasses();
         void Reset();
         void AddFormFactor();
-        void MakeWWVecs(ATOOLS::Vec4D_Vector p);
+        /*!
+          The W+ and W- momenta of the final state: an on-shell W+ W- pair, or
+          the daughters of a four-fermion final state paired by flavour (CKM
+          diagonal): W+ -> nu_l l+ or u-type quark + d-type antiquark of the
+          same generation, W- the charge conjugates. False if neither exists.
+          Replaces MakeWWVecs (2026-10-10), which grouped by particle /
+          antiparticle (u into W-, ubar into W+; an on-shell W+ into W-, against
+          BVV_WW's p1 = W+) and read m_plab whatever it was given; for four
+          leptons the two agree exactly.
+        */
+        bool WPairMomenta(const Vec4D_Vector &p, Vec4D &wp, Vec4D &wm) const;
         //! hand ACRAIC its W decay groups (ACRAIC: W_STAGES); false = flat groups
         bool SetACRAICWStageGroups();
         void CalculateCoulomb();
