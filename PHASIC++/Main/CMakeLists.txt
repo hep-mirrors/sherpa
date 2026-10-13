@@ -6,7 +6,8 @@ set(PhasicMain_SOURCES Color_Integrator.C
                  Phase_Space_Point.C
                  Phase_Space_Enhance.C
                  Phase_Space_Handler.C
-                 Phase_Space_Integrator.C)
+                 Phase_Space_Integrator.C
+                 Timing_Statistics.C)
 
 set(PhasicMain_HEADERS Color_Integrator.H
                  Helicity_Integrator.H
@@ -17,7 +18,8 @@ set(PhasicMain_HEADERS Color_Integrator.H
                  Phase_Space_Enhance.H
                  Phase_Space_Variation_Weights.H
                  Phase_Space_Handler.H
-                 Phase_Space_Integrator.H)
+                 Phase_Space_Integrator.H
+                 Timing_Statistics.H)
 
 sherpa_create_git_info(PhasicMain ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  

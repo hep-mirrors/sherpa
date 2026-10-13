@@ -5,6 +5,7 @@
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
+#include "PHASIC++/Main/Timing_Statistics.H"
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 #include "METOOLS/SpinCorrelations/Decay_Matrix.H"
 #include "METOOLS/SpinCorrelations/Spin_Density.H"
@@ -59,13 +60,9 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist)
         // A repetition of the last hard event for its overweight (unweighted
         // events only, see FillBlob()): marked, so that the kept repetitions and
         // their time after acceptance are booked separately, and counted per
-        // subprocess.
+        // subprocess, see PHASIC::Timing_Statistics.
         blob->AddData("Overweight_Copy",new Blob_Data<int>(1));
-        const std::string &sub_name(rpa->gen.GetIsGenSubName());
-        rpa->gen.SetNumberMap("n_copy_"+sub_name,rpa->gen.NumberMap("n_copy_"+sub_name)+1);
-        // its time after acceptance is booked like that of an accepted event,
-        // as rejected if it is vetoed, see Phase_Space_Handler::Differential()
-        if (rpa->gen.TimingActive()) rpa->gen.SetIsGen(true);
+        Timing_Statistics::Instance().StartRepetition();
         m_overweight=Max(overweight,0.0);
         return Return_Value::Success;
       }

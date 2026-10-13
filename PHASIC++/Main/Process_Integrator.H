@@ -7,6 +7,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Org/Terminator_Objects.H"
 
+#include <memory>
 #include <string>
 
 namespace ATOOLS {
@@ -24,6 +25,53 @@ namespace PHASIC {
   class Helicity_Integrator;
 
   class Phase_Space_Handler;
+
+  // The weight histogram of the points that passed the cuts (both signs) and the
+  // sums over it, from which Process_Integrator::GetMaxEps() determines the reduced
+  // maximum and the statistics of the events unweighted against it. The epsilon
+  // scans of the timing statistics evaluate the same, see Timing_Statistics.
+  class Weight_Distribution {
+    std::unique_ptr<ATOOLS::Histogram> p_all;
+    const ATOOLS::Histogram &m_pos, &m_neg;
+    double m_weightmax, m_ovwth;
+    double m_abssum, m_sum, m_sum2;
+    // number of cut-passing points; differs from All().Fills(), which also
+    // counts the cut points (the ratio is the cut efficiency)
+    int m_fills;
+    int m_first, m_last;
+  public:
+    // statistics of the events unweighted against max, see Unweight()
+    struct Unweighting { double max, efficiency, alpha, selweight_xs; };
+
+    Weight_Distribution(const ATOOLS::Histogram &pos, const ATOOLS::Histogram &neg,
+                        const double weightmax, const double ovwth);
+
+    // weight of the entries of bin i: the bin middle, clipped to the maximum
+    double BinWeight(const int i) const;
+    // Unweighting against the upper edge of bin i (clipped to the maximum), with
+    // the sums of |w| and w^2 and the number of the points up to bin i.
+    Unweighting Unweight(const int i, const double cutxs_abs,
+                         const double cutxs2, const double cnt) const;
+    // Generated events per accepted one for unweighted events and the maximum
+    // max, which lies in bin i, see Unweight() for cutxs_abs; nacc is the number
+    // of accepted points.
+    double GeneratedPerAccepted(const double max, const int i,
+                                const double cutxs_abs, const double nacc) const;
+
+    inline ATOOLS::Histogram &All() const { return *p_all; }
+    inline const ATOOLS::Histogram &Pos() const { return m_pos; }
+    inline const ATOOLS::Histogram &Neg() const { return m_neg; }
+    inline double WeightMax() const { return m_weightmax; }
+    inline double OverweightThreshold() const { return m_ovwth; }
+    // sums of |w|, w and w^2 of the points that passed the cuts
+    inline double AbsSum() const { return m_abssum; }
+    inline double Sum() const { return m_sum; }
+    inline double Sum2() const { return m_sum2; }
+    inline int Fills() const { return m_fills; }
+    // first and last filled bin, -1 and Nbin()+2 if none
+    inline int First() const { return m_first; }
+    inline int Last() const { return m_last; }
+  };
 
   class Process_Integrator: public ATOOLS::Terminator_Object {
   protected:
@@ -69,8 +117,7 @@ namespace PHASIC {
     // average (see SHERPA::Signal_Processes::Treat()), otherwise 1. Set together
     // with m_effi by GetMaxEps() and SetFullUnweightingStats().
     double m_genperacc = 1.;
-    double m_timing_statistics_large_weight_fraction, m_external_selectionweight, m_ovwth;
-    int m_timing_statistics, m_timing_statistics_min_unc_per_day;
+    double m_external_selectionweight, m_ovwth;
 
     long unsigned int m_n, m_itmin, m_itmax;
 

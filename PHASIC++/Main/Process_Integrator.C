@@ -5,6 +5,7 @@
 #include "PHASIC++/Main/Color_Integrator.H"
 #include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Main/Helicity_Integrator.H"
+#include "PHASIC++/Main/Timing_Statistics.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "ATOOLS/Math/Random.H"
@@ -58,9 +59,6 @@ bool Process_Integrator::Initialize
   p_beamhandler=beamhandler;
   p_isrhandler=isrhandler;
   p_yfshandler=yfshandler;
-  m_timing_statistics_large_weight_fraction=s["TIMING_STATISTICS_LARGE_WEIGHT_FRACTION"].SetDefault(0.001).Get<double>();
-  m_timing_statistics=s["TIMING_STATISTICS"].SetDefault(0).Get<int>();
-  m_timing_statistics_min_unc_per_day=s["TIMING_STATISTICS_MIN_UNC_PER_DAY"].SetDefault(0).Get<int>();
   // the overweight is capped at OVERWEIGHT_THRESHOLD, see GetMaxEps()
   m_ovwth = s["OVERWEIGHT_THRESHOLD"].SetDefault(1e12).Get<double>();
   m_swmode=s["SELECTION_WEIGHT_MODE"].SetDefault(0).Get<int>();
@@ -572,9 +570,88 @@ void Process_Integrator::SetFullUnweightingStats(const double w_max)
   m_selweight_xs = m_sncut > 0 ? m_ssumenhabs/m_sncut : 0.;
   // no weight above the maximum, hence no repetition for an overweight
   m_genperacc = 1.;
-  rpa->gen.SetXsecMap(p_proc->ResultsName(), m_ssumenh/m_sn*m_enhancefac);
-  rpa->gen.SetChosenEfficiencyMap(p_proc->ResultsName(), m_effi);
-  rpa->gen.SetChosenAlphaMap(p_proc->ResultsName(), m_effevperev);
+  Timing_Statistics &timing(Timing_Statistics::Instance());
+  timing.SetCrossSection(p_proc->ResultsName(), m_ssumenh/m_sn*m_enhancefac);
+  timing.SetChosen(p_proc->ResultsName(), m_effi, m_effevperev);
+}
+
+Weight_Distribution::Weight_Distribution
+(const Histogram &pos, const Histogram &neg, const double weightmax,
+ const double ovwth):
+  p_all(new Histogram(&pos)), m_pos(pos), m_neg(neg),
+  m_weightmax(weightmax), m_ovwth(ovwth),
+  m_abssum(0.), m_sum(0.), m_sum2(0.), m_fills(0),
+  m_first(-1), m_last(pos.Nbin()+2)
+{
+  *p_all += neg;
+  // Add forward, small numbers first, for numerical stability. The underflow bin
+  // (i=0) is included: its entries are cut-passing points with a weight below
+  // the histogram range, which is entered with the log-centre of a virtual bin
+  // below the lower edge. The overflow bin (i=Nbin+1) is included with its
+  // weight clipped to the maximum.
+  for (int i=0;i<p_all->Nbin()+2;i++) {
+    if (p_all->Value(i)!=0) {
+      //bin middle times count is added
+      double w = BinWeight(i);
+      m_abssum += p_all->Value(i) * w;
+      m_sum2 += p_all->Value(i) * w * w;
+      m_sum += m_pos.Value(i) * w;
+      m_sum -= m_neg.Value(i) * w;
+      m_fills += p_all->Value(i);
+      m_last = i;
+      if (m_first==-1) {
+        m_first = i;
+      }
+    }
+  }
+}
+
+double Weight_Distribution::BinWeight(const int i) const
+{
+  if (exp(log(10.)*(p_all->Xmin()+i*p_all->BinSize())) > m_weightmax) return m_weightmax;
+  return exp(log(10.)*(p_all->Xmin()+(i-0.5)*p_all->BinSize()));
+}
+
+Weight_Distribution::Unweighting Weight_Distribution::Unweight
+(const int i, const double cutxs_abs, const double cutxs2, const double cnt) const
+{
+  Unweighting u;
+  u.max = Min(exp(log(10.)*(p_all->Xmin()+i*p_all->BinSize())),dabs(m_weightmax));
+  // Acceptance probability of the points that passed the cuts: points above
+  // max are always kept (as overweights), the others with |w|/max.
+  u.efficiency = (m_fills-cnt+cutxs_abs/u.max)/m_fills;
+  // Kish statistical dilution of the accepted sample, eq. (39) of arXiv:2506.06203:
+  //   alpha = (sum_i p_i*wt_i)^2 / (sum_j p_j*wt_j^2 * sum_k p_k)
+  //         = alpha_sign * alpha_absolute,
+  //   alpha_sign = (sum w / sum |w|)^2,  alpha_absolute = (sum p|wt|)^2/(sum p wt^2 sum p),
+  // with acceptance probability p and overweight wt (p*wt = w/max).
+  // In units of max^2 the denominator is
+  // (sum_{|w|<max} |w|*max + sum_{|w|>max} w^2) * N_accepted and the numerator
+  // is the signed weight sum, so that sign cancellations dilute as well.
+  const double alpha_denom = (cutxs_abs * u.max + (m_sum2 - cutxs2))
+                             * u.efficiency * (double)m_fills;
+  u.alpha = alpha_denom > 0. ? pow(m_sum, 2) / alpha_denom : 0.;
+  // Selection weight numerator |<w>_cut|/sqrt(alpha) = sqrt(alpha_denom)/N_cut,
+  // written in this form so that it stays finite when positive and negative
+  // weights cancel. With the efficiency the selection weight is
+  // sqrt(alpha_denom)/N_accepted = max * sqrt(<wt^2>_acc).
+  u.selweight_xs = m_fills > 0 ? sqrt(alpha_denom) / m_fills : 0.;
+  return u;
+}
+
+double Weight_Distribution::GeneratedPerAccepted
+(const double max, const int i, const double cutxs_abs, const double nacc) const
+{
+  // The points of the bins up to i are accepted with the probability |w|/max and
+  // give one event each, whose sum is cutxs_abs/max; the points above are always
+  // accepted and repeated min(|w|/max,OVERWEIGHT_THRESHOLD) times on average, see
+  // SHERPA::Signal_Processes::Treat().
+  if (!(nacc>0.) || !(max>0.)) return 1.;
+  double ngen(cutxs_abs/max);
+  for (int k=std::max(i+1,0);k<p_all->Nbin()+2;++k)
+    if (p_all->Value(k)!=0.)
+      ngen+=p_all->Value(k)*ATOOLS::Min(BinWeight(k)/max,m_ovwth);
+  return ATOOLS::Max(1.,ngen/nacc);
 }
 
 double Process_Integrator::GetMaxEps(double epsilon)
@@ -584,30 +661,11 @@ double Process_Integrator::GetMaxEps(double epsilon)
     SetFullUnweightingStats(m_weightmax);
     return m_weightmax;
   }
-  //construct whisto having all pos and neg weights
-  std::unique_ptr<Histogram> p_whisto(new Histogram(p_whisto_pos));
-  *p_whisto += *p_whisto_neg;
-  // weight of the entries of bin i: the bin middle, clipped to m_weightmax
-  auto bin_weight = [&](const int i) {
-    if (exp(log(10.)*(p_whisto->Xmin()+i*p_whisto->BinSize())) > m_weightmax) return m_weightmax;
-    return exp(log(10.)*(p_whisto->Xmin()+(i-0.5)*p_whisto->BinSize()));
-  };
-  // Generated events per accepted one for unweighted events and the maximum max,
-  // which lies in bin i: the points of the bins up to i are accepted with the
-  // probability |w|/max and give one event each, whose sum is cutxs_abs/max; the
-  // points above are always accepted and repeated min(|w|/max,OVERWEIGHT_THRESHOLD)
-  // times on average, see SHERPA::Signal_Processes::Treat(). nacc is the number of
-  // accepted points.
+  // all pos and neg weights and the sums over them
+  const Weight_Distribution wd(*p_whisto_pos,*p_whisto_neg,m_weightmax,m_ovwth);
+  Histogram *p_whisto(&wd.All());
+  // repetitions of overweight events, see Weight_Distribution::GeneratedPerAccepted()
   const bool unweighted(ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"))==1);
-  auto gen_per_acc = [&](const double max, const int i, const double cutxs_abs,
-                         const double nacc) {
-    if (!(nacc>0.) || !(max>0.)) return 1.;
-    double ngen(cutxs_abs/max);
-    for (int k=std::max(i+1,0);k<p_whisto->Nbin()+2;++k)
-      if (p_whisto->Value(k)!=0.)
-        ngen+=p_whisto->Value(k)*ATOOLS::Min(bin_weight(k)/max,m_ovwth);
-    return ATOOLS::Max(1.,ngen/nacc);
-  };
   if (epsilon<=-1.) {
     int nsamples(-epsilon), npoints(p_whisto->Fills());
     npoints*=-(epsilon-int(epsilon));
@@ -633,36 +691,6 @@ double Process_Integrator::GetMaxEps(double epsilon)
     return fin_w_max;
   }
 
-  //save last, first filled bin and more for next loop
-  double whisto_abs_sum = 0;
-  double whisto_sum = 0;
-  double whisto_sum2 = 0;
-  // Number of cut-passing points. Differs from ->Fills(), which also counts the
-  // cut points (the ratio is the cut efficiency).
-  int whisto_fills = 0;
-  int last_filled_bin = p_whisto->Nbin()+2;
-  int first_filled_bin = -1;
-  // Add forward, small numbers first, for numerical stability. The underflow bin
-  // (i=0) is included: its entries are cut-passing points with a weight below
-  // the histogram range, which is entered with the log-centre of a virtual bin
-  // below the lower edge. The overflow bin (i=Nbin+1) is included with its
-  // weight clipped to m_weightmax.
-  for (int i=0;i<p_whisto->Nbin()+2;i++) {
-    if (p_whisto->Value(i)!=0) {
-      //bin middle times count is added
-      double w = bin_weight(i);
-      whisto_abs_sum += p_whisto->Value(i) * w;
-      whisto_sum2 += p_whisto->Value(i) * w * w;
-      whisto_sum += p_whisto_pos->Value(i) * w;
-      whisto_sum -= p_whisto_neg->Value(i) * w;
-      whisto_fills += p_whisto->Value(i);
-      last_filled_bin = i;
-      if (first_filled_bin==-1) {
-        first_filled_bin = i;
-      }
-    }
-  }
-
   // Weights above the histogram range (overflow bin) enter with their weight
   // clipped to m_weightmax, which overestimates them. Report whenever it occurs.
   // Results files written before 3.1 have a much narrower range by construction,
@@ -679,25 +707,30 @@ double Process_Integrator::GetMaxEps(double epsilon)
   // is narrow enough that it fires for almost every subprocess.
   if (msg_LevelIsTracking()) {
     const int margin(ATOOLS::Max(1,int(1./p_whisto->BinSize())));
-    if (first_filled_bin<margin)
+    if (wd.First()<margin)
       msg_Tracking()<<METHOD<<"(): lower edge of the weight histogram of "
                     <<p_proc->ResultsName()<<" is within a decade of the lowest"
-                    <<" weight (bin "<<first_filled_bin<<" of "<<p_whisto->Nbin()
+                    <<" weight (bin "<<wd.First()<<" of "<<p_whisto->Nbin()
                     <<")."<<std::endl;
-    if (last_filled_bin>p_whisto->Nbin()-margin)
+    if (wd.Last()>p_whisto->Nbin()-margin)
       msg_Tracking()<<METHOD<<"(): upper edge of the weight histogram of "
                     <<p_proc->ResultsName()<<" is within a decade of the highest"
-                    <<" weight (bin "<<last_filled_bin<<" of "<<p_whisto->Nbin()
+                    <<" weight (bin "<<wd.Last()<<" of "<<p_whisto->Nbin()
                     <<")."<<std::endl;
   }
 
-  if (whisto_abs_sum==0) {
+  if (wd.AbsSum()==0) {
     //fallback for empty WD histogram: fall back to full unweighting against m_weightmax.
     int wmode = ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"));
     if (wmode!=0) msg_Error()<<"Warning: The weight histogram for "<< p_proc->ResultsName() << " is empty. Partial unweighting is not possible."<<std::endl;
     SetFullUnweightingStats(m_weightmax);
     return m_weightmax;
   }
+
+  // the epsilon scans for the tables of TIMING_STATISTICS
+  Timing_Statistics &timing(Timing_Statistics::Instance());
+  if (timing.Enabled()) timing.ScanMaxEpsilon(*this,wd);
+  timing.SetCrossSection(p_proc->ResultsName(), wd.Sum()/p_whisto->Fills()*m_enhancefac);//to be consistent with above psel: whisto_sum/p_whisto->Fills()*m_enhancefac
 
   //cutxs: sum of |w| which are cut atm
   double cutxs_abs = 0.;
@@ -707,137 +740,10 @@ double Process_Integrator::GetMaxEps(double epsilon)
   double cutxs2 = 0.;
   //cnt: number of events cut atm
   double cnt = 0.;
-
-  if (m_timing_statistics) {
-    std::vector<double> epsilon_max_values = rpa->gen.EpsilonValues();
-    const size_t neps(epsilon_max_values.size());
-    // Scan of the epsilon values for the large-weight region, i.e. the fraction
-    // target_fraction of the largest weights of |w|. For every epsilon: the
-    // reduced maximum, the statistical dilution alpha of the whole sample and
-    // alpha times beta of the large-weight region, the efficiency including
-    // the cut efficiency, and the generated events per accepted one for
-    // unweighted events (gen_per_acc above). An entry without a value stays -1.
-    struct Eps_Scan { std::vector<double> wmax, alpha, alpha_beta_fraction, efficiency, genperacc; };
-    auto scan = [&](const double target_fraction) {
-      Eps_Scan res{std::vector<double>(neps,-1), std::vector<double>(neps,-1),
-                   std::vector<double>(neps,-1), std::vector<double>(neps,-1),
-                   std::vector<double>(neps,-1)};
-      // sums over the weights below the large-weight region
-      double whisto_sum2_fraction = 0;
-      double whisto_sum_fraction = 0;
-      double whisto_sum_abs_fraction = 0;
-      int whisto_fills_fraction = 0;
-      double fraction_pxs = (1-target_fraction)*whisto_abs_sum;
-      // Only filled bins contribute, so start at first_filled_bin, which can be the
-      // underflow bin i=0 (first_filled_bin-1 would read bin -1).
-      for (int i=first_filled_bin;i<last_filled_bin+1;i++) {
-        if (p_whisto->Value(i)!=0) {
-          double w = bin_weight(i);
-          //it is rounded up the target_fraction -> for fraction of 0 largest weight is picked
-          if ((whisto_sum_abs_fraction+(p_whisto_pos->Value(i)+p_whisto_neg->Value(i))*w)>fraction_pxs) break;
-          whisto_sum_abs_fraction += p_whisto->Value(i)*w;
-          whisto_sum_fraction += p_whisto_pos->Value(i)*w;
-          whisto_sum_fraction -= p_whisto_neg->Value(i)*w;
-          whisto_sum2_fraction += p_whisto->Value(i)*w*w;
-          whisto_fills_fraction += p_whisto->Value(i);
-        }
-      }
-
-      //sums of |w|, w^2 and number of the points below the current bin edge
-      double this_cutxs_abs = 0.;
-      double this_cutxs2 = 0.;
-      double this_cnt = 0.;
-      int curr_epsilon_max_manual_index = neps-1;
-      double next_pxs_manual = whisto_abs_sum*(1-exp(log(10.)*epsilon_max_values[curr_epsilon_max_manual_index]));
-      for (int i=first_filled_bin-1;i<last_filled_bin+1;i++) {
-        // i=-1 if the underflow bin is filled
-        if (i>=0) {
-          double w = bin_weight(i);
-          this_cutxs_abs+= p_whisto->Value(i) * w;
-          this_cutxs2+= p_whisto->Value(i) * pow(w,2);
-          this_cnt+= p_whisto->Value(i);
-        }
-        //manual epsilon_max definition: all epsilon values whose threshold is
-        //crossed in this bin, as for the chosen one in the loop at the end
-        while (curr_epsilon_max_manual_index>=0 and this_cutxs_abs>=next_pxs_manual) {
-          double fin_w_max = Min(exp(log(10.)*(p_whisto->Xmin()+i*p_whisto->BinSize())),dabs(m_weightmax));
-          double mean_efficiency = (whisto_fills-this_cnt+this_cutxs_abs/fin_w_max)/whisto_fills;
-          msg_Debugging() << "Manual: " << epsilon_max_values[curr_epsilon_max_manual_index] << ": "<< mean_efficiency << std::endl;
-          //according to equation (39) in arXiv:2506.06203v2
-          double alpha = pow(whisto_sum/fin_w_max,2)/(((this_cutxs_abs+(whisto_sum2-this_cutxs2)/fin_w_max)/fin_w_max)*mean_efficiency*whisto_fills);
-          double mean_efficiency_fraction = (whisto_fills-this_cnt+(this_cutxs_abs-whisto_sum_abs_fraction)/fin_w_max)/(whisto_fills-whisto_fills_fraction);
-          if (this_cutxs_abs<whisto_sum_abs_fraction) {//when over fraction, then efficiency is 1
-            mean_efficiency_fraction = 1;
-          }
-          //in one variable, because "whisto_sum-whisto_sum_fraction" can be 0, but cancels in product
-          double alpha_times_beta_fraction = 0;
-          if (this_cutxs_abs>whisto_sum_abs_fraction) {//alpha is const else, because wmax is smaller than lowest w of fraction -> wmax cancels -> const
-            alpha_times_beta_fraction = (whisto_sum*whisto_sum/whisto_fills*(whisto_abs_sum-whisto_sum_abs_fraction)/mean_efficiency)/(whisto_abs_sum)*(1.0/fin_w_max)/(((-whisto_sum_abs_fraction+this_cutxs_abs+(whisto_sum2-this_cutxs2)/fin_w_max)));
-          } else {
-            alpha_times_beta_fraction = (whisto_sum*whisto_sum/whisto_fills*(whisto_abs_sum-whisto_sum_abs_fraction)/mean_efficiency)/(whisto_abs_sum/mean_efficiency_fraction)*1.0/((whisto_sum2-whisto_sum2_fraction));
-          }
-          res.wmax[curr_epsilon_max_manual_index] = fin_w_max;
-          res.alpha[curr_epsilon_max_manual_index] = alpha;
-          res.alpha_beta_fraction[curr_epsilon_max_manual_index] = alpha_times_beta_fraction;
-          res.efficiency[curr_epsilon_max_manual_index] = mean_efficiency*whisto_fills/p_whisto->Fills();//directly multiply with cut efficiency for manual definition
-          res.genperacc[curr_epsilon_max_manual_index] = gen_per_acc(fin_w_max,i,this_cutxs_abs,mean_efficiency*whisto_fills);
-          if (--curr_epsilon_max_manual_index>=0)
-            next_pxs_manual = whisto_abs_sum*(1-exp(log(10.)*epsilon_max_values[curr_epsilon_max_manual_index]));
-        }
-      }
-      return res;
-    };
-
-    // An empty weight histogram has returned above, so every entry is set below or
-    // stays -1 (no value for this epsilon).
-    const Eps_Scan eps_scan(scan(m_timing_statistics_large_weight_fraction));
-    vector<double> wmax_manual_list(eps_scan.wmax);
-    vector<double> alpha_manual_list(eps_scan.alpha);
-    vector<double> alpha_manual_fraction_list(eps_scan.alpha_beta_fraction);
-    vector<double> efficiency_manual_list(eps_scan.efficiency);
-    // full unweighting and weighted events: no repetitions
-    vector<double> genperacc_manual_list(eps_scan.genperacc);
-    genperacc_manual_list.resize(neps+2,1.);
-    wmax_manual_list.resize(neps+2,-1);
-    alpha_manual_list.resize(neps+2,-1);
-    efficiency_manual_list.resize(neps+2,-1);
-    //unweighted with eps=0.0
-    std::vector<double> unweighted_effiandeffevperev = TotalEffiAndEffEvPerEv(1);
-    efficiency_manual_list[neps]=unweighted_effiandeffevperev[0]*whisto_fills/p_whisto->Fills();//directly multiply with cut efficiency for manual definition
-    alpha_manual_list[neps]=unweighted_effiandeffevperev[1];
-    wmax_manual_list[neps]=m_weightmax;
-    //weighted: every point that passes the cuts is an event, so that the efficiency
-    //is the cut efficiency, as in the entries above, and alpha that of the weights
-    efficiency_manual_list[neps+1]=double(whisto_fills)/p_whisto->Fills();
-    std::vector<double> weighted_effiandeffevperev = TotalEffiAndEffEvPerEv(0);
-    alpha_manual_list[neps+1]=weighted_effiandeffevperev[1];
-    wmax_manual_list[neps+1]=1;
-    //save number of generatead events after cuts
-    rpa->gen.SetFillsMap(p_proc->ResultsName(), whisto_fills);//only to check average fill of weight-histo for Warning-printing
-    rpa->gen.SetEfficiencyManualMap(p_proc->ResultsName(), efficiency_manual_list);
-    rpa->gen.SetAlphaManualMap(p_proc->ResultsName(), alpha_manual_list);
-    rpa->gen.SetAlphaManualFractionMap(p_proc->ResultsName(), alpha_manual_fraction_list);
-    rpa->gen.SetWmaxManualMap(p_proc->ResultsName(), wmax_manual_list);
-    rpa->gen.SetGenPerAccManualMap(p_proc->ResultsName(), genperacc_manual_list);
-
-    //the same scan for all fractions
-    std::vector<double> fraction_values = rpa->gen.EpsilonValues();
-    vector<vector<double>> alpha_manual_fscan_list(fraction_values.size());
-    vector<vector<double>> efficiency_manual_fscan_list(fraction_values.size());
-    for (size_t fi=0;fi<fraction_values.size();fi++) {
-      const Eps_Scan fraction_scan(scan(exp(log(10.)*fraction_values[fi])));
-      alpha_manual_fscan_list[fi] = fraction_scan.alpha_beta_fraction;
-      efficiency_manual_fscan_list[fi] = fraction_scan.efficiency;
-    }
-    rpa->gen.SetEfficiencyManualFScanMap(p_proc->ResultsName(), efficiency_manual_fscan_list);
-    rpa->gen.SetAlphaManualFScanMap(p_proc->ResultsName(), alpha_manual_fscan_list);
-  }
-
-  rpa->gen.SetXsecMap(p_proc->ResultsName(), whisto_sum/p_whisto->Fills()*m_enhancefac);//to be consistent with above psel: whisto_sum/p_whisto->Fills()*m_enhancefac
-  double pxs = whisto_abs_sum*(1-epsilon);
-  for (int i=first_filled_bin-1;i<last_filled_bin+1;i++) {
+  double pxs = wd.AbsSum()*(1-epsilon);
+  for (int i=wd.First()-1;i<wd.Last()+1;i++) {
     //bin middle times count is added
-    double w = bin_weight(i);
+    double w = wd.BinWeight(i);
     // The loop starts one bin below the first filled one (i=-1 if that is the
     // underflow bin, hence the guard), so that for epsilon>=1 it returns the
     // upper edge of that empty bin: all points are overweights, the fully
@@ -850,43 +756,15 @@ double Process_Integrator::GetMaxEps(double epsilon)
       cnt+= p_whisto->Value(i);
     }
     if (cutxs_abs>=pxs) {
-      double fin_w_max = Min(exp(log(10.)*(p_whisto->Xmin()+i*p_whisto->BinSize())),dabs(m_weightmax));
-      // Acceptance probability of the points that passed the cuts: points above
-      // fin_w_max are always kept (as overweights), the others with |w|/fin_w_max.
-      double mean_efficiency = (whisto_fills-cnt+cutxs_abs/fin_w_max)/whisto_fills;
-      m_effi = mean_efficiency;
-      // Kish statistical dilution of the accepted sample, eq. (39) of arXiv:2506.06203:
-      //   alpha = (sum_i p_i*wt_i)^2 / (sum_j p_j*wt_j^2 * sum_k p_k)
-      //         = alpha_sign * alpha_absolute,
-      //   alpha_sign = (sum w / sum |w|)^2,  alpha_absolute = (sum p|wt|)^2/(sum p wt^2 sum p),
-      // with acceptance probability p and overweight wt (p*wt = w/fin_w_max).
-      // In units of fin_w_max^2 the denominator is
-      // (sum_{|w|<max} |w|*max + sum_{|w|>max} w^2) * N_accepted and the numerator
-      // is the signed weight sum, so that sign cancellations dilute as well.
-      double alpha_denom = (cutxs_abs * fin_w_max + (whisto_sum2 - cutxs2))
-                           * mean_efficiency * (double)whisto_fills;
-      m_effevperev = alpha_denom > 0. ? pow(whisto_sum, 2) / alpha_denom : 0.;
-      // Selection weight numerator |<w>_cut|/sqrt(alpha) = sqrt(alpha_denom)/N_cut,
-      // written in this form so that it stays finite when positive and negative
-      // weights cancel. With m_effi the selection weight is
-      // sqrt(alpha_denom)/N_accepted = fin_w_max * sqrt(<wt^2>_acc).
-      m_selweight_xs = whisto_fills > 0 ? sqrt(alpha_denom) / whisto_fills : 0.;
+      const Weight_Distribution::Unweighting u(wd.Unweight(i,cutxs_abs,cutxs2,cnt));
+      m_effi = u.efficiency;
+      m_effevperev = u.alpha;
+      m_selweight_xs = u.selweight_xs;
       m_genperacc = unweighted ?
-        gen_per_acc(fin_w_max,i,cutxs_abs,mean_efficiency*whisto_fills) : 1.;
-      rpa->gen.SetChosenEfficiencyMap(p_proc->ResultsName(), mean_efficiency);
-      rpa->gen.SetChosenAlphaMap(p_proc->ResultsName(), m_effevperev);
-      //save lost xsec fraction due to overweight_threshold
-      if (m_timing_statistics) {
-	double capped_fraction = 0;
-	for (int k=i+1;k<last_filled_bin+1;k++) {
-	  double w = bin_weight(k);
-	  if (w>fin_w_max*m_ovwth) {
-	    capped_fraction += p_whisto->Value(k) * (w-fin_w_max*m_ovwth);
-	  }
-	}
-	rpa->gen.SetChosenCappedFractionMap(p_proc->ResultsName(), capped_fraction/whisto_abs_sum);
-      }
-      return fin_w_max;
+        wd.GeneratedPerAccepted(u.max,i,cutxs_abs,u.efficiency*wd.Fills()) : 1.;
+      timing.SetChosen(p_proc->ResultsName(), u.efficiency, u.alpha);
+      if (timing.Enabled()) timing.SetCappedFraction(p_proc->ResultsName(),wd,i,u.max);
+      return u.max;
     }
   }
   // Loop ran to completion: all weights fit under m_weightmax, full unweighting.
@@ -981,11 +859,10 @@ void Process_Integrator::SetUpEnhance(const int omode)
   }
   // Weighted events are not unweighted: the generated events of this subprocess are
   // its cut-passing points with their weights, so that the efficiency is 1 and the
-  // statistical dilution is that of the weights, see Sherpa::SummarizeRun().
+  // statistical dilution is that of the weights, see Timing_Statistics::Report().
   if (ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"))==0) {
     const std::vector<double> weighted(TotalEffiAndEffEvPerEv(0));
-    rpa->gen.SetChosenEfficiencyMap(p_proc->ResultsName(), weighted[0]);
-    rpa->gen.SetChosenAlphaMap(p_proc->ResultsName(), weighted[1]);
+    Timing_Statistics::Instance().SetChosen(p_proc->ResultsName(), weighted[0], weighted[1]);
   }
 }
 
