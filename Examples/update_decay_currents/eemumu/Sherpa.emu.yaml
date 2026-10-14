@@ -35,13 +35,13 @@ SELECTORS:
 - [Q2, 11, 11, 1, 1e12] #[observable, flavor1, flavor2, min, max]
 
 PROCESSES:
-- 11 13 -> 11 13:
+- 11 13 -> 11 13:        # e-(0) mu-(1) -> e-(2) mu-(3)
     Sort_Flavors: 0
     Order: {QCD: 0, EW: 2}
     Currents:
       Exchange:
       - Boson: 22
-        J1: {Type: VA_F_F, Indices: [2, 0]}
+        J1: {Type: VA_F_F, Indices: [2, 0]}    # [out in]
         J2: {Type: VA_F_F, Indices: [3, 1]}
       - Boson: 23
         J1: {Type: VA_F_F, Indices: [2, 0]}
