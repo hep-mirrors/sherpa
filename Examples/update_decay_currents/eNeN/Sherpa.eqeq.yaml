@@ -78,3 +78,7 @@ PROCESSES:
       - Boson: 23
         J1: {Type: VA_F_F, Indices: [2, 0]}
         J2: {Type: VA_F_F, Indices: [3, 1]}
+
+# Decaydata.yaml file is currently being checked and is therefore incomplete
+HADRON_DECAYS:
+  Model: None
