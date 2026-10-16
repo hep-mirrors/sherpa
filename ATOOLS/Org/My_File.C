@@ -242,7 +242,7 @@ bool My_File<FileType>::Open()
       if (fsize<0) return false;
       char *content = new char[fsize+1];
       mpi->Bcast(content,fsize+1,MPI_CHAR);
-      (*p_stream)<<content<<"\n";
+      (*p_stream)<<content;
       delete [] content;
     }
     else {
