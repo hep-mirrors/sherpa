@@ -74,3 +74,15 @@ Tests/UFO/
 /lib/
 /share/
 *.DS_Store
+# LaTeX sources and everything produced when compiling them
+*.tex
+*.pdf
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg

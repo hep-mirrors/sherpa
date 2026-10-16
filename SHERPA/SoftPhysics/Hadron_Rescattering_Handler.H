@@ -9,7 +9,6 @@ namespace SHERPA {
   class Hadron_Rescattering_Handler {
   private:
     HADRON_RESCATTERING::Hadron_Rescatterings m_rescattering;
-    HADRON_RESCATTERING::Deuteron_Coalescence m_deuterons;
 
     std::string m_name;
     bool        m_on;

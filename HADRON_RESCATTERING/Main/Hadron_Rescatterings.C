@@ -67,6 +67,8 @@ Blob * Hadron_Rescatterings::ElasticRescatter(Hadron_Collision * candidate) {
 		  blob_status::needs_hadrondecays);
   blob->SetId();
   for (size_t i=0;i<2;i++) {
+    // the incoming hadrons are replaced by the outgoing ones
+    candidate->InPart(i)->SetStatus(part_status::decayed);
     blob->AddToInParticles(candidate->InPart(i));
     Vec4D mom = ( candidate->InvBoost() *
 		  Vec4D(candidate->MomCMS(i)[0],

@@ -47,9 +47,10 @@ void Hadron_Init::Init() {
     InitHadron(kf_bb_1,10.07354,0.,0,-2,-3,2,0,0,1,1,"bb_1","bb_1b","bb_1b","bb_1b");
   }
 
-  // deuterium is not in the KF table, so we add it here.
-  constexpr double A = 0.93149410372;
-  InitHadron(kf_deuterium,   true, 2.014*A, 2.1 ,0.,  3,0,false,true,1,"deuterium", "H$_2$");
+  // deuterium is not in the KF table, so we add it here: nuclear (not atomic)
+  // mass, spin 1, and it has an antiparticle (the "majorana" flag below means
+  // "is not self-conjugate", as for the nucleons).
+  InitHadron(kf_deuterium,   true, 1.875613, 2.1 ,0.,  3,2,true,true,1,"deuterium", "d");
   
 
   // ##################################################################################################

@@ -10,12 +10,8 @@ using namespace std;
 
 Hadron_Rescattering_Handler::Hadron_Rescattering_Handler() :
   m_name("Hadron_Rescattering"), m_on(true),
-  m_rescattering(Hadron_Rescatterings(true)),
-  m_deuterons(Deuteron_Coalescence( 3.,            //0.7,  b_coal in fm
-				    0.197326/(3.), // p_coal in GeV from uncertainty principle : p = hbar/(2r)
-				    CoalescenceModel::Exponential
-				    // or HardDisk, choose as you wish
-				    ))
+  m_rescattering(Hadron_Rescatterings(true))
+  // deuteron formation is a separate event phase, see Deuteron_Formation
 {
   if (!m_on) return;
   m_rescattering.Initialize();
@@ -34,6 +30,9 @@ void Hadron_Rescattering_Handler::HarvestParticles(Blob * blob) {
 	if (part1==(*pit)) continue;
 	Hadron_Collision * cc = new Hadron_Collision(part1,(*pit));
 	if (!cc->On() || cc->B2()>10000.) { delete cc; continue; }
+	// a candidate with the same collision time is replaced: free it
+	auto old = m_candidates.find(cc->T_Lab());
+	if (old!=m_candidates.end()) delete old->second;
 	m_candidates[cc->T_Lab()] = cc;
       }
     }
@@ -57,6 +56,7 @@ bool Hadron_Rescattering_Handler::operator()() {
       EliminateOptions(candidate);
       return true;
     }
+    delete candidate;
     m_candidates.erase(m_candidates.begin());
   }
   return false;
@@ -65,13 +65,16 @@ bool Hadron_Rescattering_Handler::operator()() {
 void Hadron_Rescattering_Handler::EliminateOptions(Hadron_Collision * candidate) {
   msg_Out()<<METHOD<<" for "<<m_particles.size()<<" particles and "
 	   <<m_candidates.size()<<" candidate scatters.\n";
+  // the candidate itself is among the deleted ones: keep its particles
+  Particle * parts[2] = {candidate->InPart(0),candidate->InPart(1)};
   for (size_t i=0;i<2;i++) {
-    Particle * part = candidate->InPart(i);
+    Particle * part = parts[i];
     set<Particle *>::iterator pit = m_particles.find(part);
     if (pit!=m_particles.end()) m_particles.erase(pit);
     map<double,Hadron_Collision *>::iterator cit=m_candidates.begin();
     while(cit!=m_candidates.end()) {
       if (cit->second->InPart(0)==part || cit->second->InPart(1)==part) {
+	delete cit->second;
 	cit = m_candidates.erase(cit);
       }
       else cit++;

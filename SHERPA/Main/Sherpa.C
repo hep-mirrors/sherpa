@@ -16,6 +16,7 @@
 #include "SHERPA/Single_Events/Hadronization.H"
 #include "SHERPA/Single_Events/Hadron_Decays.H"
 #include "SHERPA/Single_Events/Hadron_Rescattering.H"
+#include "SHERPA/Single_Events/Deuteron_Formation.H"
 #include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
 #include "SHERPA/Tools/HepMC3_Interface.H"
 #include "PHASIC++/Decays/Decay_Channel.H"
@@ -200,6 +201,7 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(new Hadron_Rescattering(p_inithandler->
 							  GetHadronRescatteringHandler()));
     p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHDHandler()));
+    p_eventhandler->AddEventPhase(new Deuteron_Formation());
   }
   p_eventhandler->AddEventPhase(new Userhook_Phase(this));
   if (!anas->empty()) p_eventhandler->AddEventPhase(new Analysis_Phase(anas));

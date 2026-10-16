@@ -1,0 +1,32 @@
+# Validation run: as Sherpa.Deuterons.yaml, but with 1/sigma_0 ten times larger,
+# so that enough deuterons are formed in the events to compare with the
+# "expected" spectra.  e+e- -> hadrons at the Z pole, deuteron formation following
+# Dal & Raklev, arXiv:1504.07242.  Run from this directory with
+#   Sherpa -f Sherpa.Deuterons.Validation.yaml
+# Output goes to DeuteronFormationFromXSecs/, see XSecs/Plotting.ipynb.
+
+# collider setup
+BEAMS: [11, -11]
+BEAM_ENERGIES: 45.6
+PDF_LIBRARY: None
+
+# general setting
+EVENTS: 200k
+
+# model parameters
+ALPHAS(MZ): 0.1188
+ORDER_ALPHAS: 2
+SHOWER:
+  FS_PT2MIN: 1.00
+
+DEUTERON_FORMATION:
+  MODE: true
+  MODEL: CrossSection    # or HardDisk, Exponential
+  INV_SIGMA0: 18         # 1/sigma_0 in 1/barn, 10 x the default 1.8
+  NSAMP: 10              # kinematic samples per pair for the 'expected' spectra
+  OUTPUT: DeuteronFormationFromXSecs/validation_invsigma0_18
+  TEST: false            # writes test_*.dat and prints the checks at start-up
+
+PROCESSES:
+- 11 -11 -> 93 93:
+    Order: {QCD: 0, EW: 2}

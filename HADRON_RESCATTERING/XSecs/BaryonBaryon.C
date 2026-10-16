@@ -72,7 +72,9 @@ double BaryonBaryon::pnToDGamma(ATOOLS::Particle * A , ATOOLS::Particle * B) {
     Vec4D p1 = A->Momentum(); Vec4D p2 = B->Momentum();
     Vec4D P = p1 + p2;    Poincare boost(P);
     Vec4D p1cm = p1;  boost.Boost(p1cm);
-    double p_rel = sqrt(p1cm[1]*p1cm[1]+p1cm[2]*p1cm[2]+p1cm[3]*p1cm[3]);
+    // k = |p1 - p2| in the c.m. frame, i.e. twice the c.m. momentum of each
+    // nucleon (arXiv:1504.07242, after Eq. (1)); the fits are in kappa = k/GeV.
+    double p_rel = 2.*sqrt(p1cm[1]*p1cm[1]+p1cm[2]*p1cm[2]+p1cm[3]*p1cm[3]);
     double sigma = 0; 
 
 if (p_rel < 1.28) {
@@ -128,12 +130,14 @@ double BaryonBaryon::ppToDPiPlus(ATOOLS::Particle * A , ATOOLS::Particle * B) {
 }
 
 double BaryonBaryon::ppToPiPlusPiZero(ATOOLS::Particle * A , ATOOLS::Particle * B) {
-  std::vector<double> piPlusPiZero = {5.099*std::pow(10,15), 1.656*10, 2.333*std::pow(10,7), 1.133*10, 2.866*std::pow(10,16)};
+  std::vector<double> piPlusPiZero = {5.099*std::pow(10,15), 1.656*10, 2.333*std::pow(10,7), 1.133*10, 2.868*std::pow(10,16)};
 
   Vec4D p1 = A->Momentum(); Vec4D p2 = B->Momentum();
   Vec4D P = p1 + p2;    Poincare boost(P);
   Vec4D p1cm = p1;  boost.Boost(p1cm);
-  double p_rel = sqrt(p1cm[1]*p1cm[1]+p1cm[2]*p1cm[2]+p1cm[3]*p1cm[3]);//center of mass mom.
+  // k = |p1 - p2| in the c.m. frame, i.e. twice the c.m. momentum of each
+  // nucleon (arXiv:1504.07242, after Eq. (1)); the fits are in kappa = k/GeV.
+  double p_rel = 2.*sqrt(p1cm[1]*p1cm[1]+p1cm[2]*p1cm[2]+p1cm[3]*p1cm[3]);
   // double s     = P[0]*P[0]-P[1]*P[1]-P[2]*P[2]-P[3]*P[3]; double sqrtS = std::sqrt(s);
   double sigma = 0;
   sigma = piPlusPiZero[0]*std::pow(p_rel,piPlusPiZero[1])/(std::pow( (piPlusPiZero[2] - std::exp(piPlusPiZero[3]*p_rel)),2 ) + piPlusPiZero[4]);
@@ -152,7 +156,9 @@ double BaryonBaryon::pnToPiZeroPiZero(ATOOLS::Particle * A , ATOOLS::Particle * 
   Vec4D p1 = A->Momentum(); Vec4D p2 = B->Momentum();
   Vec4D P = p1 + p2;    Poincare boost(P);
   Vec4D p1cm = p1;  boost.Boost(p1cm);
-  double p_rel = sqrt(p1cm[1]*p1cm[1]+p1cm[2]*p1cm[2]+p1cm[3]*p1cm[3]);//center of mass mom.
+  // k = |p1 - p2| in the c.m. frame, i.e. twice the c.m. momentum of each
+  // nucleon (arXiv:1504.07242, after Eq. (1)); the fits are in kappa = k/GeV.
+  double p_rel = 2.*sqrt(p1cm[1]*p1cm[1]+p1cm[2]*p1cm[2]+p1cm[3]*p1cm[3]);
   // double s     = P[0]*P[0]-P[1]*P[1]-P[2]*P[2]-P[3]*P[3]; double sqrtS = std::sqrt(s);
   double sigma = 0;
   sigma = piZeroPiZero[0]*std::pow(p_rel,piZeroPiZero[1])/(std::pow( (piZeroPiZero[2] - std::exp(piZeroPiZero[3]*p_rel)),2 ) + piZeroPiZero[4]);
@@ -167,7 +173,9 @@ double BaryonBaryon::pnToPiPlusPiMinus(ATOOLS::Particle * A , ATOOLS::Particle *
   Vec4D p1 = A->Momentum(); Vec4D p2 = B->Momentum();
   Vec4D P = p1 + p2;    Poincare boost(P);
   Vec4D p1cm = p1;  boost.Boost(p1cm);
-  double p_rel = sqrt(p1cm[1]*p1cm[1]+p1cm[2]*p1cm[2]+p1cm[3]*p1cm[3]);//center of mass mom.
+  // k = |p1 - p2| in the c.m. frame, i.e. twice the c.m. momentum of each
+  // nucleon (arXiv:1504.07242, after Eq. (1)); the fits are in kappa = k/GeV.
+  double p_rel = 2.*sqrt(p1cm[1]*p1cm[1]+p1cm[2]*p1cm[2]+p1cm[3]*p1cm[3]);
   // double s     = P[0]*P[0]-P[1]*P[1]-P[2]*P[2]-P[3]*P[3]; double sqrtS = std::sqrt(s);
   double sigma = 0;
   sigma = piPlusPiMinusOne[0]*std::pow(p_rel,piPlusPiMinusOne[1])/(std::pow( (piPlusPiMinusOne[2] - std::exp(piPlusPiMinusOne[3]*p_rel)),2 ) + piPlusPiMinusOne[4]) + 
@@ -200,34 +208,35 @@ void BaryonBaryon::Tests() {
     histos["pnToPiPlusPiMinus"] = new Histogram(0, kmin, kmax, bins);
     histos["nnToPiMinusPiZero"] = new Histogram(0, kmin, kmax, bins);
 
-    Flavour flA(kf_p_plus), flB(kf_n);
+    Flavour flp(kf_p_plus), fln(kf_n);
 
     for (int i = 0; i < bins; i++) {
         double k   = kmin + (i + 0.5) * bin_width;  // bin centre, one per bin
-        double E_p = sqrt(flA.HadMass()*flA.HadMass() + k*k);
-        double E_n = sqrt(flB.HadMass()*flB.HadMass() + k*k);
-        Vec4D pA(E_p, 0., 0.,  k);
-        Vec4D pB(E_n, 0., 0., -k);
-        Particle partA(-1, flA, pA);
-        Particle partB(-1, flB, pB);
+        // the particles must be built with the flavours of each pair, the
+        // flavours are not picked up if changed after construction
+        // k = |p1 - p2| in the c.m. frame, each nucleon has |p| = k/2
+        double q   = k/2.;
+        Vec4D pp1(sqrt(flp.HadMass()*flp.HadMass() + q*q), 0., 0.,  q);
+        Vec4D pp2(sqrt(flp.HadMass()*flp.HadMass() + q*q), 0., 0., -q);
+        Vec4D pn1(sqrt(fln.HadMass()*fln.HadMass() + q*q), 0., 0.,  q);
+        Vec4D pn2(sqrt(fln.HadMass()*fln.HadMass() + q*q), 0., 0., -q);
+        Particle p1(-1, flp, pp1), p2(-1, flp, pp2);
+        Particle n1(-1, fln, pn1), n2(-1, fln, pn2);
 
-        histos["pnToDGamma"]       ->Insert(k, pnToDGamma(&partA, &partB));
-        histos["pnToDPiZero"]     ->Insert(k, pnToDPiZero(&partA, &partB));
-        histos["pnToPiZeroPiZero"] ->Insert(k, pnToPiZeroPiZero(&partA, &partB));
-        histos["pnToPiPlusPiMinus"]->Insert(k, pnToPiPlusPiMinus(&partA, &partB));
-        
-        flA = Flavour(kf_n);
-        histos["nnToPiMinusPiZero"]->Insert(k, nnToPiMinusPiZero(&partA, &partB));
-        histos["nnToDPiMinus"]    ->Insert(k, nnToDPiMinus(&partA, &partB));
-        
-        flA = Flavour(kf_p_plus), flB = Flavour(kf_p_plus);
-        histos["ppToDPiPlus"]     ->Insert(k, ppToDPiPlus(&partA, &partB));
+        histos["pnToDGamma"]       ->Insert(k, pnToDGamma(&p1, &n2));
+        histos["pnToDPiZero"]      ->Insert(k, pnToDPiZero(&p1, &n2));
+        histos["pnToPiZeroPiZero"] ->Insert(k, pnToPiZeroPiZero(&p1, &n2));
+        histos["pnToPiPlusPiMinus"]->Insert(k, pnToPiPlusPiMinus(&p1, &n2));
 
-        histos["ppToPiPlusPiZero"] ->Insert(k, ppToPiPlusPiZero(&partA, &partB));
+        histos["nnToPiMinusPiZero"]->Insert(k, nnToPiMinusPiZero(&n1, &n2));
+        histos["nnToDPiMinus"]     ->Insert(k, nnToDPiMinus(&n1, &n2));
+
+        histos["ppToDPiPlus"]      ->Insert(k, ppToDPiPlus(&p1, &p2));
+        histos["ppToPiPlusPiZero"] ->Insert(k, ppToPiPlusPiZero(&p1, &p2));
     }
 
     for (auto& [name, histo] : histos) {
-        histo->Output("XSecs/" + name + ".dat");
+        histo->Output("DeuteronFormationFromXSecs/" + name + ".dat");
         delete histo;
     }
     histos.clear();

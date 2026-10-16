@@ -1,0 +1,33 @@
+# Non-diffractive pp at sqrt(s) = 0.9 TeV (ALICE, cf. Fig. 7 of arXiv:1504.07242)
+# with (anti)deuteron formation following Dal & Raklev, arXiv:1504.07242.
+# Minimum-bias settings as in Examples/Soft_QCD/LHC_7TeV_MinBias/Amisic.yaml.
+# Run from this directory with
+#   Sherpa -f Sherpa.Deuterons.ALICE_0.9TeV.yaml
+# Output goes to DeuteronFormationFromXSecs/ALICE_0.9TeV/, see XSecs/Plotting.ipynb.
+
+BEAMS:         2212
+BEAM_ENERGIES: 450
+EVENTS:        100k
+EVENT_TYPE:    MinimumBias
+ME_GENERATORS: None
+SOFT_COLLISIONS: Amisic
+YFS:
+  MODE: None
+
+# Amisic generates non-diffractive events only, as used by the paper (Sec. IV A)
+AMISIC:
+  EVENT_TYPE:     Perturbative
+  PT_0:           0.5
+  PT_Min:         2.0
+  SIGMA_ND_NORM:  1.0
+  MU_R_FACTOR:    1.0
+  MU_F_FACTOR:    1.0
+  N_MaxScatters:  100
+
+DEUTERON_FORMATION:
+  MODE: true
+  MODEL: CrossSection
+  INV_SIGMA0: 1.8        # 1/sigma_0 in 1/barn
+  NSAMP: 10
+  OUTPUT: DeuteronFormationFromXSecs/ALICE_0.9TeV
+  TEST: false
