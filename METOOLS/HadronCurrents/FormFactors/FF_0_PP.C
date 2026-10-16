@@ -98,40 +98,39 @@ void FF_0_PP_Base::FixMode() {
 
 Complex FF_0_PP_Base::operator()(const ATOOLS::Vec4D_Vector& moms) {
   double Q2 = (moms[m_pi[0]]+moms[m_pi[1]]).Abs2();
-  // Fallback policy: ff_model::none is an explicit, deliberate "this
+  // Fallback policy: FF_0_PP_Base::Model::none is an explicit, deliberate "this
   // form factor is identically zero" (e.g. F0 for pipi_plus/KK_plus,
   // vanishing by SU(3)/G-parity) and stays hard zero. Every other case
   // where a specific channel+model combination has no real dynamical
   // implementation falls back to a CONSTANT form factor equal to
   // m_norm (i.e. F=1 times whatever CKM/isospin/normalisation factors
   // are already folded into m_norm for this channel) rather than
-  // silently vanishing - see ff_model::point below for the same
+  // silently vanishing - see FF_0_PP_Base::Model::point below for the same
   // convention made explicit.
-  switch (m_ffmodel) {
-  case ff_model::none:    return Complex(0.,0.);
-  case ff_model::point:   return Complex(m_norm,0.);
+  switch (GetModel()) {
+  case FF_0_PP_Base::Model::None:    return Complex(0.,0.);
+  case FF_0_PP_Base::Model::Point:   return Complex(1.,0.);
   // KS(100)/GS(101)/KS_CLEO(102): try the specifically-requested
   // model's own propagator first; if that channel/model combination
   // has nothing (p_props==NULL), fall back to the family-base
   // (KS=100) construction if IT exists for this channel
   // (p_props_fallback, request #2); only fall back further to the
   // flat constant if even that isn't available.
-  case ff_model::KS:
-  case ff_model::GS:
-  case ff_model::KS_CLEO:
+  case FF_0_PP_Base::Model::KS:
+  case FF_0_PP_Base::Model::GS:
+  case FF_0_PP_Base::Model::KS_CLEO:
     if (p_props!=NULL)          return m_norm * (*p_props)(Q2);
     if (p_props_fallback!=NULL) return m_norm * (*p_props_fallback)(Q2);
     return Complex(m_norm,0.);
-  case ff_model::RChiPT:  return m_norm * FF_RChiPT(Q2);
-  case ff_model::combRChL:
+  case FF_0_PP_Base::Model::RChiPT:  return m_norm * FF_RChiPT(Q2);
+  case FF_0_PP_Base::Model::combRChL:
     msg_Error()<<"Error in "<<METHOD<<": combRChL form factor requested for "
 	       <<m_flavs[m_pi[0]]<<"+"<<m_flavs[m_pi[1]]<<", but it is not "
 	       <<"implemented yet (missing dispersion integral / B22 loop "
 	       <<"functions - see FormFactor_Base.H). Falling back to a "
 	       <<"constant (isospin/CKM-only) form factor.\n";
     return Complex(m_norm,0.);
-  case ff_model::RChL2012: return m_norm * FF_RChL2012(Q2);
-  case ff_model::unknown:
+  case FF_0_PP_Base::Model::RChL2012: return m_norm * FF_RChL2012(Q2);
   default:
     break;
   }
@@ -178,7 +177,7 @@ class Fplus_0_PiZeroPiPlus : public FF_0_PP_Base {
   double  m_fpi, m_mpi2, m_mK2;
   double  m_mV, m_mV2, m_mVp, m_mVp2, m_mVpp, m_mVpp2, m_GVp, m_GVpp;
   Complex m_gamma, m_delta;
-  // Family-base (ff_model::KS=100-equivalent) mixing weights, ALWAYS
+  // Family-base (FF_0_PP_Base::Model::KS=100-equivalent) mixing weights, ALWAYS
   // computed regardless of which model was actually requested. Used
   // both as the direct KS(100) result and, per request #2, as the
   // second-tier fallback for GS(101)/KS_CLEO(102) whenever THEIR own
@@ -187,7 +186,7 @@ class Fplus_0_PiZeroPiPlus : public FF_0_PP_Base {
   // FM95 K*(892)+K*(1410) tune rather than straight to a flat constant).
   Complex m_gamma_base, m_delta_base;
   // Kpi_plus/Keta_plus only: true iff we are actually building the
-  // ff_model::KS_CLEO-specific K*(892)+K*(1680) propagator (as opposed
+  // FF_0_PP_Base::Model::KS_CLEO-specific K*(892)+K*(1680) propagator (as opposed
   // to the family-base FM95 K*(892)+K*(1410) one). See the cross-check
   // note tau_two_meson_currents_KS_RChiT.tex, which flags these as TWO
   // genuinely different, non-interchangeable historical tunes that
@@ -401,7 +400,7 @@ void Fplus_0_PiZeroPiPlus::Construct(const FF_Parameters & params) {
   // Diagnostic dump (request #1), common to every channel.
   std::string label = std::string("Fplus_0_PiZeroPiPlus, mode=")+
                        std::to_string(int(m_mode));
-  DumpPropagatorStructure(label, int(m_ffmodel),
+  DumpPropagatorStructure(label, int(GetModel()),
 			   p_props!=NULL ? p_props : p_props_fallback);
 }
 
@@ -436,7 +435,7 @@ void Fplus_0_PiZeroPiPlus::Construct_PiPi(const FF_Parameters & params) {
 				   "deltaMag_pipi2_100", 0.050,"deltaPhase_pipi2_100");
   p_props_fallback = BuildRhoTower(false, m_gamma_base, m_delta_base);
 
-  if ((m_ffmodel==ff_model::KS || m_ffmodel==ff_model::GS) &&
+  if ((GetModel()==FF_0_PP_Base::Model::KS || GetModel()==FF_0_PP_Base::Model::GS) &&
       HasLocalSet(params.p_model)) {
     // A local ParameterSet was selected for this (channel, model): it
     // replaces the tower wholesale - see HasLocalSet/BuildLocalTower.
@@ -444,11 +443,11 @@ void Fplus_0_PiZeroPiPlus::Construct_PiPi(const FF_Parameters & params) {
     delete p_props_fallback;
     p_props_fallback = NULL;
   }
-  else if (m_ffmodel==ff_model::KS) {
+  else if (GetModel()==FF_0_PP_Base::Model::KS) {
     p_props = p_props_fallback;
     p_props_fallback = NULL;
   }
-  else if (m_ffmodel==ff_model::GS) {
+  else if (GetModel()==FF_0_PP_Base::Model::GS) {
     // TODO: defaults below are placeholder values, identical to the
     // KS fit. Replace with the actual Gounaris-Sakurai beta/gamma from
     // the Belle fit (Fujikawa et al., Phys.Rev.D78 (2008) 072006, the
@@ -463,7 +462,7 @@ void Fplus_0_PiZeroPiPlus::Construct_PiPi(const FF_Parameters & params) {
 			       "deltaMag_pipi_GS", 0.050,"deltaPhase_pipi_GS");
     p_props = BuildRhoTower(true, m_gamma, m_delta);
   }
-  else if (m_ffmodel==ff_model::RChiPT) {
+  else if (GetModel()==FF_0_PP_Base::Model::RChiPT) {
     // Resonance masses/widths now read from the particle database
     // (Flavour(kf_xxx).HadMass()/.Width()) rather than hardcoded fit-
     // specific literals, at the cost of some precision (these will
@@ -486,7 +485,7 @@ void Fplus_0_PiZeroPiPlus::Construct_PiPi(const FF_Parameters & params) {
     m_delta = ReadComplexParam(params.p_model,
 			       "deltaMag_pipi2_200", 0.12,"deltaPhase_pipi2_200",-0.02);
   }
-  else if (m_ffmodel==ff_model::RChL2012) {
+  else if (GetModel()==FF_0_PP_Base::Model::RChL2012) {
     // Defaults from Table 4 of 1203.3955, channel 1 (pi- pi0); masses
     // now default to the particle database rather than hardcoded
     // literals.
@@ -555,11 +554,11 @@ void Fplus_0_PiZeroPiPlus::Construct_KK(const FF_Parameters & params) {
 				   "deltaMag_KK_100", 0.050,"deltaPhase_KK_100");
   p_props_fallback = BuildRhoTower(false, m_gamma_base, m_delta_base);
 
-  if (m_ffmodel==ff_model::KS) {
+  if (GetModel()==FF_0_PP_Base::Model::KS) {
     p_props = p_props_fallback;
     p_props_fallback = NULL;
   }
-  else if (m_ffmodel==ff_model::GS) {
+  else if (GetModel()==FF_0_PP_Base::Model::GS) {
     // TODO: placeholder, see note above for pipi_plus/GS. Own "_GS"
     // parameter names so the eventual real fit doesn't collide with KS.
     m_gamma = ReadComplexParam(params.p_model,
@@ -568,7 +567,7 @@ void Fplus_0_PiZeroPiPlus::Construct_KK(const FF_Parameters & params) {
 			       "deltaMag_KK_GS", 0.050,"deltaPhase_KK_GS");
     p_props = BuildRhoTower(true, m_gamma, m_delta);
   }
-  else if (m_ffmodel==ff_model::RChiPT) {
+  else if (GetModel()==FF_0_PP_Base::Model::RChiPT) {
     m_mV    = Flavour(kf_rho_770_plus).HadMass();   m_mV2   = sqr(m_mV);
     m_mVp   = (*params.p_model)("MVp_KK",
 				 Flavour(kf_rho_1450_plus).HadMass());
@@ -591,7 +590,7 @@ void Fplus_0_PiZeroPiPlus::Construct_KK(const FF_Parameters & params) {
     m_delta = ReadComplexParam(params.p_model,
 			       "deltaMag_KK_200",0.,"deltaPhase_KK_200",0.);
   }
-  else if (m_ffmodel==ff_model::RChL2012) {
+  else if (GetModel()==FF_0_PP_Base::Model::RChL2012) {
     // Eq.(26): the "default" (FFKKVEC=0) two-kaon form factor has NO
     // excited-resonance terms, only the loop-function exponential on
     // top of a plain rho(770) pole - m_gammaRC/m_deltaRC default to 0
@@ -624,7 +623,7 @@ void Fplus_0_PiZeroPiPlus::Construct_EtaPi(const FF_Parameters & params) {
   // Eqs.(eq:pieta-current-pm),(eq:pieta-vff-data): second-class
   // current with c_{piP}^V=sqrt(2) and an overall isospin-breaking
   // mixing normalisation epsilon_pieta(') multiplying the SAME
-  // (normalized) rho tower used for pi-pi. Only ff_model::KS is
+  // (normalized) rho tower used for pi-pi. Only FF_0_PP_Base::Model::KS is
   // implemented; other models fall back to the family-base/generic
   // constant policy.
   double eps = (m_mode==FF_0_PP_mode::etapi_plus ?
@@ -640,7 +639,7 @@ void Fplus_0_PiZeroPiPlus::Construct_EtaPi(const FF_Parameters & params) {
   m_delta_base = ReadComplexParam(params.p_model,
 				   "deltaMag_pipi2_100", 0.050,"deltaPhase_pipi2_100");
   p_props_fallback = BuildRhoTower(false, m_gamma_base, m_delta_base);
-  if (m_ffmodel==ff_model::KS) {
+  if (GetModel()==FF_0_PP_Base::Model::KS) {
     p_props = p_props_fallback;
     p_props_fallback = NULL;
   }
@@ -670,11 +669,11 @@ void Fplus_0_PiZeroPiPlus::Construct_Kpi(const FF_Parameters & params) {
 				   "gammaMag_Kpi_100",-0.135,"gammaPhase_Kpi_100");
   p_props_fallback = BuildKstarTower(false, m_gamma_base);
 
-  if (m_ffmodel==ff_model::KS) {
+  if (GetModel()==FF_0_PP_Base::Model::KS) {
     p_props = p_props_fallback;
     p_props_fallback = NULL;
   }
-  else if (m_ffmodel==ff_model::KS_CLEO) {
+  else if (GetModel()==FF_0_PP_Base::Model::KS_CLEO) {
     // CLEO/TAUOLA-type tune: K*(892)+w*K*(1680), w~=-0.038. The note
     // quotes M=1.700 GeV, Gamma=0.235 GeV for K*(1680) here, which may
     // or may not match whatever Sherpa's particle table has for that
@@ -685,7 +684,7 @@ void Fplus_0_PiZeroPiPlus::Construct_Kpi(const FF_Parameters & params) {
     m_useCLEO = true;
     p_props   = BuildKstarTower(true, m_gamma);
   }
-  else if (m_ffmodel==ff_model::RChiPT) {
+  else if (GetModel()==FF_0_PP_Base::Model::RChiPT) {
     // "Level 1: bare RChiPT" two-resonance vector form factor (Jamin,
     // Pich, Portoles - JPP), cross-check note
     // tau_two_meson_currents_KS_RChiT.tex Eq.(eq:RchiT-Kpi-vector):
@@ -717,7 +716,7 @@ void Fplus_0_PiZeroPiPlus::Construct_Kpi(const FF_Parameters & params) {
     p_GKst  = LineShapes->Get(Flavour(kf_K_star_892_plus));
     p_GKstp = LineShapes->Get(Flavour(kf_K_star_1410_plus));
   }
-  else if (m_ffmodel==ff_model::RChL2012) {
+  else if (GetModel()==FF_0_PP_Base::Model::RChL2012) {
     // Eq.(27), default (FFKPIVEC=1) parameters from Table 4; masses
     // now default to the particle database rather than the paper's
     // own fitted literals (0.8953/1.307 GeV) - see the identical
@@ -766,11 +765,11 @@ void Fplus_0_PiZeroPiPlus::Construct_Keta(const FF_Parameters & params) {
 				   isPrime ? "gammaPhase_Ketaprime_100" : "gammaPhase_Keta_100");
   p_props_fallback = BuildKstarTower(false, m_gamma_base);
 
-  if (m_ffmodel==ff_model::KS) {
+  if (GetModel()==FF_0_PP_Base::Model::KS) {
     p_props = p_props_fallback;
     p_props_fallback = NULL;
   }
-  else if (m_ffmodel==ff_model::KS_CLEO) {
+  else if (GetModel()==FF_0_PP_Base::Model::KS_CLEO) {
     // CLEO/TAUOLA-type Keta tune, Eq.(eq:CLEO-Keta) of the note:
     // K*(892) - 0.038*K*(1680) (the sign is now folded directly into
     // the default magnitude below, rather than negated in code). No
@@ -786,7 +785,7 @@ void Fplus_0_PiZeroPiPlus::Construct_Keta(const FF_Parameters & params) {
     m_useCLEO = true;
     p_props   = BuildKstarTower(true, m_gamma);
   }
-  else if (m_ffmodel==ff_model::RChiPT) {
+  else if (GetModel()==FF_0_PP_Base::Model::RChiPT) {
     // "Level 1: bare RChiPT" (Jamin, Pich, Portoles), cross-check note
     // Eqs.(eq:RchiT-Keta-relation)/(eq:Ketap-vector-relation): the
     // SAME normalized K*(892)+K*(1410) two-resonance vector form
@@ -1089,7 +1088,7 @@ void Fzero_0_PiZeroPiPlus::Construct(const FF_Parameters & params) {
                        std::to_string(int(m_mode));
   Propagator_Base * dumpme = (p_BWKst0!=NULL ? p_BWKst0 :
 			      (p_BWa0!=NULL ? p_BWa0 : NULL));
-  DumpPropagatorStructure(label, int(m_ffmodel), dumpme);
+  DumpPropagatorStructure(label, int(GetModel()), dumpme);
 }
 
 void Fzero_0_PiZeroPiPlus::Construct_Kpi(const FF_Parameters & params) {
@@ -1100,7 +1099,7 @@ void Fzero_0_PiZeroPiPlus::Construct_Kpi(const FF_Parameters & params) {
   // K_S/K_L projection - see Fplus_0_PiZeroPiPlus::Construct_Kpi and
   // the m_isKSKL member comment in FF_0_PP.H for the reasoning.
   if (m_isKSKL) m_norm /= sqrt(2.);
-  if (m_ffmodel!=ff_model::KS) return;
+  if (GetModel()!=FF_0_PP_Base::Model::KS) return;
 
   m_betaKst  = (*params.p_model)("betaKst_scalar",-0.135);    // Sec.II of FM95
   m_cV       = (*params.p_model)("cV_scalar",1.);             // Eq.(21)
@@ -1154,7 +1153,7 @@ void Fzero_0_PiZeroPiPlus::Construct_EtaPi(const FF_Parameters & params) {
   m_metaP2 = (m_mode==FF_0_PP_mode::etapi_plus ?
 	      sqr(Flavour(kf_eta).HadMass()) :
 	      sqr(Flavour(kf_eta_prime_958).HadMass()));
-  if (m_ffmodel!=ff_model::KS) return;
+  if (GetModel()!=FF_0_PP_Base::Model::KS) return;
 
   // c_0^{piP}, EGSR16 Eq.(eq:pieta-sff-one-dressed): the paper fits
   // this directly and we don't have its numeric value from the
@@ -1197,11 +1196,11 @@ Complex Fzero_0_PiZeroPiPlus::operator()(const ATOOLS::Vec4D_Vector& moms) {
     return Complex(0.,0.);
   }
   // pi-eta/pi-eta': dressed a0(980) pole, EGSR16 Eq.(eq:pieta-sff-
-  // one-dressed). Only ff_model::KS implemented; falls back to the
+  // one-dressed). Only FF_0_PP_Base::Model::KS implemented; falls back to the
   // constant m_norm (already set to satisfy F_0(0)=F_+(0)) otherwise
   // or if the a0(980) lineshape is unavailable.
   if (m_mode==FF_0_PP_mode::etapi_plus || m_mode==FF_0_PP_mode::etaprimepi_plus) {
-    if (m_ffmodel!=ff_model::KS || p_BWa0==NULL) return Complex(m_norm,0.);
+    if (GetModel()!=FF_0_PP_Base::Model::KS || p_BWa0==NULL) return Complex(m_norm,0.);
     double Q2 = (moms[m_pi[0]]+moms[m_pi[1]]).Abs2();
     // (*p_BWa0)(Q2) = M_S^2/(M_S^2-Q2-i*sqrt(Q2)*Gamma(Q2)) in this
     // codebase's standard (FM/TAUOLA, Xi=sqrt(s)) convention; dividing
@@ -1214,11 +1213,11 @@ Complex Fzero_0_PiZeroPiPlus::operator()(const ATOOLS::Vec4D_Vector& moms) {
 		   (Q2 + m_mpi2 - m_metaP2) * (*p_BWa0)(Q2) / m_Ma0_2);
   }
   // Kpi_plus/Keta_plus: the dynamical (FM96) scalar form factor is
-  // only implemented for ff_model::KS. Any other model requested here
+  // only implemented for FF_0_PP_Base::Model::KS. Any other model requested here
   // has no dedicated implementation, so falls back to the constant
   // (isospin/CKM-only) form factor m_norm, per the general fallback
   // policy - see FF_0_PP_Base::operator().
-  if (!(m_ffmodel==ff_model::KS &&
+  if (!(GetModel()==FF_0_PP_Base::Model::KS &&
 	(m_mode==FF_0_PP_mode::Kpi_plus || m_mode==FF_0_PP_mode::Keta_plus))) {
     return Complex(m_norm,0.);
   }
@@ -1318,7 +1317,7 @@ operator()(const METOOLS::FF_Parameters &params) const
       ) {
     msg_Out()<<METHOD<<"("<<params.m_flavs[params.m_pi[0]]<<" + "
 	     <<params.m_flavs[params.m_pi[1]]<<"): "
-	     <<"model = "<<int(params.m_ffmodel)<<".\n";
+	     <<"model = "<<params.m_ffmodel<<".\n";
     if (params.m_name=="F+_0_PP") return new Fplus_0_PiZeroPiPlus(params);
     if (params.m_name=="F0_0_PP") return new Fzero_0_PiZeroPiPlus(params);
   }

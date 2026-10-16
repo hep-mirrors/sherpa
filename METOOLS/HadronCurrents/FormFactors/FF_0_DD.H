@@ -11,7 +11,10 @@ namespace METOOLS {
   };
   
   class FF_0_DD_Base : public FormFactor_Base {
+  public:
+    enum class Model : int { None=0, Point=1, Dipole=10 };
   protected:
+    Model GetModel() const { return ModelAs<Model>(); }
     FF_0_DD_mode m_mode;
     double       m_norm;
 

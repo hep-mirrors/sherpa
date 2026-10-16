@@ -48,7 +48,7 @@ variant:
 
 applies_to:
   - channel: "-211,111,16"
-    model: 100
+    model: 10
 applies_to_note: >
   The paper fits Belle tau- -> pi- pi0 nu_tau (62 points, full spectrum)
   simultaneously with e+e- -> pi+ pi- data.  This file carries the WEAK form

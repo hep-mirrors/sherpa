@@ -41,7 +41,7 @@ variant:
     the cross-fit mixing this file exists to prevent.
 
 applies_to:
-  - { channel: "-211,111,16", model: 201 }
+  - { channel: "-211,111,16", model: 21 }
 
 applies_to_note: >
   The paper gives this parameter set for pi- pi0 only.  It additionally

@@ -76,6 +76,11 @@ namespace METOOLS {
   ///////////////////////////////////////////////////////////////////////////
 
   class FF_0_Isoscalar3Pi : public FormFactor_Base {
+public:
+  enum class Model : int { None=0, Point=1, KS=10, KT=11 };
+protected:
+  Model GetModel() const { return ModelAs<Model>(); }
+
   private:
     // omega(782), phi(1020), omega(1420), omega(1650) -- all FixedBreitWigner
     // at model-level poles; see the note above on why they are not registry

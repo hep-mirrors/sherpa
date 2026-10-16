@@ -83,10 +83,10 @@ operator()(const METOOLS::FF_Parameters &params) const
        params.m_flavs[params.m_pi[1]].Kfcode()==kf_p_plus)    ||
       (params.m_flavs[params.m_pi[0]].Kfcode()==kf_n &&
        params.m_flavs[params.m_pi[1]].Kfcode()==kf_n)         ) {
-    if (params.m_ffmodel==ff_model::none)   return new FF_0_DD_None(params);
-    if (params.m_ffmodel==ff_model::point)  return new FF_0_DD_Point(params);
-    if (params.m_ffmodel==ff_model::dipole) return new FF_0_DD_Dipole(params);
+    if (params.m_ffmodel==int(FF_0_DD_Base::Model::None))   return new FF_0_DD_None(params);
+    if (params.m_ffmodel==int(FF_0_DD_Base::Model::Point))  return new FF_0_DD_Point(params);
+    if (params.m_ffmodel==int(FF_0_DD_Base::Model::Dipole)) return new FF_0_DD_Dipole(params);
   }
-  return NULL;
+  THROW(fatal_error,"Unknown FORM_FACTOR="+std::to_string(params.m_ffmodel)+" for FF_0_DD");
 }
 

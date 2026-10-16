@@ -39,7 +39,7 @@ variant:
     is driven solely by the F(0) = 1 constraint of the generator.
 
 applies_to:
-  - { channel: "-211,111,16", model: 101 }
+  - { channel: "-211,111,16", model: 11 }
 # Model changed 2026-09-22 from 105 to 101 (Gounaris-Sakurai): model numbers
 # now mean the functional form and this file carries the fit, so the retired
 # FORM_FACTOR = 105 is exactly 101 with this set selected locally.

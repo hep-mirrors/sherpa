@@ -273,7 +273,7 @@ FF_PP_Wave * VA_P_PP::MakeWave(const std::string & name,GeneralModel & model)
 {
   std::vector<int> pp; pp.push_back(p_i[1]); pp.push_back(p_i[2]);
   std::map<std::string,double> pmap;
-  FF_Parameters params(ff_model::none,m_flavs,pp,pmap,name,&model);
+  FF_Parameters params(ff_zero,m_flavs,pp,pmap,name,&model);
   FormFactor_Base * ff = FF_Getter::GetObject("FF_PP_Wave",params);
   if (ff==NULL)
     THROW(fatal_error,"Could not build wave lineshape '"+name+"' for current "

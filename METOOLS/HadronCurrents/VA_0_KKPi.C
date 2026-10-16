@@ -87,7 +87,7 @@ void VA_0_KKPi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 
 void VA_0_KKPi::SetModelParameters(struct GeneralModel model) {
   map<string,double> pmap;
-  FF_Parameters params(ff_model(model[string("FORM_FACTOR")]),
+  FF_Parameters params(int(model[string("FORM_FACTOR")]),
 		       m_flavs,p_i,pmap,"",&model);
   params.m_name = "F1_0_KKPi";
   p_f1 = FF_Getter::GetObject("FF_0_PPP",params);

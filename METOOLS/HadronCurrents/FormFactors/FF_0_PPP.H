@@ -50,6 +50,38 @@ namespace METOOLS {
   };
   
   class FF_0_PPP_Base : public FormFactor_Base {
+  public:
+    enum class Model : int {
+      None = 0, Point = 1,
+      KS = 10,
+      KS_CLEO = 12,
+      KS_f0 = 13,
+      CLEO_f0 = 14,
+      KS_flatte = 15,
+      CLEO_flatte = 16,
+      RChiPT = 20,
+      RChL2012 = 21,
+
+    };
+  protected:
+    Model GetModel() const { return ModelAs<Model>(); }
+    void ValidateModel() const {
+      switch (GetModel()) {
+        case Model::None: case Model::Point:
+        case Model::KS:
+        case Model::KS_CLEO:
+        case Model::KS_f0:
+        case Model::CLEO_f0:
+        case Model::KS_flatte:
+        case Model::CLEO_flatte:
+        case Model::RChiPT:
+        case Model::RChL2012:
+
+          return;
+      }
+      THROW(fatal_error, "Unknown FORM_FACTOR=" + std::to_string(m_ffmodel) +
+            " for FF_0_PPP_Base");
+    }
   protected:
     FF_0_PPP_mode       m_mode;
     Complex             m_norm;

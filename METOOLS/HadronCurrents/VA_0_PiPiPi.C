@@ -107,7 +107,7 @@ void VA_0_PiPiPi::SetModelParameters(struct GeneralModel model) {
   // generic parameter.yaml structure or so?  Will resolve during
   // the MCnet school while chatting with Chris & Eno
   map<string,double> pmap;
-  FF_Parameters params(ff_model(model[string("FORM_FACTOR")]),
+  FF_Parameters params(int(model[string("FORM_FACTOR")]),
 		       m_flavs,p_i,pmap,"",&model);
   msg_Out()<<METHOD<<"("<<m_flavs[p_i[0]]<<"/"<<m_flavs[p_i[1]]<<"/"<<m_flavs[p_i[2]]<<")\n";
   params.m_name = "F1_0_PPP";

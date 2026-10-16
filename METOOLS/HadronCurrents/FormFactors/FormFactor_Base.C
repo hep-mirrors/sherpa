@@ -16,11 +16,7 @@ FormFactor_Base::FormFactor_Base(const FF_Parameters & params) :
   m_name(params.m_name),
   p_model(params.p_model)
 {
-  if (m_ffmodel==ff_model::retired_105)
-    THROW(fatal_error,"FORM_FACTOR = 105 is retired.  The Belle 2008 "
-	  "Gounaris-Sakurai fit it hardcoded is now FORM_FACTOR = 101 with "
-	  "HADRON_DECAYS:Resonance_Parameters = local (or local_else_global) "
-	  "and the parameter set Belle2008_Fujikawa.yaml.");
+  CheckReservedModel(m_ffmodel);
   // Two loops, NOT one: m_pi holds the decay indices and is generally SHORTER
   // than m_flavs (five flavours but three hadrons for e+e- -> pi+ pi- pi0, or
   // for a tau decay).  Indexing m_pi by the flavour loop reads past its end --
@@ -40,7 +36,13 @@ FormFactor_Base::FormFactor_Base(const FF_Parameters & params) :
   // production alike.  ff_model::none means "no dynamical model" -- a constant
   // form factor, or a current whose card named no FORM_FACTOR -- which no
   // published fit can describe, so those are left alone.
-  if (m_ffmodel!=ff_model::none && m_ffmodel!=ff_model::unknown)
-    ApplyParameterSet(p_model,m_flavs,m_pi,int(m_ffmodel));
+  if (m_ffmodel!=ff_zero && m_ffmodel!=ff_one)
+    ApplyParameterSet(p_model,m_flavs,m_pi,m_ffmodel);
 }
 
+
+void FormFactor_Base::CheckReservedModel(int model) {
+  if (model==ff_invalid || model<0 || (model>1 && model<10))
+    THROW(fatal_error,"Invalid FORM_FACTOR model number " +
+          std::to_string(model) + ". Use 0 (zero), 1 (one), or a family model >= 10; 99 is reserved.");
+}

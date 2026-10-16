@@ -51,8 +51,8 @@ void FF_0_Isoscalar3Pi::FixParameters(const FF_Parameters & params) {
   // back to a constant form factor would give a cross section that looks
   // plausible and means nothing -- so anything else throws.  Decided first,
   // because the default couplings depend on it.
-  m_kt = (m_ffmodel==ff_model::KT);
-  if (!m_kt && m_ffmodel!=ff_model::none && !IsKSFamily(m_ffmodel))
+  m_kt = (GetModel()==Model::KT);
+  if (!m_kt && GetModel()!=Model::None && GetModel()!=Model::Point && GetModel()!=Model::KS)
     THROW(fatal_error,"FF_0_Isoscalar3Pi implements FormFactor 100 "
 	  "(hep-ph/0512180 Eq. (10)) and 300 (Khuri-Treiman), not "+
 	  ToString(int(m_ffmodel))+".");
@@ -321,6 +321,8 @@ double FF_0_Isoscalar3Pi::ContactNorm(const double & q2) {
 }
 
 Complex FF_0_Isoscalar3Pi::operator()(const Vec4D_Vector & moms) {
+  if (GetModel()==Model::None) return Complex(0.,0.);
+  if (GetModel()==Model::Point) return Complex(1.,0.);
   const Vec4D & pp=moms[m_i_plus], & pm=moms[m_i_minus], & p0=moms[m_i_zero];
   const double q2 = (pp+pm+p0).Abs2();
   if (m_kt) {

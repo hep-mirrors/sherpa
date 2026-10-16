@@ -62,7 +62,7 @@ variant:
     SM.
 
 applies_to:
-  - { channel: "-321,211,-211,16", model: 102 }
+  - { channel: "-321,211,-211,16", model: 12 }
 
 applies_to_note: >
   The paper fits/models exactly one final state, tau- -> K- pi- pi+ nu_tau

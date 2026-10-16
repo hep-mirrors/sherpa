@@ -38,7 +38,7 @@ void V_0_Isoscalar3Pi::SetModelParameters(struct GeneralModel model) {
   // The parameterisation arrives as an ff_model number, as FORM_FACTOR does
   // elsewhere: 100, the default, is hep-ph/0512180 Eq. (10); 300 is the
   // Khuri-Treiman form.
-  const ff_model ffm(ff_model(int(m_model("EE3Pi_ff_model",100.))));
+  const int ffm(int(m_model("EE3Pi_ff_model",10.)));
   FF_Parameters params(ffm,m_flavs,p_i,pmap,"FS_0_EE3Pi",&m_model);
   p_ff = new FF_0_Isoscalar3Pi(params);
 }

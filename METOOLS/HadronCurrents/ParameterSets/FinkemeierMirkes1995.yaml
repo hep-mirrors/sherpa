@@ -64,14 +64,14 @@ applies_to:
 
   # --- Cabibbo-suppressed, K pi pi:  parameterised directly in Tabs. I and II
   - channel: "-321,211,-211,16"
-    model: 100
+    model: 10
     paper_channel: "K^- pi^- pi^+"
     q1q2q3: "q1=K^-, q2=pi^-, q3=pi^+"
     provenance: printed-eq
     where: "Tab. I row 7, :1720-1723 and Tab. II row 7, :1785-1788"
 
   - channel: "-321,111,111,16"
-    model: 100
+    model: 10
     paper_channel: "pi^0 pi^0 K^-"
     q1q2q3: "q1=pi^0, q2=pi^0, q3=K^-"
     provenance: printed-eq
@@ -79,7 +79,7 @@ applies_to:
     note: "identical-particle factor 1/2 required in the rate; see conventions.identical_particles"
 
   - channel: "310,-211,111,16"
-    model: 100
+    model: 10
     paper_channel: "pi^- Kbar^0 pi^0"
     q1q2q3: "q1=pi^-, q2=K_S, q3=pi^0"
     provenance: inferred
@@ -94,7 +94,7 @@ applies_to:
       unobservable here.
 
   - channel: "-211,130,111,16"
-    model: 100
+    model: 10
     paper_channel: "pi^- Kbar^0 pi^0"
     q1q2q3: "q1=pi^-, q2=K_L, q3=pi^0"
     provenance: inferred
@@ -104,14 +104,14 @@ applies_to:
 
   # --- Cabibbo-allowed, K K pi
   - channel: "321,-321,-211,16"
-    model: 100
+    model: 10
     paper_channel: "K^- pi^- K^+"
     q1q2q3: "q1=K^-, q2=pi^-, q3=K^+"
     provenance: printed-eq
     where: "Tab. I row 1, :1683-1686 and Tab. II row 1, :1754-1757"
 
   - channel: "-321,310,111,16"
-    model: 100
+    model: 10
     paper_channel: "K^- pi^0 K^0"
     q1q2q3: "q1=K^-, q2=pi^0, q3=K_S"
     provenance: inferred
@@ -124,7 +124,7 @@ applies_to:
       eq.(klsdef); the paper does not perform this projection itself.
 
   - channel: "-321,130,111,16"
-    model: 100
+    model: 10
     paper_channel: "K^- pi^0 K^0"
     q1q2q3: "q1=K^-, q2=pi^0, q3=K_L"
     provenance: inferred
@@ -133,7 +133,7 @@ applies_to:
     note: "as above; B = 0.080%."
 
   - channel: "310,-211,130,16"
-    model: 100
+    model: 10
     paper_channel: "K_S pi^- K_L"
     q1q2q3: "q1=K_S, q2=pi^-, q3=K_L"
     provenance: printed-eq
@@ -144,7 +144,7 @@ applies_to:
       (:1163), "<K_S(q_1) \pi^-(q_2) K_L(q_3) | J^\mu | 0 >".
 
   - channel: "310,310,-211,16"
-    model: 100
+    model: 10
     paper_channel: "K_S pi^- K_S"
     q1q2q3: "q1=K_S, q2=pi^-, q3=K_S"
     provenance: printed-eq
@@ -152,7 +152,7 @@ applies_to:
     note: "identical-particle factor 1/2 required in the rate."
 
   - channel: "-211,130,130,16"
-    model: 100
+    model: 10
     paper_channel: "K_L pi^- K_L"
     q1q2q3: "q1=K_L, q2=pi^-, q3=K_L"
     provenance: printed-eq

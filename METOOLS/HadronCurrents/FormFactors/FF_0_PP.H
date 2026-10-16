@@ -20,6 +20,34 @@ namespace METOOLS {
   };
   
   class FF_0_PP_Base : public FormFactor_Base {
+  public:
+    enum class Model : int {
+      None = 0, Point = 1,
+      KS = 10,
+      GS = 11,
+      KS_CLEO = 12,
+      RChiPT = 20,
+      RChL2012 = 21,
+      combRChL = 22,
+
+    };
+  protected:
+    Model GetModel() const { return ModelAs<Model>(); }
+    void ValidateModel() const {
+      switch (GetModel()) {
+        case Model::None: case Model::Point:
+        case Model::KS:
+        case Model::GS:
+        case Model::KS_CLEO:
+        case Model::RChiPT:
+        case Model::RChL2012:
+        case Model::combRChL:
+
+          return;
+      }
+      THROW(fatal_error, "Unknown FORM_FACTOR=" + std::to_string(m_ffmodel) +
+            " for FF_0_PP_Base");
+    }
   protected:
     FF_0_PP_mode        m_mode;
     double              m_norm;
@@ -54,6 +82,7 @@ namespace METOOLS {
       FormFactor_Base(params),
       m_mode(FF_0_PP_mode::unknown), m_isKSKL(false),
       m_norm(0.), p_props(NULL), p_props_fallback(NULL) {
+      ValidateModel();
       FixMode();
     }
     ~FF_0_PP_Base() {

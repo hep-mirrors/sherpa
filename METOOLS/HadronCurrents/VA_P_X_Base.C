@@ -99,7 +99,7 @@ FF_P_X * VA_P_X_Base::MakeFF(const std::string & name,GeneralModel & model) {
   fi.push_back(p_i[0]);
   fi.push_back(p_i[1]);
   map<string,double> pmap;
-  FF_Parameters params(ff_model::none,m_flavs,fi,pmap,name,&model);
+  FF_Parameters params(ff_zero,m_flavs,fi,pmap,name,&model);
   FormFactor_Base * ff = FF_Getter::GetObject("FF_P_X",params);
   if (ff==NULL)
     THROW(fatal_error,"Could not build form factor '"+name+"' for current "

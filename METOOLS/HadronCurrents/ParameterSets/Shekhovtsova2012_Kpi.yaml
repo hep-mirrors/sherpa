@@ -38,7 +38,7 @@ variant:
     paper and cannot be reconstructed from this one.
 
 applies_to:
-  - { channel: "-321,111,16", model: 201 }
+  - { channel: "-321,111,16", model: 21 }
 
 applies_to_note: >
   The paper gives this set for BOTH pi0 K- and pi- K0bar (channels 2 and 3,
