@@ -697,20 +697,31 @@ double Massive_Kernels::Kb2(int type)
   return 0.;
 }
 
+double Massive_Kernels::CSSIFShift(double x,double muq2) const
+// CSS initial-final dipoles (u<alpha_IF) and final-initial ones
+// (1-x<alpha_FI) change their soft kernels by 2u/(1-x+u) and 2(1-x)/(2-x-z);
+// a final-state parton of mass^2 muq2 (in units of s_ja/x) limits u and 1-z
+// to up; zero in the other schemes
+{
+  if (m_subtype!=subscheme::CSS) return 0.;
+  const double up((1.-x)/(1.-x+muq2));
+  double res(2.*log((1.-x+Min(m_alpha_if,up))/(1.-x)));
+  if (1.-x<m_alpha_fi) res+=2.*log((1.-x+up)/(1.-x));
+  return res;
+}
+
 double Massive_Kernels::Kb3(int type,double x)
 {
-  double me(0.0);
-  if (m_subtype==subscheme::CSS) me=2.*log((2.-x)/(1.-x));
   if (m_stype==sbt::qed && type==4) return 0.;
   switch(type) {
   case 1:
-    return (-(1.+x)*log((1.-x)/x)+(1.-x)+2.*me);
+    return (-(1.+x)*log((1.-x)/x)+(1.-x)+CSSIFShift(x));
   case 2:
     return m_CFbyCA*((1.+sqr(1.-x))/x*log((1.-x)/x)+x);
   case 3:
     return m_TRbyCF*((x*x+sqr(1.-x))*log((1.-x)/x)+2.*x*(1.-x));
   case 4:
-    return 2.*(((1.-x)/x-1.+x*(1.-x))*log((1.-x)/x)+me);
+    return 2.*((1.-x)/x-1.+x*(1.-x))*log((1.-x)/x)+CSSIFShift(x);
   }
   return 0.;
 }
@@ -801,16 +812,12 @@ double Massive_Kernels::KbM4(int type,double muak2,double x)
 }
 
 double Massive_Kernels::Kbc3(int type,double muq2,double x)
+// massive final-state parton: change of the CSS shift of its IF and FI dipoles
 {
-  double me(0.0);
-  // factor 2 due to sum over IF & FI dipoles
-  if (m_subtype==subscheme::CSS)
-    me=2.*log((2.-x+muq2)/(1.-x+muq2))-2.*log((2.-x)/(1.-x));
   switch(type) {
   case 1:
-    return 2.*me;
   case 4:
-    return 2.*me;
+    return CSSIFShift(x,muq2)-CSSIFShift(x);
   }
   return 0.;
 }
@@ -843,28 +850,32 @@ double Massive_Kernels::Kt3(int type,double x)
   if (m_stype==sbt::qed && type==4) return 0.;
   double ax=0.;
   if (m_alpha_ii<(1.-x)) ax=log(m_alpha_ii/(1.-x));
+  // the CSS and Dire II kernels are evaluated at z=x+v; their shifts are
+  // integrated over the dipole phase space v<min(alpha_II,1-x)
+  const double v(Min(m_alpha_ii,1.-x));
   switch(type) {
   case 1:
     ax*=(1.+x*x)/(1.-x);
-    if (m_subtype==subscheme::Dire) ax+=-(1.-x);
-    if (m_subtype==subscheme::CSS)  ax+=2.-(1.-x)-4.*log((2.-x)/(1.-x));
+    if (m_subtype==subscheme::Dire) ax+=-v;
+    if (m_subtype==subscheme::CSS)  ax+=v*(2./(1.-x)-1.)-CSSIFShift(x);
     return -(1.+x)*log(1.-x)+ax;
   case 2:
     ax*=(1.+sqr(1.-x))/x;
     if (m_subtype==subscheme::Dire || m_subtype==subscheme::CSS)
-      ax+=(1.-x)+2.*log(x)/x;
+      ax+=v-2./x*log(1.+v/x);
     return m_CFbyCA*((1.+sqr(1.-x))/x*log(1.-x)+ax);
   case 3:
     ax*=(1.-2.*x*(1.-x));
     if (m_subtype==subscheme::Dire || m_subtype==subscheme::CSS)
-      ax+=-(1.-x)*(1.-3.*x);
+      ax+=-2.*(1.-2.*x)*v+v*v;
     return m_TRbyCF*((x*x+sqr(1.-x))*log(1.-x)+ax);
   case 4:
     ax*=x/(1.-x)+(1.-x)/x+x*(1.-x);
     if (m_subtype==subscheme::Dire)
-      ax+=0.5*(1.-x*(4.-3.*x)+2.*log(x)/x);
+      ax+=0.5*(2.*(1.-2.*x)*v-v*v-2./x*log(1.+v/x));
     if (m_subtype==subscheme::CSS)
-      ax+=0.5*(3.-x*(4.-3.*x)+2.*log(x)/x-4.*log((2.-x)/(1.-x)));
+      ax+=0.5*(2.*v/(1.-x)+2.*(1.-2.*x)*v-v*v-2./x*log(1.+v/x)
+               -CSSIFShift(x));
     return 2.*((1.-x)/x-1.+x*(1.-x))*log(1.-x)+2.*ax;
   }
   return 0.;
@@ -1237,7 +1248,7 @@ double Massive_Kernels::at3(int type,int spin,double muq2,double x)
     }
     break;
   case 3:
-    if (zp>m_alpha_if) res += -m_TRbyCA*(x*x+sqr(1.-x))*log(zp/m_alpha_if);
+    if (zp>m_alpha_if) res += -m_TRbyCF*(x*x+sqr(1.-x))*log(zp/m_alpha_if);
     break;
   case 4:
     if (zp>m_alpha_if) {
