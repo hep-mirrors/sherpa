@@ -1237,7 +1237,7 @@ double Massive_Kernels::at3(int type,int spin,double muq2,double x)
     }
     break;
   case 3:
-    if (zp>m_alpha_if) res += -m_TRbyCA*(x*x+sqr(1.-x))*log(zp/m_alpha_if);
+    if (zp>m_alpha_if) res += -m_TRbyCF*(x*x+sqr(1.-x))*log(zp/m_alpha_if);
     break;
   case 4:
     if (zp>m_alpha_if) {
