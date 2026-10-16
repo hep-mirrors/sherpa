@@ -180,6 +180,7 @@ namespace AMEGIC {
                           const ATOOLS::Vec4D_Vector &,
                           std::vector<std::vector<double> >&);
     void           Calc_KP(const ATOOLS::Vec4D_Vector&);
+    void           Calc_KP_Pointlike();
     double         KPTerms(int mode, PDF::PDF_Base *pdfa,
                                      PDF::PDF_Base *pdfb, double scalefac2=1.0,
                                      double *kppointlike=NULL);
