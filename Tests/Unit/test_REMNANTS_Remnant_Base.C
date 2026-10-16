@@ -20,10 +20,10 @@ namespace {
     if (!ATOOLS::msg) ATOOLS::msg = new ATOOLS::Message();
     if (!ATOOLS::rpa) ATOOLS::rpa = new ATOOLS::Run_Parameter();
     Settings::InitializeMainSettings("");
-    if (s_kftable.find(kf_photon) == s_kftable.end()) {
+    if (s_kftable.find(kf_photon) == s_kftable.end())
       AddParticle(kf_photon, 0., 0., 0., 0, 2, true, 1, "P", "P");
+    if (s_kftable.find(kf_d) == s_kftable.end())
       AddParticle(kf_d, 0.01, 0., 0., -1, 1, true, 1, "d", "d");
-    }
     booted = true;
   }
 
