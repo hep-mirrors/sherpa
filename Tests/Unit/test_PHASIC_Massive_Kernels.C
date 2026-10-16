@@ -1,0 +1,287 @@
+#include <catch2/catch_all.hpp>
+
+#include "PHASIC++/Process/Massive_Kernels.H"
+#include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Settings.H"
+#include "ATOOLS/Phys/KF_Table.H"
+#include "ATOOLS/Phys/NLO_Types.H"
+
+#include <cmath>
+#include <vector>
+
+using namespace ATOOLS;
+using PHASIC::Massive_Kernels;
+using Catch::Matchers::WithinAbs;
+using Catch::Matchers::WithinRel;
+
+namespace {
+
+  void Register(kf_code kf, double mass, int icharge, const std::string& name) {
+    if (s_kftable.find(kf) == s_kftable.end())
+      AddParticle(kf, mass, 0., 0., icharge, 1, true, 1, name, name);
+  }
+
+  void Boot() {
+    static bool booted = false;
+    if (booted) return;
+    if (!ATOOLS::msg) ATOOLS::msg = new ATOOLS::Message();
+    if (!ATOOLS::rpa) ATOOLS::rpa = new ATOOLS::Run_Parameter();
+    Settings::InitializeMainSettings("");
+    // the same records as the other unit tests, so the shared table does not
+    // depend on the test order; the q <- g kernels need neither colour nor masses
+    Register(kf_d, 0.01, -1, "d");
+    Register(kf_u, 0.005, 2, "u");
+    Register(kf_s, 0.2, -1, "s");
+    Register(kf_c, 1.42, 2, "c");
+    Register(kf_b, 4.92, -1, "b");
+    booted = true;
+  }
+
+  // SetNC sums Q^2 over the model's massless charged flavours; only the
+  // quarks matter, and only for the I-operator constants, not the KP kernels.
+  class Quark_Model : public MODEL::Model_Base {
+  public:
+    Quark_Model() : Model_Base(true) {
+      for (long kf = 1; kf <= 5; ++kf) {
+        m_fls.push_back(Flavour(kf));
+        m_fls.push_back(Flavour(kf).Bar());
+      }
+    }
+    void InitVertices() override {}
+    void ParticleInit() override {}
+    bool ModelInit() override { return true; }
+  };
+
+  // Massive_Kernels with N_C = 3 set the way KP_Terms does it
+  struct Kernels {
+    Quark_Model model;
+    MODEL::Model_Base *saved;
+    Massive_Kernels kernels;
+    explicit Kernels(sbt::subtype st) : saved(MODEL::s_model), kernels(st, 5, 0) {
+      MODEL::s_model = &model;
+      kernels.SetNC(3.);
+    }
+    ~Kernels() { MODEL::s_model = saved; }
+  };
+
+  // regular part of the q <- g (QCD) or q <- photon (QED) splitting function
+  // per T^2 of the quark entering the Born, without its colour/charge factor
+  double Pqg(double x) { return x * x + (1. - x) * (1. - x); }
+
+  const std::vector<double> xs = {0.05, 0.3, 0.7, 0.95};
+  constexpr int q_from_g = 3;  // Massive_Kernels type: quark entering, gluon/photon split
+  constexpr int quark = 1;     // spin of a final-state quark spectator
+
+  // Spin-averaged initial-initial dipole kernel of the real subtraction
+  // (METOOLS FFV_DLC, VVV_DLC) per T^2 of the parton entering the Born,
+  // types as in Massive_Kernels: 1 q<-q, 2 g<-q, 3 q<-g, 4 g<-g. CSS and
+  // Dire evaluate it at z = x+v instead of x.
+  double IIKernel(int type, subscheme::code scheme, double x, double v) {
+    const double z(scheme == subscheme::CS ? x : x + v);
+    switch (type) {
+    case 1:
+      if (scheme == subscheme::CSS) return 2. * z / (1. - x) + (1. - z);
+      return 2. / (1. - x) - (1. + z);
+    case 2:
+      return z + 2. * (1. - z) / z;
+    case 3:
+      return 1. - 2. * z * (1. - z);
+    case 4:
+      return 2. * (scheme == subscheme::CSS ? z : x) / (1. - x)
+             + 2. * z * (1. - z) + 2. * (1. - z) / z;
+    }
+    return 0.;
+  }
+
+  // int_0^V dv/v [kernel(scheme) - kernel(CS)], V = min(alpha_II, 1-x): what
+  // the scheme changes in the II dipoles that survive the alpha_II cut
+  double IIShift(int type, subscheme::code scheme, double x, double alpha) {
+    const double V(std::min(alpha, 1. - x));
+    const int n(20000);
+    double sum(0.);
+    for (int i(0); i < n; ++i) {
+      const double v((i + 0.5) * V / n);
+      sum += (IIKernel(type, scheme, x, v) - IIKernel(type, subscheme::CS, x, v)) / v;
+    }
+    return sum * V / n;
+  }
+
+}
+
+TEST_CASE("Quark-from-gluon and quark-from-photon KP kernels follow Catani-Seymour",
+          "[PHASIC::Massive_Kernels]") {
+  Boot();
+  // T_R/C_F for g -> q qbar; for gamma -> q qbar T_R -> N_C Q^2, C_F -> Q^2
+  const auto [st, c] = GENERATE(table<sbt::subtype, double>(
+      {{sbt::qcd, 0.5 / (4. / 3.)}, {sbt::qed, 3.}}));
+  {
+    Kernels k(st);
+    auto &K = k.kernels;
+    CAPTURE(st, c);
+
+    SECTION("an off-diagonal splitting has no endpoint or plus-distribution pieces") {
+      K.SetAlpha(0.1, 0.1, 0.1, 0.1);
+      CHECK(K.Kb2(q_from_g) == 0.);
+      CHECK(K.Kt2(q_from_g) == 0.);
+      CHECK(K.P2(q_from_g) == 0.);
+      CHECK(K.t2(q_from_g, quark, 0.) == 0.);
+      for (double x : xs) {
+        CAPTURE(x);
+        CHECK(K.Kb1(q_from_g, x) == 0.);
+        CHECK(K.Kb4(q_from_g, x) == 0.);
+        CHECK(K.Kt1(q_from_g, x) == 0.);
+        CHECK(K.Kt4(q_from_g, x) == 0.);
+        CHECK(K.P1(q_from_g, x) == 0.);
+        CHECK(K.P4(q_from_g, x) == 0.);
+        CHECK(K.t1(q_from_g, quark, 0., x) == 0.);
+        CHECK(K.t4(q_from_g, quark, 0., x) == 0.);
+      }
+    }
+
+    SECTION("Kbar is c [P(x) ln((1-x)/x) + 2x(1-x)] and P is c P(x)") {
+      for (double x : xs) {
+        CAPTURE(x);
+        CHECK_THAT(K.Kb3(q_from_g, x),
+                   WithinRel(c * (Pqg(x) * std::log((1. - x) / x) + 2. * x * (1. - x)), 1e-12));
+        CHECK_THAT(K.P3(q_from_g, x), WithinRel(c * Pqg(x), 1e-12));
+      }
+    }
+
+    SECTION("Ktilde is c P(x) ln(1-x) at alpha_II = 1") {
+      for (double x : xs) {
+        CAPTURE(x);
+        CHECK_THAT(K.Kt3(q_from_g, x), WithinRel(c * Pqg(x) * std::log(1. - x), 1e-12));
+      }
+    }
+
+    SECTION("alpha_II < 1 cuts Ktilde to c P(x) ln(alpha_II) where 1-x > alpha_II") {
+      const double a = 0.1;
+      K.SetAlpha(1., 1., 1., a);
+      CHECK_THAT(K.Kt3(q_from_g, 0.3), WithinRel(c * Pqg(0.3) * std::log(a), 1e-12));
+      CHECK_THAT(K.Kt3(q_from_g, 0.95),
+                 WithinRel(c * Pqg(0.95) * std::log(1. - 0.95), 1e-12));
+    }
+
+    SECTION("in the CSS scheme Ktilde gains the integral of the II kernel shift, -c (1-x)(1-3x) at alpha_II = 1") {
+      // the CSS II dipole evaluates 1-2z(1-z) at z = x+v instead of x (FFV_DLC);
+      // int_0^{1-x} dv/v [-2v(1-2x-v)] = -(1-x)(1-3x)
+      K.SetSubType(subscheme::CSS);
+      for (double x : xs) {
+        CAPTURE(x);
+        CHECK_THAT(K.Kt3(q_from_g, x),
+                   WithinRel(c * (Pqg(x) * std::log(1. - x) - (1. - x) * (1. - 3. * x)), 1e-12));
+      }
+    }
+
+    SECTION("a massless final-state spectator adds nothing at alpha_IF = 1") {
+      K.SetAlpha(1., 0.1, 1., 1.);  // alpha_FI restricts final-state emitters only
+      for (double x : xs) {
+        CAPTURE(x);
+        CHECK_THAT(K.t3(q_from_g, quark, 0., x), WithinAbs(0., 1e-15));
+      }
+    }
+
+    SECTION("alpha_IF < 1 adds the spectator term P(x) ln(1/alpha_IF) in the same normalisation as P") {
+      const double a = 0.1;
+      K.SetAlpha(1., 1., a, 1.);
+      for (double x : xs) {
+        CAPTURE(x);
+        CHECK_THAT(K.t3(q_from_g, quark, 0., x),
+                   WithinRel(K.P3(q_from_g, x) * std::log(1. / a), 1e-12));
+      }
+    }
+  }
+}
+
+TEST_CASE("The CSS and Dire Ktilde shifts integrate the II dipole change over v < alpha_II",
+          "[PHASIC::Massive_Kernels]") {
+  Boot();
+  const subscheme::code scheme = GENERATE(subscheme::CSS, subscheme::Dire);
+  const int type = GENERATE(1, 2, 3, 4);
+  const double alpha = GENERATE(1., 0.1);
+  CAPTURE(scheme, type, alpha);
+  Kernels cs(sbt::qcd), shifted(sbt::qcd);
+  shifted.kernels.SetSubType(scheme);
+  cs.kernels.SetAlpha(1., 1., 1., alpha);
+  shifted.kernels.SetAlpha(1., 1., 1., alpha);
+  // Kt3 normalisation per T^2 of the parton entering the Born
+  const auto &K = cs.kernels;
+  const double norm[5] = {0., 1., K.CF() / K.CA(), K.TR() / K.CF(), 1.};
+  for (double x : {0.3, 0.7, 0.95}) {
+    CAPTURE(x);
+    double expected(norm[type] * IIShift(type, scheme, x, alpha));
+    // the CSS initial-final shift, moved into Ktilde by colour conservation
+    if (scheme == subscheme::CSS && (type == 1 || type == 4))
+      expected -= 4. * std::log((2. - x) / (1. - x));
+    CHECK_THAT(shifted.kernels.Kt3(type, x) - cs.kernels.Kt3(type, x),
+               WithinRel(expected, 1e-6));
+  }
+}
+
+namespace {
+
+  // CSS initial-final and final-initial dipoles change their soft kernels by
+  // 2u/(1-x+u) (IF, cut at u < alpha_IF) and 2y/(1-z+y), y = 1-x (FI, active
+  // for 1-x < alpha_FI, measure dz/(1-x)); both for q<-q and g<-g. A
+  // final-state parton of mass^2 muq2 (in units of s_ja/x, as in Kbc3)
+  // limits u and 1-z of the gluon to (1-x)/(1-x+muq2).
+  double CSSIFShift(double x, double alpha_if, double alpha_fi, double muq2 = 0.) {
+    const int n(20000);
+    const double y(1. - x), up(y / (y + muq2)), umax(std::min(alpha_if, up));
+    double ifs(0.), fis(0.);
+    for (int i(0); i < n; ++i) {
+      const double u((i + 0.5) * umax / n), zg((i + 0.5) * up / n);
+      ifs += 2. / (y + u) * umax / n;
+      fis += 2. * y / (zg + y) / y * up / n;
+    }
+    return ifs + (y < alpha_fi ? fis : 0.);
+  }
+
+}
+
+TEST_CASE("The CSS initial-final shifts of Kbar and Ktilde follow alpha_IF and alpha_FI",
+          "[PHASIC::Massive_Kernels]") {
+  Boot();
+  const int type = GENERATE(1, 4);
+  const double alpha_if = GENERATE(1., 0.1);
+  const double alpha_fi = GENERATE(1., 0.1);
+  CAPTURE(type, alpha_if, alpha_fi);
+  Kernels cs(sbt::qcd), css(sbt::qcd);
+  css.kernels.SetSubType(subscheme::CSS);
+  cs.kernels.SetAlpha(1., alpha_fi, alpha_if, 1.);
+  css.kernels.SetAlpha(1., alpha_fi, alpha_if, 1.);
+  for (double x : {0.3, 0.7, 0.95}) {
+    CAPTURE(x);
+    const double shift(CSSIFShift(x, alpha_if, alpha_fi));
+    // Kbar carries it for all final-state partons; Ktilde takes it back for
+    // the initial-state spectator (colour conservation), on top of the II shift
+    CHECK_THAT(css.kernels.Kb3(type, x) - cs.kernels.Kb3(type, x), WithinRel(shift, 1e-6));
+    CHECK_THAT(css.kernels.Kt3(type, x) - cs.kernels.Kt3(type, x),
+               WithinRel(IIShift(type, subscheme::CSS, x, 1.) - shift, 1e-6));
+  }
+}
+
+TEST_CASE("Kbc3 corrects the CSS initial-final shifts for a massive final-state parton",
+          "[PHASIC::Massive_Kernels]") {
+  Boot();
+  const int type = GENERATE(1, 4);
+  const double alpha_if = GENERATE(1., 0.1);
+  const double alpha_fi = GENERATE(1., 0.1);
+  CAPTURE(type, alpha_if, alpha_fi);
+  Kernels cs(sbt::qcd), css(sbt::qcd);
+  css.kernels.SetSubType(subscheme::CSS);
+  cs.kernels.SetAlpha(1., alpha_fi, alpha_if, 1.);
+  css.kernels.SetAlpha(1., alpha_fi, alpha_if, 1.);
+  // muq2 = 0.5 limits u to below alpha_IF = 0.1 for x >= 0.95
+  for (double muq2 : {0.02, 0.5}) {
+    for (double x : {0.3, 0.7, 0.95, 0.99}) {
+      CAPTURE(muq2, x);
+      const double shift(CSSIFShift(x, alpha_if, alpha_fi, muq2)
+                         - CSSIFShift(x, alpha_if, alpha_fi));
+      CHECK_THAT(css.kernels.Kbc3(type, muq2, x), WithinRel(shift, 1e-6));
+      CHECK(cs.kernels.Kbc3(type, muq2, x) == 0.);
+    }
+  }
+}
