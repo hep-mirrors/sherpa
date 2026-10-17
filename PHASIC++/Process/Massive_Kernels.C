@@ -697,20 +697,29 @@ double Massive_Kernels::Kb2(int type)
   return 0.;
 }
 
+double Massive_Kernels::CSSIFShift(double x) const
+// CSS initial-final dipoles (u<alpha_IF) and final-initial ones
+// (1-x<alpha_FI) change their soft kernels by 2u/(1-x+u) and 2(1-x)/(2-x-z)
+{
+  double res(2.*log((1.-x+m_alpha_if)/(1.-x)));
+  if (1.-x<m_alpha_fi) res+=2.*log((2.-x)/(1.-x));
+  return res;
+}
+
 double Massive_Kernels::Kb3(int type,double x)
 {
   double me(0.0);
-  if (m_subtype==subscheme::CSS) me=2.*log((2.-x)/(1.-x));
+  if (m_subtype==subscheme::CSS) me=CSSIFShift(x);
   if (m_stype==sbt::qed && type==4) return 0.;
   switch(type) {
   case 1:
-    return (-(1.+x)*log((1.-x)/x)+(1.-x)+2.*me);
+    return (-(1.+x)*log((1.-x)/x)+(1.-x)+me);
   case 2:
     return m_CFbyCA*((1.+sqr(1.-x))/x*log((1.-x)/x)+x);
   case 3:
     return m_TRbyCF*((x*x+sqr(1.-x))*log((1.-x)/x)+2.*x*(1.-x));
   case 4:
-    return 2.*(((1.-x)/x-1.+x*(1.-x))*log((1.-x)/x)+me);
+    return 2.*((1.-x)/x-1.+x*(1.-x))*log((1.-x)/x)+me;
   }
   return 0.;
 }
@@ -850,7 +859,7 @@ double Massive_Kernels::Kt3(int type,double x)
   case 1:
     ax*=(1.+x*x)/(1.-x);
     if (m_subtype==subscheme::Dire) ax+=-v;
-    if (m_subtype==subscheme::CSS)  ax+=v*(2./(1.-x)-1.)-4.*log((2.-x)/(1.-x));
+    if (m_subtype==subscheme::CSS)  ax+=v*(2./(1.-x)-1.)-CSSIFShift(x);
     return -(1.+x)*log(1.-x)+ax;
   case 2:
     ax*=(1.+sqr(1.-x))/x;
@@ -868,7 +877,7 @@ double Massive_Kernels::Kt3(int type,double x)
       ax+=0.5*(2.*(1.-2.*x)*v-v*v-2./x*log(1.+v/x));
     if (m_subtype==subscheme::CSS)
       ax+=0.5*(2.*v/(1.-x)+2.*(1.-2.*x)*v-v*v-2./x*log(1.+v/x)
-               -4.*log((2.-x)/(1.-x)));
+               -CSSIFShift(x));
     return 2.*((1.-x)/x-1.+x*(1.-x))*log(1.-x)+2.*ax;
   }
   return 0.;

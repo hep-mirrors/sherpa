@@ -60,6 +60,7 @@ namespace PHASIC {
     void CalcAq(double mu2, double s,double mj,double mk);
     void CalcAg(double mu2, double s,double mk);
     void CalcAs(double mu2, double s,double mj,double mk);
+    double CSSIFShift(double x) const;
   public:
     Massive_Kernels(ATOOLS::sbt::subtype st,
                     const size_t &nf, const size_t nmf);

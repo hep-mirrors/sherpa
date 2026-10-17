@@ -219,3 +219,43 @@ TEST_CASE("The CSS and Dire Ktilde shifts integrate the II dipole change over v 
                WithinRel(expected, 1e-6));
   }
 }
+
+namespace {
+
+  // CSS initial-final and final-initial dipoles change their soft kernels by
+  // 2u/(1-x+u) (IF, cut at u < alpha_IF) and 2y/(1-z+y), y = 1-x (FI, active
+  // for 1-x < alpha_FI, measure dz/(1-x)); both for q<-q and g<-g
+  double CSSIFShift(double x, double alpha_if, double alpha_fi) {
+    const int n(20000);
+    double ifs(0.), fis(0.);
+    for (int i(0); i < n; ++i) {
+      const double u((i + 0.5) * alpha_if / n), z((i + 0.5) / n), y(1. - x);
+      ifs += 2. / (1. - x + u) * alpha_if / n;
+      fis += 2. * y / (1. - z + y) / y / n;
+    }
+    return ifs + (1. - x < alpha_fi ? fis : 0.);
+  }
+
+}
+
+TEST_CASE("The CSS initial-final shifts of Kbar and Ktilde follow alpha_IF and alpha_FI",
+          "[PHASIC::Massive_Kernels]") {
+  Boot();
+  const int type = GENERATE(1, 4);
+  const double alpha_if = GENERATE(1., 0.1);
+  const double alpha_fi = GENERATE(1., 0.1);
+  CAPTURE(type, alpha_if, alpha_fi);
+  Kernels cs(sbt::qcd), css(sbt::qcd);
+  css.kernels.SetSubType(subscheme::CSS);
+  cs.kernels.SetAlpha(1., alpha_fi, alpha_if, 1.);
+  css.kernels.SetAlpha(1., alpha_fi, alpha_if, 1.);
+  for (double x : {0.3, 0.7, 0.95}) {
+    CAPTURE(x);
+    const double shift(CSSIFShift(x, alpha_if, alpha_fi));
+    // Kbar carries it for all final-state partons; Ktilde takes it back for
+    // the initial-state spectator (colour conservation), on top of the II shift
+    CHECK_THAT(css.kernels.Kb3(type, x) - cs.kernels.Kb3(type, x), WithinRel(shift, 1e-6));
+    CHECK_THAT(css.kernels.Kt3(type, x) - cs.kernels.Kt3(type, x),
+               WithinRel(IIShift(type, subscheme::CSS, x, 1.) - shift, 1e-6));
+  }
+}
