@@ -610,21 +610,16 @@ void COMIX::Single_Process::UpdateKPTerms(const int mode)
   double eta1(p1[3]<0.0?p1.PMinus()/rpa->gen.PBunch(1).PMinus():
 	      p1.PPlus()/rpa->gen.PBunch(0).PPlus());
   Single_Process *sp(p_map!=NULL?p_map:this);
-  double w(1.0);
   bool map(p_map!=NULL && m_lookup && p_map->m_lookup);
-  if (p_int->ISR()->PDF(0) && p_int->ISR()->PDF(0)->Contains(m_flavs[0])) {
+  if (p_int->ISR()->PDF(0) && p_int->ISR()->PDF(0)->Contains(m_flavs[0]))
     m_x[0]=map?p_map->m_x[0]:eta0+p_ismc->ERan("z_1")*(1.0-eta0);
-    w*=(1.0-eta0);
-  }
-  if (p_int->ISR()->PDF(1) && p_int->ISR()->PDF(1)->Contains(m_flavs[1])) {
+  if (p_int->ISR()->PDF(1) && p_int->ISR()->PDF(1)->Contains(m_flavs[1]))
     m_x[1]=map?p_map->m_x[1]:eta1+p_ismc->ERan("z_2")*(1.-eta1);
-    w*=(1.0-eta1);
-  }
   p_kpterms->Calculate(p_int->Momenta(),sp->p_bg->DSij(),
-		       m_x[0],m_x[1],eta0,eta1,w);
+		       m_x[0],m_x[1],eta0,eta1);
   if (p_kpterms_ph)
     p_kpterms_ph->Calculate(p_int->Momenta(),sp->p_bg->DSij(),
-			    m_x[0],m_x[1],eta0,eta1,w);
+			    m_x[0],m_x[1],eta0,eta1);
 }
 
 double COMIX::Single_Process::KPTerms

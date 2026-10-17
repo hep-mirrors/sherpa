@@ -339,21 +339,16 @@ namespace EXTAMP {
 	      p[1].PPlus()/rpa->gen.PBunch(0).PPlus());
 
     /* Randomly select x0 \in [eta0,1] 
-                       x1 \in [eta1,1] 
-       and calc weight corresponding to 
-       the volume of those intervals */
-    double w(1.0);
+                       x1 \in [eta1,1] */
     if(m_flavs[0].Strong())
       {
 	m_x0 = m_eta0+ATOOLS::ran->Get()*(1.-m_eta0);
 	//m_x0 = m_eta0+0.2               *(1.-m_eta0); // set ran to 0.2 for unit tests
-	w *= (1.-m_eta0);
       }
     if(m_flavs[1].Strong())
       {
 	m_x1 = m_eta1+ATOOLS::ran->Get()*(1.-m_eta1);
 	//m_x1 = m_eta1+               0.8*(1.-m_eta1); // set ran to 0.8 for unit tests
-	w *= (1.-m_eta1);
       }
 
     /* Populate a 2D array with color correlated MEs for KP_Terms.
@@ -370,7 +365,7 @@ namespace EXTAMP {
     dsij[0][0] = p_corr_me->GetBorn2();
 
     /* Let KP_Terms class calculate */
-    p_kpterms->Calculate(p,dsij,m_x0,m_x1,m_eta0,m_eta1,w);
+    p_kpterms->Calculate(p,dsij,m_x0,m_x1,m_eta0,m_eta1);
 
     /* Set all relevant members of ME_Weight_Info */
     bool swap = ISRSwapped();

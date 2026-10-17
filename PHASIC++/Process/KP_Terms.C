@@ -187,8 +187,7 @@ void KP_Terms::SetKappa(const double &kappa)
 
 void KP_Terms::Calculate
 (const Vec4D_Vector &mom,const std::vector<std::vector<double > > &dsij_,
- const double &x0_,const double &x1_,const double &eta0,const double &eta1,
- const double &wgt)
+ const double &x0_,const double &x1_,const double &eta0,const double &eta1)
 {
   DEBUG_FUNC(m_itype<<": type(a)="<<m_typea<<", beam(a)="<<m_sa
                     <<", type(b)="<<m_typeb<<", beam(b)="<<m_sb);
@@ -550,17 +549,13 @@ void KP_Terms::Calculate
       m_kpcb[2]=m_kpcb[3]=m_kpcb[6]=m_kpcb[7]=0.;
   }
 
-  double cplfac(wgt*cpl);
-  if (m_sa) cplfac/=(1.-eta0);
-  if (m_sb) cplfac/=(1.-eta1);
-
   if (m_sa) {
-    for (int i=0;i<8;i++) m_kpca[i]*=cplfac;
-    for (size_t i=0;i<m_xpa.size();i++) m_xpa[i].kpc*=cplfac;
+    for (int i=0;i<8;i++) m_kpca[i]*=cpl;
+    for (size_t i=0;i<m_xpa.size();i++) m_xpa[i].kpc*=cpl;
   }
   if (m_sb) {
-    for (int i=0;i<8;i++) m_kpcb[i]*=cplfac;
-    for (size_t i=0;i<m_xpb.size();i++) m_xpb[i].kpc*=cplfac;
+    for (int i=0;i<8;i++) m_kpcb[i]*=cpl;
+    for (size_t i=0;i<m_xpb.size();i++) m_xpb[i].kpc*=cpl;
   }
 
   msg_Debugging()<<"sa & sb: final"<<std::endl;

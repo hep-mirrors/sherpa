@@ -65,8 +65,7 @@ namespace PHASIC {
     void Calculate(const ATOOLS::Vec4D_Vector &mom,
                    const std::vector<std::vector<double > > &dsij,
                    const double &x0,const double &x1,
-                   const double &eta0,const double &eta1,
-                   const double &wgt);
+                   const double &eta0,const double &eta1);
 
     double Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
                const double &x0,const double &x1,

@@ -229,18 +229,16 @@ namespace {
     }
     // Get() x f_a(eta0): the pointlike coefficient per unit Born for the
     // flavour-ordered momenta p, as the ME generators combine it with the
-    // Born PDFs; wgt carries the (1-eta) x-sampling Jacobians they pass in
+    // Born PDFs
     double Coefficient(const Vec4D_Vector& p, double eta0, double eta1,
                        double muf2, double alpha_if = 1.) {
       std::unique_ptr<KP_Terms> kp(
           KP_Terms::PhotonSplitting(&proc, &cpls, cs_itype::K | cs_itype::P));
       REQUIRE(kp);
       kp->SetAlpha(1., 1., alpha_if, 1.);
-      const bool beamb = proc.Flavours()[1].Charge() != 0.;
       const double x0 = 0.5 * (1. + eta0), x1 = 0.5 * (1. + eta1);
-      const double wgt = (1. - eta0) * (beamb ? 1. - eta1 : 1.);
       const std::vector<std::vector<double>> dsij(1, std::vector<double>(1, 1.));
-      kp->Calculate(p, dsij, x0, x1, eta0, eta1, wgt);
+      kp->Calculate(p, dsij, x0, x1, eta0, eta1);
       // Get() is flavour-ordered: parton 0 comes from the photon
       const Flavour fl0 = proc.Flavours()[0], fl1 = proc.Flavours()[1];
       const double res = kp->Get(photon, proton, x0, x1, eta0, eta1,
