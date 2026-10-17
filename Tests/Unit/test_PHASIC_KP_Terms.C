@@ -251,6 +251,12 @@ namespace {
   const double muf2 = 91.1876 * 91.1876;
   const double eta0 = 0.4, eta1 = 0.05;
 
+  // seeds the settings with extra YAML and restores the defaults on exit
+  struct Seeded {
+    explicit Seeded(const std::string& yaml) { Seed(yaml); }
+    ~Seeded() { Seed(); }
+  };
+
 }
 
 TEST_CASE("The resolved-photon pointlike KP term is the Catani-Seymour gamma -> q qbar term",
@@ -275,15 +281,6 @@ TEST_CASE("The resolved-photon pointlike KP term is the Catani-Seymour gamma -> 
                                    {{1, -0.5}, {2, 1.}, {3, 0.5}}), 1e-6));
   }
 
-  SECTION("in the DISgamma scheme no pointlike term is built") {
-    Seed("KP: {FACTORISATION_SCHEME: DISgamma}\n");
-    Setup s({u, g, u, g}, muf2, dir);
-    std::unique_ptr<KP_Terms> kp(
-        KP_Terms::PhotonSplitting(&s.proc, &s.cpls, cs_itype::K | cs_itype::P));
-    CHECK_FALSE(kp);
-    Seed();
-  }
-
   SECTION("alpha_IF < 1 adds -P ln(1/alpha_IF) times the final-state spectator weights") {
     Setup s({u, d.Bar(), u, d.Bar()}, muf2, dir);
     const Vec4D_Vector p = Born(10., 41., 1.1, dir);
@@ -292,4 +289,14 @@ TEST_CASE("The resolved-photon pointlike KP term is the Catani-Seymour gamma -> 
                WithinRel(Pointlike(p, 2. / 3., eta0, muf2,
                                    {{1, -0.5}, {2, 1.}, {3, 0.5}}, a), 1e-6));
   }
+}
+
+TEST_CASE("In the DISgamma scheme no pointlike KP term is built", "[PHASIC::KP_Terms]") {
+  Boot();
+  const Seeded disgamma("KP: {FACTORISATION_SCHEME: DISgamma}\n");
+  const Flavour u(kf_u), g(kf_gluon);
+  Setup s({u, g, u, g}, muf2, 1);
+  std::unique_ptr<KP_Terms> kp(
+      KP_Terms::PhotonSplitting(&s.proc, &s.cpls, cs_itype::K | cs_itype::P));
+  CHECK_FALSE(kp);
 }
