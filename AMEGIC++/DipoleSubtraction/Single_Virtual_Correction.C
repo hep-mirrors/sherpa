@@ -838,8 +838,7 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
   if (!p_LO_process->HasInitialStateEmitter()) return;
   DEBUG_FUNC("");
   m_x0=1.,m_x1=1.,m_eta0=1.,m_eta1=1.;
-  double weight(1.);
-  // dice eta0 and eta1, incorporate phase space weight in weight
+  // dice x0 in [eta0,1] and x1 in [eta1,1]
   if (p_int->ISR()->PDF(0) && p_int->ISR()->PDF(0)->Contains(m_flavs[0])) {
     m_eta0=mom[0][3]>0.0?mom[0].PPlus()/rpa->gen.PBunch(0).PPlus():
       mom[0].PMinus()/rpa->gen.PBunch(1).PMinus();
@@ -852,7 +851,6 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
     } else {
       m_x0 = m_eta0 + p_fsmc->ERan("z_1") * (1. - m_eta0);
     }
-    weight*=(1.-m_eta0);
     msg_Debugging()<<"x0="<<m_x0<<std::endl;
   }
   if (p_int->ISR()->PDF(1) && p_int->ISR()->PDF(1)->Contains(m_flavs[1])) {
@@ -867,15 +865,14 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
     } else {
       m_x1 = m_eta1 + p_fsmc->ERan("z_2") * (1. - m_eta1);
     }
-    weight*=(1.-m_eta1);
     msg_Debugging()<<"x1="<<m_x1<<std::endl;
   }
   if (p_kpterms_qcd && p_LO_process->HasInitialStateQCDEmitter())
     p_kpterms_qcd->Calculate(p_int->Momenta(),m_dsijqcd,
-                             m_x0,m_x1,m_eta0,m_eta1,weight);
+                             m_x0,m_x1,m_eta0,m_eta1);
   if (p_kpterms_ew  && p_LO_process->HasInitialStateQEDEmitter())
     p_kpterms_ew->Calculate(p_int->Momenta(),m_dsijew,
-                            m_x0,m_x1,m_eta0,m_eta1,weight);
+                            m_x0,m_x1,m_eta0,m_eta1);
 }
 
 double Single_Virtual_Correction::KPTerms
