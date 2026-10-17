@@ -56,7 +56,9 @@ NLO_Value METOOLS::FFVS(const I_Args &a,const Dipole_Info *info)
 
 double METOOLS::FFAE(const I_Args &ia,const Dipole_Info *info)
 {
-  if ((ia.type&&info->Massive()) || info->AMax(ia.type)==1.0) return 0.0;
+  // the alpha dependence of dipoles with an initial-state leg is x-dependent
+  // and part of the KP terms (PHASIC::KP_Terms); only final-final ones get it here
+  if (ia.type || info->AMax(ia.type)==1.0) return 0.0;
   if (ia.mij==0.0 && ia.mk==0.0) return -0.5*sqr(log(info->AMax(ia.type)));
   if (ia.mij==0.0) {
     double al(info->AMax(ia.type)), yp((ia.Q-ia.mk)/(ia.Q+ia.mk));
@@ -130,7 +132,7 @@ double METOOLS::FFVNSQQ(const I_Args &a,const Dipole_Info *info)
 
 double METOOLS::FFACQQ(const I_Args &a,const Dipole_Info *info)
 {
-  if ((a.type&&info->Massive()) || info->AMax(a.type)==1.0) return 0.0;
+  if (a.type || info->AMax(a.type)==1.0) return 0.0;
   if (a.mij==0.0 && a.mk==0.0)
     return 3.0/2.0*(info->AMax(a.type)-1.0-log(info->AMax(a.type)));
   if (a.mij==0.0) {
@@ -184,7 +186,7 @@ double METOOLS::FFVNSGQ(const I_Args &a,const Dipole_Info *info,const double &m)
 
 double METOOLS::FFACGQ(const I_Args &ia,const Dipole_Info *info,const double &m)
 {
-  if ((ia.type&&info->Massive()) || info->AMax(ia.type)==1.0) return 0.0;
+  if (ia.type || info->AMax(ia.type)==1.0) return 0.0;
   if (m==0.0) {
     if (ia.mk==0.0)
       return -2.0/3.0*(info->AMax(ia.type)-1.0-log(info->AMax(ia.type)));
@@ -244,7 +246,7 @@ double METOOLS::FFVNSGG(const I_Args &a,const Dipole_Info *info)
 
 double METOOLS::FFACGG(const I_Args &a,const Dipole_Info *info)
 {
-  if ((a.type&&info->Massive()) || info->AMax(a.type)==1.0) return 0.0;
+  if (a.type || info->AMax(a.type)==1.0) return 0.0;
   if (a.mk==0.0)
     return 11.0/6.0*(info->AMax(a.type)-1.0-log(info->AMax(a.type)));
   double muk(a.mk/a.Q), al(info->AMax(a.type)*(1.0-muk)/(1.0+muk));
