@@ -526,7 +526,7 @@ void Single_Virtual_Correction::Minimize()
   if (p_partner==this) return;
   if (p_psgen)                  { delete p_psgen;       p_psgen=NULL; }
   if (p_kpterms_qcd)            { delete p_kpterms_qcd; p_kpterms_qcd=NULL;}
-  // the pointlike term is kept: it carries this process's quark charges
+  // a mapped process keeps its pointlike term, which uses its own charges
   if (p_kpterms_ew && !m_photonsplitting) { delete p_kpterms_ew;  p_kpterms_ew=NULL;}
   if (p_loopme && m_loopmapped) { delete p_loopme;      p_loopme=NULL;}
 
@@ -596,7 +596,7 @@ double Single_Virtual_Correction::DSigma(const Vec4D_Vector &_moms,
     m_lasti=p_partner->m_lasti*m_sfactor;
     for (size_t i(0);i<m_wass.size();++i)
       m_wass[i]=p_partner->m_wass[i]*m_sfactor;
-    if (m_photonsplitting) Calc_KP_Pointlike();
+    Calc_KP_Pointlike();
     if (!m_loopmapped) {
       if (m_checkpoles)  {
         m_finite     = p_partner->Finite()*m_sfactor;
@@ -617,8 +617,7 @@ double Single_Virtual_Correction::DSigma(const Vec4D_Vector &_moms,
   m_mewgtinfo.m_VI = (m_lastv+m_lasti)/m_sfactor;
   for (size_t i=0;i<m_mewgtinfo.m_wass.size();++i)
     m_mewgtinfo.m_wass[i]=m_wass[i]/m_sfactor;
-  p_partner->FillMEwgts(m_mewgtinfo);
-  if (p_partner!=this && m_photonsplitting) p_kpterms_ew->FillMEwgts(m_mewgtinfo);
+  p_partner->FillMEwgts(m_mewgtinfo,p_kpterms_ew);
   m_mewgtinfo*=m_Norm*m_sfactor;
   m_mewgtinfo.m_K = p_partner->LastK();
 
@@ -845,10 +844,16 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::sbt::subtype st,
   return finite;
 }
 
+bool Single_Virtual_Correction::HasKPTerms()
+{
+  return ((m_user_imode&cs_itype::K) || (m_user_imode&cs_itype::P)) &&
+    p_LO_process->HasInitialStateEmitter() &&
+    m_stype!=sbt::none && (m_pinfo.m_fi.m_nlotype&nlo_type::vsub);
+}
+
 void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
 {
-  if (!((m_user_imode&cs_itype::K) || (m_user_imode&cs_itype::P))) return;
-  if (!p_LO_process->HasInitialStateEmitter()) return;
+  if (!HasKPTerms()) return;
   DEBUG_FUNC("");
   m_x0=1.,m_x1=1.,m_eta0=1.,m_eta1=1.;
   // dice x0 in [eta0,1] and x1 in [eta1,1]
@@ -890,10 +895,9 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
 
 void Single_Virtual_Correction::Calc_KP_Pointlike()
 {
-  // A mapped process reuses its partner's Born and x, but the mapping is blind
-  // to the quark charges, which the pointlike gamma -> q qbar term depends on.
-  if (!((m_user_imode&cs_itype::K) || (m_user_imode&cs_itype::P))) return;
-  if (!p_LO_process->HasInitialStateEmitter()) return;
+  // The mapping ignores quark charges, so a mapped process evaluates its own
+  // pointlike term, at the Born, x and eta its partner used for this point.
+  if (!m_photonsplitting || !(p_partner->m_bvimode&2) || !HasKPTerms()) return;
   p_kpterms_ew->Calculate(p_int->Momenta(),p_partner->m_dsijqcd,
                           p_partner->m_x0,p_partner->m_x1,
                           p_partner->m_eta0,p_partner->m_eta1);
@@ -924,20 +928,7 @@ double Single_Virtual_Correction::KPTerms
                                     pdfb,
                                     eta0, eta1,
                                     m_flavs[0],m_flavs[1],
-                                    scalefac2, &kppl);
-    // a mapped process uses its own pointlike term, see Calc_KP_Pointlike
-    if (p_partner!=this) {
-      kpterm-=kppl;
-      kppl=0.;
-      if (m_photonsplitting && p_LO_process->HasInitialStateEmitter() &&
-          ((m_user_imode&cs_itype::K) || (m_user_imode&cs_itype::P))) {
-        const double muf2(p_partner->ScaleSetter()->Scale(stp::fac,1));
-        kppl=p_kpterms_ew->Get(pdfa,pdfb,p_partner->m_x0,p_partner->m_x1,
-                               eta0,eta1,muf2,muf2,scalefac2,scalefac2,
-                               m_flavs[0],m_flavs[1])*p_partner->m_lastki;
-      }
-      kpterm+=kppl;
-    }
+                                    scalefac2, &kppl, p_kpterms_ew);
   }
   // return normalised result
   if (p_partner != this) {
@@ -954,23 +945,23 @@ double Single_Virtual_Correction::Get_KPTerms(PDF_Base *pdfa, PDF_Base *pdfb,
                                               const ATOOLS::Flavour& fl0,
                                               const ATOOLS::Flavour& fl1,
                                               const double& sf,
-                                              double *kppointlike)
+                                              double *kppointlike,
+                                              KP_Terms *kpew)
 {
   if (kppointlike) *kppointlike=0.;
-  if (!((m_user_imode&cs_itype::K) || (m_user_imode&cs_itype::P))) return 0.;
-  if (!p_LO_process->HasInitialStateEmitter()) return 0.;
+  if (!HasKPTerms()) return 0.;
   DEBUG_FUNC("");
-  if (m_stype==sbt::none || !(m_pinfo.m_fi.m_nlotype&nlo_type::vsub))
-    return 0.;
+  // the EW KP terms of the calling process, see Calc_KP_Pointlike
+  KP_Terms *ew(kpew?kpew:p_kpterms_ew);
   double res(0.), pl(0.);
   double muf2(ScaleSetter()->Scale(stp::fac,1));
   if (p_kpterms_qcd && p_LO_process->HasInitialStateQCDEmitter())
     res+=p_kpterms_qcd->Get(pdfa,pdfb,m_x0,m_x1,eta0,eta1,muf2,muf2,sf,sf,fl0,fl1);
-  if (p_kpterms_ew  && (p_LO_process->HasInitialStateQEDEmitter() || m_photonsplitting)) {
-    double ew(p_kpterms_ew->Get(pdfa,pdfb,m_x0,m_x1,eta0,eta1,muf2,muf2,sf,sf,fl0,fl1));
-    res+=ew;
+  if (ew && (p_LO_process->HasInitialStateQEDEmitter() || m_photonsplitting)) {
+    double kp(ew->Get(pdfa,pdfb,m_x0,m_x1,eta0,eta1,muf2,muf2,sf,sf,fl0,fl1));
+    res+=kp;
     // the pointlike term is O(alpha): reported separately for the alpha_s reweighting
-    if (m_photonsplitting) pl=ew;
+    if (m_photonsplitting) pl=kp;
   }
   if (kppointlike) *kppointlike = pl * p_partner->m_lastki;
   return res * p_partner->m_lastki;
@@ -1249,7 +1240,8 @@ void Single_Virtual_Correction::SetSelectorOn(const bool on)
   p_LO_process->SetSelectorOn(on);
 }
 
-void Single_Virtual_Correction::FillMEwgts(ATOOLS::ME_Weight_Info& wgtinfo)
+void Single_Virtual_Correction::FillMEwgts(ATOOLS::ME_Weight_Info& wgtinfo,
+                                           KP_Terms *kpew)
 {
   wgtinfo.m_swap=ISRSwapped();
   wgtinfo.m_y1=wgtinfo.m_swap?m_x1:m_x0;
@@ -1257,7 +1249,9 @@ void Single_Virtual_Correction::FillMEwgts(ATOOLS::ME_Weight_Info& wgtinfo)
   if (wgtinfo.m_type&mewgttype::VI)
     for (size_t i=0;i<2;i++) wgtinfo.m_wren[i]=m_cmur[i]*=m_lastki;
   if (p_kpterms_qcd) p_kpterms_qcd->FillMEwgts(wgtinfo);
-  if (p_kpterms_ew)  p_kpterms_ew->FillMEwgts(wgtinfo);
+  // the EW KP terms of the calling process, see Calc_KP_Pointlike
+  KP_Terms *ew(kpew?kpew:p_kpterms_ew);
+  if (ew) ew->FillMEwgts(wgtinfo);
   for (size_t i=2;i<wgtinfo.m_wren.size();++i) wgtinfo.m_wren[i]*=m_lastk;
   for (size_t i=0;i<wgtinfo.m_wfac.size();++i) wgtinfo.m_wfac[i]*=m_lastk;
 }

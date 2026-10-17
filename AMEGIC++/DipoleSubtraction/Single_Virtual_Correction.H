@@ -179,6 +179,7 @@ namespace AMEGIC {
                           const PHASIC::KP_Terms*,
                           const ATOOLS::Vec4D_Vector &,
                           std::vector<std::vector<double> >&);
+    bool           HasKPTerms();
     void           Calc_KP(const ATOOLS::Vec4D_Vector&);
     void           Calc_KP_Pointlike();
     double         KPTerms(int mode, PDF::PDF_Base *pdfa,
@@ -187,11 +188,13 @@ namespace AMEGIC {
     double         Get_KPTerms(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
                                const double&,const double&,
                                const ATOOLS::Flavour&,const ATOOLS::Flavour&,
-                               const double&, double *kppointlike=NULL);
+                               const double&, double *kppointlike=NULL,
+                               PHASIC::KP_Terms *kpew=NULL);
     void           CheckBorn();
     void           CheckFinite(const double &, const double &);
     void           CheckPoleCancelation(const ATOOLS::Vec4D_Vector);
-    void           FillMEwgts(ATOOLS::ME_Weight_Info&);
+    void           FillMEwgts(ATOOLS::ME_Weight_Info&,
+                              PHASIC::KP_Terms *kpew=NULL);
     void           EndOptimize();
     void           AttachChargeFactors();
     void           ComputeChargeFactors();
