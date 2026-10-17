@@ -74,6 +74,40 @@ namespace {
   constexpr int q_from_g = 3;  // Massive_Kernels type: quark entering, gluon/photon split
   constexpr int quark = 1;     // spin of a final-state quark spectator
 
+  // Spin-averaged initial-initial dipole kernel of the real subtraction
+  // (METOOLS FFV_DLC, VVV_DLC) per T^2 of the parton entering the Born,
+  // types as in Massive_Kernels: 1 q<-q, 2 g<-q, 3 q<-g, 4 g<-g. CSS and
+  // Dire evaluate it at z = x+v instead of x.
+  double IIKernel(int type, subscheme::code scheme, double x, double v) {
+    const double z(scheme == subscheme::CS ? x : x + v);
+    switch (type) {
+    case 1:
+      if (scheme == subscheme::CSS) return 2. * z / (1. - x) + (1. - z);
+      return 2. / (1. - x) - (1. + z);
+    case 2:
+      return z + 2. * (1. - z) / z;
+    case 3:
+      return 1. - 2. * z * (1. - z);
+    case 4:
+      return 2. * (scheme == subscheme::CSS ? z : x) / (1. - x)
+             + 2. * z * (1. - z) + 2. * (1. - z) / z;
+    }
+    return 0.;
+  }
+
+  // int_0^V dv/v [kernel(scheme) - kernel(CS)], V = min(alpha_II, 1-x): what
+  // the scheme changes in the II dipoles that survive the alpha_II cut
+  double IIShift(int type, subscheme::code scheme, double x, double alpha) {
+    const double V(std::min(alpha, 1. - x));
+    const int n(20000);
+    double sum(0.);
+    for (int i(0); i < n; ++i) {
+      const double v((i + 0.5) * V / n);
+      sum += (IIKernel(type, scheme, x, v) - IIKernel(type, subscheme::CS, x, v)) / v;
+    }
+    return sum * V / n;
+  }
+
 }
 
 TEST_CASE("Quark-from-gluon and quark-from-photon KP kernels follow Catani-Seymour",
@@ -158,5 +192,30 @@ TEST_CASE("Quark-from-gluon and quark-from-photon KP kernels follow Catani-Seymo
                    WithinRel(K.P3(q_from_g, x) * std::log(1. / a), 1e-12));
       }
     }
+  }
+}
+
+TEST_CASE("The CSS and Dire Ktilde shifts integrate the II dipole change over v < alpha_II",
+          "[PHASIC::Massive_Kernels]") {
+  Boot();
+  const subscheme::code scheme = GENERATE(subscheme::CSS, subscheme::Dire);
+  const int type = GENERATE(1, 2, 3, 4);
+  const double alpha = GENERATE(1., 0.1);
+  CAPTURE(scheme, type, alpha);
+  Kernels cs(sbt::qcd), shifted(sbt::qcd);
+  shifted.kernels.SetSubType(scheme);
+  cs.kernels.SetAlpha(1., 1., 1., alpha);
+  shifted.kernels.SetAlpha(1., 1., 1., alpha);
+  // Kt3 normalisation per T^2 of the parton entering the Born
+  const auto &K = cs.kernels;
+  const double norm[5] = {0., 1., K.CF() / K.CA(), K.TR() / K.CF(), 1.};
+  for (double x : {0.3, 0.7, 0.95}) {
+    CAPTURE(x);
+    double expected(norm[type] * IIShift(type, scheme, x, alpha));
+    // the CSS initial-final shift, moved into Ktilde by colour conservation
+    if (scheme == subscheme::CSS && (type == 1 || type == 4))
+      expected -= 4. * std::log((2. - x) / (1. - x));
+    CHECK_THAT(shifted.kernels.Kt3(type, x) - cs.kernels.Kt3(type, x),
+               WithinRel(expected, 1e-6));
   }
 }
