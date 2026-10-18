@@ -1,0 +1,50 @@
+# Resolved photoproduction of jets in the d and c gluon channels. AMEGIC maps
+# c g -> c g onto d g -> d g, whose QCD amplitudes are the same; the pointlike
+# gamma -> q qbar KP term depends on the quark charge and must not follow that
+# mapping. The integrated Born (B) and KP (I) parts must therefore agree with and
+# without AMEGIC's process mapping, see compare.sh. AMEGIC's MHV amplitudes are
+# switched off, so that it writes libraries and stops for their compilation.
+EVENTS: 0
+PRETTY_PRINT: Off
+INTEGRATION_ERROR: 0.03
+# four optimisation cycles suffice for that
+PSI: {NOPT: 4}
+
+FRAGMENTATION: None
+MI_HANDLER: None
+SHOWER_GENERATOR: None
+BEAM_REMNANTS: false
+ME_QED: {ENABLED: false}
+ME_GENERATORS: [Amegic]
+
+BEAMS: [11, 2212]
+BEAM_ENERGIES: [27.5, 820]
+BEAM_SPECTRA: [EPA, Monochromatic]
+EPA: {Q2Max: 1.0}
+PDF_LIBRARY: [SALSherpa, NNPDFSherpa]
+PDF_SET: [SAL, NNPDF31_nnlo_as_0118_mc]
+# alpha_s(M_Z) and its order from the proton PDF, with Sherpa's own running
+ALPHAS: {USE_PDF: 2}
+SCALES: VAR{sqr(91.1876)}{sqr(91.1876)}
+NLO_IMODE: KP
+
+PARTICLE_CONTAINERS:
+  901: {Name: dc, Flavours: [1, 4]}
+
+PROCESSES:
+  - 901 21 -> 21 901:
+      Order: {QCD: 2, EW: 0}
+      NLO_Order: {QCD: 1, EW: 0}
+      NLO_Mode: Fixed_Order
+      NLO_Part: B
+      Enable_MHV: 0
+  - 901 21 -> 21 901:
+      Order: {QCD: 2, EW: 0}
+      NLO_Order: {QCD: 1, EW: 0}
+      NLO_Mode: Fixed_Order
+      NLO_Part: I
+      Enable_MHV: 0
+
+SELECTORS:
+  - NJetFinder: {N: 2, PTMin: 10.0, R: 1.0, Exp: 1}
+  - NJetFinder: {N: 1, PTMin: 13.0, R: 1.0, Exp: 1}
