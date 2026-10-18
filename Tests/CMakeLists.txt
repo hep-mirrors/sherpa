@@ -43,6 +43,34 @@ if (SHERPA_ENABLE_INTEGRATION_TESTS)
   set_tests_properties( Main${test}part2 PROPERTIES DEPENDS Main${test}part1)
   set_tests_properties( Main${test}part3 PROPERTIES DEPENDS Main${test}part2)
 
+  # Integrate the resolved-photon KP terms with and without AMEGIC's process
+  # mapping, which must not change them (part4)
+  set(test test-Amegic-KP_Photoproduction)
+  foreach(mapping 1 0)
+    set(dir ${CMAKE_CURRENT_BINARY_DIR}/${test}/mapping${mapping})
+    file(MAKE_DIRECTORY ${dir})
+    add_test( NAME Main${test}mapping${mapping}part1 COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/KP_Photoproduction/Sherpa.yaml
+                                  "AMEGIC: {ALLOW_MAPPING: ${mapping}}"
+                                  WORKING_DIRECTORY ${dir}
+               )
+    add_test( NAME Main${test}mapping${mapping}part2 COMMAND ${makelibsscript}
+                                  WORKING_DIRECTORY ${dir}
+               )
+    add_test( NAME Main${test}mapping${mapping}part3 COMMAND Sherpa ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/KP_Photoproduction/Sherpa.yaml
+                                  "AMEGIC: {ALLOW_MAPPING: ${mapping}}" "LOG_FILE: run.log"
+                                  WORKING_DIRECTORY ${dir}
+               )
+    SET_TESTS_PROPERTIES( Main${test}mapping${mapping}part1 Main${test}mapping${mapping}part2 Main${test}mapping${mapping}part3
+                          PROPERTIES ENVIRONMENT "${STANDARDENVIRONMENT}")
+    set_tests_properties( Main${test}mapping${mapping}part2 PROPERTIES DEPENDS Main${test}mapping${mapping}part1)
+    set_tests_properties( Main${test}mapping${mapping}part3 PROPERTIES DEPENDS Main${test}mapping${mapping}part2)
+  endforeach()
+  add_test( NAME Main${test}part4 COMMAND sh ${PROJECT_SOURCE_DIR}/Tests/End2End/CI/KP_Photoproduction/compare.sh
+                                mapping1/run.log mapping0/run.log
+                                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test}
+             )
+  set_tests_properties( Main${test}part4 PROPERTIES DEPENDS "Main${test}mapping1part3;Main${test}mapping0part3")
+
 
   set(test test-LO_Z)
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${test})
