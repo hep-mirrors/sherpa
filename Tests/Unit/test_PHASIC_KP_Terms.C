@@ -55,12 +55,14 @@ namespace {
     s["DIPOLES"]["V_SUBTRACTION_MODE"].SetDefault(1);
   }
 
-  void Boot() {
-    static bool booted = false;
-    if (booted) return;
+  // seeds the settings anew in every test case, as the other test files
+  // reinitialise them
+  void Boot(const std::string& yaml = "") {
     if (!ATOOLS::msg) ATOOLS::msg = new ATOOLS::Message();
     if (!ATOOLS::rpa) ATOOLS::rpa = new ATOOLS::Run_Parameter();
-    Seed();
+    Seed(yaml);
+    static bool booted = false;
+    if (booted) return;
     // the same records as the REMNANTS tests, so the shared table does not
     // depend on the order the test files run in
     Register(kf_photon, 0., 0, 2, "P");
@@ -251,12 +253,6 @@ namespace {
   const double muf2 = 91.1876 * 91.1876;
   const double eta0 = 0.4, eta1 = 0.05;
 
-  // seeds the settings with extra YAML and restores the defaults on exit
-  struct Seeded {
-    explicit Seeded(const std::string& yaml) { Seed(yaml); }
-    ~Seeded() { Seed(); }
-  };
-
 }
 
 TEST_CASE("The resolved-photon pointlike KP term is the Catani-Seymour gamma -> q qbar term",
@@ -292,8 +288,7 @@ TEST_CASE("The resolved-photon pointlike KP term is the Catani-Seymour gamma -> 
 }
 
 TEST_CASE("In the DISgamma scheme no pointlike KP term is built", "[PHASIC::KP_Terms]") {
-  Boot();
-  const Seeded disgamma("KP: {FACTORISATION_SCHEME: DISgamma}\n");
+  Boot("KP: {FACTORISATION_SCHEME: DISgamma}\n");
   const Flavour u(kf_u), g(kf_gluon);
   Setup s({u, g, u, g}, muf2, 1);
   std::unique_ptr<KP_Terms> kp(
