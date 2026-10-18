@@ -697,14 +697,16 @@ double Massive_Kernels::Kb2(int type)
   return 0.;
 }
 
-double Massive_Kernels::CSSIFShift(double x) const
+double Massive_Kernels::CSSIFShift(double x,double muq2) const
 // CSS initial-final dipoles (u<alpha_IF) and final-initial ones
 // (1-x<alpha_FI) change their soft kernels by 2u/(1-x+u) and 2(1-x)/(2-x-z);
-// zero in the other schemes
+// a final-state parton of mass^2 muq2 (in units of s_ja/x) limits u and 1-z
+// to up; zero in the other schemes
 {
   if (m_subtype!=subscheme::CSS) return 0.;
-  double res(2.*log((1.-x+m_alpha_if)/(1.-x)));
-  if (1.-x<m_alpha_fi) res+=2.*log((2.-x)/(1.-x));
+  const double up((1.-x)/(1.-x+muq2));
+  double res(2.*log((1.-x+Min(m_alpha_if,up))/(1.-x)));
+  if (1.-x<m_alpha_fi) res+=2.*log((1.-x+up)/(1.-x));
   return res;
 }
 
@@ -810,17 +812,12 @@ double Massive_Kernels::KbM4(int type,double muak2,double x)
 }
 
 double Massive_Kernels::Kbc3(int type,double muq2,double x)
+// massive final-state parton: change of the CSS shift of its IF and FI dipoles
 {
-  double me(0.0);
-  // massive final-state parton: change of the CSS shift of the IF and FI
-  // dipoles (factor 2); assumes alpha_IF = alpha_FI = 1, unlike CSSIFShift
-  if (m_subtype==subscheme::CSS)
-    me=2.*log((2.-x+muq2)/(1.-x+muq2))-2.*log((2.-x)/(1.-x));
   switch(type) {
   case 1:
-    return 2.*me;
   case 4:
-    return 2.*me;
+    return CSSIFShift(x,muq2)-CSSIFShift(x);
   }
   return 0.;
 }
