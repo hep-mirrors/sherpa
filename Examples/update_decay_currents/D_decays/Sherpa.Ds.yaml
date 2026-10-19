@@ -1,0 +1,29 @@
+# Ds+ semileptonic decays against BESIII data.
+#
+# Same construction as Sherpa.yaml -- see the notes there on why this makes
+# charm rather than using a decayer run, and on the normalisation.
+#
+# The Ds+ block carries 18 channels. The eta and eta' modes are the
+# interesting ones: they probe the eta-eta' mixing that goes into the
+# transition form factor, and BESIII has measured both in the e and mu
+# channels.
+
+BEAMS: [11, -11]
+BEAM_ENERGIES: 5.29
+
+EVENTS: 50000
+
+HADRON_DECAYS:
+  Spin_Correlations: 1
+
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: Ds_semileptonic
+RIVET:
+  --analyses:
+  - BESIII_2019_I1712742      # Ds+ -> eta e+ nu, eta' e+ nu
+  - BESIII_2023_I2667117      # Ds+ -> eta e+ nu, eta' e+ nu
+  - BESIII_2023_I2679776      # Ds+ -> eta mu+ nu, eta' mu+ nu
+
+PROCESSES:
+- 11 -11 -> 4 -4:
+    Order: {QCD: 0, EW: 2}

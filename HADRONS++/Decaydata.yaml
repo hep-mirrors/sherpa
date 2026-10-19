@@ -105,18 +105,18 @@ HADRON_DECAYS:
     ######################################################
       16,-12,11:
         BR: [0., 0.] # [0.1785, 0.1785]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [1, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_F_F
-                Indices: [3, 2]
-                v: 1.
-                a: -1.
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [1, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_F_F
+              Indices: [3, 2]
+              v: 1.
+              a: -1.
         PhaseSpace:
           - Dalitz_W_23:
               Weight: 1.0
@@ -127,18 +127,18 @@ HADRON_DECAYS:
     ######################################################
       16,-14,13:
         BR: [0., 0.] # [0.1736, 0.1736]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [1, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_F_F
-                Indices: [3, 2]
-                v: 1.
-                a: -1.
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [1, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_F_F
+              Indices: [3, 2]
+              v: 1.
+              a: -1.
         PhaseSpace:
           - Dalitz_W_23:
               Weight: 1.0
@@ -229,22 +229,22 @@ HADRON_DECAYS:
     ######################################################
       -211,111,16:
         BR: [0.0, 0.0] # [0.255, 0.255]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [3, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PiPi
-                Indices: [2, 1]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 20
-                gammaMag_pipi2_200: -0.15
-                gammaPhase_pipi2_200: -0.36
-                deltaMag_pipi2_200: 0.12
-                deltaPhase_pipi2_200: -0.02
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [3, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_PiPi
+              Indices: [2, 1]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 20
+              gammaMag_pipi2_200: -0.15
+              gammaPhase_pipi2_200: -0.36
+              deltaMag_pipi2_200: 0.12
+              deltaPhase_pipi2_200: -0.02
         PhaseSpace:
           - Dalitz_rho(770)+_12:
               Weight: 1.0
@@ -282,20 +282,20 @@ HADRON_DECAYS:
     ######################################################
       -321,111,16:
         BR: [0.0, 0.0] # [0.0045, 0.0045]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [3, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PiPi
-                Indices: [2, 1]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 10
-                gammaMag_Kpi_100: -0.135
-                gammaPhase_Kpi_100: 0.
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [3, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_PiPi
+              Indices: [2, 1]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 10
+              gammaMag_Kpi_100: -0.135
+              gammaPhase_Kpi_100: 0.
         IntResults: [1.0953e-14, 1.0953e-17, 9.2621e-13]
 
     #
@@ -323,20 +323,20 @@ HADRON_DECAYS:
     #
       310,-211,16:
         BR: [0.0, 0.0] # [0.0042, 0.0042]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [3, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PiPi
-                Indices: [2, 1]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 10
-                gammaMag_Kpi_100: -0.135
-                gammaPhase_Kpi_100: 0.
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [3, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_PiPi
+              Indices: [2, 1]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 10
+              gammaMag_Kpi_100: -0.135
+              gammaPhase_Kpi_100: 0.
         IntResults: [1.03186e-14, 1.03182e-17, 8.54277e-13]
 
     #
@@ -348,20 +348,20 @@ HADRON_DECAYS:
     #
       -211,130,16:
         BR: [0.0, 0.0] # [0.0042, 0.0042]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [3, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PiPi
-                Indices: [1, 2]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 10
-                gammaMag_Kpi_100: -0.135
-                gammaPhase_Kpi_100: 0.
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [3, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_PiPi
+              Indices: [1, 2]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 10
+              gammaMag_Kpi_100: -0.135
+              gammaPhase_Kpi_100: 0.
         IntResults: [1.032e-14, 1.0318e-17, 8.5431e-13]
 
     ##### K Kbar (two physical final states: K^- K_S, K^- K_L) #####
@@ -385,42 +385,42 @@ HADRON_DECAYS:
     ######################################################
       -321,310,16:
         BR: [0.0, 0.0] # [0.0007, 0.0007]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [3, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PiPi
-                Indices: [2, 1]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 20
-                gammaMag_KK_200: -0.15
-                gammaPhase_KK_200: -1.88
-                deltaMag_KK_200: 0.
-                deltaPhase_KK_200: 0.
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [3, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_PiPi
+              Indices: [2, 1]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 20
+              gammaMag_KK_200: -0.15
+              gammaPhase_KK_200: -1.88
+              deltaMag_KK_200: 0.
+              deltaPhase_KK_200: 0.
         IntResults: [1.2657e-15, 1.2628e-18, 1.2172e-14]
 
       -321,130,16:
         BR: [0.0, 0.0]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [3, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PiPi
-                Indices: [2, 1]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 20
-                gammaMag_KK_200: -0.15
-                gammaPhase_KK_200: -1.88
-                deltaMag_KK_200: 0.
-                deltaPhase_KK_200: 0.
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [3, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_PiPi
+              Indices: [2, 1]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 20
+              gammaMag_KK_200: -0.15
+              gammaPhase_KK_200: -1.88
+              deltaMag_KK_200: 0.
+              deltaPhase_KK_200: 0.
 
     ##### K eta #####
     #
@@ -449,21 +449,21 @@ HADRON_DECAYS:
         IntResults: [1.2678e-15, 1.2657e-18, 1.2176e-14]
       -321,221,16:
         BR: [0.0, 0.0]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [3, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PiPi
-                Indices: [2, 1]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 10
-                gammaMag_Keta_100: -0.135
-                gammaPhase_Keta_100: 0.
-                N_Keta: 1.
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [3, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_PiPi
+              Indices: [2, 1]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 10
+              gammaMag_Keta_100: -0.135
+              gammaPhase_Keta_100: 0.
+              N_Keta: 1.
 
     ##### K eta' #####
     #
@@ -490,21 +490,21 @@ HADRON_DECAYS:
         IntResults: [5.3026e-16, 5.2983e-19, 5.464e-15]
       -321,331,16:
         BR: [0.0, 0.0]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [3, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PiPi
-                Indices: [2, 1]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 20
-                gammaMag_Ketaprime_200: -0.034
-                gammaPhase_Ketaprime_200: 0.
-                N_Ketaprime: 1.
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [3, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_PiPi
+              Indices: [2, 1]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 20
+              gammaMag_Ketaprime_200: -0.034
+              gammaPhase_Ketaprime_200: 0.
+              N_Ketaprime: 1.
 
     ##### pi eta #####
     #
@@ -526,19 +526,19 @@ HADRON_DECAYS:
         IntResults: [2.7917e-17, 2.7832e-20, 2.0969e-16]
       -211,221,16:
         BR: [0.0, 0.0]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [3, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PiPi
-                Indices: [2, 1]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 10
-                eps_pieta: 0.017
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [3, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_PiPi
+              Indices: [2, 1]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 10
+              eps_pieta: 0.017
 
     ##### pi eta' #####
     #
@@ -552,19 +552,19 @@ HADRON_DECAYS:
         IntResults: [6.914e-16, 6.9126e-19, 2.4363e-14]
       -211,331,16:
         BR: [0.0, 0.0]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [3, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PiPi
-                Indices: [2, 1]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 10
-                eps_pietaprime: 0.004
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [3, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_PiPi
+              Indices: [2, 1]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 10
+              eps_pietaprime: 0.004
     ######################################################
     # Three pseudoscalars
     #
@@ -610,18 +610,18 @@ HADRON_DECAYS:
         IntResults: [4.0324e-18, 4.032e-21, 9.7297e-17]
       -211,111,111,16:
         BR: [0.0, 0.0] # [0.0917, 0.0917]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [4, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PPP
-                Indices: [3, 2, 1]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 10
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [4, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_PPP
+              Indices: [3, 2, 1]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 10
         # 2 chains (which pi0 pairs with pi-) x 2 inner resonances
         # (rho(770), rho(1450)) = 4 combinations, each weight 0.25.
         PhaseSpace:
@@ -652,18 +652,18 @@ HADRON_DECAYS:
     #
       211,-211,-211,16:
         BR: [0.0, 0.0] # [0.0932, 0.0932]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [4, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PPP
-                Indices: [2, 3, 1]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 10
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [4, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_PPP
+              Indices: [2, 3, 1]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 10
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_2_rho(770)+_13:
               Weight: 0.25
@@ -691,18 +691,18 @@ HADRON_DECAYS:
     #
       -321,111,111,16:
         BR: [0.0, 0.0] # [0.00058, 0.00058]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [4, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PPP
-                Indices: [2, 3, 1]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 10
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [4, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_PPP
+              Indices: [2, 3, 1]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 10
         # 2 outer (K1(1400)/K1(1270)) x 2 inner (K*(892)/K*(1410)) x 2
         # chains (which pi0 pairs with K^-) = 8 combinations, each
         # weight 0.125.
@@ -764,18 +764,18 @@ HADRON_DECAYS:
         IntResults: [3.6442e-15, 2.9146e-18, 1.2738e-13]
       -321,211,-211,16:
         BR: [0.0, 0.0] # [0.00342, 0.00342]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [4, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_KPiPi
-                Indices: [1, 3, 2]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 15
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [4, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_KPiPi
+              Indices: [1, 3, 2]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 15
         # 2 K* combinations (K1(1270)/K1(1400) x bare K*(892), spectator
         # =2) + 3 pi-pi combinations (K1(1270) x rho(770)/rho(1450)/
         # f0(600), spectator=1) - 50/50 split between the two chains,
@@ -817,18 +817,18 @@ HADRON_DECAYS:
         IntResults: [9.9123e-15, 9.9089e-18, 2.388e-12]
       310,-211,111,16:
         BR: [0.0, 0.0] # [0.00185, 0.00185]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [4, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_KPiPi
-                Indices: [2, 1, 3]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 13
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [4, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_KPiPi
+              Indices: [2, 1, 3]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 13
         #   rho region:  pi-(idx2)+pi0(idx3), spectator=K_S(idx1)
         #   K* region A: K_S(idx1)+pi-(idx2), spectator=pi0(idx3)
         #   K* region B: K_S(idx1)+pi0(idx3), spectator=pi-(idx2)
@@ -865,18 +865,18 @@ HADRON_DECAYS:
         IntResults: [1.1153e-14, 1.0141e-17, 7.9669e-13]
       -211,130,111,16:
         BR: [0.0, 0.0] # [0.00185, 0.00185]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [4, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_KPiPi
-                Indices: [1, 2, 3]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 13
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [4, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_KPiPi
+              Indices: [1, 2, 3]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 13
         PhaseSpace:
           - TwoResonances_K(1)(1270)+_2_rho(770)+_13:
               Weight: 0.111111
@@ -926,18 +926,18 @@ HADRON_DECAYS:
         IntResults: [1.1133e-14, 9.9309e-18, 7.247e-13]
       321,-321,-211,16:
         BR: [0.0, 0.0] # [0.0932, 0.0932]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [4, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_KPiK
-                Indices: [2, 3, 1]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 10
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [4, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_KPiK
+              Indices: [2, 3, 1]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 10
         # Indices are FM95's own q1,q2,q3 = K^-(idx2), pi^-(idx3),
         # K^+(idx1). PhaseSpace below names PARTICLE indices, which are
         # unaffected by that reordering:
@@ -982,18 +982,18 @@ HADRON_DECAYS:
         IntResults: [3.7554e-15, 3.4152e-18, 2.6323e-13]
       -321,310,111,16:
         BR: [0.0, 0.0]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [4, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_KPiK
-                Indices: [1, 3, 2]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 10
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [4, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_KPiK
+              Indices: [1, 3, 2]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 10
         # 3 regions x 2 inner resonances = 6 combinations:
         #   rho region:  K-(idx1)+K_S(idx2),  spectator=pi0(idx3)
         #   K* region A: K-(idx1)+pi0(idx3), spectator=K_S(idx2)
@@ -1021,18 +1021,18 @@ HADRON_DECAYS:
         IntResults: [1.5111e-15, 1.5048e-18, 6.741e-14]
       -321,130,111,16:
         BR: [0.0, 0.0]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [4, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_KPiK
-                Indices: [1, 3, 2]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 10
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [4, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_KPiK
+              Indices: [1, 3, 2]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 10
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_3_rho(770)+_12:
               Weight: 0.166667
@@ -1061,18 +1061,18 @@ HADRON_DECAYS:
         IntResults: [1.5137e-15, 1.5075e-18, 6.3976e-14]
       310,-211,130,16:
         BR: [0.0, 0.0] # [0.00055, 0.00055]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [4, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_KPiK
-                Indices: [1, 2, 3]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 10
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [4, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_KPiK
+              Indices: [1, 2, 3]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 10
         # 3 regions x 2 inner resonances = 6 combinations:
         #   rho region:  K_S(idx1)+K_L(idx3),  spectator=pi-(idx2)
         #   K* region A: K_S(idx1)+pi-(idx2), spectator=K_L(idx3)
@@ -1107,18 +1107,18 @@ HADRON_DECAYS:
         IntResults: [1.6922e-15, 1.6443e-18, 8.6607e-14]
       310,310,-211,16:
         BR: [0.0, 0.0] # [0.00024, 0.00024]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [4, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_KPiK
-                Indices: [1, 3, 2]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 10
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [4, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_KPiK
+              Indices: [1, 3, 2]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 10
         #   K* region A: K_S(idx1)+pi-(idx3), spectator=K_S(idx2)
         #   K* region B: pi-(idx3)+K_S(idx2), spectator=K_S(idx1)
         PhaseSpace:
@@ -1146,18 +1146,18 @@ HADRON_DECAYS:
         IntResults: [8.87e-16, 8.7966e-19, 2.5547e-14]
       -211,130,130,16:
         BR: [0.0, 0.0] # [0.00024, 0.00024]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [4, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_KPiK
-                Indices: [2, 1, 3]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 10
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [4, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_KPiK
+              Indices: [2, 1, 3]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 10
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_3_K*(892)+_12:
               Weight: 0.25
@@ -1186,18 +1186,18 @@ HADRON_DECAYS:
         IntResults: [8.8602e-16, 8.8123e-19, 2.6146e-14]
       321,-321,-321,16:
         BR: [0.0, 0.0] # [3.7e-05, 3.7e-05]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [4, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_PPP
-                Indices: [1, 2, 3]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 10
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [4, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_PPP
+              Indices: [1, 2, 3]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 10
         AlwaysIntegrate: 0
 
     ##### eta pi pi #####
@@ -1216,19 +1216,19 @@ HADRON_DECAYS:
     ######################################################
       221,-211,111,16:
         BR: [0.0, 0.0] # [0.00174, 0.00174]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [4, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_EtaPiPi
-                Indices: [1, 2, 3]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 10
-                N_etapipi: 1.
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [4, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_EtaPiPi
+              Indices: [1, 2, 3]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 10
+              N_etapipi: 1.
         # Unlike every other channel above, BOTH resonance layers here
         # are genuinely charged rho(770)/rho(1450)/rho(1700) - there is
         # no "outer axial resonance" like a1/K1 in this current at all,
@@ -1264,18 +1264,18 @@ HADRON_DECAYS:
         IntResults: [3.4161e-15, 3.0723e-18, 1.7635e-13]
       221,221,-211,16:
         BR: [0.0, 0.0] # [0.0001, 0.0001]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [4, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_EtaPiPi
-                Indices: [1, 2, 3]
-                RUNNING_WIDTH: 1
-                FORM_FACTOR: 10
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [4, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_EtaPiPi
+              Indices: [1, 2, 3]
+              RUNNING_WIDTH: 1
+              FORM_FACTOR: 10
         AlwaysIntegrate: 0
     ######################################################
     # Four pseudoscalars
@@ -1324,16 +1324,16 @@ HADRON_DECAYS:
         # = (7.4+-0.8+-1.1)e-4, is about twice that; the non-K-omega
         # remainder has no current here, so only the K omega piece is quoted.
         BR: [0.0, 0.0] # [0.000366, 0.000366]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [5, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_KOmega3Pi
-                Indices: [1, 2, 3, 4]
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [5, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_KOmega3Pi
+              Indices: [1, 2, 3, 4]
         AlwaysIntegrate: 0
         IntResults: [8.4715e-16, 8.4713e-19, 1.7015e-12]
 
@@ -1373,31 +1373,31 @@ HADRON_DECAYS:
     #
       111,111,111,-211,16:
         BR: [0.33333333, 0.33333333]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [5, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_Novosibirsk4Pi
-                Indices: [1, 2, 3, 4]
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [5, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_Novosibirsk4Pi
+              Indices: [1, 2, 3, 4]
         AlwaysIntegrate: 0
         IntResults: [2.6063e-14, 2.6052e-17, 3.2238e-12]
 
       -211,-211,211,111,16:
         BR: [0.33333333, 0.33333333]
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_F_F
-                Indices: [5, 0]
-                v: 1.
-                a: -1.
-              J2:
-                Type: VA_0_Novosibirsk4Pi
-                Indices: [1, 2, 3, 4]
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [5, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_Novosibirsk4Pi
+              Indices: [1, 2, 3, 4]
         AlwaysIntegrate: 0
         IntResults: [1.0138e-13, 1.0137e-16, 7.9814e-11]
 
@@ -1620,45 +1620,45 @@ HADRON_DECAYS:
       -321,12,-11:
         BR: [0.2885183843, 0.001403065447]
         Origin: "PDG2026 (3.537+-0.017)E-2 OUR FIT"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.97349
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.7383
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -2.28
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3170
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_P
+              Indices: [0, 1]
+              Vcq:             0.97349
+              Fplus_SHAPE:     12          # charm z-series, 2-parameter
+              Fplus_F0:        0.7383
+              Fplus_NCOEFF:    1
+              Fplus_r1:        -2.28
+              Fplus_NBLASCHKE: 1
+              Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
+              Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
+              Fzero_MPOLE:     2.3170
         IntResults: [5.6434e-14, 5.6327e-17, 5.1738e-13]
 
       -321,14,-13:
         BR: [0.2787907357, 0.001582527306]
         Origin: "PDG2026 (3.418+-0.019)E-2 OUR FIT"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.97349
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.7383
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -2.28
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3170
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_P
+              Indices: [0, 1]
+              Vcq:             0.97349
+              Fplus_SHAPE:     12          # charm z-series, 2-parameter
+              Fplus_F0:        0.7383
+              Fplus_NCOEFF:    1
+              Fplus_r1:        -2.28
+              Fplus_NBLASCHKE: 1
+              Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
+              Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
+              Fzero_MPOLE:     2.3170
         IntResults: [5.5345e-14, 5.5271e-17, 4.9966e-13]
 
     #
@@ -1694,269 +1694,269 @@ HADRON_DECAYS:
       -311,-211,12,-11:
         BR: [0.1180369594, 0.002691927892]
         Origin: "PDG2026 (1.447+-0.033)E-2 OUR AVERAGE, K0bar pi- e+ nu TOTAL"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           1
-                USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
-                AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
-                PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.46
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     3           # LASS = background + resonance
-                Swave_KF0:       10321       # K*_0(1430)+
-                Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
-                Swave_LASS_A:    1.94        # scattering length [GeV^-1]
-                Swave_LASS_R:    1.76        # effective range [GeV^-1]
-                A1_0:            0.618
-                rV:              1.42
-                r2:              0.75
-                PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
-                V_SHAPE:         2
-                V_MPOLE:         2.11220
-                A1_SHAPE:        2
-                A1_MPOLE:        2.45950
-                A2_SHAPE:        2
-                A2_MPOLE:        2.45950
-                A0_SHAPE:        2
-                A0_MPOLE:        1.96835
-                Pwave_L:         1
-                Pwave_MODEL:     1           # single resonance
-                Pwave_KF0:       323         # K*(892)+
-                Pwave_TYPE0:     1           # running
-                A1T_0:           1.0
-                rVT:             1.0
-                r2T:             1.0
-                DWAVE_MASS:      1.4324
-                VT_SHAPE:        2
-                VT_MPOLE:        2.11220
-                A1T_SHAPE:       2
-                A1T_MPOLE:       2.45950
-                A2T_SHAPE:       2
-                A2T_MPOLE:       2.45950
-                A0T_SHAPE:       2
-                A0T_MPOLE:       1.96835
-                Dwave_L:         2
-                Dwave_MODEL:     1
-                Dwave_KF0:       325         # K*_2(1430)
-                Dwave_TYPE0:     1
-                AMP_D:           1.0
-                PHASE_D:         0.0
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.97349
+              USE_S:           1
+              USE_P:           1
+              USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
+              AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
+              PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
+              AMP_P:           1.0
+              PHASE_P:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.46
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.96835
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     3           # LASS = background + resonance
+              Swave_KF0:       10321       # K*_0(1430)+
+              Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
+              Swave_LASS_A:    1.94        # scattering length [GeV^-1]
+              Swave_LASS_R:    1.76        # effective range [GeV^-1]
+              A1_0:            0.618
+              rV:              1.42
+              r2:              0.75
+              PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
+              V_SHAPE:         2
+              V_MPOLE:         2.11220
+              A1_SHAPE:        2
+              A1_MPOLE:        2.45950
+              A2_SHAPE:        2
+              A2_MPOLE:        2.45950
+              A0_SHAPE:        2
+              A0_MPOLE:        1.96835
+              Pwave_L:         1
+              Pwave_MODEL:     1           # single resonance
+              Pwave_KF0:       323         # K*(892)+
+              Pwave_TYPE0:     1           # running
+              A1T_0:           1.0
+              rVT:             1.0
+              r2T:             1.0
+              DWAVE_MASS:      1.4324
+              VT_SHAPE:        2
+              VT_MPOLE:        2.11220
+              A1T_SHAPE:       2
+              A1T_MPOLE:       2.45950
+              A2T_SHAPE:       2
+              A2T_MPOLE:       2.45950
+              A0T_SHAPE:       2
+              A0T_MPOLE:       1.96835
+              Dwave_L:         2
+              Dwave_MODEL:     1
+              Dwave_KF0:       325         # K*_2(1430)
+              Dwave_TYPE0:     1
+              AMP_D:           1.0
+              PHASE_D:         0.0
         IntResults: [2.2038e-14, 2.2034e-17, 2.4253e-12]
 
       -311,-211,14,-13:
         BR: [0.1142030015, 0.003262942899]
         Origin: "PDG2026 (1.40+-0.04)E-2 OUR FIT, K0bar pi- mu+ nu TOTAL"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           1
-                USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
-                AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
-                PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.46
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     3           # LASS = background + resonance
-                Swave_KF0:       10321       # K*_0(1430)+
-                Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
-                Swave_LASS_A:    1.94        # scattering length [GeV^-1]
-                Swave_LASS_R:    1.76        # effective range [GeV^-1]
-                A1_0:            0.618
-                rV:              1.42
-                r2:              0.75
-                PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
-                V_SHAPE:         2
-                V_MPOLE:         2.11220
-                A1_SHAPE:        2
-                A1_MPOLE:        2.45950
-                A2_SHAPE:        2
-                A2_MPOLE:        2.45950
-                A0_SHAPE:        2
-                A0_MPOLE:        1.96835
-                Pwave_L:         1
-                Pwave_MODEL:     1           # single resonance
-                Pwave_KF0:       323         # K*(892)+
-                Pwave_TYPE0:     1           # running
-                A1T_0:           1.0
-                rVT:             1.0
-                r2T:             1.0
-                DWAVE_MASS:      1.4324
-                VT_SHAPE:        2
-                VT_MPOLE:        2.11220
-                A1T_SHAPE:       2
-                A1T_MPOLE:       2.45950
-                A2T_SHAPE:       2
-                A2T_MPOLE:       2.45950
-                A0T_SHAPE:       2
-                A0T_MPOLE:       1.96835
-                Dwave_L:         2
-                Dwave_MODEL:     1
-                Dwave_KF0:       325         # K*_2(1430)
-                Dwave_TYPE0:     1
-                AMP_D:           1.0
-                PHASE_D:         0.0
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.97349
+              USE_S:           1
+              USE_P:           1
+              USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
+              AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
+              PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
+              AMP_P:           1.0
+              PHASE_P:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.46
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.96835
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     3           # LASS = background + resonance
+              Swave_KF0:       10321       # K*_0(1430)+
+              Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
+              Swave_LASS_A:    1.94        # scattering length [GeV^-1]
+              Swave_LASS_R:    1.76        # effective range [GeV^-1]
+              A1_0:            0.618
+              rV:              1.42
+              r2:              0.75
+              PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
+              V_SHAPE:         2
+              V_MPOLE:         2.11220
+              A1_SHAPE:        2
+              A1_MPOLE:        2.45950
+              A2_SHAPE:        2
+              A2_MPOLE:        2.45950
+              A0_SHAPE:        2
+              A0_MPOLE:        1.96835
+              Pwave_L:         1
+              Pwave_MODEL:     1           # single resonance
+              Pwave_KF0:       323         # K*(892)+
+              Pwave_TYPE0:     1           # running
+              A1T_0:           1.0
+              rVT:             1.0
+              r2T:             1.0
+              DWAVE_MASS:      1.4324
+              VT_SHAPE:        2
+              VT_MPOLE:        2.11220
+              A1T_SHAPE:       2
+              A1T_MPOLE:       2.45950
+              A2T_SHAPE:       2
+              A2T_MPOLE:       2.45950
+              A0T_SHAPE:       2
+              A0T_MPOLE:       1.96835
+              Dwave_L:         2
+              Dwave_MODEL:     1
+              Dwave_KF0:       325         # K*_2(1430)
+              Dwave_TYPE0:     1
+              AMP_D:           1.0
+              PHASE_D:         0.0
         IntResults: [2.0796e-14, 2.0795e-17, 2.2168e-12]
 
       -321,111,12,-11:
         BR: [0.05791723646, 0.001713045022]
         Origin: "PDG2026: mu-mode (7.10+-0.21)E-3 OUR FIT reused; the e-mode average (1.6+1.3-0.5)E-2 is twice the isospin expectation with a >50 percent error and is not used"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           1
-                USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
-                AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
-                PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.46
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     3           # LASS = background + resonance
-                Swave_KF0:       10321       # K*_0(1430)+
-                Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
-                Swave_LASS_A:    1.94        # scattering length [GeV^-1]
-                Swave_LASS_R:    1.76        # effective range [GeV^-1]
-                A1_0:            0.618
-                rV:              1.42
-                r2:              0.75
-                PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
-                V_SHAPE:         2
-                V_MPOLE:         2.11220
-                A1_SHAPE:        2
-                A1_MPOLE:        2.45950
-                A2_SHAPE:        2
-                A2_MPOLE:        2.45950
-                A0_SHAPE:        2
-                A0_MPOLE:        1.96835
-                Pwave_L:         1
-                Pwave_MODEL:     1           # single resonance
-                Pwave_KF0:       323         # K*(892)+
-                Pwave_TYPE0:     1           # running
-                A1T_0:           1.0
-                rVT:             1.0
-                r2T:             1.0
-                DWAVE_MASS:      1.4324
-                VT_SHAPE:        2
-                VT_MPOLE:        2.11220
-                A1T_SHAPE:       2
-                A1T_MPOLE:       2.45950
-                A2T_SHAPE:       2
-                A2T_MPOLE:       2.45950
-                A0T_SHAPE:       2
-                A0T_MPOLE:       1.96835
-                Dwave_L:         2
-                Dwave_MODEL:     1
-                Dwave_KF0:       325         # K*_2(1430)
-                Dwave_TYPE0:     1
-                AMP_D:           1.0
-                PHASE_D:         0.0
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.97349
+              USE_S:           1
+              USE_P:           1
+              USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
+              AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
+              PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
+              AMP_P:           1.0
+              PHASE_P:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.46
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.96835
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     3           # LASS = background + resonance
+              Swave_KF0:       10321       # K*_0(1430)+
+              Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
+              Swave_LASS_A:    1.94        # scattering length [GeV^-1]
+              Swave_LASS_R:    1.76        # effective range [GeV^-1]
+              A1_0:            0.618
+              rV:              1.42
+              r2:              0.75
+              PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
+              V_SHAPE:         2
+              V_MPOLE:         2.11220
+              A1_SHAPE:        2
+              A1_MPOLE:        2.45950
+              A2_SHAPE:        2
+              A2_MPOLE:        2.45950
+              A0_SHAPE:        2
+              A0_MPOLE:        1.96835
+              Pwave_L:         1
+              Pwave_MODEL:     1           # single resonance
+              Pwave_KF0:       323         # K*(892)+
+              Pwave_TYPE0:     1           # running
+              A1T_0:           1.0
+              rVT:             1.0
+              r2T:             1.0
+              DWAVE_MASS:      1.4324
+              VT_SHAPE:        2
+              VT_MPOLE:        2.11220
+              A1T_SHAPE:       2
+              A1T_MPOLE:       2.45950
+              A2T_SHAPE:       2
+              A2T_MPOLE:       2.45950
+              A0T_SHAPE:       2
+              A0T_MPOLE:       1.96835
+              Dwave_L:         2
+              Dwave_MODEL:     1
+              Dwave_KF0:       325         # K*_2(1430)
+              Dwave_TYPE0:     1
+              AMP_D:           1.0
+              PHASE_D:         0.0
         IntResults: [1.1014e-14, 1.1014e-17, 1.2433e-12]
 
       -321,111,14,-13:
         BR: [0.05791723646, 0.001713045022]
         Origin: "PDG2026 (7.10+-0.21)E-3 OUR FIT, K- pi0 mu+ nu TOTAL"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           1
-                USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
-                AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
-                PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.46
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     3           # LASS = background + resonance
-                Swave_KF0:       10321       # K*_0(1430)+
-                Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
-                Swave_LASS_A:    1.94        # scattering length [GeV^-1]
-                Swave_LASS_R:    1.76        # effective range [GeV^-1]
-                A1_0:            0.618
-                rV:              1.42
-                r2:              0.75
-                PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
-                V_SHAPE:         2
-                V_MPOLE:         2.11220
-                A1_SHAPE:        2
-                A1_MPOLE:        2.45950
-                A2_SHAPE:        2
-                A2_MPOLE:        2.45950
-                A0_SHAPE:        2
-                A0_MPOLE:        1.96835
-                Pwave_L:         1
-                Pwave_MODEL:     1           # single resonance
-                Pwave_KF0:       323         # K*(892)+
-                Pwave_TYPE0:     1           # running
-                A1T_0:           1.0
-                rVT:             1.0
-                r2T:             1.0
-                DWAVE_MASS:      1.4324
-                VT_SHAPE:        2
-                VT_MPOLE:        2.11220
-                A1T_SHAPE:       2
-                A1T_MPOLE:       2.45950
-                A2T_SHAPE:       2
-                A2T_MPOLE:       2.45950
-                A0T_SHAPE:       2
-                A0T_MPOLE:       1.96835
-                Dwave_L:         2
-                Dwave_MODEL:     1
-                Dwave_KF0:       325         # K*_2(1430)
-                Dwave_TYPE0:     1
-                AMP_D:           1.0
-                PHASE_D:         0.0
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.97349
+              USE_S:           1
+              USE_P:           1
+              USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
+              AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
+              PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
+              AMP_P:           1.0
+              PHASE_P:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.46
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.96835
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     3           # LASS = background + resonance
+              Swave_KF0:       10321       # K*_0(1430)+
+              Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
+              Swave_LASS_A:    1.94        # scattering length [GeV^-1]
+              Swave_LASS_R:    1.76        # effective range [GeV^-1]
+              A1_0:            0.618
+              rV:              1.42
+              r2:              0.75
+              PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
+              V_SHAPE:         2
+              V_MPOLE:         2.11220
+              A1_SHAPE:        2
+              A1_MPOLE:        2.45950
+              A2_SHAPE:        2
+              A2_MPOLE:        2.45950
+              A0_SHAPE:        2
+              A0_MPOLE:        1.96835
+              Pwave_L:         1
+              Pwave_MODEL:     1           # single resonance
+              Pwave_KF0:       323         # K*(892)+
+              Pwave_TYPE0:     1           # running
+              A1T_0:           1.0
+              rVT:             1.0
+              r2T:             1.0
+              DWAVE_MASS:      1.4324
+              VT_SHAPE:        2
+              VT_MPOLE:        2.11220
+              A1T_SHAPE:       2
+              A1T_MPOLE:       2.45950
+              A2T_SHAPE:       2
+              A2T_MPOLE:       2.45950
+              A0T_SHAPE:       2
+              A0T_MPOLE:       1.96835
+              Dwave_L:         2
+              Dwave_MODEL:     1
+              Dwave_KF0:       325         # K*_2(1430)
+              Dwave_TYPE0:     1
+              AMP_D:           1.0
+              PHASE_D:         0.0
         IntResults: [1.0413e-14, 1.0411e-17, 1.1366e-12]
 
     #
@@ -1970,53 +1970,53 @@ HADRON_DECAYS:
       -10323,12,-11:
         BR: [0.007542806426, 0.0005677520645]
         Origin: "PDG2026 (3.23+-0.25)E-4 OUR AVERAGE [/0.3499 daughter chain]"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_A
-                Indices: [0, 1]
-                Vcq:             0.97349
-                V1_0:            1.741       # absolute normalisation not measured; tuned so
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_A
+              Indices: [0, 1]
+              Vcq:             0.97349
+              V1_0:            1.741       # absolute normalisation not measured; tuned so
 #                             the generated width matches PDG
-                rA:              -0.112      # A(0)/V1(0),  BESIII arXiv:2503.02196
-                rV2:             -0.043      # V2(0)/V1(0), same fit (called r_V there)
-                A_SHAPE:         2
-                A_MPOLE:         2.5         # fixed in that fit
-                V1_SHAPE:        2
-                V1_MPOLE:        2.1         # fixed in that fit
-                V2_SHAPE:        2
-                V2_MPOLE:        2.1
-                V0_SHAPE:        2           # SHAPE only - V0(0) from Eq.(V0constraint)
-                V0_MPOLE:        2.317
+              rA:              -0.112      # A(0)/V1(0),  BESIII arXiv:2503.02196
+              rV2:             -0.043      # V2(0)/V1(0), same fit (called r_V there)
+              A_SHAPE:         2
+              A_MPOLE:         2.5         # fixed in that fit
+              V1_SHAPE:        2
+              V1_MPOLE:        2.1         # fixed in that fit
+              V2_SHAPE:        2
+              V2_MPOLE:        2.1
+              V0_SHAPE:        2           # SHAPE only - V0(0) from Eq.(V0constraint)
+              V0_MPOLE:        2.317
         IntResults: [1.5269e-15, 1.5245e-18, 1.4778e-14]
 
       -10323,14,-13:
         BR: [0.006108955113, 0.0009707255126]
         Origin: "PDG2026 (2.6+0.4-0.5)E-4 OUR AVERAGE [/0.3499 daughter chain]"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_A
-                Indices: [0, 1]
-                Vcq:             0.97349
-                V1_0:            1.741       # absolute normalisation not measured; tuned so
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_A
+              Indices: [0, 1]
+              Vcq:             0.97349
+              V1_0:            1.741       # absolute normalisation not measured; tuned so
 #                             the generated width matches PDG
-                rA:              -0.112      # A(0)/V1(0),  BESIII arXiv:2503.02196
-                rV2:             -0.043      # V2(0)/V1(0), same fit (called r_V there)
-                A_SHAPE:         2
-                A_MPOLE:         2.5         # fixed in that fit
-                V1_SHAPE:        2
-                V1_MPOLE:        2.1         # fixed in that fit
-                V2_SHAPE:        2
-                V2_MPOLE:        2.1
-                V0_SHAPE:        2           # SHAPE only - V0(0) from Eq.(V0constraint)
-                V0_MPOLE:        2.317
+              rA:              -0.112      # A(0)/V1(0),  BESIII arXiv:2503.02196
+              rV2:             -0.043      # V2(0)/V1(0), same fit (called r_V there)
+              A_SHAPE:         2
+              A_MPOLE:         2.5         # fixed in that fit
+              V1_SHAPE:        2
+              V1_MPOLE:        2.1         # fixed in that fit
+              V2_SHAPE:        2
+              V2_MPOLE:        2.1
+              V0_SHAPE:        2           # SHAPE only - V0(0) from Eq.(V0constraint)
+              V0_MPOLE:        2.317
         IntResults: [1.2917e-15, 1.2887e-18, 1.3113e-14]
 
     #
@@ -2029,45 +2029,45 @@ HADRON_DECAYS:
       -211,12,-11:
         BR: [0.02374557751, 0.0003385303258]
         Origin: "PDG2026 (2.91+-0.04)E-3 OUR FIT"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.22486
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.6372
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -2.0365
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3000
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_P
+              Indices: [0, 1]
+              Vcq:             0.22486
+              Fplus_SHAPE:     12          # charm z-series, 2-parameter
+              Fplus_F0:        0.6372
+              Fplus_NCOEFF:    1
+              Fplus_r1:        -2.0365
+              Fplus_NBLASCHKE: 1
+              Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
+              Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
+              Fzero_MPOLE:     2.3000
         IntResults: [4.6881e-15, 4.6728e-18, 2.9214e-14]
 
       -211,14,-13:
         BR: [0.02181220227, 0.0009462534408]
         Origin: "PDG2026 (2.67+-0.12)E-3 OUR FIT"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.22486
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.6372
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -2.0365
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3000
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_P
+              Indices: [0, 1]
+              Vcq:             0.22486
+              Fplus_SHAPE:     12          # charm z-series, 2-parameter
+              Fplus_F0:        0.6372
+              Fplus_NCOEFF:    1
+              Fplus_r1:        -2.0365
+              Fplus_NBLASCHKE: 1
+              Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
+              Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
+              Fzero_MPOLE:     2.3000
         IntResults: [4.6284e-15, 4.611e-18, 2.8664e-14]
 
     #
@@ -2100,99 +2100,99 @@ HADRON_DECAYS:
       -211,111,12,-11:
         BR: [0.01182816801, 0.0005710150074]
         Origin: "PDG2026 (1.45+-0.07)E-3 OUR AVERAGE, pi- pi0 e+ nu TOTAL"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.22486
-                USE_S:           0           # pi+- pi0 is pure I=1: no I=0 S wave exists
-                USE_P:           1
-                USE_D:           0           # f_2(1270) not measured in this mode
-                AMP_S:           0.633       # CALIBRATED against the run, see note
-                PHASE_S:         0.0         # CALIBRATE: the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.42
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.86966
-                TIE_MASS:        0.5
-                Swave_L:         0
-                Swave_MODEL:     1           # single resonance
-                Swave_KF0:       9000221     # f_0(500), for the diagnostic label only
-                Swave_TYPE0:     3           # COMPLEX POLE, not a Breit-Wigner
-                Swave_MPOLE0:    0.449       # PDG f_0(500) T-matrix pole, Re sqrt(s_p)
-                Swave_GPOLE0:    0.550       # full pole width, 2 x Im sqrt(s_p)
-                A1_0:            0.522       # rescaled from the quasi-2-body fit, see note
-                rV:              1.548
-                r2:              0.823
-                PWAVE_MASS:      0.7755      # normalise A1, V, A2 at the rho pole
-                V_SHAPE:         2
-                V_MPOLE:         2.01026
-                A1_SHAPE:        2
-                A1_MPOLE:        2.42210
-                A2_SHAPE:        2
-                A2_MPOLE:        2.42210
-                A0_SHAPE:        2
-                A0_MPOLE:        1.86966
-                Pwave_L:         1
-                Pwave_MODEL:     1
-                Pwave_KF0:       213         # rho(770)+
-                Pwave_TYPE0:     2           # Gounaris-Sakurai, from Rho_Decays
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.22486
+              USE_S:           0           # pi+- pi0 is pure I=1: no I=0 S wave exists
+              USE_P:           1
+              USE_D:           0           # f_2(1270) not measured in this mode
+              AMP_S:           0.633       # CALIBRATED against the run, see note
+              PHASE_S:         0.0         # CALIBRATE: the S-P interference
+              AMP_P:           1.0
+              PHASE_P:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.42
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.86966
+              TIE_MASS:        0.5
+              Swave_L:         0
+              Swave_MODEL:     1           # single resonance
+              Swave_KF0:       9000221     # f_0(500), for the diagnostic label only
+              Swave_TYPE0:     3           # COMPLEX POLE, not a Breit-Wigner
+              Swave_MPOLE0:    0.449       # PDG f_0(500) T-matrix pole, Re sqrt(s_p)
+              Swave_GPOLE0:    0.550       # full pole width, 2 x Im sqrt(s_p)
+              A1_0:            0.522       # rescaled from the quasi-2-body fit, see note
+              rV:              1.548
+              r2:              0.823
+              PWAVE_MASS:      0.7755      # normalise A1, V, A2 at the rho pole
+              V_SHAPE:         2
+              V_MPOLE:         2.01026
+              A1_SHAPE:        2
+              A1_MPOLE:        2.42210
+              A2_SHAPE:        2
+              A2_MPOLE:        2.42210
+              A0_SHAPE:        2
+              A0_MPOLE:        1.86966
+              Pwave_L:         1
+              Pwave_MODEL:     1
+              Pwave_KF0:       213         # rho(770)+
+              Pwave_TYPE0:     2           # Gounaris-Sakurai, from Rho_Decays
         IntResults: [2.3088e-15, 2.3081e-18, 1.4129e-13]
 
       -211,111,14,-13:
         BR: [0.01101243229, 0.001060456442]
         Origin: "PDG2026 (1.35+-0.13)E-3: no pi- pi0 mu nu total is quoted, so the rho- mu nu value is used - the two agree to 1 percent in the e mode"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.22486
-                USE_S:           0           # pi+- pi0 is pure I=1: no I=0 S wave exists
-                USE_P:           1
-                USE_D:           0           # f_2(1270) not measured in this mode
-                AMP_S:           0.633       # CALIBRATED against the run, see note
-                PHASE_S:         0.0         # CALIBRATE: the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.42
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.86966
-                TIE_MASS:        0.5
-                Swave_L:         0
-                Swave_MODEL:     1           # single resonance
-                Swave_KF0:       9000221     # f_0(500), for the diagnostic label only
-                Swave_TYPE0:     3           # COMPLEX POLE, not a Breit-Wigner
-                Swave_MPOLE0:    0.449       # PDG f_0(500) T-matrix pole, Re sqrt(s_p)
-                Swave_GPOLE0:    0.550       # full pole width, 2 x Im sqrt(s_p)
-                A1_0:            0.522       # rescaled from the quasi-2-body fit, see note
-                rV:              1.548
-                r2:              0.823
-                PWAVE_MASS:      0.7755      # normalise A1, V, A2 at the rho pole
-                V_SHAPE:         2
-                V_MPOLE:         2.01026
-                A1_SHAPE:        2
-                A1_MPOLE:        2.42210
-                A2_SHAPE:        2
-                A2_MPOLE:        2.42210
-                A0_SHAPE:        2
-                A0_MPOLE:        1.86966
-                Pwave_L:         1
-                Pwave_MODEL:     1
-                Pwave_KF0:       213         # rho(770)+
-                Pwave_TYPE0:     2           # Gounaris-Sakurai, from Rho_Decays
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.22486
+              USE_S:           0           # pi+- pi0 is pure I=1: no I=0 S wave exists
+              USE_P:           1
+              USE_D:           0           # f_2(1270) not measured in this mode
+              AMP_S:           0.633       # CALIBRATED against the run, see note
+              PHASE_S:         0.0         # CALIBRATE: the S-P interference
+              AMP_P:           1.0
+              PHASE_P:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.42
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.86966
+              TIE_MASS:        0.5
+              Swave_L:         0
+              Swave_MODEL:     1           # single resonance
+              Swave_KF0:       9000221     # f_0(500), for the diagnostic label only
+              Swave_TYPE0:     3           # COMPLEX POLE, not a Breit-Wigner
+              Swave_MPOLE0:    0.449       # PDG f_0(500) T-matrix pole, Re sqrt(s_p)
+              Swave_GPOLE0:    0.550       # full pole width, 2 x Im sqrt(s_p)
+              A1_0:            0.522       # rescaled from the quasi-2-body fit, see note
+              rV:              1.548
+              r2:              0.823
+              PWAVE_MASS:      0.7755      # normalise A1, V, A2 at the rho pole
+              V_SHAPE:         2
+              V_MPOLE:         2.01026
+              A1_SHAPE:        2
+              A1_MPOLE:        2.42210
+              A2_SHAPE:        2
+              A2_MPOLE:        2.42210
+              A0_SHAPE:        2
+              A0_MPOLE:        1.86966
+              Pwave_L:         1
+              Pwave_MODEL:     1
+              Pwave_KF0:       213         # rho(770)+
+              Pwave_TYPE0:     2           # Gounaris-Sakurai, from Rho_Decays
         IntResults: [2.2139e-15, 2.2131e-18, 1.3422e-13]
 
     #
@@ -2214,69 +2214,69 @@ HADRON_DECAYS:
       221,-211,12,-11:
         BR: [0.0007015327234, 0.0001468324305]
         Origin: "PDG2026 (8.6+-1.8)E-5, a_0(980)- -> eta pi-; the a_0 saturates the I=1 eta pi final state"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.22486
-                USE_S:           1
-                USE_P:           0           # forbidden, see the channel note
-                USE_D:           0
-                AMP_S:           0.5204      # calibrated so the generated width matches PDG
-                PHASE_S:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.420
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.86966
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     1
-                Swave_KF0:       9000211
-                Swave_TYPE0:     4           # 1 running BW, 3 complex pole
-                Swave_MFLAT0:    0.9990      # Flatte mass - NOT the PDG mass;
-                Swave_G10:       0.2210      # coupling to THIS channel [GeV^2]
-                Swave_G20:       0.2560      # coupling to the second channel
-                Swave_MA20:      0.493677
-                Swave_MB20:      0.497611
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.22486
+              USE_S:           1
+              USE_P:           0           # forbidden, see the channel note
+              USE_D:           0
+              AMP_S:           0.5204      # calibrated so the generated width matches PDG
+              PHASE_S:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.420
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.86966
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     1
+              Swave_KF0:       9000211
+              Swave_TYPE0:     4           # 1 running BW, 3 complex pole
+              Swave_MFLAT0:    0.9990      # Flatte mass - NOT the PDG mass;
+              Swave_G10:       0.2210      # coupling to THIS channel [GeV^2]
+              Swave_G20:       0.2560      # coupling to the second channel
+              Swave_MA20:      0.493677
+              Swave_MB20:      0.497611
         IntResults: [1.3751e-16, 1.3746e-19, 1.0814e-14]
 
       221,-211,14,-13:
         BR: [0.0006623774086, 0.0001386750732]
         Origin: "INFERRED: no mu mode is quoted. e value 8.6E-5 scaled by the mu/e ratio 0.944 that this current itself generates, rather than copied"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.22486
-                USE_S:           1
-                USE_P:           0           # forbidden, see the channel note
-                USE_D:           0
-                AMP_S:           0.5204      # calibrated so the generated width matches PDG
-                PHASE_S:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.420
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.86966
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     1
-                Swave_KF0:       9000211
-                Swave_TYPE0:     4           # 1 running BW, 3 complex pole
-                Swave_MFLAT0:    0.9990      # Flatte mass - NOT the PDG mass;
-                Swave_G10:       0.2210      # coupling to THIS channel [GeV^2]
-                Swave_G20:       0.2560      # coupling to the second channel
-                Swave_MA20:      0.493677
-                Swave_MB20:      0.497611
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.22486
+              USE_S:           1
+              USE_P:           0           # forbidden, see the channel note
+              USE_D:           0
+              AMP_S:           0.5204      # calibrated so the generated width matches PDG
+              PHASE_S:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.420
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.86966
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     1
+              Swave_KF0:       9000211
+              Swave_TYPE0:     4           # 1 running BW, 3 complex pole
+              Swave_MFLAT0:    0.9990      # Flatte mass - NOT the PDG mass;
+              Swave_G10:       0.2210      # coupling to THIS channel [GeV^2]
+              Swave_G20:       0.2560      # coupling to the second channel
+              Swave_MA20:      0.493677
+              Swave_MB20:      0.497611
         IntResults: [1.3014e-16, 1.3012e-19, 9.9457e-15]
 
     #
@@ -2295,59 +2295,59 @@ HADRON_DECAYS:
       -321,221,12,-11:
         BR: [0.0006525885799, 0.0003262942899]
         Origin: "PDG2026 (8+-4)E-5 OUR AVERAGE, K- eta e+ nu"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           0           # forbidden, see the channel note
-                USE_D:           0
-                AMP_S:           0.3889      # calibrated so the generated width matches PDG
-                PHASE_S:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.460
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     1
-                Swave_KF0:       10321
-                Swave_TYPE0:     1           # 1 running BW, 3 complex pole
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.97349
+              USE_S:           1
+              USE_P:           0           # forbidden, see the channel note
+              USE_D:           0
+              AMP_S:           0.3889      # calibrated so the generated width matches PDG
+              PHASE_S:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.460
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.96835
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     1
+              Swave_KF0:       10321
+              Swave_TYPE0:     1           # 1 running BW, 3 complex pole
         IntResults: [1.2786e-16, 1.2783e-19, 5.2465e-15]
 
       -321,221,14,-13:
         BR: [0.0005498058786, 0.0002773501465]
         Origin: "INFERRED: e value 8E-5 scaled by the generated mu/e ratio 0.842"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           0           # forbidden, see the channel note
-                USE_D:           0
-                AMP_S:           0.3889      # calibrated so the generated width matches PDG
-                PHASE_S:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.460
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     1
-                Swave_KF0:       10321
-                Swave_TYPE0:     1           # 1 running BW, 3 complex pole
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.97349
+              USE_S:           1
+              USE_P:           0           # forbidden, see the channel note
+              USE_D:           0
+              AMP_S:           0.3889      # calibrated so the generated width matches PDG
+              PHASE_S:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.460
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.96835
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     1
+              Swave_KF0:       10321
+              Swave_TYPE0:     1           # 1 running BW, 3 complex pole
         IntResults: [1.0817e-16, 1.0811e-19, 4.1543e-15]
 
     411:
@@ -2360,45 +2360,45 @@ HADRON_DECAYS:
       -311,12,-11:
         BR: [0.2837732788, 0.002405098407]
         Origin: "PDG2026 (8.81+-0.07)E-2 OUR AVERAGE"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.97349
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.7383
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -2.28
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3170
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_P
+              Indices: [0, 1]
+              Vcq:             0.97349
+              Fplus_SHAPE:     12          # charm z-series, 2-parameter
+              Fplus_F0:        0.7383
+              Fplus_NCOEFF:    1
+              Fplus_r1:        -2.28
+              Fplus_NBLASCHKE: 1
+              Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
+              Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
+              Fzero_MPOLE:     2.3170
         IntResults: [5.6936e-14, 5.6903e-17, 5.2307e-13]
 
       -311,14,-13:
         BR: [0.2793507311, 0.003084450166]
         Origin: "PDG2026 (8.68+-0.10)E-2 OUR FIT"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.97349
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.7383
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -2.28
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3170
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_P
+              Indices: [0, 1]
+              Vcq:             0.97349
+              Fplus_SHAPE:     12          # charm z-series, 2-parameter
+              Fplus_F0:        0.7383
+              Fplus_NCOEFF:    1
+              Fplus_r1:        -2.28
+              Fplus_NBLASCHKE: 1
+              Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
+              Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
+              Fzero_MPOLE:     2.3170
         IntResults: [5.5719e-14, 5.5604e-17, 5.0526e-13]
 
     #
@@ -2434,269 +2434,269 @@ HADRON_DECAYS:
       -321,211,12,-11:
         BR: [0.1287870633, 0.00547345019]
         Origin: "PDG2026 (4.00+-0.17)E-2 OUR FIT, K- pi+ e+ nu TOTAL"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           1
-                USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
-                AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
-                PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.46
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     3           # LASS = background + resonance
-                Swave_KF0:       10311       # K*_0(1430)0
-                Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
-                Swave_LASS_A:    1.94        # scattering length [GeV^-1]
-                Swave_LASS_R:    1.76        # effective range [GeV^-1]
-                A1_0:            0.618
-                rV:              1.42
-                r2:              0.75
-                PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
-                V_SHAPE:         2
-                V_MPOLE:         2.11220
-                A1_SHAPE:        2
-                A1_MPOLE:        2.45950
-                A2_SHAPE:        2
-                A2_MPOLE:        2.45950
-                A0_SHAPE:        2
-                A0_MPOLE:        1.96835
-                Pwave_L:         1
-                Pwave_MODEL:     1           # single resonance
-                Pwave_KF0:       313         # K*(892)0
-                Pwave_TYPE0:     1           # running
-                A1T_0:           1.0
-                rVT:             1.0
-                r2T:             1.0
-                DWAVE_MASS:      1.4324
-                VT_SHAPE:        2
-                VT_MPOLE:        2.11220
-                A1T_SHAPE:       2
-                A1T_MPOLE:       2.45950
-                A2T_SHAPE:       2
-                A2T_MPOLE:       2.45950
-                A0T_SHAPE:       2
-                A0T_MPOLE:       1.96835
-                Dwave_L:         2
-                Dwave_MODEL:     1
-                Dwave_KF0:       315         # K*_2(1430)
-                Dwave_TYPE0:     1
-                AMP_D:           1.0
-                PHASE_D:         0.0
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.97349
+              USE_S:           1
+              USE_P:           1
+              USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
+              AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
+              PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
+              AMP_P:           1.0
+              PHASE_P:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.46
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.96835
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     3           # LASS = background + resonance
+              Swave_KF0:       10311       # K*_0(1430)0
+              Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
+              Swave_LASS_A:    1.94        # scattering length [GeV^-1]
+              Swave_LASS_R:    1.76        # effective range [GeV^-1]
+              A1_0:            0.618
+              rV:              1.42
+              r2:              0.75
+              PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
+              V_SHAPE:         2
+              V_MPOLE:         2.11220
+              A1_SHAPE:        2
+              A1_MPOLE:        2.45950
+              A2_SHAPE:        2
+              A2_MPOLE:        2.45950
+              A0_SHAPE:        2
+              A0_MPOLE:        1.96835
+              Pwave_L:         1
+              Pwave_MODEL:     1           # single resonance
+              Pwave_KF0:       313         # K*(892)0
+              Pwave_TYPE0:     1           # running
+              A1T_0:           1.0
+              rVT:             1.0
+              r2T:             1.0
+              DWAVE_MASS:      1.4324
+              VT_SHAPE:        2
+              VT_MPOLE:        2.11220
+              A1T_SHAPE:       2
+              A1T_MPOLE:       2.45950
+              A2T_SHAPE:       2
+              A2T_MPOLE:       2.45950
+              A0T_SHAPE:       2
+              A0T_MPOLE:       1.96835
+              Dwave_L:         2
+              Dwave_MODEL:     1
+              Dwave_KF0:       315         # K*_2(1430)
+              Dwave_TYPE0:     1
+              AMP_D:           1.0
+              PHASE_D:         0.0
         IntResults: [2.2112e-14, 2.2108e-17, 2.4802e-12]
 
       -321,211,14,-13:
         BR: [0.1165522923, 0.01062493272]
         Origin: "PDG2026 (3.62+-0.33)E-2 OUR AVERAGE, K- pi+ mu+ nu TOTAL"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           1
-                USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
-                AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
-                PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.46
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     3           # LASS = background + resonance
-                Swave_KF0:       10311       # K*_0(1430)0
-                Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
-                Swave_LASS_A:    1.94        # scattering length [GeV^-1]
-                Swave_LASS_R:    1.76        # effective range [GeV^-1]
-                A1_0:            0.618
-                rV:              1.42
-                r2:              0.75
-                PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
-                V_SHAPE:         2
-                V_MPOLE:         2.11220
-                A1_SHAPE:        2
-                A1_MPOLE:        2.45950
-                A2_SHAPE:        2
-                A2_MPOLE:        2.45950
-                A0_SHAPE:        2
-                A0_MPOLE:        1.96835
-                Pwave_L:         1
-                Pwave_MODEL:     1           # single resonance
-                Pwave_KF0:       313         # K*(892)0
-                Pwave_TYPE0:     1           # running
-                A1T_0:           1.0
-                rVT:             1.0
-                r2T:             1.0
-                DWAVE_MASS:      1.4324
-                VT_SHAPE:        2
-                VT_MPOLE:        2.11220
-                A1T_SHAPE:       2
-                A1T_MPOLE:       2.45950
-                A2T_SHAPE:       2
-                A2T_MPOLE:       2.45950
-                A0T_SHAPE:       2
-                A0T_MPOLE:       1.96835
-                Dwave_L:         2
-                Dwave_MODEL:     1
-                Dwave_KF0:       315         # K*_2(1430)
-                Dwave_TYPE0:     1
-                AMP_D:           1.0
-                PHASE_D:         0.0
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.97349
+              USE_S:           1
+              USE_P:           1
+              USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
+              AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
+              PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
+              AMP_P:           1.0
+              PHASE_P:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.46
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.96835
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     3           # LASS = background + resonance
+              Swave_KF0:       10311       # K*_0(1430)0
+              Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
+              Swave_LASS_A:    1.94        # scattering length [GeV^-1]
+              Swave_LASS_R:    1.76        # effective range [GeV^-1]
+              A1_0:            0.618
+              rV:              1.42
+              r2:              0.75
+              PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
+              V_SHAPE:         2
+              V_MPOLE:         2.11220
+              A1_SHAPE:        2
+              A1_MPOLE:        2.45950
+              A2_SHAPE:        2
+              A2_MPOLE:        2.45950
+              A0_SHAPE:        2
+              A0_MPOLE:        1.96835
+              Pwave_L:         1
+              Pwave_MODEL:     1           # single resonance
+              Pwave_KF0:       313         # K*(892)0
+              Pwave_TYPE0:     1           # running
+              A1T_0:           1.0
+              rVT:             1.0
+              r2T:             1.0
+              DWAVE_MASS:      1.4324
+              VT_SHAPE:        2
+              VT_MPOLE:        2.11220
+              A1T_SHAPE:       2
+              A1T_MPOLE:       2.45950
+              A2T_SHAPE:       2
+              A2T_MPOLE:       2.45950
+              A0T_SHAPE:       2
+              A0T_MPOLE:       1.96835
+              Dwave_L:         2
+              Dwave_MODEL:     1
+              Dwave_KF0:       315         # K*_2(1430)
+              Dwave_TYPE0:     1
+              AMP_D:           1.0
+              PHASE_D:         0.0
         IntResults: [2.0881e-14, 2.088e-17, 2.2914e-12]
 
       -311,111,12,-11:
         BR: [0.06072310034, 0.001030296506]
         Origin: "PDG2026 2x(9.43+-0.16)E-3 (K0S pi0 -> K0bar pi0), TOTAL"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           1
-                USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
-                AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
-                PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.46
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     3           # LASS = background + resonance
-                Swave_KF0:       10311       # K*_0(1430)0
-                Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
-                Swave_LASS_A:    1.94        # scattering length [GeV^-1]
-                Swave_LASS_R:    1.76        # effective range [GeV^-1]
-                A1_0:            0.618
-                rV:              1.42
-                r2:              0.75
-                PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
-                V_SHAPE:         2
-                V_MPOLE:         2.11220
-                A1_SHAPE:        2
-                A1_MPOLE:        2.45950
-                A2_SHAPE:        2
-                A2_MPOLE:        2.45950
-                A0_SHAPE:        2
-                A0_MPOLE:        1.96835
-                Pwave_L:         1
-                Pwave_MODEL:     1           # single resonance
-                Pwave_KF0:       313         # K*(892)0
-                Pwave_TYPE0:     1           # running
-                A1T_0:           1.0
-                rVT:             1.0
-                r2T:             1.0
-                DWAVE_MASS:      1.4324
-                VT_SHAPE:        2
-                VT_MPOLE:        2.11220
-                A1T_SHAPE:       2
-                A1T_MPOLE:       2.45950
-                A2T_SHAPE:       2
-                A2T_MPOLE:       2.45950
-                A0T_SHAPE:       2
-                A0T_MPOLE:       1.96835
-                Dwave_L:         2
-                Dwave_MODEL:     1
-                Dwave_KF0:       315         # K*_2(1430)
-                Dwave_TYPE0:     1
-                AMP_D:           1.0
-                PHASE_D:         0.0
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.97349
+              USE_S:           1
+              USE_P:           1
+              USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
+              AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
+              PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
+              AMP_P:           1.0
+              PHASE_P:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.46
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.96835
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     3           # LASS = background + resonance
+              Swave_KF0:       10311       # K*_0(1430)0
+              Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
+              Swave_LASS_A:    1.94        # scattering length [GeV^-1]
+              Swave_LASS_R:    1.76        # effective range [GeV^-1]
+              A1_0:            0.618
+              rV:              1.42
+              r2:              0.75
+              PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
+              V_SHAPE:         2
+              V_MPOLE:         2.11220
+              A1_SHAPE:        2
+              A1_MPOLE:        2.45950
+              A2_SHAPE:        2
+              A2_MPOLE:        2.45950
+              A0_SHAPE:        2
+              A0_MPOLE:        1.96835
+              Pwave_L:         1
+              Pwave_MODEL:     1           # single resonance
+              Pwave_KF0:       313         # K*(892)0
+              Pwave_TYPE0:     1           # running
+              A1T_0:           1.0
+              rVT:             1.0
+              r2T:             1.0
+              DWAVE_MASS:      1.4324
+              VT_SHAPE:        2
+              VT_MPOLE:        2.11220
+              A1T_SHAPE:       2
+              A1T_MPOLE:       2.45950
+              A2T_SHAPE:       2
+              A2T_MPOLE:       2.45950
+              A0T_SHAPE:       2
+              A0T_MPOLE:       1.96835
+              Dwave_L:         2
+              Dwave_MODEL:     1
+              Dwave_KF0:       315         # K*_2(1430)
+              Dwave_TYPE0:     1
+              AMP_D:           1.0
+              PHASE_D:         0.0
         IntResults: [1.1066e-14, 1.1065e-17, 1.2484e-12]
 
       -311,111,14,-13:
         BR: [0.05769660435, 0.001223477101]
         Origin: "PDG2026 2x(8.96+-0.19)E-3 (K0S pi0 -> K0bar pi0), TOTAL"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           1
-                USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
-                AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
-                PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.46
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     3           # LASS = background + resonance
-                Swave_KF0:       10311       # K*_0(1430)0
-                Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
-                Swave_LASS_A:    1.94        # scattering length [GeV^-1]
-                Swave_LASS_R:    1.76        # effective range [GeV^-1]
-                A1_0:            0.618
-                rV:              1.42
-                r2:              0.75
-                PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
-                V_SHAPE:         2
-                V_MPOLE:         2.11220
-                A1_SHAPE:        2
-                A1_MPOLE:        2.45950
-                A2_SHAPE:        2
-                A2_MPOLE:        2.45950
-                A0_SHAPE:        2
-                A0_MPOLE:        1.96835
-                Pwave_L:         1
-                Pwave_MODEL:     1           # single resonance
-                Pwave_KF0:       313         # K*(892)0
-                Pwave_TYPE0:     1           # running
-                A1T_0:           1.0
-                rVT:             1.0
-                r2T:             1.0
-                DWAVE_MASS:      1.4324
-                VT_SHAPE:        2
-                VT_MPOLE:        2.11220
-                A1T_SHAPE:       2
-                A1T_MPOLE:       2.45950
-                A2T_SHAPE:       2
-                A2T_MPOLE:       2.45950
-                A0T_SHAPE:       2
-                A0T_MPOLE:       1.96835
-                Dwave_L:         2
-                Dwave_MODEL:     1
-                Dwave_KF0:       315         # K*_2(1430)
-                Dwave_TYPE0:     1
-                AMP_D:           1.0
-                PHASE_D:         0.0
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.97349
+              USE_S:           1
+              USE_P:           1
+              USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
+              AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
+              PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
+              AMP_P:           1.0
+              PHASE_P:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.46
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.96835
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     3           # LASS = background + resonance
+              Swave_KF0:       10311       # K*_0(1430)0
+              Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
+              Swave_LASS_A:    1.94        # scattering length [GeV^-1]
+              Swave_LASS_R:    1.76        # effective range [GeV^-1]
+              A1_0:            0.618
+              rV:              1.42
+              r2:              0.75
+              PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
+              V_SHAPE:         2
+              V_MPOLE:         2.11220
+              A1_SHAPE:        2
+              A1_MPOLE:        2.45950
+              A2_SHAPE:        2
+              A2_MPOLE:        2.45950
+              A0_SHAPE:        2
+              A0_MPOLE:        1.96835
+              Pwave_L:         1
+              Pwave_MODEL:     1           # single resonance
+              Pwave_KF0:       313         # K*(892)0
+              Pwave_TYPE0:     1           # running
+              A1T_0:           1.0
+              rVT:             1.0
+              r2T:             1.0
+              DWAVE_MASS:      1.4324
+              VT_SHAPE:        2
+              VT_MPOLE:        2.11220
+              A1T_SHAPE:       2
+              A1T_MPOLE:       2.45950
+              A2T_SHAPE:       2
+              A2T_MPOLE:       2.45950
+              A0T_SHAPE:       2
+              A0T_MPOLE:       1.96835
+              Dwave_L:         2
+              Dwave_MODEL:     1
+              Dwave_KF0:       315         # K*_2(1430)
+              Dwave_TYPE0:     1
+              AMP_D:           1.0
+              PHASE_D:         0.0
         IntResults: [1.0473e-14, 1.0472e-17, 1.1582e-12]
 
     #
@@ -2706,53 +2706,53 @@ HADRON_DECAYS:
       -10313,12,-11:
         BR: [0.008091980957, 0.0005537843721]
         Origin: "PDG2026 (1.23+-0.08)E-3 OUR AVERAGE [/0.4886 daughter chain]"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_A
-                Indices: [0, 1]
-                Vcq:             0.97349
-                V1_0:            1.741       # absolute normalisation not measured; tuned so
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_A
+              Indices: [0, 1]
+              Vcq:             0.97349
+              V1_0:            1.741       # absolute normalisation not measured; tuned so
 #                             the generated width matches PDG
-                rA:              -0.112      # A(0)/V1(0),  BESIII arXiv:2503.02196
-                rV2:             -0.043      # V2(0)/V1(0), same fit (called r_V there)
-                A_SHAPE:         2
-                A_MPOLE:         2.5         # fixed in that fit
-                V1_SHAPE:        2
-                V1_MPOLE:        2.1         # fixed in that fit
-                V2_SHAPE:        2
-                V2_MPOLE:        2.1
-                V0_SHAPE:        2           # SHAPE only - V0(0) from Eq.(V0constraint)
-                V0_MPOLE:        2.317
+              rA:              -0.112      # A(0)/V1(0),  BESIII arXiv:2503.02196
+              rV2:             -0.043      # V2(0)/V1(0), same fit (called r_V there)
+              A_SHAPE:         2
+              A_MPOLE:         2.5         # fixed in that fit
+              V1_SHAPE:        2
+              V1_MPOLE:        2.1         # fixed in that fit
+              V2_SHAPE:        2
+              V2_MPOLE:        2.1
+              V0_SHAPE:        2           # SHAPE only - V0(0) from Eq.(V0constraint)
+              V0_MPOLE:        2.317
         IntResults: [1.6067e-15, 1.6058e-18, 1.5538e-14]
 
       -10313,14,-13:
         BR: [0.007195816177, 0.0008081388221]
         Origin: "PDG2026 (1.09+0.12-0.16)E-3 OUR AVERAGE [/0.4886 daughter chain]"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_A
-                Indices: [0, 1]
-                Vcq:             0.97349
-                V1_0:            1.741       # absolute normalisation not measured; tuned so
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_A
+              Indices: [0, 1]
+              Vcq:             0.97349
+              V1_0:            1.741       # absolute normalisation not measured; tuned so
 #                             the generated width matches PDG
-                rA:              -0.112      # A(0)/V1(0),  BESIII arXiv:2503.02196
-                rV2:             -0.043      # V2(0)/V1(0), same fit (called r_V there)
-                A_SHAPE:         2
-                A_MPOLE:         2.5         # fixed in that fit
-                V1_SHAPE:        2
-                V1_MPOLE:        2.1         # fixed in that fit
-                V2_SHAPE:        2
-                V2_MPOLE:        2.1
-                V0_SHAPE:        2           # SHAPE only - V0(0) from Eq.(V0constraint)
-                V0_MPOLE:        2.317
+              rA:              -0.112      # A(0)/V1(0),  BESIII arXiv:2503.02196
+              rV2:             -0.043      # V2(0)/V1(0), same fit (called r_V there)
+              A_SHAPE:         2
+              A_MPOLE:         2.5         # fixed in that fit
+              V1_SHAPE:        2
+              V1_MPOLE:        2.1         # fixed in that fit
+              V2_SHAPE:        2
+              V2_MPOLE:        2.1
+              V0_SHAPE:        2           # SHAPE only - V0(0) from Eq.(V0constraint)
+              V0_MPOLE:        2.317
         IntResults: [1.3606e-15, 1.3581e-18, 1.3812e-14]
 
     #
@@ -2766,47 +2766,47 @@ HADRON_DECAYS:
       111,12,-11:
         BR: [0.01196995261, 0.0005505646955]
         Origin: "PDG2026 (3.72+-0.17)E-3 OUR AVERAGE"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.22486
-                ISOSPIN:         0.70710678    # explicit 1/sqrt(2), see the isospin note above
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.6220
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -2.01
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3000
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_P
+              Indices: [0, 1]
+              Vcq:             0.22486
+              ISOSPIN:         0.70710678    # explicit 1/sqrt(2), see the isospin note above
+              Fplus_SHAPE:     12          # charm z-series, 2-parameter
+              Fplus_F0:        0.6220
+              Fplus_NCOEFF:    1
+              Fplus_r1:        -2.01
+              Fplus_NBLASCHKE: 1
+              Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
+              Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
+              Fzero_MPOLE:     2.3000
         IntResults: [2.2877e-15, 2.2769e-18, 1.4192e-14]
 
       111,14,-13:
         BR: [0.01126886804, 0.0004797318107]
         Origin: "PDG2026 (3.50+-0.15)E-3 OUR AVERAGE"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.22486
-                ISOSPIN:         0.70710678    # explicit 1/sqrt(2), see the isospin note above
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.6220
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -2.01
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3000
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_P
+              Indices: [0, 1]
+              Vcq:             0.22486
+              ISOSPIN:         0.70710678    # explicit 1/sqrt(2), see the isospin note above
+              Fplus_SHAPE:     12          # charm z-series, 2-parameter
+              Fplus_F0:        0.6220
+              Fplus_NCOEFF:    1
+              Fplus_r1:        -2.01
+              Fplus_NBLASCHKE: 1
+              Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
+              Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
+              Fzero_MPOLE:     2.3000
         IntResults: [2.2569e-15, 2.2485e-18, 1.3934e-14]
 
     #
@@ -2839,167 +2839,167 @@ HADRON_DECAYS:
       -211,211,12,-11:
         BR: [0.007888207626, 0.0002575741266]
         Origin: "PDG2026 (2.45+-0.08)E-3 OUR FIT, pi+ pi- e+ nu TOTAL"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.22486
-                USE_S:           1
-                USE_P:           1
-                USE_D:           0           # f_2(1270) not measured in this mode
-                AMP_S:           0.633       # CALIBRATED against the run, see note
-                PHASE_S:         0.0         # CALIBRATE: the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.42
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.86966
-                TIE_MASS:        0.5
-                Swave_L:         0
-                Swave_MODEL:     1           # single resonance
-                Swave_KF0:       9000221     # f_0(500), for the diagnostic label only
-                Swave_TYPE0:     3           # COMPLEX POLE, not a Breit-Wigner
-                Swave_MPOLE0:    0.449       # PDG f_0(500) T-matrix pole, Re sqrt(s_p)
-                Swave_GPOLE0:    0.550       # full pole width, 2 x Im sqrt(s_p)
-                A1_0:            0.522       # rescaled from the quasi-2-body fit, see note
-                rV:              1.548
-                r2:              0.823
-                PWAVE_MASS:      0.7755      # normalise A1, V, A2 at the rho pole
-                V_SHAPE:         2
-                V_MPOLE:         2.01026
-                A1_SHAPE:        2
-                A1_MPOLE:        2.42210
-                A2_SHAPE:        2
-                A2_MPOLE:        2.42210
-                A0_SHAPE:        2
-                A0_MPOLE:        1.86966
-                Pwave_L:         1
-                Pwave_MODEL:     1
-                Pwave_KF0:       113         # rho(770)0
-                Pwave_TYPE0:     2           # Gounaris-Sakurai, from Rho_Decays
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.22486
+              USE_S:           1
+              USE_P:           1
+              USE_D:           0           # f_2(1270) not measured in this mode
+              AMP_S:           0.633       # CALIBRATED against the run, see note
+              PHASE_S:         0.0         # CALIBRATE: the S-P interference
+              AMP_P:           1.0
+              PHASE_P:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.42
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.86966
+              TIE_MASS:        0.5
+              Swave_L:         0
+              Swave_MODEL:     1           # single resonance
+              Swave_KF0:       9000221     # f_0(500), for the diagnostic label only
+              Swave_TYPE0:     3           # COMPLEX POLE, not a Breit-Wigner
+              Swave_MPOLE0:    0.449       # PDG f_0(500) T-matrix pole, Re sqrt(s_p)
+              Swave_GPOLE0:    0.550       # full pole width, 2 x Im sqrt(s_p)
+              A1_0:            0.522       # rescaled from the quasi-2-body fit, see note
+              rV:              1.548
+              r2:              0.823
+              PWAVE_MASS:      0.7755      # normalise A1, V, A2 at the rho pole
+              V_SHAPE:         2
+              V_MPOLE:         2.01026
+              A1_SHAPE:        2
+              A1_MPOLE:        2.42210
+              A2_SHAPE:        2
+              A2_MPOLE:        2.42210
+              A0_SHAPE:        2
+              A0_MPOLE:        1.86966
+              Pwave_L:         1
+              Pwave_MODEL:     1
+              Pwave_KF0:       113         # rho(770)0
+              Pwave_TYPE0:     2           # Gounaris-Sakurai, from Rho_Decays
         IntResults: [1.5675e-15, 1.5668e-18, 7.7863e-14]
 
       -211,211,14,-13:
         BR: [0.007598436734, 0.0007083288481]
         Origin: "PDG2026: no pi+ pi- mu nu total is quoted; this is rho0 (1.64+-0.16)E-3 plus f_0(500) (7.2+-1.5)E-4, so it double counts whatever interference there is - the e-mode components overshoot their total by 1.6 percent"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.22486
-                USE_S:           1
-                USE_P:           1
-                USE_D:           0           # f_2(1270) not measured in this mode
-                AMP_S:           0.633       # CALIBRATED against the run, see note
-                PHASE_S:         0.0         # CALIBRATE: the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.42
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.86966
-                TIE_MASS:        0.5
-                Swave_L:         0
-                Swave_MODEL:     1           # single resonance
-                Swave_KF0:       9000221     # f_0(500), for the diagnostic label only
-                Swave_TYPE0:     3           # COMPLEX POLE, not a Breit-Wigner
-                Swave_MPOLE0:    0.449       # PDG f_0(500) T-matrix pole, Re sqrt(s_p)
-                Swave_GPOLE0:    0.550       # full pole width, 2 x Im sqrt(s_p)
-                A1_0:            0.522       # rescaled from the quasi-2-body fit, see note
-                rV:              1.548
-                r2:              0.823
-                PWAVE_MASS:      0.7755      # normalise A1, V, A2 at the rho pole
-                V_SHAPE:         2
-                V_MPOLE:         2.01026
-                A1_SHAPE:        2
-                A1_MPOLE:        2.42210
-                A2_SHAPE:        2
-                A2_MPOLE:        2.42210
-                A0_SHAPE:        2
-                A0_MPOLE:        1.86966
-                Pwave_L:         1
-                Pwave_MODEL:     1
-                Pwave_KF0:       113         # rho(770)0
-                Pwave_TYPE0:     2           # Gounaris-Sakurai, from Rho_Decays
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.22486
+              USE_S:           1
+              USE_P:           1
+              USE_D:           0           # f_2(1270) not measured in this mode
+              AMP_S:           0.633       # CALIBRATED against the run, see note
+              PHASE_S:         0.0         # CALIBRATE: the S-P interference
+              AMP_P:           1.0
+              PHASE_P:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.42
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.86966
+              TIE_MASS:        0.5
+              Swave_L:         0
+              Swave_MODEL:     1           # single resonance
+              Swave_KF0:       9000221     # f_0(500), for the diagnostic label only
+              Swave_TYPE0:     3           # COMPLEX POLE, not a Breit-Wigner
+              Swave_MPOLE0:    0.449       # PDG f_0(500) T-matrix pole, Re sqrt(s_p)
+              Swave_GPOLE0:    0.550       # full pole width, 2 x Im sqrt(s_p)
+              A1_0:            0.522       # rescaled from the quasi-2-body fit, see note
+              rV:              1.548
+              r2:              0.823
+              PWAVE_MASS:      0.7755      # normalise A1, V, A2 at the rho pole
+              V_SHAPE:         2
+              V_MPOLE:         2.01026
+              A1_SHAPE:        2
+              A1_MPOLE:        2.42210
+              A2_SHAPE:        2
+              A2_MPOLE:        2.42210
+              A0_SHAPE:        2
+              A0_MPOLE:        1.86966
+              Pwave_L:         1
+              Pwave_MODEL:     1
+              Pwave_KF0:       113         # rho(770)0
+              Pwave_TYPE0:     2           # Gounaris-Sakurai, from Rho_Decays
         IntResults: [1.5138e-15, 1.5132e-18, 7.3157e-14]
 
       221,111,12,-11:
         BR: [0.000547345019, 0.0002575741266]
         Origin: "PDG2026 (1.7+0.8-0.7)E-4, a_0(980)0 -> eta pi0"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.22486
-                USE_S:           1
-                USE_P:           0           # forbidden, see the channel note
-                USE_D:           0
-                AMP_S:           0.5204      # calibrated so the generated width matches PDG
-                PHASE_S:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.420
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.86966
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     1
-                Swave_KF0:       9000111
-                Swave_TYPE0:     4           # 1 running BW, 3 complex pole
-                Swave_MFLAT0:    0.9990      # Flatte mass - NOT the PDG mass;
-                Swave_G10:       0.2210      # coupling to THIS channel [GeV^2]
-                Swave_G20:       0.2560      # coupling to the second channel
-                Swave_MA20:      0.493677
-                Swave_MB20:      0.493677
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.22486
+              USE_S:           1
+              USE_P:           0           # forbidden, see the channel note
+              USE_D:           0
+              AMP_S:           0.5204      # calibrated so the generated width matches PDG
+              PHASE_S:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.420
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.86966
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     1
+              Swave_KF0:       9000111
+              Swave_TYPE0:     4           # 1 running BW, 3 complex pole
+              Swave_MFLAT0:    0.9990      # Flatte mass - NOT the PDG mass;
+              Swave_G10:       0.2210      # coupling to THIS channel [GeV^2]
+              Swave_G20:       0.2560      # coupling to the second channel
+              Swave_MA20:      0.493677
+              Swave_MB20:      0.493677
         IntResults: [7.3239e-17, 7.3227e-20, 5.7503e-15]
 
       221,111,14,-13:
         BR: [0.0005183679297, 0.0002446954202]
         Origin: "INFERRED: e value 1.7E-4 scaled by the generated mu/e ratio 0.947"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.22486
-                USE_S:           1
-                USE_P:           0           # forbidden, see the channel note
-                USE_D:           0
-                AMP_S:           0.5204      # calibrated so the generated width matches PDG
-                PHASE_S:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.420
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.86966
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     1
-                Swave_KF0:       9000111
-                Swave_TYPE0:     4           # 1 running BW, 3 complex pole
-                Swave_MFLAT0:    0.9990      # Flatte mass - NOT the PDG mass;
-                Swave_G10:       0.2210      # coupling to THIS channel [GeV^2]
-                Swave_G20:       0.2560      # coupling to the second channel
-                Swave_MA20:      0.493677
-                Swave_MB20:      0.493677
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.22486
+              USE_S:           1
+              USE_P:           0           # forbidden, see the channel note
+              USE_D:           0
+              AMP_S:           0.5204      # calibrated so the generated width matches PDG
+              PHASE_S:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.420
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.86966
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     1
+              Swave_KF0:       9000111
+              Swave_TYPE0:     4           # 1 running BW, 3 complex pole
+              Swave_MFLAT0:    0.9990      # Flatte mass - NOT the PDG mass;
+              Swave_G10:       0.2210      # coupling to THIS channel [GeV^2]
+              Swave_G20:       0.2560      # coupling to the second channel
+              Swave_MA20:      0.493677
+              Swave_MB20:      0.493677
         IntResults: [6.9211e-17, 6.9195e-20, 5.3428e-15]
 
     #
@@ -3018,59 +3018,59 @@ HADRON_DECAYS:
       -311,221,12,-11:
         BR: [0.000647154993, 0.0003219676582]
         Origin: "INFERRED, not measured: isospin gives B(D+ -> K0bar eta)/B(D0 -> K- eta) = tau(D+)/tau(D0) = 2.518, and D0 -> K- eta is (8+-4)E-5. PDG bounds D+ -> K0S eta < 2.0E-4, i.e. K0bar eta < 4.0E-4, so this sits just under the limit"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           0           # forbidden, see the channel note
-                USE_D:           0
-                AMP_S:           0.3889      # calibrated so the generated width matches PDG
-                PHASE_S:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.460
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     1
-                Swave_KF0:       10311
-                Swave_TYPE0:     1           # 1 running BW, 3 complex pole
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.97349
+              USE_S:           1
+              USE_P:           0           # forbidden, see the channel note
+              USE_D:           0
+              AMP_S:           0.3889      # calibrated so the generated width matches PDG
+              PHASE_S:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.460
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.96835
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     1
+              Swave_KF0:       10311
+              Swave_TYPE0:     1           # 1 running BW, 3 complex pole
         IntResults: [1.3198e-16, 1.3196e-19, 5.3714e-15]
 
       -311,221,14,-13:
         BR: [0.000546379116, 0.0002736725095]
         Origin: "INFERRED twice over: from D0 -> K- eta by isospin, then scaled by the generated mu/e ratio 0.844"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           0           # forbidden, see the channel note
-                USE_D:           0
-                AMP_S:           0.3889      # calibrated so the generated width matches PDG
-                PHASE_S:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.460
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     1
-                Swave_KF0:       10311
-                Swave_TYPE0:     1           # 1 running BW, 3 complex pole
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.97349
+              USE_S:           1
+              USE_P:           0           # forbidden, see the channel note
+              USE_D:           0
+              AMP_S:           0.3889      # calibrated so the generated width matches PDG
+              PHASE_S:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.460
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.96835
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     1
+              Swave_KF0:       10311
+              Swave_TYPE0:     1           # 1 running BW, 3 complex pole
         IntResults: [1.1153e-16, 1.1149e-19, 4.2578e-15]
 
     #
@@ -3092,31 +3092,31 @@ HADRON_DECAYS:
       14,-13:
         BR: [0.001294309986, 2.897708924e-05]
         Origin: "PDG2026 (4.02+-0.09)E-4 OUR AVERAGE, D+ -> mu+ nu"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [1, 2]
-              J2:
-                Type: VA_P_0
-                Indices: [0]
-                fP:              0.2067      # f_D [GeV]
-                Vxx:             0.22486
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [1, 2]
+            J2:
+              Type: VA_P_0
+              Indices: [0]
+              fP:              0.2067      # f_D [GeV]
+              Vxx:             0.22486
         IntResults: [2.3948e-16, 0, 8.9531e-16]
 
       16,-15:
         BR: [0.003187479816, 0.0003863611898]
         Origin: "PDG2026 (9.9+-1.2)E-4 OUR AVERAGE, D+ -> tau+ nu"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [1, 2]
-              J2:
-                Type: VA_P_0
-                Indices: [0]
-                fP:              0.2067
-                Vxx:             0.22486
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [1, 2]
+            J2:
+              Type: VA_P_0
+              Indices: [0]
+              fP:              0.2067
+              Vxx:             0.22486
         IntResults: [6.4032e-16, 0, 2.3939e-15]
 
     #
@@ -3129,53 +3129,53 @@ HADRON_DECAYS:
       223,12,-11:
         BR: [0.005450880257, 0.0003573841006]
         Origin: "PDG2026 (1.69+-0.11)E-3 OUR AVERAGE"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_V
-                Indices: [0, 1]
-                Vcq:             0.22486
-                ISOSPIN:         0.70710678    # explicit 1/sqrt(2), see the isospin note above
-                A1_0:            0.5382        # not published; tuned so the generated width matches PDG
-                rV:              1.24
-                r2:              1.06
-                V_SHAPE:         2
-                V_MPOLE:         2.01000
-                A1_SHAPE:        2
-                A1_MPOLE:        2.42000
-                A2_SHAPE:        2
-                A2_MPOLE:        2.42000
-                A0_SHAPE:        2           # SHAPE only - A0(0) is fixed by Eq.(A0constraint)
-                A0_MPOLE:        1.86966
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_V
+              Indices: [0, 1]
+              Vcq:             0.22486
+              ISOSPIN:         0.70710678    # explicit 1/sqrt(2), see the isospin note above
+              A1_0:            0.5382        # not published; tuned so the generated width matches PDG
+              rV:              1.24
+              r2:              1.06
+              V_SHAPE:         2
+              V_MPOLE:         2.01000
+              A1_SHAPE:        2
+              A1_MPOLE:        2.42000
+              A2_SHAPE:        2
+              A2_MPOLE:        2.42000
+              A0_SHAPE:        2           # SHAPE only - A0(0) is fixed by Eq.(A0constraint)
+              A0_MPOLE:        1.86966
         IntResults: [1.0783e-15, 1.0736e-18, 6.9854e-15]
 
       223,14,-13:
         BR: [0.005702304801, 0.0006793517588]
         Origin: "PDG2026 (1.77+-0.21)E-3 OUR AVERAGE"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_V
-                Indices: [0, 1]
-                Vcq:             0.22486
-                ISOSPIN:         0.70710678    # explicit 1/sqrt(2), see the isospin note above
-                A1_0:            0.5382
-                rV:              1.24
-                r2:              1.06
-                V_SHAPE:         2
-                V_MPOLE:         2.01000
-                A1_SHAPE:        2
-                A1_MPOLE:        2.42000
-                A2_SHAPE:        2
-                A2_MPOLE:        2.42000
-                A0_SHAPE:        2           # SHAPE only - A0(0) is fixed by Eq.(A0constraint)
-                A0_MPOLE:        1.86966
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_V
+              Indices: [0, 1]
+              Vcq:             0.22486
+              ISOSPIN:         0.70710678    # explicit 1/sqrt(2), see the isospin note above
+              A1_0:            0.5382
+              rV:              1.24
+              r2:              1.06
+              V_SHAPE:         2
+              V_MPOLE:         2.01000
+              A1_SHAPE:        2
+              A1_MPOLE:        2.42000
+              A2_SHAPE:        2
+              A2_MPOLE:        2.42000
+              A0_SHAPE:        2           # SHAPE only - A0(0) is fixed by Eq.(A0constraint)
+              A0_MPOLE:        1.86966
         IntResults: [1.0349e-15, 1.0335e-18, 6.4338e-15]
 
     #
@@ -3188,45 +3188,45 @@ HADRON_DECAYS:
       331,12,-11:
         BR: [0.0005912678469, 6.08518874e-05]
         Origin: "PDG2026 (1.84+-0.19)E-4 OUR AVERAGE"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.22486
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.2630
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -21.5
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3000
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_P
+              Indices: [0, 1]
+              Vcq:             0.22486
+              Fplus_SHAPE:     12          # charm z-series, 2-parameter
+              Fplus_F0:        0.2630
+              Fplus_NCOEFF:    1
+              Fplus_r1:        -21.5
+              Fplus_NBLASCHKE: 1
+              Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
+              Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
+              Fzero_MPOLE:     2.3000
         IntResults: [1.1714e-16, 1.1699e-19, 1.131e-15]
 
       331,14,-13:
         BR: [0.0006181779038, 9.369258854e-05]
         Origin: "PDG2026 (1.92+-0.29)E-4 OUR AVERAGE"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.22486
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.2630
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -21.5
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3000
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_P
+              Indices: [0, 1]
+              Vcq:             0.22486
+              Fplus_SHAPE:     12          # charm z-series, 2-parameter
+              Fplus_F0:        0.2630
+              Fplus_NCOEFF:    1
+              Fplus_r1:        -21.5
+              Fplus_NBLASCHKE: 1
+              Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
+              Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
+              Fzero_MPOLE:     2.3000
         IntResults: [1.105e-16, 1.1046e-19, 1.0717e-15]
 
     431:
@@ -3239,51 +3239,51 @@ HADRON_DECAYS:
       333,12,-11:
         BR: [0.1290250971, 0.006629846342]
         Origin: "PDG2026 (2.34+-0.12)E-2 OUR AVERAGE"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_V
-                Indices: [0, 1]
-                Vcq:             0.97349
-                A1_0:            0.607
-                rV:              1.849
-                r2:              0.763
-                V_SHAPE:         2
-                V_MPOLE:         2.10000
-                A1_SHAPE:        2
-                A1_MPOLE:        2.28000
-                A2_SHAPE:        2
-                A2_MPOLE:        2.28000
-                A0_SHAPE:        2           # SHAPE only - A0(0) is fixed by Eq.(A0constraint)
-                A0_MPOLE:        1.96835
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_V
+              Indices: [0, 1]
+              Vcq:             0.97349
+              A1_0:            0.607
+              rV:              1.849
+              r2:              0.763
+              V_SHAPE:         2
+              V_MPOLE:         2.10000
+              A1_SHAPE:        2
+              A1_MPOLE:        2.28000
+              A2_SHAPE:        2
+              A2_MPOLE:        2.28000
+              A0_SHAPE:        2           # SHAPE only - A0(0) is fixed by Eq.(A0constraint)
+              A0_MPOLE:        1.96835
         IntResults: [3.4398e-14, 3.424e-17, 2.2958e-13]
 
       333,14,-13:
         BR: [0.123572601, 0.006187856586]
         Origin: "PDG2026 (2.24+-0.11)E-2 OUR AVERAGE"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_V
-                Indices: [0, 1]
-                Vcq:             0.97349
-                A1_0:            0.607
-                rV:              1.849
-                r2:              0.763
-                V_SHAPE:         2
-                V_MPOLE:         2.10000
-                A1_SHAPE:        2
-                A1_MPOLE:        2.28000
-                A2_SHAPE:        2
-                A2_MPOLE:        2.28000
-                A0_SHAPE:        2           # SHAPE only - A0(0) is fixed by Eq.(A0constraint)
-                A0_MPOLE:        1.96835
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_V
+              Indices: [0, 1]
+              Vcq:             0.97349
+              A1_0:            0.607
+              rV:              1.849
+              r2:              0.763
+              V_SHAPE:         2
+              V_MPOLE:         2.10000
+              A1_SHAPE:        2
+              A1_MPOLE:        2.28000
+              A2_SHAPE:        2
+              A2_MPOLE:        2.28000
+              A0_SHAPE:        2           # SHAPE only - A0(0) is fixed by Eq.(A0constraint)
+              A0_MPOLE:        1.96835
         IntResults: [3.2459e-14, 3.2422e-17, 2.1125e-13]
 
     #
@@ -3294,45 +3294,45 @@ HADRON_DECAYS:
       221,12,-11:
         BR: [0.1254941515, 0.003110502909]
         Origin: "PDG2026 (2.27+-0.06)E-2 OUR AVERAGE"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.97349
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.4642
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -2.63
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3170
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_P
+              Indices: [0, 1]
+              Vcq:             0.97349
+              Fplus_SHAPE:     12          # charm z-series, 2-parameter
+              Fplus_F0:        0.4642
+              Fplus_NCOEFF:    1
+              Fplus_r1:        -2.63
+              Fplus_NBLASCHKE: 1
+              Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
+              Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
+              Fzero_MPOLE:     2.3170
         IntResults: [2.9402e-14, 2.9387e-17, 2.7239e-13]
 
       221,14,-13:
         BR: [0.1237179051, 0.003977907805]
         Origin: "PDG2026 (2.24+-0.07)E-2 OUR AVERAGE"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.97349
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.4642
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -2.63
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3170
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_P
+              Indices: [0, 1]
+              Vcq:             0.97349
+              Fplus_SHAPE:     12          # charm z-series, 2-parameter
+              Fplus_F0:        0.4642
+              Fplus_NCOEFF:    1
+              Fplus_r1:        -2.63
+              Fplus_NBLASCHKE: 1
+              Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
+              Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
+              Fzero_MPOLE:     2.3170
         IntResults: [2.8809e-14, 2.8792e-17, 2.6414e-13]
 
     #
@@ -3343,45 +3343,45 @@ HADRON_DECAYS:
       331,12,-11:
         BR: [0.04452505355, 0.002171274677]
         Origin: "PDG2026 (8.1+-0.4)E-3 OUR AVERAGE"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.97349
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.5400
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -6.3
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3170
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_P
+              Indices: [0, 1]
+              Vcq:             0.97349
+              Fplus_SHAPE:     12          # charm z-series, 2-parameter
+              Fplus_F0:        0.5400
+              Fplus_NCOEFF:    1
+              Fplus_r1:        -6.3
+              Fplus_NBLASCHKE: 1
+              Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
+              Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
+              Fzero_MPOLE:     2.3170
         IntResults: [1.068e-14, 1.0667e-17, 1.4277e-13]
 
       331,14,-13:
         BR: [0.04443571637, 0.003386746506]
         Origin: "PDG2026 (8.0+-0.6)E-3 OUR AVERAGE"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.97349
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.5400
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -6.3
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3170
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_P
+              Indices: [0, 1]
+              Vcq:             0.97349
+              Fplus_SHAPE:     12          # charm z-series, 2-parameter
+              Fplus_F0:        0.5400
+              Fplus_NCOEFF:    1
+              Fplus_r1:        -6.3
+              Fplus_NBLASCHKE: 1
+              Fplus_mR0:       2.11220     # lowest 1^- c-qbar pole; auto-skipped if above t_+
+              Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
+              Fzero_MPOLE:     2.3170
         IntResults: [1.0201e-14, 1.0191e-17, 1.3531e-13]
 
     #
@@ -3395,45 +3395,45 @@ HADRON_DECAYS:
       311,12,-11:
         BR: [0.01592654837, 0.001419892092]
         Origin: "PDG2026 (2.88+-0.26)E-3 OUR AVERAGE"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.22486
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.6230
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -4.000
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3000
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_P
+              Indices: [0, 1]
+              Vcq:             0.22486
+              Fplus_SHAPE:     12          # charm z-series, 2-parameter
+              Fplus_F0:        0.6230
+              Fplus_NCOEFF:    1
+              Fplus_r1:        -4.000
+              Fplus_NBLASCHKE: 1
+              Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
+              Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
+              Fzero_MPOLE:     2.3000
         IntResults: [3.8417e-15, 3.8316e-18, 2.9043e-14]
 
       311,14,-13:
         BR: [0.01592654837, 0.001419892092]
         Origin: "PDG2026 (2.88+-0.26)E-3 e-mode value reused, no PDG mu entry"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [2, 3]
-              J2:
-                Type: VA_P_P
-                Indices: [0, 1]
-                Vcq:             0.22486
-                Fplus_SHAPE:     12          # charm z-series, 2-parameter
-                Fplus_F0:        0.6230
-                Fplus_NCOEFF:    1
-                Fplus_r1:        -4.000
-                Fplus_NBLASCHKE: 1
-                Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
-                Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
-                Fzero_MPOLE:     2.3000
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [2, 3]
+            J2:
+              Type: VA_P_P
+              Indices: [0, 1]
+              Vcq:             0.22486
+              Fplus_SHAPE:     12          # charm z-series, 2-parameter
+              Fplus_F0:        0.6230
+              Fplus_NCOEFF:    1
+              Fplus_r1:        -4.000
+              Fplus_NBLASCHKE: 1
+              Fplus_mR0:       2.01026     # lowest 1^- c-qbar pole; auto-skipped if above t_+
+              Fzero_SHAPE:     2           # 0^+ pole shape; f0(0)=f+(0) imposed by the current
+              Fzero_MPOLE:     2.3000
         IntResults: [3.7718e-15, 3.7588e-18, 2.8386e-14]
 
     #
@@ -3455,31 +3455,31 @@ HADRON_DECAYS:
       14,-13:
         BR: [0.02966856238, 0.0006077359147]
         Origin: "PDG2026 (5.37+-0.11)E-3 OUR AVERAGE, Ds+ -> mu+ nu"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [1, 2]
-              J2:
-                Type: VA_P_0
-                Indices: [0]
-                fP:              0.260       # f_Ds [GeV]
-                Vxx:             0.97349
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [1, 2]
+            J2:
+              Type: VA_P_0
+              Indices: [0]
+              fP:              0.260       # f_Ds [GeV]
+              Vxx:             0.97349
         IntResults: [7.4834e-15, 0, 2.9462e-14]
 
       16,-15:
         BR: [0.2977905982, 0.004972384756]
         Origin: "PDG2026 (5.39+-0.09)E-2 OUR AVERAGE, Ds+ -> tau+ nu - the largest single mode in this block"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [1, 2]
-              J2:
-                Type: VA_P_0
-                Indices: [0]
-                fP:              0.260
-                Vxx:             0.97349
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [1, 2]
+            J2:
+              Type: VA_P_0
+              Indices: [0]
+              fP:              0.260
+              Vxx:             0.97349
         IntResults: [7.3856e-14, 0, 2.9077e-13]
 
     #
@@ -3505,269 +3505,269 @@ HADRON_DECAYS:
       321,-211,12,-11:
         BR: [0.008033163817, 0.0007734820732]
         Origin: "GUESSTIMATE: PDG measures only the K*(892)0 P wave, (2.05+-0.20)E-3. Total K pi = P/(1-0.06) with a 6 percent S-wave fraction carried over from the four measured D -> K pi modes, then split 2/3 by isospin"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.22486
-                USE_S:           1
-                USE_P:           1
-                USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
-                AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
-                PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.46
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.86966
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     3           # LASS = background + resonance
-                Swave_KF0:       10311       # K*_0(1430)0
-                Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
-                Swave_LASS_A:    1.94        # scattering length [GeV^-1]
-                Swave_LASS_R:    1.76        # effective range [GeV^-1]
-                A1_0:            0.56
-                rV:              1.63
-                r2:              0.60
-                PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
-                V_SHAPE:         2
-                V_MPOLE:         2.01026
-                A1_SHAPE:        2
-                A1_MPOLE:        2.42210
-                A2_SHAPE:        2
-                A2_MPOLE:        2.42210
-                A0_SHAPE:        2
-                A0_MPOLE:        1.86966
-                Pwave_L:         1
-                Pwave_MODEL:     1           # single resonance
-                Pwave_KF0:       313         # K*(892)0
-                Pwave_TYPE0:     1           # running
-                A1T_0:           1.0
-                rVT:             1.0
-                r2T:             1.0
-                DWAVE_MASS:      1.4324
-                VT_SHAPE:        2
-                VT_MPOLE:        2.01026
-                A1T_SHAPE:       2
-                A1T_MPOLE:       2.42210
-                A2T_SHAPE:       2
-                A2T_MPOLE:       2.42210
-                A0T_SHAPE:       2
-                A0T_MPOLE:       1.86966
-                Dwave_L:         2
-                Dwave_MODEL:     1
-                Dwave_KF0:       315         # K*_2(1430)
-                Dwave_TYPE0:     1
-                AMP_D:           1.0
-                PHASE_D:         0.0
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.22486
+              USE_S:           1
+              USE_P:           1
+              USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
+              AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
+              PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
+              AMP_P:           1.0
+              PHASE_P:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.46
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.86966
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     3           # LASS = background + resonance
+              Swave_KF0:       10311       # K*_0(1430)0
+              Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
+              Swave_LASS_A:    1.94        # scattering length [GeV^-1]
+              Swave_LASS_R:    1.76        # effective range [GeV^-1]
+              A1_0:            0.56
+              rV:              1.63
+              r2:              0.60
+              PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
+              V_SHAPE:         2
+              V_MPOLE:         2.01026
+              A1_SHAPE:        2
+              A1_MPOLE:        2.42210
+              A2_SHAPE:        2
+              A2_MPOLE:        2.42210
+              A0_SHAPE:        2
+              A0_MPOLE:        1.86966
+              Pwave_L:         1
+              Pwave_MODEL:     1           # single resonance
+              Pwave_KF0:       313         # K*(892)0
+              Pwave_TYPE0:     1           # running
+              A1T_0:           1.0
+              rVT:             1.0
+              r2T:             1.0
+              DWAVE_MASS:      1.4324
+              VT_SHAPE:        2
+              VT_MPOLE:        2.01026
+              A1T_SHAPE:       2
+              A1T_MPOLE:       2.42210
+              A2T_SHAPE:       2
+              A2T_MPOLE:       2.42210
+              A0T_SHAPE:       2
+              A0T_MPOLE:       1.86966
+              Dwave_L:         2
+              Dwave_MODEL:     1
+              Dwave_KF0:       315         # K*_2(1430)
+              Dwave_TYPE0:     1
+              AMP_D:           1.0
+              PHASE_D:         0.0
         IntResults: [1.7041e-15, 1.704e-18, 2.1319e-13]
 
       321,-211,14,-13:
         BR: [0.007690621756, 0.0007734820732]
         Origin: "GUESSTIMATE as the e mode, scaled by the generated mu/e ratio 0.958"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.22486
-                USE_S:           1
-                USE_P:           1
-                USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
-                AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
-                PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.46
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.86966
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     3           # LASS = background + resonance
-                Swave_KF0:       10311       # K*_0(1430)0
-                Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
-                Swave_LASS_A:    1.94        # scattering length [GeV^-1]
-                Swave_LASS_R:    1.76        # effective range [GeV^-1]
-                A1_0:            0.56
-                rV:              1.63
-                r2:              0.60
-                PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
-                V_SHAPE:         2
-                V_MPOLE:         2.01026
-                A1_SHAPE:        2
-                A1_MPOLE:        2.42210
-                A2_SHAPE:        2
-                A2_MPOLE:        2.42210
-                A0_SHAPE:        2
-                A0_MPOLE:        1.86966
-                Pwave_L:         1
-                Pwave_MODEL:     1           # single resonance
-                Pwave_KF0:       313         # K*(892)0
-                Pwave_TYPE0:     1           # running
-                A1T_0:           1.0
-                rVT:             1.0
-                r2T:             1.0
-                DWAVE_MASS:      1.4324
-                VT_SHAPE:        2
-                VT_MPOLE:        2.01026
-                A1T_SHAPE:       2
-                A1T_MPOLE:       2.42210
-                A2T_SHAPE:       2
-                A2T_MPOLE:       2.42210
-                A0T_SHAPE:       2
-                A0T_MPOLE:       1.86966
-                Dwave_L:         2
-                Dwave_MODEL:     1
-                Dwave_KF0:       315         # K*_2(1430)
-                Dwave_TYPE0:     1
-                AMP_D:           1.0
-                PHASE_D:         0.0
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.22486
+              USE_S:           1
+              USE_P:           1
+              USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
+              AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
+              PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
+              AMP_P:           1.0
+              PHASE_P:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.46
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.86966
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     3           # LASS = background + resonance
+              Swave_KF0:       10311       # K*_0(1430)0
+              Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
+              Swave_LASS_A:    1.94        # scattering length [GeV^-1]
+              Swave_LASS_R:    1.76        # effective range [GeV^-1]
+              A1_0:            0.56
+              rV:              1.63
+              r2:              0.60
+              PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
+              V_SHAPE:         2
+              V_MPOLE:         2.01026
+              A1_SHAPE:        2
+              A1_MPOLE:        2.42210
+              A2_SHAPE:        2
+              A2_MPOLE:        2.42210
+              A0_SHAPE:        2
+              A0_MPOLE:        1.86966
+              Pwave_L:         1
+              Pwave_MODEL:     1           # single resonance
+              Pwave_KF0:       313         # K*(892)0
+              Pwave_TYPE0:     1           # running
+              A1T_0:           1.0
+              rVT:             1.0
+              r2T:             1.0
+              DWAVE_MASS:      1.4324
+              VT_SHAPE:        2
+              VT_MPOLE:        2.01026
+              A1T_SHAPE:       2
+              A1T_MPOLE:       2.42210
+              A2T_SHAPE:       2
+              A2T_MPOLE:       2.42210
+              A0T_SHAPE:       2
+              A0T_MPOLE:       1.86966
+              Dwave_L:         2
+              Dwave_MODEL:     1
+              Dwave_KF0:       315         # K*_2(1430)
+              Dwave_TYPE0:     1
+              AMP_D:           1.0
+              PHASE_D:         0.0
         IntResults: [1.6265e-15, 1.6265e-18, 1.9883e-13]
 
       311,111,12,-11:
         BR: [0.004016581909, 0.0003922659086]
         Origin: "GUESSTIMATE: isospin 1/3 partner of Ds -> K+ pi-"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.22486
-                USE_S:           1
-                USE_P:           1
-                USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
-                AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
-                PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.46
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.86966
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     3           # LASS = background + resonance
-                Swave_KF0:       10311       # K*_0(1430)0
-                Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
-                Swave_LASS_A:    1.94        # scattering length [GeV^-1]
-                Swave_LASS_R:    1.76        # effective range [GeV^-1]
-                A1_0:            0.56
-                rV:              1.63
-                r2:              0.60
-                PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
-                V_SHAPE:         2
-                V_MPOLE:         2.01026
-                A1_SHAPE:        2
-                A1_MPOLE:        2.42210
-                A2_SHAPE:        2
-                A2_MPOLE:        2.42210
-                A0_SHAPE:        2
-                A0_MPOLE:        1.86966
-                Pwave_L:         1
-                Pwave_MODEL:     1           # single resonance
-                Pwave_KF0:       313         # K*(892)0
-                Pwave_TYPE0:     1           # running
-                A1T_0:           1.0
-                rVT:             1.0
-                r2T:             1.0
-                DWAVE_MASS:      1.4324
-                VT_SHAPE:        2
-                VT_MPOLE:        2.01026
-                A1T_SHAPE:       2
-                A1T_MPOLE:       2.42210
-                A2T_SHAPE:       2
-                A2T_MPOLE:       2.42210
-                A0T_SHAPE:       2
-                A0T_MPOLE:       1.86966
-                Dwave_L:         2
-                Dwave_MODEL:     1
-                Dwave_KF0:       315         # K*_2(1430)
-                Dwave_TYPE0:     1
-                AMP_D:           1.0
-                PHASE_D:         0.0
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.22486
+              USE_S:           1
+              USE_P:           1
+              USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
+              AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
+              PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
+              AMP_P:           1.0
+              PHASE_P:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.46
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.86966
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     3           # LASS = background + resonance
+              Swave_KF0:       10311       # K*_0(1430)0
+              Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
+              Swave_LASS_A:    1.94        # scattering length [GeV^-1]
+              Swave_LASS_R:    1.76        # effective range [GeV^-1]
+              A1_0:            0.56
+              rV:              1.63
+              r2:              0.60
+              PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
+              V_SHAPE:         2
+              V_MPOLE:         2.01026
+              A1_SHAPE:        2
+              A1_MPOLE:        2.42210
+              A2_SHAPE:        2
+              A2_MPOLE:        2.42210
+              A0_SHAPE:        2
+              A0_MPOLE:        1.86966
+              Pwave_L:         1
+              Pwave_MODEL:     1           # single resonance
+              Pwave_KF0:       313         # K*(892)0
+              Pwave_TYPE0:     1           # running
+              A1T_0:           1.0
+              rVT:             1.0
+              r2T:             1.0
+              DWAVE_MASS:      1.4324
+              VT_SHAPE:        2
+              VT_MPOLE:        2.01026
+              A1T_SHAPE:       2
+              A1T_MPOLE:       2.42210
+              A2T_SHAPE:       2
+              A2T_MPOLE:       2.42210
+              A0T_SHAPE:       2
+              A0T_MPOLE:       1.86966
+              Dwave_L:         2
+              Dwave_MODEL:     1
+              Dwave_KF0:       315         # K*_2(1430)
+              Dwave_TYPE0:     1
+              AMP_D:           1.0
+              PHASE_D:         0.0
         IntResults: [8.5264e-16, 8.5247e-19, 1.08e-13]
 
       311,111,14,-13:
         BR: [0.003845310878, 0.0003922659086]
         Origin: "GUESSTIMATE: isospin 1/3 partner, mu mode"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.22486
-                USE_S:           1
-                USE_P:           1
-                USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
-                AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
-                PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
-                AMP_P:           1.0
-                PHASE_P:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.46
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.86966
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     3           # LASS = background + resonance
-                Swave_KF0:       10311       # K*_0(1430)0
-                Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
-                Swave_LASS_A:    1.94        # scattering length [GeV^-1]
-                Swave_LASS_R:    1.76        # effective range [GeV^-1]
-                A1_0:            0.56
-                rV:              1.63
-                r2:              0.60
-                PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
-                V_SHAPE:         2
-                V_MPOLE:         2.01026
-                A1_SHAPE:        2
-                A1_MPOLE:        2.42210
-                A2_SHAPE:        2
-                A2_MPOLE:        2.42210
-                A0_SHAPE:        2
-                A0_MPOLE:        1.86966
-                Pwave_L:         1
-                Pwave_MODEL:     1           # single resonance
-                Pwave_KF0:       313         # K*(892)0
-                Pwave_TYPE0:     1           # running
-                A1T_0:           1.0
-                rVT:             1.0
-                r2T:             1.0
-                DWAVE_MASS:      1.4324
-                VT_SHAPE:        2
-                VT_MPOLE:        2.01026
-                A1T_SHAPE:       2
-                A1T_MPOLE:       2.42210
-                A2T_SHAPE:       2
-                A2T_MPOLE:       2.42210
-                A0T_SHAPE:       2
-                A0T_MPOLE:       1.86966
-                Dwave_L:         2
-                Dwave_MODEL:     1
-                Dwave_KF0:       315         # K*_2(1430)
-                Dwave_TYPE0:     1
-                AMP_D:           1.0
-                PHASE_D:         0.0
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.22486
+              USE_S:           1
+              USE_P:           1
+              USE_D:           0           # K*_2(1430) is only an UPPER LIMIT in PDG2026
+              AMP_S:           1.037       # tuned to a 6.0% S-wave fraction
+              PHASE_S:         0.0         # CALIBRATE - sets the S-P interference
+              AMP_P:           1.0
+              PHASE_P:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.46
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.86966
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     3           # LASS = background + resonance
+              Swave_KF0:       10311       # K*_0(1430)0
+              Swave_TYPE0:     1           # 0 fixed, 1 running, 2 GS, 3 complex pole
+              Swave_LASS_A:    1.94        # scattering length [GeV^-1]
+              Swave_LASS_R:    1.76        # effective range [GeV^-1]
+              A1_0:            0.56
+              rV:              1.63
+              r2:              0.60
+              PWAVE_MASS:      0.89555     # normalise A1, V, A2 at the K* pole
+              V_SHAPE:         2
+              V_MPOLE:         2.01026
+              A1_SHAPE:        2
+              A1_MPOLE:        2.42210
+              A2_SHAPE:        2
+              A2_MPOLE:        2.42210
+              A0_SHAPE:        2
+              A0_MPOLE:        1.86966
+              Pwave_L:         1
+              Pwave_MODEL:     1           # single resonance
+              Pwave_KF0:       313         # K*(892)0
+              Pwave_TYPE0:     1           # running
+              A1T_0:           1.0
+              rVT:             1.0
+              r2T:             1.0
+              DWAVE_MASS:      1.4324
+              VT_SHAPE:        2
+              VT_MPOLE:        2.01026
+              A1T_SHAPE:       2
+              A1T_MPOLE:       2.42210
+              A2T_SHAPE:       2
+              A2T_MPOLE:       2.42210
+              A0T_SHAPE:       2
+              A0T_MPOLE:       1.86966
+              Dwave_L:         2
+              Dwave_MODEL:     1
+              Dwave_KF0:       315         # K*_2(1430)
+              Dwave_TYPE0:     1
+              AMP_D:           1.0
+              PHASE_D:         0.0
         IntResults: [8.1387e-16, 8.138e-19, 1.0066e-13]
 
     #
@@ -3791,137 +3791,137 @@ HADRON_DECAYS:
       211,-211,12,-11:
         BR: [0.00906079, 0.0007182333537]
         Origin: "PDG2026 (1.64+-0.13)E-3, f_0(980) -> pi+ pi-; the I=0 S wave is the whole final state"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           0           # forbidden, see the channel note
-                USE_D:           0
-                AMP_S:           0.6004      # calibrated so the generated width matches PDG
-                PHASE_S:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.460
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     1
-                Swave_KF0:       9010221
-                Swave_TYPE0:     4           # 1 running BW, 3 complex pole
-                Swave_MFLAT0:    0.9650      # Flatte mass - NOT the PDG mass;
-                Swave_G10:       0.1650      # coupling to THIS channel [GeV^2]
-                Swave_G20:       0.6950      # coupling to the second channel
-                Swave_MA20:      0.493677
-                Swave_MB20:      0.493677
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.97349
+              USE_S:           1
+              USE_P:           0           # forbidden, see the channel note
+              USE_D:           0
+              AMP_S:           0.6004      # calibrated so the generated width matches PDG
+              PHASE_S:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.460
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.96835
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     1
+              Swave_KF0:       9010221
+              Swave_TYPE0:     4           # 1 running BW, 3 complex pole
+              Swave_MFLAT0:    0.9650      # Flatte mass - NOT the PDG mass;
+              Swave_G10:       0.1650      # coupling to THIS channel [GeV^2]
+              Swave_G20:       0.6950      # coupling to the second channel
+              Swave_MA20:      0.493677
+              Swave_MB20:      0.493677
         IntResults: [2.1476e-15, 2.1476e-18, 3.1029e-13]
 
       211,-211,14,-13:
         BR: [0.008712723067, 0.0006906089939]
         Origin: "INFERRED: e value 1.64E-3 scaled by the generated mu/e ratio 0.962"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           0           # forbidden, see the channel note
-                USE_D:           0
-                AMP_S:           0.6004      # calibrated so the generated width matches PDG
-                PHASE_S:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.460
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     1
-                Swave_KF0:       9010221
-                Swave_TYPE0:     4           # 1 running BW, 3 complex pole
-                Swave_MFLAT0:    0.9650      # Flatte mass - NOT the PDG mass;
-                Swave_G10:       0.1650      # coupling to THIS channel [GeV^2]
-                Swave_G20:       0.6950      # coupling to the second channel
-                Swave_MA20:      0.493677
-                Swave_MB20:      0.493677
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.97349
+              USE_S:           1
+              USE_P:           0           # forbidden, see the channel note
+              USE_D:           0
+              AMP_S:           0.6004      # calibrated so the generated width matches PDG
+              PHASE_S:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.460
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.96835
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     1
+              Swave_KF0:       9010221
+              Swave_TYPE0:     4           # 1 running BW, 3 complex pole
+              Swave_MFLAT0:    0.9650      # Flatte mass - NOT the PDG mass;
+              Swave_G10:       0.1650      # coupling to THIS channel [GeV^2]
+              Swave_G20:       0.6950      # coupling to the second channel
+              Swave_MA20:      0.493677
+              Swave_MB20:      0.493677
         IntResults: [2.0581e-15, 2.0579e-18, 2.8978e-13]
 
       111,111,12,-11:
         BR: [0.004364648842, 0.0008287307927]
         Origin: "PDG2026 (7.9+-1.5)E-4, f_0(980) -> pi0 pi0; ratio to pi+ pi- is 2.08 against the I=0 prediction of 2"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           0           # forbidden, see the channel note
-                USE_D:           0
-                AMP_S:           0.6004      # calibrated so the generated width matches PDG
-                PHASE_S:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.460
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     1
-                Swave_KF0:       9010221
-                Swave_TYPE0:     4           # 1 running BW, 3 complex pole
-                Swave_MFLAT0:    0.9650      # Flatte mass - NOT the PDG mass;
-                Swave_G10:       0.1650      # coupling to THIS channel [GeV^2]
-                Swave_G20:       0.6950      # coupling to the second channel
-                Swave_MA20:      0.493677
-                Swave_MB20:      0.493677
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.97349
+              USE_S:           1
+              USE_P:           0           # forbidden, see the channel note
+              USE_D:           0
+              AMP_S:           0.6004      # calibrated so the generated width matches PDG
+              PHASE_S:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.460
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.96835
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     1
+              Swave_KF0:       9010221
+              Swave_TYPE0:     4           # 1 running BW, 3 complex pole
+              Swave_MFLAT0:    0.9650      # Flatte mass - NOT the PDG mass;
+              Swave_G10:       0.1650      # coupling to THIS channel [GeV^2]
+              Swave_G20:       0.6950      # coupling to the second channel
+              Swave_MA20:      0.493677
+              Swave_MB20:      0.493677
         IntResults: [1.0751e-15, 1.075e-18, 1.5498e-13]
 
       111,111,14,-13:
         BR: [0.004193377811, 0.000795581561]
         Origin: "INFERRED: e value 7.9E-4 scaled by the generated mu/e ratio 0.961"
-        ME:
-          - Current_ME:
-              J1:
-                Type: VA_0_FF
-                Indices: [3, 4]
-              J2:
-                Type: VA_P_PP
-                Indices: [0, 1, 2]
-                Vcq:             0.97349
-                USE_S:           1
-                USE_P:           0           # forbidden, see the channel note
-                USE_D:           0
-                AMP_S:           0.6004      # calibrated so the generated width matches PDG
-                PHASE_S:         0.0
-                Fplus_SHAPE:     2
-                Fplus_F0:        1.0
-                Fplus_MPOLE:     2.460
-                Fzero_SHAPE:     2
-                Fzero_MPOLE:     1.96835
-                TIE_MASS:        1.0
-                Swave_L:         0
-                Swave_MODEL:     1
-                Swave_KF0:       9010221
-                Swave_TYPE0:     4           # 1 running BW, 3 complex pole
-                Swave_MFLAT0:    0.9650      # Flatte mass - NOT the PDG mass;
-                Swave_G10:       0.1650      # coupling to THIS channel [GeV^2]
-                Swave_G20:       0.6950      # coupling to the second channel
-                Swave_MA20:      0.493677
-                Swave_MB20:      0.493677
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_0_FF
+              Indices: [3, 4]
+            J2:
+              Type: VA_P_PP
+              Indices: [0, 1, 2]
+              Vcq:             0.97349
+              USE_S:           1
+              USE_P:           0           # forbidden, see the channel note
+              USE_D:           0
+              AMP_S:           0.6004      # calibrated so the generated width matches PDG
+              PHASE_S:         0.0
+              Fplus_SHAPE:     2
+              Fplus_F0:        1.0
+              Fplus_MPOLE:     2.460
+              Fzero_SHAPE:     2
+              Fzero_MPOLE:     1.96835
+              TIE_MASS:        1.0
+              Swave_L:         0
+              Swave_MODEL:     1
+              Swave_KF0:       9010221
+              Swave_TYPE0:     4           # 1 running BW, 3 complex pole
+              Swave_MFLAT0:    0.9650      # Flatte mass - NOT the PDG mass;
+              Swave_G10:       0.1650      # coupling to THIS channel [GeV^2]
+              Swave_G20:       0.6950      # coupling to the second channel
+              Swave_MA20:      0.493677
+              Swave_MB20:      0.493677
         IntResults: [1.0308e-15, 1.0307e-18, 1.4503e-13]
 
 

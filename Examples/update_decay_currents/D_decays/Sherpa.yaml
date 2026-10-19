@@ -1,0 +1,59 @@
+# D semileptonic decays against BESIII data.
+#
+# Frank's D blocks in HADRONS++/Decaydata.yaml give 56 channels across
+# D0 (16), D+ (22) and Ds+ (18). There are no currents in THIS card because
+# its only job is to make D mesons; the decay is declared in the decay
+# table, in a Currents: block with exactly the syntax used by the scattering
+# cards in ../eemumu. Each is one contact exchange of
+#
+#   J1 = VA_0_FF   the lepton pair
+#   J2 = VA_P_P    the hadronic transition, e.g. D0 -> K-
+#
+# with no Boson:, so g = G_F/sqrt(2); "Boson: 24" makes it explicit W
+# exchange instead, which differs by 0.03%.
+#
+# The form factors are real ones: the D0 -> K- entry carries the BESIII
+# z-series fit (Fplus_F0 = 0.7383, Fplus_r1 = -2.28, arXiv:2601.21196). The
+# q^2 spectrum is what tests those, which is what the analysis below
+# measures.
+#
+# WHY CHARM PRODUCTION RATHER THAN A DECAYER RUN
+#
+# The natural card for this would be EVENT_TYPE: HadronDecay with
+# DECAYER: 421. That SEGFAULTS on this branch whenever Rivet is attached:
+# Rivet::AnalysisHandler::weightSumWs() from Rivet_Interface::Finish(), at
+# the end of the run, after every event has been generated. It is not
+# specific to D decays -- DECAYER: 15 with a bare MC_XS analysis does the
+# same -- so it is a Sherpa/Rivet-4 interface problem, not something in the
+# decay data. A decayer run WITHOUT Rivet works fine.
+#
+# So this card makes charm the normal way and lets it hadronise; the D
+# mesons that come out decay through exactly the same channels.
+#
+# NOTE ON NORMALISATION: the analysis measures dGamma/dq^2 per D decay,
+# while this sample is normalised to the e+e- -> c cbar cross section. The
+# absolute height is therefore meaningless here -- compare the SHAPE, which
+# is what carries the form factor. 5000 events gives roughly ten entries per
+# bin, so use far more than that before reading anything into a deviation.
+
+BEAMS: [11, -11]
+BEAM_ENERGIES: 5.29
+
+EVENTS: 50000
+
+HADRON_DECAYS:
+  Spin_Correlations: 1
+
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: D_semileptonic
+RIVET:
+  --analyses:
+  - BESIII_2024_I2819140      # D0 -> K- l+ nu, D+ -> K0bar l+ nu
+  - BESIII_2015_I1391138      # D0 -> K-, pi- e+ nu
+  - BESIII_2018_I1697371      # D0 -> K- mu+ nu
+  - BESIII_2017_I1519425      # D+ -> K0bar, pi0 e+ nu
+  - CLEO_2004_I654843         # q^2 spectra, D0 -> (pi-, K-) e+ nu
+
+PROCESSES:
+- 11 -11 -> 4 -4:
+    Order: {QCD: 0, EW: 2}

@@ -1,0 +1,64 @@
+# Changing a D form factor from the run card, without touching the shared
+# decay data.
+#
+# D decays get their matrix elements from HADRONS++/Decaydata.yaml, where
+# each channel already declares its currents:
+#
+#   ME:
+#     - Current_ME:
+#         J1: {Type: VA_0_FF, Indices: [2, 3]}    the lepton pair
+#         J2: {Type: VA_P_P,  Indices: [0, 1]}    D0 -> K- transition
+#
+# That is the SAME two-current idea as the Currents: block the e+e- cards
+# use, declared in a different place: Currents: is a PROCESS declaration for
+# EXTRA_XS, this is a DECAY CHANNEL declaration for HADRONS++. The two are
+# separate implementations of one structure and have not been unified yet.
+#
+# A run card can override a channel's block, which is the way to experiment:
+# edit the numbers here, rerun, see the q^2 spectrum move, and leave
+# Decaydata.yaml alone so everyone else's results do not shift under them.
+#
+# Below is D0 -> K- e+ nu exactly as the decay data has it. The number worth
+# pushing on first is Fplus_r1, the z-series slope: BESIII fit -2.28, and
+# the q^2 shape is what constrains it. Try -1.0 and -4.0 and compare.
+#
+# AlwaysIntegrate is on because changing a form factor changes the partial
+# width, so the cached IntResults no longer applies.
+
+BEAMS: [11, -11]
+BEAM_ENERGIES: 5.29
+
+EVENTS: 50000
+
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: D_formfactor
+RIVET:
+  --analyses: [BESIII_2024_I2819140, BESIII_2015_I1391138]
+
+HADRON_DECAYS:
+  Spin_Correlations: 1
+  Channels:
+    421:
+      -321,12,-11:
+        AlwaysIntegrate: 1
+        ME:
+          - Current_ME:
+              J1:
+                Type: VA_0_FF
+                Indices: [2, 3]
+              J2:
+                Type: VA_P_P
+                Indices: [0, 1]
+                Vcq:             0.97349
+                Fplus_SHAPE:     12
+                Fplus_F0:        0.7383
+                Fplus_NCOEFF:    1
+                Fplus_r1:        -2.28      # <-- the one to vary
+                Fplus_NBLASCHKE: 1
+                Fplus_mR0:       2.11220
+                Fzero_SHAPE:     2
+                Fzero_MPOLE:     2.3170
+
+PROCESSES:
+- 11 -11 -> 4 -4:
+    Order: {QCD: 0, EW: 2}
