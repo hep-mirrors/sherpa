@@ -920,12 +920,20 @@ void Initialization_Handler::InitISRHandler(const PDF::isr::id & pid,Settings& s
     }
     PDF_Arguments args = PDF_Arguments(flav, beam, set, version, order, scheme);
     if (pid != PDF::isr::bunch_rescatter) {
-      PDF_Base* pdfbase = PDF_Base::PDF_Getter_Function::GetObject(set, args);
-      if (m_bunch_particles[beam].IsHadron() && pdfbase == nullptr)
+      // Allow special keywords for non-pdf beam hadrons (elastic/quasi-elastic scattering)
+      bool is_intact_keyword = (set == "Intact");
+      PDF_Base* pdfbase = is_intact_keyword ? nullptr :
+        PDF_Base::PDF_Getter_Function::GetObject(set, args);
+      if (m_bunch_particles[beam].IsHadron() && pdfbase == nullptr && !is_intact_keyword)
         THROW(critical_error,
               "PDF '" + set + "' does not exist in any of the loaded" +
                       " libraries for " + ToString(m_bunch_particles[beam]) +
-                      " bunch.");
+                      " bunch." +
+                      (set == "None" ?
+                       " Would you like an intact (unresolved) hadron for"
+                       " elastic or quasi-elastic scattering? Then set"
+                       " PDF_SET: Intact for this beam. Otherwise choose a"
+                       " PDF." : ""));
       if (pid == PDF::isr::hard_process) rpa->gen.SetPDF(beam, pdfbase);
       if (pdfbase == nullptr) {
         isrbases[beam] = new Intact(flav);

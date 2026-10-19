@@ -32,6 +32,7 @@
 
 BEAMS: [11, 2212]
 BEAM_ENERGIES: 50.0
+PDF_SET: [None, Default]
 
 # WHY FIVE LINES FOR A PDF
 #
@@ -49,11 +50,14 @@ BEAM_ENERGIES: 50.0
 #                    skip MPI PDF initialisation
 #   ALPHAS USE_PDF   the internal NNPDF interface has no alpha_s, so asking
 #                    for it throws "PDF doesn't implement alpha_s running"
-PDF_LIBRARY:     [None, NNPDFSherpa]
-PDF_SET:         [None, NNPDF31_nnlo_as_0118_mc]
-MPI_PDF_LIBRARY: [None, NNPDFSherpa]
-MPI_PDF_SET:     [None, NNPDF31_nnlo_as_0118_mc]
+# PDF_LIBRARY:     [None, NNPDFSherpa]
+# PDF_SET:         [None, NNPDF31_nnlo_as_0118_mc]
+# MPI_PDF_LIBRARY: [None, NNPDFSherpa]
+# MPI_PDF_SET:     [None, NNPDF31_nnlo_as_0118_mc]
 ALPHAS: {USE_PDF: 0}
+#
+# note from Zara: we dont need all this, but it is a possible simplification
+
 
 # PARTICLE_DATA:
 #   11: {Massive: true}

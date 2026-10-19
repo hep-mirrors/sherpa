@@ -22,13 +22,25 @@
 
 
 #  now doing e p -> e p 
+# default pdf splits the proton up
+# sherpa will set any energy below rest mass to the rest mass.
+
+# Form factor models of VA_N_N / FF_N_N:
+#   VFF (vector, F1/F2): 0 off, 1 pointlike Dirac, 10 Kelly (default)
+#   AFF (axial, F_A):    0 off, 1 constant g_A, 20 Meyer deuterium (default),
+#                        21 lattice-QCD z-expansion
+#  numbers 10 and 20 come from FF base class
+#   AFF is ignored for the photon (no axial coupling); it acts on Z and W.
+TAGS: {VFF: 1, AFF: 20}
+
+EVENTS: 10k
 
 BEAMS: [11, 2212]
-BEAM_ENERGIES: 50.0
-PDF_SET: [None, Default]
+BEAM_ENERGIES: [3.6, 0.938272] 
+PDF_SET: [None, Intact] 
 
 PARTICLE_DATA:
-  11: {Massive: false}
+  11: {Massive: true}
   2212: {Massive: true}
 
 ME_GENERATORS: [Internal]
@@ -36,25 +48,43 @@ ME_GENERATORS: [Internal]
 SELECTORS:
 # - [PT, 11, 10.0, E_CMS]
 # - [PT, 13, 10.0, E_CMS]
-- [Q2, 11, 11, 1, 1e12] #[observable, flavor1, flavor2, min, max]
+- [Q2, 11, 11, 0.001, 1e12] #[observable, flavor1, flavor2, min, max]
+# note that for minQ2=0.001 => XS ~ 2.5e8 pb
+# for minQ2=0.01 => XS ~ 2.5e7 pb
+# for minQ2=1 => XS ~ 5e3 pb, NOTE how its not linear in min Q2 due to FF
 
 PROCESSES:
-- 11 2212 -> 11 2212:        # e-(0) p-(1) -> e-(2) p-(3)
+- 11 2212 -> 11 2212:        # e-(0) p(1) -> e-(2) p(3)
     Sort_Flavors: 0
     Order: {QCD: 0, EW: 2}
     Currents:
       Exchange:
       - Boson: 22
-        J1: {Type: VA_F_F, Indices: [2, 0]}    # [out in]
-        J2: {Type: VA_F_F, Indices: [3, 1]}
-      - Boson: 23
-        J1: {Type: VA_F_F, Indices: [2, 0]}
-        J2: {Type: VA_F_F, Indices: [3, 1]}
+        J1: {Type: VA_F_F, Indices: [2, 0]}    # electron [out in]
+        J2: {Type: VA_N_N, Indices: [3, 1],    # proton [out in]
+              BOSON: 22, VECTOR_FF: $(VFF), AXIAL_FF: $(AFF)}
+      # - Boson: 23
+      #   J1: {Type: VA_F_F, Indices: [2, 0]}
+      #   J2: {Type: VA_N_N, Indices: [3, 1], 
+      #         BOSON: 23, VECTOR_FF: $(VFF), AXIAL_FF: $(AFF)}
 
+# settings for now for low energies
 
-# zara notes trying to recreate maddies error
+SHOWER_GENERATOR: None
+SCALES: VAR{-Abs2(p[0]-p[2])}  # need if turning off shower
 
-# for flavours error doesnt occur for : turnig off Z, using Q2 not PT selector, turning sort flavs on/off 
-# putting in masses is the problem, but it solved by Sort_Flavors: 0
+FRAGMENTATION: None
+BEAM_REMNANTS: false
+MI_HANDLER: None
+HADRON_DECAYS:
+  Model: None
+YFS: {MODE: None}
 
-# need any selector to not get bad effeciency
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: Analysis_V$(VFF)
+
+RIVET:
+  --analyses: [my_MC_FSPARTICLES, MC_DIS, MC_XS]
+  --pwd: /Users/tvcr49@durham.ac.uk/code_analysis/MyRivetAnalyses
+  --ignore_beams: 1
+
