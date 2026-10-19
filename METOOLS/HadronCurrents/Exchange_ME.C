@@ -234,6 +234,15 @@ void Exchange_ME::SetModelParameters(Scoped_Settings& s)
   if (n==0) THROW(fatal_error,"A Currents: block needs an Exchange: list.");
   for (size_t k(0);k<n;++k) AddExchange(ex[k]);
 
+  // You have to specify why the amplitude vanishes when using this flag, otherwise its not very helpful.
+  bool allzero(true);
+  for (size_t k(0);k<m_x.size();++k)
+    if (!m_x[k].p_j1->Vanishes() && !m_x[k].p_j2->Vanishes()) allzero = false;
+  if (allzero)
+    THROW(fatal_error,"Every exchange in this Currents: block vanishes "
+          "identically, so the amplitude is zero "
+          "everywhere and the integrator never finds ME != 0.");
+
   // Spin states per leg, counted as Spin_Structure counts them: a massless
   // vector has 2, everything else 2s+1, so a SCALAR HAS ONE. Enumerating
   // 2^N instead would walk 32 combinations for e+e- -> pi+ pi- pi0 where

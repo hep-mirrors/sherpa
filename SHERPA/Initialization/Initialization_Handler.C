@@ -774,9 +774,10 @@ void Initialization_Handler::LoadPDFLibraries(Settings& settings) {
     // define bunch particle-dependent PDF libraries and sets here
     /////////////////////////////////////////////////////////
     std::string deflib("None"), defset;
-    if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_p_plus) {
-      deflib = PDF::pdfdefs->DefaultPDFLibrary(kf_p_plus);
-      defset = PDF::pdfdefs->DefaultPDFSet(kf_p_plus);
+    const kf_code kfbunch = p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode();
+    if (kfbunch==kf_p_plus || kfbunch==kf_n) {
+      deflib = PDF::pdfdefs->DefaultPDFLibrary(kfbunch);
+      defset = PDF::pdfdefs->DefaultPDFSet(kfbunch);
     }
     else if (p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_e ||
 	     p_beamspectra->GetBeam(beam)->Bunch(0).Kfcode()==kf_mu) {

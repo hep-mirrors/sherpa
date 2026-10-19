@@ -44,13 +44,19 @@ namespace METOOLS {
   ///
   /// The getter refuses a nucleon beam that carries a PDF: the current
   /// describes the whole nucleon, so its beam must be PDF_SET: Intact.
+  ///
+  /// m_vanishes flags a current that is identically zero: photon exchange
+  /// on a neutron with VECTOR_FF = 0 or 1, where F1n = F2n = 0. It only
+  /// warns, and is returned by Vanishes(). Exchange_ME stops the run if
+  /// every exchange of a Currents: block vanishes, so a Z exchange next to
+  /// the photon keeps a pointlike-neutron run going.
   //////////////////////////////////////////////////////////////////////////
   class VA_N_N : public Current_Base {
   private:
     FormFactor_Base *p_F1p, *p_F2p, *p_F1n, *p_F2n, *p_FA;
     kf_code m_boson;
     double  m_mN, m_mpi, m_s2, m_T3, m_norm;
-    bool    m_isp;
+    bool    m_isp, m_vanishes;
 
     FormFactor_Base * MakeFF(const std::string & name,const int ffmodel,
                              GeneralModel & model);
@@ -60,6 +66,7 @@ namespace METOOLS {
            const std::string& name);
     ~VA_N_N();
     void CheckTopology() const override;
+    inline bool Vanishes() const override { return m_vanishes; }
     void SetModelParameters(struct GeneralModel model) override;
     void Calc(const ATOOLS::Vec4D_Vector& moms, bool anti) override;
   };

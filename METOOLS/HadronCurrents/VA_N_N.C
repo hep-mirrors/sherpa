@@ -15,7 +15,7 @@ VA_N_N::VA_N_N(const ATOOLS::Flavour_Vector& flavs,
   Current_Base(flavs,indices,name),
   p_F1p(NULL), p_F2p(NULL), p_F1n(NULL), p_F2n(NULL), p_FA(NULL),
   m_boson(kf_photon), m_mN(0.), m_mpi(0.),
-  m_s2(0.), m_T3(0.), m_norm(1.), m_isp(true)
+  m_s2(0.), m_T3(0.), m_norm(1.), m_isp(true), m_vanishes(false)
 {
   for (size_t k(0);k<p_i.size();++k) {
     const kf_code kf(m_flavs[p_i[k]].Kfcode());
@@ -83,6 +83,13 @@ void VA_N_N::SetModelParameters(struct GeneralModel model)
     std::abs(MODEL::s_model->ComplexConstant(string("CKM_0_0"))) : 1.;
 
   const int vff(int(model("VECTOR_FF",10.)+0.5));
+  // Exchange_ME stops the run only if every exchange vanishes, so a Z
+  // alongside the photon keeps it going.
+  m_vanishes = (m_boson==kf_photon && !m_isp && (vff==ff_zero || vff==ff_one));
+  if (m_vanishes)
+    msg_Error() << "Warning in " << METHOD << ": current " << m_name << ": VECTOR_FF = " << vff
+                << " gives a neutron no electromagnetic coupling (F1n = F2n = 0), so photon exchange vanishes identically. \n"
+                << "   Use a non-zero VECTOR_FF >= 10 for a neutron.\n";
   const int aff(m_boson==kf_photon ? ff_zero : int(model("AXIAL_FF",20.)+0.5));
   p_F1p = MakeFF("F1p",vff,model);
   p_F2p = MakeFF("F2p",vff,model);
