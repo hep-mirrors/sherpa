@@ -28,13 +28,20 @@ namespace METOOLS {
   /// correct for both; what was missing was any check that the tag
   /// matches the topology actually supplied.
   ///
-  /// Both tags are therefore registered against this class and the
-  /// topology is now VALIDATED rather than assumed:
-  ///   VA_0_FF : neither index may be the decaying particle. Throws.
-  ///   VA_F_F  : exactly one index should be the decaying particle.
-  ///             Warns if not, rather than throwing, so that existing
-  ///             tables keep running - but those entries are
-  ///             mislabelled and should be switched to VA_0_FF.
+  /// All THREE tags are registered against this class, and the topology
+  /// is measured from how many of the current's legs are incoming rather
+  /// than assumed:
+  ///   VA_FF_0 : both legs incoming  - an annihilating pair, e.g. the
+  ///             e+e- side of e+e- -> mu+mu-.
+  ///   VA_F_F  : one in, one out     - a fermion line passing through,
+  ///             e.g. tau -> nu_tau, or a t-channel lepton line.
+  ///   VA_0_FF : both legs outgoing  - a produced pair, e.g. the lepton
+  ///             pair of a semileptonic decay.
+  /// A mismatched tag warns; it cannot change the answer, since one
+  /// implementation serves all three. What DOES throw is a current whose
+  /// two legs are not the same fermion line, which no later stage can
+  /// detect and which silently computes a process that does not exist.
+  ///
   /// Index order is unchanged: 0 = the BARRED spinor, 1 = the unbarred
   /// one. Parameters: v (default 1), a (default -1).
   ///
@@ -48,11 +55,12 @@ namespace METOOLS {
   class VA_0_FF : public Current_Base {
   private:
     Complex m_cR, m_cL;
-    /// True if one of the two legs is the decaying particle
-    /// (external index 0), i.e. the F -> F topology.
-    bool    m_hasincoming;
-    void CheckTopology() const;
   public:
+    /// Validate the tag against the topology actually supplied, and that
+    /// the two legs really are one fermion line. Called via
+    /// Current_Base::SetNIn, not from the constructor: which legs are
+    /// incoming is context the constructor does not have.
+    void CheckTopology() const override;
     VA_0_FF(const ATOOLS::Flavour_Vector& flavs,
             const std::vector<int>& indices,
             const std::string& name);
@@ -61,17 +69,28 @@ namespace METOOLS {
     void Calc(const ATOOLS::Vec4D_Vector& moms, bool anti);
   };
 
-  /// Alias for the F -> F topology (tau -> nu_tau, b -> c, ...). Same
-  /// implementation; it exists only so that the two topologies can
-  /// carry honest, separately checkable tags. A trivial derived class
-  /// rather than a second DEFINE_CURRENT_GETTER on VA_0_FF, because
-  /// that macro specialises Getter<...> on the class and so can only
-  /// be used once per class.
+  /// Aliases for the other two topologies. Same implementation; they
+  /// exist only so that all three can carry honest, separately checkable
+  /// tags. Trivial derived classes rather than further
+  /// DEFINE_CURRENT_GETTERs on VA_0_FF, because that macro specialises
+  /// Getter<...> on the class and so can only be used once per class.
+
+  /// One leg in, one out: tau -> nu_tau, b -> c, a t-channel lepton line.
   class VA_F_F : public VA_0_FF {
   public:
     VA_F_F(const ATOOLS::Flavour_Vector& flavs,
            const std::vector<int>& indices,
            const std::string& name) :
+      VA_0_FF(flavs,indices,name) {}
+  };
+
+  /// Both legs in: an annihilating pair, e.g. the e+e- side of
+  /// e+e- -> mu+mu-. Only reachable in a scattering process.
+  class VA_FF_0 : public VA_0_FF {
+  public:
+    VA_FF_0(const ATOOLS::Flavour_Vector& flavs,
+            const std::vector<int>& indices,
+            const std::string& name) :
       VA_0_FF(flavs,indices,name) {}
   };
 }

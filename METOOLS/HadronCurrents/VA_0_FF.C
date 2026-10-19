@@ -11,27 +11,41 @@ VA_0_FF::VA_0_FF(const ATOOLS::Flavour_Vector& flavs,
                  const std::vector<int>& indices,
                  const std::string& name) :
   Current_Base(flavs,indices,name),
-  m_cR(0.,0.), m_cL(1.,0.), m_hasincoming(false)
+  m_cR(0.,0.), m_cL(1.,0.)
 {
-  // External index 0 is the decaying particle, so its presence in the
-  // index list is exactly what distinguishes F -> F from 0 -> F Fbar.
-  for (size_t k=0;k<p_i.size();k++) if (p_i[k]==0) m_hasincoming = true;
-  CheckTopology();
+  // No topology check here. A current cannot know which of its legs are
+  // incoming until it is told how many external legs are incoming at all,
+  // and that is context the constructor does not have: leg 0 is the
+  // decaying particle in a decay, but the FIRST BEAM in a scattering
+  // process. Exchange_ME calls SetNIn, which then calls CheckTopology.
 }
 
 void VA_0_FF::CheckTopology() const {
-  if (m_name=="VA_0_FF" && m_hasincoming)
-    THROW(fatal_error,"Current VA_0_FF was given the decaying particle "
-          "(external index 0) as one of its two legs. VA_0_FF is the "
-          "'nothing in, two fermions out' current; for a fermion "
-          "transition such as tau -> nu_tau use the tag VA_F_F.");
-  if (m_name=="VA_F_F" && !m_hasincoming)
-    msg_Info()<<"Warning in "<<METHOD<<": current tagged VA_F_F, but "
-              <<"neither leg is the decaying particle - both fermions are "
-              <<"outgoing. By this directory's <in>_<out> naming that is "
-              <<"a 0 -> F Fbar current and should be tagged VA_0_FF. The "
-              <<"result is unaffected (same class, XYZFunc resolves the "
-              <<"spinor types), but please relabel the channel.\n";
+  if (p_i.size()!=2)
+    THROW(fatal_error,"Current "+m_name+" needs exactly two legs, got "
+          +ToString(p_i.size())+".");
+
+  // DOES THE TAG MATCH THE TOPOLOGY?
+  //
+  // Measured, not assumed. The old test asked whether the index list
+  // contained external index 0 -- true for the decaying particle, but also
+  // true for the first BEAM of a scattering process, where it means
+  // nothing. Counting incoming legs works in both contexts.
+  const size_t nin = NIncomingLegs();
+  const std::string got = (nin==2) ? "VA_FF_0" : (nin==1 ? "VA_F_F"
+                                                         : "VA_0_FF");
+  const std::string what = (nin==2) ? "both legs incoming (an annihilating "
+                                      "pair)"
+                         : (nin==1 ? "one leg incoming and one outgoing (a "
+                                     "fermion line passing through)"
+                                   : "both legs outgoing (a produced pair)");
+  if (m_name!=got)
+    msg_Info()<<"Warning in "<<METHOD<<": current tagged "<<m_name
+              <<" was given "<<what<<", which by this directory's "
+              <<"<in>_<out> naming is "<<got<<". The result is unaffected "
+              <<"-- one class serves all three, and XYZFunc resolves the "
+              <<"spinor types from the flavours -- but the tag is wrong "
+              <<"and should be corrected.\n";
 }
 
 void VA_0_FF::SetModelParameters(struct GeneralModel model)
@@ -50,7 +64,7 @@ void VA_0_FF::SetModelParameters(struct GeneralModel model)
           "(no form factor).");
   msg_Tracking()<<"### "<<m_name<<": V-A fermion current, v = "
                 <<model("v",1.)<<", a = "<<model("a",-1.)
-                <<", topology = "<<(m_hasincoming?"F -> F":"0 -> F Fbar")
+                <<", legs incoming = "<<NIncomingLegs()
                 <<"\n";
 }
 
@@ -87,18 +101,32 @@ PrintInfo(std::ostream &st,const size_t width) const {
     <<std::endl;
 }
 
-// Legacy/transition tag: one leg is the decaying fermion. Kept as a
-// first-class name, not a deprecation - tau -> nu_tau really is an
-// F -> F current and reads correctly as VA_F_F.
+// Transition tag: one leg incoming, one outgoing. A first-class name, not
+// a deprecation - tau -> nu_tau and a t-channel lepton line both really
+// are F -> F currents and read correctly as VA_F_F.
 DEFINE_CURRENT_GETTER(METOOLS::VA_F_F,"VA_F_F")
 
 void ATOOLS::Getter<METOOLS::Current_Base,
                     METOOLS::ME_Parameters,METOOLS::VA_F_F>::
 PrintInfo(std::ostream &st,const size_t width) const {
-  st<<"Example: $\\tau^-\\rightarrow\\nu_\\tau$ transition current \n\n"
+  st<<"Example: $\\tau^-\\rightarrow\\nu_\\tau$, or the electron line \n"
+    <<"of $e^-\\mu^-\\rightarrow e^-\\mu^-$ \n\n"
     <<"Order: 0 = bar'ed spinor, 1 = non-bar'ed spinor \n\n"
-    <<"Identical to {\\tt VA\\_0\\_FF}; use this tag when ONE leg is \n"
-    <<"the decaying particle. If both are outgoing, use \n"
-    <<"{\\tt VA\\_0\\_FF} - a warning is issued otherwise. \n"
+    <<"Identical to {\\tt VA\\_0\\_FF}; use this tag when exactly ONE \n"
+    <<"leg is incoming. \n"
+    <<std::endl;
+}
+
+// Annihilation tag: both legs incoming. Only reachable in a scattering
+// process, where there is no decaying particle and leg 0 is a beam.
+DEFINE_CURRENT_GETTER(METOOLS::VA_FF_0,"VA_FF_0")
+
+void ATOOLS::Getter<METOOLS::Current_Base,
+                    METOOLS::ME_Parameters,METOOLS::VA_FF_0>::
+PrintInfo(std::ostream &st,const size_t width) const {
+  st<<"Example: the $e^+e^-$ side of $e^+e^-\\rightarrow\\mu^+\\mu^-$ \n\n"
+    <<"Order: 0 = bar'ed spinor, 1 = non-bar'ed spinor \n\n"
+    <<"Identical to {\\tt VA\\_0\\_FF}; use this tag when BOTH legs \n"
+    <<"are incoming. \n"
     <<std::endl;
 }

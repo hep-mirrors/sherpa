@@ -43,6 +43,15 @@ namespace METOOLS {
     /// name of the current
     std::string       m_name;
 
+    /// How many of the EXTERNAL legs are incoming: 1 for a decay, where
+    /// leg 0 is the decaying particle, 2 for a scattering process. A leg
+    /// index i is incoming iff i < m_nin.
+    ///
+    /// Defaults to the decay convention, so a current built by the legacy
+    /// Current_ME path behaves exactly as it always has. Exchange_ME sets
+    /// it explicitly from the context it was built in.
+    size_t            m_nin;
+
   public:
     /** 
      * Constructor which initialises all fields of the class.
@@ -80,6 +89,29 @@ namespace METOOLS {
      * relevant for the current
      */
     virtual void SetModelParameters( struct GeneralModel _md ) {};
+
+    /**
+     * Check that the tag this current was built under matches the topology
+     * it was actually handed. Called by SetNIn, i.e. once the current knows
+     * which of its legs are incoming -- which it cannot know at
+     * construction. The default does nothing; currents with a meaningful
+     * in/out distinction override it.
+     */
+    virtual void CheckTopology() const {}
+
+    /// Tell the current how many external legs are incoming, then validate.
+    inline void SetNIn(const size_t nin) { m_nin = nin; CheckTopology(); }
+
+    /// Whether external leg index i is an incoming leg.
+    inline bool IsIncoming(const int i) const { return i<int(m_nin); }
+
+    /// How many of THIS current's legs are incoming.
+    inline size_t NIncomingLegs() const
+    {
+      size_t n(0);
+      for (size_t k(0);k<p_i.size();++k) if (IsIncoming(p_i[k])) ++n;
+      return n;
+    }
 
     //@{
     /// Getter/setter method
