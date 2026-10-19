@@ -2560,7 +2560,7 @@ operator()(const METOOLS::FF_Parameters &params) const
   // F1, F2, FS(=F5) have real RChL2012 implementations (see F1_0_KKPi,
   // F5_0_KKPi above); F3 is identically 0 for this channel regardless
   // of model (c3=0 in Table 1 of 1203.3955 / Table 1 of 1509.09140),
-  // so it stays a stub for every ff_model.
+  // so it stays a stub for every model.
   if (params.m_flavs[params.m_pi[0]].Kfcode()==kf_K_plus &&
       params.m_flavs[params.m_pi[1]].Kfcode()==kf_K_plus &&
       params.m_flavs[params.m_pi[2]].Kfcode()==kf_pi_plus) {

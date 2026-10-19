@@ -19,8 +19,8 @@ namespace METOOLS {
   // and this class supplies F together with that epsilon structure, through
   // Current().
   //
-  // THERE ARE TWO PARAMETERISATIONS, picked by the ff_model number: 100, the
-  // default, is Eq. (10) below; 300 is a Khuri-Treiman form that replaces the
+  // THERE ARE TWO PARAMETERISATIONS, picked by the FORM_FACTOR number: 10,
+  // the default, is Eq. (10) below; 11 is a Khuri-Treiman form that replaces the
   // whole rho sector with a solved dispersion relation and runs only over
   // 0.454-1.060 GeV.  See the KHURI-TREIMAN MODE block further down.
   //
@@ -168,7 +168,7 @@ protected:
     Complex m_contact_c;
     int    m_i_plus, m_i_minus, m_i_zero; // which index is which pion
 
-    // KHURI-TREIMAN MODE (FormFactor 300).  The whole rho sector -- all three
+    // KHURI-TREIMAN MODE (FORM_FACTOR = 11).  The whole rho sector -- all three
     // towers, and E and F with them -- is replaced by the dispersive basis of
     // KT3Pi_Tables.H,
     //     F = [A BW_om + B BW_phi + C BW_om' + D BW_om''](q^2)

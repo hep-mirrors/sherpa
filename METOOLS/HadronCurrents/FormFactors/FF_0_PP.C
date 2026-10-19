@@ -177,7 +177,7 @@ class Fplus_0_PiZeroPiPlus : public FF_0_PP_Base {
   double  m_fpi, m_mpi2, m_mK2;
   double  m_mV, m_mV2, m_mVp, m_mVp2, m_mVpp, m_mVpp2, m_GVp, m_GVpp;
   Complex m_gamma, m_delta;
-  // Family-base (FF_0_PP_Base::Model::KS=100-equivalent) mixing weights, ALWAYS
+  // Family-base (FF_0_PP_Base::Model::KS) mixing weights, ALWAYS
   // computed regardless of which model was actually requested. Used
   // both as the direct KS(100) result and, per request #2, as the
   // second-tier fallback for GS(101)/KS_CLEO(102) whenever THEIR own

@@ -53,8 +53,8 @@ void FF_0_Isoscalar3Pi::FixParameters(const FF_Parameters & params) {
   // because the default couplings depend on it.
   m_kt = (GetModel()==Model::KT);
   if (!m_kt && GetModel()!=Model::None && GetModel()!=Model::Point && GetModel()!=Model::KS)
-    THROW(fatal_error,"FF_0_Isoscalar3Pi implements FormFactor 100 "
-	  "(hep-ph/0512180 Eq. (10)) and 300 (Khuri-Treiman), not "+
+    THROW(fatal_error,"FF_0_Isoscalar3Pi implements FORM_FACTOR = 10 "
+	  "(hep-ph/0512180 Eq. (10)) and 11 (Khuri-Treiman), not "+
 	  ToString(int(m_ffmodel))+".");
 
   // A--F refitted against Belle 2024 with the line shapes below.  The
@@ -193,7 +193,7 @@ void FF_0_Isoscalar3Pi::Construct() {
   BuildAmplitude();
 
   if (m_kt) {
-    msg_Out()<<"FF_0_Isoscalar3Pi: Khuri-Treiman (FormFactor 300), r = "
+    msg_Out()<<"FF_0_Isoscalar3Pi: Khuri-Treiman (FORM_FACTOR = 11), r = "
 	     <<m_kt_r<<" m_pi^-2, tabulated for sqrt(q^2) = "
 	     <<std::round(kKT3Pi_M[0]*kKT3Pi_mpi*1.e3)/1.e3<<" - "
 	     <<std::round(kKT3Pi_M[kKT3Pi_NM-1]*kKT3Pi_mpi*1.e3)/1.e3

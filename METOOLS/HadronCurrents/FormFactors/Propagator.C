@@ -307,7 +307,7 @@ const Complex Fitted_VPP_Propagator::operator()(const double & s) {
   //
   // NOTE METOOLS' shared BreitWigner::ValueGS (this file, above) has the
   // running width in its numerator and so carries the same defect for
-  // FORM_FACTOR = 101. That is NOT changed here: it is a shared class whose
+  // FORM_FACTOR = 11. That is NOT changed here: it is a shared class whose
   // other users were validated against its current form. Flagged, not fixed.
   return Complex(m_M2+m_d*m_M*m_G0,0.) /
          Complex(m_M2-s+fs, -sqrt(s)*Gs);

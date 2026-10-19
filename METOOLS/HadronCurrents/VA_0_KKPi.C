@@ -108,10 +108,10 @@ PrintInfo(std::ostream &st,const size_t width) const {
     <<"Order: 0 = $K^+$, 1 = $K^-$, 2 = $\\pi^-$ \n\n"
     <<"Available form factors: \n "
     <<"  \\begin{itemize} \n"
-    <<"    \\item {\\tt FORM\\_FACTOR = 201 :} RChL2012 (arXiv:1203.3955 "
+    <<"    \\item {\\tt FORM\\_FACTOR = 21 :} RChL2012 (arXiv:1203.3955 "
     <<"Sec.2.2, Eqs.12-15; F3 is identically 0 for this channel) \n"
     <<"  \\end{itemize} \n"
-    <<"Status: form factors for FORM_FACTOR=100,101,200,202 not implemented "
+    <<"Status: form factors for FORM_FACTOR = 10, 11, 20, 22 not implemented "
     <<"(return 0). \n\n"
     <<"Reference: https://arxiv.org/pdf/1203.3955 (Sec.2.2) \n"
     <<std::endl;

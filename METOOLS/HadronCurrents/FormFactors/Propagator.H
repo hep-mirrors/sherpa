@@ -338,7 +338,7 @@ namespace METOOLS {
   // A vector -> pi pi propagator carrying its OWN pole parameters, in either
   // Gounaris-Sakurai or plain running-width Breit-Wigner form.  Built for
   // local ParameterSets (see Current_ME::SelectCurrent), e.g. Belle 2008 on
-  // FORM_FACTOR = 101.  The two line shapes share Gamma(s); only the numerator and f(s)
+  // FORM_FACTOR = 11.  The two line shapes share Gamma(s); only the numerator and f(s)
   // differ.  k(s) and k(M^2) may use DIFFERENT pion pairs - the charged-rho
   // weak form factor of arXiv:2411.07696 needs pi+ pi0 at s but pi+ pi- in
   // the normalisation.

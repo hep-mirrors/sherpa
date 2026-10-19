@@ -33,9 +33,10 @@ FormFactor_Base::FormFactor_Base(const FF_Parameters & params) :
 
   // Local parameter sets; see Parameter_Sets.H.  Applied HERE rather than in
   // the caller so that every consumer of a form factor gets them, decay or
-  // production alike.  ff_model::none means "no dynamical model" -- a constant
-  // form factor, or a current whose card named no FORM_FACTOR -- which no
-  // published fit can describe, so those are left alone.
+  // production alike.  FORM_FACTOR 0 (zero) and 1 (one) mean "no dynamical
+  // model" -- a constant form factor, or a current whose card named no
+  // FORM_FACTOR -- which no published fit can describe, so both are left
+  // alone.
   if (m_ffmodel!=ff_zero && m_ffmodel!=ff_one)
     ApplyParameterSet(p_model,m_flavs,m_pi,m_ffmodel);
 }

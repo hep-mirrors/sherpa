@@ -69,7 +69,7 @@ namespace METOOLS {
     // 200s) whenever the SPECIFICALLY requested model has no
     // dedicated construction for this channel. Used as a second tier
     // in operator(), before the final constant-only fallback. NULL
-    // for ff_model::KS/RChiPT themselves (nothing to fall back to
+    // for Model::KS/RChiPT themselves (nothing to fall back to
     // that isn't p_props itself), and for channels where even the
     // family base has no implementation.
     Summed_Propagator * p_props_fallback;

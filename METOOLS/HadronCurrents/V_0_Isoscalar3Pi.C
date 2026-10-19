@@ -35,9 +35,9 @@ void V_0_Isoscalar3Pi::SetModelParameters(struct GeneralModel model) {
   // This branch's FF_Parameters carries a parameter map; nothing here uses
   // it, so an empty one is passed.
   std::map<std::string,double> pmap;
-  // The parameterisation arrives as an ff_model number, as FORM_FACTOR does
-  // elsewhere: 100, the default, is hep-ph/0512180 Eq. (10); 300 is the
-  // Khuri-Treiman form.
+  // The parameterisation arrives as a FORM_FACTOR number, local to the
+  // FF_0_Isoscalar3Pi family: 10, the default, is hep-ph/0512180 Eq. (10);
+  // 11 is the Khuri-Treiman form.
   const int ffm(int(m_model("EE3Pi_ff_model",10.)));
   FF_Parameters params(ffm,m_flavs,p_i,pmap,"FS_0_EE3Pi",&m_model);
   p_ff = new FF_0_Isoscalar3Pi(params);
@@ -52,10 +52,10 @@ PrintInfo(std::ostream &st,const size_t width) const {
     <<"Order: 0 = $\\pi^+$, 1 = $\\pi^-$, 2 = $\\pi^0$ \n\n"
     <<"\\[ \\epsilon^{\\mu\\alpha\\beta\\gamma} p_{+\\alpha} p_{-\\beta} "
     <<"p_{0\\gamma}\\, F(q^2, s_{ij}) \\] \n\n"
-    <<"FormFactor 100 (default): a sum of products of isoscalar Breit-Wigners "
+    <<"FORM\\_FACTOR = 10 (default): a sum of products of isoscalar Breit-Wigners "
     <<"in $q^2$ with rho line shapes in the two-pion sub-masses, "
     <<"hep-ph/0512180 Eq. (10). \n\n"
-    <<"FormFactor 300: the Khuri-Treiman form, a(q^2) times a tabulated "
+    <<"FORM\\_FACTOR = 11: the Khuri-Treiman form, a(q^2) times a tabulated "
     <<"dispersive basis, for $0.454 < \\sqrt{q^2} < 1.060$ GeV only; "
     <<"arXiv:2212.11767. \n"
 
