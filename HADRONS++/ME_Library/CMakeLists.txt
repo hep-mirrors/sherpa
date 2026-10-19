@@ -1,6 +1,7 @@
 set(ME_Library_SOURCES HD_ME_Base.C
                        Generic.C
                        Current_ME.C
+                       Exchange_ME_Shim.C
                        Eta_Decay_MEs.C
                        Four_Body_MEs.C
                        Three_Body_MEs.C
@@ -11,6 +12,7 @@ set(ME_Library_SOURCES HD_ME_Base.C
 set(ME_Library_HEADERS HD_ME_Base.H
                        Generic.H
                        Current_ME.H
+                       Exchange_ME_Shim.H
                        PseudoScalar_Decay_MEs.H
                        Eta_Decay_MEs.H
                        Vector_Decay_MEs.H

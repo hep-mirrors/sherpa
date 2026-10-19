@@ -1,4 +1,6 @@
 set(HadronCurrents_SOURCES Current_Base.C
+			   ME_Base.C
+			   Exchange_ME.C
 			   VA_0_PiPi.C
 			   V_0_Isoscalar3Pi.C VA_0_PiPiPi.C
 			   VA_0_KKPi.C
@@ -18,6 +20,8 @@ set(HadronCurrents_SOURCES Current_Base.C
 			   VA_P_T.C
 			   Tools.C )
 set(HadronCurrents_HEADERS Current_Base.H
+			   ME_Base.H
+			   Exchange_ME.H
 			   VA_0_PiPi.H
 			   V_0_Isoscalar3Pi.H VA_0_PiPiPi.H
 			   VA_0_KKPi.H

@@ -75,6 +75,30 @@ void Hadron_Decay_Channel::Initialise(Scoped_Settings s, METOOLS::GeneralModel s
     HD_ME_Base* me = SelectME(tmp.GetKeys()[0], sme);
     AddDiagram(me);
   }
+  DEBUG_INFO("processing Currents block");
+  if (s["Currents"].GetKeys().size()>0) {
+    // The SAME block, read by the SAME amplitude constructor, as a Currents:
+    // declaration in a run card -- see METOOLS::Exchange_ME. A current
+    // written for a decay therefore works in a scattering process unchanged,
+    // and nothing about the decay is hardcoded in C++ beyond the individual
+    // currents, the propagators and the form factors.
+    //
+    // Indices are every leg of the channel in order, decaying particle
+    // first, which is what Current_ME assumed too; an exchange picks out the
+    // subset it wants through its own J1/J2 Indices.
+    int n=NOut()+1;
+    vector<int> indices(n);
+    for(int i=0;i<n;i++) indices[i]=i;
+    ME_Parameters fi(m_physicalflavours, indices);
+    HD_ME_Base* me = HD_ME_Getter_Function::GetObject("Exchange_ME",fi);
+    if (me==NULL)
+      THROW(fatal_error, "Could not build the Currents: block of "+FSIDCode()+
+            ". Exchange_ME is not registered.");
+    auto currents = s["Currents"];
+    me->SetModelParameters(currents);
+    AddDiagram(me);
+  }
+
   if(m_diagrams.size()==0) {
     DEBUG_INFO("No ME specified, adding Generic.");
     int n=NOut()+1;
