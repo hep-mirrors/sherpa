@@ -240,7 +240,7 @@ HADRON_DECAYS:
                 Type: VA_0_PiPi
                 Indices: [2, 1]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 200
+                FORM_FACTOR: 20
                 gammaMag_pipi2_200: -0.15
                 gammaPhase_pipi2_200: -0.36
                 deltaMag_pipi2_200: 0.12
@@ -293,7 +293,7 @@ HADRON_DECAYS:
                 Type: VA_0_PiPi
                 Indices: [2, 1]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 100
+                FORM_FACTOR: 10
                 gammaMag_Kpi_100: -0.135
                 gammaPhase_Kpi_100: 0.
         IntResults: [1.0953e-14, 1.0953e-17, 9.2621e-13]
@@ -334,7 +334,7 @@ HADRON_DECAYS:
                 Type: VA_0_PiPi
                 Indices: [2, 1]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 100
+                FORM_FACTOR: 10
                 gammaMag_Kpi_100: -0.135
                 gammaPhase_Kpi_100: 0.
         IntResults: [1.03186e-14, 1.03182e-17, 8.54277e-13]
@@ -359,7 +359,7 @@ HADRON_DECAYS:
                 Type: VA_0_PiPi
                 Indices: [1, 2]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 100
+                FORM_FACTOR: 10
                 gammaMag_Kpi_100: -0.135
                 gammaPhase_Kpi_100: 0.
         IntResults: [1.032e-14, 1.0318e-17, 8.5431e-13]
@@ -396,7 +396,7 @@ HADRON_DECAYS:
                 Type: VA_0_PiPi
                 Indices: [2, 1]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 200
+                FORM_FACTOR: 20
                 gammaMag_KK_200: -0.15
                 gammaPhase_KK_200: -1.88
                 deltaMag_KK_200: 0.
@@ -416,7 +416,7 @@ HADRON_DECAYS:
                 Type: VA_0_PiPi
                 Indices: [2, 1]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 200
+                FORM_FACTOR: 20
                 gammaMag_KK_200: -0.15
                 gammaPhase_KK_200: -1.88
                 deltaMag_KK_200: 0.
@@ -460,7 +460,7 @@ HADRON_DECAYS:
                 Type: VA_0_PiPi
                 Indices: [2, 1]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 100
+                FORM_FACTOR: 10
                 gammaMag_Keta_100: -0.135
                 gammaPhase_Keta_100: 0.
                 N_Keta: 1.
@@ -501,7 +501,7 @@ HADRON_DECAYS:
                 Type: VA_0_PiPi
                 Indices: [2, 1]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 200
+                FORM_FACTOR: 20
                 gammaMag_Ketaprime_200: -0.034
                 gammaPhase_Ketaprime_200: 0.
                 N_Ketaprime: 1.
@@ -537,7 +537,7 @@ HADRON_DECAYS:
                 Type: VA_0_PiPi
                 Indices: [2, 1]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 100
+                FORM_FACTOR: 10
                 eps_pieta: 0.017
 
     ##### pi eta' #####
@@ -563,7 +563,7 @@ HADRON_DECAYS:
                 Type: VA_0_PiPi
                 Indices: [2, 1]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 100
+                FORM_FACTOR: 10
                 eps_pietaprime: 0.004
     ######################################################
     # Three pseudoscalars
@@ -621,7 +621,7 @@ HADRON_DECAYS:
                 Type: VA_0_PPP
                 Indices: [3, 2, 1]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 100
+                FORM_FACTOR: 10
         # 2 chains (which pi0 pairs with pi-) x 2 inner resonances
         # (rho(770), rho(1450)) = 4 combinations, each weight 0.25.
         PhaseSpace:
@@ -663,7 +663,7 @@ HADRON_DECAYS:
                 Type: VA_0_PPP
                 Indices: [2, 3, 1]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 100
+                FORM_FACTOR: 10
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_2_rho(770)+_13:
               Weight: 0.25
@@ -702,7 +702,7 @@ HADRON_DECAYS:
                 Type: VA_0_PPP
                 Indices: [2, 3, 1]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 100
+                FORM_FACTOR: 10
         # 2 outer (K1(1400)/K1(1270)) x 2 inner (K*(892)/K*(1410)) x 2
         # chains (which pi0 pairs with K^-) = 8 combinations, each
         # weight 0.125.
@@ -775,7 +775,7 @@ HADRON_DECAYS:
                 Type: VA_0_KPiPi
                 Indices: [1, 3, 2]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 106
+                FORM_FACTOR: 15
         # 2 K* combinations (K1(1270)/K1(1400) x bare K*(892), spectator
         # =2) + 3 pi-pi combinations (K1(1270) x rho(770)/rho(1450)/
         # f0(600), spectator=1) - 50/50 split between the two chains,
@@ -828,7 +828,7 @@ HADRON_DECAYS:
                 Type: VA_0_KPiPi
                 Indices: [2, 1, 3]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 103
+                FORM_FACTOR: 13
         #   rho region:  pi-(idx2)+pi0(idx3), spectator=K_S(idx1)
         #   K* region A: K_S(idx1)+pi-(idx2), spectator=pi0(idx3)
         #   K* region B: K_S(idx1)+pi0(idx3), spectator=pi-(idx2)
@@ -876,7 +876,7 @@ HADRON_DECAYS:
                 Type: VA_0_KPiPi
                 Indices: [1, 2, 3]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 103
+                FORM_FACTOR: 13
         PhaseSpace:
           - TwoResonances_K(1)(1270)+_2_rho(770)+_13:
               Weight: 0.111111
@@ -937,7 +937,7 @@ HADRON_DECAYS:
                 Type: VA_0_KPiK
                 Indices: [2, 3, 1]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 100
+                FORM_FACTOR: 10
         # Indices are FM95's own q1,q2,q3 = K^-(idx2), pi^-(idx3),
         # K^+(idx1). PhaseSpace below names PARTICLE indices, which are
         # unaffected by that reordering:
@@ -993,7 +993,7 @@ HADRON_DECAYS:
                 Type: VA_0_KPiK
                 Indices: [1, 3, 2]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 100
+                FORM_FACTOR: 10
         # 3 regions x 2 inner resonances = 6 combinations:
         #   rho region:  K-(idx1)+K_S(idx2),  spectator=pi0(idx3)
         #   K* region A: K-(idx1)+pi0(idx3), spectator=K_S(idx2)
@@ -1032,7 +1032,7 @@ HADRON_DECAYS:
                 Type: VA_0_KPiK
                 Indices: [1, 3, 2]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 100
+                FORM_FACTOR: 10
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_3_rho(770)+_12:
               Weight: 0.166667
@@ -1072,7 +1072,7 @@ HADRON_DECAYS:
                 Type: VA_0_KPiK
                 Indices: [1, 2, 3]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 100
+                FORM_FACTOR: 10
         # 3 regions x 2 inner resonances = 6 combinations:
         #   rho region:  K_S(idx1)+K_L(idx3),  spectator=pi-(idx2)
         #   K* region A: K_S(idx1)+pi-(idx2), spectator=K_L(idx3)
@@ -1118,7 +1118,7 @@ HADRON_DECAYS:
                 Type: VA_0_KPiK
                 Indices: [1, 3, 2]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 100
+                FORM_FACTOR: 10
         #   K* region A: K_S(idx1)+pi-(idx3), spectator=K_S(idx2)
         #   K* region B: pi-(idx3)+K_S(idx2), spectator=K_S(idx1)
         PhaseSpace:
@@ -1157,7 +1157,7 @@ HADRON_DECAYS:
                 Type: VA_0_KPiK
                 Indices: [2, 1, 3]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 100
+                FORM_FACTOR: 10
         PhaseSpace:
           - TwoResonances_a(1)(1260)+_3_K*(892)+_12:
               Weight: 0.25
@@ -1197,7 +1197,7 @@ HADRON_DECAYS:
                 Type: VA_0_PPP
                 Indices: [1, 2, 3]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 100
+                FORM_FACTOR: 10
         AlwaysIntegrate: 0
 
     ##### eta pi pi #####
@@ -1227,7 +1227,7 @@ HADRON_DECAYS:
                 Type: VA_0_EtaPiPi
                 Indices: [1, 2, 3]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 100
+                FORM_FACTOR: 10
                 N_etapipi: 1.
         # Unlike every other channel above, BOTH resonance layers here
         # are genuinely charged rho(770)/rho(1450)/rho(1700) - there is
@@ -1275,7 +1275,7 @@ HADRON_DECAYS:
                 Type: VA_0_EtaPiPi
                 Indices: [1, 2, 3]
                 RUNNING_WIDTH: 1
-                FORM_FACTOR: 100
+                FORM_FACTOR: 10
         AlwaysIntegrate: 0
     ######################################################
     # Four pseudoscalars
