@@ -18,6 +18,7 @@ set(FormFactors_SOURCES Line_Shapes.C
 			FF_0_DD.C
                         FF_Dirac_Dirac_1.C
 			FF_P_X.C
+			FF_N_N.C
 			FF_PP_Wave.C
 			RChL_Functions.C
                      Novosibirsk4pi_GTables.C
@@ -44,6 +45,7 @@ set(FormFactors_HEADERS Line_Shapes.H
 			FF_0_DD.H
                         FF_Dirac_Dirac_1.H
 			FF_P_X.H
+			FF_N_N.H
 			FF_PP_Wave.H
 			RChL_Functions.H
 			Novosibirsk4pi_GTables.H

@@ -99,6 +99,12 @@ namespace METOOLS {
      */
     virtual void CheckTopology() const {}
 
+    /// True if the current is identically zero for its chosen model. Lets
+    /// Exchange_ME stop a process whose every exchange vanishes, while a
+    /// single vanishing exchange (e.g. the photon on a pointlike neutron
+    /// next to a Z) is allowed.
+    virtual bool Vanishes() const { return false; }
+
     /// Tell the current how many external legs are incoming, then validate.
     inline void SetNIn(const size_t nin) { m_nin = nin; CheckTopology(); }
 

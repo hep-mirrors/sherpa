@@ -23,9 +23,13 @@ PDF_Defaults::PDF_Defaults()
   #ifdef USING__LHAPDF
     m_deflib[kf_p_plus] = "LHAPDFSherpa";
     m_defset[kf_p_plus] = "PDF4LHC21_40_pdfas";
+    m_deflib[kf_n]      = "LHAPDFSherpa";
+    m_defset[kf_n]      = "PDF4LHC21_40_pdfas"; // NOTE THIS IS PULLED FROM MAIN BRANCH BUT I DIDNT PULL ALL THE U<->D SWITCHES!!!!!!!! do this when rebasing.
   #else
     m_deflib[kf_p_plus] = "NNPDFSherpa";
     m_defset[kf_p_plus] = "NNPDF31_nnlo_as_0118_mc";
+    m_deflib[kf_n]      = "NNPDFSherpa";
+    m_defset[kf_n]      = "NNPDF31_nnlo_as_0118_mc";
   #endif
   m_deflib[kf_e] = "PDFESherpa";
   m_defset[kf_e] = "PDFe";
