@@ -1,10 +1,11 @@
 # vN->vN scattering
 # see eNeN for more description
-# v:1 a:1 needed for charged current since sherpa doesnt auto assign them for a W, due to hadron decays sometines needing other ones.
+# v:1 a:-1 needed for charged current since sherpa doesnt auto assign them for a W, due to hadron decays sometines needing other ones.
+# v:1 a:-1 is gamma^mu (1 - gamma_5), the tex's V-A, same as VA_N_N. The VA_N_N v, a are ignored.
 
 TAGS: {VFF: 10, AFF: 20}
 
-EVENTS: 100000k
+EVENTS: 100k
 
 BEAMS: [12, 2112]
 BEAM_ENERGIES: [3.6, 0.938272] 
@@ -32,8 +33,8 @@ PROCESSES:
     Currents:
       Exchange:
       - Boson: 24
-        J1: {Type: VA_F_F, Indices: [2, 0], v: 1, a: 1}    # e- out, nu in
-        J2: {Type: VA_N_N, Indices: [3, 1], v: 1, a: 1,    # proton out, neutron in
+        J1: {Type: VA_F_F, Indices: [2, 0]}   # e- out, nu in
+        J2: {Type: VA_N_N, Indices: [3, 1],   # proton out, neutron in
               BOSON: 24, VECTOR_FF: $(VFF), AXIAL_FF: $(AFF)}
 
 # settings for now for low energies

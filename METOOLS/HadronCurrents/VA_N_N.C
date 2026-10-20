@@ -122,9 +122,11 @@ void VA_N_N::Calc(const ATOOLS::Vec4D_Vector& moms, bool anti)
 
   // Gordon: gamma^mu coefficient F1 + (m'+m)/(2m_N) F2, plus -P^mu F2/(2m_N).
   const double V(F1+(p_masses[0]+p_masses[1])/m2N*F2);
-  const Complex cR(0.,V+FA), cL(0.,V-FA);      // i gamma^mu (V - F_A g5)
+  // Same map as VA_0_FF, cR = i(v+a), cL = i(v-a) <-> i(v + a g5), with the
+  // tex's V-A signs: v = V, a = -F_A (cf. a = -1 for a left-handed lepton).
+  const Complex cR(0.,V-FA), cL(0.,V+FA);      // i gamma^mu (V - F_A g5)
   const Complex sR(0.,1.),   sL(0.,1.);        // i
-  const Complex pR(0.,FP),   pL(0.,-FP);       // i (-F_P g5)
+  const Complex pR(0.,-FP),  pL(0.,FP);        // i (-F_P g5)
 
   XYZFunc F(moms,m_flavs,anti,p_i);
   for (int h0=0;h0<2;h0++) {

@@ -20,14 +20,17 @@ namespace METOOLS {
   /// The overall i and the coupling convention match VA_0_FF, so that
   /// Exchange_ME's g_V = e^2, (g/2c_W)^2, (g/2sqrt2)^2 complete the vertex.
   /// The form factors carry the nucleon's charges (F1^p(0)=1, F1^n(0)=0),
-  /// so v and a are NOT used. The gamma_5 terms are fed to XYZFunc through
-  /// the same (cR,cL) = (V+A, V-A) map as VA_0_FF. XYZFunc's cR multiplies
-  /// P_R = (1+gamma_5)/2 in both L and Y (hep-ph/0109036, Eq. 24), so the
-  /// gamma^mu gamma_5 and the F_P gamma_5 terms share one convention. That
-  /// map gives V + A gamma_5, the parity mirror of the tex vertex, exactly
-  /// as Exchange_ME's DefaultVA (a = T3) mirrors the Z lepton vertex; the
-  /// relative sign, and so every unpolarised rate, is that of the tex.
-  /// Give the lepton line of a W exchange v: 1, a: 1 to stay consistent.
+  /// so v and a are NOT used.
+  ///
+  /// V-A CONVENTION. XYZFunc's cR multiplies P_R = (1+gamma_5)/2 in both L
+  /// and Y (hep-ph/0109036, Eq. 24), so VA_0_FF's cR = i(v+a), cL = i(v-a)
+  /// is the current i gamma^mu (v + a gamma_5): its default v = 1, a = -1 is
+  /// the left-handed gamma^mu (1 - gamma_5). This current is written the
+  /// same way with v = V, a = -F_A (and -F_P for the q^mu term), i.e. the
+  /// tex vertex gamma^mu F1 - gamma^mu gamma_5 F_A literally, not a parity
+  /// mirror. The lepton line must use the same convention:
+  ///   W : v: 1, a: -1               (gamma^mu (1 - gamma_5))
+  ///   Z : Exchange_ME's default a = -T3, v = T3 - 2 Q s_W^2.
   ///
   /// sigma^{mu nu} is removed by the on-shell Gordon identity
   ///   ubar(p') i sigma^{mu nu} q_nu u(p) = ubar(p') [(m'+m) gamma^mu - P^mu] u(p),

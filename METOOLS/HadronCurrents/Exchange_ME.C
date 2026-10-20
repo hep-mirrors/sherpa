@@ -19,9 +19,8 @@ namespace {
 
   // A fermion line has two legs of the same fermion, differing at most by
   // particle/antiparticle, and couplings are quoted for the particle. A
-  // FLAVOUR-CHANGING current (D0 -> K-) has no such thing, which is why the
-  // defaults below only serve the neutral bosons and everything else has to
-  // declare its couplings.
+  // FLAVOUR-CHANGING current (D0 -> K-) has no such thing; the neutral-boson
+  // defaults below read this flavour, the W default (V-A) does not need it.
   Flavour LineFlavour(const Flavour_Vector & flavs,
                       const std::vector<int> & idx)
   {
@@ -36,14 +35,26 @@ namespace {
     if (bos.Kfcode()==kf_Z) {
       const double s2 =
         std::abs(MODEL::s_model->ComplexConstant(string("csin2_thetaW")));
-      a = f.IsoWeak();
-      v = a - 2.*f.Charge()*s2;
+      // VA_0_FF builds i gamma^mu (v + a gamma_5), as HADRONS++ has always done, 
+      //  so the SM vertex gamma ^ mu(c_V - c_A gamma_5) with c_A = T3 
+      //  needs a = -T3.
+      v = f.IsoWeak() - 2. * f.Charge() * s2;
+      a = -f.IsoWeak();
+      return;
+    }
+    // W on a lepton line only: V-A. Quark and hadron lines need a CKM element
+   // and/or form factors, so they must state their couplings.
+   if (bos.Kfcode() == kf_Wplus && f.IsLepton())
+    {
+      v = 1;
+      a = -1;
       return;
     }
     THROW(fatal_error,"No default couplings known for exchanged boson "
-          +ToString(bos)+". Give v and a on both currents, and Coupling on "
-          "the exchange, explicitly. A flavour-changing current has no "
-          "model-derivable coupling in any case.");
+          +ToString(bos)+" on a "+ToString(f)+" line (defaults exist for the photon, the Z, "
+          "and the W on lepton lines only). "
+          "Give v and a on both currents, and Coupling on the exchange, "
+          "explicitly.");
   }
 
   double DefaultCoupling(const Flavour & bos)
@@ -148,9 +159,13 @@ void Exchange_ME::AddExchange(Scoped_Settings e)
   double v1(0.),a1(0.),v2(0.),a2(0.),g(1.);
   const bool wantdefaults = !contact &&
     !(HasKey(j1,"v") && HasKey(j1,"a") && HasKey(j2,"v") && HasKey(j2,"a"));
+  // Per line: a line stating both v and a needs no default, so a hadron
+  // line with explicit couplings next to a defaulted lepton line is fine.
   if (wantdefaults) {
-    DefaultVA(bos,LineFlavour(m_flavs,i1),v1,a1);
-    DefaultVA(bos,LineFlavour(m_flavs,i2),v2,a2);
+    if (!(HasKey(j1,"v") && HasKey(j1,"a")))
+      DefaultVA(bos,LineFlavour(m_flavs,i1),v1,a1);
+    if (!(HasKey(j2,"v") && HasKey(j2,"a")))
+      DefaultVA(bos,LineFlavour(m_flavs,i2),v2,a2);
   }
   if (HasKey(j1,"v")) v1 = j1["v"].GetScalarWithOtherDefault<double>(v1);
   if (HasKey(j1,"a")) a1 = j1["a"].GetScalarWithOtherDefault<double>(a1);
