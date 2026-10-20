@@ -67,6 +67,16 @@ Tests/End2End/UFO/TestProcesses/
 Tests/End2End/UFO/run_all.py
 Tests/UFO/
 
+
+Examples/update_decay_currents/*/Process
+Examples/update_decay_currents/*/rivet*
+Examples/update_decay_currents/*/Analysis*
+Examples/update_decay_currents/*/Re*
+Examples/update_decay_currents/*/K*
+Examples/update_decay_currents/*/pi*
+
+
+
 # (local) make install targets
 
 /bin/

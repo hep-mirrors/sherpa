@@ -21,7 +21,7 @@
 # this card massive; see the note in the project doc.
 
 BEAMS: [11, 13]
-BEAM_ENERGIES: 50.0
+BEAM_ENERGIES: 100.0
 
 PARTICLE_DATA:
   11: {Massive: true}

@@ -16,6 +16,14 @@ BEAM_ENERGIES: 100.0
 
 ME_GENERATORS: [Internal]
 
+ANALYSIS: [Rivet]
+RIVET:
+  ANALYSES:
+    - MC_FSPARTICLES
+    - MC_XS
+  OUTPUT: rivet_eemumu.yoda
+  IGNORE_BEAMS: 1
+
 
 PROCESSES:
 - 11 -11 -> 13 -13:

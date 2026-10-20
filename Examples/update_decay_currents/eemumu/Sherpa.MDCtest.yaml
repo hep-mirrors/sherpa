@@ -1,0 +1,61 @@
+# e+ e- -> mu+ mu-, built from two fermion currents joined by a photon and a Z.
+#
+# The matrix element is not looked up by process. It is assembled from what
+# is declared below:
+#
+#   M = sum_V  g_V  D_V(q^2)  [ J1_V . J2_V - (J1_V.q)(J2_V.q)/M_V^2 ]
+#
+# Index 0 of a VA_F_F is the barred spinor, so J1 takes (e+, e-) and J2
+# takes (mu-, mu+); the numbers are positions in the process above, counting
+# the two incoming legs first.
+#
+# The momentum transfer is NOT declared. It is the sum of J1's legs with the
+# sign that makes each one outgoing, which here gives q^2 = s. Compare
+# Sherpa.emu.yaml, where the same block with different indices gives q^2 = t.
+#
+# Each boson carries its own pair of currents, because the couplings belong
+# to the (boson, current) pair: the photon wants (v,a) = (Q,0) on the same
+# electron line where the Z wants (v_e, a_e). They default from the model;
+# give v and a on a current, or Coupling on an exchange, to override.
+
+BEAMS: [13, 11]
+BEAM_ENERGIES: 100.0
+#PDF_LIBRARY: None 
+
+
+# Leptons are given their real masses. Sherpa's default is to treat them as
+# massless, which at these energies is numerically harmless -- (m_mu/sqrt(s))^2
+# is about 3e-7 here -- but it is an approximation, and the currents handle
+# the masses exactly, so there is no reason to take it.
+PARTICLE_DATA:
+  11: {Massive: true}
+  13: {Massive: true}
+
+ME_GENERATORS: [Amegic, Comix]
+
+ANALYSIS: [Rivet]
+ANALYSIS_OUTPUT: Analysis_trialemuemu
+RIVET:
+  ANALYSES:
+    - MC_FSPARTICLES
+    - MC_XS
+  IGNORE_BEAMS: 1
+
+SELECTORS:
+- [Q2, 11, 11, 1, 1e12]
+
+PROCESSES:
+- 13 11 -> 11 13:
+    Sort_Flavours: 0
+    Order: {QCD: 0, EW: 2}
+    Currents:
+      Exchange:
+      - Boson: 22
+        J1: {Type: VA_F_F, Indices: [3, 0]}
+        J2: {Type: VA_F_F, Indices: [2, 1]}
+      - Boson: 23
+        J1: {Type: VA_F_F, Indices: [3, 0]}
+        J2: {Type: VA_F_F, Indices: [2, 1]}
+
+
+

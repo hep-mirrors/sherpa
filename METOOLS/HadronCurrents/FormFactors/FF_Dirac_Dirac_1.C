@@ -3,6 +3,7 @@
 #include "METOOLS/HadronCurrents/FormFactors/Kstar_Decays.H"
 #include "METOOLS/HadronCurrents/FormFactors/A0_Decays.H"
 #include "METOOLS/HadronCurrents/Tools.H"
+#include "ATOOLS/Math/Histogram.H"
 
 using namespace METOOLS;
 using namespace ATOOLS;
@@ -10,7 +11,7 @@ using namespace std;
 
 
 namespace {
-
+ 
   Complex SachsToF1(const double GE,
                     const double GM,
                     const double tau)
@@ -36,30 +37,30 @@ void FF_Dirac_Dirac_1_Base::FixMode()
 
 //operator() evaluates the form factor by selecting the requested model through m_ffmodel, such as Dipole, Kelly, BBBA05 or YAHL18.
 
-Complex FF_Dirac_Dirac_1_Base::operator()(const ATOOLS::Vec4D_Vector& moms){
- double Q2 = (moms[m_pi[0]] + moms[m_pi[1]]).Abs2();
+Complex FF_Dirac_Dirac_1_Base::operator()(
+  const ATOOLS::Vec4D_Vector& moms)
+{
+const double Q2 =
+    (moms[m_pi[0]] + moms[m_pi[1]]).Abs2();
 
-switch (m_ffmodel) {
-case ff_model::none:       return Complex(0.0, 0.0);
+switch (GetModel()) {
+  case Model::None:     return Complex(0.0, 0.0);
 
+  case Model::pp_Point:   if (m_mode == FF_Dirac_Dirac_1_mode::pp) return Complex(1.0, 0.0); break;
+  case Model::pp_Dipole:  if (m_mode == FF_Dirac_Dirac_1_mode::pp) return F1_pp_Dipole(Q2); break;
+  case Model::pp_Kelly:   if (m_mode == FF_Dirac_Dirac_1_mode::pp) return F1_pp_Kelly(Q2); break;
+  case Model::pp_BBBA05:  if (m_mode == FF_Dirac_Dirac_1_mode::pp) return F1_pp_BBBA05(Q2); break;
+  case Model::pp_YAHL18:  if (m_mode == FF_Dirac_Dirac_1_mode::pp) return F1_pp_YAHL18(Q2); break;
 
-case ff_model::pp_Point:   return Complex(1.0, 0.0);
-case ff_model::pp_Dipole:  return F1_pp_Dipole(Q2);
-case ff_model::pp_Kelly:   return F1_pp_Kelly(Q2);
-case ff_model::pp_BBBA05:  return F1_pp_BBBA05(Q2);
-case ff_model::pp_YAHL18:  return F1_pp_YAHL18(Q2);
-
-case ff_model::nn_Point:   return Complex(1.0, 0.0);
-case ff_model::nn_Dipole:  return F1_nn_Dipole(Q2);
-case ff_model::nn_Kelly:   return F1_nn_Kelly(Q2);
-case ff_model::nn_BBBA05:  return F1_nn_BBBA05(Q2);
-case ff_model::nn_YAHL18:  return F1_nn_YAHL18(Q2);
-
-case ff_model::unknown:
-default:                   return Complex(0.0, 0.0);
-}
+  case Model::nn_Point:   if (m_mode == FF_Dirac_Dirac_1_mode::nn) return Complex(1.0, 0.0); break;
+  case Model::nn_Dipole:  if (m_mode == FF_Dirac_Dirac_1_mode::nn) return F1_nn_Dipole(Q2); break;
+  case Model::nn_Kelly:   if (m_mode == FF_Dirac_Dirac_1_mode::nn) return F1_nn_Kelly(Q2); break;
+  case Model::nn_BBBA05:  if (m_mode == FF_Dirac_Dirac_1_mode::nn) return F1_nn_BBBA05(Q2); break;
+  case Model::nn_YAHL18:  if (m_mode == FF_Dirac_Dirac_1_mode::nn) return F1_nn_YAHL18(Q2); break;
 }
 
+return Complex(0.0, 0.0);
+}
 
 //construct
 
@@ -101,7 +102,42 @@ if (params.m_parameterMap.find("Lambda2") !=
   Lambda2 = params.m_parameterMap.at("Lambda2");
 }
 }
+
+
+//histogram
+void FF_Dirac_Dirac_1_Base::CreateF1Histogram()
+{
+  const double low = 0.0, up = 20.0;
+  const int nbins = 1000;
+  const double step = (up - low) / nbins;
+
+  ATOOLS::Histogram hist(0, low, up + step, nbins + 1);
+
+  for (int i = 0; i <= nbins; ++i) {
+    const double Q2 = low + i * step;
+    Complex f1(0.0, 0.0);
+
+    switch (GetModel()) {
+      case Model::None:      break;
+      case Model::pp_Point:  if (m_mode == FF_Dirac_Dirac_1_mode::pp) f1 = Complex(1.0, 0.0); break;
+      case Model::pp_Dipole: if (m_mode == FF_Dirac_Dirac_1_mode::pp) f1 = F1_pp_Dipole(Q2); break;
+      case Model::pp_Kelly:  if (m_mode == FF_Dirac_Dirac_1_mode::pp) f1 = F1_pp_Kelly(Q2); break;
+      case Model::pp_BBBA05: if (m_mode == FF_Dirac_Dirac_1_mode::pp) f1 = F1_pp_BBBA05(Q2); break;
+      case Model::pp_YAHL18: if (m_mode == FF_Dirac_Dirac_1_mode::pp) f1 = F1_pp_YAHL18(Q2); break;
+      case Model::nn_Point:  if (m_mode == FF_Dirac_Dirac_1_mode::nn) f1 = Complex(1.0, 0.0); break;
+      case Model::nn_Dipole: if (m_mode == FF_Dirac_Dirac_1_mode::nn) f1 = F1_nn_Dipole(Q2); break;
+      case Model::nn_Kelly:  if (m_mode == FF_Dirac_Dirac_1_mode::nn) f1 = F1_nn_Kelly(Q2); break;
+      case Model::nn_BBBA05: if (m_mode == FF_Dirac_Dirac_1_mode::nn) f1 = F1_nn_BBBA05(Q2); break;
+      case Model::nn_YAHL18: if (m_mode == FF_Dirac_Dirac_1_mode::nn) f1 = F1_nn_YAHL18(Q2); break;
+    }
+
+    hist.Insert(Q2, f1.real());
+  }
+
+  hist.Output("F1_Dirac_Dirac.dat");
+}
   
+
 
 
 //funcs
@@ -118,6 +154,8 @@ Complex FF_Dirac_Dirac_1_Base::F1_pp_Dipole(const double& Q2) {
 
 return Complex(0.0, 0.0);
 }
+
+
 
 
 Complex FF_Dirac_Dirac_1_Base::F1_nn_Dipole(const double& Q2) {
