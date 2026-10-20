@@ -1,0 +1,55 @@
+# vN->vN scattering
+# see eNeN for more description
+
+TAGS: {VFF: 10, AFF: 20, nucleon: 2112}
+EVENTS: 10k
+
+BEAMS: [12, $(nucleon)]
+BEAM_ENERGIES: [3.6, 0.938272] 
+PDF_SET: [None, Intact] 
+
+PARTICLE_DATA:
+  12: {Massive: false}
+  2212: {Massive: true}
+  2112: {Massive: true}
+
+ME_GENERATORS: [Internal]
+
+SELECTORS:
+# - [PT, 11, 10.0, E_CMS]
+# - [PT, 13, 10.0, E_CMS]
+# - [Q2, 12, 12, 0.001, 1e12] #[observable, flavor1, flavor2, min, max] # technically no cut needed here due to Z mass
+# note that for proton => XS ~ 1-2e-3 pb, not super dependant on min Q2
+
+
+PROCESSES:
+- 12 2112 -> 12 2112:       
+    Sort_Flavors: 0
+    Order: {QCD: 0, EW: 2}
+    Currents:
+      Exchange:
+      - Boson: 23
+        J1: {Type: VA_F_F, Indices: [2, 0]}    # nu [out in]
+        J2: {Type: VA_N_N, Indices: [3, 1],    # proton [out in]
+              BOSON: 23, VECTOR_FF: $(VFF), AXIAL_FF: $(AFF)}
+
+# settings for now for low energies
+
+SHOWER_GENERATOR: None
+SCALES: VAR{-Abs2(p[0]-p[2])}  # need if turning off shower
+
+FRAGMENTATION: None
+BEAM_REMNANTS: false
+MI_HANDLER: None
+HADRON_DECAYS:
+  Model: None
+YFS: {MODE: None}
+
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: Analysis_V$(VFF)_A$(AFF)_N$(nucleon)
+
+RIVET:
+  --analyses: [my_MC_FSPARTICLES, MC_DIS, MC_NU_DIS, MC_XS, MINERVA_2015_I1393997, MINERVA_2015_I1393997T6]
+  --pwd: /Users/tvcr49@durham.ac.uk/code_analysis/MyRivetAnalyses
+  --ignore_beams: 1
+

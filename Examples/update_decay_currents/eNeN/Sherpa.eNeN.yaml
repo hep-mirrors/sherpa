@@ -31,7 +31,7 @@
 #                        21 lattice-QCD z-expansion
 #  numbers 10 and 20 come from FF base class
 #   AFF is ignored for the photon (no axial coupling); it acts on Z and W.
-TAGS: {VFF: 1, AFF: 20, nucleon: 2112}
+TAGS: {VFF: 10, AFF: 20, nucleon: 2112}
 
 EVENTS: 10k
 
@@ -50,9 +50,10 @@ SELECTORS:
 # - [PT, 11, 10.0, E_CMS]
 # - [PT, 13, 10.0, E_CMS]
 - [Q2, 11, 11, 0.001, 1e12] #[observable, flavor1, flavor2, min, max]
-# note that for proton minQ2=0.001 => XS ~ 2.5e8 pb
-# for minQ2=0.01 => XS ~ 2.5e7 pb
-# for minQ2=1 => XS ~ 5e3 pb, NOTE how its not linear in min Q2 due to FF
+# note that for proton  expected XS should not be linear in min Q2 due to FF
+# minQ2=0.001 => XS ~ 2.5e8 pb
+# minQ2=0.01 => XS ~ 2.5e7 pb
+# minQ2=1 => XS ~ 5e3 pb
 
 PROCESSES:
 - 11 $(nucleon) -> 11 $(nucleon):        

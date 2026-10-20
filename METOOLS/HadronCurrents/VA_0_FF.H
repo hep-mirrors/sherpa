@@ -61,12 +61,16 @@ namespace METOOLS {
     /// Current_Base::SetNIn, not from the constructor: which legs are
     /// incoming is context the constructor does not have.
     void CheckTopology() const override;
+    /// Zero couplings (v = a = 0), e.g. a photon on a neutrino line. See
+    /// Current_Base::Vanishes and the check in Exchange_ME.
+    inline bool Vanishes() const override
+    { return m_cR==Complex(0.,0.) && m_cL==Complex(0.,0.); }
     VA_0_FF(const ATOOLS::Flavour_Vector& flavs,
             const std::vector<int>& indices,
             const std::string& name);
     ~VA_0_FF() {}
-    void SetModelParameters(struct GeneralModel model);
-    void Calc(const ATOOLS::Vec4D_Vector& moms, bool anti);
+    void SetModelParameters(struct GeneralModel model) override;
+    void Calc(const ATOOLS::Vec4D_Vector& moms, bool anti) override;
   };
 
   /// Aliases for the other two topologies. Same implementation; they

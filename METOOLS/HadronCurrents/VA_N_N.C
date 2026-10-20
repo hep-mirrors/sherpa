@@ -77,7 +77,7 @@ void VA_N_N::SetModelParameters(struct GeneralModel model)
   m_isp  = (kf0==kf_p_plus);
   m_T3   = m_isp ? 0.5 : -0.5;
   m_mN   = 0.5*(p_masses[0]+p_masses[1]);
-  m_mpi  = Flavour(m_boson==kf_Z ? kf_pi : kf_pi_plus).HadMass();
+  m_mpi  = Flavour(kf_pi).HadMass(); // only need for PCAC
   m_s2   = std::abs(MODEL::s_model->ComplexConstant(string("csin2_thetaW")));
   m_norm = (m_boson==kf_Wplus) ?
     std::abs(MODEL::s_model->ComplexConstant(string("CKM_0_0"))) : 1.;

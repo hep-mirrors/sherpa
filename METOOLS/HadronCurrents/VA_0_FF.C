@@ -56,6 +56,11 @@ void VA_0_FF::SetModelParameters(struct GeneralModel model)
   // currents and cancels in every rate.
   m_cR = Complex(0.,model("v",1.)+model("a",-1.));
   m_cL = Complex(0.,model("v",1.)-model("a",-1.));
+  
+  if (Vanishes())
+    msg_Error()<<"Warning in "<<METHOD<<": current "<<m_name<<" on "
+               <<m_flavs[p_i[0]]<<" has v = a = 0 (e.g. a photon coupled to "
+               <<"a neutral lepton), so it vanishes identically. Check process.\n";
 
   const int ff = int(model("V_A_FORM_FACTOR",1.)+0.5);
   if (ff!=1)
