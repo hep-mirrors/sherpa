@@ -76,6 +76,23 @@ Examples/update_decay_currents/*/K*
 Examples/update_decay_currents/*/pi*
 
 
+Examples/*/*/Process
+Examples/*/*/makelibs
+Examples/*/*/References.tex
+Examples/*/*/Settings_Report
+Examples/*/*/Results.zip
+Examples/*/*/Results.zip~
+Examples/*/*/rivet*
+Examples/*/*/Analysis*
+
+Examples/*/*/*/Process
+Examples/*/*/*/makelibs
+Examples/*/*/*/References.tex
+Examples/*/*/*/Settings_Report
+Examples/*/*/*/Results.zip
+Examples/*/*/*/Results.zip~
+Examples/*/*/*/rivet*
+Examples/*/*/*/Analysis*
 
 # (local) make install targets
 
