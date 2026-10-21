@@ -10,6 +10,7 @@
 #include "ATOOLS/Org/Getter_Function.H"
 #include "METOOLS/Main/Spin_Structure.H"
 #include "METOOLS/HadronCurrents/Tools.H"
+#include "METOOLS/HadronCurrents/Photon_Emission.H"
 #include "METOOLS/HadronCurrents/FormFactors/FormFactor_Base.H"
 
 
@@ -51,6 +52,11 @@ namespace METOOLS {
     /// Current_ME path behaves exactly as it always has. Exchange_ME sets
     /// it explicitly from the context it was built in.
     size_t            m_nin;
+
+    /// Conventions and coupling for a real photon emitted from inside this
+    /// current. Unused unless the current is handed a photon leg; set by
+    /// Exchange_ME. See Photon_Emission.H.
+    Photon_Emission   m_photon;
 
   public:
     /** 
@@ -107,6 +113,8 @@ namespace METOOLS {
 
     /// Tell the current how many external legs are incoming, then validate.
     inline void SetNIn(const size_t nin) { m_nin = nin; CheckTopology(); }
+
+    inline Photon_Emission & Photon() { return m_photon; }
 
     /// Whether external leg index i is an incoming leg.
     inline bool IsIncoming(const int i) const { return i<int(m_nin); }

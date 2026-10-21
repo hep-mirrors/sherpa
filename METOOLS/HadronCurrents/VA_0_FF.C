@@ -21,9 +21,22 @@ VA_0_FF::VA_0_FF(const ATOOLS::Flavour_Vector& flavs,
 }
 
 void VA_0_FF::CheckTopology() const {
-  if (p_i.size()!=2)
-    THROW(fatal_error,"Current "+m_name+" needs exactly two legs, got "
-          +ToString(p_i.size())+".");
+  if (p_i.size()!=2 && p_i.size()!=3)
+    THROW(fatal_error,"Current "+m_name+" needs two legs, or three with a "
+          "photon, got "+ToString(p_i.size())+".");
+  if (p_i.size()==3) {
+    const Flavour & g = m_flavs[p_i[2]];
+    if (g.Kfcode()!=kf_photon)
+      THROW(fatal_error,"Current "+m_name+": a third leg must be a photon, "
+            "and must come LAST in Indices; leg "+ToString(p_i[2])+" is "
+            +ToString(g)+".");
+    if (IsIncoming(p_i[2]))
+      THROW(not_implemented,"Current "+m_name+": an incoming photon is not "
+            "implemented, only an emitted one.");
+    if (m_flavs[p_i[0]].IntCharge()==0 && m_flavs[p_i[1]].IntCharge()==0)
+      THROW(fatal_error,"Current "+m_name+" was given a photon, but neither "
+            "of its fermion legs is charged.");
+  }
 
   // DOES THE TAG MATCH THE TOPOLOGY?
   //
@@ -75,6 +88,7 @@ void VA_0_FF::SetModelParameters(struct GeneralModel model)
 
 void VA_0_FF::Calc(const ATOOLS::Vec4D_Vector& moms, bool anti)
 {
+  if (p_i.size()==3) { CalcWithPhoton(moms,anti); return; }
   XYZFunc F(moms,m_flavs,anti,p_i);
   for (int h0=0;h0<2;h0++) {
     for (int h1=0;h1<2;h1++) {
@@ -85,6 +99,60 @@ void VA_0_FF::Calc(const ATOOLS::Vec4D_Vector& moms, bool anti)
       spins.push_back(make_pair(0,h0));
       spins.push_back(make_pair(1,h1));
       Insert(amp,spins);
+    }
+  }
+}
+
+void VA_0_FF::CalcWithPhoton(const ATOOLS::Vec4D_Vector& moms, bool anti)
+{
+  // Under anti, XYZFunc flips every spinor type and the photon's
+  // polarisation would have to follow; nothing here has been checked for
+  // that, and only the decay path asks for it.
+  if (anti)
+    THROW(not_implemented,"Current "+m_name+": photon emission under the "
+          "charge-conjugated evaluation (anti) is not implemented.");
+
+  const Vec4D p0 = moms[p_i[0]], p1 = moms[p_i[1]];
+  const Vec4D k  = m_photon.LightLike(moms[p_i[2]]);
+
+  // The pseudo-leg for the spin sum: k appended as an extra momentum, with
+  // a massless FERMION flavour so that XYZFunc builds u(k,s). Which fermion
+  // is immaterial -- XYZFunc takes the mass from sqrt(k^2) = 0 and the
+  // spinor type from IsAnti -- so the line's own particle is used, as
+  // PHOTONS++ does for its pseudo-particles. The real legs keep their own
+  // momenta and flavours, so their spinors are bit for bit the ones the
+  // photon-less current builds.
+  Vec4D_Vector   ext(moms);
+  Flavour_Vector efl(m_flavs);
+  Flavour pseudo = m_flavs[p_i[1]];
+  if (pseudo.IsAnti()) pseudo = pseudo.Bar();
+  ext.push_back(k);
+  efl.push_back(pseudo);
+  const vector<int> idx = { p_i[0], p_i[1], int(moms.size()) };
+  XYZFunc F(ext,efl,anti,idx);
+
+  const Complex one(1.,0.);
+  for (int lam=0;lam<2;lam++) {
+    const Vec4C eps = m_photon.EpsStar(k,lam);
+    for (int h0=0;h0<2;h0++) {
+      for (int h1=0;h1<2;h1++) {
+        const Vec4C J0 = F.L(0,h0, 1,h1, m_cR,m_cL);
+        // S_0 = ubar_0 eps* k Gamma u_1,  S_1 = ubar_0 Gamma k eps* u_1,
+        // with k-slash = sum_s u(k,s) ubar(k,s) on pseudo-leg 2.
+        Vec4C S0(0.,0.,0.,0.), S1(0.,0.,0.,0.);
+        for (int s=0;s<2;s++) {
+          S0 += F.X(0,h0, eps, 2,s, one,one)*F.L(2,s, 1,h1, m_cR,m_cL);
+          S1 += F.L(0,h0, 2,s, m_cR,m_cL)*F.X(2,s, eps, 1,h1, one,one);
+        }
+        const Vec4C J =
+          m_photon.Emit(m_flavs[p_i[0]],p0,IsIncoming(p_i[0]),k,eps,J0,S0)
+        + m_photon.Emit(m_flavs[p_i[1]],p1,IsIncoming(p_i[1]),k,eps,J0,S1);
+        vector<pair<int,int> > spins;
+        spins.push_back(make_pair(0,h0));
+        spins.push_back(make_pair(1,h1));
+        spins.push_back(make_pair(2,lam));
+        Insert(J,spins);
+      }
     }
   }
 }

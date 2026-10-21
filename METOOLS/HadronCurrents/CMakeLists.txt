@@ -20,6 +20,7 @@ set(HadronCurrents_SOURCES Current_Base.C
 			   VA_P_V.C
 			   VA_P_A.C
 			   VA_P_T.C
+			   Photon_Emission.C
 			   Tools.C )
 set(HadronCurrents_HEADERS Current_Base.H
 			   ME_Base.H
@@ -43,6 +44,7 @@ set(HadronCurrents_HEADERS Current_Base.H
 			   VA_P_V.H
 			   VA_P_A.H
 			   VA_P_T.H
+			   Photon_Emission.H
 			   Tools.H )
 
 

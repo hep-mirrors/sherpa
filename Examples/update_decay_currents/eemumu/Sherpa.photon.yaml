@@ -1,0 +1,79 @@
+# e+ e- -> mu+ mu- gamma: the photon-less card in Sherpa.yaml with one real
+# photon, emitted from inside the fermion currents.
+#
+# The Exchange: list is written WITHOUT the photon, exactly as in
+# Sherpa.yaml. "Photon: 4" then expands each entry into one diagram per
+# charged line -- photon on the e+e- current (initial-state radiation) and
+# on the mu+mu- current (final-state radiation) -- so the two entries below
+# become four diagrams, {ISR, FSR} x {photon, Z}, each with its own momentum
+# transfer: q^2 = (p0+p1-k)^2 for ISR, s for FSR.
+#
+# The photon's leg is appended to the current it is attached to, so it is
+# always that current's LAST index. Writing the placements by hand instead
+# works too, and is how to ask for one side only, e.g. ISR alone:
+#
+#   Exchange:
+#   - Boson: 22
+#     J1: {Type: VA_FF_0, Indices: [1, 0, 4]}
+#     J2: {Type: VA_0_FF, Indices: [2, 3]}
+#
+# which is gauge invariant on its own for a neutral boson, so it runs with a
+# warning that the result is incomplete.
+#
+# The coupling at the emission vertex is the model's alpha_QED, the same one
+# the photon exchange uses. Photon_Alpha: overrides it, e.g. with
+# 0.0072973525693 for alpha(0).
+#
+# CHECKS, both pointwise, both off by default:
+#
+#   Sherpa -f Sherpa.photon.yaml XS_CURRENTS_GAUGE=1
+#     replaces eps* by k in every current; the amplitude must vanish. Reports
+#     the worst |M(k)|/(k0 |M|) at the end of the run.
+#
+#   Sherpa -f Sherpa.photon.yaml XS_CURRENTS_ANALYTIC=1
+#     switches the Z off and compares against the closed form for
+#     e+e- -> f fbar gamma with massive final-state fermions (Berends,
+#     Kleiss, Jadach, Was, Acta Phys. Pol. B14 (1983) 413). Reports the
+#     worst relative deviation at the end of the run.
+#
+# CUTS. The photon needs a minimum transverse momentum: emission from the
+# massless beams is collinear-divergent, and every leg is soft-divergent.
+# The muon mass regulates final-state collinear emission.
+#
+# Phase space is flat (Rambo) for a 2 -> 3 built from currents, which
+# samples the soft and collinear peaks poorly: expect slow convergence.
+
+BEAMS: [11, -11]
+BEAM_ENERGIES: 100.0
+
+# No electron structure function. Sherpa switches it on for lepton beams by
+# default, and it already contains collinear initial-state photons -- the
+# same physics as the explicit photon here, so leaving it on double counts.
+PDF_LIBRARY: None
+
+PARTICLE_DATA:
+  13: {Massive: true}
+
+ME_GENERATORS: [Internal]
+
+# The default scale setter clusters the final state back to a 2 -> 2 core,
+# which a matrix element built from currents does not offer; it then
+# reports Q^2 = 0 for every point. Nothing here runs with the scale, so fix
+# it rather than leave the warnings.
+SCALES: VAR{sqr(E_CMS)}
+
+SELECTORS:
+- [PT, 22, 5.0, E_CMS]
+
+PROCESSES:
+- 11 -11 -> 13 -13 22:
+    Order: {QCD: 0, EW: 3}
+    Currents:
+      Photon: 4
+      Exchange:
+      - Boson: 22
+        J1: {Type: VA_FF_0, Indices: [1, 0]}
+        J2: {Type: VA_0_FF, Indices: [2, 3]}
+      - Boson: 23
+        J1: {Type: VA_FF_0, Indices: [1, 0]}
+        J2: {Type: VA_0_FF, Indices: [2, 3]}

@@ -45,6 +45,30 @@ namespace METOOLS {
   /// Index order is unchanged: 0 = the BARRED spinor, 1 = the unbarred
   /// one. Parameters: v (default 1), a (default -1).
   ///
+  /// OPTIONAL PHOTON, index 2. A third leg must be an outgoing photon,
+  /// listed last -- where the Currents: block's Photon: key puts it. The
+  /// current then returns the line with that photon radiated from each of
+  /// its charged legs,
+  ///
+  ///   J^mu(h0,h1,lambda) = e sum_i Q_i [ eta_i (p_i.eps*)/(p_i.k) J0^mu
+  ///                                      + S_i^mu / (2 p_i.k) ],
+  ///   S_0 = ubar_0 eps*-slash k-slash Gamma^mu u_1,
+  ///   S_1 = ubar_0 Gamma^mu k-slash eps*-slash u_1,
+  ///
+  /// with Gamma^mu = gamma^mu (cR P_R + cL P_L). The fermion propagator never
+  /// appears: the Dirac equation on the external spinor removes its
+  /// p-slash + m exactly, for any sign of the propagator's virtuality, and
+  /// leaves one k-slash, which is written as sum_s u(k,s) ubar(k,s) -- the
+  /// spin sum runs over a massless pseudo-leg carrying the photon's
+  /// momentum. Every spinor comes from the same XYZFunc as the photon-less
+  /// current, which keeps the phase conventions of the two in step: that is
+  /// what makes the interference between a diagram with the photon here and
+  /// one with it elsewhere correct.
+  ///
+  /// Not handled: an incoming photon, a second photon on the same line, and
+  /// the charge-conjugated evaluation (anti = true) the decay path uses.
+  /// Each throws.
+  ///
   /// Ported from HADRONS++/Current_Library/VA_F_F.{H,C}. Two latent
   /// bugs were fixed rather than transcribed: p_ff was never
   /// initialised although the destructor unconditionally deleted it
@@ -71,6 +95,8 @@ namespace METOOLS {
     ~VA_0_FF() {}
     void SetModelParameters(struct GeneralModel model) override;
     void Calc(const ATOOLS::Vec4D_Vector& moms, bool anti) override;
+  private:
+    void CalcWithPhoton(const ATOOLS::Vec4D_Vector& moms, bool anti);
   };
 
   /// Aliases for the other two topologies. Same implementation; they

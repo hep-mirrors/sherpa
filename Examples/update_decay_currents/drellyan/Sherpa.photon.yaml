@@ -1,0 +1,49 @@
+# d dbar -> mu+ mu- gamma: Sherpa.yaml with one real photon, emitted from
+# inside the currents. Photon: 4 places it on the quark line (initial-state
+# radiation) and on the muon line (final-state radiation), for both the
+# photon and the Z, so the two entries below become four diagrams.
+#
+# The quark line radiates with charge -1/3, so initial-state radiation is
+# suppressed by Q_d^2 = 1/9 relative to e+e-, and the initial-final
+# interference by Q_d Q_mu = 1/3. Colour is handled exactly as without the
+# photon: the photon carries none, so the line still contributes N_c once.
+#
+# Partonic beams with no PDF, so that this compares matrix elements rather
+# than parton luminosities. Same checks as eemumu/Sherpa.photon.yaml:
+#
+#   Sherpa -f Sherpa.photon.yaml XS_CURRENTS_GAUGE=1
+#   Sherpa -f Sherpa.photon.yaml XS_CURRENTS_ANALYTIC=1
+#
+# The analytic reference (Berends, Kleiss, Jadach, Was 1983) is written for
+# e+e-, but carries the incoming and outgoing charges explicitly, so it
+# covers q qbar -> l+ l- gamma once the colour average is applied.
+
+BEAMS: [1, -1]
+BEAM_ENERGIES: 100.0
+
+PDF_LIBRARY: None
+
+PARTICLE_DATA:
+  13: {Massive: true}
+
+ME_GENERATORS: [Internal]
+
+# See eemumu/Sherpa.photon.yaml: the default scale setter has no 2 -> 2 core
+# to cluster back to.
+SCALES: VAR{sqr(E_CMS)}
+
+SELECTORS:
+- [PT, 22, 5.0, E_CMS]
+
+PROCESSES:
+- 1 -1 -> 13 -13 22:
+    Order: {QCD: 0, EW: 3}
+    Currents:
+      Photon: 4
+      Exchange:
+      - Boson: 22
+        J1: {Type: VA_FF_0, Indices: [1, 0]}
+        J2: {Type: VA_0_FF, Indices: [2, 3]}
+      - Boson: 23
+        J1: {Type: VA_FF_0, Indices: [1, 0]}
+        J2: {Type: VA_0_FF, Indices: [2, 3]}

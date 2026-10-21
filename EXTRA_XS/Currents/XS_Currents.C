@@ -56,6 +56,28 @@ namespace EXTRAXS {
     bool                    m_analytic;
     double                  m_adev;
     long                    m_ancheck;
+    // XS_CURRENTS_ANALYTIC for e+e- -> f fbar gamma: the legs, found once.
+    // -1 when the process is not of that shape, and the check is skipped.
+    int                     m_ia, m_ib, m_ic, m_id, m_ig;
+    // XS_CURRENTS_GAUGE: eps* -> k at every point. The amplitude must
+    // vanish; the worst |M(k)| / (k^0 |M|) seen is reported.
+    bool                    m_gauge;
+    double                  m_gdev;
+    long                    m_gcheck;
+    // A maximum alone cannot tell rounding in a soft or collinear corner
+    // from a small systematic error, so both radiative checks also count
+    // deviations by decade (bin d holds [1e-(d+1), 1e-d); the last bin is
+    // everything below 1e-12) and record where the worst point sits: photon
+    // energy fraction 2k0/sqrt(s) and the smallest 1-cos(angle) to any
+    // charged leg.
+    std::vector<long>       m_ahist, m_ghist;
+    double                  m_aworst[2], m_gworst[2];
+    void Record(const double dev,double & max,std::vector<long> & hist,
+                double * worst,const ATOOLS::Vec4D_Vector & mom) const;
+    void Report(const std::string & what,const double max,const long n,
+                const std::vector<long> & hist,const double * worst) const;
+    void   FindRadiativeLegs();
+    double AnalyticRadiative(const ATOOLS::Vec4D_Vector& mom) const;
 
     Flavour LineFlavour(const std::vector<int> & idx) const;
     void    SetColours();
@@ -98,7 +120,9 @@ void XS_Currents::SetColours()
             "the Currents: schema does not carry.");
 
   for (int line(0);line<2;++line) {
-    const std::vector<int> & idx = line ? p_me->J2Indices() : p_me->J1Indices();
+    // The LINE, photons removed: a photon carries no colour, and every
+    // diagram joins the same two lines, so this is done once.
+    const std::vector<int> & idx = line ? p_me->Line2() : p_me->Line1();
     if (idx.empty() || !LineFlavour(idx).Strong()) continue;
     m_colfac *= 3.;
     // One colour line threaded through the two legs: the quark leg carries
@@ -113,6 +137,7 @@ void XS_Currents::SetColours()
 
 XS_Currents::XS_Currents(const External_ME_Args& args) : ME2_Base(args)
 {
+  // Set from the card once the block has been read, below.
   m_oew   = 2;
   m_oqcd  = 0;
   for (size_t i(0);i<m_flavs.size();++i)
@@ -124,6 +149,11 @@ XS_Currents::XS_Currents(const External_ME_Args& args) : ME2_Base(args)
   Settings & set = Settings::GetMainSettings();
   m_analytic = set["XS_CURRENTS_ANALYTIC"].SetDefault(0).Get<int>();
   m_adev = 0.; m_ancheck = 0;
+  m_gauge    = set["XS_CURRENTS_GAUGE"].SetDefault(0).Get<int>();
+  m_gdev = 0.; m_gcheck = 0;
+  m_ahist.assign(13,0); m_ghist.assign(13,0);
+  m_aworst[0] = m_aworst[1] = m_gworst[0] = m_gworst[1] = 0.;
+  m_ia = m_ib = m_ic = m_id = m_ig = -1;
 
   std::vector<int> pi(m_flavs.size());
   for (size_t i(0);i<pi.size();++i) pi[i] = i;
@@ -135,6 +165,31 @@ XS_Currents::XS_Currents(const External_ME_Args& args) : ME2_Base(args)
   p_me = new METOOLS::Exchange_ME(m_ffflavs,pi,"XS_Currents",2);
   Scoped_Settings cur(args.m_currents);
   p_me->SetModelParameters(cur);
+
+  // COUPLING ORDERS come from the card's Order: block, which Sherpa treats
+  // as exact; 99 means it was not stated. They are also DERIVABLE from what
+  // was declared -- 2 for the exchange, one more per photon -- so the two
+  // are compared rather than either being trusted. A card saying EW: 2 for
+  // a process with a photon has been edited from its photon-less parent and
+  // half-updated; it should not quietly integrate with the wrong coupling
+  // power.
+  //
+  // QCD is 0 by construction: the exchange is a colour singlet (coloured
+  // ones are refused in SetColours) and no current here has a strong
+  // vertex.
+  const int oew = p_me->OrderEW();
+  if (args.m_orders.size()>1 && args.m_orders[1]<99. &&
+      int(args.m_orders[1]+0.5)!=oew)
+    THROW(fatal_error,"XS_Currents: the process' Order: block says EW: "
+          +ToString(args.m_orders[1])+", but the Currents: block declares "
+          +ToString(oew)+" -- 2 for the exchange plus one per photon ("
+          +ToString(p_me->Photons().size())+" here). Make them agree.");
+  if (args.m_orders.size()>0 && args.m_orders[0]<99. && args.m_orders[0]>0.)
+    THROW(fatal_error,"XS_Currents: the process' Order: block says QCD: "
+          +ToString(args.m_orders[0])+", but a matrix element built from "
+          "currents has no strong vertex. Use QCD: 0.");
+  m_oew  = oew;
+  m_oqcd = 0;
 
   // The closed form compared against below is pure QED, so under
   // XS_CURRENTS_ANALYTIC every exchange but the photon is switched off by
@@ -149,6 +204,7 @@ XS_Currents::XS_Currents(const External_ME_Args& args) : ME2_Base(args)
   }
 
   SetColours();
+  if (m_analytic) FindRadiativeLegs();
 
   // Which phase-space mapping matches this topology. Exchange_ME classifies
   // the exchange by which two legs J1 pairs; FillIntegrator reads SIntType
@@ -192,9 +248,17 @@ XS_Currents::XS_Currents(const External_ME_Args& args) : ME2_Base(args)
 
 XS_Currents::~XS_Currents()
 {
-  if (m_analytic && m_ancheck)
-    msg_Out()<<"### XS_Currents vs analytic QED over "<<m_ancheck
-             <<" points: max relative deviation "<<m_adev<<"\n";
+  if (m_analytic && m_ancheck) {
+    if (m_ig>=0)
+      Report("vs analytic e+e- -> f fbar gamma, relative deviation,",m_adev,
+             m_ancheck,m_ahist,m_aworst);
+    else
+      msg_Out()<<"### XS_Currents vs analytic QED over "<<m_ancheck
+               <<" points: max relative deviation "<<m_adev<<"\n";
+  }
+  if (m_gauge && m_gcheck)
+    Report("gauge check (eps* -> k), |M(k)|/(k0 |M|),",m_gdev,m_gcheck,
+           m_ghist,m_gworst);
   if (p_ref) {
     msg_Out()<<"### XS_Currents vs XS_ee_ffbar over "<<m_ncheck
              <<" points: max relative deviation "<<m_maxdev<<"\n";
@@ -205,9 +269,9 @@ XS_Currents::~XS_Currents()
 
 double XS_Currents::operator()(const ATOOLS::Vec4D_Vector& mom)
 {
-  const double q2 = p_me->Q(mom).Abs2();
-  if (!(std::abs(q2)>0.)) return 0.;
-
+  // A point on a massless propagator's pole is now refused inside
+  // Exchange_ME, per exchange: with a photon in one current, different
+  // diagrams have different q and there is no single q^2 to test here.
   p_me->Calculate(mom,false);
 
   double sum(0.);
@@ -232,8 +296,8 @@ double XS_Currents::operator()(const ATOOLS::Vec4D_Vector& mom)
     // M being the summed squared masses of the two fermion LINES, so it
     // does not care how the legs are ordered. Reduces to 2e^4(Y^2+Z^2)/X^2
     // at zero mass.
-    const double M = sqr(LineFlavour(p_me->J1Indices()).Mass())
-                   + sqr(LineFlavour(p_me->J2Indices()).Mass());
+    const double M = sqr(LineFlavour(p_me->Line1()).Mass())
+                   + sqr(LineFlavour(p_me->Line2()).Mass());
     double X(s), Y(tt), Z(u);
     if      (p_me->Channel()==2) { X = tt; Y = s; Z = u; }
     else if (p_me->Channel()==3) { X = u;  Y = s; Z = tt; }
@@ -244,6 +308,29 @@ double XS_Currents::operator()(const ATOOLS::Vec4D_Vector& mom)
       if (dev>m_adev) m_adev = dev;
     }
     ++m_ancheck;
+  }
+
+  if (m_analytic && m_ig>=0) {
+    const double ana = AnalyticRadiative(mom);
+    const double den = std::max(std::abs(ana),std::abs(res));
+    if (den>0.) Record(std::abs(ana-res)/den,m_adev,m_ahist,m_aworst,mom);
+    ++m_ancheck;
+  }
+
+  // Last, because it overwrites the amplitudes held by p_me.
+  if (m_gauge && !p_me->Photons().empty() && sum>0.) {
+    p_me->SetPhotonGaugeTest(true);
+    p_me->Calculate(mom,false);
+    p_me->SetPhotonGaugeTest(false);
+    // Normalised by each photon's energy in the partonic rest frame, so the
+    // figure does not depend on the frame the momenta arrive in.
+    double sk(0.), k0(1.);
+    const Vec4D P = mom[0]+mom[1];
+    for (size_t n(0);n<p_me->size();++n) sk += std::norm((*p_me)[n]);
+    for (size_t j(0);j<p_me->Photons().size();++j)
+      k0 *= (mom[p_me->Photons()[j]]*P)/P.Abs();
+    Record(sqrt(sk/sum)/k0,m_gdev,m_ghist,m_gworst,mom);
+    ++m_gcheck;
   }
 
   if (p_ref) {
@@ -257,6 +344,130 @@ double XS_Currents::operator()(const ATOOLS::Vec4D_Vector& mom)
     ++m_ncheck;
   }
   return res;
+}
+
+void XS_Currents::Record(const double dev,double & max,
+                         std::vector<long> & hist,double * worst,
+                         const ATOOLS::Vec4D_Vector & mom) const
+{
+  const int d = dev>0. ? std::min(12,std::max(0,int(-std::log10(dev))))
+                       : 12;
+  ++hist[d];
+  if (dev<=max) return;
+  max = dev;
+  const std::vector<int> & g = p_me->Photons();
+  if (g.empty()) return;
+  // In the partonic rest frame, written invariantly: with a lepton PDF the
+  // momenta here are in the lab frame, and k0/sqrt(s_hat) is meaningless.
+  const Vec4D & k = mom[g[0]];
+  const Vec4D   P = mom[0]+mom[1];
+  worst[0] = 2.*(k*P)/P.Abs2();
+  worst[1] = 2.;
+  for (size_t i(0);i<mom.size();++i) {
+    if (m_flavs[i].IntCharge()==0) continue;
+    worst[1] = std::min(worst[1],1.-mom[i].CosTheta(k));
+  }
+}
+
+void XS_Currents::Report(const std::string & what,const double max,
+                         const long n,const std::vector<long> & hist,
+                         const double * worst) const
+{
+  msg_Out()<<"### XS_Currents "<<what<<" over "<<n<<" points: max "<<max
+           <<"\n###   worst point: 2k0/sqrt(s) = "<<worst[0]
+           <<", smallest 1-cos(angle) to a charged leg = "<<worst[1]
+           <<"\n###   points per decade:";
+  for (int d(0);d<13;++d) {
+    if (!hist[d]) continue;
+    if (d<12) msg_Out()<<"  [1e-"<<d+1<<",1e-"<<d<<"): "<<hist[d];
+    else      msg_Out()<<"  <1e-12: "<<hist[d];
+  }
+  msg_Out()<<"\n";
+}
+
+// The reference for XS_CURRENTS_ANALYTIC with one photon needs an incoming
+// antiparticle a and particle b of one massless flavour, an outgoing
+// antiparticle c and particle d of another, and the photon g: e+e- ->
+// mu+mu- gamma and its relatives (tau pairs, q qbar -> l+l- gamma, e+e- ->
+// q qbar gamma). Anything else skips the check, saying so.
+void XS_Currents::FindRadiativeLegs()
+{
+  if (m_flavs.size()!=5 || p_me->Photons().size()!=1) return;
+  std::vector<int> in, out;
+  for (int i(0);i<5;++i) {
+    if (m_flavs[i].Kfcode()==kf_photon) { m_ig = i; continue; }
+    (i<2 ? in : out).push_back(i);
+  }
+  const bool ok = m_ig>=2 && in.size()==2 && out.size()==2
+    && m_flavs[in[0]].Kfcode()==m_flavs[in[1]].Kfcode()
+    && m_flavs[in[0]].IsAnti()!=m_flavs[in[1]].IsAnti()
+    && m_flavs[out[0]].Kfcode()==m_flavs[out[1]].Kfcode()
+    && m_flavs[out[0]].IsAnti()!=m_flavs[out[1]].IsAnti()
+    && m_flavs[in[0]].Mass()==0.;
+  if (!ok) {
+    m_ig = -1;
+    msg_Info()<<"XS_Currents: no analytic reference for this radiative "
+              <<"process (it covers f fbar -> f' fbar' gamma with massless "
+              <<"incoming fermions); comparison skipped.\n";
+    return;
+  }
+  m_ia = m_flavs[in[0]].IsAnti()  ? in[0]  : in[1];
+  m_ib = m_flavs[in[0]].IsAnti()  ? in[1]  : in[0];
+  m_ic = m_flavs[out[0]].IsAnti() ? out[0] : out[1];
+  m_id = m_flavs[out[0]].IsAnti() ? out[1] : out[0];
+}
+
+// e+(p+) e-(p-) -> fbar(q+) f(q-) gamma(k) through photon exchange only,
+// massless incoming fermions, any final-state mass; averaged over incoming
+// and summed over outgoing spins.
+//
+// Berends, Kleiss, Jadach, Was, Acta Phys. Pol. B14 (1983) 413, Eqs.
+// (3.2)-(3.7), in the dimensionful form of Silagadze, arXiv:2010.15553,
+// Eqs. (48)-(50):
+//
+//   |M|^2 = e^6 Q^2 Q'^2 [ Q^2 R_ini + Q'^2 R_fin + Q Q' R_int ],
+//
+// Q and Q' the charges of the incoming and outgoing ANTIparticle. The
+// arXiv paper prints "y^2" in R_int where the original has u^2; u^2 is
+// right, and with it the two papers agree to machine precision for massive
+// final states, and both reduce to the massless closed form of
+// arXiv:2010.15553 Eq. (46) as m -> 0 (all checked numerically).
+//
+// Coupling: e^4 from the photon exchange (as built, so a Coupling: override
+// is honoured) and e^2 at the emission vertex (Photon_Alpha). Colour: N_c
+// summed over an outgoing coloured line, averaged out (1/N_c) over an
+// incoming one.
+double XS_Currents::AnalyticRadiative(const ATOOLS::Vec4D_Vector& mom) const
+{
+  const Vec4D & pp = mom[m_ia], & pm = mom[m_ib];
+  const Vec4D & qp = mom[m_ic], & qm = mom[m_id], & k = mom[m_ig];
+  const double s  = (pp+pm).Abs2(), sp = (qp+qm).Abs2();
+  const double t  = -2.*(pp*qp), u  = -2.*(pp*qm);
+  const double tp = -2.*(pm*qm), up = -2.*(pm*qp);
+  const double x1 = k*pp, x2 = k*pm, y1 = k*qp, y2 = k*qm;
+  const double m2 = sqr(m_flavs[m_ic].Mass());
+
+  const double Ri = (t*t+u*u+tp*tp+up*up
+                     +2.*m2*(sqr(t+u)+sqr(tp+up))/sp)/(sp*x1*x2);
+  const double Rf = ((t*t+up*up+2.*m2*s)*(1.-2.*m2/s*(1.+y1/y2))
+                    +(tp*tp+u*u+2.*m2*s)*(1.-2.*m2/s*(1.+y2/y1))
+                    +8.*m2/s*(x1*x1+x2*x2)-8.*m2*(s-sp))/(s*y1*y2);
+  const double Rn = ((u*x2*y1+up*x1*y2-t*x2*y2-tp*x1*y1)
+                     *(t*t+tp*tp+u*u+up*up+2.*m2*(s+sp))
+                    +2.*m2*x1*x2*((s-sp)*(u+up-t-tp)-4.*(x1-x2)*(y1-y2)))
+                    /(s*sp*x1*x2*y1*y2);
+
+  const double Q = m_flavs[m_ia].Charge(), Qp = m_flavs[m_ic].Charge();
+  double gex(0.);
+  const std::vector<METOOLS::Exchange_ME::Exchange> & xs = p_me->Exchanges();
+  for (size_t j(0);j<xs.size();++j)
+    if (xs[j].p_prop && xs[j].p_prop->Flav().Kfcode()==kf_photon &&
+        xs[j].m_g!=0.) { gex = xs[j].m_g; break; }
+  const double e2g = 4.*M_PI*p_me->PhotonAlpha();
+  double col(1.);
+  if (m_flavs[m_ia].Strong()) col /= 3.;
+  if (m_flavs[m_ic].Strong()) col *= 3.;
+  return col*gex*gex*e2g*Q*Q*Qp*Qp*(Q*Q*Ri+Qp*Qp*Rf+Q*Qp*Rn);
 }
 
 // DECLARE_TREEME2_GETTER stringifies its tag for PrintInfo, so it has to be
