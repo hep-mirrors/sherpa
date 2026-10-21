@@ -40,55 +40,17 @@ namespace YFS {
 
     private:
 
-        /*!
-          Everything that belongs to ONE event, in one object so that the
-          event boundary is a construction rather than a list of assignments.
-
-          The handler used to hold these flat alongside its run- and
-          process-scope state, and Reset() cleared eight of them; the other
-          thirty were simply overwritten before the next read, an invariant
-          nothing enforced. m_ev.m_nlo_current is the surviving trace of where that
-          went wrong - the named YFS.* weights were once built from the
-          PREVIOUS event's accumulators. Pure-FSR mode was worse: it enters at
-          CalculateFSR() and never reached MakeYFS(), so Reset() never ran at
-          all.
-
-          StartEvent() now assigns a default-constructed YFS_Event at the one
-          point both modes pass through (SetBornMomenta), so a field added
-          later starts fresh without anyone having to remember to clear it.
-          The defaults below are the values the constructor and Reset() used
-          to establish - in particular m_ev.m_real, m_ev.m_formfactor and m_ev.m_ww_formfact
-          are 1, not 0.
-        */
         struct YFS_Event {
           // -- kinematics -----------------------------------------------
           Vec4D_Vector m_plab, m_reallab, m_bornMomenta;
-          /*!
-            m_plab with the final pairs that hid photons replaced by their
-            record momenta (AbsorbHiddenPhotons): legs that balance against
-            the VISIBLE photons. Empty when nothing was hidden. ACRAIC takes its
-            final legs from here, since it gets only the visible photons.
-          */
           Vec4D_Vector m_acraiclegs;
-          /*!
-            The ISR-reduced beams BEFORE ToLab, so they are in the same frame
-            as m_plab[2..] (which stay in the incoming-pair rest frame). With
-            those final legs they are a phase-space point that balances and
-            whose invariant is s'. m_plab[0..1] are the same momenta boosted to
-            the lab, so {m_plab[0],m_plab[1],m_plab[2..]} is frame-mixed and
-            balances only for symmetric beams.
-          */
           Vec4D_Vector m_sprimeBeams;
           ATOOLS::Poincare m_cmsboost;
           ATOOLS::Vec4D m_Wm, m_Wp;
           ATOOLS::ParticleMomMap m_inparticles, m_outparticles;
 
           // -- photons --------------------------------------------------
-          //! Every photon of the event, each tagged with the dipole it came
-          //! from, so its ISR/FSR origin never has to be recovered positionally.
           YFS::Photon_Vector m_photons;
-          //! The photons the NLO layer sees: ISR plus the FSR *ME* photons
-          //! (captured before HidePhotons). NOT the same list as m_photons.
           YFS::Photon_Vector m_me_photons;
           Vec4D_Vector m_ISRPhotons, m_FSRPhotons;
           Vec4D_Vector m_isrphotonsforME, m_fsrphotonsforME;
@@ -97,20 +59,11 @@ namespace YFS {
           // -- weights and form factors ---------------------------------
           double m_yfsweight = 0.;
           double m_formfactor = 1.;
-          //! FormFactorSum() as evaluated by AddFormFactor, i.e. the exponent
-          //! m_formfactor was actually built from. Cached rather than
-          //! recomputed so YFS.NLO_FixedOrder's (1+Y)/exp(Y) is provably the
-          //! same Y in numerator and denominator.
           double m_formfactor_sum = 0.;
           double m_coulSub = 0.;
-          //! YFS: COULOMB_HIGHER_ORDER: 1 + delta_C - delta_C^(1) of the W pair
-          //! (1 when off or when the final state has no W+W- pairing)
           double m_coulho = 1.;
           double m_ww_formfact = 1.;
           double m_real = 1.;
-          //! The EEX beta-expansion estimate, assigned in CalculateBeta only
-          //! when BETA > 0; read by the YFS.EEX named weight, where an
-          //! unassigned read produced a NaN column rather than a missing one.
           double m_eex = 0.;
 
           // -- fixed-order accumulators ---------------------------------
@@ -131,28 +84,11 @@ namespace YFS {
           double m_nlo_rr_2hardest = 0., m_nlo_real_2hardest = 0.;
           double m_nlo_rv_2hardest = 0.;
           ATOOLS::Weights_Map m_nlo_weightsmap;
-          /*!
-            True only once the accumulators above belong to THIS event.
-            CalculateBeta() bails out early during integration when
-            Integrate_NLO is off (m_rmode is set to 1 only in
-            Phase_Space_Handler::OneEvent), and the named YFS.* weights must
-            not be built from accumulators it never filled. Structurally false
-            at the start of every event now, rather than by assignment.
-          */
           bool m_nlo_current = false;
-          /*!
-            Per-photon real from the EXTERNAL provider, captured the moment
-            CalculateReal() returns. It cannot be read later: CalculateNLO()
-            calls InitNLO() again before the virtual, and that REBUILDS
-            p_nlo->m_photons from scratch, so every m_beta10 is back to zero
-            by the time anything downstream looks.
-          */
           std::vector<std::pair<ATOOLS::Vec4D,double> > m_extrealphot;
 
           // -- ACRAIC, per event ------------------------------------------
-          //! ACRAIC's O(alpha) factor for this event; 0 = ACRAIC produced none.
           double m_acraicfactor = 0.;
-          //! The O(alpha) correction actually applied, and ACRAIC's, for the
           //! named-weight ratio. Set in GenerateWeight once IFI_Real is known.
           double m_corr_nominal = 1., m_corr_acraic = 0., m_corr_eex = 1.;
           //! ACRAIC: ORDER 2 only - the O(alpha^1) ACRAIC correction of the
@@ -166,7 +102,9 @@ namespace YFS {
           //! ... and with (1+v/2) on the whole of A_1 (ACRAIC_O1V1)
           double m_corr_acraic_o1v1 = 0.;
           //! ORDER 2, both external-virtual compositions: (v/2) on A_0
-          //! (ACRAIC_O2V0) and on A_1, KKMC's (1+v/2) on beta_1 (ACRAIC_O2V1)
+          //! (ACRAIC_O2V0), the closest to KKMC CEEX2 (whose one-photon
+          //! amplitudes get only the ISR real-virtual or, for pions, the soft
+          //! pion vertex), and (1+v/2) on A_1 (ACRAIC_O2V1)
           double m_corr_acraic_v0 = 0., m_corr_acraic_v1 = 0.;
           //! ... and with (1+v/2) on the whole of A_2 (ACRAIC_O2V2): the
           //! nominal plus the (v/2) beta_2 terms, an O(alpha^3) estimate
@@ -181,66 +119,24 @@ namespace YFS {
         };
         YFS_Event m_ev;
 
-        //! Begin a new event: discard everything the previous one left behind.
-        //! Called from SetBornMomenta, the one entry point both the ISR/ISRFSR
-        //! and the pure-FSR paths pass through (Phase_Space_Point.C:229,241).
         void StartEvent() { m_ev = YFS_Event(); }
 
         bool   m_setparticles, m_asymbeams;
-        // m_nbar and m_betatWW removed: both shadowed YFS_Base's. m_betatWW
-        // is set from the card (WW_BETAT) on the base, but the test in
-        // CalculateBeta resolved to this copy, which nothing ever wrote.
-        //! The EEX beta-expansion estimate of the correction, assigned in
-        //! CalculateBeta only when BETA > 0. Initialised and reset per event
-        //! because it is read by the YFS.EEX named weight, and an unassigned
-        //! read there produced a NaN column rather than a missing one.
-        //! FormFactorSum() as evaluated by AddFormFactor, i.e. the exponent
-        //! that m_ev.m_formfactor was actually built from. Cached rather than
-        //! recomputed so YFS.NLO_FixedOrder's (1+Y)/exp(Y) is provably the same
-        //! Y in numerator and denominator, whatever happens to the dipoles in
-        //! between.
         int m_negskip;
-        //! events whose weight came out non-finite (zeroed, reported at the end)
         long m_nonfinite = 0;
-        //! YFS: SOFT_REGION_CHECK counters (photons checked, inside the region, min E_P/Emin)
         long m_regcheck_n[2] = {0, 0}, m_regcheck_bad[2] = {0, 0};   //!< [ISR, FSR]
         double m_regcheck_min[2] = {1e300, 1e300};
         long m_regcheck_zero = 0;
         std::unique_ptr<YFS::Coulomb> p_coulomb;
-        /*!
-          The externally visible view (SHERPA's Signal_Processes copies it as a
-          Particle_Vector), holding observing pointers into m_particle_store.
-          The store is what owns them; the two are filled and cleared together
-          in SetFlavours.
-        */
         ATOOLS::Particle_Vector m_particles;
         std::vector<std::unique_ptr<ATOOLS::Particle> > m_particle_store;
-
-        // std::string m_name, m_type, m_debugDIR_ISR, m_debugDIR_FSR;
-        // Every photon of the event, each tagged with the dipole it came from,
-        // so its ISR/FSR origin never has to be recovered positionally.
-        // The photons the NLO layer sees: ISR plus the FSR *ME* photons
-        // (captured before HidePhotons), which is what InitNLO hands it and is
-        // NOT the same list as m_ev.m_photons.
         ATOOLS::Flavour_Vector m_flavs;
         std::vector<double> m_mass;
         ATOOLS::Momenta_Stretcher m_stretcher;
-        //! Not owned: handed in by SetBeam, lives in Beam_Spectra_Handler.
         BEAM::Beam_Spectra_Handler *p_beams = nullptr;
         std::unique_ptr<YFS::ISR> p_isr;
         std::unique_ptr<YFS::Debug> p_debug;
-        // born unless YFS_Process (NLO_Mode YFS) says otherwise: a plain LO
-        // process never calls SetNLOType, and an uninitialised value sent it
-        // into CalculateNLO with no NLO_Base (null p_nlo, crash in InitNLO)
         ATOOLS::nlo_type::code m_nlotype{ATOOLS::nlo_type::born};
-        // True only while m_ev.m_nlo_real/m_ev.m_nlo_virtual/m_ev.m_nlo_rv/m_ev.m_nlo_rr belong to
-        // the event currently being weighted. CalculateBeta() bails out early
-        // during integration when Integrate_NLO is off (m_rmode is set to 1
-        // only in Phase_Space_Handler::OneEvent), leaving m_ev.m_real at its Reset()
-        // value of 1 and the m_nlo_* accumulators holding the PREVIOUS event's
-        // numbers. The named YFS.* weights must not be built from those.
-        //! Beam flavours, set once at initialisation; REMNANTS reads them
-        //! back through GetInFlav. Not per-event.
         Flavour_Vector m_inflav;
         
         std::unique_ptr<YFS::NLO_Base> p_nlo;
@@ -249,22 +145,9 @@ namespace YFS {
         std::unique_ptr<YFS::YFS_Form_Factor> p_yfsFormFact;
         std::unique_ptr<YFS::Define_Dipoles> p_dipoles;
         std::unique_ptr<YFS::Acraic_Base> p_acraic;
-        //! One Acraic_Base per process (flavour set): the handler is shared by
-        //! every process of the card, and a ACRAIC object holds process-specific
-        //! state (stages, Comix/loop helicity maps, calibration). p_acraic is
-        //! the current process's; the others wait here (InitializeACRAIC).
         std::map<std::string, std::unique_ptr<YFS::Acraic_Base> > m_acraicstore;
         std::string m_acraickey;
-        //! Bookkeeping for the ACRAIC-vs-EEX comparison at end of run.
-        //! ACRAIC's O(alpha) factor for the current event; 0 = ACRAIC produced none.
-        //! The O(alpha) correction actually applied, and ACRAIC's, for the
-        //! named-weight ratio. Set in GenerateWeight once IFI_Real is known.
-        /*!
-          YFS: ACRAIC_Compare - point-by-point ACRAIC against the EXTERNAL
-          providers. Prints the first N events and accumulates the spread, so
-          a disagreement can be attributed to the virtual or the real rather
-          than just seen in the total.
-        */
+
         void   AcraicCompare();
         //! YFS: FSR_DENSITY_GATE - the FSR generator density against the eikonals.
         void ProbeFSRDensity(YFS::Dipole &D);
@@ -299,19 +182,6 @@ namespace YFS {
                           const double corr_eex);
         //! YFS: SIGN_PROBE - the hardest photons, m_ll and both weights, per event.
         void ProbeSign(const double w_full);
-        /*!
-          Per-photon real from the EXTERNAL provider, captured the moment
-          CalculateReal() returns. It cannot be read later: CalculateNLO()
-          calls InitNLO() again before the virtual, and that REBUILDS
-          p_nlo->m_photons from scratch, so every m_beta10 is back to zero by
-          the time anything downstream looks.
-        */
-        /*!
-          End-of-run bookkeeping for the two ACRAIC cross-checks. Grouped rather
-          than left as ten loose members because none of it takes part in the
-          event: it accumulates and is printed once by the destructor, so it
-          has no business sitting beside the per-event momenta.
-        */
         struct Acraic_Stats {
           //! ACRAIC vs the external providers, per point: running mean and worst.
           long   m_cmp_n = 0;
@@ -332,14 +202,6 @@ namespace YFS {
           void AddOverEex(double ratio) { m_oesum += ratio; ++m_oen; }
         };
         Acraic_Stats m_acraicstats;
-        /*!
-          YFS: FSR_FAILURE_STATS - why CalculateFSR returned false or set a
-          zero weight, per dipole and failure kind, reported at the end of
-          the run. A trial that fails here is a zero-weight event, so a high
-          failure rate lowers every column; the pole scheme's factor-5
-          deficit on cc_em_mup (NOTES-w-stages-2026-09-27.md 1.4) is what
-          this was added to find.
-        */
         std::map<std::string, long> m_fsrfail;
         long m_fsrtrials = 0;
         void CountFSRFailure(const std::string &what);

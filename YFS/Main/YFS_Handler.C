@@ -41,19 +41,13 @@ YFS_Handler::YFS_Handler()
     if (m_fb_analysis)
       p_fb = std::make_unique<YFS::YFS_FB_Analysis>(std::vector<YFS::fbdef::code>{}, m_fb_kf);
     m_isrinital = true;
-    // the YFS record puts its photons in YFS_Initial and QED_Radiation
-    // blobs (Signal_Processes::FillYFSBlobs); the photon splitter works on
-    // photons of the signal blob and has not been ported
     if (m_photon_split != 0)
       THROW(not_implemented, "YFS: PHOTON_SPLITTER_MODE is not supported with"
             " YFS: its photons are in the YFS_Initial and QED_Radiation blobs,"
             " which the photon splitter does not handle.");
     m_rmode = 0;
     m_negskip = 0;
-    // m_ev needs nothing here: YFS_Event's default member initialisers are
-    // the single definition of the per-event starting values, and every
-    // event re-establishes them through StartEvent().
-    rpa->gen.AddCitation(1,"The automation of YFS ISR is published in  \\cite{Krauss:2022ajk}.Which is based on \\cite{Jadach:1988gb}");
+    rpa->gen.AddCitation(1,"The automation of YFS ISR is published in  \\cite{Krauss:2022ajk}. Which is based on \\cite{Jadach:1988gb}");
   }
 }
 
@@ -84,17 +78,9 @@ YFS_Handler::~YFS_Handler()
                <<(cs.m_bad ? " ("+ATOOLS::ToString(cs.m_bad)
                              +" events fell back to EEX)" : "")
                <<std::endl;
-    // Everything this class owns is held by unique_ptr and released with it,
-    // which also covers the two cases the hand written destructor got wrong:
-    // p_acraic, new'd in InitializeACRAIC, was never released (so Acraic_Base's
-    // end of run reporting never ran), and every member was deleted
-    // unconditionally although the constructor only fills them when the mode
-    // is not "off", so an "off" handler deleted uninitialised pointers.
     if(m_negskip!=0){
       msg_Out()<<"Total Events Skipped: "<<m_negskip<<std::endl;
     }
-    // non-finite weights (e.g. a loop provider's unstable point): zeroed in
-    // GenerateWeight; this rank's count, so the run can show how many it lost
     if(m_regcheck_zero > 0)
       msg_Out()<<"YFS: SOFT_REGION_CHECK (this rank): "<<m_regcheck_zero
                <<" events skipped, ISR photon below K_min (weight zero)"<<std::endl;
@@ -107,20 +93,11 @@ YFS_Handler::~YFS_Handler()
     if(m_nonfinite!=0)
       msg_Out()<<"YFS (this rank): "<<m_nonfinite<<" events with a non-finite weight, "
                <<"set to zero"<<std::endl;
-    // The emission-side IF reweight is only trustworthy while the clamp is
-    // rarely hit; a large count here means photons are being handed an
-    // interference factor the soft approximation cannot support, and the rate
-    // is being shaped by IFI_RClip rather than by the physics.
     if(m_ifireal && p_dipoles && p_dipoles->IFIClipped()!=0){
       msg_Out()<<"IFI real reweight: "<<p_dipoles->IFIClipped()
                <<" photon factors clamped to ["<<p_dipoles->IFIRClip()
                <<", "<<1./p_dipoles->IFIRClip()<<"]"<<std::endl;
     }
-    // The restoration is m_born*(subloc/subb - 1), so the spread of subloc/subb
-    // is what sets both the shift and the MC error. A mean far from 1, or a
-    // min/max spanning orders of magnitude, says the two eikonals are not the
-    // matched pair the cancellation assumes - which is the thing to look at
-    // before adjusting anything else.
     if(m_ifireal && p_nlo && p_nlo->m_ifi_n>0){
       const double mean = p_nlo->m_ifi_sum/p_nlo->m_ifi_n;
       const double var  = p_nlo->m_ifi_sum2/p_nlo->m_ifi_n - mean*mean;
@@ -140,8 +117,6 @@ YFS_Handler::~YFS_Handler()
                  <<"  residue="<<(rr-ee)<<std::endl;
       }
     }
-    // Photons above omega whose IF ratio was never applied keep factor 1,
-    // i.e. lose their share of the interference.
     if(m_ifireal && p_nlo && p_nlo->m_ifi_eligible>0){
       msg_Out()<<"IFI real restoration skipped on "
                <<(p_nlo->m_ifi_skip_emin+p_nlo->m_ifi_skip_momcons
@@ -159,23 +134,13 @@ NLO_Base *YFS_Handler::EnsureNLO()
 {
   if (!p_nlo) p_nlo = std::make_unique<YFS::NLO_Base>();
   if (m_acraicborn) p_nlo->SetBornProc(m_acraicborn);
-  // A raw observer on purpose: callers (YFS_Process) only use the NLO layer,
-  // they never take it over.
   return p_nlo.get();
 }
-
-
-// bool YFS_Handler::On()
-// {
-//   return m_mode;
-// }
-
 
 
 void YFS_Handler::SetBeam(BEAM::Beam_Spectra_Handler *beam)
 {
   p_beams = beam;
-  // for(size_t i = 0; i < 2; ++i) m_beams.push_back(beam->GetBeam(i));
   m_beam1 = p_beams->GetBeam(0)->OutMomentum();
   m_beam2 = p_beams->GetBeam(1)->OutMomentum();
   if(m_beam1 != -m_beam2) m_asymbeams = true;
@@ -184,10 +149,7 @@ void YFS_Handler::SetBeam(BEAM::Beam_Spectra_Handler *beam)
 
 void YFS_Handler::SetLimits(const double &smin, const double &s) {
   // s must be this event's actual s' (from the real, possibly beam-spread-
-  // sampled, incoming momenta), not sqr(rpa->gen.Ecms()) -- that singleton is
-  // the fixed nominal collider energy and does not track BEAM_SPECTRA
-  // (Gaussian) event-by-event variation, which understated/overstated maxV
-  // here let m_v exceed what the actual event could physically radiate.
+  // sampled, incoming momenta), not sqr(rpa->gen.Ecms())
   p_yfsFormFact->SetCharge(1);
   p_coulomb->SetAlphaQED(m_alpha);
   double maxV = 1. - smin / s;
@@ -198,26 +160,12 @@ void YFS_Handler::SetLimits(const double &smin, const double &s) {
 }
 
 void YFS_Handler::SetFlavours(const ATOOLS::Flavour_Vector &flavs) {
-  // One YFS_Handler is shared by every process in the run card, but m_flavs,
-  // m_mass and m_particles describe a single process. Latching on
-  // m_setparticles alone meant the first process to get here kept ownership of
-  // those forever, so with more than one process the momenta of the active
-  // process were combined with the flavours of a different one -- mismatched
-  // multiplicities, which MakeDipoles used to index out of bounds. Rebuild
-  // whenever the flavours actually change; the early return keeps the
-  // per-event calls cheap when they do not.
   if(m_setparticles && m_flavs == flavs) return;
-  // MODE implied by ACRAIC: 1 (YFS_Base::RegisterSettings): ISR alone when no
-  // final-state particle is charged (nu nu, gamma gamma, H nu nu), else ISRFSR
   if (m_mode_from_acraic) {
     bool charged(false);
     for (size_t i(2); i < flavs.size(); ++i) if (flavs[i].Charge() != 0.) charged = true;
     m_mode = charged ? yfsmode::isrfsr : yfsmode::isr;
   }
-  // Clearing the store frees the Particles; m_particles only observes them, so
-  // it has to be emptied in step or it is left holding dangling pointers.
-  // (The hand written version deleted through m_particles, which had to happen
-  // before the clear -- an ordering the code had wrong once already.)
   m_particle_store.clear();
   m_particles.clear();
   m_flavs.clear();
@@ -240,14 +188,6 @@ void YFS_Handler::SetFlavours(const ATOOLS::Flavour_Vector &flavs) {
     }
   }
   m_setparticles = true;
-  /*
-    The coherent partition sum needs ONE soft region for every photon (the
-    P-frame sphere of IR_CUTOFF/2; hep-ph/0006359 eqs. 36-38): ACRAIC's stage
-    factors, IF_FORMFACTOR_CUT and m_acraiclegs all assume it. HIDE_PHOTONS
-    false leaves each FSR pair in its own Q-frame region (KKMC KeyPia 0), which
-    is legitimate only at the squared level without IFI
-    (NOTES-lorentz-invariant-yfs-ff.md sec. 5.2).
-  */
   if (m_useacraic && !m_hidephotons)
     THROW(fatal_error, "YFS: HIDE_PHOTONS false is incompatible with ACRAIC: the "
           "coherent sum needs one common soft region for all photons.");
@@ -255,9 +195,6 @@ void YFS_Handler::SetFlavours(const ATOOLS::Flavour_Vector &flavs) {
 }
 
 void YFS_Handler::SetBornMomenta(const ATOOLS::Vec4D_Vector &p) {
-  // The per-event boundary. Both the ISR/ISRFSR and the pure-FSR paths call
-  // this first (Phase_Space_Point.C:229 and :241), so it is the one place
-  // that sees every event; pure-FSR never reached MakeYFS()'s Reset().
   StartEvent();
   m_ev.m_bornMomenta.clear();
   for(size_t i = 0; i < p.size(); ++i) {
@@ -266,12 +203,6 @@ void YFS_Handler::SetBornMomenta(const ATOOLS::Vec4D_Vector &p) {
   // detect asymmetric beams from the original lab momenta, before any boost
   if(m_ev.m_bornMomenta[0] != -m_ev.m_bornMomenta[1]) m_asymbeams = true;
   else m_asymbeams = false;
-  // NLO_Base::MapMomenta (and the ISR/FSR kinematics) assume the incoming pair
-  // is at rest. For non-standard setups (fixed target, e.g. MUonE muon-e-;
-  // asymmetric beams; beamstrahlung) it is not, so boost into the incoming-pair
-  // rest frame here; the blob-facing getters (ToLab) undo it when handing the
-  // event back. Pure-FSR mode feeds lab momenta straight into CalculateFSR(p)
-  // and is left untouched.
   Vec4D Q(m_ev.m_bornMomenta[0] + m_ev.m_bornMomenta[1]);
   if (m_mode != yfsmode::fsr && !IsZero(Q.PSpat() / Q[0], 1e-10)) {
     m_ev.m_cmsboost = Poincare(Q);
@@ -280,9 +211,6 @@ void YFS_Handler::SetBornMomenta(const ATOOLS::Vec4D_Vector &p) {
   } else {
     m_ev.m_cmsboost = Poincare();
   }
-  // (the W momenta are built where they are used: CalculateWWForm and
-  //  CalculateCoulomb; this call read the previous event's m_plab)
-  // AddFormFactor();
 }
 
 void YFS_Handler::SetMomenta(const ATOOLS::Vec4D_Vector &p) {
@@ -312,14 +240,6 @@ void YFS_Handler::CreatMomentumMap() {
 }
 
 void YFS_Handler::InitializeACRAIC(const ATOOLS::Flavour_Vector &fl) {
-  /*
-    One ACRAIC object per flavour set. This returned as soon as ANY p_acraic
-    existed, so with several processes in one card every process after the
-    first ran ACRAIC with the first one's flavours, stages and helicity maps
-    (YFS_Process::MakeActive re-points the flavours and providers of the
-    shared handler, but ACRAIC kept its own). Now the current object is parked
-    under its key and the one for fl is taken out, or created.
-  */
   std::string key;
   for (const Flavour &f : fl) key += ATOOLS::ToString((long)f) + ",";
   if (p_acraic && key == m_acraickey) return;
@@ -346,13 +266,6 @@ bool YFS_Handler::MakeYFS(){
   return MakeYFS(m_ev.m_bornMomenta);
 }
 
-/*
-  Every YFS object holds its own m_s, set to sqr(Ecms) when it was built. With
-  a beam spectrum that is neither this event's s nor its mean, and the ISR
-  photon energies, the form factors' soft limits, the FSR cutoff and ACRAIC's
-  flux s/X^2 all read it. Without a spectrum s is the same every event and
-  this rewrites the same value.
-*/
 void YFS_Handler::SetEventS(const double s) {
   SetS(s);
   p_isr->SetS(s);
@@ -382,15 +295,6 @@ bool YFS_Handler::MakeYFS(ATOOLS::Vec4D_Vector &p)
     return false;
   }
   SetEventS((p[0] + p[1]).Abs2());
-  // p_dipoles->CreateAllDipoles(m_flavs, m_ev.m_plab, m_ev.m_bornMomenta);
-  /*
-    The initial-initial dipole is built once and kept, because ISR holds a
-    pointer to it (CalculateISR re-points it while m_isrinital is set). With a
-    fixed beam energy its beams are every event's. With a beam spectrum they
-    are not: the kept dipole put every event's ISR on the FIRST event's beams,
-    so s' ignored the spread and the photons did not balance the event's
-    beams. Rebuild it whenever the beams have moved.
-  */
   if (m_isrinital || !IIDipoleIsCurrent()) {
     p_dipoles->MakeDipolesII(m_flavs, m_ev.m_plab, m_ev.m_bornMomenta);
     m_isrinital = true;
@@ -424,11 +328,6 @@ bool YFS_Handler::MakeYFS(ATOOLS::Vec4D_Vector &p)
 void YFS_Handler::MakeACRAIC() {
   if (m_useacraic) {
     Vec4D_Vector vv;
-    // The real providers, one per photon multiplicity, so ACRAIC: COMIX_REAL
-    // can ask for Comix's helicity amplitudes at whatever multiplicity the
-    // event came out with. Re-pointed every event because the handler is
-    // shared by every process in the run card and the providers belong to
-    // whichever one is currently selected.
     if (p_nlo) {
       for (size_t n(1); n <= p_nlo->MaxRealPhotons(); ++n)
         p_acraic->SetRealProvider(n, p_nlo->RealProvider(n));
@@ -452,33 +351,12 @@ void YFS_Handler::MakeACRAIC() {
     }
     p_acraic->SetBorn(m_born);
     for(size_t i = 0; i < m_ev.m_plab.size(); ++i) vv.push_back(m_ev.m_bornMomenta[i]);
-    /*
-      Every lab final leg, not just two. BuildAcraicMomenta wants
-      {beams, Born final state, lab final state} and decides it has the lab
-      set by counting - so appending only legs 2 and 3 of a longer final state
-      left it one short, and it fell back to the BORN legs, which do not
-      balance against the photons. That surfaced as Comix refusing the real
-      with "momenta do not balance", several layers away.
-    */
-    /*
-      With hidden FSR photons the final legs of m_plab balance against ALL the
-      FSR photons, while ACRAIC is handed only the visible ones: the momentum
-      repair then moved the softest visible photons, and the coherent IF soft
-      factor of photons at x ~ 1e-7 came out wrong by up to 77% on ~20% of them
-      (Z-pole mu mu, 2026-10-02). m_acraiclegs has the hidden photons absorbed
-      into the pairs, so legs and visible photons balance.
-    */
     const Vec4D_Vector &finlegs(m_ev.m_acraiclegs.size() == m_ev.m_plab.size()
                                 ? m_ev.m_acraiclegs : m_ev.m_plab);
     for(size_t i = 2; i < m_ev.m_plab.size(); ++i)
       vv.push_back(finlegs[i]);
     p_acraic->Init(vv);
-    /*
-      The phase-space point that actually realises s': the ISR-reduced beams
-      in the SAME frame as the recoiled final legs. m_plab[0..1] have been
-      boosted to the lab while m_plab[2..] have not, so m_plab itself does not
-      balance; m_sprimeBeams is the pre-boost pair.
-    */
+
     if (m_ev.m_sprimeBeams.size() == 2) {
       Vec4D_Vector sp(m_ev.m_sprimeBeams);
       for (size_t i = 2; i < m_ev.m_plab.size(); ++i) sp.push_back(finlegs[i]);
@@ -487,17 +365,10 @@ void YFS_Handler::MakeACRAIC() {
     p_acraic->SetPreFSRMomenta(m_ev.m_reallab);
     p_acraic->SetISRPhotons(m_ev.m_ISRPhotons);
     if (HasFSR()) p_acraic->SetFSRPhotons(m_ev.m_FSRPhotons);
-    /*
-      YFS: SOFT_REGION_CHECK (default false): the coherent sum assumes every
-      photon it is handed lies outside the common region, energy above
-      IR_CUTOFF/2 in the beams' rest frame. Checked in its invariant form,
-      k.P/sqrt(P^2) with P the beams' total momentum, so the check does not
-      depend on the frame the record is in; counted, reported at the end.
-    */
+
     static const bool regcheck(Settings::GetMainSettings()["YFS"]["SOFT_REGION_CHECK"]
                                .SetDefault(false).Get<bool>());
-    // an ISR photon at or below K_min zeroes the ISR weight (ISR.C, m_cut), so
-    // such an event carries no weight: counted apart, not as a violation
+    
     if (regcheck && p_isr && p_isr->GetCut() == 0) ++m_regcheck_zero;
     else if (regcheck && m_ev.m_bornMomenta.size() >= 2) {
       const SoftRegion common(SoftRegion::RestOf(m_ev.m_bornMomenta[0] + m_ev.m_bornMomenta[1],
@@ -515,12 +386,7 @@ void YFS_Handler::MakeACRAIC() {
     }
     p_acraic->SetBornMomenta(m_ev.m_bornMomenta);
     p_acraic->SetISRFormFactor(m_ev.m_formfactor);
-    /*
-      The radiating final-state dipoles are ACRAIC's final stages: one per
-      resonance pair, so that each resonance propagator carries its own
-      partition-shifted invariant. Leg labels are positions in the process
-      flavour list.
-    */
+
     std::vector<std::vector<int> > groups;
     for (auto &D : p_dipoles->GetDipoleFF())
       if (D.IsResonance()) groups.push_back({D.Left(), D.Right()});
@@ -532,17 +398,6 @@ void YFS_Handler::MakeACRAIC() {
 
 }
 
-/*
-  ACRAIC's W stages for a W+W- -> 4f final state (ACRAIC: W_STAGES, see
-  NOTES-w-stages-2026-09-27.md): one decay group per W, holding the W as the
-  incoming leg and its charged daughter, from the same pairing the pole
-  scheme uses (DipoleSet::FindWW: each charged lepton with the neutrino of
-  its own generation). ACRAIC puts the W's, outgoing, into the production
-  stage itself. Independent of YFS: WW_Scheme - the generator's dipoles are
-  whatever they are, the crude has to be theirs (section 4.8 of the notes).
-  Returns false when W stages are off or the state is not W+W- -> 4f, and
-  the flat radiating-dipole groups are handed over as before.
-*/
 bool YFS_Handler::SetACRAICWStageGroups() {
   if (!p_acraic || !p_acraic->WStagesRequested()) return false;
   const DipoleSet::WWLegs w(DipoleSet::FindWW(m_flavs, m_ev.m_plab));
@@ -585,9 +440,6 @@ bool YFS_Handler::CalculateISR() {
   if (p_dipoles->GetDipoleII().size() != 2) {
     THROW(fatal_error, "Wrong dipole size for ISR");
   }
-  // Address-of is deliberate: ISR keeps this pointer until MakeYFS rebuilds
-  // the dipole (see m_isrinital), which is why DipoleSet holds its dipoles by
-  // unique_ptr so they never move.
   if (m_isrinital) p_isr->SetIncoming(&p_dipoles->GetDipoleII());
   m_isrinital = false;
   m_g=p_dipoles->GetDipoleII().m_gamma;
@@ -608,8 +460,6 @@ bool YFS_Handler::CalculateISR() {
     ToLab(m_ev.m_plab[i]);
   }
   double sp = (m_ev.m_plab[0] + m_ev.m_plab[1]).Abs2();
-  // An invariant, so it holds for boosted (asymmetric, beam-spread) pairs as
-  // well; exempting them hid the stale initial-initial dipole (MakeYFS).
   if (!IsEqual(sp, m_sp, 1e-4)) {
     msg_Error() << "Boost failed, sprime"
                 << " is " << sp << " and should be "
@@ -650,17 +500,6 @@ bool YFS_Handler::CalculateFSR(){
   return CalculateFSR(m_ev.m_plab);
 }
 
-// Event-record copy of an FSR pair that has to absorb the photons
-// HIDE_PHOTONS dropped. The pair was built recoiling against every generated
-// photon, and the weights are computed at that point (m_plab together with the
-// pre-hide m_me_photons), so only the copy written to the record is changed:
-// the pair keeps its rest-frame direction and takes the total momentum
-// p1 + p2 + k_hidden. Without it the record misses k_hidden ~ Emin =
-// IR_CUTOFF/2 and fails the four-momentum check (relative accuracy
-// sqrt(NUM_ACCURACY) = 1e-5) once Emin/sqrt(s) is above it: Beam_Remnants:None
-// then rejects the event and the trials lower the generated cross section
-// (Bhabha/Moller at sqrt(s) = 0.106 GeV, IR_CUTOFF 1e-5: 6.8% of events,
-// sigma -7.9%; 2026-10-02).
 static void AbsorbHiddenPhotons(Vec4D &p1, Vec4D &p2, const double m1,
                                 const double m2, const Vec4D &khidden)
 {
@@ -679,56 +518,20 @@ static void AbsorbHiddenPhotons(Vec4D &p1, Vec4D &p2, const double m1,
 }
 
 bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
-  // update NLO momenta from PHASIC
-  // m_ev.m_reallab should be used for 
-  // fixed order corrections.
-  // Final state eikonals should be constructed
-  // for the final state momenta before emissions
-  // of photons. 
   m_ev.m_FSRPhotons.clear();
   m_ev.m_fsrphotonsforME.clear();
   m_ev.m_reallab = p;
   m_ev.m_plab=p;
-  // Pure-FSR mode never goes through MakeYFS, so CreatMomentumMap() (the only
-  // place m_ev.m_inparticles/m_ev.m_outparticles get cleared) would otherwise never run
-  // for this path, letting stale entries from earlier trials survive under
-  // reused Particle* keys and leak into Signal_Processes::FillBlob via
-  // GetOutParticles(). Reset it here on every call so it always starts from
-  // the current born momenta.
   CreatMomentumMap();
   if(FixedOrder()==fixed_order::nlo && m_ev.m_ISRPhotons.size()!=0) {
     for(size_t i = 2; i < m_ev.m_plab.size(); ++i) m_ev.m_outparticles[m_particles[i]] = m_ev.m_plab[i];
     return true;
   }
-  if(m_mode==yfsmode::isr) {
-    // if(m_ev.m_ISRPhotons.size() < m_mingammaN){
-    //   m_isrWeight=0;
-    //   return false;
-    // }
-    return true;
-  }
+  if(m_mode==yfsmode::isr) return true;
   m_fsrWeight=1;
   p_dipoles->MakeDipoles(m_flavs, m_ev.m_plab, m_ev.m_plab);
-  // p_dipoles->CreateAllDipoles(m_flavs, m_ev.m_plab, m_ev.m_plab);
   CheckResonance();
-  // p_dipoles->CreateAllDipoles(m_flavs, m_ev.m_plab, m_ev.m_plab);
   if(m_mode==yfsmode::isrfsr) {
-    // Initial legs are the BORN beams, not the ISR-reduced ones. The
-    // interference is between radiation off the incoming particles and off the
-    // outgoing ones, so the initial leg of an initial-final pair is the
-    // physical beam - which is also what KKMC's Yint uses (m_p1, m_p2 in
-    // KKceex.cxx:315, the same momenta its Yisr = SForFac(alfpini, m_p1, m_p2)
-    // uses). Final legs stay at m_ev.m_plab, i.e. after the ISR recoil and before
-    // FSR emission. This does NOT match KKMC: its m_p3, m_p4 are the fermions
-    // AFTER FSR (KKceex.cxx:197-198 builds them from m_Event->m_Qf1/m_Qf2,
-    // which KKarFin.cxx:97-98 overwrites with the post-YFSfin m_q1, m_q2), and
-    // Yint uses those (KKceex.cxx:334-337).
-    //
-    // Passing m_ev.m_plab for both also mixed frames once the beams were asymmetric:
-    // CalculateISR() writes m_ev.m_plab[0..1] back through ToLab() while
-    // m_ev.m_plab[2..] stay in the incoming-pair rest frame. m_ev.m_bornMomenta is in
-    // that rest frame throughout, so the pair is now built in one frame - which
-    // matters because Btilda depends on the leg energies, not just invariants.
     Vec4D_Vector ifmom(m_ev.m_plab);
     ifmom[0] = m_ev.m_bornMomenta[0];
     ifmom[1] = m_ev.m_bornMomenta[1];
@@ -748,8 +551,6 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   p_dipoles->MakeDipolesPole(m_flavs, polemom, polemom);
   YFS::DipoleView ffdip(p_dipoles->GetDipoleFF());
   ++m_fsrtrials;
-  // event-record momenta that differ from m_plab: the legs of pairs that
-  // absorbed hidden photons (AbsorbHiddenPhotons)
   std::map<size_t, Vec4D> recordonly;
   for (auto Dip = ffdip.begin(); Dip != ffdip.end(); ++Dip) {
     if(!Dip->IsResonance()) continue;
@@ -834,9 +635,6 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     m_ev.m_acraiclegs = m_ev.m_plab;
     for (const auto &r : recordonly) m_ev.m_acraiclegs[r.first] = r.second;
   }
-  // YFS: EXCHANGE_T_MIN_FINAL: the physical |t|, full beams against the
-  // outgoing legs after all radiation as the record has them (hidden photons
-  // absorbed), all in the incoming pair's rest frame
   if (m_exchange_tmin_final > 0. && m_ev.m_bornMomenta.size() >= 2) {
     Vec4D_Vector phys(m_ev.m_acraiclegs.size() == m_ev.m_plab.size() ? m_ev.m_acraiclegs
                                                                     : m_ev.m_plab);
@@ -870,7 +668,6 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
       m_ev.m_me_photons.push_back(YFS::Photon(k, &*Dip));
     }
   }
-  // if(!CheckMomentumConservation()) return false;
   if(FixedOrder()==fixed_order::nlo){
     int totk = m_ev.m_ISRPhotons.size();
     if(m_nlo_fsr_photons) totk += m_ev.m_FSRPhotons.size();
@@ -881,27 +678,11 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
       return false;
     }
   }
-  // if((m_ev.m_ISRPhotons.size() +  m_ev.m_FSRPhotons.size()) < m_mingammaN) {
-  //   m_fsrWeight=0;
-  //   return false;
-  // }
-  // CheckMasses();
   CountFSRFailure("CalculateFSR completed");
   return true;
 }
 
 
-/*
-  YFS: EXCHANGE_T_MIN. A lower bound on |t| = |(p_in - p_out)^2| of every
-  same-flavour in-out pair (an exchange line) of p, legs 0 and 1 incoming.
-  The selectors only see the radiative event, so a lab-frame energy or angle
-  cut does not keep YFS's own pairs away from t = 0. At fixed target (MUonE)
-  an outgoing muon can come out equal to the beam after the ISR recoil while
-  the electron passes a lab E_e cut: the initial-final form factor's
-  ln(-t) times the photon-mass log then blows up exp(Y) (LO) or is NaN (the
-  virtual subtraction). Checked on the reduced Born (the Born weight) and on
-  the initial-final dipoles (beams against the outgoing legs after ISR).
-  A generation cut: set it below the fiducial |t|.
 */
 namespace {
   //! ACRAIC: WEIGHT_O0 - the O(alpha^0) ACRAIC column (rho_0/rho_crude) as a
@@ -914,13 +695,6 @@ namespace {
   }
   //! ACRAIC: FIXED_ORDER_STREAM - the strict O(alpha) truncation of ACRAIC as
   //! the named weight ACRAIC_FixedOrder (see GenerateWeight)
-  /*
-    ACRAIC: STRICT_O1_STREAM (2026-10-11, referee M4): the O(alpha) ACRAIC
-    column as a strict truncation, the external virtual on C_0 only and no
-    (v/2)^2 term: (rho_1 + v Re<C_0, C_1>)/rho_crude, with the same IF
-    exponent swap as every ACRAIC column. Named weight ACRAIC_O1S, with an
-    external virtual only (ACRAIC's own virtual sits inside C_1).
-  */
   bool AcraicStrictO1Stream()
   {
     static const bool on(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
@@ -954,8 +728,6 @@ void YFS_Handler::CountFSRFailure(const std::string &what) {
 }
 
 bool YFS_Handler::WPairMomenta(const Vec4D_Vector &p, Vec4D &wp, Vec4D &wm) const {
-  // a W daughter pair: one fermion, one antifermion of the same SU(2) doublet
-  // (generation-diagonal), total charge +-1
   auto partner = [](const Flavour &a, const Flavour &b) {
     if (a.IsAnti() == b.IsAnti()) return false;
     const kf_code ka(a.Kfcode()), kb(b.Kfcode());
@@ -1019,9 +791,6 @@ void YFS_Handler::CalculateCoulomb() {
 }
 
 void YFS_Handler::CalculateBeta() {
-  // Invalidate last event's NLO pieces first, so an early return cannot leave
-  // them looking current. Zeroed as well as flagged: a stale value that is
-  // never read is still a trap for the next person to add a weight here.
   m_ev.m_nlo_current = false;
   m_ev.m_nlo_real = m_ev.m_nlo_virtual = m_ev.m_nlo_rv = m_ev.m_nlo_rr = 0.;
   m_ev.m_nlo_vxr = 0.;
@@ -1043,16 +812,7 @@ void YFS_Handler::CalculateBeta() {
     }
     m_ev.m_eex = m_ev.m_real;
     if(IsNan(m_ev.m_eex)) m_ev.m_eex=0;
-    // if(m_ev.m_real < 0) m_ev.m_real = 0;
-    // m_ev.m_real /= m_born;
   }
-  /*
-    ACRAIC FIRST. Two things downstream need its result:
-      - CalculateNLO() asks NLO_Base for the virtual, and when no
-        Loop_Generator was named ACRAIC is what supplies it,
-      - the nominal weight itself, if ACRAIC_WEIGHT is on.
-    Both read a number ACRAIC has to have produced already.
-  */
   double acraicfac(1.);
   bool   haveacraic(false);
   if (m_useacraic) {
@@ -1104,25 +864,15 @@ void YFS_Handler::CalculateBeta() {
     }
     if (p_acraic) {
       /*
-        Denominator = the INCOHERENT partition sum (KKMC's RhoCrud), not rho0.
+        Denominator = the INCOHERENT partition sum.
 
         rho0 is the coherent sum, so the partitions can cancel and it can come
         arbitrarily close to zero, while the crude weight this factor
-        multiplies is a factorised eikonal times Born and does not. Measured at
-        250 GeV with rho0 as the denominator: one event produced 1107 pb on a
-        4.86 pb cross section, unweighting efficiency 2e-06. The incoherent sum
-        is a sum of positive terms and cannot vanish.
-
-        With a single partition - no FSR, so nothing to interfere - the two
-        denominators are identical, which is why the Z-peak ISR results and the
-        KKMC cross-check are unaffected.
+        multiplies is a factorised eikonal times Born and does not.
       */
       const double r0(p_acraic->GetRhoCrude()), r1(p_acraic->GetResult());
       if (r0 > 0. && !IsBad(r1/r0)) { acraicfac = r1/r0; haveacraic = true; }
       else ++m_acraicstats.m_bad;
-      // Published immediately: AcraicCompare() below reads it, and so does
-      // GenerateWeight(). Assigning it only at the end of this function left
-      // the comparison reading the PREVIOUS event's value.
       m_ev.m_acraicfactor = haveacraic ? acraicfac : 0.;
       ProbeGolden(r0, r1);
       ProbeAcraicWeight();
@@ -1139,59 +889,28 @@ void YFS_Handler::CalculateBeta() {
     ProbeReference(haveacraic);
   }
 
-  /*
-    The ACRAIC O(alpha) factor, kept whether or not it drives the nominal.
-
-    m_ev.m_real is the same object from the EEX/fixed-order side - 1 + sum(beta)/Born
-    there, rho1/rho0 here - so m_ev.m_acraicfactor/m_ev.m_real is the ratio that turns the
-    nominal weight into the ACRAIC one, which is exactly what a named weight is.
-    With ACRAIC_WEIGHT on, ACRAIC becomes the nominal and the column is 1.
-  */
   if (haveacraic) {
     m_acraicstats.AddOverEex(m_ev.m_real != 0. ? acraicfac/m_ev.m_real : 0.);
-    // m_ev.m_real is NOT overwritten here. Which correction drives the weight is
-    // decided in GenerateWeight(), because only there is the IFI_Real term
-    // known - and that term belongs to the EEX correction alone.
   }
 }
 
 /*!
   ACRAIC against the EXTERNAL providers, event by event.
 
-  Both sides are O(alpha) corrections relative to the SAME Born, so they are
-  directly comparable without any normalisation being matched by hand:
+  Both sides are O(alpha) corrections relative to the Born, so they are
+  directly comparable without any normalisation being matched by hand.
 
       external virtual / Born   <->   rho(Born+virtual)/rho(Born) - 1
       external real    / Born   <->   rho(Born+real)   /rho(Born) - 1
 
-  The TOTAL row is the meaningful one: both sides are the O(alpha) correction
+  The total row is the meaningful one: both sides are the O(alpha) correction
   factor to the same resummed Born, and it is what drives the weight.
 
-  The split rows are INDICATIVE ONLY, and the real row (marked real*) is not a
-  like-for-like comparison at all. ACRAIC decomposes at AMPLITUDE level -
-  rho(B+R)/rho(B) - 1 is 2Re(B*R)/|B|^2 + |R|^2/|B|^2 - whereas NLO_Base's
-  CalculateReal() returns the YFS-subtracted real ME, a squared object. They
-  coincide only in the soft limit. Read the real row as "are these even the
-  same size", not as a discrepancy.
-
-  The ACRAIC side excludes IFI_Real by construction - its partition sum already
-  contains the real initial-final interference - so the external side is taken
-  without it too, or the comparison is against a different quantity.
 */
 void YFS_Handler::AcraicCompare() {
   if (!p_acraic || !p_nlo || m_born == 0.) return;
   const double rc(p_acraic->RealFactor() - 1.);
   const double tc(m_ev.m_acraicfactor - 1.);
-  /*
-    The virtual BY DIFFERENCE, total minus real - KKMC's convention
-    (Rho1(full) - Rho1(Born+real))/Rho0 - and the only one that is comparable
-    with the external provider's additive decomposition.
-
-    rho(B+V)/rho(B) - 1 is NOT the same object once the real emission is hard:
-    it drops the V-R cross term. Measured on a dumped point with real/Born =
-    -0.40, that definition gave 0.0920 where KKMC gave 0.0629; total - real
-    gives 0.06287084 against KKMC's 0.0628708363144.
-  */
   const double vc(tc - rc);
   const double ve(m_ev.m_nlo_virtual/m_born);
   const double re(m_ev.m_nlo_real   /m_born);
@@ -2717,8 +2436,6 @@ void YFS_Handler::BuildNamedWeights(double w_lo, double w_full) {
 
 bool YFS_Handler::BuildLadderWeights(ATOOLS::Weights &w) {
   if (!m_ladder_weights) return false;
-  // Names are registered by BuildNamedWeights; this fills values only. An
-  // event that cannot supply one leaves it at 1.0.
   bool any(false);
 
   if (m_coulomb && p_coulomb) {
@@ -2742,10 +2459,6 @@ void YFS_Handler::YFSDebug(double W){
 
 
 void YFS_Handler::Reset() {
-  // NOT the event boundary - that is StartEvent(), called from
-  // SetBornMomenta. This is the failure path: MakeYFS and CalculateFSR call
-  // it when an event is abandoned part-way, to drop the photons and zero the
-  // weight while leaving the kinematics that were already handed in.
   m_fsrWeight = 0;
   m_ev.m_yfsweight = 0;
   m_ev.m_ISRPhotons.clear();

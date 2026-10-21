@@ -691,14 +691,7 @@ EmissionResult Dipole::GenerateEmissions(ISR *isr, FSR *fsr,
   res.photon_sum = fsr->GetPhotonSum();
 
   Vec4D_Vector k(fsr->GetPhotons());
-  // F() is the mass weight; a failure zeroes the FSR weight rather than only
-  // rejecting, which is why it is separated from the two exits above.
   if (!fsr->F()) { res.fail = EmissionResult::Failure::masswgt; res.weight = 0.; return res; }
-
-  // NOTE: this list is built BEFORE fsr->HidePhotons() below, so it carries
-  // photons the event record discards as unresolved. Whether those should
-  // receive a fixed-order real correction is decided in NLO_Base, by the
-  // YFS setting NLO_PHOTON_EMIN, so that ISR and FSR are treated alike.
   for (const Vec4D &g : k) {
     me_acc.push_back(g);
     res.me_photons.push_back(Photon(g, this));
