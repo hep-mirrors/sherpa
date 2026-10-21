@@ -32,6 +32,9 @@ namespace YFS {
       // names; the names now say which is which.
       double m_beta, m_beta1, m_beta2, m_mu1, m_mu2, m_gammaFF, m_gammapFF, m_EQ, m_betaf, m_volmc, m_gpBar, m_gBar;
       double m_massW, m_hideW, m_expf, m_wt2, m_amc2, m_f, m_fbar, m_bvrA, m_yy, m_xfact;
+      //! YFS: FSR_SHELL_JACOBIAN and its value, dPhi_2(s_Q)/dPhi_2(s_pre), folded into m_wt2
+      bool m_shelljacobian = true;
+      double m_shellW = 1.;
       double  m_fsrform, m_nbar, m_betaBar,m_YFS_IR, m_btil, m_btilStar, m_volumc, m_delvol, m_DelYFS,m_delta1,m_cut;
       double m_BtiXcru, m_BtiQcru, m_fsrcutF, m_omegaMax, m_omegaMin, m_A4, m_A, m_betaBar1, m_betaBar2;
       double m_scalek;
@@ -53,6 +56,7 @@ namespace YFS {
       double CalculateBeta(const Vec4D& p);
       void CalculateBetaBar();
       bool MakeFSR();
+      double PairPhaseSpace(const double M2) const;
       void Reset();
       void NPhotons();
       double Btild(Vec4D p1,Vec4D p2, double kmax);

@@ -47,6 +47,24 @@ FSR::FSR()
   // with the photon mass); t-channel dipoles use BVirtT either way
   s["FSR_CRU"].SetDefault(true);
   s["FSR_NGAMMA"].SetDefault(-1);
+  /*
+    FSR_SHELL_JACOBIAN (default true): the two-body phase-space factor of
+    moving the pair from the shell it was generated on (the pre-emission
+    dipole mass, m_dip_sp) to the one it ends up on after the photons took
+    their energy (m_sprim = s_Q):
+
+      dPhi_2(s_Q) / dPhi_2(s_pre) = [lambda^1/2(s_Q,m1^2,m2^2)/s_Q]
+                                  / [lambda^1/2(s_pre,m1^2,m2^2)/s_pre],
+
+    i.e. beta(s_Q)/beta(s_pre) for equal masses. The Born event was sampled
+    with dPhi_2 on the pre-emission shell, the physical event lives on the
+    s_Q shell; without this factor the generator's density carried
+    beta(s_pre)/beta(s_Q) relative to the crude Born x eikonals x flux that
+    ACRAIC and YFS.NLO divide by. Invisible for light fermions (1 + O(m^2/s_Q)),
+    up to 1.4 for pi+ pi- (gamma) at 0.7 GeV, where it was the hard-photon
+    excess over the exact O(alpha) tree. false: the old weight.
+  */
+  s["FSR_SHELL_JACOBIAN"].SetDefault(true);
   // FSR_CUT is in GeV, like IR_CUTOFF; m_fsrcut is it over the nominal
   // sqrt(s), like m_isrcut. NB the default, 1e-2*m_isrcut read as GeV, is in
   // effect 1e-2*IR_CUTOFF/sqrt(s) GeV, not the 1e-2*IR_CUTOFF GeV the comment
@@ -78,6 +96,7 @@ FSR::FSR()
   m_nbar = s["FSR_NBAR"].Get<double>();
   m_use_massive_nbar = s["MASSIVE_NBAR"].Get<bool>();
   m_use_crude = s["FSR_CRU"].Get<bool>();
+  m_shelljacobian = s["FSR_SHELL_JACOBIAN"].Get<bool>();
   m_eikonal_mode = s["FSR_EIK"].Get<bool>();
   m_fixed_ngamma = s["FSR_NGAMMA"].Get<int>();
   p_fsrFormFact = std::make_unique<YFS::YFS_Form_Factor>();
@@ -381,6 +400,10 @@ bool FSR::MakeFSR() {
     msg_Error() << METHOD << "Incorrect jacobian in YFS FSR" << std::endl;
   }
   m_u = 1 - m_sprim / m_dip_sp;
+  // the pair-shell Jacobian (FSR_SHELL_JACOBIAN), part of the photon-scale
+  // weight m_wt2 so WEIGHT_MODE jacob carries it too; 1 without photons
+  m_shellW = m_shelljacobian ? PairPhaseSpace(m_sprim)/PairPhaseSpace(m_dip_sp) : 1.;
+  m_wt2 *= m_shellW;
   MakePair(sqrt(m_sprim), m_dipole[0], m_dipole[1]);
   m_px = m_dipole[0] + m_dipole[1] + m_photonSum;
   m_Q = m_dipole[0] + m_dipole[1];
@@ -402,6 +425,14 @@ bool FSR::MakeFSR() {
   m_photonSumPreBoost = m_photonSum;
   if (m_cut != 0) return true;
   else return false;
+}
+
+// The two-body phase space of the pair at mass^2 M2 per solid angle, up to
+// the constant: lambda^1/2(M2, m1^2, m2^2)/M2 = 2|q|/M (= beta for m1 = m2).
+double FSR::PairPhaseSpace(const double M2) const
+{
+  if (!(M2 > 0.)) return 0.;
+  return sqrt(MySqLam(M2, sqr(m_mass[0]), sqr(m_mass[1])))/M2;
 }
 
 void FSR::RescalePhotons() {
@@ -756,7 +787,8 @@ void FSR::Weight() {
                 << "\n mass r1 = " << m_r1.Mass()
                 << "\n mass r2 = " << m_r2.Mass()
                 << "\n Hidden Photon Weight = " << m_hideW
-                << "\n Photon Scale Weight =  " << m_wt2 << "\n";
+                << "\n Photon Scale Weight =  " << m_wt2
+                << "\n Pair-shell Jacobian (in it) = " << m_shellW << "\n";
     m_fsrWeight = 0;
   }
   DEBUG_FUNC("FSR for Dipole  = " << m_dipoleFl
@@ -782,6 +814,7 @@ void FSR::Weight() {
              << "\n mass r2 = " << m_r2.Mass()
              << "\n Hidden Photon Weight = " << m_hideW
              << "\n Photon Scale Weight =  " << m_wt2
+             << "\n Pair-shell Jacobian (in it) = " << m_shellW
              << "\n Cut is =  " << m_cut
              << "\n Total Weight = " << m_fsrWeight << "\n");
 }
