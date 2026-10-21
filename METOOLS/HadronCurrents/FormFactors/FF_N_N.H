@@ -26,8 +26,11 @@ namespace METOOLS {
   class FF_N_N : public FormFactor_Base {
   public:
     enum class Model : int {
+      // none sets all to 0, pointlike sets F1p=1, F_A=g_A, all else 0
       None = 0, Point = 1,
+      // vector 10-19
       Kelly = 10,
+      // axial 20-29
       Meyer = 20,
       Lattice = 21
     };

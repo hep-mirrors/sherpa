@@ -24,7 +24,7 @@ FF_N_N::FF_N_N(const FF_Parameters & params) :
   const GeneralModel & md = p_model ? *p_model : empty;
   FixMode(md);
   m_mN  = 0.5*(m_masses[m_pi[0]]+m_masses[m_pi[1]]);
-  m_mpi = Flavour(kf_pi).HadMass();
+  m_mpi = Flavour(kf_pi).HadMass(); // make this available from the runcard for specific pion masses
   m_s2  = std::abs(MODEL::s_model->ComplexConstant(string("csin2_thetaW")));
   m_T3  = (m_vertex==FF_N_N_vertex::Z_p) ? 0.5 : -0.5;
   m_gA  = md("GA",1.2754);
@@ -74,6 +74,8 @@ void FF_N_N::Kelly_n(const double & Q2,double & F1,double & F2) const
 
 ////////////////////////////////////////////////////////////////////////////
 // Axial models. F_A = g_A Ftilde(Q^2)/Ftilde(0), positive-F_A convention.
+//        - ensure you normalize to F_A to g_A !!!! otherwise you may end up with
+//          negative F_A or with differeing normalization to Delta's and N* 
 ////////////////////////////////////////////////////////////////////////////
 double FF_N_N::Meyer(const double & Q2) const
 {
@@ -129,16 +131,18 @@ double FF_N_N::Axial(const double & Q2) const
 }
 
 ////////////////////////////////////////////////////////////////////////////
-// Boson combinations.
+// Boson combinations: this should be the same for any form factor models
 ////////////////////////////////////////////////////////////////////////////
 double FF_N_N::Value(const double & Q2) const
 {
+  // axial
   if (m_fftype==FFtype::FA || m_fftype==FFtype::FP) {
     double FA(Axial(Q2));
     if      (m_vertex==FF_N_N_vertex::gamma_p || m_vertex==FF_N_N_vertex::gamma_n) FA = 0.;
     else if (m_vertex==FF_N_N_vertex::Z_p     || m_vertex==FF_N_N_vertex::Z_n)     FA *= m_T3;
-    return m_fftype==FFtype::FA ? FA : 4.*sqr(m_mN)/(Q2+sqr(m_mpi))*FA;
+    return m_fftype==FFtype::FA ? FA : 4.*sqr(m_mN)/(Q2+sqr(m_mpi))*FA; // currently using
   }
+  // vector
   double F1p, F2p, F1n, F2n;
   Vector(Q2,F1p,F2p,F1n,F2n);
   const double Fp(m_fftype==FFtype::F1 ? F1p : F2p), Fn(m_fftype==FFtype::F1 ? F1n : F2n);

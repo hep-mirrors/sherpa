@@ -58,11 +58,9 @@ namespace {
       a = -1;
       return;
     }
-    THROW(fatal_error,"No default couplings known for exchanged boson "
-          +ToString(bos)+" on a "+ToString(f)+" line (defaults exist for the photon, the Z, "
-          "and the W on lepton lines only). "
-          "Give v and a on both currents, and Coupling on the exchange, "
-          "explicitly.");
+    THROW(fatal_error, "No default couplings known for exchanged boson " + ToString(bos) + " on a " + ToString(f) + " line (defaults exist for the photon, the Z, "
+                                                                                                                    "and the W on lepton lines only). "
+                                                                                                                    "Give v and a on both currents, and Coupling on the exchange, explicitly. OR check boson!!");
   }
 
   double DefaultCoupling(const Flavour & bos)
