@@ -29,7 +29,11 @@ namespace ATOOLS { class Blob_Data_Base; }
 
 namespace YFS {
 
+    class YFS_Weight_Builder;
+
     class YFS_Handler : public YFS_Base {
+
+        friend class YFS_Weight_Builder;
 
     public:
          // constructor
@@ -147,41 +151,11 @@ namespace YFS {
         std::unique_ptr<YFS::Acraic_Base> p_acraic;
         std::map<std::string, std::unique_ptr<YFS::Acraic_Base> > m_acraicstore;
         std::string m_acraickey;
+        //! CalculateBeta through BuildNamedWeights and their probes (YFS_Weight_Builder.C)
+        std::unique_ptr<YFS::YFS_Weight_Builder> p_weights;
 
-        void   AcraicCompare();
         //! YFS: FSR_DENSITY_GATE - the FSR generator density against the eikonals.
         void ProbeFSRDensity(YFS::Dipole &D);
-        //! ACRAIC: GOLDEN - bit-exact reference stream of the ACRAIC factor (@@@ ACRAICGOLD).
-        void ProbeGolden(const double r0, const double r1);
-        //! ACRAIC: WEIGHT_PROBE - what makes a heavy ACRAIC event (@@@ ACRAICWT).
-        void ProbeAcraicWeight();
-        //! ACRAIC: WEIGHT_PROBE - the ACRAIC factor next to the YFS.NLO one (@@@ ACRAICCMP).
-        void ProbeAcraicCompare(const bool haveacraic);
-        //! ACRAIC: REF_PROBE - every momentum of a one-photon event (@@@ REFP).
-        void ProbeReference(const bool haveacraic);
-        //! ACRAIC: REF_PROBE - the Born-level weight pieces of that event (@@@ REFW).
-        void ProbeReferenceWeight(const double w_lo);
-        //! YFS: REAL_STAB - the pre/post-emission momentum residual of each resonant pair (@@@ PREPOST).
-        void ProbeRealStab();
-        //! YFS: RR_PROBE - the O(alpha^2) weight pieces and exactness identities (@@@ NNLOEV/RRID/RVID).
-        void ProbeNNLOEvent();
-        //! YFS: LO_PROBE - how CalculateBeta moved the LO pieces (@@@ LOPRE).
-        void ProbeLOPre(const double pre_yfsw, const double pre_ff,
-                        const double pre_v, const double pre_born);
-        //! YFS: LO_PROBE - the Born-level weight pieces (@@@ LOPROBE).
-        void ProbeLO();
-        //! ACRAIC: WEIGHT_PROBE - the final per-column factors (@@@ WPROBE).
-        void ProbeFinalWeights(const double corr_eex, const double corr_acraic,
-                               const double wif, const bool acraico2,
-                               const double corr_acraic_o1,
-                               const double corr_acraic_v0,
-                               const double corr_acraic_v1);
-        //! YFS: LO_PROBE - the final LO and full weights (@@@ LOPROBE2).
-        void ProbeLOFinal(const double w_lo, const double w_full,
-                          const bool acraic_nom, const double corr_acraic,
-                          const double corr_eex);
-        //! YFS: SIGN_PROBE - the hardest photons, m_ll and both weights, per event.
-        void ProbeSign(const double w_full);
         struct Acraic_Stats {
           //! ACRAIC vs the external providers, per point: running mean and worst.
           long   m_cmp_n = 0;
@@ -232,12 +206,7 @@ namespace YFS {
         //! Hand ACRAIC the Born and one-photon real processes, so it can take
         //! its spin amplitudes from Comix rather than hand-coded spinors.
         void SetAcraicProcs(PHASIC::Process_Base *born, PHASIC::Process_Base *real);
-        void CalculateBeta();
         void GenerateWeight();
-        //! Fills m_ev.m_nlo_weightsmap with the YFS.* ratios. Defined next to
-        //! GenerateWeight, which supplies the two weights it compares.
-        void BuildNamedWeights(double w_lo, double w_full);
-        bool BuildLadderWeights(ATOOLS::Weights &w);
         //! The YFS.* column names this configuration emits. Fixed once per
         //! event from configuration alone, and the only names emit() will
         //! write -- a per-event code path must not be able to conjure a column
@@ -252,7 +221,6 @@ namespace YFS {
         void CheckInvariants() const;
         void CreatMomentumMap();
         void MakeACRAIC();
-        void InitNLO();
         Vec4D_Vector GetPhotons();
         inline double GetWeight() const      { return m_ev.m_yfsweight;  }
         inline const ATOOLS::Weights_Map& GetNLOWeightsMap() const { return m_ev.m_nlo_weightsmap; }
@@ -328,24 +296,6 @@ namespace YFS {
         inline void SetRunMode(const int &rmode) { m_rmode = rmode; }
 
         double Eikonal(Vec4D k);
-        double CalculateNLO();
-        //! ACRAIC: REAL_VIRTUAL 2 - sum_j dv_j Re<A_1, M_1j>/4 with dv_j from
-        //! YFS.NLO's RV (NLO_Base::m_rvdv), matched to ACRAIC photons by lab
-        //! momentum; 0 without YFS: RV_MODE 1
-        double AcraicRealVirtualRemainder();
-        //! ACRAIC: REAL_VIRTUAL helicity: the same, resolved by helicity
-        //! (Acraic_RealVirtualHelicity.C); per-photon fallback to dv/2
-        double AcraicRealVirtualHelicityRemainder();
-        /*!
-          ACRAIC: BETA0_2 with an external virtual: d2 on A_0 alone,
-            |A_X + (v/2) A_v + d2 A_0|^2 - |A_X + (v/2) A_v|^2
-              = 2 d2 Re<A_0, A_X + (v/2) A_v> + d2^2 |A_0|^2
-          (per 4 initial helicities), from the overlaps r0x = Re<A_0,A_X>/4
-          and r0v = Re<A_0,A_v>/4.
-        */
-        double AcraicBeta02Rho(double d2, double v, double r0x, double r0v) const;
-        //! BETA0_2: the per-event pieces, on the event ACRAIC dumped (CHECK_XS)
-        void Beta02DumpProbe(double v) const;
         long m_acrv_n = 0, m_acrv_nomatch = 0, m_acrv_nom1 = 0;
         bool CalculateFSR();
         bool CalculateISR();
