@@ -417,6 +417,17 @@ void Acraic_Base::RegisterDefaults()
   s["BETA1_BORNLEGS"].SetDefault(1);         // 1 = reduced, 0 = physical
 
   s["NO_PSEUDOFLUX"].SetDefault(pseudoflux::rho0_only);
+  /*
+    CRUDE_BORN_LEGS (default generator): the Born point of the crude. The FSR
+    generator keeps the pair's direction in the PAIR rest frame (the Born
+    direction it was sampled with), so that is the direction the crude's Born
+    must be evaluated at (GeneratorBornAt). `reduced` rebuilds the pair along
+    its direction in the reduced system's frame (BornLegsAt), which differs
+    from the generator's by the recoil against a hard final-state photon: a
+    density mismatch, up to 5x for pi+ pi- gamma, where the Born is sin^2
+    theta. Beyond 2 -> 2 the generator's point was already used.
+  */
+  s["CRUDE_BORN_LEGS"].SetDefault(crudebornlegs::generator);
   s["SOFT_NORM_CHECK"].SetDefault(0);        // @@@ SOFTNORM
   s["SOFT_LIMIT_TEST"].SetDefault(0);        // @@@ SOFTLIM
   s["BETA1_COMPARE"].SetDefault(0);          // @@@ B1CMP

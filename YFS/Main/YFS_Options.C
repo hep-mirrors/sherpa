@@ -190,6 +190,9 @@ namespace {
     {"rho0_and_rho1", pseudoflux::rho0_and_rho1},
     {"neither", pseudoflux::neither}, {"rho0_only", pseudoflux::rho0_only}};
 
+  const std::vector<Option_Name> s_crudebornlegs{
+    {"reduced", crudebornlegs::reduced}, {"generator", crudebornlegs::generator}};
+
   const std::vector<Option_Name> s_acraicrv{
     {"off", acraicrv::off}, {"factorisable", acraicrv::factorisable},
     {"averaged", acraicrv::averaged}, {"auto", acraicrv::automatic},
@@ -417,6 +420,11 @@ std::istream &YFS::operator>>(std::istream &s, pseudoflux::code &c)
 { return ReadOption(s, c, s_pseudoflux, "ACRAIC: NO_PSEUDOFLUX"); }
 std::ostream &YFS::operator<<(std::ostream &s, const pseudoflux::code &c)
 { return WriteOption(s, c, s_pseudoflux); }
+
+std::istream &YFS::operator>>(std::istream &s, crudebornlegs::code &c)
+{ return ReadOption(s, c, s_crudebornlegs, "ACRAIC: CRUDE_BORN_LEGS"); }
+std::ostream &YFS::operator<<(std::ostream &s, const crudebornlegs::code &c)
+{ return WriteOption(s, c, s_crudebornlegs); }
 
 std::istream &YFS::operator>>(std::istream &s, acraicrv::code &c)
 { return ReadOption(s, c, s_acraicrv, "ACRAIC: REAL_VIRTUAL"); }

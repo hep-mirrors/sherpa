@@ -235,6 +235,12 @@ namespace YFS {
     enum code { off = 0, factorisable = 1, averaged = 2, automatic = 3,
                 helicity = 4 };
   };
+  //! ACRAIC: CRUDE_BORN_LEGS - the Born point of the crude: the generator's
+  //! (pre-emission pair direction in its own rest frame) or the pair
+  //! rebuilt along its physical direction in the reduced system's frame.
+  struct crudebornlegs {
+    enum code { reduced = 0, generator = 1 };
+  };
   //! ACRAIC: BETA1_LEGS - the legs beta_1's M_1 is evaluated on.
   struct beta1legs {
     enum code { physical = 0, balanced = 1 };
@@ -312,6 +318,8 @@ namespace YFS {
   std::ostream &operator<<(std::ostream &str, const pseudoflux::code &c);
   std::istream &operator>>(std::istream &str, acraicrv::code &c);
   std::ostream &operator<<(std::ostream &str, const acraicrv::code &c);
+  std::istream &operator>>(std::istream &str, crudebornlegs::code &c);
+  std::ostream &operator<<(std::ostream &str, const crudebornlegs::code &c);
   std::istream &operator>>(std::istream &str, beta1legs::code &c);
   std::ostream &operator<<(std::ostream &str, const beta1legs::code &c);
   std::istream &operator>>(std::istream &str, weikonal::code &c);

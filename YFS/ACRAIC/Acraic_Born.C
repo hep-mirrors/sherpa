@@ -213,6 +213,19 @@ bool Acraic_Base::ComixBornShifted(const Vec4D_Vector &p, Amplitude &A,
                                  const PropShifts &shifts)
 {
   if (p_bornproc == NULL) return false;
+  // FF_SCALE_PROBE (debug): the shift list handed to Comix
+  static const bool probe(ATOOLS::Settings::GetMainSettings()["FF_SCALE_PROBE"]
+                          .SetDefault(false).Get<bool>());
+  static int nprobe(0);
+  if (probe && nprobe < 30 && p.size() > 3 && (p[2] + p[3]).Abs2() < 0.95*(p[0] + p[1]).Abs2()) {
+    ++nprobe;
+    std::cerr<<"@@@BSHIFT nphot="<<m_allphotons.size()<<" nstage="<<m_stage.size()
+             <<" nshifts="<<shifts.size()<<" (pi pair)^2/s="
+             <<(p.size() > 3 ? (p[2] + p[3]).Abs2()/(p[0] + p[1]).Abs2() : -1.);
+    for (size_t g(0); g < shifts.size(); ++g)
+      std::cerr<<"  [mask "<<shifts[g].first<<" shift "<<shifts[g].second<<"]";
+    std::cerr<<std::endl;
+  }
   std::vector<METOOLS::Spin_Amplitudes> amps;
   if (!p_bornproc->BornSpinAmplitudesShifts(p, amps, NULL, shifts)) return false;
   if (amps.empty()) return false;
@@ -309,16 +322,25 @@ void Acraic_Base::InfraredSubtractedME_0_0() {
   // GENERATOR's density, whose Born is Comix's, and the alignment now exists
   // on both paths (2026-10-11); before, the hand-coded path fell back to the
   // shifted physical-spinor Born, which differs for hard photons
+  // ACRAIC: CRUDE_BORN_LEGS: the generator's own point (the pre-emission
+  // pair's rest-frame direction, GeneratorBornAt) whenever the pre-FSR legs
+  // are known; BornLegsAt (the physical direction in the reduced frame) is
+  // the 2 -> 2 fallback and the `reduced` option. Beyond 2 -> 2 the
+  // generator's point is the only one.
+  static const crudebornlegs::code cbl(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
+                                       ["CRUDE_BORN_LEGS"].Get<crudebornlegs::code>());
+  const bool genlegs((cbl == crudebornlegs::generator || m_flavs.size() > 4)
+                     && m_prefsr.size() == m_flavs.size());
   bool usered(crudeborn && m_flavs.size() >= 4
               && m_cxbalignok && !realpoint
-              && (m_flavs.size() == 4 || m_prefsr.size() == m_flavs.size()));
+              && (m_flavs.size() == 4 || genlegs));
   Amplitude Cred;
   double fluxred(1.);
   if (usered) {
     Vec4D_Vector pb;
     const double X2(m_PXvec.Abs2());
-    const bool legs(X2 > 0. && (m_flavs.size() == 4 ? BornLegsAt(m_PXvec, pb)
-                                                     : GeneratorBornAt(m_PXvec, pb)));
+    const bool legs(X2 > 0. && (genlegs ? GeneratorBornAt(m_PXvec, pb)
+                                        : BornLegsAt(m_PXvec, pb)));
     usered = legs && ComixBornAmplitude(pb, Cred, NULL, -1., -1.);
     if (usered) fluxred = m_s/X2;
     // ACRAIC: CRUDE_BORN_TRACE: the reduced-point crude's Born against m_born
