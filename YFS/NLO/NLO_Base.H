@@ -233,7 +233,12 @@ public:
     ACRAIC goes out as its own named weight rather than replacing anything.
   */
   inline bool NeedsVirtualProvider(bool ext=true) const
-  { return !m_eex_virt && (ext || !m_useacraic); }
+  { return !m_eex_virt && (ext || !m_useacraic ||
+                           // YFS: ACRAIC_Virtual external names the provider
+                           // even when it is Loop_Generator Internal (the
+                           // Process_Info default), e.g. an analytic
+                           // virtual registered in EXTRA_XS/NLO
+                           m_acraicvirtsrc == acraicvirt::external); }
   /// whether ACRAIC is the thing supplying the virtual on this run
   /*!
     Whether ACRAIC's OWN virtual is used, rather than the provider's.

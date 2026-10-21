@@ -90,7 +90,11 @@ double NLO_Base::CalculateVirtual() {
     virt = p_virt->Calc(m_plab, m_born);
   // (not with YFS: VIRTUAL_MASSIFICATION: the provider's Born is then the
   // massless one at the massless image of the point)
-  if (m_check_virt_born && !p_virt->p_massif) {
+  // (nor for a provider without a Born of its own: the internal analytic
+  // virtuals (Loop_Generator Internal) return delta_V only, which YFS
+  // multiplies by Sherpa's Born, so ME_Born() stays 0 and there is nothing to
+  // compare)
+  if (m_check_virt_born && !p_virt->p_massif && p_virt->p_loop_me->ME_Born() != 0.) {
     // the provider's Born is pointlike, m_born is dressed with the pion form
     // factor, so compare against the dressed provider Born
     if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born()
@@ -280,7 +284,11 @@ double NLO_Base::CalculateVV() {
     virt = p_vv->Calc(m_plab, m_born);
   // (not with YFS: VIRTUAL_MASSIFICATION: the provider's Born is then the
   // massless one at the massless image of the point)
-  if (m_check_virt_born && !p_virt->p_massif) {
+  // (nor for a provider without a Born of its own: the internal analytic
+  // virtuals (Loop_Generator Internal) return delta_V only, which YFS
+  // multiplies by Sherpa's Born, so ME_Born() stays 0 and there is nothing to
+  // compare)
+  if (m_check_virt_born && !p_virt->p_massif && p_virt->p_loop_me->ME_Born() != 0.) {
     // the provider's Born is pointlike, m_born is dressed with the pion form
     // factor, so compare against the dressed provider Born
     if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born()
