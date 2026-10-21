@@ -35,6 +35,9 @@ namespace COMIX {
 
     double m_w, m_dxs, m_x[2];
     bool   m_checkpoles, m_allowmap, m_hasmapfile;
+    // Whether to skip the evaluation of the squared amplitude for LO events
+    // read in with an event reader, see Partonic().
+    bool   m_skipreadme;
 
     ATOOLS::sbt::subtype   m_user_stype;
     ATOOLS::cs_itype::type m_user_imode;

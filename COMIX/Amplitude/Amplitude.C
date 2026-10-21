@@ -1849,6 +1849,21 @@ double Amplitude::Coupling(const int mode) const
   return cpl->Default()*cpl->Factor();
 }
 
+bool Amplitude::CouplingFactor(double &fac) const
+{
+  fac=1.0;
+  if (m_cpls.empty()) return true;
+  const Coupling_Info &ci(m_cpls.front());
+  for (size_t i(1);i<m_cpls.size();++i)
+    if (m_cpls[i].m_oqcd!=ci.m_oqcd || m_cpls[i].m_oew!=ci.m_oew ||
+	m_cpls[i].p_aqcd!=ci.p_aqcd || m_cpls[i].p_aqed!=ci.p_aqed)
+      return false;
+  // SetCouplings() scales each amplitude by sqrt(factor)^order
+  if (ci.p_aqcd) fac*=intpow(ci.p_aqcd->Factor(),ci.m_oqcd);
+  if (ci.p_aqed) fac*=intpow(ci.p_aqed->Factor(),ci.m_oew);
+  return true;
+}
+
 void Amplitude::FillMEWeights(ME_Weight_Info &wgtinfo) const
 {
   if (wgtinfo.m_wren.size()<2) return;

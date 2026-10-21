@@ -235,6 +235,11 @@ namespace COMIX {
     void PrintStatistics(std::ostream &str,const int mode=0) const;
 
     double Coupling(const int mode) const;
+    // Factor by which the running couplings rescale the squared amplitude
+    // relative to their default values, i.e. what SetCouplings() applies.
+    // Returns false if the amplitude mixes coupling orders, in which case
+    // there is no single such factor.
+    bool   CouplingFactor(double &fac) const;
     void   FillMEWeights(ATOOLS::ME_Weight_Info &wgtinfo) const;
 
     double KT2Trigger(ATOOLS::NLO_subevt *const sub,const int mode);

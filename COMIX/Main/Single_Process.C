@@ -10,6 +10,7 @@
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "PHASIC++/Main/Color_Integrator.H"
 #include "PHASIC++/Main/Helicity_Integrator.H"
+#include "PHASIC++/Main/Event_Reader.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "ATOOLS/Math/Random.H"
@@ -35,6 +36,8 @@ COMIX::Single_Process::Single_Process():
   m_user_imode = s["NLO_IMODE"].Get<cs_itype::type>();
   m_allowmap = s["KFACTOR_ALLOW_MAPPING"].SetDefault(true).Get<bool>();
   m_checkpoles = s["COMIX"]["CHECK_POLES"].SetDefault(false).Get<bool>();
+  m_skipreadme =
+      s["COMIX"]["SKIP_ME_FOR_READ_EVENTS"].SetDefault(false).Get<bool>();
 }
 
 COMIX::Single_Process::~Single_Process()
@@ -451,7 +454,26 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
         !sp->p_bg->RSTrigger(Selector(),m_mcmode))
       return m_lastxs=m_dxs=0.0;
     sp->p_scale->CalculateScale(p);
-    if (m_pinfo.m_cls==cls::sample) {
+    // For LO events read in with an event reader, the squared amplitude
+    // cancels in the event weight: the phase-space handler divides the
+    // weight read in by the differential cross section at the scales of the
+    // input and multiplies it by the one at our own scales, both at the same
+    // point (cf. Phase_Space_Handler::Differential). As long as the K-factor
+    // does not distinguish the Born from the full result, as is the case for
+    // "None" and, at LO, for the "CCFM" one used in CKKW merging, it is
+    // enough to replace the squared amplitude by the factor that the running
+    // couplings would rescale it with.
+    double cplfac(1.0);
+    const bool skipme(m_skipreadme && p_read && p_read->Compute()==1 &&
+		      m_pinfo.m_fi.NLOType()==nlo_type::lo &&
+		      (sp->Info().m_kfactor=="None" ||
+		       sp->Info().m_kfactor=="CCFM") &&
+		      sp->p_bg->CouplingFactor(cplfac));
+    if (skipme) {
+      m_w=1.0;
+      m_dxs=cplfac;
+    }
+    else if (m_pinfo.m_cls==cls::sample) {
       m_dxs=sp->p_bg->Differential();
       m_w=p_int->ColorIntegrator()->GlobalWeight();
     }
@@ -465,12 +487,13 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
     }
     if (p_int->HelicityIntegrator()!=NULL) 
       m_w*=p_int->HelicityIntegrator()->Weight();
-    int isb(m_dxs==sp->p_bg->Born());
-    double kb(sp->p_bg->Born()?sp->KFactor(1|2):1.0);
+    const double born(skipme?m_dxs:sp->p_bg->Born());
+    int isb(m_dxs==born);
+    double kb(born?sp->KFactor(1|2):1.0);
     double kf(m_mewgtinfo.m_K=isb?kb:
-	      sp->KFactor(sp->p_bg->Born()?0:2));
-    m_mewgtinfo.m_B=sp->p_bg->Born()*kb/kf;
-    m_dxs+=sp->p_bg->Born()*(kb/kf-1.0);
+	      sp->KFactor(born?0:2));
+    m_mewgtinfo.m_B=born*kb/kf;
+    m_dxs+=born*(kb/kf-1.0);
     m_w*=kf;
     m_dxs*=m_w;
     if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) {
