@@ -225,6 +225,8 @@ namespace LHEH5 {
       return true;
     }
 
+    inline int WeightingStrategy() const { return wstrategy; }
+
     inline double TotalXS() const
     {
       double xs(0.);

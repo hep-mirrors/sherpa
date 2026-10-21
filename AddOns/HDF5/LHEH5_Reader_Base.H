@@ -109,9 +109,15 @@ namespace LHEH5 {
       p_ampl->SetLKF(e.wgts[0]);
       m_compute=1;
       m_trials+=e.trials;
+      // The unweighted events of strategy +-3 share the absolute weight of
+      // their process, unless they were unweighted with respect to an
+      // enhanced weight, which carries the enhancement as the ratio.
+      m_enhancewgt=std::abs(file.WeightingStrategy())==3?
+	e.pinfo.unitwgt/std::abs(e.wgts[0]):1.0;
       if (e.pinfo.npnlo>0) {
 	p_ampl->SetLKF(e.psw);
 	m_compute=2;
+	m_enhancewgt=1.0;
       }
       if (e.ctparts.empty()) p_sub->m_n=0;
       else {

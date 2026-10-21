@@ -51,6 +51,14 @@ namespace PHASIC {
     // needed to unweight them.
     bool m_hasmaxwgt {true};
 
+    // The factor by which the last event read in was enhanced when the
+    // events were unweighted, i.e. the ratio of the weight they were
+    // unweighted to and its actual weight. It is 1 unless the events were
+    // unweighted with respect to an enhanced weight, e.g. using an enhance
+    // function, in which case Phase_Space_Handler::Differential treats it
+    // like the enhance weight of the events Sherpa generates itself.
+    double m_enhancewgt {1.0};
+
   public:
 
     typedef ATOOLS::Getter_Function
@@ -88,6 +96,7 @@ namespace PHASIC {
     inline double UnitWeight() const { return m_unitwgt; }
     inline const std::string &PhaseSpaceGenerator() const { return m_psgen; }
     inline bool HasMaxWeight() const { return m_hasmaxwgt; }
+    inline double EnhanceWeight() const { return m_enhancewgt; }
 
     inline int Compute() const { return m_compute; }
 
