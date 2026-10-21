@@ -153,6 +153,21 @@ bool Acraic_Base::BuildStages() {
                 <<"final-state emission vetoed in M_1/M_2, no initial-final "
                 <<"boxes or resonance exponentiation."<<std::endl; }
   }
+  // YFS: MODE FSR with a charged initial state: FSR only (see m_fsronly), the
+  // mirror of the above: the initial current does not radiate
+  m_fsronly = false;
+  if (!HasISR())
+    for (size_t l(0); l < m_stagelegs[m_initstage].size(); ++l)
+      if (m_stagelegs[m_initstage][l].w != 0.) m_fsronly = true;
+  if (m_fsronly) {
+    for (size_t l(0); l < m_stagelegs[m_initstage].size(); ++l)
+      m_stagelegs[m_initstage][l].w = 0.;
+    static bool shown(false);
+    if (!shown) { shown = true;
+      msg_Info()<<"ACRAIC: YFS MODE FSR with a charged initial state - FSR only: "
+                <<"initial-state emission vetoed in M_1/M_2, no initial-final "
+                <<"boxes or resonance exponentiation."<<std::endl; }
+  }
   { static bool shown(false);
     if (!shown) { shown = true;
       msg_Debugging()<<METHOD<<"(): "<<m_nstages<<" stages:";
@@ -381,7 +396,7 @@ void Acraic_Base::CalculateSfactors() {
 
   // closure: sum_g s_g(k) = sum_{all legs i} w_i S(p_i,k), every emitter once
   // (ISR only: the final legs carry weight 0 on purpose)
-  if (m_checkxs && !m_isronly) {
+  if (m_checkxs && !SingleSided()) {
     for (size_t i(0); i < m_allphotons.size(); ++i) {
       Complex tot(0., 0.), sum(0., 0.);
       for (size_t l(0); l < m_flavs.size() && l < m_stagemom.size(); ++l) {
@@ -500,7 +515,10 @@ void Acraic_Base::PartitionStart(int &last) {
   size_t nfree(0);
   for (size_t i(0); i < n; ++i) {
     const double x(m_s > 0. ? 2.*m_allphotons[i][0]/sqrt(m_s) : 1.);
-    if (fsr && x >= cut && (int)m_Sfac.size() == m_nstages) { ++nfree; continue; }
+    // FSR only (m_fsronly): nothing to enumerate either - every photon is
+    // fixed below to its best final stage (the initial stage's eikonal is 0),
+    // as ISR only fixes every photon to the production stage
+    if (fsr && !m_fsronly && x >= cut && (int)m_Sfac.size() == m_nstages) { ++nfree; continue; }
     // fixed: the stage with the largest eikonal is its natural emitter
     m_fixedstage[i] = 1;
     int best(m_initstage); double bmax(-1.);

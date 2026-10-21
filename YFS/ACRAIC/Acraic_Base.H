@@ -253,6 +253,18 @@ namespace YFS {
     */
     bool m_isronly = false;
     inline bool IsrOnly() const { return m_isronly; }
+    /*!
+      YFS: MODE FSR with charged initial-state particles: FSR only, the mirror
+      of m_isronly. Every photon sits on a final stage, the initial-stage
+      emission diagrams are vetoed in M_1 and M_2 (AddPlacementVetoes), the
+      initial legs carry eikonal weight 0, no IF boxes, no greco. Without it
+      the coherent partition sum keeps the ISR assignments (Born pole at s')
+      and MODE FSR is not an FSR-only calculation.
+    */
+    bool m_fsronly = false;
+    inline bool FsrOnly() const { return m_fsronly; }
+    //! one radiating side only (MODE ISR or MODE FSR with both sides charged)
+    inline bool SingleSided() const { return m_isronly || m_fsronly; }
     //! ACRAIC: RESONANCE_EXPONENTIATION (greco, Acraic_Resonance.C) is on
     inline bool ResonanceExponentiation() const
     { return m_resexpmode != acraicresexp::none; }

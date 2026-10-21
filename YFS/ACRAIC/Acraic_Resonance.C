@@ -52,12 +52,12 @@ void Acraic_Base::BuildResonanceExponents()
   if (!ResonanceExponentiation()) return;
   // RESONANCE_EXPONENTIATION auto: no exponent on this event
   if (WStagesActive() && m_resexpmode == acraicresexp::automatic) return;
-  // ISR only: the resonant log is initial-final interference
-  if (m_isronly) {
+  // ISR or FSR only: the resonant log is initial-final interference
+  if (SingleSided()) {
     if (m_resexpmode == acraicresexp::automatic) return;
     THROW(fatal_error, "ACRAIC: RESONANCE_EXPONENTIATION: greco exponentiates "
-          "the resonant initial-final log, which YFS: MODE ISR (ISR only) "
-          "leaves out. Set it to none or auto.");
+          "the resonant initial-final log, which YFS: MODE ISR or FSR (one side "
+          "only) leaves out. Set it to none or auto.");
   }
   if (WStagesActive())
     THROW(fatal_error, "ACRAIC: RESONANCE_EXPONENTIATION: greco is not defined "

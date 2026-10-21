@@ -276,6 +276,8 @@ namespace YFS {
         void ProbeAcraicCompare(const bool haveacraic);
         //! ACRAIC: REF_PROBE - every momentum of a one-photon event (@@@ REFP).
         void ProbeReference(const bool haveacraic);
+        //! ACRAIC: REF_PROBE - the Born-level weight pieces of that event (@@@ REFW).
+        void ProbeReferenceWeight(const double w_lo);
         //! YFS: REAL_STAB - the pre/post-emission momentum residual of each resonant pair (@@@ PREPOST).
         void ProbeRealStab();
         //! YFS: RR_PROBE - the O(alpha^2) weight pieces and exactness identities (@@@ NNLOEV/RRID/RVID).

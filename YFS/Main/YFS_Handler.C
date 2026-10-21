@@ -1732,6 +1732,7 @@ void YFS_Handler::GenerateWeight() {
   // to reproduce -- built here directly rather than recovered downstream as
   // 1/m_ev.m_real, so the LO column cannot inherit anything m_ev.m_real does.
   double w_lo = m_ev.m_yfsweight * m_ev.m_formfactor * (1.-m_v);
+  ProbeReferenceWeight(w_lo);
   /*
     YFS.LO without IFI_Real. With IFI_Real on, the IF exponent stops at
     IFIOmega() (the generation cutoff) and the interference above it is
@@ -1937,12 +1938,12 @@ void YFS_Handler::GenerateWeight() {
     // per-photon v_{n+1} - v_B on each photon's M_1 (Acraic_Base.C)
     const acraicrv::code rvmode(YFS::Acraic_Base::RealVirtualMode());
     if ((rvmode == acraicrv::averaged || rvmode == acraicrv::helicity) && rcr > 0.) {
-      // the provider's per-photon loop has the final-state vertex and the
-      // initial-final boxes, which ISR only leaves out
-      if (p_acraic->IsrOnly())
+      // the provider's per-photon loop has both vertices and the
+      // initial-final boxes, which a one-sided MODE leaves out
+      if (p_acraic->SingleSided())
         THROW(fatal_error, "ACRAIC: REAL_VIRTUAL averaged takes the loop "
-              "provider's real-virtual, which contains final-state and "
-              "initial-final loops; YFS: MODE ISR (ISR only) needs ACRAIC: "
+              "provider's real-virtual, which contains both vertices and the "
+              "initial-final loops; YFS: MODE ISR or FSR (one side only) needs ACRAIC: "
               "{REAL_VIRTUAL: factorisable} with ACRAIC's own virtual "
               "(YFS: ACRAIC_Virtual: acraic).");
       const double arv((rvmode == acraicrv::helicity ? AcraicRealVirtualHelicityRemainder()

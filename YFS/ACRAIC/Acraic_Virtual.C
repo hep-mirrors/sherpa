@@ -115,8 +115,8 @@ void Acraic_Base::InfraredSubtractedME_0_1() {
   
   static const bool useboxessetting(Settings::GetMainSettings()["ACRAIC"]["BOXES"]
                                     .SetDefault(true).Get<bool>());
-  // the boxes are the virtual IFI: none with YFS: IFI false or ISR only
-  const bool useboxes(useboxessetting && m_ifi && !m_isronly);
+  // the boxes are the virtual IFI: none with YFS: IFI false or one side only
+  const bool useboxes(useboxessetting && m_ifi && !SingleSided());
 
   // The ut boxes are the tu ones with t and u swapped.
   const Complex coef(m_alpha * m_qe * m_qf / M_PI);

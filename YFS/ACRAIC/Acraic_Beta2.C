@@ -386,7 +386,7 @@ bool Acraic_Base::ComixInfraredSubtracted_N_0(const PhotonSet &S)
       pb = m_pacraic;
       shifts = SubsetStageShifts(S);
       AddSubsetExchangeLineShifts(S, shifts);
-      if (!m_ifi || m_isronly) AddPlacementVetoes(S, shifts);
+      if (!m_ifi || SingleSided()) AddPlacementVetoes(S, shifts);
     }
     Vec4D_Vector pp(pb);
     for (size_t q(0); q < m; ++q) pp.push_back(m_allphotons[S[q]]);

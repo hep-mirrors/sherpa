@@ -1332,8 +1332,10 @@ Complex Acraic_Base::TotalEikonal(const Vec4D_Vector &p, const Vec4D &k,
 {
   Complex tot(0., 0.);
   for (size_t l(0); l < m_flavs.size() && l < p.size(); ++l) {
-    // ISR only: the final current does not radiate (see m_isronly)
+    // ISR only: the final current does not radiate (see m_isronly); FSR only:
+    // the initial current does not (m_fsronly)
     if (m_isronly && l >= 2) continue;
+    if (m_fsronly && l < 2) continue;
     const double w(m_flavs[l].Charge() * (l < 2 ? -1. : +1.));
     if (w != 0.) tot += w * SfactorLeg(p[l], k, hel);
   }
@@ -1405,8 +1407,8 @@ bool Acraic_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
     pb = m_pacraic;
     shifts = StageShifts(iphot);
     AddExchangeLineShifts(iphot, shifts); // space-like exchange lines
-    // YFS: IFI false, or ISR only (every photon on the production stage)
-    if (!m_ifi || m_isronly) AddPlacementVetoes(std::vector<int>(1, iphot), shifts);
+    // YFS: IFI false, or one radiating side (ISR or FSR only)
+    if (!m_ifi || SingleSided()) AddPlacementVetoes(std::vector<int>(1, iphot), shifts);
     dI = PartitionShift(iphot, true);   // the initial stage's photons, for S
   }
   // Softness y = 2k.S/S^2 against the radiating system S (beams less the

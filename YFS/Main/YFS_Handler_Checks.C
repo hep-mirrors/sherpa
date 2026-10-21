@@ -312,7 +312,12 @@ void YFS_Handler::ProbeReference(const bool haveacraic)
       o<<" "<<lab<<"="<<v[0]<<","<<v[1]<<","<<v[2]<<","<<v[3]; };
     o<<"@@@ REFP acraic="<<m_ev.m_acraicfactor<<" br="<<m_ev.m_real
      <<" born="<<m_born<<" rho1="<<p_acraic->GetResult()
+     <<" rho0="<<p_acraic->GetResult0()
      <<" rhocr="<<p_acraic->GetRhoCrude()
+     // the photon's drawn helicity (ACRAIC samples one), the generator's
+     // ISR/FSR weights (before the form factor and 1 - v, see @@@ REFW)
+     <<" hel="<<p_acraic->PhotonHelicity(0)
+     <<" isrw="<<m_isrWeight<<" fsrw="<<m_fsrWeight
      <<" me2plab="<<(p_nlo?p_nlo->BornME2At(m_ev.m_plab):-1.)
      <<" me2born="<<(p_nlo?p_nlo->BornME2At(m_ev.m_bornMomenta):-1.);
     for (size_t i(0); i < m_ev.m_bornMomenta.size(); ++i) {
@@ -324,6 +329,25 @@ void YFS_Handler::ProbeReference(const bool haveacraic)
     for (const Vec4D &k : m_ev.m_ISRPhotons) v4("kI", k);
     for (const Vec4D &k : m_ev.m_FSRPhotons) v4("kF", k);
     o<<"\n";
+    std::cerr<<o.str();
+  }
+}
+
+/*
+  ACRAIC: REF_PROBE, second line (@@@ REFW): the Born-level weight pieces of
+  the same one-photon event, so an offline check can rebuild the YFS.LO
+  weight w_lo = yfsweight x form factor x (1 - v) that the ACRAIC factor
+  multiplies.
+*/
+void YFS_Handler::ProbeReferenceWeight(const double w_lo)
+{
+  static const bool rp(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
+                       ["REF_PROBE"].SetDefault(0).Get<int>()!=0);
+  if (rp && m_ev.m_ISRPhotons.size() + m_ev.m_FSRPhotons.size() == 1) {
+    std::ostringstream o;
+    o<<std::setprecision(15)<<"@@@ REFW wlo="<<w_lo<<" yfsw="<<m_ev.m_yfsweight
+     <<" ff="<<m_ev.m_formfactor<<" v="<<m_v<<" born="<<m_born
+     <<" acraic="<<m_ev.m_acraicfactor<<"\n";
     std::cerr<<o.str();
   }
 }
