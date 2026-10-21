@@ -1005,3 +1005,41 @@ shared by all processes that use `Event_Source: Pepper`:
    At most one fill is ever in flight per reader,
    so Pepper itself is never re-entered concurrently.
    Default: ``false``.
+
+.. _SKIP_ME_FOR_READ_EVENTS:
+
+Skipping the matrix-element evaluation
+--------------------------------------
+
+Each event read in from an external source is reweighted
+to Sherpa's own scale choice,
+which involves evaluating its matrix element twice:
+once at the scales stored with the event
+and once at Sherpa's scales.
+For leading-order events, the squared amplitude cancels in this ratio,
+and only the running couplings and the PDFs change the weight.
+Setting
+
+.. code-block:: yaml
+
+   COMIX:
+     SKIP_ME_FOR_READ_EVENTS: true
+
+lets Comix skip the evaluation of the squared amplitude for such events
+and apply only the coupling factors.
+The event weights are unchanged,
+but event generation can be much faster,
+in particular at high jet multiplicities,
+where evaluating the colour-summed amplitude is expensive.
+Default: ``false``.
+
+The evaluation is only skipped when this leaves the weight unchanged,
+i.e. for leading-order processes of a single coupling order,
+with no K-factor or with the one used in CKKW merging.
+Otherwise, the matrix element is evaluated as usual.
+
+.. note::
+
+   With this setting enabled, the ``EXTRA__MEWeight`` entry
+   of read-in events no longer holds the matrix-element weight
+   and must not be used.
