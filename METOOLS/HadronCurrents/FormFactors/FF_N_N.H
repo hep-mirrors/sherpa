@@ -4,30 +4,24 @@
 #include "METOOLS/HadronCurrents/FormFactors/FormFactor_Base.H"
 
 namespace METOOLS {
+  // Boson x nucleon line, fixed from the legs and BOSON in FixMode().
+  enum class FF_N_N_vertex {
+    gamma_p = 1, gamma_n = 2,
+    Z_p     = 11, Z_n    = 12,
+    W_pn    = 21,
+    unknown = 999
+  };
+
   //////////////////////////////////////////////////////////////////////////
-  /// Nucleon form factors for the quasi-elastic N -> N' current VA_N_N,
-  /// Tab. "Form factors used in the vertex rules" of implementation_1.tex.
-  ///
-  /// FORM-FACTOR-indexed, like FF_P_X: one object per invariant function,
-  /// selected by its name,
-  ///   F1p, F2p, F1n, F2n : Dirac/Pauli form factors of p and n,
-  ///   FA                 : nucleon axial form factor F_A.
-  /// The boson-dependent combinations (F^V = F^p - F^n, the Z mixtures)
-  /// and the PCAC F_P are assembled in VA_N_N, which knows the boson.
-  ///
-  /// The model number (FORM_FACTOR slot of FF_Parameters) is
-  ///   0  : zero
-  ///   1  : pointlike - F1p=1, F1n=F2p=F2n=0, F_A=g_A
-  ///   10 : Kelly Sachs parametrisation           (F1p..F2n, default)
-  ///   20 : Meyer et al. deuterium z-expansion    (FA, default)
-  ///   21 : lattice-QCD average z-expansion       (FA)
-  ///
-  /// Q^2 = -(p_0 - p_1)^2 with m_pi[0] the outgoing, m_pi[1] the incoming
-  /// nucleon. m_N and m_pi are Sherpa's own flavour masses.
-  ///
-  /// Parameters (defaults from the tex input table):
-  ///   MU_P 2.793, MU_N -1.913, LAMBDA2 0.7174,
-  ///   KELLY_AN 1.7, KELLY_BN 3.3, GA 1.2754.
+  /// Nucleon form factors for VA_N_N, already combined for the boson:
+  ///   F1, F2 : photon F^N, Z T3 F^V - 2 s_W^2 F^N, W F^V = F^p - F^n
+  ///   FA     : photon 0, Z T3 F_A, W F_A
+  ///   FP     : PCAC, 4 m_N^2/(Q^2+m_pi^2) FA
+  /// FORM_FACTOR: 0 zero, 1 point (F1p=1, F_A=g_A),
+  ///   vector 10-19 : 10 Kelly
+  ///   axial  20-29 : 20 Meyer deuterium z-exp., 21 lattice z-exp.
+  /// To add a model: add an enum entry, a case in ValidateModel(), a
+  /// self-contained function, and a case in Vector() or Axial().
   //////////////////////////////////////////////////////////////////////////
   class FF_N_N : public FormFactor_Base {
   public:
@@ -37,17 +31,39 @@ namespace METOOLS {
       Meyer = 20,
       Lattice = 21
     };
+  protected:
+    Model GetModel() const { return ModelAs<Model>(); }
+    void ValidateModel() const {
+      const bool axial(m_fftype==FFtype::FA || m_fftype==FFtype::FP);
+      switch (GetModel()) {
+        case Model::None: case Model::Point:
+          return;
+        case Model::Kelly:
+        case Model::Meyer:
+        case Model::Lattice:
+          if (m_ffmodel/10==(axial ? 2 : 1)) return;
+      }
+      THROW(fatal_error, "Unknown FORM_FACTOR=" + std::to_string(m_ffmodel) +
+            " for FF_N_N '" + m_name + "'");
+    }
   private:
-    enum class Which { F1p, F2p, F1n, F2n, FA };
-    Which  m_which;
-    double m_mN, m_muP, m_muN, m_L2, m_An, m_Bn, m_gA;
-    double m_tc, m_t0, m_FA0;
-    std::vector<double> m_ak;
+    enum class FFtype { F1, F2, FA, FP };
+    FFtype       m_fftype;
+    FF_N_N_vertex m_vertex;
+    double      m_mN, m_mpi, m_s2, m_T3, m_gA;
 
-    double Kelly(const double & a1,const double & b1,const double & b2,
-                 const double & b3,const double & tau) const;
-    double Z(const double & Q2) const;
-    double ZSeries(const double & Q2) const;
+    void FixMode(const GeneralModel & md);
+
+    // vector models: each returns F1, F2 of one nucleon
+    void   Kelly_p(const double & Q2,double & F1,double & F2) const;
+    void   Kelly_n(const double & Q2,double & F1,double & F2) const;
+    // axial models: each returns the normalised F_A
+    double Meyer(const double & Q2) const;
+    double Lattice(const double & Q2) const;
+
+    void   Vector(const double & Q2,double & F1p,double & F2p,
+                  double & F1n,double & F2n) const;
+    double Axial(const double & Q2) const;
   public:
     FF_N_N(const FF_Parameters & params);
     ~FF_N_N() {}

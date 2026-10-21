@@ -13,9 +13,8 @@ VA_N_N::VA_N_N(const ATOOLS::Flavour_Vector& flavs,
                const std::vector<int>& indices,
                const std::string& name) :
   Current_Base(flavs,indices,name),
-  p_F1p(NULL), p_F2p(NULL), p_F1n(NULL), p_F2n(NULL), p_FA(NULL),
-  m_boson(kf_photon), m_mN(0.), m_mpi(0.),
-  m_s2(0.), m_T3(0.), m_norm(1.), m_isp(true), m_vanishes(false)
+  p_F1(NULL), p_F2(NULL), p_FA(NULL), p_FP(NULL),
+  m_boson(kf_photon), m_mN(0.), m_norm(1.), m_vanishes(false)
 {
   for (size_t k(0);k<p_i.size();++k) {
     const kf_code kf(m_flavs[p_i[k]].Kfcode());
@@ -27,11 +26,10 @@ VA_N_N::VA_N_N(const ATOOLS::Flavour_Vector& flavs,
 
 VA_N_N::~VA_N_N()
 {
-  if (p_F1p) delete p_F1p;
-  if (p_F2p) delete p_F2p;
-  if (p_F1n) delete p_F1n;
-  if (p_F2n) delete p_F2n;
-  if (p_FA)  delete p_FA;
+  if (p_F1) delete p_F1;
+  if (p_F2) delete p_F2;
+  if (p_FA) delete p_FA;
+  if (p_FP) delete p_FP;
 }
 
 void VA_N_N::CheckTopology() const
@@ -74,28 +72,24 @@ void VA_N_N::SetModelParameters(struct GeneralModel model)
           " does not match the nucleon legs "+ToString(m_flavs[p_i[0]])+
           ", "+ToString(m_flavs[p_i[1]])+".");
 
-  m_isp  = (kf0==kf_p_plus);
-  m_T3   = m_isp ? 0.5 : -0.5;
+  const bool isp(kf0==kf_p_plus);
   m_mN   = 0.5*(p_masses[0]+p_masses[1]);
-  m_mpi  = Flavour(kf_pi).HadMass(); // only need for PCAC
-  m_s2   = std::abs(MODEL::s_model->ComplexConstant(string("csin2_thetaW")));
   m_norm = (m_boson==kf_Wplus) ?
     std::abs(MODEL::s_model->ComplexConstant(string("CKM_0_0"))) : 1.;
 
   const int vff(int(model("VECTOR_FF",10.)+0.5));
   // Exchange_ME stops the run only if every exchange vanishes, so a Z
   // alongside the photon keeps it going.
-  m_vanishes = (m_boson==kf_photon && !m_isp && (vff==ff_zero || vff==ff_one));
+  m_vanishes = (m_boson==kf_photon && !isp &&(vff==ff_zero || vff==ff_one));
   if (m_vanishes)
     msg_Error() << "Warning in " << METHOD << ": current " << m_name << ": VECTOR_FF = " << vff
                 << " gives a neutron no electromagnetic coupling (F1n = F2n = 0), so photon exchange vanishes identically. \n"
                 << "   Use a non-zero VECTOR_FF >= 10 for a neutron.\n";
   const int aff(m_boson==kf_photon ? ff_zero : int(model("AXIAL_FF",20.)+0.5));
-  p_F1p = MakeFF("F1p",vff,model);
-  p_F2p = MakeFF("F2p",vff,model);
-  p_F1n = MakeFF("F1n",vff,model);
-  p_F2n = MakeFF("F2n",vff,model);
-  p_FA  = MakeFF("FA", aff,model);
+  p_F1 = MakeFF("F1",vff,model);
+  p_F2 = MakeFF("F2",vff,model);
+  p_FA = MakeFF("FA",aff,model);
+  p_FP = MakeFF("FP",aff,model);
 
   msg_Tracking()<<"### "<<m_name<<": "<<m_flavs[p_i[1]]<<" -> "
                 <<m_flavs[p_i[0]]<<" via "<<Flavour(m_boson)
@@ -106,19 +100,9 @@ void VA_N_N::SetModelParameters(struct GeneralModel model)
 void VA_N_N::Calc(const ATOOLS::Vec4D_Vector& moms, bool anti)
 {
   const Vec4D  q(moms[p_i[0]]-moms[p_i[1]]), P(moms[p_i[0]]+moms[p_i[1]]);
-  const double Q2(-q.Abs2()), m2N(2.*m_mN);
-
-  const double F1p((*p_F1p)(moms).real()), F2p((*p_F2p)(moms).real());
-  const double F1n((*p_F1n)(moms).real()), F2n((*p_F2n)(moms).real());
-  const double F1N(m_isp ? F1p : F1n), F2N(m_isp ? F2p : F2n);
-  double F1(F1p-F1n), F2(F2p-F2n), FA((*p_FA)(moms).real());
-  if (m_boson==kf_photon) { F1 = F1N; F2 = F2N; }
-  else if (m_boson==kf_Z) {
-    F1 = m_T3*F1-2.*m_s2*F1N;
-    F2 = m_T3*F2-2.*m_s2*F2N;
-    FA = m_T3*FA;
-  }
-  const double FP(4.*sqr(m_mN)/(Q2+sqr(m_mpi))*FA);
+  const double m2N(2.*m_mN);
+  const double F1((*p_F1)(moms).real()), F2((*p_F2)(moms).real());
+  const double FA((*p_FA)(moms).real()), FP((*p_FP)(moms).real());
 
   // Gordon: gamma^mu coefficient F1 + (m'+m)/(2m_N) F2, plus -P^mu F2/(2m_N).
   const double V(F1+(p_masses[0]+p_masses[1])/m2N*F2);

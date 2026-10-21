@@ -16,6 +16,7 @@ namespace METOOLS {
   ///   Z      : F_i = T3 F_i^V - 2 s_W^2 F_i^N,  F_A -> T3 F_A
   ///   W      : F_i = F_i^V, times V_ud
   /// and F^V = F^p - F^n, F_P = 4 m_N^2/(Q^2+m_pi^2) F_A (PCAC).
+  /// These boson combinations and F_P are built in FF_N_N.
   ///
   /// The overall i and the coupling convention match VA_0_FF, so that
   /// Exchange_ME's g_V = e^2, (g/2c_W)^2, (g/2sqrt2)^2 complete the vertex.
@@ -56,10 +57,10 @@ namespace METOOLS {
   //////////////////////////////////////////////////////////////////////////
   class VA_N_N : public Current_Base {
   private:
-    FormFactor_Base *p_F1p, *p_F2p, *p_F1n, *p_F2n, *p_FA;
+    FormFactor_Base *p_F1, *p_F2, *p_FA, *p_FP;
     kf_code m_boson;
-    double  m_mN, m_mpi, m_s2, m_T3, m_norm;
-    bool    m_isp, m_vanishes;
+    double  m_mN, m_norm;
+    bool    m_vanishes;
 
     FormFactor_Base * MakeFF(const std::string & name,const int ffmodel,
                              GeneralModel & model);
