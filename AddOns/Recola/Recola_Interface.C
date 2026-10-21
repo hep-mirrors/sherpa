@@ -413,6 +413,7 @@ void Recola::Recola_Interface::RegisterDefaults() const
   s["RECOLA_ONSHELLZW"].SetDefault(0);
   s["RECOLA_COMPUTE_POLES"].SetDefault(0);
   s["RECOLA_COLLIER_CACHE"].SetDefault(-1);
+  s["RECOLA_COLLIER_MODE"].SetDefault(1);
   s["RECOLA_VMODE"].SetDefault(0);
   s["RECOLA_AMPTYPE"].SetDefault(1);
   s["RECOLA_PHOTON_MASS"].SetDefault(0.1);
@@ -482,6 +483,11 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
                 <<s_pol2<<").\n";
   }
   set_output_file_rcl(recolaOutput.c_str());
+  int recolaCollierMode = s["RECOLA_COLLIER_MODE"].Get<int>();
+  if (recolaCollierMode<1 || recolaCollierMode>3)
+    THROW(fatal_error, "Invalid value for RECOLA_COLLIER_MODE"
+                       " (1=COLI, 2=DD, 3=COLI+DD check)");
+  set_reduction_mode_rcl(recolaCollierMode);
   s_vmode = s["RECOLA_VMODE"].Get<int>();
   msg_Tracking()<<METHOD<<"(): Set V-mode to "<<s_vmode<<endl;
   s_use_decay   = s["RECOLA_USE_DECAY"].Get<bool>();
