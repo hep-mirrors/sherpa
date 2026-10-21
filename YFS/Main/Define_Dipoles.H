@@ -137,6 +137,8 @@ namespace YFS {
       //! diagnostic (YFS: ACRAIC_Compare): CalculateVirtualSub's default branch
       //! split by dipole type, initial / final / initial-final
       void VirtualSubParts(double &ii, double &ff, double &ifi);
+      //! the dim.-reg. virtual B of an initial-final dipole (YFS: IF_VIRTUAL_TCHANNEL)
+      DivArrD IFVirtualBEps(YFS::Dipole &D);
       //! The real-soft B-tilde of the dipoles CalculateVirtualSub sums, photon
       //! energies below K in the frame of the legs, in the IR regularisation
       //! of that subtraction (dim-reg finite part: lambda^2 = 4 pi mu^2/eps).

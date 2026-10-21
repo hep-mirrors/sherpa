@@ -265,6 +265,18 @@ double Define_Dipoles::CalculateVirtualSub() {
   return sub;
 }
 
+/*
+  YFS: IF_VIRTUAL_TCHANNEL (default true): the dim.-reg. virtual subtraction of an
+  initial-final dipole uses its t-channel B (YFS_Form_Factor::BVirtT_eps), the B the
+  exponent carries (IFForFac). false restores BVV_full_eps, the s-channel form, whose
+  finite part differs by a C-odd amount (see BVirtT_eps).
+*/
+DivArrD Define_Dipoles::IFVirtualBEps(YFS::Dipole &D) {
+  static const bool tch(ATOOLS::Settings::GetMainSettings()["YFS"]["IF_VIRTUAL_TCHANNEL"]
+                        .SetDefault(true).Get<bool>());
+  return tch ? p_yfsFormFact->BVirtT_eps(D) : p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
+}
+
 void Define_Dipoles::VirtualSubParts(double &ii, double &ff, double &ifi) {
   ii = ff = ifi = 0.;
   if (m_dim_reg == 1) {   // CalculateVirtualSubEps, finite parts
@@ -275,7 +287,7 @@ void Define_Dipoles::VirtualSubParts(double &ii, double &ff, double &ifi) {
         ff += (D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3)).Finite();
     for (auto &D : m_set.IF())
       if (!D.IsFinite())
-        ifi += (D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3)).Finite();
+        ifi += (D.ChargeNorm()*IFVirtualBEps(D)).Finite();
     return;
   }
   for (auto &D : m_set.ByType(dipoletype::initial))
@@ -377,7 +389,7 @@ double Define_Dipoles::CalculateVirtualSubEps() {
 
   for (auto &D : m_set.IF()){
     if(D.IsFinite()) continue;
-    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
+    sub += D.ChargeNorm()*IFVirtualBEps(D);
     if(IsBad(sub.Finite())) {
       msg_Error()<<"YFS subtraction is Nan For dipole:"<<D<<std::endl;
       // THROW(fatal_error, "YFS Subtraction fails");
@@ -415,7 +427,7 @@ double Define_Dipoles::CalculateVVSubEps() {
 
   for (auto &D : m_set.IF()){
     if(D.IsFinite()) continue;
-    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
+    sub += D.ChargeNorm()*IFVirtualBEps(D);
     if(IsBad(sub.Finite())) {
       msg_Error()<<"YFS subtraction is Nan For dipole:"<<D<<std::endl;
       // THROW(fatal_error, "YFS Subtraction fails");
@@ -454,7 +466,7 @@ double Define_Dipoles::CalculateRealVirtualSubEps(const Vec4D &k) {
     // Note Born momenta are redifined
     // for IFI terms.
     if(D.IsFinite()) continue;
-    sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
+    sub += D.ChargeNorm()*IFVirtualBEps(D);
   }
   m_virtSub=sub;
   return sub.Finite();

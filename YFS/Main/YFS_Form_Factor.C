@@ -715,6 +715,36 @@ double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax){
 }
 
 
+DivArrD YFS_Form_Factor::BVirtT_eps(YFS::Dipole &d){
+  /*
+    The virtual B of an initial-final dipole in dim. reg.: BVirtT (KKMC's TBvirt, the
+    t-channel form the exponent's IFForFac uses) with its ln(lambda^2) mapped as in
+    BVV_full_eps, ln(lambda^2) -> massph + ln(4 pi mu_IR^2/eps_scheme). BVV_full_eps
+    itself is the s-channel form: its IR coefficient agrees, but its finite part does
+    not, by an amount odd under exchanging the final legs' charges (e+e- -> pi+pi- at
+    0.7 GeV: d sigma/d cos(e-,pi+) tilted by +0.0029, measured 0.0027-0.0028 against
+    KKMC, which uses TBvirt).
+  */
+  Vec4D p1, p2;
+  d.LegsBeforeRadiation(p1, p2);
+  const double m1(d.GetMass(0)), m2(d.GetMass(1));
+  const double M(m1 >= m2 ? m1 : m2), m(m1 >= m2 ? m2 : m1);
+  const double ta(fabs((p1 - p2).Abs2()));
+  const double zeta(1. + M*M/ta);
+  const double irloop(p_virt->IRscale());
+  const double epsloop(p_virt->Eps_Scheme_Factor({p1, p2}));
+  DivArrD massph(0,-1,0,0,0,0);
+  const DivArrD t1((log(ta/m/M) + log(zeta) - 1.)
+                   *(massph + log(4.*M_PI*sqr(irloop)/(m*M)/epsloop)));
+  const double rest(0.5*zeta*log(ta*zeta/(m1*m2))
+                    - 0.5*log(ta/m1/m1)*log(ta/m2/m2)
+                    + 0.5*(zeta - 1.0)*log(m/M)
+                    - log(zeta)*(log(ta/(m1*m2)) + 0.5*log(zeta))
+                    + DiLog(1./zeta) - 1.0);
+  return m_alpi*(t1 + rest);
+}
+
+
 double YFS_Form_Factor::IFForFac(YFS::Dipole &d, double omega){
   // KKMC's TForFac, for one initial-final dipole. KKceex.cxx assembles the
   // interference form factor as

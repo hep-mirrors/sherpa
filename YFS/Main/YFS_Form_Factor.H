@@ -59,6 +59,9 @@ public:
     double WW_t(double t, double m, double M, double k);
     double WW_s(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2);
     double BVirtT(Vec4D p1, Vec4D p2,  double kmax=0);
+    //! BVirtT in dim. reg., with BVV_full_eps's map of ln(lambda^2): the virtual B of an
+    //! initial-final (t-channel) dipole, the one the exponent's IFForFac carries
+    DivArrD BVirtT_eps(YFS::Dipole &d);
     // YFS exponent for an INITIAL-FINAL (t-channel-like) dipole: Btilda plus the
     // T-CHANNEL virtual. This is KKMC's TForFac (SRCee/KKceex.cxx), which builds
     // its interference form factor Yint out of exactly exp(Btilda + TBvirt).
