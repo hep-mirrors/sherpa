@@ -1,0 +1,72 @@
+# tau- -> nu_tau K- eta'
+#
+# One tau channel, forced. The HADRON_DECAYS block below overrides this
+# channel's entry in HADRONS++/Decaydata.yaml: Status: [2] forces it and
+# switches every other tau channel off, and the hadronic current and its
+# form factor are stated here rather than taken from the table.
+#
+# BR: [1, 0] only gives the forced channel a non-zero weight (the table
+# currently sets most tau channels to 0 for testing). It does not affect
+# the events. The partial width Sherpa actually uses is integrated from
+# the matrix element and printed at start-up as
+#   "Calculating width (PR2) for tau- --> ...   yields: <GeV>"
+# Compare it with Gamma_tau * BR(PDG), Gamma_tau = 2.267e-12 GeV.
+# AlwaysIntegrate: 1 makes that integration rerun whenever the model here
+# is changed, instead of reusing the table's cached result.
+#
+# Currents:     J1 = VA_F_F (tau- -> nu_tau), J2 = VA_0_PiPi
+# Form factor:  FF_0_PP, mode Ketaprime_plus
+# Selected:     FORM_FACTOR: 20 (RChiPT), the model the decay table uses:
+#               genuine: RChiPT.
+#
+# Other FORM_FACTOR models for this channel:
+#   0  None        identically zero (also what an omitted FORM_FACTOR gives)
+#   1  Point       F = 1: no dynamics and no CKM/isospin normalisation
+#   10 KS          genuine: KS-type K* tower
+#   11 GS          no own implementation: falls back to 10
+#   12 KS_CLEO     genuine: CLEO tune
+#   21 RChL2012    vector form factor is zero; only the constant scalar survives
+#   22 combRChL    not implemented: error message every call, then a constant
+#
+# The scalar form factor F0 is a constant for every model here.
+#
+# Leaving FORM_FACTOR out does not give a default: the current reads a
+# missing key as 0 (None), so the channel would run with zero or nearly
+# zero rate and no error. Always state it.
+#
+# Model parameters can be overridden alongside FORM_FACTOR. Their names are
+# listed in this channel's entry in HADRONS++/Decaydata.yaml, whose comments
+# use the current model numbers. The names themselves keep the earlier
+# numbering as a suffix, because the code reads them under exactly those
+# names: _100 -> 10, _101 -> 11, _102 -> 12, _103 -> 13, _104 -> 14,
+# _106 -> 15, _200 -> 20, _201 -> 21. Writing e.g. _20 would be ignored.
+#
+# Run:  Sherpa -f Sherpa.K_etaprime.yaml
+
+BEAMS: [11, -11]
+BEAM_ENERGIES: [7., 4.]   # irrelevant for a decayer run, but required
+
+EVENT_TYPE: HadronDecay
+DECAYER: 15
+EVENTS: 10000
+
+HADRON_DECAYS:
+  Spin_Correlations: 1
+  Channels:
+    15:
+      "-321,331,16":
+        BR: [1., 0.]
+        Status: [2]
+        AlwaysIntegrate: 1
+        Currents:
+          Exchange:
+          - J1: {Type: VA_F_F, Indices: [3, 0], v: 1.0, a: -1.0}
+            J2: {Type: VA_0_PiPi, Indices: [2, 1], FORM_FACTOR: 20, N_Ketaprime: 1.0}
+
+# No Rivet analysis we have been using covers this final state.
+
+# Sherpa needs a hard process to initialise, even for a decayer run.
+SCALES: VAR{sqr(91.2)}
+PROCESSES:
+- 11 -11 -> 13 -13:
+    Order: {QCD: 0, EW: 2}
