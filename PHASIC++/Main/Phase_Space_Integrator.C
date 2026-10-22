@@ -278,7 +278,14 @@ bool Phase_Space_Integrator::AddPoint(const double value)
                 <<" % )";
     }
     msg_Info()<<endl<<om::brown<<" "<<weighted_effiandeffevperev[1]<<om::reset<<" Neff/N (weighted)";
-    msg_Info()<<" | "<<" exp.eff.: "<<om::brown<<unweighted_effiandeffevperev[0]<<om::reset<<", "<<om::brown<<unweighted_effiandeffevperev[1]<<om::reset<<" Neff/N (unweighted)"<<endl;
+    msg_Info()<<" | "<<" exp.eff.: "<<om::brown<<unweighted_effiandeffevperev[0]<<om::reset<<", "<<om::brown<<unweighted_effiandeffevperev[1]<<om::reset<<" Neff/N (unweighted)";
+    // with an enhancement the above are those of the enhanced distribution,
+    // with which the points are sampled; the events carry the weights without it
+    if (p_psh->Process()->Enhanced())
+      msg_Info()<<" | events: "<<om::brown<<weighted_effiandeffevperev[2]<<om::reset
+                <<" (weighted), "<<om::brown<<unweighted_effiandeffevperev[2]<<om::reset
+                <<" (unweighted)";
+    msg_Info()<<endl;
     if (optimized) m_nstep = m_ncstep = 0;
     if (fotime) { msg_Info()<<" full optimization: "; }
     else        { msg_Info()<<" integration time:  "; }

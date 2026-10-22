@@ -22,6 +22,40 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
+namespace {
+
+  // The points are sampled, unweighted and selected with their enhanced
+  // weights v = e*w (Enhance_Function, Enhance_Observable, Enhance_Factor),
+  // whose Neff/N is the one of the enhanced distribution; the events carry
+  // w = v/e: for an unweighting at max, sign(v)*max/e below it and v/e above
+  // it (overweights). The Neff/N of the events, i.e. of the whole sample,
+  // follows from that of the unweighting of v with
+  //   sumpersumenh       = sum(v/e)/sum(v), the signed sum without the
+  //                        enhancement,
+  //   divenhabsperenhabs = sum(|v|/e^2)/sum(|v|), mean 1/e^2 of the points
+  //                        below the maximum, which are accepted in proportion
+  //                        to |v|,
+  //   sqrperenhsqr       = sum(v^2/e^2)/sum(v^2), mean 1/e^2 of the
+  //                        overweights, which enter with v^2,
+  // all 1 without an enhancement, named after the sums they are made of.
+  // divenhabsperenhabs needs m_ssumdivenhabs; for results written before it,
+  // sqrperenhsqr replaces it (exact if e does not depend on |v|), see
+  // ReadInXSecs().
+  struct Enhancement {
+    double sumpersumenh, divenhabsperenhabs, sqrperenhsqr;
+    Enhancement(const double sum, const double sumenh, const double sumdivenhabs,
+                const double sumenhabs, const double sumsqr,
+                const double sumenhsqr):
+      sumpersumenh(sumenh!=0. ? sum/sumenh : 1.),
+      divenhabsperenhabs(1.),
+      sqrperenhsqr(sumenhsqr>0. ? sumsqr/sumenhsqr : 1.)
+    {
+      divenhabsperenhabs = sumenhabs>0. ? sumdivenhabs/sumenhabs : sqrperenhsqr;
+    }
+  };
+
+}
+
 // number of weight-histogram bins per 10 decades (IB_WHBINS), as for the
 // range of 10 decades before 3.1; the range now spans 130 decades
 static int s_whbins(100);
@@ -35,8 +69,9 @@ Process_Integrator::Process_Integrator(Process_Base *const proc):
   m_n(0), m_itmin(0), m_itmax(1000000), m_max(0.), m_weightmax(0.), m_totalxs(0.),
   m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), m_ssumenh(0.),
   m_ssumenhabs(0.), m_ssumsqr(0.), m_ssumenhsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.),
+  m_ssumdivenhabs(0.),
   m_mssum(0.), m_mssumsqr(0.), m_mssumenh(0.), m_mssumenhabs(0.), m_mssumenhsqr(0.),
-  m_msn(0.), m_msncut(0.), m_sn(0), m_sncut(0), m_son(1),
+  m_msn(0.), m_msncut(0.), m_mssumdivenhabs(0.), m_sn(0), m_sncut(0), m_son(1),
   m_external_selectionweight(-1), // -1 is the sentinel meaning "not set"
   m_writeout(false),
   p_whisto_pos(NULL),
@@ -153,13 +188,16 @@ double Process_Integrator::TotalResult() const
 
 std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) const
 {
-  std::vector<double> totaleffiandeffevperev(2,-1.0);
+  std::vector<double> totaleffiandeffevperev(3,-1.0);
   if (p_proc->IsGroup()) {
     //weight effevperev with selection weight
     double sum_selw=0.0;
     double sum_effi=0.0;
     double sum_xsec=0.0;
     double sum_xsec_abs=0.0;
+    // the same for the events: their cross sections and Kish terms
+    double sum_xsec_ev=0.0;
+    double sum_kish_ev=0.0;
     for (size_t i(0);i<p_proc->Size();++i) {
       //need to sum up weighted with wsel
       std::vector<double> proci_totaleffiandeffevperev = (*p_proc)[i]->Integrator()->TotalEffiAndEffEvPerEv(unweighted);
@@ -188,6 +226,22 @@ std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) 
       // (accepted)/(cut-passing) and (sum sigma)^2/(sum |sigma|/sqrt(alpha))^2,
       // the latter with the same normalisation of <w> as sum_xsec.
       double proci_selw = dabs(proci_xsec)/sqrt(proci_effevperev)/proci_effi;
+      // The events, with the same N_i: with an enhancement the selection follows
+      // the enhanced cross section, the events carry the weights without it, of
+      // cross section sigma_i^ev, and their own Neff/N alpha_i^ev, so that their
+      // Kish term is (sigma_i^ev)^2/(alpha_i^ev*N_i), and their Neff/N
+      //   (sum sigma^ev)^2 / (sum N_i * sum (sigma_i^ev)^2/(alpha_i^ev*N_i)).
+      const double proci_nacc = proci_effi*proci_selw;
+      const double proci_xsec_ev = (*p_proc)[i]->Integrator()->GetSSum()/m_sn;
+      const double proci_effevperev_ev = proci_totaleffiandeffevperev[2];
+      if (proci_xsec_ev!=0.) {
+        if (proci_effevperev_ev<=0.)
+          THROW(critical_error, METHOD+"(): Neff/N of the events "
+                +ToString(proci_effevperev_ev)+" for '"+(*p_proc)[i]->Name()
+                +"' with a cross section of its events.");
+        sum_kish_ev += sqr(proci_xsec_ev)/(proci_effevperev_ev*proci_nacc);
+      }
+      sum_xsec_ev += proci_xsec_ev;
 
       sum_xsec += proci_xsec;
       sum_xsec_abs += dabs(proci_xsec);
@@ -200,6 +254,8 @@ std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) 
     if (sum_selw!=0) {
       totaleffiandeffevperev[0] = sum_effi/sum_selw;
       totaleffiandeffevperev[1] = pow(sum_xsec_abs/sum_effi,2)*pow(sum_xsec/sum_xsec_abs,2);
+      totaleffiandeffevperev[2] = sum_effi*sum_kish_ev!=0. ?
+        sqr(sum_xsec_ev)/(sum_effi*sum_kish_ev) : 0.;
     }
     return totaleffiandeffevperev;
   }
@@ -207,12 +263,19 @@ std::vector<double> Process_Integrator::TotalEffiAndEffEvPerEv(bool unweighted) 
   double meanweight = m_ssumenh/m_sncut;
   double meanabsweight = m_ssumenhabs/m_sncut;
   double meansqrweight = m_ssumenhsqr/m_sncut;
+  // [1] of the enhanced weights v, [2] of the events, see Enhancement
+  const Enhancement enh(m_ssum,m_ssumenh,m_ssumdivenhabs,m_ssumenhabs,
+                        m_ssumsqr,m_ssumenhsqr);
   if (unweighted) {
+    // events with the weights sign(v)*max/e
     totaleffiandeffevperev[0] = dabs(meanabsweight)/m_smax;
     totaleffiandeffevperev[1] = pow(meanweight,2)/pow(meanabsweight,2);
+    totaleffiandeffevperev[2] = totaleffiandeffevperev[1]*sqr(enh.sumpersumenh)/enh.divenhabsperenhabs;
   } else {
+    // weighted events carry the weights w = v/e
     totaleffiandeffevperev[0] = 1;
     totaleffiandeffevperev[1] = pow(meanweight,2)/meansqrweight;
+    totaleffiandeffevperev[2] = sqr(m_ssum/m_sncut)/(m_ssumsqr/m_sncut);
   }
   return totaleffiandeffevperev;
 }
@@ -251,7 +314,7 @@ void Process_Integrator::OptimizeSubResult(const double &s2)
     m_totalsum+=s2*m_ssum/m_sn;
     m_totalsumsqr+=sqr(s2)/vij2;
   }
-  m_ssum=m_ssumenh=m_ssumenhabs=m_ssumsqr=m_ssumenhsqr=0.0;
+  m_ssum=m_ssumenh=m_ssumenhabs=m_ssumsqr=m_ssumenhsqr=m_ssumdivenhabs=0.0;
   m_sn=0;
   m_sncut=0;
   if (p_colint!=NULL) p_colint->Optimize();
@@ -331,6 +394,7 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
     m_ssumenh = m_ssum;
     m_ssumenhsqr = m_ssumsqr;
     m_ssumenhabs = dabs(m_ssumenh);
+    m_ssumdivenhabs = m_ssumenhabs;
     m_sncut = m_sn;
   } else {
     *from>>name>>m_totalxs>>m_weightmax>>m_totalerr>>m_totalsum>>m_totalsumsqr
@@ -347,6 +411,16 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
   m_vsn.resize(vn);
   for (size_t i(0);i<m_vsn.size();++i)
     *from>>m_vsmax[i]>>m_vsum[i]>>m_vsn[i]>>dummy;
+  }
+  if (integration_sherpa_version!="before 3.1" &&
+      !(vn<=100 && *from>>m_ssumdivenhabs)) {
+    // m_ssumdivenhabs is the last entry, so that the versions before it read
+    // the file as before. Results written by them do not have it: the mean
+    // 1/e^2 of the overweights replaces that of the points below the maximum
+    // (divenhabsperenhabs = sqrperenhsqr, see Enhancement), exact if e does
+    // not depend on |v|.
+    m_ssumdivenhabs = m_ssumenhsqr>0. ?
+      m_ssumenhabs*m_ssumsqr/m_ssumenhsqr : m_ssumenhabs;
   }
   msg_Tracking()<<"Found result: xs for "<<name<<" : "
 		<<m_totalxs*rpa->Picobarn()<<" pb"
@@ -426,6 +500,8 @@ void Process_Integrator::WriteOutXSecs(const std::string &path)
   for (size_t i(0);i<m_vsn.size();++i)
     *outfile<<m_vsmax[i]<<" "<<m_vsum[i]<<" "
 	   <<m_vsn[i]<<" "<<-1<<"\n";
+  // the last entry, see ReadInXSecs()
+  *outfile<<m_ssumdivenhabs<<"\n";
   p_proc->WriteOut(path);
   if (p_colint!=NULL) p_colint->WriteOut(path+"/"+fname+"_Color");
   if (p_proc->IsGroup())
@@ -471,7 +547,11 @@ void Process_Integrator::SetTotal(const int mode)
     std::vector<double> meaneffiandeffevperev = TotalEffiAndEffEvPerEv(1);
     msg_Info()<<" %"<<om::reset<<" ) "<<om::bold<<" exp. eff: "
 	      <<om::red<<(100.*meaneffiandeffevperev[0])<<" % "<<om::reset
-	      <<om::bold<<" Neff/N: "<<om::brown<<meaneffiandeffevperev[1]<<om::reset<<std::endl;
+	      <<om::bold<<" Neff/N: "<<om::brown<<meaneffiandeffevperev[1]<<om::reset;
+    if (Enhanced())
+      msg_Info()<<om::bold<<", of the events: "<<om::brown<<meaneffiandeffevperev[2]
+                <<om::reset;
+    msg_Info()<<std::endl;
   }
 }
 
@@ -486,6 +566,10 @@ void Process_Integrator::SetFullUnweightingStats(const double w_max)
   }
   m_effi         = (m_sncut > 0 && w_max != 0.) ? m_ssumenhabs/m_sncut/w_max : 0.;
   m_effevperev   = m_ssumenhabs != 0. ? pow(m_ssumenh/m_ssumenhabs,2) : 0.;
+  // the events carry the weights sign(v)*w_max/e, see Enhancement
+  const Enhancement enh(m_ssum,m_ssumenh,m_ssumdivenhabs,m_ssumenhabs,
+                        m_ssumsqr,m_ssumenhsqr);
+  m_effevperev_ev = m_effevperev*sqr(enh.sumpersumenh)/enh.divenhabsperenhabs;
   // |<w>_cut|/sqrt(alpha) = <|w|>_cut (alpha_absolute = 1 for full unweighting),
   // so that m_selweight_xs/m_effi = w_max.
   m_selweight_xs = m_sncut > 0 ? m_ssumenhabs/m_sncut : 0.;
@@ -635,6 +719,16 @@ double Process_Integrator::GetMaxEps(double epsilon)
       double alpha_denom = (cutxs_abs * fin_w_max + (whisto_sum2 - cutxs2))
                            * mean_efficiency * (double)whisto_fills;
       m_effevperev = alpha_denom > 0. ? pow(whisto_sum, 2) / alpha_denom : 0.;
+      // The events carry the weights without the enhancement, see Enhancement:
+      // the signed sum times sumpersumenh, the terms below and above the
+      // maximum times their mean 1/e^2.
+      const Enhancement enh(m_ssum,m_ssumenh,m_ssumdivenhabs,m_ssumenhabs,
+                            m_ssumsqr,m_ssumenhsqr);
+      double alpha_denom_ev = (enh.divenhabsperenhabs * cutxs_abs * fin_w_max
+                               + enh.sqrperenhsqr * (whisto_sum2 - cutxs2))
+                              * mean_efficiency * (double)whisto_fills;
+      m_effevperev_ev = alpha_denom_ev > 0. ?
+        pow(enh.sumpersumenh * whisto_sum, 2) / alpha_denom_ev : 0.;
       // Selection weight numerator |<w>_cut|/sqrt(alpha) = sqrt(alpha_denom)/N_cut,
       // written in this form so that it stays finite when positive and negative
       // weights cancel. With m_effi the selection weight is
@@ -657,6 +751,9 @@ void Process_Integrator::SetUpEnhance(const int omode)
     m_effi=0.0;
     m_effevperev=0.0;
     double effevperev_signed=0.0;
+    // the same for the events, see TotalEffiAndEffEvPerEv()
+    double effevperev_signed_ev=0.0;
+    double effevperev_kish_ev=0.0;
     // Efficiency() and EffEvPerEv() describe the unweighting alone and are therefore
     // defined per point that passed the cuts. The averages below must be weighted
     // with the same population, i.e. with the number of cut-passing trial points of
@@ -683,6 +780,27 @@ void Process_Integrator::SetUpEnhance(const int omode)
         double effevperev = sqrt(child_effevperev)*(*p_proc)[i]->Integrator()->Efficiency()*selw;
         m_effevperev+=effevperev;
         effevperev_signed+=effevperev*((*p_proc)[i]->Integrator()->TotalResult() >= 0. ? 1. : -1.);
+        // The events: |sigma_i| ~ sqrt(alpha_i)*N_i is the enhanced cross
+        // section, which the selection follows, the events carry the weights
+        // without the enhancement, of sumpersumenh_i times that and of Neff/N
+        // alpha_i^ev, so that their Neff/N is
+        //   (sum sign_i*sumpersumenh_i*sqrt(alpha_i)*N_i)^2
+        //   / (sum N_i * sum sumpersumenh_i^2*alpha_i*N_i/alpha_i^ev).
+        const Process_Integrator *child((*p_proc)[i]->Integrator());
+        const double sumpersumenh(child->GetSSumEnh()!=0. ?
+                                  child->GetSSum()/child->GetSSumEnh() : 1.);
+        const double child_effevperev_ev(child->EventsEffEvPerEv());
+        const double nacc(child->Efficiency()*selw);
+        effevperev_signed_ev+=sumpersumenh*effevperev
+                              *(child->TotalResult() >= 0. ? 1. : -1.);
+        if (nacc!=0. && sumpersumenh!=0.) {
+          if (child_effevperev_ev<=0.)
+            THROW(critical_error, METHOD+"(): Neff/N of the events "
+                  +ToString(child_effevperev_ev)+" for '"+(*p_proc)[i]->Name()
+                  +"' with accepted events.");
+          effevperev_kish_ev+=sqr(sumpersumenh)*child_effevperev*nacc
+                              /child_effevperev_ev;
+        }
       } else {
         THROW(critical_error, METHOD+"(): EffEvPerEv="+ToString(child_effevperev)
                    +" (uninitialized) for '"+(*p_proc)[i]->Name()
@@ -695,17 +813,21 @@ void Process_Integrator::SetUpEnhance(const int omode)
       m_effevperev = pow(m_effevperev/m_effi,2)*pow(effevperev_signed/m_effevperev,2);
     else
       m_effevperev = 0.;
+    m_effevperev_ev = m_effi != 0. && effevperev_kish_ev != 0. ?
+      sqr(effevperev_signed_ev)/(m_effi*effevperev_kish_ev) : 0.;
     // sum_selw is the sum of the children's cut-passing point counts, accumulated
     // above with the same weight as m_effi, so that m_effi becomes the unweighting
     // efficiency of the group (eps_baseline of arXiv:2506.06203). It is zero only
     // when every child has zero cross section, in which case m_effi is also 0.
     m_effi = sum_selw != 0. ? m_effi/sum_selw : 0.;
-    if (omode || p_proc->Parent()==p_proc)
-      if (p_whisto_pos)
-    msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
+    if ((omode || p_proc->Parent()==p_proc) && p_whisto_pos) {
+      msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
 	      <<m_max/m_weightmax<<" ( eps = "<<m_maxeps<<" -> exp. eff "
 	      << m_effi<<", Neff/N "
-	      << m_effevperev << " ) "<<std::endl;
+	      << m_effevperev;
+      if (Enhanced()) msg_Info()<<", of the events "<<m_effevperev_ev;
+      msg_Info()<<" ) "<<std::endl;
+    }
     return;
   }
   if (m_maxeps!=0.0) {
@@ -713,7 +835,9 @@ void Process_Integrator::SetUpEnhance(const int omode)
     if (omode || msg->LevelIsTracking()) {
       msg_Info()<<"  reduce max for "<<p_proc->ResultsName()<<" to "
                 <<max/m_weightmax<<" ( eps = "<<m_maxeps<<" -> exp. eff "
-                <<  m_effi <<", Neff/N " << m_effevperev << " ) "<<std::endl;
+                <<  m_effi <<", Neff/N " << m_effevperev;
+      if (Enhanced()) msg_Info()<<", of the events "<<m_effevperev_ev;
+      msg_Info()<<" ) "<<std::endl;
     }
     SetMax(max);
   } else {
@@ -758,6 +882,7 @@ void Process_Integrator::AddPoint(const double value)
   m_mssumenhsqr += sqr(value);
   m_mssum    += value/enhance;
   m_mssumsqr += sqr(value/enhance);
+  m_mssumdivenhabs += dabs(value)/sqr(enhance);
 #else
   m_sn++;
   if (dabs(value)!=0) m_sncut++;
@@ -766,6 +891,7 @@ void Process_Integrator::AddPoint(const double value)
   m_ssumenhsqr += sqr(value);
   m_ssum    += value/enhance;
   m_ssumsqr += sqr(value/enhance);
+  m_ssumdivenhabs += dabs(value)/sqr(enhance);
 #endif
   double max=dabs(value)/dabs(p_proc->Last())*
     ATOOLS::Max(p_proc->LastPlus(),-p_proc->LastMinus());
@@ -800,6 +926,7 @@ void Process_Integrator::Reset(const int mode)
   m_n=0;
   m_totalxs=m_totalsum=m_totalsumsqr=m_totalerr=0.0;
   m_smax=m_weightmax=m_max=m_wmin=m_ssigma2=m_ssumsqr=m_ssum=m_ssumenh=m_ssumenhabs=m_ssumenhsqr=0.0;
+  m_ssumdivenhabs=0.0;
   m_sn=0;
   m_sncut=0;
   m_son=1;
@@ -874,15 +1001,16 @@ void Process_Integrator::SetPSHandler(const double &maxerr,const std::string eob
 void Process_Integrator::MPICollect
 (std::vector<double> &sv,std::vector<double> &mv,size_t &i)
 {
-  sv.resize(7*(i+1));
+  sv.resize(8*(i+1));
   mv.resize(2*(i+1));
-  sv[7*i+0]=m_msn;
-  sv[7*i+1]=m_msncut;
-  sv[7*i+2]=m_mssum;
-  sv[7*i+3]=m_mssumenh;
-  sv[7*i+4]=m_mssumenhabs;
-  sv[7*i+5]=m_mssumenhsqr;
-  sv[7*i+6]=m_mssumsqr;
+  sv[8*i+0]=m_msn;
+  sv[8*i+1]=m_msncut;
+  sv[8*i+2]=m_mssum;
+  sv[8*i+3]=m_mssumenh;
+  sv[8*i+4]=m_mssumenhabs;
+  sv[8*i+5]=m_mssumenhsqr;
+  sv[8*i+6]=m_mssumsqr;
+  sv[8*i+7]=m_mssumdivenhabs;
   mv[2*i+0]=m_weightmax;
   mv[2*i+1]=m_smax;
   ++i;
@@ -894,13 +1022,14 @@ void Process_Integrator::MPICollect
 void Process_Integrator::MPIReturn
 (std::vector<double> &sv,std::vector<double> &mv,size_t &i)
 {
-  m_msn=sv[7*i+0];
-  m_msncut=sv[7*i+1];
-  m_mssum=sv[7*i+2];
-  m_mssumenh=sv[7*i+3];
-  m_mssumenhabs=sv[7*i+4];
-  m_mssumenhsqr=sv[7*i+5];
-  m_mssumsqr=sv[7*i+6];
+  m_msn=sv[8*i+0];
+  m_msncut=sv[8*i+1];
+  m_mssum=sv[8*i+2];
+  m_mssumenh=sv[8*i+3];
+  m_mssumenhabs=sv[8*i+4];
+  m_mssumenhsqr=sv[8*i+5];
+  m_mssumsqr=sv[8*i+6];
+  m_mssumdivenhabs=sv[8*i+7];
   m_weightmax=mv[2*i+0];
   m_smax=mv[2*i+1];
   ++i;
@@ -931,7 +1060,9 @@ void Process_Integrator::MPISync(const int mode)
   m_ssumenhsqr+=m_mssumenhsqr;
   m_ssum+=m_mssum;
   m_ssumsqr+=m_mssumsqr;
+  m_ssumdivenhabs+=m_mssumdivenhabs;
   m_msn=m_msncut=m_mssumenh=m_mssumenhabs=m_mssumenhsqr=m_mssum=m_mssumsqr=0.0;
+  m_mssumdivenhabs=0.0;
 #endif
   if (p_colint!=NULL) p_colint->MPISync();
   p_proc->MPISync(mode);

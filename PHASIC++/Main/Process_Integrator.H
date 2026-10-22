@@ -49,6 +49,10 @@ namespace PHASIC {
     hls::scheme m_helicityscheme;
 
     double m_threshold, m_enhancefac, m_maxeps, m_rsfac, m_effi = -1, m_effevperev=-1;
+    // the same Neff/N for the events, which carry the weights without the
+    // enhancement (m_effevperev is that of the enhanced weights, with which the
+    // points are sampled, unweighted and selected), see EventsEffEvPerEv()
+    double m_effevperev_ev = -1;
     // Numerator of the selection weight for unweighted events,
     //   m_selweight_xs = |<w>_cut| / sqrt(alpha) = |sigma*<h>| / (eff_cut*sqrt(alpha)),
     // with <w>_cut the mean (enhanced, signed) weight of the points that passed the
@@ -69,7 +73,11 @@ namespace PHASIC {
 
     double m_max, m_weightmax, m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
     double m_ssum, m_ssumenh, m_ssumenhabs, m_ssumenhsqr, m_ssumsqr, m_smax, m_ssigma2, m_wmin;
+    // sum of |w/e| = |v|/e^2 of the weights w = v/e without the enhancement e
+    // (v the enhanced weight), for the dilution of unweighted events
+    double m_ssumdivenhabs;
     double m_mssum, m_mssumenh, m_mssumenhabs, m_mssumenhsqr, m_mssumsqr, m_msn, m_msncut;
+    double m_mssumdivenhabs;
 
     std::vector<double> m_vsmax, m_vsum;
     std::vector<long unsigned int> m_vsn;
@@ -185,6 +193,7 @@ namespace PHASIC {
     inline const ATOOLS::Vec4D_Vector &Momenta() const { return p_momenta;  }
     inline ATOOLS::Vec4D_Vector       &Momenta()       { return p_momenta;  }
 
+    inline double   GetSSum() const        { return m_ssum;       }
     inline double   GetSSumEnh() const     { return m_ssumenh;    }
     inline double   GetSSumEnhAbs() const  { return m_ssumenhabs;    }
     inline double   GetSNCut() const       { return m_sncut;    }
@@ -212,6 +221,14 @@ namespace PHASIC {
 
     inline double Efficiency() const { return m_effi; }
     inline double EffEvPerEv() const { return m_effevperev; }
+    // EffEvPerEv() for the events: with an enhancement (Enhance_Function,
+    // Enhance_Observable, Enhance_Factor) the Neff/N of the whole sample, whose
+    // events carry the weights without it, where EffEvPerEv() is that of the
+    // enhanced distribution; the same without one
+    inline double EventsEffEvPerEv() const { return m_effevperev_ev; }
+    // whether the weights of the current integration step had an enhancement
+    inline bool Enhanced() const
+    { return m_ssum!=m_ssumenh || m_ssumsqr!=m_ssumenhsqr; }
 
     inline void SetBeam(BEAM::Beam_Spectra_Handler *const beam) 
     { p_beamhandler=beam; }
