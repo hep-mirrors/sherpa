@@ -253,18 +253,11 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
     std::vector<std::vector<std::vector<Complex>>> coeff_vec;
     std::vector<std::vector<std::vector<Complex>>> conj_coeff_vec;
     do {
-<<<<<<< HEAD
-      if (tmp_amps->SpinDegreesofFreedom() != 3) {
-        THROW(fatal_error, "basis transformation for polarization definition is currently only implemented for "
-                           "massive vector bosons")
-      }
-=======
       if (tmp_amps->SpinDegreesofFreedom() != 3 && tmp_amps->SpinDegreesofFreedom() != 1
       && !(tmp_amps->CurrentParticle().Flav().IsFermion() && refsystem == "Lab"))
         THROW(fatal_error, "basis transformation for polarization definition is currently only implemented for "
                            "massive vector bosons")
       if (tmp_amps->SpinDegreesofFreedom()==3) require_trafo = true;
->>>>>>> 4443a3f00 (Allow for polarized, intermediate spin-1/2 particles in the Lab frame)
 
       // Determination of necessary particle information
       ATOOLS::Vec4D mom(tmp_amps->CurrentParticle().Momentum());
@@ -333,9 +326,6 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
       // CALCULATION OF POLARIZATION OBJECTS IN THE NEW POLARIZATION BASIS
       std::vector<std::vector<Complex>> coeff_in;
       std::vector<std::vector<Complex>> coeff_out;
-<<<<<<< HEAD
-      if (spin==1){
-=======
       if (spin==0){
         coeff_vec.push_back(std::vector<std::vector<Complex>>(1, std::vector<Complex>(1,1)));
         conj_coeff_vec.push_back(std::vector<std::vector<Complex>>(1, std::vector<Complex>(1,1)));
@@ -349,7 +339,6 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
         coeff_out.push_back(std::vector<Complex>(2,1));
       }
       else if (spin==1){
->>>>>>> 4443a3f00 (Allow for polarized, intermediate spin-1/2 particles in the Lab frame)
         // calculate polarization vectors with new reference momentum
         METOOLS::Polarization_Vector new_polarization(mom, new_ref_mom);
         // transformation back to laboratory system where matrix elements are calculated
