@@ -487,7 +487,14 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
     }
     if (p_int->HelicityIntegrator()!=NULL) 
       m_w*=p_int->HelicityIntegrator()->Weight();
-    const double born(skipme?m_dxs:sp->p_bg->Born());
+    // In the colour sum, the amplitude is evaluated once per colour
+    // permutation, such that Born() only holds the result for the last one,
+    // while m_dxs holds the colour-summed result. Real-emission events are
+    // left out, since Born() also reflects their trigger.
+    const double born
+      (skipme || (m_pinfo.m_cls!=cls::sample &&
+		  !(m_pinfo.m_fi.NLOType()&nlo_type::rsub))?
+       m_dxs:sp->p_bg->Born());
     int isb(m_dxs==born);
     double kb(born?sp->KFactor(1|2):1.0);
     double kf(m_mewgtinfo.m_K=isb?kb:
