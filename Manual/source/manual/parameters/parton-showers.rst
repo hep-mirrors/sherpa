@@ -200,3 +200,10 @@ from gluon splittings below their mass threshold. This behaviour can
 be steered using :option:`SHOWER:FORCED_IS_QUARK_SPLITTING`.
 Its precise kinematics are governed by :option:`SHOWER:FORCED_SPLITTING_GLUON_SCALING`.
 
+For testing purposes, :option:`SHOWER:FIXED_ALPHAS` can be set to a nonnegative
+constant. The CS shower then uses this alpha_s value,
+with its usual colour factors, in all QCD splitting kernels and their
+veto bounds.
+This mode bypasses coupling scale shifts and renormalisation counterterms;
+alternative shower couplings used for reweighting also retain this
+constant. Matrix-element couplings and PDFs are unaffected. 

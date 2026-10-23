@@ -5,6 +5,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
+#include "ATOOLS/Math/MathTools.H"
 
 #include <algorithm>
 #include <cassert>
@@ -17,7 +18,7 @@ CF_QCD::CF_QCD(const SF_Key &key):
   SF_Coupling(key),
   m_maincplinfo(QCD_Coupling_Info()), m_altcplinfo(QCD_Coupling_Info()),
   m_altcplmax(),
-  m_q(0.), m_k0sq(0.0), m_scvmode(0)
+  m_q(0.), m_k0sq(0.0), m_fixedalphas(-1.0), m_scvmode(0)
 {
   if (key.p_v->in[0].StrongCharge()==8 &&
       key.p_v->in[1].StrongCharge()==8 &&
@@ -44,6 +45,9 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
 {
   // obtain global variables
   auto pss = Settings::GetMainSettings()["SHOWER"];
+  m_fixedalphas = pss["FIXED_ALPHAS"].Get<double>();
+  if (IsBad(m_fixedalphas) || (m_fixedalphas < 0. && m_fixedalphas != -1.))
+    THROW(fatal_error,"SHOWER: FIXED_ALPHAS must be -1 (running) or a finite nonnegative value.");
   MODEL::Running_AlphaS * cpl = (MODEL::Running_AlphaS *)(md->GetScalarFunction("alpha_S"));
   double rsf = ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   rsf *= pss["SCALE_FACTOR"].Get<double>();
@@ -87,6 +91,7 @@ void CF_QCD::SetAlternativeUnderlyingCoupling(void *cpl, double sf)
 
 double CF_QCD::CplMax(MODEL::Running_AlphaS * as, double rsf) const
 {
+  if (m_fixedalphas >= 0.) return m_fixedalphas * m_q;
   double minscale = Min(1.0, CplFac(m_k0sq)) * m_k0sq;
   double ct(0.);
   if (rsf > 1.) // only for f>1 cpl gets larger
@@ -100,6 +105,8 @@ double CF_QCD::Coupling(const double &scale,const int pol)
   DEBUG_FUNC("pol="<<pol);
 #endif
   if (pol!=0) return 0.0;
+  // Keep the kernel and veto proposal at exactly the same constant coupling.
+  if (m_fixedalphas >= 0.) return m_last = m_fixedalphas * m_q;
   QCD_Coupling_Info cplinfo = CurrentCouplingInfo();
   if (scale<0.0) return (m_last = (*as)(sqr(rpa->gen.Ecms())))*m_q;
   double t(CplFac(scale)*scale), scl(CplFac(scale)*scale*cplinfo.RSF());

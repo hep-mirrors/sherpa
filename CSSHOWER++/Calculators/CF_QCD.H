@@ -43,7 +43,7 @@ namespace CSSHOWER {
 
     //! Buffer of max alphas values to avoid re-calculations
     std::map<MODEL::Running_AlphaS *, std::vector<double> > m_altcplmax;
-    double m_q, m_k0sq, m_kfac[7];
+    double m_q, m_k0sq, m_kfac[7], m_fixedalphas;
     int m_scvmode;
   public:
     CF_QCD(const SF_Key &key);
