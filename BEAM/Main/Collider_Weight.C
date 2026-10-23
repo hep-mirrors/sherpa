@@ -1,6 +1,13 @@
 #include "BEAM/Main/Collider_Weight.H"
 
+#include "ATOOLS/Math/Gauss_Integrator.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
+#include "BEAM/Spectra/Gaussian.H"
+
+#include <cmath>
+#include <functional>
 
 using namespace BEAM;
 
@@ -22,6 +29,27 @@ Collider_Weight::Collider_Weight(Kinematics_Base* kinematics)
     m_mode = collidermode::both_spectral;
   if (m_mode == collidermode::unknown)
     THROW(fatal_error, "Bad settings for collider mode.");
+
+  /*
+    BEAM_SPREAD_CORRELATION rho: the two Gaussian beam energies follow the
+    correlated two-dimensional Gaussian
+  */
+  m_rho = ATOOLS::Settings::GetMainSettings()["BEAM_SPREAD_CORRELATION"]
+              .SetDefault(0.0)
+              .Get<double>();
+  if (m_rho != 0.) {
+    for (int i = 0; i < 2; ++i) p_gauss[i] = dynamic_cast<const Gaussian*>(p_beams[i]);
+    if (!p_gauss[0] || !p_gauss[1])
+      THROW(fatal_error, "BEAM_SPREAD_CORRELATION needs BEAM_SPECTRA: "
+                         "[Gaussian, Gaussian].");
+    if (!(std::fabs(m_rho) < 1.))
+      THROW(fatal_error, "BEAM_SPREAD_CORRELATION must lie in (-1, 1).");
+    const double n1(p_gauss[0]->NSigma()), n2(p_gauss[1]->NSigma());
+    m_rhonorm = std::erf(n1 / M_SQRT2) * std::erf(n2 / M_SQRT2)
+                / BoxProbability(m_rho, n1, n2);
+    msg_Info() << "Correlated Gaussian beam energy spread: rho = " << m_rho
+               << ", box renormalisation " << m_rhonorm << ".\n";
+  }
 
   m_rejection = ATOOLS::Settings::GetMainSettings()["BEAM_OVERLAP_REJECTION"]
                     .SetDefault(0)
@@ -85,7 +113,42 @@ double Collider_Weight::operator()()
   double overlap_weight(1.);
   if (m_rejection > 0) overlap_weight *= OverlapWeight();
   m_weight = p_beams[0]->Weight() * p_beams[1]->Weight() * overlap_weight;
+  if (m_rho != 0.) m_weight *= CorrelationFactor();
   return m_weight;
+}
+
+double Collider_Weight::CorrelationFactor()
+{
+  const double d1((m_xkey[4] - p_gauss[0]->X0()) / p_gauss[0]->SigmaX());
+  const double d2((m_xkey[5] - p_gauss[1]->X0()) / p_gauss[1]->SigmaX());
+  return CorrelationWeight(d1, d2, m_rho, m_rhonorm);
+}
+
+double Collider_Weight::CorrelationWeight(double d1, double d2, double rho,
+                                          double rhonorm)
+{
+  const double omr2(1. - rho * rho);
+  return rhonorm / std::sqrt(omr2) *
+         std::exp(-(rho * rho * (d1 * d1 + d2 * d2) - 2. * rho * d1 * d2)
+                  / (2. * omr2));
+}
+
+/*
+  Probability of the standard correlated Gaussian in |d1| < n1, |d2| < n2:
+  the d2 integral is done analytically (normal CDF), the d1 integral with
+  ATOOLS::Gauss_Integrator (Gauss-Legendre) to a relative precision of 1e-12.
+*/
+double Collider_Weight::BoxProbability(double rho, double n1, double n2)
+{
+  const double s(std::sqrt(1. - rho * rho));
+  auto Phi = [](double z) { return 0.5 * std::erfc(-z / M_SQRT2); };
+  const std::function<double(double)> f = [&](double d1) {
+    return std::exp(-0.5 * d1 * d1) / std::sqrt(2. * M_PI) *
+           (Phi((n2 - rho * d1) / s) - Phi((-n2 - rho * d1) / s));
+  };
+  ATOOLS::Lambda_Functor functor(&f);
+  ATOOLS::Gauss_Integrator integrator(&functor);
+  return integrator.Integrate(-n1, n1, 1.e-12);
 }
 
 double Collider_Weight::OverlapWeight()
