@@ -77,27 +77,12 @@ public:
   double Calc_R(const ATOOLS::Vec4D_Vector &p);
   //! The external generator's matrix element, with the symmetry factor applied.
   double Calc_External(const ATOOLS::Vec4D_Vector &p);
+  void SoftScan(const ATOOLS::Vec4D_Vector &p);
   //! YFS: IFI false: sum over photon placements of |M|^2 (no initial-final
   //! interference) over the coherent |M|^2, from Comix at p
   double NoIFIRatio(const ATOOLS::Vec4D_Vector &p);
 
   ATOOLS::Cluster_Amplitude *CreateAmplitude(const ATOOLS::Vec4D_Vector &p) const;
-
-  /*!
-    Analytic arbiter for the quasi-collinear disagreement between the internal
-    and the external real ME. Takes one phase-space point, keeps the hard
-    system and the photon energy fixed, and sweeps the photon polar angle
-    across the mass angle m/E. In the soft limit the real ME must approach
-    S(k) x |M_Born|^2 with the Born independent of the photon direction, so
-    ME(theta)/S(theta) must be FLAT - and S is known in closed form,
-    mass terms included. Whichever generator's ratio is flat is the correct
-    one; no Born, no coupling normalisation and no third generator needed.
-
-    Single-photon only so far: the sweep is over ONE photon's polar angle.
-    Generalising it is the natural replacement for the cross-generator check
-    at n=3, where an external double-real-plus-one is unlikely to exist.
-  */
-  void SoftScan(const ATOOLS::Vec4D_Vector &p);
 
   inline bool FailCut() const { return m_failcut; }
   inline void SetProc(PHASIC::Process_Base *proc) { p_proc = proc; }
@@ -174,12 +159,6 @@ public:
   ComixAmplitudes(const ATOOLS::Vec4D_Vector &p,
                   const double propscale = -1.0,
                   const double decscale = -1.0, const size_t deccid = 0);
-  //! The same with the propagator momenta shifted per side; see
-  //! PHASIC::Process_Base::DifferentialWithPropShift.
-  const std::vector<METOOLS::Spin_Amplitudes> *
-  ComixAmplitudesShifted(const ATOOLS::Vec4D_Vector &p,
-                         const ATOOLS::Vec4D &dini, const ATOOLS::Vec4D &dfin,
-                         const size_t ffmask);
   const std::vector<METOOLS::Spin_Amplitudes> *
   ComixAmplitudesShifts(const ATOOLS::Vec4D_Vector &p,
                         const PHASIC::Process_Base::Prop_Shifts &shifts);

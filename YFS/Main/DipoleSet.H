@@ -125,12 +125,9 @@ namespace YFS {
 
     const std::vector<std::size_t> &Index(dipoletype::code t) const;
 
-    const std::vector<std::size_t> &RadiatingIndex() const { return m_idxRad; }
-
     DipoleView ByType(dipoletype::code t) { return DipoleView(m_dipoles, Index(t)); }
     DipoleView FF() { return DipoleView(m_dipoles, m_idxFF); }
     DipoleView IF() { return DipoleView(m_dipoles, m_idxIF); }
-    DipoleView Radiating() { return DipoleView(m_dipoles, m_idxRad); }
 
     // There is at most one initial-initial dipole, so this is a reference and
     // not a range. Its absence whenever ISR is on is a setup error, not a case

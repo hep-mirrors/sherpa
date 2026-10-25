@@ -102,9 +102,7 @@ double NLO_Base::VirtualSubPhotonMass()
 void NLO_Base::BuildLoopHelicityFactors(double virt, double sub)
 {
   m_lhelok = false;
-  static const int probe(Main()["ACRAIC"]["VIRT_HEL_PROBE"].SetDefault(0).Get<int>());
   static const double minborn(Main()["ACRAIC"]["VIRT_HEL_MINBORN"].SetDefault(1e-3).Get<double>());
-  static long nprobe(0);
   PHASIC::Virtual_ME2_Base *lme(p_virt->p_loop_me.get());
   std::vector<Complex> a0, a1;
   std::vector<std::vector<int> > hel;
@@ -168,7 +166,6 @@ void NLO_Base::BuildLoopHelicityFactors(double virt, double sub)
   m_lratio_ok.swap(ratiook);
   m_lrun = run; m_limsh = imsh;
   m_lhelmom = m_plab;
-  m_lhelv = v;
   m_lhelok = true;
   ++m_lhel_n;
   m_lhel_nfall += nfall;
@@ -192,24 +189,6 @@ void NLO_Base::BuildLoopHelicityFactors(double virt, double sub)
     ir = subs - spm - 2.*K.real()*log(mu2/sqr(m_photonMass));
     m_lhel_ir_sum += ir; m_lhel_ir_sq += ir*ir;
     m_lhel_ir_max = Max(m_lhel_ir_max, std::abs(ir));
-  }
-  if (probe > 0 && nprobe < probe) {
-    ++nprobe;
-    std::ostringstream o;
-    o<<std::setprecision(10)
-     <<"@@@ VHEL v="<<v<<" vraw="<<vraw<<" run="<<run<<" sub="<<subs
-     <<" K="<<K.real()<<","<<K.imag()<<" imsh="<<imsh<<" muIR="<<mu
-     <<" closure="<<clo<<" identity="<<res<<" irdiag="<<ir
-     <<" nfall="<<nfall<<" ncfg="<<m_la0.size()<<"\n";
-    for (size_t c(0); c < m_la0.size(); ++c) {
-      if (std::abs(m_la0[c]) <= minborn*amax) continue;
-      o<<"@@@ VHEL   h=(";
-      for (size_t l(0); l < m_lhel[c].size(); ++l)
-        o<<(l?",":"")<<(m_lhel[c][l] > 0 ? "+" : (m_lhel[c][l] < 0 ? "-" : "0"));
-      o<<") w="<<std::norm(m_la0[c])/s0<<" delta="<<m_ldelta[c].real()
-       <<","<<m_ldelta[c].imag()<<"\n";
-    }
-    std::cerr<<o.str();
   }
 }
 
@@ -271,9 +250,7 @@ bool NLO_Base::BuildRealVirtualHelicityFactors(const Vec4D &k, double dv,
 {
   out = RVHelicityFactors();
   out.k = k; out.dv = dv; out.plab = plab;
-  static const int probe(Main()["ACRAIC"]["RV_HEL_PROBE"].SetDefault(0).Get<int>());
   static const double minborn(Main()["ACRAIC"]["VIRT_HEL_MINBORN"].SetDefault(1e-3).Get<double>());
-  static long nprobe(0);
   if (p_realvirt == NULL || !m_lhelok || !m_vborn_own_ok) {
     if (m_rvhel_fail++ == 0)
       msg_Error()<<METHOD<<"(): no per-helicity Born factors (the Born loop"
@@ -365,40 +342,6 @@ bool NLO_Base::BuildRealVirtualHelicityFactors(const Vec4D &k, double dv,
   m_rvhel_res_max = Max(m_rvhel_res_max, std::abs(res));
   m_rvhel_dv_sum += dres; m_rvhel_dv_sq += dres*dres;
   m_rvhel_dv_max = Max(m_rvhel_dv_max, std::abs(dres));
-  if (probe > 0 && nprobe < probe) {
-    ++nprobe;
-    double rmax(0.), rsum(0.), wsum(0.);
-    for (size_t c(0); c < out.a0.size(); ++c) {
-      if (std::abs(out.a0[c]) <= minborn*amax) continue;
-      const double w(std::norm(out.a0[c])/s0);
-      rmax = Max(rmax, std::abs(out.rem[c]));
-      rsum += w*std::norm(out.rem[c]); wsum += w;
-    }
-    // the photon's angle to the nearest beam, in the loop frame
-    double thmin(M_PI);
-    for (size_t i(0); i < 2; ++i) {
-      const Vec3D a(m_rvLastLoop[i]), b(m_rvLastLoop.back());
-      const double cth(a*b/(a.Abs()*b.Abs()));
-      thmin = Min(thmin, acos(Max(-1., Min(1., cth))));
-    }
-    std::ostringstream o;
-    o<<std::setprecision(10)<<"@@@ RVHEL x="<<2.*k.E()/sqrt(m_s)
-     <<" fsr="<<(PhotonIsFSR(k)?1:0)<<" nph="<<m_photons.size()
-     <<" thbeam="<<thmin<<" dv="<<dv<<" v1="<<v1<<" vB="<<m_vborn_own
-     <<" mshift="<<mshift<<" identity="<<res<<" dvdiff="<<dres
-     <<" remmax="<<rmax<<" remrms="<<(wsum > 0. ? sqrt(rsum/wsum) : 0.)
-     <<" imsh="<<imsh<<" imshB="<<m_limsh<<" nfall="<<nfall<<" nbfall="<<nbfall
-     <<" ncfg="<<out.a0.size()<<"\n";
-    for (size_t c(0); c < out.a0.size(); ++c) {
-      if (std::abs(out.a0[c]) <= minborn*amax) continue;
-      o<<"@@@ RVHEL   h=(";
-      for (size_t l(0); l < out.hel[c].size(); ++l)
-        o<<(l?",":"")<<(out.hel[c][l] > 0 ? "+" : (out.hel[c][l] < 0 ? "-" : "0"));
-      o<<") w="<<std::norm(out.a0[c])/s0<<" rem="<<out.rem[c].real()
-       <<","<<out.rem[c].imag()<<"\n";
-    }
-    std::cerr<<o.str();
-  }
   return true;
 }
 

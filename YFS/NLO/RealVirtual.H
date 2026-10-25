@@ -46,7 +46,7 @@ namespace YFS{
         //! Not owned; set by SetProc, may be null.
         PHASIC::Process_Base *p_rvproc = nullptr;
         ATOOLS::Flavour_Vector m_flavs;
-        double m_sym, m_factor;
+        double m_factor;
         //! RV_Generator as configured. Unlike Real/RealReal there is no
         //! internal-vs-external choice here: p_loop_me (the value this class
         //! actually returns) is always built from RV_Generator directly, and

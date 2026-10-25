@@ -464,8 +464,6 @@ double NLO_Base::CalculateRealVirtualRemainder(size_t i, const Vec4D &k) {
   SoftSumsOnBothLegs(Vec4D_Vector(info.p.begin(), info.p.end() - 1), Keps,
                      bt_pt, bt_gen, dY_pt, dY_gen);
   const double dv(m_rvLastLt + m_rvct - vb_ev);
-  // YFS: RR_LOG_CHECK (diagnostic, NLO_Checks.C)
-  ProbeRRLog(k, Vec4D_Vector(info.p.begin(), info.p.end() - 1), Keps);
   /*
     YFS: RV_PROBE_TERM (diagnostic, default none): the RealVirtual stream
     carries only one piece of the remainder, to measure it on the same
@@ -996,7 +994,7 @@ bool NLO_Base::BuildLoopNSetFactors(const std::vector<size_t> &S, LoopNHelicityF
   }
   // the (n+2)-point identity: <2 Re delta_S>_tree = v_{n+2} + 2c
   const double res(sd/s0 - v2);
-  m_lnh_res_sum += res; m_lnh_res_sq += res*res;
+  m_lnh_res_sum += res;
   m_lnh_res_max = Max(m_lnh_res_max, std::abs(res));
   ++m_lnh_n;
   out.v2 = v2;

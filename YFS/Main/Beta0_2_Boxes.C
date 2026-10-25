@@ -119,12 +119,7 @@ double YFS::AddPhotonicTwoLoopDiphoton(Photonic_Factors &f,
   if (aa == NULL) return 0.;
   provided = true;
   if (p.size() < 4) return 0.;
-  /*
-    The hard function is leading power in m_e^2/|t|, m_e^2/|u|: a photon
-    (nearly) along a beam of the Born point is outside it (the massified
-    poles then miss YFS's by up to 1e-7 instead of 1e-11, VV_POLE_CHECK).
-    YFS: BETA0_2_DIPHOTON_POWER_CUT: no term there (counted).
-  */
+
   const double t(std::abs((p[0] - p[2]).Abs2())), u(std::abs((p[0] - p[3]).Abs2()));
   if (powercut > 0. && me > 0. && me*me > powercut*Min(t, u)) { skipped = true; return 0.; }
   aa->Calc(p);

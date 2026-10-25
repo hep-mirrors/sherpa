@@ -124,8 +124,6 @@ double NLO_Base::CalculateVirtual() {
     m_virt_sub_if = ifi * m_born / m_rescale_alpha;
   }
   m_oneloop = (virt - sub * m_born / m_rescale_alpha);
-  // YFS: VIRTUAL_POLE_PROBE (diagnostic, NLO_Checks.C)
-  ProbeVirtualPoles(vsub);
   // YFS: VIRTUAL_CHECK: drop the virtual of a numerically unstable loop
   CheckVirtualStability(virt, sub, vcanon);
   // YFS: VIRTUAL_PROBE_ABOVE (diagnostic, NLO_Checks.C)
@@ -269,73 +267,10 @@ bool NLO_Base::BornVirtualOnOwnLegs(double &vb) {
   return !IsBad(vb);
 }
 
-double NLO_Base::CalculateVV() {
-  if (!m_vvtool)
-    return 0;
-  if (m_eex_virt) {
-    return p_dipoles->CalculateEEXVirtual() * m_born - m_born;
-  }
-  double virt;
-  double sub;
-  // CheckMassReg();
-  if (!HasISR())
-    virt = p_vv->Calc(m_bornMomenta, m_born);
-  else
-    virt = p_vv->Calc(m_plab, m_born);
-  // (not with YFS: VIRTUAL_MASSIFICATION: the provider's Born is then the
-  // massless one at the massless image of the point)
-  // (nor for a provider without a Born of its own: the internal analytic
-  // virtuals (Loop_Generator Internal) return delta_V only, which YFS
-  // multiplies by Sherpa's Born, so ME_Born() stays 0 and there is nothing to
-  // compare)
-  if (m_check_virt_born && !p_virt->p_massif && p_virt->p_loop_me->ME_Born() != 0.) {
-    // the provider's Born is pointlike, m_born is dressed with the pion form
-    // factor, so compare against the dressed provider Born
-    if (!IsEqual(m_born, p_virt->p_loop_me->ME_Born()
-                         * ExternalFormFactor(m_plab, m_flavs), 1e-6)) {
-      msg_Error() << METHOD
-                  << "\n Warning! Loop provider's born is different! YFS "
-                     "Subtraction likely fails\n"
-                  << "Loop Provider " << ":  " << p_virt->p_loop_me->ME_Born()
-                  << "\nSherpa" << ":  " << m_born << std::endl
-                  << "PhaseSpace Point = ";
-      for (auto _p : m_plab)
-        msg_Error() << _p << std::endl;
-    }
-  }
-  if (p_vv->FailCut())
-    return 0;
-  if (m_virt_sub && p_virt->p_loop_me->Mode() != 1)
-    sub = p_dipoles->CalculateVirtualSub();
-  else
-    sub = 0;
-  double sub2 = p_dipoles->CalculateVVSubEps();
-  // m_oneloop = (virt- sub * m_born/m_rescale_alpha );
-  m_oneloop = (virt - sub * CalculateVirtual() / m_rescale_alpha -
-               0.5 * sub * sub * m_born / m_rescale_alpha);
-  if (p_virt->p_loop_me->Mode() == 1) {
-    m_oneloop /= m_rescale_alpha;
-  }
-  if (IsBad(m_oneloop) || IsBad(sub)) {
-    msg_Error() << "YFS Virtual is NaN" << std::endl
-                << "Virtual:  " << virt << std::endl
-                << "Subtraction: " << sub * m_born << std::endl
-                << "PhaseSpace Point: " << std::endl
-                << m_plab << std::endl;
-  }
-  // the two-loop pole check (the old one compared the 1/eps of the double
-  // virtual with the one loop's): NLO_Base::CheckVVPoles
-  if (m_check_poles == 1) CheckVVPoles();
-  return 0;
-}
-
-
 void NLO_Base::CheckVVPoles()
 {
   static const bool on(ATOOLS::Settings::GetMainSettings()["YFS"]["VV_POLE_CHECK"]
                        .SetDefault(true).Get<bool>());
-  static const int probe(ATOOLS::Settings::GetMainSettings()["YFS"]["VV_POLE_PROBE"]
-                         .SetDefault(0).Get<int>());
   if (!on || p_vv == NULL || p_virt == NULL) return;
   EXTRAXS::ee_aa_QED_VV *aa(dynamic_cast<EXTRAXS::ee_aa_QED_VV*>(p_vv->p_loop_me.get()));
   if (aa == NULL) return;
@@ -354,12 +289,9 @@ void NLO_Base::CheckVVPoles()
     return;
   }
   p_dipoles->CalculateVirtualSub();
-  const double mu(p_virt->p_loop_me->IRscale()), s(aa->S());
   // sigma = 2 B/(alpha/pi) in D = 4 - 2 eps: Sherpa's IR slot is minus the
-  // 1/eps coefficient; the finite part moved from mu^2 to s
+  // 1/eps coefficient
   const double sm1(-2.*p_dipoles->Get_E1()/m_alpi);
-  double s0(2.*p_dipoles->Get_Finite()/m_alpi);
-  if (mu > 0.) s0 += sm1*std::log(s/(mu*mu));
   const double me(m_flavs[0].Mass());
   if (!(me > 0.)) { ++m_vvp_fail; return; }
   double m1m[3], m2m[3];
@@ -373,18 +305,6 @@ void NLO_Base::CheckVVPoles()
     // matching digits, 0 .. 16
     const int d(rel > 0. ? Max(0, Min(16, (int)std::floor(-std::log10(rel)))) : 16);
     ++m_vvp_digits[k][d];
-  }
-  static int nprobe(0);
-  if (nprobe < probe) {
-    ++nprobe;
-    std::ostringstream o;
-    o<<std::setprecision(13)<<"@@@ VVPOLE x="<<aa->X()<<" mu="<<mu
-     <<" sigma_m1="<<sm1<<" sigma_0="<<s0
-     <<" m1m_m1="<<m1m[0]<<" m1m_0="<<m1m[1]<<" v1="<<m1m[1] - s0
-     <<" m2m_m2="<<m2m[0]<<" half_sig2="<<want[1]
-     <<" m2m_m1="<<m2m[1]<<" sig_m1m="<<want[2]
-     <<" loopprov_fin="<<p_virt->p_loop_me->ME_Finite()<<"\n";
-    std::cerr<<o.str();
   }
 }
 

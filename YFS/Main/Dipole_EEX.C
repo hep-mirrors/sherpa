@@ -21,9 +21,8 @@
 // reassign it after every pair and every triple to repair the damage before
 // the next iteration. Two consequences, both now gone: the reassignments in
 // EEX's loops were load-bearing rather than defensive, and any caller reaching
-// Beta1() without going through EEX() first - Define_Dipoles::EEXRealVirtual
-// and NLO_Base's collinear-ratio histogram both do - read whatever order the
-// last unrelated call had left behind.
+// Beta1() without going through EEX() first read whatever order the last
+// unrelated call had left behind.
 
 #include "YFS/Main/Dipole.H"
 

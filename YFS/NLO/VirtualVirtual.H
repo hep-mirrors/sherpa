@@ -18,11 +18,7 @@ namespace YFS{
     public:
         VirtualVirtual(const PHASIC::Process_Info& pi);
         ~VirtualVirtual();
-        double Calc(const ATOOLS::Vec4D_Vector momenta, double b);    
         std::unique_ptr<PHASIC::Virtual_ME2_Base> p_loop_me;
-        double Calc_V(const ATOOLS::Vec4D_Vector& p,
-                    const double B,
-                    const double mur);
         MODEL::Coupling_Map m_cpls;
         double m_factor;
         //! Not owned; set by SetProc, may be null.

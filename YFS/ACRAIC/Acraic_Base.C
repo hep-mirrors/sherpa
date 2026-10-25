@@ -31,17 +31,14 @@ Acraic_Base::Acraic_Base(const Flavour_Vector &flavs)
   m_onlyz = s["ONLYZ"].Get<bool>();
   m_onlyg = s["ONLYG"].Get<bool>();
   m_checkxs = s["CHECK_XS"].Get<int>();
-  m_comixreal = s["COMIX_REAL"].Get<bool>();
   m_comixflip = s["COMIX_REAL_FLIP"].Get<int>();
   m_comixnorm = s["COMIX_REAL_NORM"].Get<double>();
   m_comixphoflip = s["COMIX_REAL_PHOTON_FLIP"].Get<int>();
-  m_perphoton    = s["COMIX_REAL_PER_PHOTON"].Get<bool>();
   m_tnp          = s["TNP_STREAMS"].Get<bool>();
   m_comixborn    = s["COMIX_BORN"].Get<bool>();
   m_wstages      = s["W_STAGES"].Get<tristate::code>();
   m_weikonal     = s["W_EIKONAL"].Get<weikonal::code>();
   m_crudegen     = s["CRUDE_FROM_GENERATOR"].Get<crudegen::code>();
-  m_vpon         = s["VIRT_PARTITION_CHECK"].Get<int>() != 0;
   m_order        = s["ORDER"].Get<int>();
   m_resexpmode   = s["RESONANCE_EXPONENTIATION"].Get<acraicresexp::code>();
   if (m_resexpmode == acraicresexp::automatic &&
@@ -165,23 +162,13 @@ Acraic_Base::Acraic_Base(const Flavour_Vector &flavs)
     m_onlyz = true;
   }
 
-  m_Q1Q2I = flavs[0].Charge() * flavs[1].Charge();
   m_QIQF  = flavs[0].Charge() * flavs[m_if1].Charge();
   // Bhabha: the final pair is the beam pair, so a t-channel gamma/Z is exchanged
   // between the two fermion lines on top of the s-channel annihilation.
   m_bhabha = (flavs[0] == flavs[m_if1]);
-  m_Q1Q2F = flavs[m_if1].Charge() * flavs[m_if2].Charge();
   m_MZ = Flavour(kf_Z).Mass();
   m_gZ = Flavour(kf_Z).Width();
-  double mw = Flavour(kf_Wplus).Mass();
-  double MH = Flavour(kf_h0).Mass();
-  double  GH  = Flavour(kf_h0).Width();
-  double  GW  = Flavour(kf_Wplus).Width();
-  double  GZ  = Flavour(kf_Z).Width();
   m_I   = Complex(0., 1.);
-
-  double F_L = 0.;
-  double F_R = 0.;
 
   m_sin2tw = MODEL::s_model->ComplexConstant("csin2_thetaW");
   if (Settings::GetMainSettings()["ACRAIC"]["REAL_SIN2THETAW"]
@@ -193,7 +180,6 @@ Acraic_Base::Acraic_Base(const Flavour_Vector &flavs)
   m_norm = sqrt(16. * m_sW * (1. - m_sW));
   m_qe       = m_flavs[0].Charge();
   m_qf       = m_flavs[m_if1].Charge();
-  m_Q1Q2I = m_flavs[0].Charge() * m_flavs[1].Charge();
   m_ae       = 2.*m_flavs[0].IsoWeak();
   m_af       = 2.*m_flavs[m_if1].IsoWeak();
   // Keep 2*T3 and 4*Q*sw^2 separately: the electroweak kappa factors multiply
@@ -209,19 +195,6 @@ Acraic_Base::Acraic_Base(const Flavour_Vector &flavs)
   m_weak = s["WEAK"].Get<bool>();
   m_mass_I = flavs[0].Mass();
   m_mass_F = flavs[m_if1].Mass();
-  // full EW couplings
-  m_I_L = -m_I * sqrt(4 * M_PI * m_alpha) / (2.*m_sW * m_cW) * (2.*flavs[0].IsoWeak()
-          - 2.*flavs[0].Charge() * m_sW * m_sW);
-
-  m_I_R = -m_I * sqrt(4 * M_PI * m_alpha) / (2.*m_sW * m_cW) * (-2.*flavs[0].Charge() * m_sW * m_sW);
-
-  m_F_L = -m_I * sqrt(4 * M_PI * m_alpha) / (2.*m_sW * m_cW) * (2.*flavs[m_if1].IsoWeak()
-          - 2.*flavs[m_if1].Charge() * m_sW * m_sW);
-
-  m_F_R = -m_I * sqrt(4 * M_PI * m_alpha) / (2.*m_sW * m_cW) * (-2.*flavs[m_if1].Charge() * m_sW * m_sW);
-  m_cL = -m_I * sqrt(4 * M_PI * m_alpha) / (2.*m_sW * m_cW) * (2.*m_flavs[1].IsoWeak()
-         - 2.*m_flavs[1].Charge() * m_sW * m_sW) / m_norm;
-  m_cR = -m_I * sqrt(4 * M_PI * m_alpha) / (2.*m_sW * m_cW) * (-2.*m_flavs[1].Charge() * m_sW * m_sW) / m_norm;
   m_zeta = {1, 1, 0, 0};
   m_eta = {0, 0, 1, 0};
   m_b  = {0.0,  0.8723e0, -0.7683e0, 0.3348e0};
@@ -237,7 +210,6 @@ void Acraic_Base::RegisterDefaults()
   // false: tree-level couplings in ACRAIC's hand-coded Born; the weak virtual
   // comes from the loop provider (ACRAIC_Virtual: auto/external)
   s["WEAK"].SetDefault(false);
-  s["COMIX_REAL"].SetDefault(true);
   /*
       COMIX_REAL_FLIP  < 0  derive the fermion bits from the Born and take
                             the photon bit from COMIX_REAL_PHOTON_FLIP
@@ -248,30 +220,12 @@ void Acraic_Base::RegisterDefaults()
   s["COMIX_REAL_PHOTON_FLIP"].SetDefault(1);
   s["COMIX_REAL_NORM"].SetDefault(-1.);
   /*
-    Let the Comix amplitude be used above one photon. OFF: the exact n-photon
-    amplitude is not infrared subtracted and carries soft content that exp(Y)
-    and the crude S-factors already hold, so it is a different matching scheme
-    rather than an extension of this one. Kept reachable because the machinery
-    is in place and the comparison is worth being able to make.
-  */
-  s["COMIX_REAL_MULTIPHOTON"].SetDefault(false);
-  /*
-    Take the one-photon real from Comix once per PHOTON, at every
-    multiplicity, instead of once per event with every photon attached. This
-    is the structure ACRAIC actually has - beta_1 is a sum over photons - and it
-    needs only the one-photon process, which always exists.
-  */
-  s["COMIX_REAL_PER_PHOTON"].SetDefault(false);
-  /*
     ACRAIC: TNP_STREAMS (default false): per-event theory-nuisance-parameter
     templates, one named weight per beta-hat class (YFS_Handler:
     ACRAIC_TNP1_* at O(alpha), ACRAIC_TNP2_* at ORDER 2; Acraic_Tnp.C). The
     nominal weight is untouched.
   */
   s["TNP_STREAMS"].SetDefault(false);
-  s["BETA1_PARTITION_CHECK"].SetDefault(0);  // @@@ B1PART
-  s["BETA1_CLOSURE"].SetDefault(0);          // @@@ B1CLOSE
-  s["CLOSURE_1PHOT"].SetDefault(0);          // @@@ CLOS1
   s["BETA1_XCUT"].SetDefault(1e-3);          // beta_1 soft threshold
   /*
     NEXT_TO_SOFT_FLUX (default true): a photon that gets no beta_1 in any
@@ -279,14 +233,6 @@ void Acraic_Base::RegisterDefaults()
     carries the next-to-soft flux of its stage.
   */
   s["NEXT_TO_SOFT_FLUX"].SetDefault(true);
-  s["BETA1_TRACE"].SetDefault(0);            // @@@ B1TRACE on the dump event
-  /*
-    Heavy-event trace: > 0 runs the beta_1 trace on EVERY event into a buffer
-    that YFS_Handler prints only when rho_1/rho_crude exceeds this value,
-    together with the event's legs and photons (@@@ HEAVY). Costly (one extra
-    Born and M_1 per photon per partition); diagnostics only.
-  */
-  s["TRACE_FACTOR_ABOVE"].SetDefault(0.);
   /*
     x_gamma = 2E/sqrt(s) below which a photon is not enumerated in the
     partition sum but fixed to the stage with the largest eikonal 
@@ -414,7 +360,6 @@ void Acraic_Base::RegisterDefaults()
     stage: unchanged.
   */
   s["BETA1_DRESSED_FSR"].SetDefault(false);
-  s["BETA1_BORNLEGS"].SetDefault(1);         // 1 = reduced, 0 = physical
 
   s["NO_PSEUDOFLUX"].SetDefault(pseudoflux::rho0_only);
   /*
@@ -428,17 +373,6 @@ void Acraic_Base::RegisterDefaults()
     theta. Beyond 2 -> 2 the generator's point was already used.
   */
   s["CRUDE_BORN_LEGS"].SetDefault(crudebornlegs::generator);
-  s["SOFT_NORM_CHECK"].SetDefault(0);        // @@@ SOFTNORM
-  s["SOFT_LIMIT_TEST"].SetDefault(0);        // @@@ SOFTLIM
-  s["BETA1_COMPARE"].SetDefault(0);          // @@@ B1CMP
-  s["SFAC_CALIB"].SetDefault(0);             // @@@ SFACCAL
-  // How many events the soft probe walks down the lambda ladder. Each rung
-  // costs a Comix evaluation and perturbs the random sequence, so it is a
-  // diagnostic budget, not something to leave large.
-  s["SOFT_PROBE_EVENTS"].SetDefault(10);
-  // @@@ PARTBORN: the partition Born against the Born at the configuration
-  // that realises the partition's scale.
-  s["PARTITION_BORN_CHECK"].SetDefault(0);
   /*
     Take the partition Born from Comix instead of the hand-coded spinor
     algebra. That algebra is the 2 -> 2 specific part of ACRAIC, so this is the
@@ -462,28 +396,13 @@ void Acraic_Base::RegisterDefaults()
     Z-return event at 161 GeV before (point harness against KKMC).
   */
   s["ISR_VERTEX_AT_S"].SetDefault(true);
-  // @@@ BORNALIGN: is the Comix -> ACRAIC Born alignment scale independent?
-  s["BORN_ALIGN_CHECK"].SetDefault(0);
-  // @@@ BETA1: the Comix hard remainder against the hand-coded one, vs E_gamma
-  s["BETA1_CHECK"].SetDefault(0);
-  // Hand Comix ACRAIC's own (non-conserving) beta_1 arguments rather than a
-  // mapped conserving configuration. Needs COMIX: MOMENTUM_PROJECTION: 0.
-  s["COMIX_REAL_ACRAIC_ARGS"].SetDefault(false);
-  // Write the |beta_1|/beta_0 vs E_gamma scan (the real-validation figure).
-  s["BETA1_SCAN"].SetDefault(0);
-  // @@@ VIRTPART: does the virtual factor V(h) depend on the partition?
-  s["VIRT_PARTITION_CHECK"].SetDefault(0);
   /*
     Diagnostics. All off by default,
   */
-  s["BORNNORM_CHECK"].SetDefault(0);   // @@@ BORNANG, Born normalisation
   s["PIN_PHOTON_HEL"].SetDefault(0);   // pin photon helicity (+1/-1) for sums
   s["DUMP_XMIN"].SetDefault(0.0);      // min x_gamma for the point dump
   s["DUMP_NPHOT"].SetDefault(1);       // photon multiplicity to dump at
   s["DUMP_XMIN_EACH"].SetDefault(0.0); // min x_gamma of EVERY dumped photon
-  s["COMIX_CHECK"].SetDefault(0);      // @@@ ACRAICCX, hand-coded vs Comix
-  s["GOLDEN"].SetDefault(0);           // @@@ ACRAICGOLD, regression stream
-  s["WEIGHT_PROBE"].SetDefault(0);     // @@@ ACRAICWT, what makes a heavy event
   /*
     The perturbative order of the ACRAIC amplitude. 1 (default): beta_0 +
     beta_1
@@ -565,10 +484,6 @@ void Acraic_Base::RegisterDefaults()
     propagator in every amplitude of the partition sum (Acraic_Resonance.C).
   */
   s["RESONANCE_EXPONENTIATION"].SetDefault(acraicresexp::automatic);
-  s["RESONANCE_EXPONENTIATION_PROBE"].SetDefault(0);
-  s["BETA2_CLOSURE"].SetDefault(0);    // @@@ B2CLOS, n = 2 closure
-  s["BETA2_SOFT_TEST"].SetDefault(0);  // @@@ B2SOFT, soft limits (N events)
-  s["BETA2_TRACE"].SetDefault(0);      // @@@ B2TRACE, per pair and partition
   s["KKMC_FLUX_EMULATION"].SetDefault(0); // diagnostic, see Acraic_Base.H
 }
 
@@ -617,7 +532,6 @@ void Acraic_Base::MakeProp(bool resonance)
   m_propG = 1. / Complex(m_sp,0);
   if (m_onlyz)  m_propG = 0;
   if (m_onlyg)  m_propZ = 0;
-  m_prop =  m_propZ + m_propG;
 }
 
 
@@ -638,7 +552,6 @@ void Acraic_Base::MakePropT(const Vec4D_Vector &p)
 void Acraic_Base::MakeEWFF(double svar, double costhd)
 {
   m_kapE = m_kapF = m_kapEF = Complex(1., 0.);
-  m_rhoEW = m_gamVPi = Complex(1., 0.);
   m_vvcor = Complex(1., 0.);
   if (!m_weak) {           // tree couplings == KKMC with KeyElw = 0
     m_ve = (m_t3e2 - m_qesw) / m_norm;
@@ -769,7 +682,6 @@ void Acraic_Base::MakeRho() {
   m_result0x   = m_result01;
   m_result0v   = m_result0;
   m_vonbeta1   = false;
-  ProbeMakeRho(nh);
   /*
     ORDER 2: A_2 = A_1 + the beta_2 sum, and the weight (m_result) becomes
     rho_2. m_result01/m_resultV are what an external virtual composes with
@@ -839,7 +751,6 @@ void Acraic_Base::MakeRho() {
   m_rhobvsum += m_resultbv;
   m_rhobrsum += m_resultbr;
   m_rhocrudsum += m_rhocrud;
-  ++m_rhon;
 }
 
 

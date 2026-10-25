@@ -161,7 +161,7 @@ public:
   //! YFS: EXCHANGE_T_MIN_FINAL, GeV^2: the same bound on the physical event
   double m_exchange_tmin_final = 0.;
   double m_alpha, m_alpi, m_hardmin, m_gp, m_g;
-  bool m_CalForm, m_isr_debug, m_fsr_debug, m_coulomb;
+  bool m_isr_debug, m_fsr_debug, m_coulomb;
   //! YFS: COULOMB_HIGHER_ORDER (flat four-fermion W pairs, see YFS_Options.H)
   coulombho::code m_coulombho;
   double m_photonMass, m_oneloop, m_born, m_isrWeight, m_fsrWeight, m_rescale_alpha;
@@ -240,7 +240,7 @@ public:
   //! (Real_Correction with two photons). Read in RegisterSettings; it was
   //! registered but never read, so the dump ran on uninitialised memory.
   int  m_check_rr = 0;
-  int m_rmode, m_qedmode, m_kkmcAngles, m_mingammaN;
+  int m_rmode, m_qedmode, m_kkmcAngles;
   bool m_virt_sub;
   // m_no_born_setting is the card value (YFS: No_Born), a global override.
   // m_no_born is the effective flag: the override OR'd with the per-process
@@ -254,8 +254,6 @@ public:
   bool m_nlo_weight_breakdown;
   bool m_ladder_weights;
   int m_dump_dipoles;
-  //! YFS: CHECK_INVARIANTS - run YFS_Handler::CheckInvariants each event.
-  bool m_check_invariants;
   int m_check_real_sub, m_check_rr_sub, m_check_virt_born;
   bool m_no_born, m_no_subtraction, m_noflux, m_massless_sub;
   //! Meaning of the YFS: Check_Real_Sub runcard integer (m_check_real_sub).
@@ -303,8 +301,6 @@ public:
   bool m_realvirt = false, m_rrtool = false, m_vvtool = false;
   bool m_skipNegWeights;
   bool m_nlo_fsr_photons;
-  bool m_fb_analysis;
-  int m_fb_kf;
   fluxmode::code m_flux_mode;
   bool m_hidephotons, m_eex_virt;
   int m_photon_split, m_int_nlo;

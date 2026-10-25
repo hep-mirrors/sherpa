@@ -10,11 +10,10 @@ set(YFSMain_SOURCES Beta0_2.C
                  FSR.C
                  ISR.C
                  YFS_Base.C
-                 YFS_FB_Analysis.C
                  YFS_Form_Factor.C
                  YFS_Handler.C
-                 YFS_Handler_Checks.C
                  YFS_Weight_Builder.C
+                 YFS_Weight_Checks_LO.C
                  YFS_Options.C)
 
 set(YFSMain_HEADERS Beta0_2.H
@@ -31,7 +30,6 @@ set(YFSMain_HEADERS Beta0_2.H
                  FSR.H
                  ISR.H
                  YFS_Base.H
-                 YFS_FB_Analysis.H
                  YFS_Form_Factor.H
                  YFS_Handler.H
                  YFS_Weight_Builder.H

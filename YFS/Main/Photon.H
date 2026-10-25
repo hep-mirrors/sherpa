@@ -19,10 +19,8 @@ namespace YFS {
 
     // -- origin -------------------------------------------------------------
     const Dipole *Dip() const { return p_dipole; }
-    dipoletype::code Origin() const { return p_dipole->m_type; }
     bool IsISR() const { return p_dipole->m_type == dipoletype::initial; }
     bool IsFSR() const { return p_dipole->m_type == dipoletype::final;   }
-    bool IsIF()  const { return p_dipole->m_type == dipoletype::ifi;     }
 
     // -- generation record --------------------------------------------------
     double m_crude   = 0.;

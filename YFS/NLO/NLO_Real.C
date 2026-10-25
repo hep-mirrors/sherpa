@@ -88,9 +88,6 @@ double NLO_Base::CalculateReal() {
   m_real_hard1 = 0.;
   m_real_hard2 = 0.;
   m_ifi_prod = 1.;
-  m_bpmc_hardx = 0.; m_bpmc_hardG = 1.; m_bpmc_hardR = 0.; m_bpmc_hardsub = 0.;
-  static const double trace_thr(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_TRACE"].Get<double>());
-  m_realtrace.str(""); m_realtrace.clear();
   double prodw(1.);
   m_rvinfo.clear();
   m_rrphot.clear();
@@ -102,7 +99,6 @@ double NLO_Base::CalculateReal() {
     m_lastrvinfo = RVPointInfo();
     if (RRFromSingles()) m_rrphot.push_back(RRPhotonInfo());   // factor 1 if skipped
     m_lastrrinfo = RRPhotonInfo();
-    DumpPhoton(g);   // YFS: PHOTON_DUMP (diagnostic, NLO_Checks.C)
     // the photons IFIRealRatio would reweight, if CalculateReal(k) reaches it
     const bool ifi_eligible(m_ifireal && m_submode == submode::global
                             && k.E() > p_dipoles->IFIOmega());
@@ -126,17 +122,7 @@ double NLO_Base::CalculateReal() {
       CheckRealCollinearSub(k, 0);
     }
     const double ifi_before(m_ifi_prod);
-    double contrib;
-    if (g.IsISR() && (m_isr_debug || m_fsr_debug)) {
-      contrib = CalculateReal(k);
-      double coll = p_dipoles->GetDipoleII().Beta1(k, m_betaorder);
-      coll /= p_dipoles->GetDipoleII().Eikonal(k);
-      if (contrib != 0)
-        m_histograms2d["REAL_COLL_RATIO"]->Insert(k.E(),
-                                                  coll * m_born / contrib);
-    } else {
-      contrib = CalculateReal(k);
-    }
+    const double contrib(CalculateReal(k));
     if (ifi_eligible && !m_ifi_applied) CountIFISkip();
     if (RVIsRemainder()) m_rvinfo.back() = m_lastrvinfo;
     if (RRFromSingles()) m_rrphot.back() = m_lastrrinfo;
@@ -154,7 +140,6 @@ double NLO_Base::CalculateReal() {
     }
     if (m_check_real_sub == CHECK_REAL_SUB_SCATTER)
       RecordSubScatter(k, contrib, g.IsISR() ? "realISR" : "realFSR", m_eikeex);
-    DumpPhotonContribution(g, contrib);   // YFS: PHOTON_DUMP (NLO_Checks.C)
     g.m_beta10 = contrib;
   }
   HardestBetas(m_photons, [](const YFS::Photon &g) { return g.beta10(); },
@@ -178,15 +163,6 @@ double NLO_Base::CalculateReal() {
   if (useprod && m_born != 0. && !IsBad(prodw)
       && (!m_rrtool || RRFromSingles()) && (!m_realvirt || RVIsRemainder()))
     real = m_born*(prodw - 1.);
-  if (trace_thr > 0. && m_born != 0. && std::abs(1. + real/m_born) > trace_thr) {
-    Vec4D Q;
-    for (size_t i(2); i < m_plab.size(); ++i) Q += m_plab[i];
-    std::cerr<<"@@@ RTRACE event nphot="<<m_photons.size()
-             <<" BRfactor="<<(1. + real/m_born)
-             <<" sqrt_s="<<sqrt(m_s)<<" sqrt_sp="<<Q.Mass()
-             <<" born="<<m_born<<" real="<<real<<"\n"
-             <<m_realtrace.str()<<"@@@ RTRACE end"<<std::endl;
-  }
   return real;
 }
 
@@ -270,24 +246,6 @@ static bool PointFSRDensity(const Vec4D &kpt, YFS::Define_Dipoles &dips,
   return true;
 }
 
-/*
-  YFS: ME_PROBE: the photon-lepton angle of g in q, in units of that
-  lepton's m/E, minimised over the charged leptons; el receives the energy
-  of the lepton that minimises it.
-*/
-static double DeadConeAngle(const Vec4D_Vector &q, const Vec4D &g,
-                            const Flavour_Vector &flavs, double &el)
-{
-  double best(1e99); el = 0.;
-  for (size_t i(2); i < q.size() && i < flavs.size(); ++i) {
-    if (!flavs[i].IsChargedLepton()) continue;
-    const double ct(Vec3D(q[i])*Vec3D(g)/(Vec3D(q[i]).Abs()*Vec3D(g).Abs()));
-    const double th(acos(Max(-1., Min(1., ct)))/(flavs[i].Mass()/q[i][0]));
-    if (th < best) { best = th; el = q[i][0]; }
-  }
-  return best;
-}
-
 // S~_II of photon k on the generation legs, the event's pre-emission (Born)
 // momenta; 0 without an initial-state dipole
 static double GenerationEikonalII(YFS::Define_Dipoles &dips, const Vec4D &k)
@@ -358,13 +316,11 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
     msg_Debugging() << METHOD << " momentum conservation failed"
                     << " k.E=" << rt.k.E() << " dip_mass=" << (rt.p[2]+rt.p[3]).Mass() << "\n";
     msg_Error() << "Momentum Conservation fails in " << METHOD << "\n";
-    if (m_isr_debug || m_fsr_debug) FillPointHistograms(rt, "");
     m_real_exit = real_exit::momentum_conservation;
     return 0;
   }
   if ((rt.p[2] + rt.p[3]).Mass() < massmin)
     massmin = (rt.p[2] + rt.p[3]).Mass();
-  if (m_isr_debug || m_fsr_debug) FillPointHistograms(rt, "_pass");
   if (!RealMEUsable(rt)) {
     m_real_exit = real_exit::unusable_me;
     return 0;
@@ -376,7 +332,6 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
   if (RealSubEik() == realsubeik::multichannel_prefsr && !PhotonIsFSR(rt.kk)
       && p_bornproc != nullptr && Sub8Part() != 1)
     PreFSRMultichannelISRPhoton(rt);
-  Sub8Trace(rt);
   AssembleBeta1(rt);
 
   /*
@@ -397,25 +352,18 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
   */
   if (RealAlpha0()) rt.tot *= m_rescale_alpha;
 
-  RecordHardestPhoton(rt);
-  RealTrace(rt);
-  RealStabilityProbe(rt);
   IFIRealRatio(rt);
 
   msg_Debugging() << METHOD << " submode=" << m_submode
                   << " r*flux=" << rt.r*rt.flux
                   << " sub=" << rt.subloc * m_born / m_rescale_alpha
                   << " tot=" << rt.tot << "\n";
-  if (m_isr_debug)
-    m_histograms2d["Real_Flux"]->Insert(
-        rt.flux, sqrt(p_dipoles->GetDipoleII().Sprime()));
 
   if (m_no_subtraction) {
     msg_Debugging() << METHOD << " no_subtraction: returning r/subloc=" << rt.r/rt.subloc << "\n";
     return rt.r / rt.subloc;
   }
   if (IsBad(rt.tot)) ReportBadReal(rt);
-  if (m_isr_debug || m_fsr_debug) FillRealHistograms(rt);
   TrackRealAverage(rt.tot);
 
   if (raw) {
@@ -481,23 +429,7 @@ void NLO_Base::RealME(RealTerms &rt)
 {
   const double norm = 2. * pow(2 * M_PI, 3);
   Vec4D_Vector &p(rt.p);
-  const Vec4D &k(rt.k), &kk(rt.kk);
-  /*
-    YFS: ME_PROBE - for one final-state photon, the photon-lepton angle in
-    units of that lepton's m/E and the lepton energy, in the event (post-
-    emission legs, lab photon) and at the point handed to Calc_R, before and
-    after CheckMasses; and the real it returns. Dead-cone referee against
-    ACRAIC, which evaluates Comix on the event legs.
-  */
-  static const bool meprobe(ATOOLS::Settings::GetMainSettings()["YFS"]
-                            ["ME_PROBE"].SetDefault(0).Get<int>() != 0);
-  double pe_ev(0.), pe_pre(0.), th_ev(-1.), th_pre(-1.);
-  const bool probe_this(meprobe && PhotonIsFSR(kk) && m_photons.size() == 1);
-  if (probe_this) {
-    th_ev  = DeadConeAngle(m_postlab, kk, m_flavs, pe_ev);
-    th_pre = DeadConeAngle(p, k, m_flavs, pe_pre);
-  }
-  const Vec4D_Vector p_before(p);
+  const Vec4D &kk(rt.kk);
   CheckMasses(p, 1);
 
   rt.pp = p;
@@ -507,20 +439,6 @@ void NLO_Base::RealME(RealTerms &rt)
   p_nlodipoles->MakeDipoles(m_flavs, rt.pp, m_plab);
 
   double r = p_real->Calc_R(p) / norm;
-  if (probe_this) {
-    double pe_post(0.);
-    const double th_post(DeadConeAngle(p, p.back(), m_flavs, pe_post));
-    double dmax(0.);
-    for (size_t i(0); i < p.size(); ++i)
-      dmax = Max(dmax, (p[i] - p_before[i]).PSpat() + std::abs((p[i] - p_before[i])[0]));
-    std::ostringstream o;
-    o<<std::setprecision(10)<<"@@@ MEPROBE x="<<2.*kk.E()/sqrt(m_s)
-     <<" th_ev="<<th_ev<<" th_pt="<<th_pre<<" th_stretch="<<th_post
-     <<" El_ev="<<pe_ev<<" El_pt="<<pe_pre<<" El_stretch="<<pe_post
-     <<" dstretch="<<dmax<<" r/B="<<(m_born != 0. ? r/m_born : 0.)
-     <<" kev="<<kk<<" kpt="<<p.back()<<"\n";
-    std::cerr<<o.str();
-  }
   /*
     Identical photons in the Born final state (YFS: REAL_BORN_PHOTON_SYM).
 
@@ -633,7 +551,7 @@ void NLO_Base::RealSubtraction(RealTerms &rt)
   // CalculateRealSub is the plain eikonal; the symmetry factor is on r above
   rt.subloc = p_nlodipoles->CalculateRealSub(rt.k);
   rt.subb   = p_dipoles->CalculateRealSubEEX(rt.kk);
-  rt.flux0 = rt.flux; rt.subloc0 = rt.subloc; rt.subb0 = rt.subb;   // SUB8_TRACE
+  rt.flux0 = rt.flux; rt.subloc0 = rt.subloc; rt.subb0 = rt.subb;
   /*
     Which eikonal beta_1 subtracts (YFS: REAL_SUB_EIK, name or old integer;
     default multichannel_prefsr (8) since 2026-09-26, see below). Each name
@@ -946,7 +864,6 @@ void NLO_Base::SubEikPreFSRMultichannelFSR(RealTerms &rt)
     subb   = g;
     rt.flux = 1.;
   }
-  m_sub8[0] = sII; m_sub8[1] = sFF; m_sub8[2] = bI; m_sub8[3] = s2;
 }
 
 /*
@@ -999,15 +916,6 @@ void NLO_Base::FluxOnFSRCrude(RealTerms &rt)
     const double sFF(GenerationEikonalFF(*p_dipoles, kk));
     if (sII + F*sFF > 0.) { rt.subb = sII + F*sFF; rt.flux = 1.; m_eikeex = rt.subb; }
   }
-}
-
-// ISR_DEBUG / FSR_DEBUG: the photon and the point's first pair, for every
-// point (suffix "") or for those that conserve momentum ("_pass")
-void NLO_Base::FillPointHistograms(const RealTerms &rt, const std::string &suffix)
-{
-  m_histograms1d["k_E" + suffix]->Insert(rt.k.E());
-  m_histograms1d["k_pt" + suffix]->Insert(rt.k.PPerp());
-  m_histograms1d["dip_mass" + suffix]->Insert((rt.p[2] + rt.p[3]).Mass());
 }
 
 // false (and CalculateReal returns 0) for a vanishing or non-finite real
@@ -1075,30 +983,17 @@ void NLO_Base::MultichannelISRPhoton(RealTerms &rt)
 {
   const Vec4D &k(rt.k), &kk(rt.kk);
   double &subb_loc(rt.subb_loc), &subloc(rt.subloc), &subb(rt.subb);
-  const double r(rt.r), flux(rt.flux);
+  const double flux(rt.flux);
   double bF(1.), s2(1.);
   if (ReducedBornAlt(kk, +1, bF, s2)) {
     const double f(flux*bF);
     const double sFFpt(m_map_reduced ? PointEikonalFF(*p_nlodipoles, k)
                                      : GenerationEikonalFF(*p_dipoles, kk));
-    static const int t7(ATOOLS::Settings::GetMainSettings()["YFS"]
-                        ["SUB7_TRACE"].SetDefault(0).Get<int>());
-    static long n7(0);
-    const double sb0(subb_loc), sl0(subloc);
     if (!IsBad(f) && !IsBad(sFFpt)) {
       subb_loc += (f - 1.)*sFFpt;
       subloc   += (f - 1.)*sFFpt;
       if (!m_map_reduced) subb += (f - 1.)*sFFpt;
     }
-    if (t7 && n7 < t7) { ++n7;
-      Vec4D P(m_bornMomenta[0] + m_bornMomenta[1]);
-      std::ostringstream o;
-      o<<"@@@ SUB7 x="<<2.*kk.E()/sqrt(m_s)<<" flux="<<flux<<" bF="<<bF<<" s2="<<s2
-       <<" f="<<f<<" sFFpt="<<sFFpt<<" subb_loc "<<sb0<<"->"<<subb_loc
-       <<" subloc "<<sl0<<"->"<<subloc<<" reduced="<<(m_map_reduced?1:0)
-       <<" sqrtP2="<<P.Mass()<<" r*flux/B="<<r*flux/m_born
-       <<" bracket="<<(r*flux/m_born - subloc)/subb_loc<<"\n";
-      std::cerr<<o.str(); }
   }
 }
 
@@ -1132,8 +1027,7 @@ void NLO_Base::PreFSRMultichannelISRPhoton(RealTerms &rt)
     const double r2(Rp.Abs2());
     if (r2 > 0.) R = sqrt(r2/Q.Abs2())*Q;
   }
-  double &bF(rt.sub8_bF), &f(rt.sub8_f);
-  bF = 0.;
+  double bF(0.), f(0.);
   if (!PreFSRBornRatio(R, bF)) bF = 0.;
   f = rt.flux*bF;
   /*
@@ -1157,79 +1051,10 @@ void NLO_Base::PreFSRMultichannelISRPhoton(RealTerms &rt)
   const double nb(subb_loc + (f - 1.)*sFFpt);
   if ((isrred || !m_map_reduced) && !IsBad(nb) && nb > 0. && subb_loc > 0.) {
     const double scale(nb/subb_loc);
-    rt.sub8_scale = scale;
     subb_loc = nb;
     subloc  *= scale;
     if (!m_map_reduced) subb *= scale;
   }
-}
-
-/*
-  YFS: SUB8_TRACE n: "@@@ SUB8" for the first n photons under REAL_SUB_EIK
-  multichannel_prefsr, both labels, with the terms before (flux0,
-  subloc0, subb0) and after the scheme; clears the m_sub8 scratch the FSR
-  half left for it.
-*/
-void NLO_Base::Sub8Trace(const RealTerms &rt)
-{
-  const bool se8(RealSubEik() == realsubeik::multichannel_prefsr);
-  static const int t8(ATOOLS::Settings::GetMainSettings()["YFS"]
-                      ["SUB8_TRACE"].SetDefault(0).Get<int>());
-  static long n8(0);
-  if (se8 && t8 && n8 < t8) { ++n8;
-    const Vec4D &kk(rt.kk);
-    const bool fsr(PhotonIsFSR(kk));
-    const double r(rt.r), flux(rt.flux), subloc(rt.subloc), subb(rt.subb),
-                 subb_loc(rt.subb_loc), flux0(rt.flux0), subloc0(rt.subloc0),
-                 subb0(rt.subb0), bF(rt.sub8_bF), f(rt.sub8_f), scale(rt.sub8_scale);
-    double me2ref(-1.);
-    Vec4D_Vector pr;
-    if (PreFSRBornPoint(PreFSRSystem(), pr)) me2ref = BornME2At(pr);
-    std::ostringstream o;
-    o<<"@@@ SUB8 fsr="<<(fsr?1:0)<<" x="<<2.*kk.E()/sqrt(m_s)
-     <<" nph="<<m_photons.size()<<" mpre="<<PreFSRSystem().Mass()
-     <<" flux="<<flux<<" r*flux/B="<<r*flux/m_born
-     <<" subloc="<<subloc<<" subb="<<(m_map_reduced?subb_loc:subb)
-     <<" bracket="<<(r*flux/m_born - subloc)/(m_map_reduced?subb_loc:subb)
-     <<" isr:bF="<<bF<<" f="<<f<<" scale="<<scale
-     <<" fsr:sII="<<m_sub8[0]<<" sFF="<<m_sub8[1]<<" bI="<<m_sub8[2]<<" s2="<<m_sub8[3]
-     <<" Bref/m_born="<<(m_born>0.?me2ref/m_born:-1.)
-     <<" bracket0="<<(r*flux0/m_born - subloc0)/(m_map_reduced?subb_loc/scale:subb0)
-     <<" flux0="<<flux0<<" subloc0="<<subloc0<<" subb0="<<subb0
-     <<" reduced="<<(m_map_reduced?1:0);
-    // the photon's dead-cone angle to the post-emission leptons, and the
-    // hardest ISR photon and other FSR photon
-    double thl(1e9);
-    for (size_t i(2); i < m_postlab.size() && i < m_flavs.size(); ++i) {
-      if (!m_flavs[i].IsChargedLepton()) continue;
-      const Vec4D &lq(m_postlab[i]);
-      const double ct(Vec3D(lq)*Vec3D(kk)/(Vec3D(lq).Abs()*Vec3D(kk).Abs()));
-      thl = Min(thl, acos(Max(-1., Min(1., ct)))/(lq.Mass()/lq[0]));
-    }
-    double xisr(0.), xfsr(0.);
-    for (const YFS::Photon &gph : m_photons) {
-      const double xx(2.*gph.K()[0]/sqrt(m_s));
-      if (gph.IsFSR()) { if (gph.K() != kk) xfsr = Max(xfsr, xx); }
-      else xisr = Max(xisr, xx); }
-    o<<" thl="<<thl<<" xisrmax="<<xisr<<" xfsrother="<<xfsr;
-    // which legs the FF eikonal sits on: generation (GetBornMomenta),
-    // pre-FSR lab (m_plab), post-FSR lab (m_postlab)
-    double sg(0.), sl(0.), sp(0.), dmax(0.);
-    for (auto &D : p_dipoles->GetDipoleFF()) {
-      const int l(D.Left()), rr(D.Right());
-      sg += D.Eikonal(kk, D.GetBornMomenta(0), D.GetBornMomenta(1));
-      if (l < (int)m_plab.size() && rr < (int)m_plab.size()) {
-        sl += D.Eikonal(kk, m_plab[l], m_plab[rr]);
-        dmax = Max(dmax, (D.GetBornMomenta(0) - m_plab[l]).PSpat()
-                         + std::abs((D.GetBornMomenta(0) - m_plab[l])[0])); }
-      if (l < (int)m_postlab.size() && rr < (int)m_postlab.size())
-        sp += D.Eikonal(kk, m_postlab[l], m_postlab[rr]);
-    }
-    o<<" sFFgen="<<sg<<" sFFpre="<<sl<<" sFFpost="<<sp<<" |dBorn|="<<dmax;
-    o<<"\n";
-    std::cerr<<o.str();
-  }
-  m_sub8[0] = m_sub8[1] = m_sub8[2] = m_sub8[3] = -1.;
 }
 
 /*
@@ -1259,105 +1084,6 @@ void NLO_Base::AssembleBeta1(RealTerms &rt)
     msg_Error() << METHOD << " unknown YFS subtraction mode " << m_submode << "\n";
 }
 
-// WEIGHT_PROBE bookkeeping for the hardest photon of the event: the
-// exact-over-crude ratio before the multichannel share, the subtraction
-// over the denominator (the "1 - sub" floor), and G.
-void NLO_Base::RecordHardestPhoton(const RealTerms &rt)
-{
-  if (rt.kk.E() >= m_bpmc_hardx) {
-    const double den(m_submode == submode::local ? rt.subloc : rt.subb_loc);
-    m_bpmc_hardx = rt.kk.E();
-    m_bpmc_hardG = m_bpmc_lastG;
-    m_bpmc_hardR = (m_born != 0. && den != 0.) ? rt.r_nomc*rt.flux/(m_born*den) : 0.;
-    m_bpmc_hardsub = (den != 0.) ? rt.subloc/(m_rescale_alpha*den) : 0.;
-  }
-}
-
-/*
-  YFS: REAL_TRACE: one line per photon into m_realtrace, which
-  CalculateReal() prints for events whose Born+real factor exceeds the
-  threshold.
-*/
-void NLO_Base::RealTrace(const RealTerms &rt)
-{
-  static const double tr(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_TRACE"].Get<double>());
-  if (tr > 0.) {
-    const Vec4D &k(rt.k), &kk(rt.kk);
-    const Vec4D_Vector &p(rt.p);
-    const double r(rt.r), flux(rt.flux), subloc(rt.subloc), subb(rt.subb),
-                 subb_loc(rt.subb_loc), tot(rt.tot);
-    // The lab photon (kk), the mapped photon (k), the reduced beams of the
-    // (n+1)-body point, the real ME and the two eikonals it is compared to.
-    Vec4D Q;
-    for (size_t i(2); i < m_plab.size(); ++i) Q += m_plab[i];
-    double cmin(2.);
-    for (size_t i(0); i < 2; ++i) {
-      const double ct(Vec3D(m_plab[i]) * Vec3D(kk) / (Vec3D(m_plab[i]).Abs() * Vec3D(kk).Abs()));
-      cmin = std::min(cmin, 1. - std::fabs(ct));
-    }
-    const double S(subloc * m_born / m_rescale_alpha);
-    const double sII(GenerationEikonalII(*p_dipoles, kk));
-    const double sFF(GenerationEikonalFF(*p_dipoles, kk));
-    m_realtrace<<std::setprecision(6)
-               <<"  gam Elab="<<kk.E()<<" x="<<2.*kk.E()/sqrt(m_s)
-               <<" SII="<<sII<<" SFF="<<sFF<<" fsr="<<(PhotonIsFSR(kk)?1:0)
-               <<" 1-|cos|="<<cmin
-               <<" Emap="<<k.E()
-               <<" sqrt_sj="<<(p[0]+p[1]).Mass()
-               <<" sqrt_sp="<<Q.Mass()
-               <<" M_ff="<<(p[2]+p[3]).Mass()
-               <<" r="<<r<<" flux="<<flux<<" rflux="<<r*flux
-               <<" S~loc*B="<<S<<" S~loc="<<subloc<<" S~crude="<<subb
-               <<" S~crude_pt="<<subb_loc<<" reduced="<<(m_map_reduced?1:0)
-               <<" Bpp/B="<<(m_born>0.?BornME2At(rt.pp)/m_born:-1.)
-               <<" born="<<m_born
-               <<" beta1/S~="<<tot<<" beta1/(S~B)="<<(m_born!=0.?tot/m_born:0.)
-               <<" failcut="<<(p_real->FailCut()?1:0)
-               <<"\n     klab="<<kk<<" kmap="<<k
-               <<"\n     Pa="<<m_bornMomenta[0]<<" Pb="<<m_bornMomenta[1]
-               <<" IIborn0="<<p_dipoles->GetDipoleII().GetBornMomenta(0)
-               <<"\n     pa_j="<<p[0]<<" pb_j="<<p[1]<<" Qlab="<<Q
-               <<"\n";
-  }
-}
-
-// YFS: REAL_STAB: "@@@ RSTAB", how deep the cancellation in r flux - S B
-// goes and how far the mapped photon moved
-void NLO_Base::RealStabilityProbe(const RealTerms &rt)
-{
-  static const bool ds(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_STAB"].Get<int>()!=0);
-  if (ds) {
-    const Vec4D &k(rt.k), &kk(rt.kk);
-    const double r(rt.r), flux(rt.flux), subloc(rt.subloc), subb(rt.subb), tot(rt.tot);
-    const double S(subloc * m_born / m_rescale_alpha);
-    const double num(r * flux - S);
-    const double subb_k(p_dipoles->CalculateRealSubEEX(k));
-    const double subloc_kk(p_nlodipoles->CalculateRealSub(kk));
-    const double dk((k-kk).PSpat()/(kk.PSpat()>0.?kk.PSpat():1.));
-    const double coskk(Vec3D(k)*Vec3D(kk)
-                       /(Vec3D(k).Abs()*Vec3D(kk).Abs()));
-    double cmin(2.), pkmin(1e300);
-    for (size_t i(0); i < m_plab.size(); ++i) {
-      if (m_flavs[i].Charge() == 0.) continue;
-      const Vec4D &q(m_plab[i]);
-      const double ct(Vec3D(q) * Vec3D(kk) / (Vec3D(q).Abs() * Vec3D(kk).Abs()));
-      cmin = std::min(cmin, 1. - std::fabs(ct));
-      pkmin = std::min(pkmin, (q * kk) / (q.E() * kk.E()));
-    }
-    std::cerr << "@@@ RSTAB x=" << (2. * kk.E() / sqrt(m_s))
-              << " 1-|cos|=" << cmin
-              << " pk/EE=" << pkmin
-              << " Rflux=" << r * flux
-              << " S=" << S
-              << " num=" << num
-              << " depth=" << (num != 0. ? std::fabs(S / num) : -1.)
-              << " tot=" << tot << " born=" << m_born
-              << " subloc=" << subloc << " subb=" << subb
-              << " subb_k=" << subb_k << " subloc_kk=" << subloc_kk
-              << " dk=" << dk << " 1-cos_kkk=" << (1.-coskk)
-              << std::endl;
-  }
-}
 
 /*
   YFS: IFI_Real, Sub_Mode global: the photon's initial-final interference
@@ -1413,18 +1139,6 @@ void NLO_Base::ReportBadReal(const RealTerms &rt)
               << "  R        : " << rt.r << "\n"
               << "  Local  S : " << rt.subloc * m_born << "\n"
               << "  Global S : " << rt.subb << "\n";
-}
-
-// ISR_DEBUG / FSR_DEBUG: the IF eikonal, the real and beta_1 over the photon
-void NLO_Base::FillRealHistograms(const RealTerms &rt)
-{
-  const Vec4D &k(rt.k);
-  const Vec4D_Vector &p(rt.p);
-  m_histograms2d["IFI_EIKONAL"]->Insert(k.Y(), k.PPerp(),
-                                        p_nlodipoles->CalculateRealSubIF(k));
-  m_histograms2d["REAL_SUB"]->Insert((p[0] + p[1]).Mass(), k.E(), rt.tot / m_born);
-  m_histograms2d["REAL"]->Insert(k.E(), k.Theta(), rt.r);
-  m_histograms2d["REAL_SUB"]->Insert(k.E(), k.Theta(), rt.tot);
 }
 
 // the running average of beta_1/S~ over all photons, for the debug line on
@@ -2053,20 +1767,6 @@ double NLO_Base::BornPhotonChannelSum(const Vec4D_Vector &lab,
   std::vector<size_t> gen(nb);
   for (size_t a(0); a < nb; ++a) gen[a] = a;
   const double hgen(hof(gen, false));
-  // YFS: BPMC_TRACE n - the first n events: the Born of the generated
-  // assignment at the reconstructed generator point against m_born (the
-  // generator's own Born; must be 1), and G.
-  static const int bptr(ATOOLS::Settings::GetMainSettings()["YFS"]
-                        ["BPMC_TRACE"].SetDefault(0).Get<int>());
-  static int nbptr(0);
-  if (bptr > 0 && nbptr < bptr) {
-    Vec4D_Vector p;
-    if (GeneratorPointOf(m_flavs, fin0, zs, p) && m_born > 0.) {
-      ++nbptr;
-      std::cerr<<"@@@ BPMC Bgen/m_born="<<BornME2At(p)/m_born
-               <<" sqrt_sp="<<(p[0]+p[1]).Mass()<<" jswap="<<jswap<<std::endl;
-    }
-  }
   double sum(0.);
   int n(0);
   if (hgen > 0.) {
@@ -2120,7 +1820,7 @@ double NLO_Base::BornPhotonChannelSum(const Vec4D_Vector &lab,
 }
 
 double NLO_Base::BornPhotonChannelWeight(const Vec4D &k) {
-  m_bpmc_lastG = 1.; m_bpmc_lastn = 0;
+  m_bpmc_lastn = 0;
   static const bornphotonmc::code mode(ATOOLS::Settings::GetMainSettings()["YFS"]
       ["REAL_BORN_PHOTON_MULTICHANNEL"].SetDefault(bornphotonmc::on)
       .Get<bornphotonmc::code>());
@@ -2135,7 +1835,6 @@ double NLO_Base::BornPhotonChannelWeight(const Vec4D &k) {
   if (j < 0) return 1.;
   const double G(BornPhotonChannelSum(m_plab, isr, p_dipoles->GetDipoleII(), j,
                                       &m_bpmc_lastn));
-  m_bpmc_lastG = G;
   return mode == bornphotonmc::on ? 1./G : 1.;   // report: compute and report only
 }
 

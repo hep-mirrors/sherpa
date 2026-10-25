@@ -213,38 +213,12 @@ double Real_Correction::Calc_R(const ATOOLS::Vec4D_Vector& p)
     // doesn't need to (and shouldn't) re-run the selector itself.
     int rmode = 128 +  2 + 1;
     Weights_Map iR = p_proc->Differential(*p_ampl, Variations_Mode::nominal_only,rmode);
-    /*
-      Comix's per-helicity amplitudes for this same point.
-
-      FillAmplitudes() must follow Differential(), which is what actually
-      evaluates the amplitude (see AddOns/EWSud/Comix_Interface.C:90-96).
-      Spin_Amplitudes is helicity-indexed with SumSquare() summing |A|^2 over
-      all combinations, so the ratio to the Differential is the spin average,
-      flux and symmetry factors - a CONSTANT. Constant across phase space is
-      the validation; drift means the two are not the same object.
-
-      The point of this is ACRAIC: Acraic_Base hand-codes ~600 lines of spinor
-      products and coupling assembly to build exactly these amplitudes, and
-      every ACRAIC bug found so far lived in that layer. If Comix can supply
-      them, that layer goes away.
-    */
-    static const bool campchk(ATOOLS::Settings::GetMainSettings()["YFS"]["COMIX_AMPS"].Get<int>()!=0);
+    // Comix's per-helicity amplitudes for this point (after Differential(),
+    // which evaluates the amplitude)
     if (m_keepamps) {
       std::vector<std::vector<Complex> > cols;
       m_spinamps.clear();
       p_proc->FillAmplitudes(m_spinamps, cols);
-    }
-    if (campchk && iR.Nominal()!=0.0) {
-      std::vector<METOOLS::Spin_Amplitudes> amps;
-      std::vector<std::vector<Complex> > cols;
-      p_proc->FillAmplitudes(amps, cols);
-      double ss(0.);
-      size_t nhel(0);
-      for (size_t a(0); a < amps.size(); ++a) { ss += amps[a].SumSquare(); nhel += amps[a].size(); }
-      std::cerr<<"@@@ CAMP n="<<m_nphotons<<" nampl="<<amps.size()
-               <<" nhel="<<nhel<<" sumsq="<<ss
-               <<" diff="<<iR.Nominal()
-               <<" ratio="<<(ss!=0.? iR.Nominal()/ss : 0.)<<std::endl;
     }
     // gauge-flip error estimator: re-evaluate the same point with the spinor
     // reference axis rotated. The result is gauge invariant analytically, so
@@ -286,50 +260,6 @@ double Real_Correction::Calc_R(const ATOOLS::Vec4D_Vector& p)
     } 
     // double ratio = iR.Nominal()/(m_factor*R);
     if(p_ampl) p_ampl->Delete();
-    // Input-conditioning probe: nudge every momentum component by one ulp and
-    // re-evaluate BOTH generators. This measures the sensitivity of each to the
-    // last representable digit of its input. If both move together the phase
-    // space point itself is under-determined here; if only one moves, that one
-    // is doing something the other is not.
-    static const bool ulpchk(ATOOLS::Settings::GetMainSettings()["YFS"]["ULP_CHECK"].Get<int>()!=0);
-    if (ulpchk && iR.Nominal()!=0.0 && external_real!=0.0) {
-      Vec4D_Vector pu(p);
-      for (size_t j(0);j<pu.size();++j)
-        for (int c(0);c<4;++c)
-          pu[j][c]=std::nextafter(pu[j][c],
-                                  std::numeric_limits<double>::infinity());
-      const double eu(Calc_External(pu));
-      Cluster_Amplitude *au(CreateAmplitude(pu));
-      const double cu(p_proc->Differential
-                      (*au,Variations_Mode::nominal_only,rmode).Nominal());
-      au->Delete();
-      std::cerr<<"@@@ "<<p_cfg->m_tag<<"-ULP comix="<<std::abs(cu/iR.Nominal()-1.0)
-               <<" ol="<<std::abs(eu/external_real-1.0)
-               <<" refdev="<<std::abs(iR.Nominal()/external_real-1.0)
-               <<std::endl;
-    }
-    // Rotation-invariance self-check: the ME is a Lorentz scalar, so a rigid
-    // rotation must leave it unchanged. Any difference is the calculation's own
-    // conditioning error on THIS point, measured against a symmetry the exact
-    // answer obeys - no reference amplitude needed. Unlike the cancellation
-    // heuristic this is not a proxy for the error, it IS an error estimate.
-    double rotdev(-1.0);
-    static const bool rotchk(ATOOLS::Settings::GetMainSettings()["YFS"]["ROT_CHECK"].Get<int>()!=0);
-    if (rotchk && iR.Nominal()!=0.0) {
-      const double ca(cos(0.6)), sa(sin(0.6));
-      Vec4D_Vector pr(p);
-      for (size_t j(0);j<pr.size();++j)
-        pr[j]=Vec4D(p[j][0],ca*p[j][1]+sa*p[j][3],p[j][2],
-                    -sa*p[j][1]+ca*p[j][3]);
-      Cluster_Amplitude *ar(CreateAmplitude(pr));
-      const double r(p_proc->Differential
-                     (*ar,Variations_Mode::nominal_only,rmode).Nominal());
-      ar->Delete();
-      rotdev=std::abs(r/iR.Nominal()-1.0);
-    }
-    if (m_check && external_real!=0.0) {
-      std::cerr<<"@@@ "<<p_cfg->m_tag<<"-ROT2 rotdev="<<rotdev<<std::endl;
-    }
     if (m_check && external_real!=0.0) {
       std::cerr<<"@@@ "<<p_cfg->m_tag<<" ratio="<<iR.Nominal()/external_real
                <<" dev="<<std::abs(iR.Nominal()/external_real-1.0)
@@ -451,43 +381,12 @@ Real_Correction::ComixAmplitudes(const ATOOLS::Vec4D_Vector &p,
 {
   if (p_proc == NULL) return NULL;
   if (p.size() != p_proc->Flavours().size()) return NULL;
-  // The cache this fills is the same one Calc_R fills; enabling it here is
-  // what takes KeepAmplitudes() out of dormancy.
   m_keepamps = true;
   Cluster_Amplitude *ampl(CreateAmplitude(p));
-  // Same rmode as Calc_R: 128 = GeneratePoint(), 2 = fixed scales from the
-  // amplitude, 1 = selector off (the point is not ours to cut).
   const int rmode(128 + 2 + 1);
-  /*
-    The scale travels as an argument, so there is no window in which this
-    process carries a moved pole that a later call could pick up.
-  */
   Weights_Map w(p_proc->DifferentialWithPropScale(
                   *ampl, Variations_Mode::nominal_only, rmode,
                   propscale, decscale, deccid));
-  m_lastcomix = w.Nominal();
-  m_spinamps.clear();
-  std::vector<std::vector<Complex> > cols;
-  p_proc->FillAmplitudes(m_spinamps, cols);
-  ampl->Delete();
-  if (m_spinamps.empty()) return NULL;
-  return &m_spinamps;
-}
-
-const std::vector<METOOLS::Spin_Amplitudes> *
-Real_Correction::ComixAmplitudesShifted(const ATOOLS::Vec4D_Vector &p,
-                                        const ATOOLS::Vec4D &dini,
-                                        const ATOOLS::Vec4D &dfin,
-                                        const size_t ffmask)
-{
-  if (p_proc == NULL) return NULL;
-  if (p.size() != p_proc->Flavours().size()) return NULL;
-  m_keepamps = true;
-  Cluster_Amplitude *ampl(CreateAmplitude(p));
-  const int rmode(128 + 2 + 1);
-  Weights_Map w(p_proc->DifferentialWithPropShift(
-                  *ampl, Variations_Mode::nominal_only, rmode,
-                  dini, dfin, ffmask));
   m_lastcomix = w.Nominal();
   m_spinamps.clear();
   std::vector<std::vector<Complex> > cols;

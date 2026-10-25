@@ -13,7 +13,6 @@ using namespace YFS;
 using namespace ATOOLS;
 using namespace MODEL;
 using namespace std;
-// #define YFS_DEBUG
 
 
 ISR::ISR()

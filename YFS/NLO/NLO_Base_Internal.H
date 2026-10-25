@@ -89,8 +89,7 @@ using namespace std;
     photons), RR_SOFT_CUT 1e-4 (OpenLoops' R_2 for two ultra-soft collinear
     initial-state photons, x ~ 1e-7, depends on the frame). Born photons'
     channel weights (REAL_BORN_PHOTON_MULTICHANNEL) are not applied to R_2
-    (e+e- -> gamma gamma needs them). RR_PROBE 1 prints "@@@ RRPAIR" per pair
-    (2 adds P and the Born point) and "@@@ RRID" per two-photon event.
+    (e+e- -> gamma gamma needs them). RR_PROBE 1 prints "@@@ RRID" per two-photon event.
     NOT for use with IFI_Real false (the paper scheme): there the single
     real's bracket subtracts the coherent eikonal, i.e. the initial-final
     interference of its photon, because the IF form factor at sqrt(s)/2
@@ -128,12 +127,6 @@ inline rrmode::code RRMode() {
 //! single reals' RRPhotonInfo and sits on top of REAL_COMBINE's product
 inline bool RRFromSingles() {
   return RRMode() == rrmode::exact || RRMode() == rrmode::singles_product;
-}
-
-// YFS: REAL_STAB (diagnostic): dump the real's mapped invariants (DumpMapQ)
-inline bool RealStabDump() {
-  static const bool on(ATOOLS::Settings::GetMainSettings()["YFS"]["REAL_STAB"].Get<int>() != 0);
-  return on;
 }
 
 // YFS: REAL_COMBINE, documented where CalculateNLO's real uses it

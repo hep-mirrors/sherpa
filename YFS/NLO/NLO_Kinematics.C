@@ -33,30 +33,6 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-void NLO_Base::RandomRotate(Vec4D &p) {
-  Vec4D t1 = p;
-  // rotate around x
-  p[2] = cos(m_ranTheta) * t1[2] - sin(m_ranTheta) * t1[3];
-  p[3] = sin(m_ranTheta) * t1[2] + cos(m_ranTheta) * t1[3];
-  t1 = p;
-  // rotate around z
-  p[1] = cos(m_ranPhi) * t1[1] - sin(m_ranPhi) * t1[2];
-  p[2] = sin(m_ranPhi) * t1[1] + cos(m_ranPhi) * t1[2];
-}
-
-void NLO_Base::CheckMappingRecoil(const Vec4D_Vector &p, const Vec4D &ksum) {
-  Vec4D q;
-  for (size_t i(2); i < p.size(); ++i) q += p[i];
-  const Vec3D imbalance(Vec3D(ksum) + Vec3D(q));
-  const double scale(Max(Vec3D(ksum).Abs(), Vec3D(q).Abs()));
-  if (scale <= 0.) return;
-  const double rel(imbalance.Abs() / scale);
-  if (rel > 1e-5)
-    msg_Error() << METHOD << "(): YFS mapping recoil imbalance " << rel
-                << " (photons " << Vec3D(ksum) << ", hard system " << Vec3D(q)
-                << ")" << std::endl;
-}
-
 /*
   The (n+1)-body point for beta_1(k_j) of FINAL-state photons (REAL_FSR_MAP: rescale_all).
 
@@ -166,7 +142,6 @@ bool NLO_Base::MapMomentaFSR(Vec4D_Vector &p, Vec4D_Vector &k) {
   Poincare pRot2(m_bornMomenta[0], Vec4D(0., 0., 0, 1.));
   for (size_t i = 0; i < p.size(); ++i) { pRot2.Rotate(p[i]); boostLab.BoostBack(p[i]); }
   for (Vec4D &kj : k) { pRot2.Rotate(kj); boostLab.BoostBack(kj); }
-  ReportFSRMapResidual(p, k, Kall, xi, Mp, msum);   // diagnostic, NLO_Checks.C
   return true;
 }
 
@@ -336,7 +311,6 @@ bool NLO_Base::RebuildBeamsAtPreFSR(Vec4D_Vector &p, Vec4D_Vector &k,
   Poincare pRot2(m_bornMomenta[0], Vec4D(0., 0., 0, 1.));
   for (size_t i = 0; i < p.size(); ++i) { pRot2.Rotate(p[i]); boostLab.BoostBack(p[i]); }
   for (Vec4D &kj : k) { pRot2.Rotate(kj); boostLab.BoostBack(kj); }
-  ReportMappingResidual(p, k, tag, Q);   // diagnostic, NLO_Checks.C
   return true;
 }
 
@@ -436,7 +410,6 @@ bool NLO_Base::MapMomentaBeamAxis(Vec4D_Vector &p, const Vec4D_Vector &k) {
   p[0] = pa; p[1] = pb;
   for (size_t i(2); i < p.size(); ++i) p[i] = q[i-2];
   m_map_reduced = (K[0] > 1e-12*P[0]);
-  if (RealStabDump()) DumpMapQ(sqrt(sj), ksel[0], " lambda=" + ToString(lambda) + " beamaxis=1");   // NLO_Checks.C
   return true;
 }
 
@@ -522,7 +495,6 @@ bool NLO_Base::MapMomentaScaled(Vec4D_Vector &p, Vec4D_Vector &k, bool anylabel)
   for (size_t i(2); i < p.size(); ++i) p[i] = q[i-2];
   for (Vec4D &kj : k) kj = x*kj;
   m_map_reduced = (K[0] > 1e-12*P[0]);
-  if (RealStabDump()) DumpMapQ(sqrt(sj), ksel[0], " x=" + ToString(x) + " scaled=1");   // NLO_Checks.C
   return true;
 }
 
@@ -637,7 +609,6 @@ bool NLO_Base::MapMomentaInvariant(Vec4D_Vector &p, Vec4D_Vector &k) {
   for (size_t i(2); i < p.size(); ++i) p[i] = q[i-2];
   for (Vec4D &kj : k) kj = kappa*kj;
   m_map_reduced = true;
-  if (RealStabDump()) DumpMapQ(sqrt(sj), ksel[0], " kappa=" + ToString(kappa) + " xa=" + ToString(xa) + " xb=" + ToString(xb) + " invariant=1");   // NLO_Checks.C
   return true;
 }
 
@@ -685,7 +656,6 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D_Vector &k) {
   // ksum must be recomputed: the photons have been boosted since.
   ksum = Vec4D();
   for (const Vec4D &ki : k) ksum += ki;
-  // CheckMappingRecoil(p, ksum);
   for (size_t i = 2; i < p.size(); ++i) QQ += p[i];
   QQ += ksum;
   const double sqq = QQ.Abs2();
@@ -693,7 +663,6 @@ void NLO_Base::MapMomenta(Vec4D_Vector &p, Vec4D_Vector &k) {
     msg_Error() << "YFS Real mapping not conserving momentum in " << METHOD
                 << std::endl;
   }
-  if (RealStabDump()) DumpMapQ(sqq > 0 ? sqrt(sqq) : -1., ksum[0], "");   // NLO_Checks.C
   const double sign_z = (m_bornMomenta[0][3] < 0 ? -1 : 1);
   const double m1 = m_flavs[0].Mass();
   const double m2 = m_flavs[1].Mass();

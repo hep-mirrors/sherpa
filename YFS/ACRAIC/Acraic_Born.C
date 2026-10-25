@@ -17,33 +17,6 @@
 using namespace YFS;
 
 
-Complex Acraic_Base::BornAmplitude(const Vec4D_Vector &k) {
-  Complex amp;
-  double hel1, hel2, hel3, hel4;
-  int mode;
-  for (int h0 = 1; h0 <= 2; ++h0) {
-    for (int h1 = 1; h1 <= 2; ++h1) {
-      for (int h2 = 1; h2 <= 2; ++h2) {
-        for (int h3 = 1; h3 <= 2; ++h3) {
-          hel1 = 3 - 2 * h0;
-          hel2 = 3 - 2 * h1;
-          hel3 = 3 - 2 * h2;
-          hel4 = 3 - 2 * h3;
-          if (hel1 == -hel2 ) {
-            m_T = T(k[2], k[0], hel3, hel1) * Tp(k[1], k[3], hel2, hel4);
-            m_U = Up(k[2], k[1], hel3, hel2) * U(k[0], k[3], hel1, hel4);
-            m_ampborn[h0][h1][h2][h3] = (CouplingZ(hel1, 1) + CouplingG()) * m_T + (CouplingZ(hel1, 1) + CouplingG()) * m_U;
-            m_bornAmp.m_A[Idx(h0,h1,h2,h3)] = (CouplingZ(hel1, 1) + CouplingG()) * m_T + (CouplingZ(hel1, 1) + CouplingG()) * m_U;
-            amp += (CouplingZ(hel1, 0) * m_propZ + CouplingG() * m_propG) * m_U + (CouplingZ(hel1, 1) * m_propZ + CouplingG() * m_propG) * m_T;
-          }
-        }
-      }
-    }
-  }
-  return amp;
-}
-
-
 // Spinor structures m_Tamp/m_Uamp are cached per call site for one event;
 // only m_TC/m_UC depend on the partition. Slot 0 is the Born, photon j owns
 // 1+4j..4+4j (its two ISR and two FSR arms).
@@ -154,41 +127,11 @@ void Acraic_Base::BornAmplitude(const Vec4D_Vector &k, Amplitude &M,
           if (m_bhabha)
             M.m_A[Idx(h0,h1,h2,h3)] += m_TCt[h0] * m_Tampt[h0][h1][h2][h3]
                                    + m_UCt[h0] * m_Uampt[h0][h1][h2][h3];
-          m_bornAmp.m_A[Idx(h0,h1,h2,h3)] = M.m_A[Idx(h0,h1,h2,h3)];
         }
       }
     }
   }
 }
-
-
-
-
-
-
-
-Complex Acraic_Base::BornAmplitude(const Vec4D_Vector &k, int h0, int h1, int h2, int h3) {
-  Complex amp;
-  if (h0 == -h1 ) {
-    m_T = T(k[2], k[0], h2, h0) * Tp(k[1], k[3], h1, h3);
-    m_U = Up(k[2], k[1], h2, h1) * U(k[0], k[3], h0, h3);
-    amp = (CouplingZ(h0, 0) * m_propZ + CouplingG() * m_propG) * m_U + (CouplingZ(h0, 1) * m_propZ + CouplingG() * m_propG) * m_T;
-  }
-  return amp;
-}
-
-
-
-Complex Acraic_Base::BornAmplitude(Vec4D p1, Vec4D p2, Vec4D p3, Vec4D p4, int h0, int h1, int h2, int h3)
-{
-  Vec4D_Vector tmp;
-  tmp.push_back(p1);
-  tmp.push_back(p2);
-  tmp.push_back(p3);
-  tmp.push_back(p4);
-  return BornAmplitude(tmp, h0, h1, h2, h3);
-}
-
 
 
 //! Born spin amplitudes from Comix; false if unavailable.
@@ -213,19 +156,6 @@ bool Acraic_Base::ComixBornShifted(const Vec4D_Vector &p, Amplitude &A,
                                  const PropShifts &shifts)
 {
   if (p_bornproc == NULL) return false;
-  // FF_SCALE_PROBE (debug): the shift list handed to Comix
-  static const bool probe(ATOOLS::Settings::GetMainSettings()["FF_SCALE_PROBE"]
-                          .SetDefault(false).Get<bool>());
-  static int nprobe(0);
-  if (probe && nprobe < 30 && p.size() > 3 && (p[2] + p[3]).Abs2() < 0.95*(p[0] + p[1]).Abs2()) {
-    ++nprobe;
-    std::cerr<<"@@@BSHIFT nphot="<<m_allphotons.size()<<" nstage="<<m_stage.size()
-             <<" nshifts="<<shifts.size()<<" (pi pair)^2/s="
-             <<(p.size() > 3 ? (p[2] + p[3]).Abs2()/(p[0] + p[1]).Abs2() : -1.);
-    for (size_t g(0); g < shifts.size(); ++g)
-      std::cerr<<"  [mask "<<shifts[g].first<<" shift "<<shifts[g].second<<"]";
-    std::cerr<<std::endl;
-  }
   std::vector<METOOLS::Spin_Amplitudes> amps;
   if (!p_bornproc->BornSpinAmplitudesShifts(p, amps, NULL, shifts)) return false;
   if (amps.empty()) return false;
@@ -343,51 +273,6 @@ void Acraic_Base::InfraredSubtractedME_0_0() {
                                         : BornLegsAt(m_PXvec, pb)));
     usered = legs && ComixBornAmplitude(pb, Cred, NULL, -1., -1.);
     if (usered) fluxred = m_s/X2;
-    // ACRAIC: CRUDE_BORN_TRACE: the reduced-point crude's Born against m_born
-    // and the shifted physical-spinor Born
-    static const int cbt(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
-                         ["CRUDE_BORN_TRACE"].SetDefault(0).Get<int>());
-    static long ncbt(0);
-    if (cbt && ncbt < cbt) { ++ncbt;
-      double nr(0.), ns(0.), nu(0.), nz(0.);
-      Amplitude U, Z;
-      const bool oku(ComixBornAmplitude(m_pacraic, U, NULL, -1., -1.));
-      PropShifts zero;
-      const bool okz(ComixBornShifted(m_pacraic, Z, zero));
-      for (int f = 0; f < nhel; ++f) { nr += std::norm(Cred.m_A[f]); ns += std::norm(AmpBorn.m_A[f]);
-        if (oku) nu += std::norm(U.m_A[f]); if (okz) nz += std::norm(Z.m_A[f]); }
-      std::cerr<<"@@@ CRUDEBORN engaged="<<(usered?1:0)<<" legs="<<(legs?1:0)
-               <<" nphot="<<m_allphotons.size()<<" x="<<(m_s>0.?1.-X2/m_s:-1.)
-               <<" |Cred|^2/4="<<nr/4.<<" |Ashift|^2/4="<<ns/4.
-               <<" |Aphys|^2/4="<<(oku?nu/4.:-1.)<<" |Azeroshift|^2/4="<<(okz?nz/4.:-1.)
-               <<" m_born="<<m_born<<" fluxred="<<fluxred<<std::endl;
-      // the partition Born's shifts and per-leg reduced-minus-physical, / E_beam
-      PropShifts shl(StageShifts(-1));
-      AddExchangeLineShifts(-1, shl);
-      const double Eb(m_pacraic[0][0] > 0. ? m_pacraic[0][0] : 1.);
-      std::cerr<<"@@@ CRUDEBORN-SHIFTS n="<<shl.size();
-      for (size_t j(0); j < shl.size(); ++j)
-        std::cerr<<" ["<<shl[j].first<<": |d|/E="<<Vec3D(shl[j].second).Abs()/Eb
-                 <<" d0/E="<<shl[j].second[0]/Eb<<"]";
-      std::cerr<<"  legs:";
-      for (size_t i(0); i < pb.size() && i < m_pacraic.size(); ++i)
-        std::cerr<<" "<<i<<":"<<Vec3D(pb[i]-m_pacraic[i]).Abs()/Eb;
-      std::cerr<<" if="<<m_if1<<","<<m_if2<<std::endl;
-      // one tiny artificial shift at a time, relative to the plain Born
-      const double tiny(1e-9*Eb);
-      auto probe = [&](const char *lab, size_t mask) {
-        PropShifts t; t.push_back(std::make_pair(mask, Vec4D(tiny, 0., 0., tiny)));
-        Amplitude T; double nt(0.);
-        if (!ComixBornShifted(m_pacraic, T, t)) { std::cerr<<" ["<<lab<<": fail]"; return; }
-        for (int f = 0; f < nhel; ++f) nt += std::norm(T.m_A[f]);
-        std::cerr<<" ["<<lab<<": "<<(nu>0.? nt/nu : -1.)<<"]"; };
-      std::cerr<<"@@@ CRUDEBORN-PROBE ratio(|A_tinyshift|^2/|A_plain|^2):";
-      probe("stage{0,1}", 3);
-      probe("stage{2,3}", 12);
-      probe("leg0", ((size_t)1) | PHASIC::Process_Base::s_propshiftleg);
-      probe("leg2", ((size_t)4) | PHASIC::Process_Base::s_propshiftleg);
-      probe("{0,2}", 5);
-      std::cerr<<std::endl; }
   }
   // One power of each flux: |B_phys|^2 = (q+K)^2/q^2 |B_red|^2 for a final
   // stage, so KKMC's (svarX/svarQ)^2 on |beta_0|^2 is svarX/svarQ on B_red^2;
@@ -422,11 +307,6 @@ void Acraic_Base::InfraredSubtractedME_0_0() {
   }
   m_rhocrud += rc / 4.;
   m_snapBorn = m_AmpExpo1;   // Born term only, before any correction
-
-  CheckPartitionBorn(AmpBorn);
-
-  // kept for the scalar diagnostics that still read it
-  SumAmplitude(m_beta00, AmpBorn, m_e * m_e);
 }
 
 
@@ -510,6 +390,4 @@ void Acraic_Base::BuildComixBornAlignment()
     } else m_cxbalign.m_A[f] = Complex(N, 0.);
   }
   m_cxbalignok = true;
-
-  CheckBornAlignment(H, C, nh, sp_save);
 }

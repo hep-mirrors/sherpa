@@ -138,11 +138,7 @@ public:
   histograms1d m_histograms1d;
   ATOOLS::Momenta_Stretcher m_stretcher;
 
-  double m_evts, m_recola_evts, m_ranTheta, m_ranPhi, m_real,m_ravg, m_rv, m_rvsub, m_eikeex, m_subloc;
-  // YFS: REAL_TRACE. Per-photon record of the Born+real assembly for the
-  // current event, printed by CalculateReal() when |1 + real/Born| exceeds
-  // the threshold. Filled by CalculateReal(k), so it sees every term.
-  std::ostringstream m_realtrace;
+  double m_evts, m_recola_evts, m_real,m_ravg, m_rv, m_rvsub, m_eikeex, m_subloc;
   // Per-nominal-call contributions of the hardest photon(s), captured
   // inline while CalculateReal/CalculateRealVirtual/CalculateRealReal sum
   // over the full photon multiplicity - no separate recomputation needed.
@@ -317,7 +313,6 @@ public:
   std::vector<std::vector<int> > m_lhel;
   std::vector<Complex> m_la0, m_ldelta;
   ATOOLS::Vec4D_Vector m_lhelmom;
-  double m_lhelv = 0.;
   //! the raw per-helicity loop over tree A1^h/A0^h of the Born point (0 and
   //! m_lratio_ok false where the tree is below VIRT_HEL_MINBORN), and the
   //! uniform running-alpha correction and Im part delta^h was built with:
@@ -402,7 +397,7 @@ public:
   void BuildLoopNPairs();
   long m_lnh_n = 0, m_lnh_fail = 0, m_lnh_polefail = 0, m_lnh_nfall = 0;
   long m_lnh_cone = 0, m_lnh_checked = 0, m_lnh_unstable = 0;
-  double m_lnh_res_sum = 0., m_lnh_res_sq = 0., m_lnh_res_max = 0.;
+  double m_lnh_res_sum = 0., m_lnh_res_max = 0.;
   //! Highest photon multiplicity a provider exists for (0 if none).
   size_t MaxRealPhotons() const;
   //! Runcard ceiling on the fixed-order photon multiplicity, NLO_MAX_PHOTONS.
@@ -577,9 +572,6 @@ public:
   double RealRealRemainder(size_t i, size_t j);
   //! YFS: RR_MODE singles_product (v x RR is then left out of the weight)
   bool RRSinglesProduct() const;
-  //! RR_MODE 1, two-photon events: rho_ij, the exact two-photon weight the
-  //! product plus RR must equal (read by YFS_Handler's RR_PROBE identity line)
-  double m_rrExactPair = 0.;
   //! the event's v = V/B - B(generation legs), as VIRTUAL_COMBINE uses it
   double VBornEvent() const { return m_vborn; }
   //! the pair's (n+2)-body point from the event, the other photons reduced
@@ -594,7 +586,6 @@ public:
   void ProbeRealVirtual(const Vec4D &kk, const ATOOLS::Vec4D_Vector &p,
                         double r, double rtree, double subloc, double eikloc,
                         double flux, double subb, double tot);
-  double CalculateVV();
   /*!
     YFS: VV_POLE_CHECK (default true). With a double-virtual provider that
     reports its massive Laurent series (VV_Generator: Internal for
@@ -604,7 +595,7 @@ public:
     sigma = 2 B/(alpha/pi) of this event's dipoles (BVV_full_eps, shifted to
     mu^2 = s), m1m/m2m the provider's massified one- and two-loop series per
     Born (alpha/2pi units, its own one loop). Diagnostic only: no weight
-    changes. YFS: VV_POLE_PROBE n prints the first n events (@@@ VVPOLE).
+    changes.
   */
   void CheckVVPoles();
   void ReportVVPoles();
@@ -614,10 +605,6 @@ public:
   long   m_vvp_n = 0, m_vvp_fail = 0;
   double m_vvp_max[3] = {0., 0., 0.};
   long   m_vvp_digits[3][17] = {{0}};
-  //! Assert that the mapped hard system balances the total photon momentum.
-  //! Multiplicity-agnostic: pass the summed photon momentum.
-  void CheckMappingRecoil(const ATOOLS::Vec4D_Vector &p,
-                          const ATOOLS::Vec4D &ksum);
   //! Map the Born configuration onto one accommodating any number of photons.
   //! The photons are boosted in place. The fixed-multiplicity overloads below
   //! are wrappers around this.
@@ -680,9 +667,7 @@ public:
   //! the generator's v_max and s for the channel check, set by YFS_Handler
   double m_bpmc_vmax = 1., m_bpmc_s = -1.;
   //! diagnostics of the last BornPhotonChannelWeight call (WEIGHT_PROBE)
-  double m_bpmc_lastG = 1.;  int m_bpmc_lastn = 0;
-  double m_bpmc_hardG = 1., m_bpmc_hardR = 0., m_bpmc_hardx = 0.,
-         m_bpmc_hardsub = 0.;
+  int m_bpmc_lastn = 0;
   bool   ReducedBornISR(const ATOOLS::Vec4D &k, double &bratio);
   /*
     The Born of the event with photon k moved to the other channel, relative
@@ -700,10 +685,9 @@ public:
     back to back along the lab axis in R's rest frame (the generator's
     reduced-beam convention), final legs along their directions in Q_pre's
     rest frame, rescaled to R^2. With R = Q_pre this is the event's Born
-    point (m_me2pre; checked against m_born by SUB8_TRACE).
+    point (m_me2pre).
   */
   double m_me2pre = -1.;
-  double m_sub8[4] = {-1., -1., -1., -1.};   // SUB8_TRACE scratch
   bool   PreFSRBornRatio(const ATOOLS::Vec4D &R, double &bratio);
   bool   GeneratorReaches(const ATOOLS::Vec4D_Vector &p);
   bool   PreFSRBornPoint(const ATOOLS::Vec4D &R, ATOOLS::Vec4D_Vector &p) const;
@@ -756,28 +740,11 @@ public:
   void MapMomenta(ATOOLS::Vec4D_Vector &p, ATOOLS::Vec4D &k1, ATOOLS::Vec4D &k2);
   // Defined in NLO_Checks.C, along with the other *Sub checks and the
   // debug histograms.
-  void BookHistograms();
   void WriteHistograms();
   void CheckMassReg();
-  //! YFS: VIRTUAL_POLE_PROBE: the loop's and the subtraction's 1/eps per event
-  void ProbeVirtualPoles(Define_Dipoles *vsub);
-  //! YFS: VIRTUAL_PROBE_ABOVE: large |V/B| re-evaluated in two more frames
-  void ProbeLargeVirtual(const double virt, const double sub);
   //! YFS: VIRTUAL_CHECK: the loop in a second frame; unstable -> no virtual
   void CheckVirtualStability(double &virt, const double sub, const bool vcanon);
-  //! YFS: RR_LOG_CHECK: the double real's soft x hard log against B~(pt) - B~(gen)
-  void ProbeRRLog(const Vec4D &k, const Vec4D_Vector &legs, const double Keps);
-  //! YFS: PHOTON_DUMP: a photon of the real loop and its contribution
-  void DumpPhoton(const YFS::Photon &g);
-  void DumpPhotonContribution(const YFS::Photon &g, const double contrib);
-  //! momentum-balance reports of the real's mappings (printed when violated)
-  void ReportFSRMapResidual(const Vec4D_Vector &p, const Vec4D_Vector &k,
-                            const Vec4D &Kall, const double xi,
-                            const double Mp, const double msum);
-  void ReportMappingResidual(const Vec4D_Vector &p, const Vec4D_Vector &k,
-                             const char *tag, const Vec4D &Q);
-  //! YFS: REAL_STAB: the mapped pair invariant of a real point
-  void DumpMapQ(const double sqrtsqq, const double eksum, const std::string &extra);
+  void ProbeLargeVirtual(const double virt, const double sub);
   //! YFS: VIRTUAL_CHECK: end-of-run counts
   void ReportVirtualCheck();
   //! B~(K) and the final-leg form factor on the point's and the generation legs
@@ -801,7 +768,6 @@ public:
   // checked for collinear enhancement. Enabled by m_check_real_sub / m_check_rr_sub == 2.
   void RecordSubScatter(const ATOOLS::Vec4D &k, double residual,
                         const std::string &tag, double eik = 1.0);
-  void RandomRotate(Vec4D &k);
   inline void SetBorn(double b) { m_born = b; m_me2born = -1.; m_me2pre = -1.; }
   inline void SetBornProc(PHASIC::Process_Base *p) { p_bornproc = p; }
   inline void SetMomentum(Vec4D_Vector &p) { m_plab = p;}
@@ -819,7 +785,6 @@ public:
   inline void SetVirtualRequested(bool r) { m_virtrequested = r; }
   inline bool VirtualRequested() const { return m_virtrequested; }
   inline bool HasReal() {return m_realtool;}
-  inline bool HasRR() {return m_rrtool;}
   //! An exact double-virtual provider (p_vv); without one YFS_Handler
   //! estimates the VV from the EEX series (VV_EEX, NNLO_VV*).
   inline bool HasVV() {return m_vvtool;}
@@ -897,7 +862,6 @@ private:
     double flux0 = 0., subloc0 = 0., subb0 = 0.;   //!< the three before REAL_SUB_EIK
     double subb_loc = 0.;       //!< the density at the point (Sub_Mode global)
     double denom0 = 0.;         //!< subb_loc without REAL_SUB_EIK
-    double sub8_bF = -1., sub8_f = -1., sub8_scale = 1.;   //!< SUB8_TRACE only
     double tot;                 //!< beta_1/S~; an unknown Sub_Mode leaves it unset
   };
   void   MapRealPoint(RealTerms &rt);
@@ -912,16 +876,11 @@ private:
   double Sub8FSRChannelDensity(const RealTerms &rt, sub8fsrlegs::code fsrlegs,
                                double sFFgen);
   void   FluxOnFSRCrude(RealTerms &rt);
-  void   FillPointHistograms(const RealTerms &rt, const std::string &suffix);
   bool   RealMEUsable(const RealTerms &rt);
   void   PointDenominator(RealTerms &rt);
   void   MultichannelISRPhoton(RealTerms &rt);
   void   PreFSRMultichannelISRPhoton(RealTerms &rt);
-  void   Sub8Trace(const RealTerms &rt);
   void   AssembleBeta1(RealTerms &rt);
-  void   RecordHardestPhoton(const RealTerms &rt);
-  void   RealTrace(const RealTerms &rt);
-  void   RealStabilityProbe(const RealTerms &rt);
   void   IFIRealRatio(const RealTerms &rt);
   //! where the last CalculateReal(k) stopped, and whether IFIRealRatio
   //! applied a ratio there; read by CountIFISkip
@@ -931,7 +890,6 @@ private:
   //! IFI_Real bookkeeping for a photon whose IF ratio was not applied
   void   CountIFISkip();
   void   ReportBadReal(const RealTerms &rt);
-  void   FillRealHistograms(const RealTerms &rt);
   void   TrackRealAverage(double tot);
   void   StoreRealPointInfo(const RealTerms &rt);
 };

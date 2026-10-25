@@ -211,7 +211,6 @@ namespace YFS {
              && !soft_limit_legs; }
   };
   rrconventions ReadRRConventions(const std::vector<std::string> &tags);
-  std::string   RRConventionsNames(const rrconventions &c);
 
   // ------------------------------------------------------------ ACRAIC:
 

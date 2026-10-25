@@ -59,12 +59,8 @@ namespace YFS {
   template <typename T>
   constexpr T LowLegs(T set, std::size_t n) { return set & AllLegs<T>(n); }
 
-  //! The part of the set from leg n on, renumbered from 0.
-  template <typename T>
-  constexpr T HighLegs(T set, std::size_t n) { return set >> n; }
-
-  //! low on legs 0 .. n-1 and high from leg n on: the inverse of LowLegs /
-  //! HighLegs. Comix stores a helicity configuration this way, the n
+  //! low on legs 0 .. n-1 and high from leg n on: the inverse of LowLegs
+  //! and the shift by n. Comix stores a helicity configuration this way, the n
   //! fermion legs first and the photons above them.
   template <typename T>
   constexpr T JoinLegs(T low, T high, std::size_t n) { return low | (high << n); }

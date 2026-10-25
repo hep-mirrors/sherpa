@@ -71,24 +71,17 @@ NLO_Base::NLO_Base() {
   m_rvBlowupHiC = 0;
   m_rvBlowupSoft = 0;
   m_rvBlowupHardWide = 0;
-  BookHistograms();
   InitBeta02();
   if (m_check_poles == 1) {
     if (!ATOOLS::DirectoryExists(m_debugDIR_NLO))
       ATOOLS::MakeDir(m_debugDIR_NLO);
     m_histograms1d["SinglePoleCD"] = std::make_unique<Histogram>(0, 0, 25, 25);
-    m_histograms1d["SinglePoleVV"] = std::make_unique<Histogram>(0, 0, 25, 25);
-    m_histograms1d["DoublePoleVV"] = std::make_unique<Histogram>(0, 0, 25, 25);
     m_histograms1d["OneLoopEpsLP"] = std::make_unique<Histogram>(0, -1.5, -0.5, 50);
     m_histograms1d["OneLoopEpsYFS"] = std::make_unique<Histogram>(0, -1.5, -0.5, 50);
     m_histograms1d["RealLoopEpsLP"] = std::make_unique<Histogram>(0, -5, 0.0, 50);
     m_histograms1d["RealLoopEpsYFS"] = std::make_unique<Histogram>(0, -5, 0.0, 50);
     m_histograms1d["relativediff"] = std::make_unique<Histogram>(0, -20., -5.0, 50);
     m_histograms1d["RVSinglePoleCD"] = std::make_unique<Histogram>(0, 0, 25, 25);
-    m_histograms2d["REAL_SUB"] =
-        std::make_unique<Histogram_2D>(0, 0, sqrt(m_s) / 2., 200, 0, 2 * M_PI, 20);
-    m_histograms2d["REAL"] =
-        std::make_unique<Histogram_2D>(0, 0, sqrt(m_s) / 2., 200, 0, 2 * M_PI, 20);
   }
   if (m_rv_cancel_hist) {
     if (!ATOOLS::DirectoryExists(m_debugDIR_NLO))

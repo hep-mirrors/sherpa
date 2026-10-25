@@ -39,12 +39,6 @@ RealVirtual::RealVirtual(const PHASIC::Process_Info &pi) {
   p_loop_me->SetCouplings(m_cpls);
   for (auto f: args.m_inflavs)  m_flavs.push_back(f);
   for (auto f: args.m_outflavs) m_flavs.push_back(f);
-  m_sym = ATOOLS::Flavour::FSSymmetryFactor(args.m_outflavs);
-  m_sym *= ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
-  Flavour_Vector bornfs;
-  for(size_t i=0; i<args.m_outflavs.size()-1; i++) bornfs.push_back(args.m_outflavs[i]);
-  double bornsym = ATOOLS::Flavour::FSSymmetryFactor(bornfs) * ATOOLS::Flavour::ISSymmetryFactor(args.m_inflavs);
-  // m_sym = bornsym;
   m_factor =  p_loop_me->AlphaQED() / 2. / M_PI;
   // p_loop_me->SwitchMode(1);
 }
@@ -71,7 +65,6 @@ double RealVirtual::Calc_V(const ATOOLS::Vec4D_Vector &p, const double B,
   if (p_massif) THROW(not_implemented, "YFS: VIRTUAL_MASSIFICATION needs RV_MODE 1"
                       " (the real-virtual as a ratio V/T)");
   p_loop_me->Calc(p);
-  // const double gammaborn = p_loop_me->ME_Born() * p_loop_me->AlphaQED() * B / m_sym;// * p_loop_me->AlphaQED() / 2. / M_PI;
   const double gammaborn = p_loop_me->ME_Born();
   switch (p_loop_me->Mode()) {
   case 0:

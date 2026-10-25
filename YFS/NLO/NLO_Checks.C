@@ -93,40 +93,8 @@ struct SubCheckAccumulator {
 };
 
 
-void NLO_Base::BookHistograms() {
-  if (m_isr_debug || m_fsr_debug) {
-    m_histograms2d["IFI_EIKONAL"] = std::make_unique<Histogram_2D>(0, -1., 1., 20, 0, 5., 20);
-    m_histograms2d["REAL_SUB"] =
-        std::make_unique<Histogram_2D>(0, 0, sqrt(m_s), 200, 0, sqrt(m_s) / 2., 20);
-    m_histograms2d["REAL_COLL_RATIO"] =
-        std::make_unique<Histogram_2D>(0, 0, 2. * M_PI, 20, 0, sqrt(m_s) / 2., 125);
-    m_histograms2d["REAL_COLL_RATIO"] =
-        std::make_unique<Histogram_2D>(0, 0, sqrt(m_s) / 2., 125, 0, 10, 20);
-    m_histograms2d["REAL_RATIO"] =
-        std::make_unique<Histogram_2D>(0, 0, 15, 16, 0, sqrt(m_s) / 2., 200);
-    m_histograms2d["Real_Flux"] = std::make_unique<Histogram_2D>(0, 0, 1.1, 50, 80, 100, 100);
-    // FillRealHistograms fills REAL too. It was booked only under CHECK_POLES,
-    // so with ISR_DEBUG / FSR_DEBUG alone the first real photon dereferenced
-    // the null entry operator[] had just created (segfault at event 1).
-    // Same binning as the CHECK_POLES booking in the NLO_Base constructor.
-    m_histograms2d["REAL"] =
-        std::make_unique<Histogram_2D>(0, 0, sqrt(m_s) / 2., 200, 0, 2 * M_PI, 20);
-    m_histograms1d["k_E"] = std::make_unique<Histogram>(0, 0, sqrt(m_s) / 2, sqrt(m_s) / 2);
-    m_histograms1d["k_pt"] = std::make_unique<Histogram>(0, 0, sqrt(m_s) / 2, sqrt(m_s) / 2);
-    m_histograms1d["dip_mass"] = std::make_unique<Histogram>(0, 0, sqrt(m_s), sqrt(m_s));
-    m_histograms1d["k_E_pass"] =
-        std::make_unique<Histogram>(0, 0, sqrt(m_s) / 2, sqrt(m_s) / 2);
-    m_histograms1d["k_pt_pass"] =
-        std::make_unique<Histogram>(0, 0, sqrt(m_s) / 2, sqrt(m_s) / 2);
-    m_histograms1d["dip_mass_pass"] = std::make_unique<Histogram>(0, 0, sqrt(m_s), sqrt(m_s));
-    if (!ATOOLS::DirectoryExists(m_debugDIR_NLO))
-      ATOOLS::MakeDir(m_debugDIR_NLO);
-  }
-}
-
 void NLO_Base::WriteHistograms() {
-  if (!(m_isr_debug || m_fsr_debug || m_check_real_sub || m_check_poles ||
-        m_rv_cancel_hist))
+  if (!(m_check_real_sub || m_check_poles || m_rv_cancel_hist))
     return;
     string name;
     for (auto &hit : m_histograms2d) {
@@ -208,9 +176,8 @@ void NLO_Base::CheckRealCollinearSub(Vec4D k, int mode) {
   out_sub.open(filename1,    std::ios_base::app);
   out_real.open(filename2,   std::ios_base::app);
 
-  // p1, p2: the two incoming beams, m_plab[0]/[1] -- same convention as
-  // Real::SoftScan's p1=p[0], p2=p[1]. The eikonal S needs the electron
-  // mass and beam energy; both come from the SAME leg.
+  // p1, p2: the two incoming beams, m_plab[0]/[1]. The eikonal S needs the
+  // electron mass and beam energy; both come from the SAME leg.
   const Vec4D p1(m_plab[0]), p2(m_plab[1]);
   const double me(m_flavs[0].Mass()), Eb(p1[0]), Eg(k.E());
   const double mth(me>0.0 && Eb>0.0 ? me/Eb : 1e-5);
@@ -221,8 +188,7 @@ void NLO_Base::CheckRealCollinearSub(Vec4D k, int mode) {
   }
 
   // Scan window: 7 decades of theta centred on the mass angle m_e/E, from
-  // 0.1x to 1e6x it -- same range Real::SoftScan uses, so the two checks
-  // agree wherever they overlap.
+  // 0.1x to 1e6x it.
   static constexpr int SCAN_POINTS = 25;
   static constexpr double SCAN_DECADES = 7.0;
   static constexpr double SCAN_MIN_DECADE_OFFSET = -1.0;  // starts at 10^-1 x mth
@@ -235,9 +201,7 @@ void NLO_Base::CheckRealCollinearSub(Vec4D k, int mode) {
     if (th<=0.0 || th>=M_PI) continue;
     const Vec4D kk(Eg, Eg*sin(th), 0.0, Eg*cos(th));
     real = CalculateReal(kk, /*raw*/mode >= 3);
-    // eikonal of the two charged initial-state legs, mass terms included --
-    // identical formula to Real::SoftScan's S, so the two checks agree in
-    // the region they both cover.
+    // eikonal of the two charged initial-state legs, mass terms included
     const double pk1(p1*kk), pk2(p2*kk), p12(p1*p2);
     const double S(2.0*p12/(pk1*pk2)-me*me/(pk1*pk1)-me*me/(pk2*pk2));
     const double ratio(S!=0.0 ? m_real/S : 0.0);
@@ -366,7 +330,6 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2) {
     out_sub << k2.E() << "," << fabs(real) / m_born << std::endl;
     acc2.Add(k2.E(), fabs(real) / m_born);
     // if(IsZero(real)) break;
-    // m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
   }
   acc2.Print("RealReal subtraction check, k2 -> 0 (" + filename2 + ")");
   out_sub.close();
@@ -383,7 +346,6 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2) {
     if (k1.E() <= 1e-16 || real == 0 && !m_failcut)
       break;
     // if(IsZero(real)) break;
-    // m_histograms2d["Real_me_sub"]->Insert(k.E(),fabs(real), 1);
   }
   acc12.Print("RealReal subtraction check, k1&k2 -> 0 (" + filename3 + ")");
   out_sub.close();
@@ -736,28 +698,17 @@ Vec4D NLO_Base::FixedTestPhoton() const {
   return k;
 }
 
-/*
-    YFS: VIRTUAL_POLE_PROBE (diagnostic, default false; weights unchanged).
-    Per event: v = 1 - s'/s of the Born point the loop sees, the loop's
-    1/eps coefficient and the subtraction's (relative to the Born), their
-    sum dpole, and v_B = V_sub/B. The initial-state dipoles carry the full
-    beams (s) while the loop is at s', so dpole ~ ln(s/s'); with Dim_Reg the
-    dropped poles leave dpole ln(mu_IR^2) in the finite part.
-*/
-void NLO_Base::ProbeVirtualPoles(Define_Dipoles *vsub)
+// YFS: VIRTUAL_CHECK: the loops checked in a second frame and dropped
+void NLO_Base::ReportVirtualCheck()
 {
-  static const bool probe(ATOOLS::Settings::GetMainSettings()["YFS"]
-                          ["VIRTUAL_POLE_PROBE"].SetDefault(false).Get<bool>());
-  if (probe && m_dim_reg && m_virt_sub && m_born != 0.) {
-    const double sp((m_plab[0] + m_plab[1]).Abs2());
-    const double e1l(p_virt->E1()*p_virt->m_factor);
-    const double e1s(vsub->Get_E1()/m_rescale_alpha);
-    std::ostringstream o;
-    o<<std::setprecision(12)<<"@@@ VPOLE v="<<1. - sp/m_s<<" lnss="<<log(m_s/sp)
-     <<" e1loop="<<e1l<<" e1sub="<<e1s<<" dpole="<<e1l + e1s
-     <<" vB="<<m_oneloop/m_born<<" mu="<<p_virt->p_loop_me->IRscale()<<"\n";
-    std::cerr<<o.str();
-  }
+  static const bool vchk(ATOOLS::Settings::GetMainSettings()["YFS"]
+                         ["VIRTUAL_CHECK"].SetDefault(false).Get<bool>());
+  if (vchk)
+    msg_Out()<<"YFS: VIRTUAL_CHECK (this rank): Born-level loops checked in a second "
+             <<"frame "<<m_vLoopChecked<<", dropped as unstable "<<m_vLoopUnstable
+             <<" (their share of the sum of m_born: "
+             <<(m_vLoopBornSum > 0. ? m_vLoopUnstableBorn/m_vLoopBornSum : 0.)
+             <<")"<<std::endl;
 }
 
 /*
@@ -789,157 +740,4 @@ void NLO_Base::ProbeLargeVirtual(const double virt, const double sub)
     for (size_t i(0); i < m_plab.size(); ++i) o<<" p"<<i<<"="<<m_plab[i];
     std::cerr<<o.str()<<std::endl;
   }
-}
-
-/*
-    YFS: RR_LOG_CHECK N (diagnostic): for the first N photons with x > 0.05,
-    the soft x hard log the form-factor difference must cancel: d/dlnK of
-    B~(pt; K) - B~(gen; K) at K = RR_SOFT_CUT sqrt(s), against the angular
-    integral at |k| = K of the soft factors the double real sees, the
-    coherent eikonal on this point's legs (exact R_2) minus the product's
-    (the crude on the generation legs plus their IF interference), both
-    also separately ("@@@ RRLOG"; the three ratios must be one constant).
-*/
-void NLO_Base::ProbeRRLog(const Vec4D &k, const Vec4D_Vector &legs, const double Keps)
-{
-  static int nlog(ATOOLS::Settings::GetMainSettings()["YFS"]["RR_LOG_CHECK"]
-                  .SetDefault(0).Get<int>());
-  if (nlog > 0 && 2.*k.E()/sqrt(m_s) > 0.05) {
-    --nlog;
-    auto bt = [&](double K, bool pt) {
-      if (pt) {
-        p_nlodipoles->MakeDipolesII(m_flavs, legs, legs);
-        p_nlodipoles->MakeDipoles(m_flavs, legs, legs);
-        p_nlodipoles->MakeDipolesIF(m_flavs, legs, legs);
-        p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me.get();
-        return p_nlodipoles->RealSoftSum(K);
-      }
-      p_dipoles->p_yfsFormFact->p_virt = p_virt->p_loop_me.get();
-      return p_dipoles->RealSoftSum(K); };
-    const double h(0.5);
-    const double dpt((bt(Keps*exp(h), true) - bt(Keps*exp(-h), true))/(2.*h));
-    const double dgen((bt(Keps*exp(h), false) - bt(Keps*exp(-h), false))/(2.*h));
-    p_nlodipoles->MakeDipolesII(m_flavs, legs, legs);
-    p_nlodipoles->MakeDipoles(m_flavs, legs, legs);
-    p_nlodipoles->MakeDipolesIF(m_flavs, legs, legs);
-    double ipt(0.), igen(0.);
-    const int N(20000);
-    for (int n(0); n < N; ++n) {
-      const double z(1. - (2.*n + 1.)/N), r(sqrt(Max(0., 1. - z*z)));
-      const double ph(n*M_PI*(3. - sqrt(5.)));
-      const Vec4D q(Keps, Keps*r*cos(ph), Keps*r*sin(ph), Keps*z);
-      ipt  += p_nlodipoles->CalculateRealSub(q);
-      igen += p_dipoles->CalculateRealSubEEX(q) + p_dipoles->CalculateRealSubIF(q);
-    }
-    Vec4D_Vector dirs;
-    for (int n(0); n < 4000; ++n) {
-      const double z(1. - (2.*n + 1.)/4000.), r(sqrt(Max(0., 1. - z*z)));
-      const double ph(n*M_PI*(3. - sqrt(5.)));
-      dirs.push_back(Vec4D(Keps, Keps*r*cos(ph), Keps*r*sin(ph), Keps*z)*(1./Keps));
-    }
-    p_nlodipoles->p_yfsFormFact->p_virt = p_realvirt->p_loop_me.get();
-    std::cerr<<"@@@ RRLOGPT"<<p_nlodipoles->RealSoftSumReport(Keps, dirs)<<"\n";
-    p_dipoles->p_yfsFormFact->p_virt = p_virt->p_loop_me.get();
-    std::cerr<<"@@@ RRLOGGEN"<<p_dipoles->RealSoftSumReport(Keps, dirs)<<"\n";
-    ipt *= 4.*M_PI*Keps*Keps/N;
-    igen *= 4.*M_PI*Keps*Keps/N;
-    std::ostringstream o;
-    o<<std::setprecision(8)<<"@@@ RRLOG x="<<2.*k.E()/sqrt(m_s)<<" fsr="<<(PhotonIsFSR(k)?1:0)
-     <<" nph="<<m_photons.size()<<" dBt/dlnK="<<dpt - dgen<<" Idiff="<<ipt - igen
-     <<" ratio="<<(dpt - dgen)/(ipt - igen)<<" ratio_pt="<<dpt/ipt<<" ratio_gen="<<dgen/igen
-     <<std::setprecision(15)<<" dpt="<<dpt<<" ipt="<<ipt<<" legs=";
-    for (const Vec4D &q : legs) o<<q<<" ";
-    o<<"\n";
-    std::cerr<<o.str();
-  }
-}
-
-// YFS: PHOTON_DUMP (diagnostic): each photon of the real loop, and the
-// energy balance of the event
-void NLO_Base::DumpPhoton(const YFS::Photon &g)
-{
-  static const bool dump(ATOOLS::Settings::GetMainSettings()["YFS"]["PHOTON_DUMP"].Get<int>()!=0);
-  if (!dump) return;
-  const Vec4D k(g.K());
-  ATOOLS::Vec4D tot; double eph(0.0);
-  for (const YFS::Photon &h : m_photons) { tot+=h.K(); eph+=h.K().E(); }
-  double elab(0.0);
-  for (size_t j(2);j<m_plab.size();++j) elab+=m_plab[j].E();
-  std::cerr<<"@@@ PHOT E="<<k.E()<<" isr="<<(g.IsISR()?1:0)
-           <<" sqrts="<<sqrt(m_s)<<" nph="<<m_photons.size()
-           <<" Ephtot="<<eph<<" Eout="<<elab
-           <<" Etot="<<(eph+elab)<<std::endl;
-}
-
-// YFS: PHOTON_DUMP (diagnostic): each photon's real contribution
-void NLO_Base::DumpPhotonContribution(const YFS::Photon &g, const double contrib)
-{
-  static const bool dump(ATOOLS::Settings::GetMainSettings()["YFS"]["PHOTON_DUMP"].Get<int>()!=0);
-  if (!dump) return;
-  std::cerr<<"@@@ PHC E="<<g.K().E()<<" isr="<<(g.IsISR()?1:0)
-           <<" contrib="<<contrib
-           <<" failcut="<<(p_real?(p_real->FailCut()?1:0):-1)
-           <<std::endl;
-}
-
-// the FSR map's momentum balance after the map (printed only when violated)
-void NLO_Base::ReportFSRMapResidual(const Vec4D_Vector &p, const Vec4D_Vector &k,
-                                    const Vec4D &Kall, const double xi,
-                                    const double Mp, const double msum)
-{
-  Vec4D res(p[0] + p[1]);
-  for (size_t i = 2; i < p.size(); ++i) res -= p[i];
-  for (const Vec4D &kj : k) res -= kj;
-  if (Vec3D(res).Abs() > 1e-9 || std::abs(res[0]) > 1e-9) {
-    Vec4D post; for (size_t i = 2; i < m_postlab.size(); ++i) post += m_postlab[i];
-    Vec4D pre;  for (size_t i = 2; i < m_plab.size(); ++i)    pre  += m_plab[i];
-    Vec4D isr;  for (const Vec4D &kj : m_ISRPhotons) isr += kj;
-    std::cerr<<std::setprecision(10)<<"@@@ FSRMAP residual="<<res
-             <<" xi="<<xi<<" Mp="<<Mp<<" msum="<<msum
-             <<" nFSR="<<m_FSRPhotons.size()<<" nk="<<k.size()
-             <<"\n   Kall(lab)="<<Kall<<" post(lab)="<<post<<" pre(lab)="<<pre
-             <<" isr(lab)="<<isr<<" P="<<(m_bornMomenta[0]+m_bornMomenta[1])
-             <<"\n   post+Kall+isr-P="<<(post+Kall+isr-m_bornMomenta[0]-m_bornMomenta[1])
-             <<" pre+isr-P="<<(pre+isr-m_bornMomenta[0]-m_bornMomenta[1])<<std::endl;
-  }
-}
-
-// RebuildBeamsAtPreFSR's momentum balance (printed only when violated)
-void NLO_Base::ReportMappingResidual(const Vec4D_Vector &p, const Vec4D_Vector &k,
-                                     const char *tag, const Vec4D &Q)
-{
-  Vec4D res(p[0] + p[1]);
-  for (size_t i = 2; i < p.size(); ++i) res -= p[i];
-  for (const Vec4D &kj : k) res -= kj;
-  const double scale(Max(1., p[0][0]));
-  if (Vec3D(res).Abs() > 1e-9*scale || std::abs(res[0]) > 1e-9*scale) {
-    static long nprint(0);
-    if (++nprint <= 20)
-      std::cerr<<std::setprecision(10)<<"@@@ "<<tag<<" residual="<<res
-               <<" nk="<<k.size()
-               <<" nFSR="<<m_FSRPhotons.size()<<" P="<<(m_bornMomenta[0]+m_bornMomenta[1])
-               <<" Q="<<Q<<std::endl;
-  }
-}
-
-// YFS: REAL_STAB (diagnostic): the mapped pair invariant of a real point
-void NLO_Base::DumpMapQ(const double sqrtsqq, const double eksum, const std::string &extra)
-{
-  std::cerr<<"@@@ MAPQ sqrt_sqq="<<sqrtsqq
-           <<" sqrt_s="<<sqrt(m_s)
-           <<" sqrt_sborn="<<(m_bornMomenta[2]+m_bornMomenta[3]).Mass()
-           <<" Eksum="<<eksum<<extra<<std::endl;
-}
-
-// YFS: VIRTUAL_CHECK: the loops checked in a second frame and dropped
-void NLO_Base::ReportVirtualCheck()
-{
-  static const bool vchk(ATOOLS::Settings::GetMainSettings()["YFS"]
-                         ["VIRTUAL_CHECK"].SetDefault(false).Get<bool>());
-  if (vchk)
-    msg_Out()<<"YFS: VIRTUAL_CHECK (this rank): Born-level loops checked in a second "
-             <<"frame "<<m_vLoopChecked<<", dropped as unstable "<<m_vLoopUnstable
-             <<" (their share of the sum of m_born: "
-             <<(m_vLoopBornSum > 0. ? m_vLoopUnstableBorn/m_vLoopBornSum : 0.)
-             <<")"<<std::endl;
 }

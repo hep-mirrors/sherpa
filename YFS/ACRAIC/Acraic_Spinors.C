@@ -117,46 +117,6 @@ Complex Acraic_Base::Up(const Vec4D &p1, const Vec4D &p2, int h1, int h2, int C1
 }
 
 
-Complex Acraic_Base::S(const Vec4D &p1, const Vec4D &p2, int h1, int h2) {
-  Complex s(0, 0);
-  double sq1 = sqrt(m_zeta * p2 / (m_zeta * p1));
-  double sq2 = sqrt(m_zeta * p1 / (m_zeta * p2));
-  if (h1 == -h2) {
-    if (h1 > 0) s = Splus(p1, p2);
-    else s = Sminus(p1, p2);
-  }
-  else if (h1 == h2) {
-    s = p1.Mass() * sq1 + p2.Mass() * sq2;
-  }
-  else {
-    msg_Error() << METHOD << "Wrong helicities\n";
-  }
-  return s;
-}
-
-
-Complex Acraic_Base::S(const Vec4D &p1, const Vec4D &p2, double m1, double m2, int h1, int h2) {
-  Complex s(0, 0);
-  Vec4D phat1, phat2;
-  if (IsEqual(m1, 0)) h1 = -h1;
-  if (IsEqual(m2, 0)) h2 = -h2;
-  double sq1 = sqrt(m_zeta * p2 / (m_zeta * p1));
-  double sq2 = sqrt(m_zeta * p1 / (m_zeta * p2));
-  if (h1 == -h2) {
-    if (h1 > 0) s = Splus(p1, p2);
-    else s = Sminus(p1, p2);
-  }
-  else if (h1 == h2) {
-    s = m1 * sq1 + m2 * sq2;
-  }
-  else {
-    msg_Error() << METHOD << "Wrong helicities\n";
-  }
-  return s;
-}
-
-
-
 Complex Acraic_Base::Splus(const Vec4D &p, const Vec4D &q) {
   Complex sp = -Complex(q[2], q[3]) * sqrt((p[0] - p[1]) / (q[0] - q[1]));
   sp += Complex(p[2], p[3]) * sqrt((q[0] - q[1]) / (p[0] - p[1]));
@@ -225,14 +185,6 @@ Complex Acraic_Base::VGamma(const Vec4D &p1, const Vec4D &p2, const Vec4D &k, in
   return UGamma(p1, p2, k, h1, -i, -j, true, M1, M2);
 }
 
-
-//! One leg's eikonal term b(p,k)/(p.k) in the GPS photon convention.
-// hel=-1 uses -Sminus = conj(Splus) to match Comix's epsilon_- sign.
-Complex Acraic_Base::SfactorLegGPS(const Vec4D &p, const Vec4D &k, int hel) {
-  const Complex b(sqrt(2) * Xi(p, k)
-                  * (hel == -1 ? -Sminus(k, p) : Splus(k, p)));
-  return 0.5 * m_e * b / (p * k);
-}
 
 Vec4C Acraic_Base::ComixPolarisation(const Vec4D &k, int hel) const
 {

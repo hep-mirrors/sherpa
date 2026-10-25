@@ -12,32 +12,27 @@ using namespace ATOOLS;
 #include <memory>
 
 namespace BEAM   { class Beam_Base;      }
-// #define YFS_DEBUG
 
 namespace YFS {
 
-#ifdef YFS_DEBUG
-typedef std::map<std::string, std::unique_ptr<ATOOLS::Histogram> > histograms;
-static histograms m_histograms;
-#endif
 class ISR : public YFS_Base {
 public:
   double  m_b1;
   double  m_b2;
   double  m_theta, m_angleWeight;
   double  m_phi;
-  double  m_c, m_F, m_sin;
+  double  m_c, m_sin;
   double  m_w, m_f, m_fbar;
-  double  m_delta, m_betaf;
+  double  m_betaf;
   double  m_jacW, m_lam, m_lam0, m_diljac, m_diljac0;
   double  A;
   int m_n, m_cut;
-  double m_beta, m_form, m_weight, m_Kmax, m_Kmin;
+  double m_beta, m_weight, m_Kmax, m_Kmin;
   double  m_am2, m_mass, m_x;
   //! Mean ISR photon multiplicity. Own member, not shared with FSR's.
   double  m_nbar;
   double m_massW;
-  double m_W, m_W0; // for beta1
+  double m_W; // for beta1
   bool m_setmass;
   double m_nsuccess, m_nfail, m_ntotal;
   // ATOOLS::Particle *p_photon;
@@ -51,7 +46,6 @@ public:
   double m_AA = 0., m_K2 = 0., m_PTK = 0., m_jacvec = 0., m_scale = 0.;
   Vec4D m_photon, m_photonSum;
   Vec4D_Vector m_photons;
-  void GeneratePhotonAngleMassless();
   //! Not owned: the dipole handed in by Initialize/SetIncoming.
   YFS::Dipole *p_dipole = nullptr;
 
@@ -63,13 +57,10 @@ public:
   void SetS(const double s) override;
   void GeneratePhotonMomentum();
   double Jacobian( double x);
-  double GenerateV();
   void SetIncoming(YFS::Dipole *p_dipole);
   double CalculateBeta(const ATOOLS::Vec4D &p);
   void GenerateAngles();
   void Weight();
-  void WeightFSR();
-  double EikonalWeight(const Vec4D_Vector, const Vec4D_Vector, double a);
   double Eikonal(Vec4D);
   double Eikonal(const Vec4D &k, const Vec4D &p1, const Vec4D &p2);
   double EikonalMassless(const Vec4D &k, const Vec4D &p1, const Vec4D &p2);
@@ -79,22 +70,15 @@ public:
   void D2(Vec4D, double, double, double);
   void MapPhotonMomentun();
   void MapMomenta(Vec4D_Vector p, Vec4D_Vector q, Vec4D_Vector k);
-  void GenerateAnglesForMassless();
   double Flux();
   void Clean();
 
   inline double GetWeight() { return m_weight; }
   inline ATOOLS::Vec4D GetPhotonSum() { return m_photonSum; }
   inline ATOOLS::Vec4D_Vector GetPhotons() { return m_photons; }
-  inline double  GetTheta() { return m_theta; }
-  inline double  GetPhi() { return m_phi; }
   inline double  GetN() { return m_n; }
   inline void  SetV(double v) { m_v = v; }
-  inline void  Setmass(bool setmass) { m_setmass = setmass; }
-  inline double  GetGamma() { return m_g; }
-  inline double  GetGammaPrime() { return m_gp; }
   inline int  GetCut() { return m_cut; }
-  void SetMinimalPhotonAngle(const double&);
 
 
 };

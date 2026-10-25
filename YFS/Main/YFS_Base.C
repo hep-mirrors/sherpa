@@ -163,7 +163,6 @@ void YFS_Base::RegisterDefaults(){
                            (false: KKMC's CEEX2/CEEX1 step, diagnostic only)
       BETA0_2_WEAK_PRODUCT the delta_f w product (false: like-for-like KKMC)
       BETA0_2_ALPHA        alpha0|loop - the coupling of delta_f and the NLL
-      BETA0_2_PROBE        @@@ B02 lines (first n events, and the ACRAIC dump)
       BETA0_2_BOXES        with two_loop: the non-factorisable photonic two-loop
                            boxes (Beta0_2_Boxes.H); false keeps only the exact
                            vertex constant, to measure the boxes on their own
@@ -182,7 +181,6 @@ void YFS_Base::RegisterDefaults(){
   s["BETA0_2_CROSS"].SetDefault(true);
   s["BETA0_2_WEAK_PRODUCT"].SetDefault(true);
   s["BETA0_2_ALPHA"].SetDefault(beta02alpha::alpha0);
-  s["BETA0_2_PROBE"].SetDefault(0);
   s["BETA0_2_BOXES"].SetDefault(true);
   s["BETA0_2_DIPHOTON"].SetDefault(true);
   Settings::GetMainSettings()["ACRAIC"]["BETA0_2"].SetDefault(beta02::none);
@@ -191,10 +189,8 @@ void YFS_Base::RegisterDefaults(){
     the photon vacuum polarisation on the Born-level amplitude of both
     columns (YFS/Main/Dyson_VP.H): resummed beyond a full-EW provider's first
     order, complete for a provider without the photon self-energy.
-    DYSON_VP_PROBE: @@@ DYSONVP lines for the first n events.
   */
   s["DYSON_VP"].SetDefault(dysonvp::none);
-  s["DYSON_VP_PROBE"].SetDefault(0);
   /*
     Target 3 of the two-loop review (NOTES-beta0-2-2026-10-01.md):
     YFS: M1_SQUARE averaged|helicity - the |m_1|^2 of YFS.NLO's beta_0^(2);
@@ -206,14 +202,11 @@ void YFS_Base::RegisterDefaults(){
   s["NLO_Weight_Breakdown"].SetDefault(false);
   s["Ladder_Weights"].SetDefault(false);
   s["Dump_Dipoles"].SetDefault(0);
-  s["CHECK_INVARIANTS"].SetDefault(false);
   /*
     NLO diagnostics. Off by default, read through Settings rather than the
     environment for the same reason as the ACRAIC ones: a run has to be
     reproducible from its card alone.
   */
-  s["REAL_STAB"].SetDefault(0);        // @@@ RSTAB / @@@ MAPQ
-  s["REAL_TRACE"].SetDefault(0.0);     // @@@ RTRACE, per-photon Born+real terms of heavy events
   /*
     REAL_FSR_MAP, the (n+1)-body point of a final-state photon at n >= 2
     (n = 1 is the event on every setting but rest_frame); name or old integer:
@@ -239,12 +232,7 @@ void YFS_Base::RegisterDefaults(){
       rest_frame (0): rest-frame map (legacy).
   */
   s["REAL_MAP"].SetDefault(realmap::scaled);
-  s["PHOTON_DUMP"].SetDefault(0);      // @@@ PHC, per-photon contributions
-  s["BETA_RECURSION"].SetDefault(0);   // @@@ BETA2, hand vs recursive beta_2
-  s["COMIX_AMPS"].SetDefault(0);       // @@@ CAMP, Comix helicity amplitudes
-  s["ULP_CHECK"].SetDefault(0);        // last-digit sensitivity of the real
-  s["ROT_CHECK"].SetDefault(0);        // rotation invariance as an error bar
-  s["SOFT_SCAN"].SetDefault(0.0);      // rel. deviation that triggers SoftScan
+  s["SOFT_SCAN"].SetDefault(0.0);      // rel. deviation that triggers SoftScan, @@@ SCAN
   s["No_Born"].SetDefault(false);
   s["No_Sub"].SetDefault(false);
   s["Sub_Mode"].SetDefault(submode::global);
@@ -280,9 +268,6 @@ void YFS_Base::RegisterDefaults(){
   s["NLO_FSR_PHOTONS"].SetDefault(true);
 
   s["NLO_FSR_FROM_EVENT"].SetDefault(true);
-  s["MIN_PHOTON"].SetDefault<int>(-1);
-  s["FB_Analysis"].SetDefault(false);
-  s["FB_Analysis_KF"].SetDefault<int>(0);
 }
 
 
@@ -381,7 +366,6 @@ void YFS_Base::RegisterSettings(){
   m_nlo_weight_breakdown = s["NLO_Weight_Breakdown"].Get<bool>();
   m_ladder_weights = s["Ladder_Weights"].Get<bool>();
   m_dump_dipoles = s["Dump_Dipoles"].Get<int>();
-  m_check_invariants = s["CHECK_INVARIANTS"].Get<bool>();
   m_no_born_setting = s["No_Born"].Get<bool>();
   m_no_born = m_no_born_setting;
   m_no_subtraction = s["No_Sub"].Get<bool>();
@@ -417,10 +401,6 @@ void YFS_Base::RegisterSettings(){
   m_skipNegWeights = s["SKIP_NEG_WEIGHTS"].Get<bool>();
   m_nlo_fsr_photons = s["NLO_FSR_PHOTONS"].Get<bool>();
   m_nlo_fsr_from_event = s["NLO_FSR_FROM_EVENT"].Get<bool>();
-  m_mingammaN = s["MIN_PHOTON"].Get<int>();
-  m_fb_analysis = s["FB_Analysis"].Get<bool>();
-  m_fb_kf = s["FB_Analysis_KF"].Get<int>();
-  m_CalForm = false;
   m_realtool = false;
   //update when beamstrahlung is added
   m_isrinital=true;

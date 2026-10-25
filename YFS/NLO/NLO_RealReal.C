@@ -308,39 +308,6 @@ double NLO_Base::RealRealRemainder(size_t i, size_t j)
   const bool singles(RRMode() == rrmode::singles_product);
   const double rem(singles ? m_born*(rhoij - gi.rho*gj.rho)*others
                            : m_born*(rhoij - gi.factor*gj.factor)*others);
-  // the two-photon target of the RR_PROBE identity: product + RR
-  if (m_photons.size() == 2)
-    m_rrExactPair = singles ? rhoij + gi.factor*gj.factor - gi.rho*gj.rho : rhoij;
-  static const int probe(ATOOLS::Settings::GetMainSettings()["YFS"]["RR_PROBE"]
-                         .SetDefault(0).Get<int>());
-  if (probe) {
-    std::ostringstream o;
-    o<<std::setprecision(10)<<"@@@ RRPAIR xi="<<2.*m_photons[i].E()/sqrt(m_s)
-     <<" xj="<<2.*m_photons[j].E()/sqrt(m_s)<<" fi="<<(m_photons[i].IsFSR()?1:0)
-     <<" fj="<<(m_photons[j].IsFSR()?1:0)<<" nph="<<m_photons.size()
-     <<" rem/B="<<rem/m_born<<" rhoij="<<rhoij<<" facti="<<gi.factor
-     <<" factj="<<gj.factor<<" rhoi="<<gi.rho<<" rhoj="<<gj.rho
-     <<" others="<<others<<" ci/c="<<ci/gi.denom
-     <<" cj/c="<<cj/gj.denom<<" Fij/FiFj="<<Fij/(gi.flux*gj.flux)
-     <<" evpt="<<(evpt?1:0);
-    // the s-channel mass at the pair point (final legs + the pair's photons that
-    // are FSR) against the generator's (pre-FSR system, all FSR photons)
-    {
-      Vec4D XP;
-      for (size_t l(2); l < nl; ++l) XP += P[l];
-      if (m_photons[i].IsFSR()) XP += P[nl];
-      if (m_photons[j].IsFSR()) XP += P[nl + 1];
-      o<<" XP="<<XP.Mass()<<" Xgen="<<PreFSRSystem().Mass();
-    }
-    if (probe >= 2) {
-      o<<std::setprecision(17)<<" P=";
-      for (const Vec4D &q : P) o<<q<<" ";
-      o<<" PB=";
-      for (const Vec4D &q : m_plab) o<<q<<" ";
-    }
-    o<<"\n";
-    std::cerr<<o.str();
-  }
   if (IsBad(rem)) { m_zeroRR++; return 0.; }
   if (!IsZero(rem)) m_nonZeroRR++;
   return rem;
@@ -352,7 +319,6 @@ bool NLO_Base::RRSinglesProduct() const
 }
 
 double NLO_Base::CalculateRealReal() {
-  m_rrExactPair = std::numeric_limits<double>::quiet_NaN();
   if (!m_rrtool)
     return 0;
   if (RRMode() == rrmode::exact) {
@@ -405,13 +371,6 @@ double NLO_Base::CalculateRealReal() {
       const double phemin(PhotonEminNLO());
       if (phemin>0.0 && (k.E()<phemin || kk.E()<phemin)) continue;
       double contrib = CalculateRealReal(k, kk);
-      static const bool betacheck(ATOOLS::Settings::GetMainSettings()["YFS"]["BETA_RECURSION"].Get<int>()!=0);
-      if (betacheck) {
-        const double gen(CalculateRealN(LegUnion(LegBit<unsigned>(i), LegBit<unsigned>(j))));
-        std::cerr<<"@@@ BETA2 hand="<<contrib<<" rec="<<gen
-                 <<" dev="<<(contrib!=0. ? std::abs(gen/contrib-1.) : -1.)
-                 <<std::endl;
-      }
       rr += contrib;
       const YFS::Photon *pi = &photons[i], *pj = &photons[j];
       if ((pi == h1 && pj == h2) || (pi == h2 && pj == h1))

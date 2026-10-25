@@ -17,7 +17,6 @@ namespace YFS{
     double m_alpha = 0.;   //!< set by SetAlphaQED, as it already was
     double m_s;            //!< sqr(Ecms), the same value YFS_Base holds
     bool   m_coulomb;
-    int m_subtract;
     void Calculate(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2);
     inline double GetWeight() { return m_weight; }
     inline void SetAlphaQED(double alp) { m_alpha = alp; }

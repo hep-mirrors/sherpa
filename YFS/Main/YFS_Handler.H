@@ -2,7 +2,6 @@
 #define YFS_Main_YFS_Handler_H
 
 #include "YFS/Main/YFS_Base.H"
-#include "YFS/Main/YFS_FB_Analysis.H"
 #include "YFS/Main/ISR.H"
 #include "YFS/Main/FSR.H"
 #include "YFS/Main/Coulomb.H"
@@ -16,7 +15,6 @@
 // #include "MODEL/Main/Model_Base.H"
 #include "YFS/Main/Define_Dipoles.H"
 #include "YFS/ACRAIC/Acraic_Base.H"
-#include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include "ATOOLS/Phys/Weights.H"
 #include <set>
 #include <memory>
@@ -51,13 +49,13 @@ namespace YFS {
           Vec4D_Vector m_sprimeBeams;
           ATOOLS::Poincare m_cmsboost;
           ATOOLS::Vec4D m_Wm, m_Wp;
-          ATOOLS::ParticleMomMap m_inparticles, m_outparticles;
+          ATOOLS::ParticleMomMap m_outparticles;
 
           // -- photons --------------------------------------------------
           YFS::Photon_Vector m_photons;
           YFS::Photon_Vector m_me_photons;
           Vec4D_Vector m_ISRPhotons, m_FSRPhotons;
-          Vec4D_Vector m_isrphotonsforME, m_fsrphotonsforME;
+          Vec4D_Vector m_fsrphotonsforME;
           ATOOLS::Vec4D m_photonSumISR, m_photonSumFSR;
 
           // -- weights and form factors ---------------------------------
@@ -106,9 +104,7 @@ namespace YFS {
           //! ... and with (1+v/2) on the whole of A_1 (ACRAIC_O1V1)
           double m_corr_acraic_o1v1 = 0.;
           //! ORDER 2, both external-virtual compositions: (v/2) on A_0
-          //! (ACRAIC_O2V0), the closest to KKMC CEEX2 (whose one-photon
-          //! amplitudes get only the ISR real-virtual or, for pions, the soft
-          //! pion vertex), and (1+v/2) on A_1 (ACRAIC_O2V1)
+          //! (ACRAIC_O2V0), the closest to KKMC CEEX2
           double m_corr_acraic_v0 = 0., m_corr_acraic_v1 = 0.;
           //! ... and with (1+v/2) on the whole of A_2 (ACRAIC_O2V2): the
           //! nominal plus the (v/2) beta_2 terms, an O(alpha^3) estimate
@@ -136,7 +132,6 @@ namespace YFS {
         std::vector<std::unique_ptr<ATOOLS::Particle> > m_particle_store;
         ATOOLS::Flavour_Vector m_flavs;
         std::vector<double> m_mass;
-        ATOOLS::Momenta_Stretcher m_stretcher;
         BEAM::Beam_Spectra_Handler *p_beams = nullptr;
         std::unique_ptr<YFS::ISR> p_isr;
         std::unique_ptr<YFS::Debug> p_debug;
@@ -144,7 +139,6 @@ namespace YFS {
         Flavour_Vector m_inflav;
         
         std::unique_ptr<YFS::NLO_Base> p_nlo;
-        std::unique_ptr<YFS::YFS_FB_Analysis> p_fb;
         std::unique_ptr<YFS::FSR> p_fsr;
         std::unique_ptr<YFS::YFS_Form_Factor> p_yfsFormFact;
         std::unique_ptr<YFS::Define_Dipoles> p_dipoles;
@@ -154,8 +148,6 @@ namespace YFS {
         //! CalculateBeta through BuildNamedWeights and their probes (YFS_Weight_Builder.C)
         std::unique_ptr<YFS::YFS_Weight_Builder> p_weights;
 
-        //! YFS: FSR_DENSITY_GATE - the FSR generator density against the eikonals.
-        void ProbeFSRDensity(YFS::Dipole &D);
         struct Acraic_Stats {
           //! ACRAIC vs the external providers, per point: running mean and worst.
           long   m_cmp_n = 0;
@@ -213,19 +205,12 @@ namespace YFS {
         //! that other events lack, since HepMC binds the set from event one.
         std::set<std::string> m_wnames;
 
-        //! Per-event assertions for the invariants that could not be made
-        //! structural. Each one corresponds to a bug that reached a physics
-        //! result before being noticed, so the point is to fail where the
-        //! invariant breaks rather than several frames downstream. Off unless
-        //! YFS: CHECK_INVARIANTS is set.
-        void CheckInvariants() const;
         void CreatMomentumMap();
         void MakeACRAIC();
         Vec4D_Vector GetPhotons();
         inline double GetWeight() const      { return m_ev.m_yfsweight;  }
         inline const ATOOLS::Weights_Map& GetNLOWeightsMap() const { return m_ev.m_nlo_weightsmap; }
         inline ATOOLS::Vec4D GetPhotonSum() const      { return m_ev.m_photonSumISR;  }
-        inline ATOOLS::Vec4D GetPhotonSumFSR() const      { return m_ev.m_photonSumFSR;  }
         // The event momenta/photons are stored in the boosted incoming-pair
         // rest frame (see SetBornMomenta). These getters feed the event blob,
         // which must be in the original lab frame, so boost the returned copy
@@ -240,13 +225,11 @@ namespace YFS {
         }
         inline ATOOLS::Flavour GetFlavour(const int i) const { return m_flavs[i];  }
         inline void SetBorn(double b) { m_born = b; }
-        inline double GetBorn() { return m_born; }
 
         inline yfsmode::code  Mode()   const {return m_mode; }
         //! YFS: Integrate_NLO - whether CalculateBeta() also runs while integrating
         inline bool IntegrateNLO() const { return m_int_nlo != 0; }
 
-        inline bool UsingLoopTool()   const {return m_looptool; }
         // Undo the incoming-pair-rest-frame boost that SetBornMomenta applied
         // (m_ev.m_cmsboost: lab->COM), returning the blob-facing momenta to the
         // original lab frame. m_ev.m_cmsboost is the identity when no boost was
@@ -287,7 +270,6 @@ namespace YFS {
         //! resonance map through it.
         inline Define_Dipoles *Dipoles() { return p_dipoles.get(); }
         inline const ATOOLS::Particle_Vector &Particles() const { return m_particles; }
-        inline const ATOOLS::ParticleMomMap &OutParticles() const { return m_ev.m_outparticles; }
         NLO_Base *EnsureNLO();
         inline void resetparticles() {m_setparticles=false;}
 
@@ -300,8 +282,6 @@ namespace YFS {
         bool CalculateFSR();
         bool CalculateISR();
         bool CalculateFSR(Vec4D_Vector &k);
-        bool CheckMomentumConservation();
-        void CheckMasses();
         void Reset();
         void AddFormFactor();
         /*!

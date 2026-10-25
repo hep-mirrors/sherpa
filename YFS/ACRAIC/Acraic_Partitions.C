@@ -425,7 +425,6 @@ bool Acraic_Base::RepairMomentumBalance()
 {
   static const bool on(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
                       ["MOMENTUM_REPAIR"].Get<bool>());
-  m_repairresid = -1.;
   if (!on || m_pacraic.size() < 3) return false;
   std::vector<Vec4D*> v;
   std::vector<double> m2;
@@ -449,7 +448,6 @@ bool Acraic_Base::RepairMomentumBalance()
       rmax = Max(rmax, dabs(r[i]));
     }
     const double rn(sqrt(sqr(R[0]) + sqr(R[1]) + sqr(R[2]) + sqr(R[3])));
-    if (pass == 0) m_repairresid = rn;
     // already at rounding: leave the point alone
     if (rn < 1e-15*scale && rmax < 1e-15*scale*scale) break;
     // A Lambda = b with A = n 1 - sum_i u_i u_i^T / |u_i|^2, u_i = G p_i
@@ -551,39 +549,6 @@ void Acraic_Base::PartitionPlus(int &last) {
     if (m_stage[j] != m_nstages - 1) { atmax = false; break; }
   }
   last = atmax ? 1 : 0;
-}
-
-
-void Acraic_Base::PrintKinematics(std::ostream &o) const
-{
-  o<<std::setprecision(6)<<"HEAVY legs:";
-  for (size_t i(0); i < m_pacraic.size(); ++i)
-    o<<" ["<<i<<"] "<<m_flavs[i]<<" E="<<m_pacraic[i][0]
-     <<" th="<<m_pacraic[i].Theta()<<" m="<<m_pacraic[i].Mass();
-  o<<std::endl;
-  const double rs(m_s > 0. ? sqrt(m_s) : 1.);
-  for (size_t j(0); j < m_allphotons.size(); ++j) {
-    const Vec4D &k(m_allphotons[j]);
-    double thmin(M_PI);
-    for (size_t i(2); i < m_pacraic.size(); ++i)
-      if (m_flavs[i].Charge() != 0.) {
-        const double c(Vec3D(k)*Vec3D(m_pacraic[i])
-                       /(Vec3D(k).Abs()*Vec3D(m_pacraic[i]).Abs()));
-        thmin = Min(thmin, acos(Max(-1., Min(1., c))));
-      }
-    o<<"HEAVY photon "<<j<<" E="<<k[0]<<" x="<<2.*k[0]/rs
-     <<" th="<<k.Theta()<<" thF="<<thmin
-     <<" hel="<<(j < m_PhoHel.size() ? m_PhoHel[j] : 0)
-     <<" fixed="<<(j < m_fixedstage.size() ? (int)m_fixedstage[j] : -1);
-    for (int g(0); g < m_nstages; ++g)
-      if ((int)m_Sfac.size() == m_nstages && j < m_Sfac[g].size())
-        o<<" |s"<<g<<"|="<<std::abs(m_Sfac[g][j]);
-    o<<std::endl;
-  }
-  o<<"HEAVY svarQ="<<m_svarQ<<" svarY="<<m_svarY<<" s="<<m_s
-   <<" rhocrud="<<m_rhocrud<<" result0="<<m_result0<<std::endl;
-  // the two physical t-channel invariants (Bhabha)
-  o<<"@@@ HEAVY t02="<<T02()<<" t13="<<T13()<<std::endl;
 }
 
 
@@ -803,19 +768,13 @@ void Acraic_Base::Calculate() {
   }
   m_inc00 = m_inc11 = m_inc01 = 0.;
   m_inc22 = m_inc12 = m_inc02 = m_incbv = m_incbo = 0.;
-  m_b1n = 0; m_b1min = m_b1max = m_b1sum = m_b1sq = 0.;  // beta_1 spread, per event
-  m_beta10 = 0.0;
-  m_beta01 = 0.0;
-  m_beta00 = 0.0;
   BuildAcraicMomenta();
   RepairMomentumBalance();
-  CheckBornNorm();
   ZerAmplit();
   m_allphotons = m_isrphotons;
   m_allphotons.insert(m_allphotons.end(),
                       m_fsrphotons.begin(), m_fsrphotons.end());
   MakePhotonHel();
-  ProbeFrames();
   CalculateSfactors();
   // stage decomposition refused (charged stage): no ACRAIC weight
   if ((int)m_Sfac.size() != m_nstages
@@ -830,18 +789,14 @@ void Acraic_Base::Calculate() {
   m_realphotM1.assign(RealVirtualMode() == acraicrv::averaged ||
                      RealVirtualMode() == acraicrv::helicity ? m_allphotons.size() : 0,
                       Amplitude());
-  SetBeta1Trace();
   // the outgoing fermion pair's invariant, not legs 2 and 3 (e.g. H l+ l-)
   m_svarQ = (m_pacraic[m_if1] + m_pacraic[m_if2]).Abs2();
   m_sQ    = m_svarQ;
   MakePropT(m_pacraic);
 
   
-  // per-photon Comix/hand ratios need the total amplitude: before the loop
-  RunBeta1Scan();
   BuildComixBornAlignment();
   BuildResonanceBornDelta();   // after the alignment: it uses m_comixflip
-  BuildComixPhotonRatios();
   // ACRAIC: TCHANNEL_REDUCED_BORN
   ResolveReducedBorn();
 
@@ -917,12 +872,6 @@ void Acraic_Base::Calculate() {
       m_crudeprod = crudeprod;
     }
     const double svarX(PX.Abs2());
-    if (m_checkxs) {
-      const Complex pz(1./Complex(svarX - sqr(m_MZ), m_gZ*svarX/m_MZ));
-      const double a(std::abs(pz));
-      if (nparts == 1) { m_pzmin = m_pzmax = a; }
-      else { m_pzmin = Min(m_pzmin, a); m_pzmax = Max(m_pzmax, a); }
-    }
     if (svarX <= 0. || m_svarQ <= 0.) {
       if (last) break;
       PartitionPlus(last);
@@ -953,12 +902,10 @@ void Acraic_Base::Calculate() {
       }
     m_cfac = sProd * Complex(pfmode == pseudoflux::rho0_and_rho1 ? m_pflux : 1., 0.);   // rho_1 side
     MakeProp();
-    ResonanceProbe(nparts);
     // ACRAIC: WEAK form factors at this partition's scale
     MakeEWFF(m_sp, cos(m_pacraic[m_if1].Theta()));
     MakeBoxMandelstams(PX);
 
-    AccumulateBeta1Partition();
     if (dobeta2 || m_treeprobe) ResetBeta1Record();
     InfraredSubtractedME_0_0();
     m_b1terms.clear();        // TCHANNEL_MULTIPHOTON 2: this partition's beta_1 terms
@@ -1005,20 +952,12 @@ void Acraic_Base::Calculate() {
     PartitionPlus(last);
     if (last == 2) break;
   }
-  // ACRAIC: CRUDE_FROM_GENERATOR; compare only prints it beside the
-  // per-partition crude
+  // ACRAIC: CRUDE_FROM_GENERATOR
   const crudegen::code cg(m_crudegen != crudegen::automatic ? m_crudegen
                           : (WStagesActive() ? crudegen::on : crudegen::off));
-  if (cg != crudegen::off) {
+  if (cg == crudegen::on) {
     const double rg(CrudeFromGenerator());
-    if (cg == crudegen::compare) {
-      static long ncg(0);
-      if (ncg < 5000) { ++ncg;
-        std::cerr<<std::setprecision(10)<<"@@@ CRUDEGEN nphot="<<m_allphotons.size()
-                 <<" nstages="<<m_nstages<<" rhocrud="<<m_rhocrud<<" gen="<<rg
-                 <<" ratio="<<(m_rhocrud > 0. && rg >= 0. ? rg/m_rhocrud : -1.)
-                 <<std::endl; }
-    } else if (rg >= 0.) m_rhocrud = rg;
+    if (rg >= 0.) m_rhocrud = rg;
     else {
       static bool warned(false);
       if (!warned) { warned = true;
@@ -1027,85 +966,11 @@ void Acraic_Base::Calculate() {
                    <<"crude is used. Reported once."<<std::endl; }
     }
   }
-  if (m_b1trace) {
-    double n0(0.), n1(0.);
-    for (int f(0); f < Amplitude::NHel(); ++f) {
-      n0 += std::norm(m_AmpExpo0.m_A[f]); n1 += std::norm(m_AmpExpo1.m_A[f]); }
-    // per helicity, in the same digit order as the KKMC harness's KKPARTP
-    for (int j1 = 0; j1 <= 1; ++j1)
-      for (int j2 = 0; j2 <= 1; ++j2)
-        for (int j3 = 0; j3 <= 1; ++j3)
-          for (int j4 = 0; j4 <= 1; ++j4) {
-            const Complex a0(m_AmpExpo0.m_A[Idx(j1,j2,j3,j4)]);
-            const Complex a1(m_AmpExpo1.m_A[Idx(j1,j2,j3,j4)]);
-            if (std::abs(a0) < 1e-6*sqrt(n0) && std::abs(a1) < 1e-6*sqrt(n1)) continue;
-            std::cerr<<std::setprecision(8)<<"@@@ B1HEL "<<j1<<j2<<j3<<j4
-                     <<" A0="<<a0<<" A1-A0="<<(a1-a0)
-                     <<" |A1-A0|/|A0|="<<(std::abs(a0)>0.? std::abs(a1-a0)/std::abs(a0) : -1.)
-                     <<" arg((A1-A0)/A0)="<<(std::abs(a0)>0.? std::arg((a1-a0)/a0) : 0.)
-                     <<std::endl;
-          }
-    std::cerr<<"@@@ B1SUM |A0|="<<sqrt(n0)<<" |A1|="<<sqrt(n1)
-             <<" nparts="<<nparts;
-    for (size_t j(0); j < m_realphot.size(); ++j) {
-      double nb(0.);
-      for (int f(0); f < Amplitude::NHel(); ++f) nb += std::norm(m_realphot[j].m_A[f]);
-      std::cerr<<" |beta1_"<<j<<"|="<<sqrt(nb)
-               <<" E_"<<j<<"="<<m_allphotons[j][0];
-    }
-    std::cerr<<std::endl;
-  }
-  CheckClosureOnePhoton();
-  ReportBeta1Partitions();
-  CheckBeta1Ratio();
-  CheckVirtualPartitions(nparts);
   m_nparts = nparts;
-  if (m_checkxs && nparts > 1 && m_pzmin > 0.) {
-    const size_t n(Min(m_allphotons.size(), size_t(15)));
-    m_pzspread[n] = Max(m_pzspread[n], m_pzmax/m_pzmin);
-    m_pzsum[n] += m_pzmax/m_pzmin;
-    ++m_pzn[n];
-    const double ecm((m_momenta[0]+m_momenta[1]).Mass());
-    for (int c(0); c < 4; ++c) {
-      const double xcut(m_pzxcut[c]);
-      Vec4D Xhard(m_pacraic[0] + m_pacraic[1]), Xall(Xhard);
-      size_t nsoft(0);
-      for (size_t j(0); j < m_allphotons.size(); ++j) {
-        const double x(2.*m_allphotons[j][0]/ecm);
-        if (x > xcut) { Xhard -= m_allphotons[j]; Xall -= m_allphotons[j]; }
-        else { Xall -= m_allphotons[j]; ++nsoft; }
-      }
-      if (nsoft == 0) continue;
-      const double sh(Xhard.Abs2()), sa(Xall.Abs2());
-      if (sh <= 0. || sa <= 0.) continue;
-      const double a(std::abs(1./Complex(sh - sqr(m_MZ), m_gZ*sh/m_MZ)));
-      const double b(std::abs(1./Complex(sa - sqr(m_MZ), m_gZ*sa/m_MZ)));
-      const double r(a > b ? a/b : b/a);
-      m_pzsoft[c] = Max(m_pzsoft[c], r);
-      m_pzsoftsum[c] += r; ++m_pzsoftn[c];
-      m_pzsoftsav[c] += double(NumLegSubsets<unsigned>(Min(nsoft, size_t(20))));
-    }
-  }
- 
   CheckPartitionCount(nparts);
 
-  // ACRAIC: COMIX_REAL overwrites m_AmpExpo1 for one-photon events: after
-  // the partition loop, before MakeRho
-  ApplyComixReal();
-
   MakeRho();
-  if (m_order == 2) {
-    static const bool b2c(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
-                          ["BETA2_CLOSURE"].Get<int>() != 0);
-    static const bool b2s(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
-                          ["BETA2_SOFT_TEST"].Get<int>() != 0);
-    if (b2c) Beta2Closure();
-    if (b2s) Beta2SoftLimit();
-    if (m_treeprobe) TreeBetaClosure();   // ACRAIC: TREE_BETA_PROBE
-  }
-  RunBeta1Closure();
-  RunSoftLimitTest();
-  RunSoftNormCheck();
+  if (m_order == 2 && m_treeprobe) TreeBetaClosure();   // ACRAIC: TREE_BETA_PROBE
 
   static const double dumpxmin(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["DUMP_XMIN"].Get<double>());
   static const size_t dumpn(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["DUMP_NPHOT"].Get<int>());
@@ -1277,47 +1142,6 @@ void Acraic_Base::Calculate() {
         std::cerr<<" x"<<i<<"="<<2.*m_allphotons[i][0]/(m_momenta[0]+m_momenta[1]).Mass();
       std::cerr<<std::endl;
     }
-  }
-
-  static const bool cxchk(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["COMIX_CHECK"].Get<int>()!=0);
-  if (cxchk) {
-    ComixCalib c;
-    if (CalibrateComixMap(c))
-      std::cerr<<std::setprecision(10)
-               <<"@@@ ACRAICCMP sum_hand="<<c.sh<<" sum_comix="<<c.sc
-               <<" comix_me2="<<c.me2
-               <<" sc_over_me2="<<(c.me2!=0.? c.sc/c.me2 : 0.)
-               <<" N="<<c.N
-               <<" mask="<<c.mask<<" met="<<c.met<<" next="<<c.next
-               <<" nlive="<<c.nlive
-               <<" absratio=["<<c.rmin<<","<<c.rmax<<"]"
-               <<" m_born="<<m_born
-               <<" cth="<<(m_bornmomenta.size()>2?cos(m_bornmomenta[2].Theta()):0.)
-               <<std::endl;
-  }
-
-  if (m_checkxs && m_bornmomenta.size() >= 4) {
-    Vec4D_Vector bp(m_bornmomenta);
-    Poincare bcms(bp[0] + bp[1]);
-    for (size_t i(0); i < bp.size(); ++i) bcms.Boost(bp[i]);
-    const double sp_save(m_sp);
-    m_sp = (bp[2] + bp[3]).Abs2();
-    MakeProp();
-    MakePropT(bp);
-    Amplitude b;
-    BornAmplitude(bp, b);
-    double sum(0.);
-    for (int j1 = 0; j1 <= 1; ++j1)
-      for (int j2 = 0; j2 <= 1; ++j2)
-        for (int j3 = 0; j3 <= 1; ++j3)
-          for (int j4 = 0; j4 <= 1; ++j4) {
-            const Complex a(m_e * m_e * b.m_A[Idx(j1,j2,j3,j4)]);
-            sum += std::real(a * conj(a));
-          }
-    m_sp = sp_save;
-    MakeProp();
-    MakePropT(m_pacraic);
-    AccumulateBornShape(cos(bp[2].Theta()), sum / 4.);
   }
 }
 

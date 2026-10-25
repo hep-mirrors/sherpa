@@ -834,68 +834,6 @@ void FSR::BoostToXFM() {
   p_dipole->SetBoost(poin);
 }
 
-void FSR::RotateDipole() {
-  double costh = 1. - 2.*ran->Get();
-  double theta = acos(costh);
-  double phi = 2.*M_PI * ran->Get();
-  Vec4D t1 = m_dipole[0];
-  Vec4D t2 = m_dipole[1];
-  int i(0);
-  Vec4D t;
-  for (auto &p : m_dipole) {
-    if (i == 0) t = t1;
-    else t = t2;
-    double px = p[1], py = p[2], pz = p[3];
-
-    // Rotate around Y axis (theta)
-    double pz_theta = cos(theta) * pz - sin(theta) * px;
-    double px_theta = sin(theta) * pz + cos(theta) * px;
-
-    // Rotate around Z axis (phi)
-    double px_phi = cos(phi) * px_theta - sin(phi) * py;
-    double py_phi = sin(phi) * px_theta + cos(phi) * py;
-
-    // Assign rotated components back
-    p[1] = px_phi;
-    p[2] = py_phi;
-    p[3] = pz_theta;
-    i++;
-  }
-  for (auto &p : m_photons) {
-    double px = p[1], py = p[2], pz = p[3];
-
-    // Rotate around Y axis (theta)
-    double pz_theta = cos(theta) * pz - sin(theta) * px;
-    double px_theta = sin(theta) * pz + cos(theta) * px;
-
-    // Rotate around Z axis (phi)
-    double px_phi = cos(phi) * px_theta - sin(phi) * py;
-    double py_phi = sin(phi) * px_theta + cos(phi) * py;
-
-    // Assign rotated components back
-    p[1] = px_phi;
-    p[2] = py_phi;
-    p[3] = pz_theta;
-  }
-
-  double px = m_photonSum[1]; // x
-  double py = m_photonSum[2]; // y
-  double pz = m_photonSum[3]; // z
-
-  // Rotate around Y axis (theta) ---
-  double pz_theta = cos(theta) * pz - sin(theta) * px;
-  double px_theta = sin(theta) * pz + cos(theta) * px;
-
-  // Rotate around Z axis (phi) ---
-  double px_phi = cos(phi) * px_theta - sin(phi) * py;
-  double py_phi = sin(phi) * px_theta + cos(phi) * py;
-
-  // Assign rotated components back ---
-  m_photonSum[1] = px_phi;
-  m_photonSum[2] = py_phi;
-  m_photonSum[3] = pz_theta;
-}
-
 void FSR::RejectEvent() {
   DEBUG_FUNC("EVENT REJECETED" << " Exp(YFS) = " << m_expf
              << "\n YFS_IR = " << m_YFS_IR

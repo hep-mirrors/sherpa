@@ -15,7 +15,6 @@ Coulomb::Coulomb(bool enabled) : m_coulomb(enabled) {
   m_MW = Flavour(kf_Wplus).Mass();
   m_GW = Flavour(kf_Wplus).Width();
   m_cms = rpa->gen.Ecms();
-  m_subtract = 0;
   if(m_coulomb) rpa->gen.AddCitation(1,"Coulomb corrections for WW threshold as described in \\cite{Bardin:1993mc,Fadin:1995fp,Jadach:1995sp}");
 }
 

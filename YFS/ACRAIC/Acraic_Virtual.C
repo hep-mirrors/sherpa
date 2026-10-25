@@ -209,25 +209,6 @@ void Acraic_Base::InfraredSubtractedME_0_1() {
           TnpAdd(tnp_b0, Idx(j1,j2,j3,j4), corr);
           m_AmpBornVirt.m_A[Idx(j1,j2,j3,j4)] += corr;
           m_snapVirt.m_A[Idx(j1,j2,j3,j4)] = corr;   // the beta_0^1 increment
-          m_beta01 += corr;   // scalar, for the diagnostics only
-          // V = 1 + corr/born per partition and helicity, for the spread check
-          // (both sides must be this partition's values)
-          if (m_vpon) {
-            const int f(Idx(j1,j2,j3,j4));
-            if ((int)m_vpmin.size() <= f) { m_vpmin.resize(f+1, 1e30);
-                                            m_vpmax.resize(f+1, -1e30); }
-            // live helicities only: in mass-suppressed ones V is an artefact
-            double bmax(0.);
-            for (int g = 0; g < Amplitude::NHel(); ++g)
-              bmax = Max(bmax, std::abs(born.m_A[g]));
-            // divide by fac*born, since corr carries the same soft-factor fac
-            const Complex b0(fac*born.m_A[f]);
-            if (std::abs(b0) > 1e-3*std::abs(fac)*bmax) {
-              const double v(std::abs(1. + corr/b0));
-              m_vpmin[f] = Min(m_vpmin[f], v);
-              m_vpmax[f] = Max(m_vpmax[f], v);
-            }
-          }
         }
 
 }

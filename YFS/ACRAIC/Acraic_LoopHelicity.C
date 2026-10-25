@@ -116,7 +116,6 @@ bool Acraic_Base::LoopHelicityToAcraic(const std::vector<std::vector<int> > &hel
                   <<"] (normalised to the sums).\n";
       m_loopmask = best;
       m_loopmet = bmet; m_loopnext = nmet;
-      m_looprmin = rmin; m_looprmax = rmax;
     }
     ++m_loopcal;
   }
@@ -212,17 +211,6 @@ std::vector<Complex> Acraic_Base::PhysicalLabelsToAcraic(const std::vector<std::
       if (hel[c] == l) { r[f] = val[c]; break; }
   }
   return r;
-}
-
-
-double Acraic_Base::A0WeightedTwoRe(const std::vector<Complex> &e) const
-{
-  double num(0.), den(0.);
-  for (int f = 0; f < Amplitude::NHel() && f < (int)e.size(); ++f) {
-    num += 2.*e[f].real()*std::norm(m_AmpExpo0.m_A[f]);
-    den += std::norm(m_AmpExpo0.m_A[f]);
-  }
-  return den > 0. ? num/den : 0.;
 }
 
 

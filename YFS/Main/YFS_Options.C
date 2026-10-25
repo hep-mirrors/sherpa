@@ -260,22 +260,6 @@ rrconventions YFS::ReadRRConventions(const std::vector<std::string> &tags)
   return c;
 }
 
-std::string YFS::RRConventionsNames(const rrconventions &c)
-{
-  if (c.Legacy()) return "legacy";
-  std::string s;
-  auto add = [&s](bool on, const char *name) {
-    if (!on) return;
-    if (!s.empty()) s += ", ";
-    s += name;
-  };
-  add(c.single_flux, "single_flux");
-  add(c.single_subtraction, "single_subtraction");
-  add(c.single_denominator, "single_denominator");
-  add(c.soft_limit_legs, "soft_limit_legs");
-  return s;
-}
-
 std::istream &YFS::operator>>(std::istream &s, tristate::code &c)
 { return ReadOption(s, c, s_tristate, "a YFS/ACRAIC auto/off/on switch"); }
 std::ostream &YFS::operator<<(std::ostream &s, const tristate::code &c)

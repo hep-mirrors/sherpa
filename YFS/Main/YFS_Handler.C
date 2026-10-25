@@ -27,8 +27,6 @@ YFS_Handler::YFS_Handler()
     p_yfsFormFact = std::make_unique<YFS::YFS_Form_Factor>();
     m_setparticles = false;
     p_isr = std::make_unique<YFS::ISR>();
-    if (m_fb_analysis)
-      p_fb = std::make_unique<YFS::YFS_FB_Analysis>(std::vector<YFS::fbdef::code>{}, m_fb_kf);
     m_isrinital = true;
     if (m_photon_split != 0)
       THROW(not_implemented, "YFS: PHOTON_SPLITTER_MODE is not supported with"
@@ -212,11 +210,9 @@ void YFS_Handler::SetMomenta(const ATOOLS::Vec4D_Vector &p) {
 }
 
 void YFS_Handler::CreatMomentumMap() {
-  m_ev.m_inparticles.clear();
   m_ev.m_outparticles.clear();
   for(size_t i = 0; i < 2; ++i)
   {
-    m_ev.m_inparticles[m_particles[i]] = m_ev.m_bornMomenta[i];
     m_particles[i]->SetMomentum(m_ev.m_bornMomenta[i]);
   }
   if(m_mode!=yfsmode::isr){
@@ -439,7 +435,6 @@ bool YFS_Handler::CalculateISR() {
   m_ev.m_photonSumISR = res.photon_sum;
   m_ev.m_ISRPhotons.clear();
   for (const YFS::Photon &k : res.photons) m_ev.m_ISRPhotons.push_back(k.K());
-  m_ev.m_isrphotonsforME = m_ev.m_ISRPhotons;
   m_isrWeight = res.weight;
   m_ev.m_photons = res.photons;
   m_ev.m_sprimeBeams.assign(2, Vec4D());
@@ -465,7 +460,6 @@ bool YFS_Handler::CalculateISR() {
 
 
 void YFS_Handler::AddFormFactor() {
-  if (m_CalForm) return;
   m_ev.m_formfactor_sum = 0.;
   if (m_fullform >= 1) {
     m_ev.m_formfactor_sum = p_dipoles->FormFactorSum();
@@ -572,7 +566,6 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     m_ev.m_FSRPhotons.clear();
     for (const YFS::Photon &k : res.photons) m_ev.m_FSRPhotons.push_back(k.K());
     m_fsrWeight *= res.weight;
-    ProbeFSRDensity(*Dip);
     if (p_dipoles->PoleActive()) {
       // The radiating dipole is the W pair, and the W's are not entries in the
       // event record -- Left()/Right() point at the charged leptons they
@@ -787,76 +780,6 @@ void YFS_Handler::Reset() {
   // m_s = sqr(rpa->gen.Ecms());
 }
 
-bool YFS_Handler::CheckMomentumConservation(){
-  Vec4D incoming = m_ev.m_bornMomenta[0]+m_ev.m_bornMomenta[1];
-  Vec4D outgoing;
-  for(auto k: m_ev.m_ISRPhotons)  outgoing+=k;
-  for(auto kk: m_ev.m_FSRPhotons) outgoing+=kk;
-  for(size_t i = 2; i < m_ev.m_plab.size(); ++i)
-  {
-    outgoing+=m_ev.m_plab[i];
-  }
-  Vec4D diff = incoming - outgoing;
-  if(!IsEqual(incoming,outgoing, 1e-5)){
-    msg_Error()<<"Momentum not conserverd in YFS"<<std::endl
-               <<"Incoming momentum = "<<incoming<<std::endl
-               <<"Outgoing momentum = "<<outgoing<<std::endl
-               <<"Difference = "<<diff<<std::endl
-               <<"ISR Photons = "<<m_ev.m_ISRPhotons<<std::endl
-               <<"FSR Photons = "<<m_ev.m_FSRPhotons<<std::endl;
-  return false;
-  }
-  return true;
-}
-
-
-void YFS_Handler::CheckMasses(){
-  bool allonshell=true;
-  std::vector<double> mass;
-  Vec4D_Vector p = m_ev.m_plab;
-  for(auto k: m_ev.m_ISRPhotons) p.push_back(k);
-  for(auto kk: m_ev.m_FSRPhotons) p.push_back(kk);
-
-  for(size_t i = 0; i < p.size(); ++i)
-  {
-    if(i<m_ev.m_plab.size()){
-      mass.push_back(m_flavs[i].Mass());
-      if(!IsEqual(p[i].Mass(),m_flavs[i].Mass(),1e-5)){
-        msg_Debugging()<<"Wrong particle masses in YFS Mapping"<<std::endl
-                       <<"Flavour = "<<m_flavs[i]<<", with mass = "<<m_flavs[i].Mass()<<std::endl
-                       <<"Four momentum = "<<p[i]<<", with mass = "<<p[i].Mass()<<std::endl;
-        allonshell = false;
-
-      }
-    }
-    else{
-      mass.push_back(0);
-      if(!IsEqual(p[i].Mass(),0,1e-5)){
-        msg_Debugging()<<"Wrong particle masses in YFS Mapping"<<std::endl
-                       <<"Flavour = "<<Flavour(22)<<", with mass = "<<Flavour(22).Mass()<<std::endl
-                       <<"Four momentum = "<<p[i]<<", with mass = "<<p[i].Mass()<<std::endl;
-        allonshell = false;
-      }
-    }
-  }
-  if(!allonshell) {
-    m_stretcher.StretchMomenta(p, mass);
-    for(size_t i = 0; i < m_ev.m_plab.size(); ++i)
-    {
-      msg_Debugging()<<"Mass after Mometum strechting"<<std::endl;
-      if(i<m_ev.m_plab.size()){
-         msg_Debugging()<<"Flavour = "<<m_flavs[i]<<", with mass = "<<m_flavs[i].Mass()<<std::endl
-                       <<"Four momentum = "<<p[i]<<", with mass = "<<p[i].Mass()<<std::endl;
-      }
-      else{
-         msg_Debugging()<<"Flavour = "<<Flavour(22)<<", with mass = "<<Flavour(22).Mass()<<std::endl
-                        <<"Four momentum = "<<p[i]<<", with mass = "<<p[i].Mass()<<std::endl;
-      }
-      m_ev.m_plab[i] = p[i];
-    }
-  }
-}
-
 Vec4D_Vector YFS_Handler::GetPhotons(){
   Vec4D_Vector k;
   for(auto p: m_ev.m_ISRPhotons) k.push_back(p);
@@ -879,35 +802,3 @@ void YFS_Handler::CheckResonance(){
     }
   }
 
-void YFS_Handler::CheckInvariants() const {
-  if (!m_check_invariants) return;
-
-  // Every photon knows the dipole it came from. A null one means a Photon was
-  // built without it, and IsISR()/IsFSR() would dereference null.
-  for (const YFS::Photon &k : m_ev.m_photons)
-    if (!k.Dip())
-      msg_Error() << METHOD << ": photon with no dipole; its origin cannot be "
-                  << "determined." << std::endl;
-
-  // E^2 >= m^2 for every dipole leg. Violated when an energy is paired with a
-  // mass from a different source, which is what produced the WW NaN in
-  // YFS_Form_Factor::A4 via sqrt(E^2 - m^2).
-  YFS::DipoleView ffchk(p_dipoles->GetDipoleFF());
-  for (auto D = ffchk.begin(); D != ffchk.end(); ++D)
-    for (int i(0); i < 2; ++i) {
-      const ATOOLS::Vec4D p(D->GetBornMomenta(i));
-      if (p[0]*p[0] + 1e-9 < p.Abs2())
-        msg_Error() << METHOD << ": dipole leg with E^2 < m^2, E=" << p[0]
-                    << " m^2=" << p.Abs2() << std::endl;
-    }
-
-  // The weight the event carries must be a number. Catching it here names the
-  // event; downstream it only shows up as a NaN cross section.
-  if (ATOOLS::IsBad(m_ev.m_yfsweight))
-    msg_Error() << METHOD << ": YFS weight is " << m_ev.m_yfsweight
-                << " (isr=" << m_isrWeight << " fsr=" << m_fsrWeight
-                << " form=" << m_ev.m_formfactor << " real=" << m_ev.m_real << ")"
-                << std::endl;
-  if (ATOOLS::IsBad(m_ev.m_formfactor))
-    msg_Error() << METHOD << ": form factor is " << m_ev.m_formfactor << std::endl;
-}

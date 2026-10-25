@@ -45,38 +45,3 @@ VirtualVirtual::VirtualVirtual(const PHASIC::Process_Info& pi)
 VirtualVirtual::~VirtualVirtual()
 {
 }
-
-
-double VirtualVirtual::Calc(const ATOOLS::Vec4D_Vector momenta, double born){
-  return Calc_V(momenta,born,sqr(rpa->gen.Ecms()));
-}
-
-
-
-
-double VirtualVirtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
-           const double B,
-           const double mur)
-  {
-    p_loop_me->SetRenScale(100);
-    // if(!p_rvproc->Trigger(p)) return 0;
-    m_failcut = false;
-    if(m_nlocuts && p_vproc != nullptr && !p_vproc->Trigger(p)) {
-      m_failcut = true;
-      return 0;
-    }
-    double V(0.0);
-    p_loop_me->Calc(p,B);
-    switch(p_loop_me->Mode())
-      {
-      case 0:
-        V =  m_factor *  p_loop_me->ME_Finite() * B ; break;
-      case 1:
-        // For Griffin
-        V =  p_loop_me->ME_Finite();
-        break;
-      default:
-        THROW(not_implemented, "Loop ME mode not implemented: "+ATOOLS::ToString(p_loop_me->Mode()));
-      }
-    return V;
-  }

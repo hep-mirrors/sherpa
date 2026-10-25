@@ -36,10 +36,9 @@ namespace YFS {
       bool m_shelljacobian = true;
       double m_shellW = 1.;
       double  m_fsrform, m_nbar, m_betaBar,m_YFS_IR, m_btil, m_btilStar, m_volumc, m_delvol, m_DelYFS,m_delta1,m_cut;
-      double m_BtiXcru, m_BtiQcru, m_fsrcutF, m_omegaMax, m_omegaMin, m_A4, m_A, m_betaBar1, m_betaBar2;
+      double m_BtiXcru, m_BtiQcru, m_fsrcutF, m_A4, m_A, m_betaBar1, m_betaBar2;
       double m_scalek;
-      // Per-photon, indexed alongside m_photons. m_fvev and m_kscale were
-      // removed: declared and never touched.
+      // Per-photon, indexed alongside m_photons.
       std::vector<double> m_mass, m_MassWls, m_cos, m_sin, m_dist1, m_dist2,
                           m_del1, m_del2, m_yini, m_zini, m_phi_vec, m_k0,
                           m_fbarvec;
@@ -52,32 +51,24 @@ namespace YFS {
       YFS::Dipole *p_dipole = nullptr;
       void GeneratePhotonMomentum();
       void GenerateAngles();
-      void DefineGammas();
       double CalculateBeta(const Vec4D& p);
       void CalculateBetaBar();
       bool MakeFSR();
       double PairPhaseSpace(const double M2) const;
       void Reset();
       void NPhotons();
-      double Btild(Vec4D p1,Vec4D p2, double kmax);
       double chi(double eta, double y1, double y2, double y3, double y4);
       double Zij(double eta, double y1, double y2);
-      double LI(double x);
-      double YEta(double eta,double y1, double y2, double y3, double y4);
       double BVR_A(Vec4D p1, Vec4D p2);
       double Eikonal(const Vec4D &k);
       double EikonalInterferance(const Vec4D &k);
       inline double GetWeight() {return m_fsrWeight;}
       //! MakeFSR rejection code: 1 ok, 2 photon energy > 1, 3 pair below threshold, 4 rescale
       inline double Cut() const { return m_cut; }
-      inline double GetSQ() {return m_sQ;}
       inline Vec4D GetPhotonSum() {return m_photonSum; }
       inline Vec4D_Vector GetPhotons() {return m_photons; }
       inline void SetNPhoton(int N) {m_n = N;}
-      inline void SetPhotons(Vec4D k) {m_photonSum = k;}
-      inline void SetDipole(Vec4D_Vector dip) {m_dipole = dip;}
       inline void SetV(double v) {m_v = v;}
-      inline Vec4D_Vector GetDipole() {return m_dipole;}
     std::unique_ptr<YFS::YFS_Form_Factor> p_fsrFormFact;
       void HidePhotons();
       void HidePhotons(Vec4D_Vector &k);
@@ -90,7 +81,6 @@ namespace YFS {
       bool Initialize(Dipole &dipole);
       void BoostToXFM();
       void RejectEvent();
-      void RotateDipole();
       bool YFS_FORM();
       void RescalePhotons();
       double ScalePhoton(const Vec4D &k);

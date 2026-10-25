@@ -75,7 +75,6 @@ public:
     // pole) so it cancels against the real BVR_full_eps in the FULL_FORM==3
     // form-factor mode.
     DivArrD BVirtMaster(YFS::Dipole &d, double kmax=0);
-    void WW_u();
     double  m_ww_s, m_ww_u, m_ww_t;
     double m_t1, m_t2, m_u1, m_u2;
     int m_useCoulomb;
@@ -87,7 +86,7 @@ public:
       passed and IRscale() segfaulted.
     */
     PHASIC::Virtual_ME2_Base *p_virt = nullptr;
-    double m_xx1, m_xx2, m_m1, m_m2;
+    double m_m1, m_m2;
     // m_use_model_alpha removed: shadowed YFS_Base's and was never read here.
     /*!
       The couplings for a pair of charge product ch (FSR::Initialize, once per
@@ -105,7 +104,6 @@ public:
     }
     bool   m_unitcharge = false;
     double m_alpha_unit = 0., m_alpi_unit = 0.;
-    inline void SetCoulomb(int c) {m_useCoulomb = c;}
 };
 
 }

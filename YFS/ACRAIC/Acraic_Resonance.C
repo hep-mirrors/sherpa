@@ -130,34 +130,3 @@ void Acraic_Base::BuildResonanceBornDelta()
       m_resexpdh[f] = dI.m_A[c] / B.m_A[c];
   }
 }
-
-void Acraic_Base::ResonanceProbe(int partition) const
-{
-  static const int np(Settings::GetMainSettings()["ACRAIC"]
-                      ["RESONANCE_EXPONENTIATION_PROBE"].Get<int>());
-  static int nev(0), last(-1);
-  if (np <= 0 || m_resexp.empty()) return;
-  if (partition == 1) { if (nev >= np) return; ++nev; last = nev; }
-  if (last != nev || nev > np) return;
-  std::ostringstream o;
-  o<<std::setprecision(12)<<"@@@ RESEXP part="<<partition
-   <<" nphot="<<m_allphotons.size()<<" dIB="<<m_resexpdv;
-  for (const ResonanceStage &r : m_resexp) {
-    const Vec4D q(StageSystemMomentum(r.stage) + StagePhotonSum(r.stage, -1));
-    double sB(-1.);
-    if (m_prefsr.size() == m_flavs.size()) {
-      Vec4D qb;
-      for (int l : StageExternalLegs(r.stage)) qb += m_prefsr[l];
-      sB = qb.Abs2();
-    }
-    o<<" stage="<<r.stage<<" a="<<r.a
-     <<" aB="<<StageResonanceCoefficient(r.stage, m_prefsr)
-     <<" q2="<<q.Abs2()<<" sB="<<sB;
-  }
-  if (m_pacraic.size() >= 4)
-    o<<" t="<<(m_pacraic[0] - m_pacraic[m_if1]).Abs2()
-     <<" u="<<(m_pacraic[0] - m_pacraic[m_if2]).Abs2()
-     <<" s="<<(m_pacraic[0] + m_pacraic[1]).Abs2();
-  o<<"\n";
-  std::cerr<<o.str();
-}

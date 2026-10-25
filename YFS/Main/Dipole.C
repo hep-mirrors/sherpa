@@ -47,8 +47,6 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   m_Qj = fl[1].Charge();
   // if(fl[0].IsBoson() || fl[1].IsBoson()) m_irfinite = true;// Case for on shell ww
   m_QiQj = m_Qi*m_Qj;
-  if(IsEqual(fl[0],fl[1])) m_sameflav = 1;
-  else m_sameflav = 0;
   // Direct 2-element init, not push_back in a loop: fl/mom/born are already
   // validated to size()==2 above, so the loop form only bought empty->push->
   // push reallocations on every one of these vectors, for every dipole built
@@ -85,7 +83,6 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   m_Q.push_back(m_Qi);
   m_Q.push_back(m_Qj);
   CalculateGamma();
-  m_isduplicate=false;
 }
 
 
@@ -388,26 +385,6 @@ void Dipole::RandomRotate(Vec4D &p){
   p[3] = z1; // from the X rotation
 }
 
-void Dipole::BoostLab(){
-  Poincare p_boost(m_oldmomenta[0] + m_oldmomenta[1]);
-  p_boost.BoostBack(m_newmomenta[0]);
-  p_boost.BoostBack(m_newmomenta[1]);
-  for(auto &k : m_dipolePhotons) p_boost.BoostBack(k);
-  // if (p_boost) delete p_boost;
-}
-
-void Dipole::BoostToCMS(){
-  Vec4D CMSFrame=m_bornmomenta[0] + m_bornmomenta[1];
-  Poincare rot;
-  ATOOLS::Poincare poin(CMSFrame);
-  for (int i=0; i<2; i++) {
-    poin.Boost(m_bornmomenta[i]);
-    if(i==0) rot = Poincare(m_bornmomenta[i],Vec4D(0.,0.,0.,1.));
-    rot.Rotate(m_bornmomenta[i]);
-  }
-}
-
-
 void Dipole::BoostToQFM(bool boostback) {
   m_QFrame = m_bornmomenta[0] + m_bornmomenta[1];
   ATOOLS::Poincare poin(m_QFrame);
@@ -564,48 +541,6 @@ double Dipole::EikonalInterferance(const Vec4D &k) {
   Vec4D p1 = m_eikmomentum[0];
   Vec4D p2 = m_eikmomentum[1];
   return -m_QiQj*m_thetaij*m_alp / (2 * M_PI * M_PI) * (p1*p2 / (p1 * k)/(p2 * k));
-}
-
-METOOLS::DivArrD Dipole::BVV_full_eps(const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double Kmax, int mode) {
-  // for dim-reg
-  // DivArrc {UV, IR, IR^2, finite, eps, eps^2, 0}
-  double muf = 91.2*91.2;
-  double mur = 91.2*91.2;
-  double t2, t3;
-  METOOLS::DivArrD t1;
-  // double alpi = m_alpha / M_PI;
-  METOOLS::DivArrD massph(0,-1,0,0,0,0);
-  double Mas1 = m_masses[0];
-  double Mas2 = m_masses[1];
-  double m12 = Mas1*Mas2;
-  double E1 = p1.E();
-  double E2 = p2.E();
-  double p1p2 = p1 * p2;
-  // double rho = sqrt(1. - sqr(m12 / p1p2));
-  double rho = sqrt((p1p2 - m12) * (p1p2 + m12)) / p1p2;
-  double s = (p1 + p2).Abs2();
-  double zeta1 = 2 * p1p2 * rho / (sqr(Mas1) + p1p2 * (1. + rho));
-  double zeta2 = 2 * p1p2 * rho / (sqr(Mas2) + p1p2 * (1. + rho));
-  double beta1 = sqrt(1. - sqr(Mas1 / E1));
-  double beta2 = sqrt(1. - sqr(Mas2 / E2));
-  double betat = 0.382;
-  double beta  = sqrt(1. - 2 * (Mas1 + Mas2) / s + sqr((Mas1 - Mas2) / s));
-  // t1 = (1./rho*A(p1p2,Mas1,Mas2)-1.)*2.*log(2.*Kmax/MasPhot);
-  double irloop = m_irscale; //p_virt->IRscale();
-  double epsloop = 4.*M_PI; //p_virt->Eps_Scheme_Factor({p1,p2});
-  double logarg = (p1p2 * (1. + rho) / m12) / rho;
-  
-  t1 = (log1p(logarg-1) -1.) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
-  // else t1 = (log(logarg) - 1.) *  (massph+log(4.*M_PI*sqr(irloop)/m12/epsloop));
-  // t1 = (log(sqr(MasPhot)/sqr(250)));
-  t2 = p1p2 * rho / s * log(p1p2 * (1. + rho) / m12) + (Mas1 * Mas1 - Mas2 * Mas2) / (2.*s) * log(Mas1 / Mas2) - 1;
-
-  t3 =  -0.5 * log(p1p2 * (1. + rho) / sqr(Mas1)) * log(p1p2 * (1. + rho) / sqr(Mas2))
-        - 0.5 * sqr(log((sqr(Mas1) + p1p2 * (1. + rho)) / (sqr(Mas2) + p1p2 * (1. + rho))));
-  t3 -= DiLog(zeta1) + DiLog(zeta2);
-  t3 += sqr(M_PI);
-  t3 /= rho;
-  return (t1 + t2 + t3);
 }
 
 void Dipole::SetFlavLab(int i, int j){

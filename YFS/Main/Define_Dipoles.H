@@ -14,28 +14,6 @@ namespace MODEL {
   typedef std::vector<Single_Vertex *> Vertex_List;
 }
 
-namespace {
-    constexpr size_t INITIAL_STATE_PARTICLES = 2;
-    constexpr size_t TWO_BODY_FINAL_STATE = 4;
-}
-
-// Particle information container
-struct ParticleInfo {
-    ATOOLS::Flavour flavor;
-    ATOOLS::Vec4D momentum;
-    ATOOLS::Vec4D born_momentum;
-    size_t index;
-    bool is_initial_state;
-    
-    ParticleInfo(const ATOOLS::Flavour& f, 
-                 const ATOOLS::Vec4D& p, 
-                 const ATOOLS::Vec4D& b, 
-                 size_t i, 
-                 bool initial = false)
-        : flavor(f), momentum(p), born_momentum(b), 
-          index(i), is_initial_state(initial) {}
-};
-
 namespace YFS {
   typedef std::vector<YFS::Dipole> Dipole_Vector;
 
@@ -43,43 +21,7 @@ namespace YFS {
   class Define_Dipoles : YFS_Base {
     public:
     void SetS(const double s) override;
-    std::vector<ParticleInfo> ExtractChargedParticles(
-        const ATOOLS::Flavour_Vector& flavors,
-        const ATOOLS::Vec4D_Vector& momenta,
-        const ATOOLS::Vec4D_Vector& born_momenta,
-        size_t start_index,
-        size_t end_index,
-        bool is_initial_state = false) const;
-    
-    std::vector<ParticleInfo> ExtractInitialStateCharged(
-        const ATOOLS::Flavour_Vector& flavors,
-        const ATOOLS::Vec4D_Vector& momenta,
-        const ATOOLS::Vec4D_Vector& born_momenta) const;
-    
-    std::vector<ParticleInfo> ExtractFinalStateCharged(
-        const ATOOLS::Flavour_Vector& flavors,
-        const ATOOLS::Vec4D_Vector& momenta,
-        const ATOOLS::Vec4D_Vector& born_momenta) const;
-    
-    Dipole CreateDipole(
-        const ParticleInfo& particle1,
-        const ParticleInfo& particle2,
-        dipoletype::code type) const;
-    
-    // Dipole creation by type
-    
-    // Individual dipole creation
-    void CreateFinalStateDipole(const ParticleInfo& particle1,
-                               const ParticleInfo& particle2);
-    void CreateResonantDipole(const ParticleInfo& particle1,
-                             const ParticleInfo& particle2);
-    
-    // State management
-    // public:
-      bool                    m_success;
-      bool                    m_photonsadded;
       int m_N;
-      std::map<ATOOLS::Flavour, ATOOLS::Vec4D> m_test_dip;
       std::map<ATOOLS::Flavour, int> m_flav_label;
       //! Flavours m_flav_label was last built from. m_flav_label is invariant
       //! per process, so MakeDipolesII/MakeDipoles skip rebuilding it (a
@@ -87,26 +29,18 @@ namespace YFS {
       //! changed since last event -- same guard YFS_Handler::SetFlavours uses.
       ATOOLS::Flavour_Vector m_flav_label_fl;
       // std::map<ATOOLS::Vec4D, int> m_mom_label;
-      ATOOLS::Vec4D_Vector m_chargedinparticles;
-      ATOOLS::Vec4D_Vector m_neutralinparticles;
-      ATOOLS::Vec4D_Vector m_chargedoutparticles;
-      ATOOLS::Vec4D_Vector m_neutraloutparticles;
       ATOOLS::Vec4D_Vector m_softphotons, m_bornmomenta;
-      ATOOLS::Vec4D m_softphotonSum;
       YFS::DipoleSet m_set;
       std::map<std::string,MODEL::Vertex_List> m_proc_restab_map;
       std::unique_ptr<YFS::YFS_Form_Factor> p_yfsFormFact;
-      DivArrD m_virtSub, m_vvSub;
+      DivArrD m_virtSub;
 
       // m_type removed: shadowed YFS_Base's std::string m_type with a
       // different type entirely, and was never read.
       Define_Dipoles();
       ~Define_Dipoles();
 
-      int m_in, m_out;
       double m_N_born_Gamma;
-      std::vector<double> m_massInC, m_massInN;
-      std::vector<double> m_massOutC, m_massOutN;
 
     
       void AddRadiation();
@@ -115,18 +49,9 @@ namespace YFS {
       void MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom,  ATOOLS::Vec4D_Vector const &born);
       void MakeDipolesFF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom,ATOOLS::Vec4D_Vector const &born);
       void Dipole_FF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom);
-      void CleanInParticles();
-      void CleanOutParticles();
-      // void Get4Mom(ATOOLS::Flavour_Vector const &fl,ATOOLS::Vec4D_Vector mom, std::vector<int> v);
-      void Get4Mom(ATOOLS::Flavour_Vector const &fl,ATOOLS::Vec4D_Vector mom);
-      bool CheckMasses();
-      void IsResonant(YFS::Dipole &D);
-      bool IsResonant();
       // Flags the subset of m_dipolesFF that may radiate: a matching of the
       // charged final state, so each leg enters FSR exactly once.
       double ResonanceWidthDistance(YFS::Dipole &D);
-      bool CheckResonant(YFS::Dipole &D);
-      bool CheckResonant();
       double ResonantDist(YFS::Dipole &D, const Vec4D &k);
       double ResonantDist(YFS::Dipole &D);
       dipoletype::code WhichResonant(const Vec4D &k);
@@ -146,9 +71,7 @@ namespace YFS {
       //! diagnostic for RealSoftSum: per dipole type and IR-finite flag
       std::string RealSoftSumReport(double K, const Vec4D_Vector &dirs);
       double CalculateVirtualSubEps();
-      double CalculateVVSubEps();
       double CalculateRealVirtualSubEps(const Vec4D &k);
-      double CalculateRealVirtualSub(const Vec4D & k);
       double CalculateEEX();
       double CalculateEEXVirtual();
       double CalculateEEXVirtual(int betaorder);
@@ -196,8 +119,6 @@ namespace YFS {
       inline bool PoleActive() const { return m_pole_active; }
       //! The W's and their daughters' positions, as BuildPole found them.
       inline const DipoleSet::WWLegs &WW() const { return m_set.WW(); }
-      //! The decay-stage dipoles (W, charged daughter) of the pole expansion.
-      inline YFS::DipoleView DecayDipoles() { return m_set.Decay(); }
       /*!
         Once per run: the closed-form decay exponent (YFS_Form_Factor::
         BVR_decay, what FormFactorSumDecay exponentiates) against the same
@@ -228,22 +149,12 @@ namespace YFS {
       // YFS_Base is inherited privately, so expose what the handler reports.
       inline long   IFIClipped() const { return m_ifi_clipped; }
       inline double IFIRClip()   const { return m_ifi_rclip; }
-      double EEXRealVirtual(const Vec4D &k);
-      void generate_pairings(std::vector<std::vector<int>>& pairings, std::vector<int>& curr_pairing, std::vector<int>& available_nums);
-      void CleanUp();
-      std::ostream& operator<<(std::ostream &out);
-      inline bool DoneSuccessfully()     { return m_success; }
-      inline bool AddedAnything()        { return m_photonsadded; }
-      inline void AddSoftPhotons(ATOOLS::Vec4D k) { m_softphotonSum +=k; }
       inline bool HasDipoleII() const { return m_set.HasII(); }
       inline Dipole & GetDipoleII() { return m_set.II(); }
       inline YFS::DipoleView GetDipoleFF() { return m_set.FF(); }
-      inline YFS::DipoleView GetDipoleIF() { return m_set.IF(); }
       inline void SetProcResMap(std::map<std::string,MODEL::Vertex_List> map) {m_proc_restab_map=map;}
       inline double Get_Finite() {return m_virtSub.GetFinite();}
       inline double Get_E1() {return m_virtSub.GetIR();}
-      inline double GetVV_E1() {return m_vvSub.GetIR();}
-      inline double GetVV_E2() {return m_vvSub.GetIR2();}
   };
 
 

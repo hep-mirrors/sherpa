@@ -155,7 +155,7 @@ bool Acraic_Base::PrepareBeta2()
       the Born-pair multichannel weight (YFS: REAL_BORN_PHOTON_MULTICHANNEL,
       rho_crude x G over all Born-pair choices) covers any number of ISR
       photons, so the open question is only the helicity-slot alignment of
-      the extra photons next to the Born ones (BETA2_SOFT_TEST).
+      the extra photons next to the Born ones.
     */
     /*
       With TCHANNEL_MULTIPHOTON factorised the pairs are not this recursion
@@ -412,7 +412,6 @@ bool Acraic_Base::ComixInfraredSubtracted_N_0(const PhotonSet &S)
   const bool loopacc(m_loopbetamax >= 2 && m == 2);
   Amplitude *lpP(loopacc ? &m_lpP[S] : NULL), *lpQa(loopacc ? &m_lpQa[S] : NULL),
             *lpQb(loopacc ? &m_lpQb[S] : NULL);
-  double nv(0.), nm(0.), nss(0.);
   for (int f = 0; f < nh; ++f) {
     if (loopacc) {
       const Complex Mj(m_b2hasM1[S[0]] ? m_b2M1[S[0]].m_A[f] : Complex(0., 0.));
@@ -428,24 +427,6 @@ bool Acraic_Base::ComixInfraredSubtracted_N_0(const PhotonSet &S)
     m_AmpBeta2.m_A[f] += add;
     TnpAdd(tnpclass, f, add);
     if (m_treeprobe && m < m_treeorder.size()) m_treeorder[m].m_A[f] += add;
-    nv += std::norm(add);
-    if (addm) nm += std::norm(w*M.m_A[f]);
-    nss += std::norm(w*coef.back()*lower.back()->m_A[f]);   // W prod_S s B
-  }
-  static const int tr(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
-                      ["BETA2_TRACE"].Get<int>());
-  static int ntr(0);
-  if (tr && ntr < tr*64) {
-    ++ntr;
-    std::string st, set;
-    for (size_t i(0); i < m_stage.size(); ++i) st += ToString(m_stage[i]);
-    for (size_t q(0); q < m; ++q) set += (q ? "," : "") + ToString(S[q]);
-    std::ostringstream o;
-    o<<std::setprecision(6)<<(m == 2 ? "@@@ B2TRACE" : "@@@ BNTRACE")
-     <<" wp="<<st<<" S="<<set<<" m="<<m<<" all_reducing="<<allreducing
-     <<" |W prod_S s B|="<<sqrt(nss)<<" |W M|="<<sqrt(nm)
-     <<" |W beta|="<<sqrt(nv)<<"\n";
-    std::cerr<<o.str();
   }
   return true;
 }
@@ -716,136 +697,6 @@ void Acraic_Base::TreeBetaClosure()
   }
   o<<" A1chk="<<(nA1 > 0. ? sqrt(nd1/nA1) : -1.)<<"\n";
   std::cerr<<o.str();
-}
-
-
-// n = 2 closure: sum_wp [s s B + s beta_1 + s beta_1 + beta_2] = M_2.
-void Acraic_Base::Beta2Closure()
-{
-  if (m_order != 2 || m_allphotons.size() != 2 || !Beta2PairEligible(0, 1)
-      || !m_cxbalignok) return;
-  Vec4D_Vector pp(m_pacraic);
-  pp.push_back(m_allphotons[0]);
-  pp.push_back(m_allphotons[1]);
-  Amplitude Mex;
-  PropShifts none;
-  if (!ComixReal2Shifted(pp, m_PhoHel[0], m_PhoHel[1], Mex, none, true)) return;
-  double nd(0.), ne(0.), n2(0.), n1(0.), nb(0.);
-  const int nh(Amplitude::NHel());
-  for (int f = 0; f < nh; ++f) {
-    nd += std::norm(m_AmpExpo2.m_A[f] - Mex.m_A[f]);
-    ne += std::norm(Mex.m_A[f]);
-    n2 += std::norm(m_AmpExpo2.m_A[f]);
-    n1 += std::norm(m_AmpExpo1.m_A[f]);
-    nb += std::norm(m_AmpBeta2.m_A[f]);
-  }
-  const double rs(sqrt(m_s));
-  const size_t ni(m_isrphotons.size());
-  std::ostringstream o;
-  o<<std::setprecision(10)<<"@@@ B2CLOS cls="<<(ni == 2 ? "II" : ni == 1 ? "IF" : "FF")
-   <<" x0="<<2.*m_allphotons[0][0]/rs<<" x1="<<2.*m_allphotons[1][0]/rs
-   <<" h="<<m_PhoHel[0]<<","<<m_PhoHel[1]
-   <<" rel="<<(ne > 0. ? sqrt(nd/ne) : -1.)
-   <<" rho2="<<n2/4.<<" |M2|^2/4="<<ne/4.<<" rho1="<<n1/4.
-   <<" |B2|^2/4="<<nb/4.<<" rho0="<<m_result0<<" nparts="<<m_nparts<<"\n";
-  std::cerr<<o.str();
-}
-
-
-// ACRAIC: BETA2_SOFT_TEST: scale the photons by lambda on balanced legs;
-// |beta_2|/|M_2| must fall linearly. s-channel 2 -> 2 only.
-void Acraic_Base::Beta2SoftLimit()
-{
-  static const int nev(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
-                       ["BETA2_SOFT_TEST"].Get<int>());
-  static int done(0);
-  if (m_order != 2 || done >= nev || m_allphotons.size() != 2
-      || !Beta2PairEligible(0, 1) || !m_cxbalignok) return;
-  ++done;
-  const std::vector<int> stsave(m_stage);
-  const Vec4D_Vector phsave(m_allphotons);
-  const Vec4D P(m_pacraic[0] + m_pacraic[1]);
-  const int nh(Amplitude::NHel());
-  const double rn(RealNorm());
-  const double rs(sqrt(m_s));
-  static const pseudoflux::code pfmode(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
-                          ["NO_PSEUDOFLUX"].Get<pseudoflux::code>());
-  const size_t ni(m_isrphotons.size());
-  const char *cls(ni == 2 ? "II" : ni == 1 ? "IF" : "FF");
-  for (int mode(0); mode < 3; ++mode) {
-    std::ostringstream o;
-    o<<std::setprecision(6)<<"@@@ B2SOFT cls="<<cls<<" mode="
-     <<(mode == 0 ? "k1soft" : mode == 1 ? "k0soft" : "both")
-     <<" x0="<<2.*phsave[0][0]/rs<<" x1="<<2.*phsave[1][0]/rs
-     <<" pfmode="<<pfmode;
-    // each photon's angle to its nearest charged leg, also in units of m/E
-    for (int j(0); j < 2; ++j) {
-      double best(1e30), bu(1e30);
-      for (size_t i(0); i < m_pacraic.size(); ++i) {
-        if (m_flavs[i].Charge() == 0.) continue;
-        const double c(Vec3D(phsave[j])*Vec3D(m_pacraic[i])
-                       /(Vec3D(phsave[j]).Abs()*Vec3D(m_pacraic[i]).Abs()));
-        const double th(acos(Max(-1., Min(1., c))));
-        const double u(m_flavs[i].Mass() > 0. ? th/(m_flavs[i].Mass()/m_pacraic[i][0]) : th);
-        if (th < best) { best = th; bu = u; }
-      }
-      o<<" th"<<j<<"="<<best<<"("<<bu<<"m/E)";
-    }
-    for (int e(0); e <= 5; ++e) {
-      const double lam(pow(10., -(double)e));
-      const double l0(mode == 0 ? 1. : lam), l1(mode == 1 ? 1. : lam);
-      const Vec4D k0(l0*phsave[0]), k1(l1*phsave[1]);
-      Vec4D Y(P - k0 - k1);
-      for (size_t i(2); i < m_pacraic.size(); ++i)
-        if (i != m_if1 && i != m_if2) Y -= m_pacraic[i];
-      Vec4D_Vector pl;
-      if (!LegsAt(P, Y, pl)) continue;
-      m_allphotons[0] = k0; m_allphotons[1] = k1;
-      Amplitude B2, M2s, SSB, B1s, SB;
-      bool ok(true);
-      for (int w0(0); w0 < m_nstages && ok; ++w0)
-        for (int w1(0); w1 < m_nstages && ok; ++w1) {
-          m_stage[0] = w0; m_stage[1] = w1;
-          const bool d0(m_stagereduces[w0] != 0), d1(m_stagereduces[w1] != 0);
-          Amplitude C, M10, M11, M2;
-          ok = ComixBornShifted(pl, C, StageShifts(-1));
-          const Complex s0(StageEikonal(w0, pl, k0, m_PhoHel[0], 0));
-          const Complex s1(StageEikonal(w1, pl, k1, m_PhoHel[1], 1));
-          if (ok && d0) { Vec4D_Vector pp(pl); pp.push_back(k0);
-            ok = ComixRealShifted(pp, m_PhoHel[0], M10, StageShifts(0)); }
-          if (ok && d1) { Vec4D_Vector pp(pl); pp.push_back(k1);
-            ok = ComixRealShifted(pp, m_PhoHel[1], M11, StageShifts(1)); }
-          if (ok && d0 && d1) { Vec4D_Vector pp(pl); pp.push_back(k0); pp.push_back(k1);
-            ok = ComixReal2Shifted(pp, m_PhoHel[0], m_PhoHel[1], M2, StageShifts2(0, 1)); }
-          if (!ok) break;
-          for (int f = 0; f < nh; ++f) {
-            const Complex B(m_cxbalign.m_A[f]*C.m_A[FlipLegs(f, ComixLegFlips(Amplitude::s_nlegs))]);
-            const Complex b10((d0 ? m_cxbalign.m_A[f]*M10.m_A[f]/rn : Complex(0., 0.)) - s0*B);
-            const Complex b11((d1 ? m_cxbalign.m_A[f]*M11.m_A[f]/rn : Complex(0., 0.)) - s1*B);
-            const Complex m2(d0 && d1 ? M2.m_A[f] : Complex(0., 0.));
-            B2.m_A[f]  += m2 - s1*b10 - s0*b11 - s0*s1*B;
-            M2s.m_A[f] += m2;
-            SSB.m_A[f] += s0*s1*B;
-            // beta_1/(s_f B) must level off at the LBK constant
-            const Complex bs(mode == 1 ? b10 : b11), sf(mode == 1 ? s1 : s0);
-            B1s.m_A[f] += sf*bs;
-            SB.m_A[f]  += sf*B;
-          }
-        }
-      if (!ok) { o<<" lam="<<lam<<":fail"; continue; }
-      double nb(0.), nm(0.), nss(0.), nb1(0.), nsb(0.);
-      for (int f = 0; f < nh; ++f) { nb += std::norm(B2.m_A[f]); nm += std::norm(M2s.m_A[f]);
-        nss += std::norm(SSB.m_A[f]); nb1 += std::norm(B1s.m_A[f]); nsb += std::norm(SB.m_A[f]); }
-      // lam:|beta_2|/|M_2|:|beta_2|/|s s B|:|beta_1|/|s B| (last single-soft only)
-      o<<" lam="<<lam<<":"<<(nm > 0. ? sqrt(nb/nm) : -1.)
-       <<":"<<(nss > 0. ? sqrt(nb/nss) : -1.);
-      if (mode < 2) o<<":"<<(nsb > 0. ? sqrt(nb1/nsb) : -1.);
-    }
-    o<<"\n";
-    std::cerr<<o.str();
-  }
-  m_stage = stsave;
-  m_allphotons = phsave;
 }
 
 

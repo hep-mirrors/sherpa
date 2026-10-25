@@ -3,7 +3,6 @@ set(ACRAIC_SOURCES Acraic_Amplitude.C
                  Acraic_Spinors.C
                  Acraic_Born.C
                  Acraic_Virtual.C
-                 Acraic_Real.C
                  Acraic_Partitions.C
                  Acraic_Comix.C
                  Acraic_Checks.C

@@ -13,14 +13,7 @@ namespace YFS {
     The soft region Omega of a YFS form factor or crude density: the photons
     with energy below Emin in one frame,
       Omega = { k : k.n < Emin } ,  n the frame's unit time direction.
-    B-tilde(Omega) is a Lorentz scalar for a given Omega
-    and what the frame changes is the region. The energy-based formula
-    (YFS_Form_Factor::BVR_full(p1p2, E1, E2, ...)) takes the leg energies IN
-    the region's frame, so the frame used to be implicit in where the caller
-    took E1, E2 from. A SoftRegion names the frame
-    and computes the energies itself.
 
-    Three kinds, each reproducing the arithmetic of the code it replaced:
       Lab       the frame the momenta are given in (the beams' rest frame after
                 YFS_Handler's CMS boost, "P"): E = p[0].
       RestOf    the rest frame of a timelike vector V: legs boosted with
@@ -55,12 +48,6 @@ namespace YFS {
 
     double Emin() const { return m_emin; }
 
-    /*!
-      The legs in the region's frame for the form factor: their invariant
-      product, and their energies there. p1p2 is taken from the vectors the
-      formula used before (boosted ones for rest_of, the given ones
-      otherwise), so that every caller stays bit-identical.
-    */
     void Legs(const ATOOLS::Vec4D &p1, const ATOOLS::Vec4D &p2, double m1, double m2,
               double &p1p2, double &E1, double &E2) const {
       switch (m_kind) {

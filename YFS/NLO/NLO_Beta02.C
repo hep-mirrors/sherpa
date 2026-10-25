@@ -120,22 +120,6 @@ void NLO_Base::BuildBeta02()
     return;
   }
   ++m_b02_n;
-  static const int probe(Main()["YFS"]["BETA0_2_PROBE"].Get<int>());
-  static long nprobe(0);
-  if (probe > 0 && nprobe < probe) {
-    ++nprobe;
-    const double v1(VOneLoop());
-    std::ostringstream o;
-    o<<std::setprecision(12)<<"@@@ B02 v1="<<v1
-     <<" deltaf="<<m_b02.deltaf.real()<<","<<m_b02.deltaf.imag()
-     <<" nll="<<m_b02.nll.real()<<","<<m_b02.nll.imag()
-     <<" d2ext="<<Beta02External()<<" v2nlo="<<Beta02SquaredLevel()
-     <<" npairs="<<m_b02.f.size()<<" daa="<<daa;
-    for (size_t d(0); d < m_b02.f.size(); ++d)
-      o<<" f"<<d<<"="<<m_b02.f[d].real()<<","<<m_b02.f[d].imag();
-    o<<"\n";
-    std::cerr<<o.str();
-  }
 }
 
 
@@ -151,21 +135,6 @@ void NLO_Base::BuildDysonVP()
     return;
   }
   ++m_vp_n;
-  static const int probe(Main()["YFS"]["DYSON_VP_PROBE"].Get<int>());
-  static long nprobe(0);
-  if (probe > 0 && nprobe < probe) {
-    ++nprobe;
-    std::ostringstream o;
-    o<<std::setprecision(10)<<"@@@ DYSONVP s="<<m_vp.s<<" t="<<m_vp.t
-     <<" Ds="<<m_vp.Ds.real()<<","<<m_vp.Ds.imag()
-     <<" Dt="<<m_vp.Dt.real()<<","<<m_vp.Dt.imag()
-     <<" v2="<<m_vp.v2<<" rbar="<<m_vp.rbar.real()<<","<<m_vp.rbar.imag();
-    for (const VP_Helicity &h : m_vp.hel)
-      o<<" ["<<h.l[0]<<h.l[1]<<h.l[2]<<h.l[3]<<" w="<<h.w
-       <<" r="<<h.r.real()<<","<<h.r.imag()<<"]";
-    o<<"\n";
-    std::cerr<<o.str();
-  }
 }
 
 
@@ -239,22 +208,6 @@ void NLO_Base::BuildEWHigherOrderHelicity()
     m_gdelta[c] = std::abs(a0[c]) > 0. ? kappa*a1[c]/a0[c] : Complex(0.5*m_vewho, 0.);
   m_ghelok = true;
   ++m_ghel_n;
-  static const int probe(Main()["YFS"]["DYSON_VP_PROBE"].Get<int>());
-  static long nprobe(0);
-  if (probe > 0 && nprobe < probe) {
-    ++nprobe;
-    std::ostringstream o;
-    // GRIFFIN's NLO helicity sum in Griffin_Virtual's normalisation (s^2/pi)
-    // against the Born the virtual is divided by
-    const double sh((m_plab[0] + m_plab[1]).Abs2());
-    o<<std::setprecision(10)<<"@@@ GRIFFINHEL vho="<<m_vewho<<" kappa="<<kappa
-     <<" nloG_over_born="<<0.25*s0*sh*sh/M_PI/m_rescale_alpha/m_born;
-    for (size_t c(0); c < a0.size(); ++c)
-      o<<" ["<<m_ghel[c][0]<<m_ghel[c][2]<<" w="<<std::norm(a0[c])/s0
-       <<" dG="<<m_gdelta[c].real()<<"]";
-    o<<"\n";
-    std::cerr<<o.str();
-  }
 }
 
 
