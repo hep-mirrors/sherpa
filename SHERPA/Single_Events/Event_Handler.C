@@ -9,6 +9,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/RUsage.H"
+#include "ATOOLS/Org/Timing_Statistics.H"
 #include "SHERPA/Single_Events/Signal_Processes.H"
 
 #include <signal.h>
@@ -189,7 +190,12 @@ void Event_Handler::InitialiseSeedBlob(ATOOLS::btp::code type,
 bool Event_Handler::AnalyseEvent() {
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     if ((*pit)->Type()==eph::Analysis) {
-      switch ((*pit)->Treat(&m_blobs)) {
+      Return_Value::code rv;
+      {
+        Scoped_Timer timer((*pit)->Name());
+        rv=(*pit)->Treat(&m_blobs);
+      }
+      switch (rv) {
       case Return_Value::Nothing :
 	break;
       case Return_Value::Success :
@@ -247,7 +253,11 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
       }
     }
     DEBUG_INFO("Treating "<<(*pit)->Name());
-    Return_Value::code rv((*pit)->Treat(&m_blobs));
+    Return_Value::code rv;
+    {
+      Scoped_Timer timer((*pit)->Name());
+      rv=(*pit)->Treat(&m_blobs);
+    }
     if (rv!=Return_Value::Nothing)
       msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "
                     <<rv<<std::endl;
@@ -314,7 +324,11 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode) {
     Event_Phase_Handler* phase=(*p_phases)[i];
     if (phase->Type()!=eph::Userhook) continue;
 
-    Return_Value::code rv(phase->Treat(&m_blobs));
+    Return_Value::code rv;
+    {
+      Scoped_Timer timer(phase->Name());
+      rv=phase->Treat(&m_blobs);
+    }
     if (rv!=Return_Value::Nothing)
       msg_Tracking()<<METHOD<<"(): ran '"<<phase->Name()<<"' -> "
 		    <<rv<<std::endl;

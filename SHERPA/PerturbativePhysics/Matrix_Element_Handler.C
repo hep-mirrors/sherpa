@@ -10,6 +10,7 @@
 #include "ATOOLS/Org/RUsage.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Strings.H"
+#include "ATOOLS/Org/Timing_Statistics.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/NLO_Types.H"
 #include "ATOOLS/Phys/Variations.H"
@@ -228,6 +229,36 @@ bool Matrix_Element_Handler::GenerateOneEvent()
   return false;
 }
 
+namespace {
+
+  // Adds the time of a trial event to the event generation timing statistics,
+  // for the process as listed in the integration results, grouped by its type,
+  // and for the partonic process selected last.
+  class Trial_Timer {
+  private:
+    Process_Base *p_proc;
+    Timing_Statistics::Clock::time_point m_start;
+  public:
+    explicit Trial_Timer(Process_Base *const proc):
+      p_proc(proc), m_start(Timing_Statistics::Clock::now()) {}
+    ~Trial_Timer()
+    {
+      if (!Timing_Statistics::IsRunning()) return;
+      const double dt(std::chrono::duration<double>
+                      (Timing_Statistics::Clock::now()-m_start).count());
+      Process_Base *partonic(p_proc->Selected());
+      if (partonic==NULL) partonic=p_proc;
+      Process_Base *group(partonic->Parent());
+      static const std::string lo("LO"), bvi("BVI"), rs("RS");
+      const nlo_type::code type(group->Info().m_fi.NLOType());
+      const std::string &label
+        (type==nlo_type::lo?lo:(type&(nlo_type::real|nlo_type::rsub))?rs:bvi);
+      Timing_Statistics::Add(dt,label,group->Name(),partonic->Name());
+    }
+  };
+
+}
+
 Matrix_Element_Handler::trial_event_generation_result
 Matrix_Element_Handler::GenerateOneTrialEvent()
 {
@@ -247,6 +278,7 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
       return trial_event_generation_result::abort;
     return trial_event_generation_result::zero;
   }
+  Trial_Timer timer(proc);
 
   // if variations are enabled and we do unweighting, we do a pilot run first
   // where no on-the-fly variations are calculated

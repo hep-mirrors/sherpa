@@ -345,6 +345,36 @@ at the same time.
    The command line option :option:`-b` should therefore not be used
    in this case, see :ref:`Command line`.
 
+.. _TIMING_STATISTICS:
+
+TIMING_STATISTICS
+=================
+
+.. index:: TIMING_STATISTICS
+
+At the end of the run, Sherpa prints where the wall-clock time of the
+event generation was spent, as a tree of timers. The total is measured
+over the same period as the event generation time printed in the line
+``Event <N> ( <T> s total )``, i.e. it excludes the initialisation and
+integration. Below it, the time is broken down into the event phases,
+e.g. ``Signal_Processes`` or ``Jet_Evolution:CSS``. The hard processes
+are listed below ``Signal_Processes``, grouped into ``LO``, ``BVI`` and
+``RS``, and with the names under which their integration results are
+reported. Each line gives the time, its fraction of the total and the
+number of calls, which for the processes is the number of trial
+events. The time not covered by the timers on the level below is
+listed as ``(other)``. The following values can be used:
+
+:samp:`{0}`
+      The default. No timing statistics are recorded or printed.
+
+:samp:`{1}`
+      The timers are printed down to the processes as reported in
+      the integration results.
+
+:samp:`{2}`
+      In addition, the time is listed for each partonic process.
+
 .. _INIT_ONLY:
 
 INIT_ONLY

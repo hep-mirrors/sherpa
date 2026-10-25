@@ -6,6 +6,7 @@ endif()
 
 set(Org_SOURCES MyStrStream.C
                 Return_Value.C
+                Timing_Statistics.C
                 Shell_Tools.C
                 STL_Tools.C
                 RUsage.C
@@ -40,6 +41,7 @@ set(Org_HEADERS CXXFLAGS_PACKAGES.H
                 CXXFLAGS.H
                 Git_Info.H
                 Return_Value.H
+                Timing_Statistics.H
                 Shell_Tools.H
                 STL_Tools.H
                 RUsage.H

@@ -29,6 +29,7 @@
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Timing_Statistics.H"
 #include "ATOOLS/Phys/KF_Table.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "PDF/Main/PDF_Base.H"
@@ -69,6 +70,7 @@ Sherpa::~Sherpa()
 {
   if (msg_LevelIsInfo()) {
     Return_Value::PrintStatistics(msg->Out());
+    Timing_Statistics::PrintStatistics(msg->Out());
     if (p_inithandler->GetVariations()) {
       p_inithandler->GetVariations()->PrintStatistics(msg->Out());
     }
@@ -137,6 +139,7 @@ bool Sherpa::InitializeTheRun()
 
     m_displayinterval=s["EVENT_DISPLAY_INTERVAL"].Get<int>();
     m_printmpixs=s["PRINT_MPI_XS"].Get<bool>();
+    Timing_Statistics::SetMode(s["TIMING_STATISTICS"].Get<int>());
     m_evt_output = s["EVT_OUTPUT"].Get<int>();
     m_evt_output_start = s["EVT_OUTPUT_START"].Get<int>();
 
@@ -159,6 +162,7 @@ void Sherpa::RegisterDefaults()
   s["DEBUG_STEP"].SetDefault(-1);
   s["EVENT_DISPLAY_INTERVAL"].SetDefault(100);
   s["PRINT_MPI_XS"].SetDefault(true);
+  s["TIMING_STATISTICS"].SetDefault(0);
   s["EVT_OUTPUT"].SetDefault(msg->Level());
   s["MSG_LIMIT"].SetDefault(20);
   msg->SetLimit(s["MSG_LIMIT"].Get<int>());
@@ -239,7 +243,10 @@ bool Sherpa::GenerateOneEvent(bool reset)
     }
   }
 
-  if (m_evt_starttime<0.0) m_evt_starttime=rpa->gen.Timer().RealTime();
+  if (m_evt_starttime<0.0) {
+    m_evt_starttime=rpa->gen.Timer().RealTime();
+    Timing_Statistics::Start();
+  }
 
   if (reset) p_eventhandler->Reset();
   if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
@@ -365,6 +372,7 @@ void Sherpa::PrepareTerminate()
 bool Sherpa::SummarizeRun()
 {
   if (p_eventhandler) {
+    Timing_Statistics::Stop();
     msg_Info()<<"  Event "<<rpa->gen.NumberOfGeneratedEvents()<<" ( "
               <<size_t(rpa->gen.Timer().RealTime()-m_evt_starttime)
               <<" s total ) = "
