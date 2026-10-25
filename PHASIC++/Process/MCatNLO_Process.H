@@ -38,6 +38,8 @@ namespace PHASIC {
     int    m_fomode, m_psmode, m_hpsmode, m_kfacmode;
     //! Book-keeping to track whether event was S or H
     bool   m_wassevent;
+    //! The BVI or RS process the last trial event was attempted with
+    Process_Base *p_lastproc;
     //! Separate scale for RS events
     std::string m_rsscale;
     
@@ -308,6 +310,11 @@ namespace PHASIC {
      */
     bool WasSEvent() const { return m_wassevent; }
     Process_Base* BVIProc() { return p_bviproc; }
+    /*!
+     * @return The BVI or RS process the last trial event was attempted with,
+     * also when it was rejected
+     */
+    Process_Base* LastProc() { return p_lastproc; }
 
   };// end of class MCatNLO_Process
 

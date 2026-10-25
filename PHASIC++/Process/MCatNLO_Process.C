@@ -46,6 +46,7 @@ MCatNLO_Process::MCatNLO_Process
       (1,"The automation of MCatNLO is published in \\cite{Hoeche:2011fd}.");
   }
   m_wassevent=false;
+  p_lastproc=NULL;
 }
 
 MCatNLO_Process::~MCatNLO_Process()
@@ -691,6 +692,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,
   }
   if (S > ran->Get() * (S + H)) {
     p_selected = p_bviproc;
+    p_lastproc = p_bviproc;
     if (p_read==NULL) winfo = p_bviproc->OneEvent(wmode, varmode, mode);
     if (winfo && m_fomode != 2) {
       // calculate and apply weight factor
@@ -706,6 +708,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,
     }
   } else {
     p_selected = p_rsproc;
+    p_lastproc = p_rsproc;
     if (p_read==NULL) winfo = p_rsproc->OneEvent(wmode, varmode, mode);
     if (winfo && m_fomode != 2) {
       // calculate and apply weight factor

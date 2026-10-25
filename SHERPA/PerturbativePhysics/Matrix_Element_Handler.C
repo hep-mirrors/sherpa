@@ -246,9 +246,12 @@ namespace {
       if (!Timing_Statistics::IsRunning()) return;
       const double dt(std::chrono::duration<double>
                       (Timing_Statistics::Clock::now()-m_start).count());
-      Process_Base *partonic(p_proc->Selected());
-      if (partonic==NULL) partonic=p_proc;
-      Process_Base *group(partonic->Parent());
+      // an MC@NLO process is listed as its BVI and RS processes
+      Process_Base *group(p_proc);
+      MCatNLO_Process *mcatnlo(dynamic_cast<MCatNLO_Process*>(p_proc));
+      if (mcatnlo && mcatnlo->LastProc()) group=mcatnlo->LastProc();
+      Process_Base *partonic(group->Selected());
+      if (partonic==NULL) partonic=group;
       static const std::string lo("LO"), bvi("BVI"), rs("RS");
       const nlo_type::code type(group->Info().m_fi.NLOType());
       const std::string &label
