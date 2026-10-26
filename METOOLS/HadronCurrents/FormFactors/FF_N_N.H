@@ -29,10 +29,17 @@ namespace METOOLS {
       // none sets all to 0, pointlike sets F1p=1, F_A=g_A, all else 0
       None = 0, Point = 1,
       // vector 10-19
-      Kelly = 10,
+      Dipole = 10,
+      Kelly = 11,
+      BBBA05 = 12,
+      Ye2018 = 13,
       // axial 20-29
-      Meyer = 20,
-      Lattice = 21
+      AxialDipole = 20,
+      Meyer = 21,
+      BBBA07 = 22,
+      MINERvA = 23,
+      Lattice = 24,
+      DjukanovicLattice = 25
     };
   protected:
     Model GetModel() const { return ModelAs<Model>(); }
@@ -41,9 +48,17 @@ namespace METOOLS {
       switch (GetModel()) {
         case Model::None: case Model::Point:
           return;
+        case Model::Dipole:
         case Model::Kelly:
+        case Model::BBBA05:
+        case Model::Ye2018:
+
+        case Model::AxialDipole:
         case Model::Meyer:
+        case Model::BBBA07:
+        case Model::MINERvA:
         case Model::Lattice:
+        case Model::DjukanovicLattice:
           if (m_ffmodel/10==(axial ? 2 : 1)) return;
       }
       THROW(fatal_error, "Unknown FORM_FACTOR=" + std::to_string(m_ffmodel) +
@@ -58,11 +73,21 @@ namespace METOOLS {
     void FixMode(const GeneralModel & md);
 
     // vector models: each returns F1, F2 of one nucleon
+    void   Dipole_p(const double & Q2,double & F1,double & F2) const;
+    void   Dipole_n(const double & Q2,double & F1,double & F2) const;
     void   Kelly_p(const double & Q2,double & F1,double & F2) const;
     void   Kelly_n(const double & Q2,double & F1,double & F2) const;
+    void   BBBA05_p(const double & Q2,double & F1,double & F2) const;
+    void   BBBA05_n(const double & Q2,double & F1,double & F2) const;
+    void   Ye2018_p(const double & Q2,double & F1,double & F2) const;
+    void   Ye2018_n(const double & Q2,double & F1,double & F2) const;
     // axial models: each returns the normalised F_A
+    double AxialDipole(const double & Q2) const;
     double Meyer(const double & Q2) const;
+    double BBBA07(const double & Q2) const;
+    double MINERvA(const double & Q2) const;
     double Lattice(const double & Q2) const;
+    double DjukanovicLattice(const double & Q2) const;
 
     void   Vector(const double & Q2,double & F1p,double & F2p,
                   double & F1n,double & F2n) const;
@@ -70,7 +95,9 @@ namespace METOOLS {
   public:
     FF_N_N(const FF_Parameters & params);
     ~FF_N_N() {}
-    double  Value(const double & Q2) const;
+    double  FF_Assigner(const double & Q2) const;
+    void CreateF1F2Histogram() const;
+    void CreateAxialRatioHistogram() const;
     Complex operator()(const ATOOLS::Vec4D_Vector& moms) override;
   };
 }
