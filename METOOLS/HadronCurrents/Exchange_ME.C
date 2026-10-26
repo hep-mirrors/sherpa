@@ -52,16 +52,18 @@ namespace {
     }
     // W on a lepton line only: V-A. Quark and hadron lines need a CKM element
    // and/or form factors, so they must state their couplings.
-   if (bos.Kfcode() == kf_Wplus && f.IsLepton())
+   // Nucleon lines: VA_N_N ignores v, a (g_A, form factors and V_ud are set
+   // inside it), so these are placeholders that only stop the throw below.
+   if (bos.Kfcode() == kf_Wplus && (f.IsLepton() || f.IsNucleon()))
     {
       v = 1;
       a = -1;
       return;
     }
-    THROW(fatal_error, "No default couplings known for exchanged boson " + ToString(bos) + " on a " + ToString(f) + " line (defaults exist for the photon, the Z, "
-                                                                                                                    "and the W on lepton lines only). "
-                                                                                                                    "Give v and a on both currents, and Coupling on the exchange, explicitly. OR check boson!!");
-  }
+    THROW(fatal_error, "No default couplings known for exchanged boson "
+      + ToString(bos) + " on a " + ToString(f) + " line (defaults exist for the photon and the Z. For the W  defaults exsist on lepton and nucleon lines only). "
+          "Give v and a on both currents, and Coupling on the exchange, explicitly. OR check boson!!");
+}
 
   double DefaultCoupling(const Flavour & bos)
   {

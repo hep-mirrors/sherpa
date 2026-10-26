@@ -31,7 +31,7 @@
 #                        21 lattice-QCD z-expansion
 #  numbers 10 and 20 come from FF base class
 #   AFF is ignored for the photon (no axial coupling); it acts on Z and W.
-TAGS: {VFF: 10, AFF: 20, nucleon: 2112}
+TAGS: {VFF: 10, AFF: 20, nucleon: 2212}
 
 EVENTS: 10k
 
@@ -65,10 +65,10 @@ PROCESSES:
         J1: {Type: VA_F_F, Indices: [2, 0]}    # electron [out in]
         J2: {Type: VA_N_N, Indices: [3, 1],    # nucleon [out in]
               BOSON: 22, VECTOR_FF: $(VFF), AXIAL_FF: $(AFF)}
-      # - Boson: 23
-      #   J1: {Type: VA_F_F, Indices: [2, 0]}
-      #   J2: {Type: VA_N_N, Indices: [3, 1], 
-      #         BOSON: 23, VECTOR_FF: $(VFF), AXIAL_FF: $(AFF)}
+      - Boson: 23
+        J1: {Type: VA_F_F, Indices: [2, 0]}
+        J2: {Type: VA_N_N, Indices: [3, 1], 
+              BOSON: 23, VECTOR_FF: $(VFF), AXIAL_FF: $(AFF)}
 
 # settings for now for low energies
 

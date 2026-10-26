@@ -38,6 +38,22 @@ void VA_0_FF::CheckTopology() const {
             "of its fermion legs is charged.");
   }
 
+  // IS INDEX 0 THE BARRED SPINOR? ubar for an outgoing particle, vbar for an
+  // incoming antiparticle; index 1 is then u (incoming particle) or v
+  // (outgoing antiparticle). XYZFunc picks u/v but never reorders, so a
+  // swapped pair silently gives the charge-conjugate line.
+  for (size_t k(0);k<2;++k) {
+    const bool barred = (IsIncoming(p_i[k])==m_flavs[p_i[k]].IsAnti());
+    if (barred!=(k==0))
+      THROW(fatal_error,"Current "+m_name+": leg "+ToString(p_i[k])+" ("
+            +ToString(m_flavs[p_i[k]])+") is in Indices slot "+ToString(k)
+            +", but slot 0 must be the barred spinor (outgoing particle or "
+            "incoming antiparticle). Swap the first two Indices or check your logic.");
+      // If this is too restrictive in the tau decays for an example I haven't thought of, feel free to make it an error message not a "stop the whole run".
+      // msg_Error()<< "Current " + m_name + ": leg " + ToString(p_i[k]) + " (" + ToString(m_flavs[p_i[k]]) + ") is in Indices slot " + ToString(k) + ", but slot 0 must be the barred spinor (outgoing particle or "
+      //                                                                                                                                                 "incoming antiparticle). Swap the first two Indices or check your logic.\n";
+  }
+
   // DOES THE TAG MATCH THE TOPOLOGY?
   //
   // Measured, not assumed. The old test asked whether the index list
