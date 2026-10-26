@@ -1,5 +1,7 @@
 #include <iomanip>
 #include <array>
+#include "ATOOLS/Math/Vector.H"
+#include "METOOLS/Currents/C_Spinor.H"
 #include "METOOLS/Main/Polarization_Tools.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -24,6 +26,11 @@ Polarization_Vector::Polarization_Vector(Vec4D p, bool anti,
   Init(p);
 }
 
+Polarization_Spinor::Polarization_Spinor(CSpinor p, bool anti,
+                                         bool out) : METOOLS::CSpinor<double>()
+{
+  Init(p);
+}
 
 Polarization_Vector::Polarization_Vector(Vec4D p, double m2, bool anti,
                                          bool out) : std::vector<Vec4C>()
@@ -31,6 +38,15 @@ Polarization_Vector::Polarization_Vector(Vec4D p, double m2, bool anti,
   if(!IsZero((p.Abs2()-m2)/(fabs(p[0])+fabs(m2)), 1e-6)) {
     PRINT_INFO("Undefined for p.Abs2()="<<p.Abs2()<<" and m2="<<m2);
   }
+  Init(p);
+}
+
+Polarization_Spinor::Polarization_Spinor(CSpinor p, double m2, bool anti,
+                                         bool out) : METOOLS::CSpinor<double>()
+{
+  //if(!IsZero((p.Abs2()-m2)/(fabs(p[0])+fabs(m2)), 1e-6)) {
+    //PRINT_INFO("Undefined for p.Abs2()="<<p.Abs2()<<" and m2="<<m2);
+  //}
   Init(p);
 }
 

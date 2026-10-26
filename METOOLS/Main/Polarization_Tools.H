@@ -1,6 +1,7 @@
 #ifndef METOOLS_Main_Polarization_Tools_H
 #define METOOLS_Main_Polarization_Tools_H
 
+#include "METOOLS/Currents/C_Vector.H"
 #ifndef SQRT_05
 #define SQRT_05 0.70710678118654757
 #endif
@@ -12,6 +13,7 @@
 #include "ATOOLS/Phys/Spinor.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/Matrix.H"
+#include "METOOLS/Currents/C_Spinor.H"
 
 namespace METOOLS
 {
@@ -36,6 +38,23 @@ namespace METOOLS
     void Test(ATOOLS::Vec4D p=ATOOLS::Vec4D(3.0399e+00, 1.7523e+00,-1.4883e-01, 3.1938e-01));
 
     vector<vector<Complex>> BasisTrafo(const Polarization_Vector& old_basis, bool pol_checks=0) const;
+  };
+
+  class Polarization_Spinor : public METOOLS::CSpinor<double> {
+    SpinorType m_kp;
+    SpinorType m_km;
+    METOOLS::CSpinor<double> m_k;
+
+    void Init(METOOLS::CSpinor<double> p);
+
+  public:
+    Polarization_Spinor(METOOLS::CSpinor<double> p, double M2, bool anti=false, bool out=false);
+    Polarization_Spinor(METOOLS::CSpinor<double> p, bool anti=false, bool out=false);
+    Polarization_Spinor(METOOLS::CSpinor<double> p, METOOLS::CSpinor<double> ref_mom);
+
+    //TODO: Polrization_Spinor has to be transformed in .C , BasisTrafo_Spinor
+    //vector<vector<Complex>> BasisTrafo_Spinor(const Polarization_Spinor& old_basis, bool pol_checks=0) const;
+  
   };
 
   class Polarization_Tensor : public std::vector<ATOOLS::CMatrix> {
