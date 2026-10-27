@@ -100,7 +100,7 @@ double LF_VV3P0_Quarkonia_FF::operator()(
     const double mj  = m_flavs[2].Mass(true);
     const double mk  = m_flspec.Mass(true);
     const double sij = y * (Q2 - sqr(mk)) + (1-y)*sqr(mj); 
-    const double M = 2*(Flavour((m_flavs[2].Kfcode()/10)%10).Mass(true));
+    const double M = mj;
     const double muj2 = sqr(mj)/Q2, muk2 = sqr(mk)/Q2;
     double value = sqr(sij - 3*sqr(M));
     value *= ( sqr(sij - sqr(M)) - 2*z*sij*((1-z)*sij - sqr(M)) );
@@ -108,10 +108,6 @@ double LF_VV3P0_Quarkonia_FF::operator()(
     value *= sqr(M/2)/sij;
     value *= 1. / ( (1 - muj2 - muk2) + 1./ y * ( muj2 ) );
     value *= 1. / (1 + sqr(z) * sqr(mj) / scale);
-    if (sqr(p_cf->Coupling(scale, 0)) * value * JFF(y, 0, muj2, muk2, 0) > sqr(p_cf->MaxCoupling(0)) * 0.2) {
-          msg_Out() << METHOD << " too high " << std::endl;
-    }
-    // const double prefactor = 64./243*GetLDME(m_flavs[2].Kfcode())/pow(M/2,5);
     return sqr(p_cf->Coupling(scale, 0)) * value * JFF(y, 0, muj2, muk2, 0);
 }
 
@@ -120,19 +116,22 @@ double LF_VV3P0_Quarkonia_FF::OverIntegrated(const double zmin, const double zma
                                            const double xbj) {
   m_zmin = std::max(zmin, ZMIN); //safety cut to catch singularity at z=0
   m_zmax = std::min(zmax, 1.);
-  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  const double prefactor = 64./243*GetLDME(m_flavs[2].Kfcode())/pow(m,5);
-  return prefactor * sqr(p_cf->MaxCoupling(0)) * 0.2 * (m_zmax - m_zmin);
+  if (m_zmax <= m_zmin) return 0.;
+  const double M = m_flavs[2].Mass(true);
+  // PRD 50 (1994) 3176, Eqs. (1),(4),(8): L=(2J+1)*H1*(M/2)^4.
+  // Include alpha_s/4, dt/(2*pi*t), polarization /2 and both neighbours.
+  const double prefactor = 32.*M_PI/27*GetLDME(m_flavs[2].Kfcode())/pow(M/2,5);
+  return prefactor * sqr(p_cf->MaxCoupling(0)) * log(m_zmax / m_zmin);
 }
 
 double LF_VV3P0_Quarkonia_FF::OverEstimated(const double z, const double y) {
-  const double m = Flavour((m_flavs[2].Kfcode()/10)%10).Mass(true);
-  // const double prefactor = 64./243*GetLDME(m_flavs[2].Kfcode())/pow(m,5);
-  return sqr(p_cf->MaxCoupling(0)) * 0.2;
+  if (z <= 0. || z >= 1.) return 0.;
+  // The physical FF kernel is bounded by MaxCoupling^2 / z.
+  return sqr(p_cf->MaxCoupling(0)) / z;
 }
 
 double LF_VV3P0_Quarkonia_FF::Z() {
-  return m_zmin + (m_zmax - m_zmin) * ATOOLS::ran->Get();
+  return m_zmin * pow(m_zmax / m_zmin, ATOOLS::ran->Get());
 }
 
 double LF_VV3P0_Quarkonia_FI::operator()(
