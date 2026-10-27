@@ -29,6 +29,9 @@ namespace PHASIC {
 
     std::string m_scale, m_coupling, m_kfactor, m_gpath, m_addname, m_hdf5;
     std::string m_megenerator, m_rsmegenerator, m_loopgenerator, m_special;
+    // loop generator used during pilot runs instead of m_loopgenerator (if
+    // not empty)
+    std::string m_pilotloopgenerator;
     std::string m_integrator, m_rsintegrator;
 
     ATOOLS::Scoped_Settings m_selectors;

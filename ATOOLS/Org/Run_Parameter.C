@@ -126,6 +126,7 @@ Run_Parameter::Run_Parameter()
   gen.SetTimeOut(3600);
   gen.m_softsc = 0;
   gen.m_hardsc = 0;
+  gen.m_pilotrun = false;
   gen.m_pbeam[0] = Vec4D(0.,0.,0.,0.);
   gen.m_pbeam[1] = Vec4D(0.,0.,0.,0.);
   gen.m_clevel=100;

@@ -562,6 +562,33 @@ only Sherpa-native option is ``Internal`` with a few hard coded loop
 matrix elements. Other loop matrix elements are provided by external
 libraries.
 
+.. _Pilot_Loop_Generator:
+
+Pilot_Loop_Generator
+====================
+
+Set a process specific nametag for the loop-ME generator used to
+calculate the weights of pilot events, see :ref:`EVENT_GENERATION_MODE`.
+If it is much faster than the :ref:`Loop_Generator`, significant
+speed-ups can be achieved in (partially) unweighted event generation.
+For example, a pilot loop generator with analytic expressions such as
+MCFM can be used together with OpenLoops as the actual
+:ref:`Loop_Generator`, such that for example EW virtual corrections
+can be calculated for the accepted events, which are not available
+with MCFM.
+
+The phase-space integration also uses the pilot loop generator, such
+that the unweighting is done with respect to the pilot weights. Once
+an event is accepted, it is recalculated with the
+:ref:`Loop_Generator`, and the event weight is corrected by the ratio
+of the two results. The better the pilot loop generator approximates
+the actual one, the narrower is therefore the resulting weight
+distribution. Note that the cross section reported after the
+integration refers to the pilot loop generator, while the one reported
+during event generation refers to the :ref:`Loop_Generator`.
+
+The pilot loop generator is not used for weighted event generation.
+
 .. _Associated_Contributions:
 
 Associated_Contributions

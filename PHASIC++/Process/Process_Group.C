@@ -247,7 +247,11 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
   std::string namestring("");
   if (p_gen) {
     namestring+="("+p_gen->Name();
-    if (m_pinfo.Has(nlo_type::loop)) namestring+="+"+m_pinfo.m_loopgenerator;
+    if (m_pinfo.Has(nlo_type::loop)) {
+      namestring+="+"+m_pinfo.m_loopgenerator;
+      if (m_pinfo.m_pilotloopgenerator!="")
+        namestring+="[pilot: "+m_pinfo.m_pilotloopgenerator+"]";
+    }
     namestring+=")";
   }
   msg_Info()<<"Calculating xs for '"

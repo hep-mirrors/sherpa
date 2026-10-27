@@ -36,7 +36,9 @@ namespace AMEGIC {
     Single_LOProcess                 * p_LO_process;
     PHASIC::Massive_Kernels          * p_kernel_qcd, * p_kernel_ew;
     PHASIC::KP_Terms                 * p_kpterms_qcd, * p_kpterms_ew;
+    // the loop ME in use (p_mainloopme, or p_pilotloopme during pilot runs)
     PHASIC::Virtual_ME2_Base         * p_loopme;
+    PHASIC::Virtual_ME2_Base         * p_mainloopme, * p_pilotloopme;
 
     double *                p_reqborn;
     std::vector<double>     m_cmur,m_wass;
@@ -111,6 +113,8 @@ namespace AMEGIC {
     double              Result()                       { return m_iresult; } 
 
     void                SelectLoopProcess();
+    PHASIC::Virtual_ME2_Base* GetLoopME(const std::string& loopgen);
+    void                SetActiveLoopME();
     /*------------------------------------------------------------------------------
 
       Process management

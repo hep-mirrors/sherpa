@@ -95,6 +95,20 @@ For :option:`Unweighted` and :option:`PartiallyUnweighted` events the user may
 set :option:`OVERWEIGHT_THRESHOLD: <maxweight>` to cap the maximal over-weight
 ``w/max`` taken into account.
 
+.. index:: Pilot run strategy
+
+To improve the performance of (partially) unweighted event generation,
+Sherpa uses a pilot run strategy :cite:`Bothmann:2022thx`. Until an
+event has been accepted, everything that is not required to perform
+the unweighting is disabled. Once an event is accepted, the exact same
+phase-space point is recomputed with everything enabled to get the
+full result. For example, on-the-fly variations are only calculated
+for accepted events. The pilot run can also use a cheaper loop
+matrix element than the accepted events, see
+:ref:`Pilot_Loop_Generator`. The pilot run strategy requires a random
+number generator that can restore its state, which is the case for the
+default one.
+
 
 .. _COLOR_SCHEME:
 

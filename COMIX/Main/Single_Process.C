@@ -28,7 +28,7 @@ using namespace ATOOLS;
 COMIX::Single_Process::Single_Process():
   COMIX::Process_Base(this),
   p_bg(NULL), p_hc(NULL), p_map(NULL),
-  p_loop(NULL), p_kpterms(NULL),
+  p_loop(NULL), p_pilotloop(NULL), p_kpterms(NULL),
   m_user_stype(sbt::none), m_user_imode(cs_itype::none)
 {
   Settings& s = Settings::GetMainSettings();
@@ -44,6 +44,7 @@ COMIX::Single_Process::~Single_Process()
 {
   if (p_kpterms) delete p_kpterms;
   if (p_loop) delete p_loop;
+  if (p_pilotloop) delete p_pilotloop;
   if (p_map) {
     for (size_t i(0);i<m_subs.size();++i) {
       delete [] m_subs[i]->p_id;
@@ -212,10 +213,21 @@ bool COMIX::Single_Process::Initialize
 	msg_Error()<<METHOD<<"(): "<<cinfo<<"\n";
 	THROW(not_implemented,"No virtual ME for this process");
       }
-      p_loop->SetCouplings(m_cpls);
-      p_loop->SetNorm(1.0/(isf*fsf));
-      p_loop->SetSubType((sbt::subtype)(stype));
-      p_loop->SetPoleCheck(m_checkpoles);
+      if (cinfo.m_pilotloopgenerator!="") {
+	cinfo.m_loopgenerator=cinfo.m_pilotloopgenerator;
+	p_pilotloop = PHASIC::Virtual_ME2_Base::GetME2(cinfo);
+	if (p_pilotloop==NULL) {
+	  msg_Error()<<METHOD<<"(): "<<cinfo<<"\n";
+	  THROW(not_implemented,"No pilot virtual ME for this process");
+	}
+      }
+      for (PHASIC::Virtual_ME2_Base *loop: {p_loop, p_pilotloop}) {
+	if (loop==NULL) continue;
+	loop->SetCouplings(m_cpls);
+	loop->SetNorm(1.0/(isf*fsf));
+	loop->SetSubType((sbt::subtype)(stype));
+	loop->SetPoleCheck(m_checkpoles);
+      }
       m_mewgtinfo.m_type|=mewgttype::VI;
     }
     p_bg->SetLoopME(p_loop);
@@ -454,6 +466,8 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
         !sp->p_bg->RSTrigger(Selector(),m_mcmode))
       return m_lastxs=m_dxs=0.0;
     sp->p_scale->CalculateScale(p);
+    if (sp->p_pilotloop)
+      sp->p_bg->SetLoopME(rpa->gen.PilotRun() ? sp->p_pilotloop : sp->p_loop);
     // For LO events read in with an event reader, the squared amplitude
     // cancels in the event weight: the phase-space handler divides the
     // weight read in by the differential cross section at the scales of the
@@ -891,5 +905,8 @@ void COMIX::Single_Process::SetLookUp(const bool lookup)
       static_cast<Single_Dipole_Term*>
 	((*subs)[i]->p_proc)->SetLookUp(m_lookup);
   }
-  if (p_loop && lookup==0) p_loop->SwitchMode(lookup);
+  if (lookup==0) {
+    if (p_loop) p_loop->SwitchMode(lookup);
+    if (p_pilotloop) p_pilotloop->SwitchMode(lookup);
+  }
 }

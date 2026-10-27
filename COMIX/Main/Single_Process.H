@@ -24,6 +24,8 @@ namespace COMIX {
     Single_Process *p_map;
 
     PHASIC::Virtual_ME2_Base *p_loop;
+    // loop ME used during pilot runs instead of p_loop (if any)
+    PHASIC::Virtual_ME2_Base *p_pilotloop;
     PHASIC::KP_Terms         *p_kpterms;
 
     ATOOLS::Vec4D_Vector m_p;

@@ -169,7 +169,7 @@ automatically be copied to the current run directory during initialisation.
 
 Note that for unweighted event generation, there is also an option to
 choose different loop-amplitude providers for the pilot run and the
-accepted events via the ``Pilot_Loop_Generator`` option.
+accepted events via the :ref:`Pilot_Loop_Generator` option.
 
 .. _Debugging a crashing/stalled event:
 

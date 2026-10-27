@@ -78,7 +78,7 @@ void Matrix_Element_Handler::RegisterMainProcessDefaults(
 Matrix_Element_Handler::Matrix_Element_Handler(MODEL::Model_Base *model):
   m_gens(),
   p_proc(NULL), p_beam(NULL), p_isr(NULL), p_model(model),
-  m_eventmode(0), m_hasnlo(0),
+  m_eventmode(0), m_hasnlo(0), m_haspilotloopgen(false),
   p_shower(NULL), p_nlomc(NULL),
   m_sum(0.0),
   m_ranidx(0), m_fosettings(0), p_ranin(NULL), p_ranout(NULL),
@@ -170,12 +170,16 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
     My_In_File::OpenDB(m_respath+"/");
   }
   bool okay(true);
+  // integrate with the pilot settings, such that the maxima used for the
+  // unweighting refer to the pilot-run weights
+  rpa->gen.SetPilotRun(m_pilotrunenabled);
   for (size_t i=0;i<m_procs.size();++i) {
     m_procs[i]->SetLookUp(true);
     if (!m_procs[i]->CalculateTotalXSec(m_respath,false)) okay=false;
     m_procs[i]->SetLookUp(false);
     m_procs[i]->Integrator()->SetUpEnhance();
   }
+  rpa->gen.SetPilotRun(false);
   if (storeresults) My_In_File::CloseDB(m_respath+"/");
   return okay;
 }
@@ -295,10 +299,12 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
     // the rng to re-run with variations after unweighting
     varmode = Variations_Mode::nominal_only;
     ran->SaveStatus(1);
+    rpa->gen.SetPilotRun(true);
   }
 
   // try to generate an event for the selected process
   ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode, varmode);
+  rpa->gen.SetPilotRun(false);
   p_proc=proc->Selected();
   if (info==NULL)
     return trial_event_generation_result::zero;
@@ -331,12 +337,21 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
     }
     if (hasvars && m_pilotrunenabled) {
       // re-run with same rng state and include the calculation of variations
-      // this time
+      // this time; the weight of the re-run can differ from the one of the
+      // pilot run if a Pilot_Loop_Generator is used, the event then keeps
+      // the ratio of the two as its weight
       ran->RestoreStatus(1);
       proc->ResetEvent();
       info=proc->OneEvent(m_eventmode, Variations_Mode::all);
-      assert(info);
-      if (!IsEqual(m_evtinfo.m_weightsmap.Nominal(),
+      // also consume random number used to set the discriminator for
+      // unweighting above, such that it is not re-used in the future
+      ran->Get();
+      if (info==NULL) {
+        assert(m_haspilotloopgen);
+        return trial_event_generation_result::zero;
+      }
+      if (!m_haspilotloopgen &&
+          !IsEqual(m_evtinfo.m_weightsmap.Nominal(),
                    info->m_weightsmap.Nominal(), 1e-6) &&
           !(IsNan(m_evtinfo.m_weightsmap.Nominal()) &&
             IsNan(info->m_weightsmap.Nominal()))) {
@@ -350,9 +365,6 @@ Matrix_Element_Handler::GenerateOneTrialEvent()
       }
       m_evtinfo=*info;
       delete info;
-      // also consume random number used to set the discriminator for
-      // unweighting above, such that it is not re-used in the future
-      ran->Get();
     }
   }
 
@@ -761,6 +773,14 @@ void Matrix_Element_Handler::BuildProcesses()
   }
 
   CheckAssociatedContributionsSetup(calculated_asscontribs);
+
+  if (m_haspilotloopgen && !m_pilotrunenabled) {
+    msg_Error()
+      <<"WARNING: A Pilot_Loop_Generator has been specified, but it will not\n"
+      <<"be used. This requires a pilot run, which can not be enabled,\n"
+      <<"either because the random number generator does not support\n"
+      <<"restoring its state, or because weighted events are generated.\n";
+  }
 }
 
 void Matrix_Element_Handler::ReadFinalStateMultiIndependentProcessSettings(
@@ -923,6 +943,8 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
     else if (subkey == "ME_Generator")       ExtractMPvalues(value, range, nf, args.pbi.m_vmegen);
     else if (subkey == "RS_ME_Generator")    ExtractMPvalues(value, range, nf, args.pbi.m_vrsmegen);
     else if (subkey == "Loop_Generator")     ExtractMPvalues(value, range, nf, args.pbi.m_vloopgen);
+    else if (subkey == "Pilot_Loop_Generator")
+      ExtractMPvalues(value, range, nf, args.pbi.m_vpilotloopgen);
     else if (subkey == "Integrator")         ExtractMPvalues(value, range, nf, args.pbi.m_vint);
     else if (subkey == "RS_Integrator")      ExtractMPvalues(value, range, nf, args.pbi.m_vrsint);
     else if (subkey == "PSI_ItMin")          ExtractMPvalues(value, range, nf, args.pbi.m_vitmin);
@@ -1135,6 +1157,12 @@ void Matrix_Element_Handler::BuildSingleProcessList(
 	if (GetMPvalue(args.pbi.m_vloopgen,nfs,pnid,ds)) {
 	  m_gens.LoadGenerator(ds);
 	  cpi.m_loopgenerator=ds;
+	}
+	if (GetMPvalue(args.pbi.m_vpilotloopgen,nfs,pnid,ds) &&
+	    ds!=cpi.m_loopgenerator) {
+	  m_gens.LoadGenerator(ds);
+	  cpi.m_pilotloopgenerator=ds;
+	  m_haspilotloopgen=true;
 	}
 	if (GetMPvalue(args.pbi.m_vint,nfs,pnid,ds)) cpi.m_integrator=ds;
 	if (GetMPvalue(args.pbi.m_vrsint,nfs,pnid,ds)) cpi.m_rsintegrator=ds;

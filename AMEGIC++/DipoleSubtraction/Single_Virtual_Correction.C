@@ -41,7 +41,8 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   m_user_imode(cs_itype::none), m_iresult(0.0),
   p_psgen(NULL), p_partner(this), p_LO_process(NULL),
   p_kernel_qcd(NULL), p_kernel_ew(NULL),
-  p_kpterms_qcd(NULL), p_kpterms_ew(NULL), p_loopme(NULL), p_reqborn(NULL),
+  p_kpterms_qcd(NULL), p_kpterms_ew(NULL),
+  p_loopme(NULL), p_mainloopme(NULL), p_pilotloopme(NULL), p_reqborn(NULL),
   m_x0(1.), m_x1(1.), m_eta0(1.), m_eta1(1.), m_z0(0.), m_z1(0.),
   m_loopmapped(false),
   m_pspisrecscheme(0), m_pspfsrecscheme(0),
@@ -93,7 +94,9 @@ Single_Virtual_Correction::~Single_Virtual_Correction()
   if (p_LO_process)  {delete p_LO_process;  p_LO_process=NULL;}
   if (p_kpterms_qcd) {delete p_kpterms_qcd; p_kpterms_qcd=NULL;}
   if (p_kpterms_ew)  {delete p_kpterms_ew;  p_kpterms_ew=NULL;}
-  if (p_loopme)      {delete p_loopme;      p_loopme=NULL;}
+  if (p_mainloopme)  {delete p_mainloopme;  p_mainloopme=NULL;}
+  if (p_pilotloopme) {delete p_pilotloopme; p_pilotloopme=NULL;}
+  p_loopme=NULL;
 }
 
 /*----------------------------------------------------------------------------
@@ -155,25 +158,41 @@ const Flavour_Vector &AMEGIC::Single_Virtual_Correction::CombinedFlavour
   ------------------------------------------------------------------------------*/
 void Single_Virtual_Correction::SelectLoopProcess()
 {
-  p_loopme=NULL;
+  p_loopme=p_mainloopme=p_pilotloopme=NULL;
   if (m_pinfo.m_fi.m_nlotype&nlo_type::loop || m_force_init) {
-    Process_Info loop_pi(m_pinfo);
-    loop_pi.m_fi.m_nlotype=nlo_type::loop;
-    msg_Debugging()<<"Looking for loop\n";
-    p_loopme=PHASIC::Virtual_ME2_Base::GetME2(loop_pi);
-    if (!p_loopme) {
-      msg_Error()<<"Could not find Loop-ME from "<<loop_pi.m_loopgenerator
-                 <<" for\n"<<loop_pi<<std::endl;
-      THROW(not_implemented, "Couldn't find virtual ME for this process.");
-    }
-    p_loopme->SetCouplings(m_cpls);
-    p_loopme->SetNorm(m_Norm);
-    p_loopme->SetSubType(m_stype);
-    p_loopme->SetPoleCheck(m_checkpoles);
-    m_drmode=p_loopme->DRMode();
+    p_loopme=p_mainloopme=GetLoopME(m_pinfo.m_loopgenerator);
+    m_drmode=p_mainloopme->DRMode();
+    if (m_pinfo.m_pilotloopgenerator!="")
+      p_pilotloopme=GetLoopME(m_pinfo.m_pilotloopgenerator);
   }
 }
 
+Virtual_ME2_Base*
+Single_Virtual_Correction::GetLoopME(const std::string& loopgen)
+{
+  Process_Info loop_pi(m_pinfo);
+  loop_pi.m_fi.m_nlotype=nlo_type::loop;
+  loop_pi.m_loopgenerator=loopgen;
+  msg_Debugging()<<"Looking for loop from "<<loopgen<<"\n";
+  Virtual_ME2_Base* loopme(PHASIC::Virtual_ME2_Base::GetME2(loop_pi));
+  if (!loopme) {
+    msg_Error()<<"Could not find Loop-ME from "<<loopgen
+               <<" for\n"<<loop_pi<<std::endl;
+    THROW(not_implemented, "Couldn't find virtual ME for this process.");
+  }
+  loopme->SetCouplings(m_cpls);
+  loopme->SetNorm(m_Norm);
+  loopme->SetSubType(m_stype);
+  loopme->SetPoleCheck(m_checkpoles);
+  return loopme;
+}
+
+
+void Single_Virtual_Correction::SetActiveLoopME()
+{
+  if (p_pilotloopme)
+    p_loopme = rpa->gen.PilotRun() ? p_pilotloopme : p_mainloopme;
+}
 
 
 int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
@@ -304,11 +323,17 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
   // if LO-proc is mapped, see whether V can be mapped as well
   if (p_LO_process!=p_LO_process->Partner()) {
     msg_Debugging()<<Name()<<": "<<this<<std::endl;
-    if (p_loopme) {
-      m_loopmapped=p_loopme->IsMappableTo(p_LO_process->Partner()->Info());
+    if (p_mainloopme) {
+      const Process_Info &partnerinfo(p_LO_process->Partner()->Info());
+      m_loopmapped=p_mainloopme->IsMappableTo(partnerinfo) &&
+        (!p_pilotloopme || p_pilotloopme->IsMappableTo(partnerinfo));
       msg_Tracking()<<(m_loopmapped?"Can":"Cannot")<<" map one-loop process: "
-                      <<p_loopme->Name()<<std::endl;
-      if (m_loopmapped) { delete p_loopme; p_loopme=NULL;}
+                      <<p_mainloopme->Name()<<std::endl;
+      if (m_loopmapped) {
+        delete p_mainloopme;
+        if (p_pilotloopme) delete p_pilotloopme;
+        p_loopme=p_mainloopme=p_pilotloopme=NULL;
+      }
     }
     string partnerID=p_LO_process->Partner()->Name();
     for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
@@ -317,7 +342,10 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
         InitFlavmap(p_partner);
         m_sfactor = p_LO_process->GetSFactor();
         m_cpls=p_partner->m_cpls;
-        if (p_loopme && !m_loopmapped) p_loopme->SetCouplings(m_cpls);
+        if (!m_loopmapped) {
+          if (p_mainloopme) p_mainloopme->SetCouplings(m_cpls);
+          if (p_pilotloopme) p_pilotloopme->SetCouplings(m_cpls);
+        }
         break;
       }
     }
@@ -508,7 +536,10 @@ void Single_Virtual_Correction::SetLookUp(const bool lookup)
 {
   m_lookup=lookup;
   if (p_LO_process) p_LO_process->SetLookUp(lookup);
-  if (p_loopme && lookup==0) p_loopme->SwitchMode(lookup);
+  if (lookup==0) {
+    if (p_mainloopme) p_mainloopme->SwitchMode(lookup);
+    if (p_pilotloopme) p_pilotloopme->SwitchMode(lookup);
+  }
 }
 
 void Single_Virtual_Correction::Minimize()
@@ -517,7 +548,11 @@ void Single_Virtual_Correction::Minimize()
   if (p_psgen)                  { delete p_psgen;       p_psgen=NULL; }
   if (p_kpterms_qcd)            { delete p_kpterms_qcd; p_kpterms_qcd=NULL;}
   if (p_kpterms_ew)             { delete p_kpterms_ew;  p_kpterms_ew=NULL;}
-  if (p_loopme && m_loopmapped) { delete p_loopme;      p_loopme=NULL;}
+  if (m_loopmapped) {
+    if (p_mainloopme)  { delete p_mainloopme;  p_mainloopme=NULL; }
+    if (p_pilotloopme) { delete p_pilotloopme; p_pilotloopme=NULL; }
+    p_loopme=NULL;
+  }
 
   m_maxcpl     = p_partner->MaxOrders();
   m_mincpl     = p_partner->MinOrders();
@@ -546,6 +581,7 @@ double Single_Virtual_Correction::DSigma(const Vec4D_Vector &_moms,
 {
   DEBUG_FUNC(Name());
   m_lastxs = m_lastdxs = m_lastbxs = 0.;
+  SetActiveLoopME();
   double wgt(1.0);
   int bvimode(p_partner->m_bvimode);
   if (!lookup && m_user_bvimode!=0) {
@@ -1026,6 +1062,8 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
     p_partner->Integrator()->SetMomenta(p_int->Momenta());
     return p_partner->operator()(mom,varmode,mode)*m_sfactor;
   }
+  // also needed here, since mapped processes call this directly
+  SetActiveLoopME();
 
   double B(0.),V(0.),I(0.);
   p_partner->m_cmur[0]=p_partner->m_cmur[1]=0.;
