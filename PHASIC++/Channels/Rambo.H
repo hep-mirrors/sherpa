@@ -40,7 +40,8 @@ namespace PHASIC {
   /*!
     To generate a phase space point according to a uniform distribution.
     In case massive vectors are needed this point gets modified by 
-    MassivePoint.
+    MassivePoint. The point is generated in the c.m. frame of the incoming
+    momenta and returned in the frame of the incoming momenta.
     /sa MassivePoint
   */
   /*!
