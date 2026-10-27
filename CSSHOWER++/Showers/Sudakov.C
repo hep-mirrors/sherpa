@@ -549,7 +549,7 @@ bool Sudakov::Generate(Parton* split, double kt2win)
       spect    = slist[i];
       selected = p_selected;
       if (selected->GetFlavourC() != Flavour(kf_none))
-        acceptance_weight = success < 0 ? 1. : 1./selected->EFac();
+        acceptance_weight = success < 0 ? 1. : 1./selected->LastEFac();
     }
   }
   // Only the winning ordinary splitting carries an acceptance correction.
@@ -996,13 +996,17 @@ bool Sudakov::Veto(double Q2,double x,double t,double y,double z) {
 
 bool Sudakov::Splitting(double Q2,double x,double t,double y,double z) {
   double wt = RejectionWeight(z,y,x,t,Q2);
-  double efac=p_selected->EFac();
+  const double bound=p_selected->EFac();
+  const double efac=p_selected->EFac(z,y,x,t,Q2);
+  const double physical_acceptance=wt/bound;
+  // Keep the constant-enhancement path numerically unchanged.
+  if (efac!=bound) wt*=efac/bound;
   double rn(ran->Get());
   if (rn>wt) {
-    if (efac!=1.0) {
-      m_weight*=(1.0-wt/efac)/(1.0-wt);
+    if (bound!=1.0 || efac!=1.0) {
+      m_weight*=(1.0-physical_acceptance)/(1.0-wt);
       p_split->Weights().push_back
-	(std::make_pair(t,(1.0-wt/efac)/(1.0-wt)));
+	(std::make_pair(t,(1.0-physical_acceptance)/(1.0-wt)));
     }
     return false;
   }

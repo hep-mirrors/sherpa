@@ -207,3 +207,32 @@ veto bounds.
 This mode bypasses coupling scale shifts and renormalisation counterterms;
 alternative shower couplings used for reweighting also retain this
 constant. Matrix-element couplings and PDFs are unaffected. 
+
+Likewise, the splitting kinematic can be biased using:
+ - ``SHOWER: ENHANCE``, for flat enhancement
+ - ``SHOWER: ENHANCE_FUNCTION`` with the same convention of the hard-event
+``Enhance_Function`` ``VAR{expression}``, optionally followed
+by ``|minimum|maximum`` to freeze the evaluated factor at those limits::
+
+   SHOWER:
+     ENHANCE:
+       - ['S{G}{G}{chi(c0)(1P)}', 100] 
+     ENHANCE_FUNCTION:
+       - ['S{G}{G}{chi(c0)(1P)}', 'VAR{1+99*pow(z,8)}|1|100']
+
+The available variables are the same as the ones in splitting trials in the shower, hard-event momenta ``p[i]`` are not available. 
+
+With explicit range limits, the upper limit is the proposal bound B used
+by ``EFac()`` to generate trial scales. It overrides any matching
+``ENHANCE`` value, including zero, and no separate ``ENHANCE`` entry is
+needed. 
+
+B must be finite and at least one; every evaluated local factor b must be
+finite and satisfy 0 < b <= B. Range limits freeze the function output as
+specified. Invalid local values otherwise raise an error. 
+
+Trial acceptance uses b/B times the usual kernel-to-overestimate ratio.
+Accepted trials carry 1/b and rejected trials carry the corresponding
+physical-to-biased survival correction. Both corrections enter the shower
+weights, including spectator competition. Beware that a sharply localized enhancement may therefore generate many
+rejected trials. 

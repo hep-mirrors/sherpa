@@ -1,4 +1,5 @@
-set(CSSShowers_SOURCES Splitting_Function_Base.C
+set(CSSShowers_SOURCES Shower_Enhancement.C
+                    Splitting_Function_Base.C
                     Splitting_Function_Group.C
                     SF_Coupling.C
                     SF_Lorentz.C
@@ -6,7 +7,8 @@ set(CSSShowers_SOURCES Splitting_Function_Base.C
                     Shower.C
                     Kinematics_Base.C)
 
-set(CSSShowers_HEADERS Splitting_Function_Base.H
+set(CSSShowers_HEADERS Shower_Enhancement.H
+                    Splitting_Function_Base.H
                     Splitting_Function_Group.H
                     SF_Coupling.H
                     SF_Lorentz.H

@@ -15,6 +15,8 @@ namespace ATOOLS {
 
 namespace CSSHOWER {
 
+  class Shower_Enhancement;
+
   class Shower {
   private:
     Kinematics_FF      m_kinFF;
@@ -32,6 +34,8 @@ namespace CSSHOWER {
     ATOOLS::Cluster_Leg *p_old[2];
 
     std::map<std::string,double,ATOOLS::String_Sort> m_efac;
+
+    std::map<std::string,std::shared_ptr<Shower_Enhancement>,ATOOLS::String_Sort> m_efunction;
 
     ATOOLS::Weights_Map m_weightsmap;
 
@@ -69,6 +73,8 @@ namespace CSSHOWER {
     double Reweight(ATOOLS::QCD_Variation_Params*, Parton& splitter);
     void SetMS(const ATOOLS::Mass_Selector *const ms);
     double EFac(const std::string &sfk) const;
+    bool HasEFac(const std::string &sfk) const;
+    std::shared_ptr<Shower_Enhancement> EFacFunction(const std::string &sfk) const;
     inline Sudakov *GetSudakov() { return &m_sudakov; }
     inline const Sudakov *GetSudakov() const { return &m_sudakov; }
 

@@ -161,6 +161,7 @@ void Initialization_Handler::RegisterDefaults()
       });
   s["SHOWER"].DeclareMatrixSettingsWithEmptyDefault({
       "ENHANCE",
+      "ENHANCE_FUNCTION",
       });
   s["EVENT_OUTPUT"].UseNoneReplacements();
   s["VARIATIONS"].UseNoneReplacements();

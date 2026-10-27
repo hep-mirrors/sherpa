@@ -1,6 +1,7 @@
 #ifndef CSSHOWER_Showers_Splitting_Function_Base_H
 #define CSSHOWER_Showers_Splitting_Function_Base_H
 
+#include <memory>
 #include "CSSHOWER++/Showers/SF_Key.H"
 #include "CSSHOWER++/Showers/SF_Coupling.H"
 #include "CSSHOWER++/Showers/SF_Lorentz.H"
@@ -14,6 +15,7 @@ namespace CSSHOWER {
 
   class Parton;
   class Shower;
+  class Shower_Enhancement;
 
   class Splitting_Function_Base {
 
@@ -28,6 +30,8 @@ namespace CSSHOWER {
     cstp::code m_type;
     double m_lastint, m_lastacceptwgt, m_lastscale;
     double m_symf, m_polfac, m_efac, m_mth;
+    std::shared_ptr<Shower_Enhancement> m_efunction;
+    double m_lastlocalefac = 1.;
     mutable double m_lpdf;
     double m_facscalefactor;
     int m_on, m_qcd, m_scs;
@@ -78,6 +82,8 @@ namespace CSSHOWER {
     void SetEFac(Shower *const shower);
 
     double EFac() const;
+    double EFac(double z, double y, double x, double t, double Q2);
+    double LastEFac() const { return m_lastlocalefac; }
 
     Parton *SetSpec(Parton *const spec);
 

@@ -1,4 +1,5 @@
 #include "CSSHOWER++/Showers/Shower.H"
+#include "CSSHOWER++/Showers/Shower_Enhancement.H"
 #include "CSSHOWER++/Tools/Parton.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
@@ -56,6 +57,19 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
     if (helpsvv[i].size()==2) {
       m_efac[helpsvv[i][0]]=ToType<double>(helpsvv[i][1]);
     }
+  for (const auto &entry : pss["ENHANCE_FUNCTION"].GetMatrix<std::string>()) {
+    if (entry.size()!=2 || entry[0].empty())
+      THROW(fatal_error, "SHOWER: ENHANCE_FUNCTION requires [splitting selector, expression] entries");
+    if (m_efunction.count(entry[0]))
+      THROW(fatal_error, "Duplicate SHOWER: ENHANCE_FUNCTION selector: "+entry[0]);
+    const auto function = std::make_shared<Shower_Enhancement>(entry[1]);
+    if (!function->HasBound() && !HasEFac(entry[0]))
+      THROW(fatal_error, "SHOWER: ENHANCE_FUNCTION requires an upper range limit or an explicit ENHANCE bound for "+entry[0]);
+    m_efunction[entry[0]] = function;
+    const double bound = EFac(entry[0]);
+    if (IsBad(bound) || bound < 1.)
+      THROW(fatal_error, "SHOWER: ENHANCE_FUNCTION requires a finite proposal bound >= 1 for "+entry[0]);
+  }
   m_sudakov.SetShower(this);
   m_sudakov.SetMassThreshold(mth);
   m_sudakov.SetScaleScheme(scs);
@@ -86,10 +100,26 @@ Shower::~Shower()
 
 double Shower::EFac(const std::string &sfk) const
 {
+  const auto function = EFacFunction(sfk);
+  if (function && function->HasBound()) return function->Bound();
   for (std::map<std::string,double,ATOOLS::String_Sort>::const_reverse_iterator
 	 eit=m_efac.rbegin();eit!=m_efac.rend();++eit)
     if (sfk.find(eit->first)!=std::string::npos) return eit->second;
   return 1.0;
+}
+
+bool Shower::HasEFac(const std::string &sfk) const
+{
+  for (auto eit=m_efac.rbegin(); eit!=m_efac.rend(); ++eit)
+    if (sfk.find(eit->first)!=std::string::npos) return true;
+  return false;
+}
+
+std::shared_ptr<Shower_Enhancement> Shower::EFacFunction(const std::string &sfk) const
+{
+  for (auto eit=m_efunction.rbegin(); eit!=m_efunction.rend(); ++eit)
+    if (sfk.find(eit->first)!=std::string::npos) return eit->second;
+  return nullptr;
 }
 
 bool Shower::EvolveShower(Singlet * actual,const size_t &maxem,size_t &nem)

@@ -9,6 +9,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "CSSHOWER++/Showers/Shower.H"
+#include "CSSHOWER++/Showers/Shower_Enhancement.H"
 
 #include <algorithm>
 
@@ -17,7 +18,7 @@ using namespace MODEL;
 using namespace ATOOLS;
 
 Splitting_Function_Base::Splitting_Function_Base():
-  p_lf(NULL), p_cf(NULL), m_type(cstp::none), m_mth(0.0),
+  p_lf(NULL), p_cf(NULL), m_type(cstp::none), m_efac(1.0), m_mth(0.0),
   m_on(1), m_qcd(-1), m_facscalefactor(1.0)
 {
 }
@@ -27,6 +28,10 @@ void Splitting_Function_Base::SetEFac(Shower *const shower)
   std::string id="S{"+ToString(p_lf->FlA())+"}{"
     +ToString(p_lf->FlB())+"}{"+ToString(p_lf->FlC())+"}";
   m_efac=shower->EFac(id);
+  m_lastlocalefac=m_efac;
+  m_efunction=shower->EFacFunction(id);
+  if (m_efunction && (IsBad(m_efac) || m_efac < 1.))
+    THROW(fatal_error, "SHOWER: ENHANCE_FUNCTION requires a finite proposal bound >= 1 for "+id);
   msg_Debugging()<<METHOD<<"Enhance "<<id<<" with "<<m_efac<<"\n";
   if (m_efac!=1.0) msg_Info()<<METHOD<<"Enhance "<<id<<" with "<<m_efac<<"\n";
   if (m_efac==0.0) m_on=0;
@@ -213,6 +218,14 @@ double Splitting_Function_Base::EFac() const
 {
   if (m_efac!=1.0) return m_efac; 
   return 1.0;
+}
+
+double Splitting_Function_Base::EFac(double z, double y, double x, double t, double Q2)
+{
+  m_lastlocalefac = m_efunction ? m_efunction->Evaluate(z,y,x,t,Q2) : m_efac;
+  if (m_efunction && (IsBad(m_lastlocalefac) || m_lastlocalefac <= 0. || m_lastlocalefac > m_efac))
+    THROW(fatal_error, "SHOWER: ENHANCE_FUNCTION must satisfy 0 < local factor <= proposal bound; got "+ToString(m_lastlocalefac)+" with bound "+ToString(m_efac));
+  return m_lastlocalefac;
 }
 
 double Splitting_Function_Base::Overestimated(const double z,const double y) {
