@@ -529,6 +529,8 @@ bool Sudakov::Generate(Parton* split, double kt2win)
 	slist.push_back(*pit);
     }
   }
+  const size_t weights_begin = split->Weights().size();
+  double acceptance_weight = 1.;
   double t0(Min(m_k0sqi, m_k0sqf)), t, y, z, phi;
   Parton *spect(NULL);
   Splitting_Function_Base *selected(NULL);
@@ -546,7 +548,18 @@ bool Sudakov::Generate(Parton* split, double kt2win)
       m_st     = t0 = t;
       spect    = slist[i];
       selected = p_selected;
+      if (selected->GetFlavourC() != Flavour(kf_none))
+        acceptance_weight = success < 0 ? 1. : 1./selected->EFac();
     }
+  }
+  // Only the winning ordinary splitting carries an acceptance correction.
+  // Mustretain every rejection above the final competition boundary, including from losing spectators.
+  if (!selected || selected->GetFlavourC() != Flavour(kf_none)) {
+    m_weight = acceptance_weight;
+    const double stopping_scale = Max(t0, kt2win);
+    for (size_t i = weights_begin; i < split->Weights().size(); ++i)
+      if (split->Weights()[i].first > stopping_scale)
+        m_weight *= split->Weights()[i].second;
   }
   p_spect = NULL;
   p_selected = NULL;
@@ -740,6 +753,8 @@ int Sudakov::Generate(Parton *split,Parton *spect,
     } // closes transition handling
     // return false; //HACK Force exit 
 
+    // ProduceT can cross the boundary in its final step.
+    if (t < Max(t0, kt2win)) return 0;
     SelectOne();
     split->SetSpect(p_spect=p_selected->SelectSpec());
     z = Z();
@@ -812,7 +827,8 @@ int Sudakov::Generate(Parton *split,Parton *spect,
     }
     const bool veto(Veto(Q2, x,t,y,z));
     if (m_keeprewinfo) {
-      const double accwgt(Selected()->LastAcceptanceWeight());
+      // Variation weights correct physical survival at the proposal rate B*H.
+      const double accwgt(Selected()->LastAcceptanceWeight()/Selected()->EFac());
       const double lastscale(Selected()->LastScale());
       if (accwgt < 1.0 && accwgt > 0.0 && lastscale > m_reweightscalecutoff) {
         Sudakov_Reweighting_Info info;
