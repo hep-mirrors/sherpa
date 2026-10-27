@@ -78,6 +78,13 @@ TEST_CASE("VPMODE tags are parsed, and unknown ones are rejected",
   CHECK(Parse("Full") == vpmode::full);
   CHECK(Parse("HP") == vpmode::hp);
   CHECK(Parse("LP") == vpmode::lp);
+  // the same modes by number
+  CHECK(Parse("0") == vpmode::off);
+  CHECK(Parse("1") == vpmode::full);
+  CHECK(Parse("2") == vpmode::hp);
+  CHECK(Parse("3") == vpmode::lp);
+  CHECK(Parse("4") == vpmode::builtin);
+  CHECK_THROWS(Parse("5"));
   // tags are case sensitive, like all other Sherpa settings
   CHECK_THROWS(Parse("full"));
   CHECK_THROWS(Parse("hp"));

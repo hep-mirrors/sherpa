@@ -129,13 +129,13 @@ std::istream &MODEL::operator>>(std::istream &str,vpmode::code &vp)
 {
   std::string tag;
   str>>tag;
-  if      (tag=="None")    vp=vpmode::off;
-  else if (tag=="Full")    vp=vpmode::full;
-  else if (tag=="HP")      vp=vpmode::hp;
-  else if (tag=="LP")      vp=vpmode::lp;
-  else if (tag=="Default") vp=vpmode::builtin;
+  if      (tag=="None"    || tag=="0") vp=vpmode::off;
+  else if (tag=="Full"    || tag=="1") vp=vpmode::full;
+  else if (tag=="HP"      || tag=="2") vp=vpmode::hp;
+  else if (tag=="LP"      || tag=="3") vp=vpmode::lp;
+  else if (tag=="Default" || tag=="4") vp=vpmode::builtin;
   else
     THROW(fatal_error, "Unknown Alpha_QED: VPMODE '"+tag+
-                       "'. Use None, Full, HP or LP, or leave it unset.");
+                       "'. Use None (0), Full (1), HP (2), LP (3) or Default (4).");
   return str;
 }
