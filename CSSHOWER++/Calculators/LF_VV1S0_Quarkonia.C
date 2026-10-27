@@ -118,14 +118,18 @@ double LF_VV1S0_Quarkonia_FF::OverIntegrated(const double zmin, const double zma
                                            const double xbj) {
   m_zmin = std::max(zmin,ZMIN);
   m_zmax = std::min(zmax,1.);
-  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  const double prefactor = 4./27*GetLDME(m_flavs[2].Kfcode())/m;
-  return prefactor * sqr(p_cf->MaxCoupling(0)) / sqr(2*m) * (zmax - zmin);
+  if (m_zmax <= m_zmin) return 0.;
+  const double M = m_flavs[2].Mass(true);
+  // Braaten-Yuan, PRL 71 (1993) 1673, Eq. (8), with
+  // LDME = 9 |R(0)|^2/(2 pi). Includes compensation for CF_QCD's
+  // colour factor, polarization averaging and the dt/(2 pi t) measure;
+  // the inclusive parent-gluon rate sums both colour neighbours.
+  const double prefactor = 64.*M_PI/27*GetLDME(m_flavs[2].Kfcode())/M;
+  return prefactor * OverEstimated(0.5, 0.) * (m_zmax - m_zmin);
 }
 
 double LF_VV1S0_Quarkonia_FF::OverEstimated(const double z, const double y) {
-  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  return sqr(p_cf->MaxCoupling(0)) /sqr(2*m);
+  return sqr(p_cf->MaxCoupling(0) / m_flavs[2].Mass(true));
 }
 
 double LF_VV1S0_Quarkonia_FF::Z() {
