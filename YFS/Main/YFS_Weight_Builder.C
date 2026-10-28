@@ -743,11 +743,22 @@ void YFS_Weight_Builder::GenerateWeight() {
   */
   ComputeFixedOrderColumn(c);
 
-  const bool   acraic_nom (m_h.m_acraic_weight && c.corr_acraic != 0.);
-  m_h.m_ev.m_yfsweight *= acraic_nom ? c.corr_acraic : corr_eex;
+  // NLO_Part: B is beta_0 only: neither ACRAIC nor the EEX beta_1 may correct
+  // the nominal; their columns stay as named weights
+  const bool   bornonly   (m_h.m_nlotype == nlo_type::born);
+  if (bornonly && m_h.m_useacraic) {
+    static bool shown(false);
+    if (!shown) { shown = true;
+      msg_Info()<<"YFS: NLO_Part: B - ACRAIC is not used for the nominal "
+                <<"weight (beta_0 only); its correction is kept in the named "
+                <<"weights only. Add R (and V) to NLO_Part to use it."<<std::endl; }
+  }
+  const bool   acraic_nom (!bornonly && m_h.m_acraic_weight && c.corr_acraic != 0.);
+  const double corr_nom   (bornonly ? 1. : acraic_nom ? c.corr_acraic : corr_eex);
+  m_h.m_ev.m_yfsweight *= corr_nom;
   m_h.m_ev.m_yfsweight *= m_h.m_ev.m_formfactor*(1.-m_h.m_v);
   // What the named ACRAIC column has to divide by to become a ratio.
-  m_h.m_ev.m_corr_nominal = acraic_nom ? c.corr_acraic : corr_eex;
+  m_h.m_ev.m_corr_nominal = corr_nom;
   m_h.m_ev.m_corr_acraic    = c.corr_acraic;
   m_h.m_ev.m_corr_eex     = corr_eex;
   m_h.m_ev.m_corr_acraic_o1 = c.corr_acraic_o1;
