@@ -17,7 +17,7 @@
 
 namespace METOOLS
 {
-  typedef ATOOLS::Spinor<double> SpinorType;
+  typedef ATOOLS::Spinor<double> SpinorType; //weil SpinorType ist kein Standardtyp
 
   class Polarization_Vector : public std::vector<ATOOLS::Vec4C> {
     SpinorType m_kp;
@@ -32,28 +32,30 @@ namespace METOOLS
     ATOOLS::Vec4C EMP(const ATOOLS::Vec4D &p);
     ATOOLS::Vec4C EML(const ATOOLS::Vec4D &p);
   public:
-    Polarization_Vector(ATOOLS::Vec4D p, double M2, bool anti=false, bool out=false);
-    Polarization_Vector(ATOOLS::Vec4D p, bool anti=false, bool out=false);
-    Polarization_Vector(ATOOLS::Vec4D p, ATOOLS::Vec4D ref_mom);
+    Polarization_Vector(ATOOLS::Vec4D p, double M2, bool anti=false, bool out=false); // teilchen mit masse
+    Polarization_Vector(ATOOLS::Vec4D p, bool anti=false, bool out=false); // teilchen ohne masse
+    Polarization_Vector(ATOOLS::Vec4D p, ATOOLS::Vec4D ref_mom); //mit eigenem ref vektor
     void Test(ATOOLS::Vec4D p=ATOOLS::Vec4D(3.0399e+00, 1.7523e+00,-1.4883e-01, 3.1938e-01));
 
     vector<vector<Complex>> BasisTrafo(const Polarization_Vector& old_basis, bool pol_checks=0) const;
   };
 
-  class Polarization_Spinor : public METOOLS::CSpinor<double> {
+  class Polarization_Spinor : public std::vector<METOOLS::CSpinor<double>> {
     SpinorType m_kp;
     SpinorType m_km;
-    METOOLS::CSpinor<double> m_k;
+    ATOOLS::Vec4D m_k;
 
-    void Init(METOOLS::CSpinor<double> p);
+    void Init(ATOOLS::Vec4D p, ATOOLS::Vec4D ref_mom=ATOOLS::Vec4D(1.0,SQRT_05,SQRT_05,0.0)); //default vector prüfen
+    METOOLS::CSpinor<double> SP(const ATOOLS::Vec4D &p, int h); //spinor mit Helizität h
 
   public:
-    Polarization_Spinor(METOOLS::CSpinor<double> p, double M2, bool anti=false, bool out=false);
-    Polarization_Spinor(METOOLS::CSpinor<double> p, bool anti=false, bool out=false);
-    Polarization_Spinor(METOOLS::CSpinor<double> p, METOOLS::CSpinor<double> ref_mom);
+    Polarization_Spinor(ATOOLS::Vec4D p, bool anti=false, bool out=false);
+    Polarization_Spinor(ATOOLS::Vec4D p, double M2, bool anti=false, bool out=false);
+    Polarization_Spinor(ATOOLS::Vec4D p, double M2, ATOOLS::Vec4D ref_mom);
+    void Test(ATOOLS::Vec4D p=ATOOLS::Vec4D(3.0399e+00, 1.7523e+00,-1.4883e-01, 3.1938e-01));
 
     //TODO: Polrization_Spinor has to be transformed in .C , BasisTrafo_Spinor
-    //vector<vector<Complex>> BasisTrafo_Spinor(const Polarization_Spinor& old_basis, bool pol_checks=0) const;
+    std::vector<std::vector<Complex>> BasisTrafo_Spinor(const Polarization_Spinor& old_basis, bool pol_checks=0) const;
   
   };
 

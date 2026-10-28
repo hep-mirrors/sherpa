@@ -26,12 +26,6 @@ Polarization_Vector::Polarization_Vector(Vec4D p, bool anti,
   Init(p);
 }
 
-Polarization_Spinor::Polarization_Spinor(CSpinor p, bool anti,
-                                         bool out) : METOOLS::CSpinor<double>()
-{
-  Init(p);
-}
-
 Polarization_Vector::Polarization_Vector(Vec4D p, double m2, bool anti,
                                          bool out) : std::vector<Vec4C>()
 {
@@ -41,20 +35,39 @@ Polarization_Vector::Polarization_Vector(Vec4D p, double m2, bool anti,
   Init(p);
 }
 
-Polarization_Spinor::Polarization_Spinor(CSpinor p, double m2, bool anti,
-                                         bool out) : METOOLS::CSpinor<double>()
-{
-  //if(!IsZero((p.Abs2()-m2)/(fabs(p[0])+fabs(m2)), 1e-6)) {
-    //PRINT_INFO("Undefined for p.Abs2()="<<p.Abs2()<<" and m2="<<m2);
-  //}
-  Init(p);
-}
-
 Polarization_Vector::Polarization_Vector(Vec4D p, Vec4D ref_mom) : std::vector<Vec4C>()
 {
   Init(p, ref_mom);
   // delete auxiliary polarization vector
   pop_back();
+}
+
+Polarization_Spinor::Polarization_Spinor(Vec4D p, bool anti,
+                                         bool out)
+{
+  Init(p);
+}
+
+Polarization_Spinor::Polarization_Spinor(Vec4D p, double M2, bool anti,
+                                         bool out)
+{
+  //if(!IsZero((p.Abs2()-M2)/(fabs(p[0])+fabs(M2)), 1e-6)) {
+    //PRINT_INFO("Undefined for p.Abs2()="<<p.Abs2()<<" and m2="<<M2);
+  //}
+  Init(p);
+}
+
+Polarization_Spinor::Polarization_Spinor(Vec4D p, double M2, Vec4D ref_mom)
+{
+  Init(p, ref_mom);
+  // delete auxiliary polarization vector
+  //pop_back();
+}
+
+void Polarization_Spinor::Init(ATOOLS::Vec4D p, ATOOLS::Vec4D ref_mom)
+{
+  m_k = ref_mom;
+  
 }
 
 void Polarization_Vector::Init(Vec4D p, Vec4D ref_mom)
@@ -81,7 +94,7 @@ Vec4C Polarization_Vector::VT(const SpinorType &a,const SpinorType &b)
   e[SpinorType::R1()]=a.U1()*b.U2()+a.U2()*b.U1();
   e[SpinorType::R2()]=Complex(0.0,1.0)*(a.U1()*b.U2()-a.U2()*b.U1());
   return e;
-}
+} //Das transformiert den vector dann im Endeffekt?
 
 Vec4C Polarization_Vector::EM(const Vec4D &p)
 {
@@ -244,6 +257,75 @@ void Polarization_Vector::Test(Vec4D p)
     }
   }
   std::cout<<METHOD<<"... "<<(success?"passed":"failed")<<std::endl<<std::endl;
+}
+vector<vector<Complex>> Polarization_Spinor::BasisTrafo_Spinor(const Polarization_Spinor& old_basis, bool pol_checks) const{
+  //int m_nhel = old_basis.size();
+  const std::size_t m_nhel = this->size();
+
+  if (m_nhel != 2 || old_basis.size() != 2) {
+    THROW(fatal_error, "BasisTrafo_Spinor expects two spinors in each basis")
+  }
+
+  //erstellt coeff matrix, erstmal mit 0 befüllen
+  vector<vector<Complex>> coeff(m_nhel, vector<Complex>(m_nhel, Complex(0, 0)));
+  if (m_nhel != this->size()){
+    THROW(fatal_error, "polarisation vectors in new and old basis describes particles with different helicity "
+                       "degrees of freedom!")
+  }
+
+  std::array<std::array<Complex,2>, 2> array_old_basis;
+  std::array<std::array<Complex,2>, 2> array_old_basis_inv;
+  std::array<std::array<Complex,2>, 2> array_new_basis;
+
+  //for (std::)
+
+  Complex det = old_basis[0][0] * old_basis[1][1] - old_basis[1][0] * old_basis[0][1];
+  if (abs(det.real()) < 1e-8 && abs(det.imag()) < 1e-8){
+    std::cout << "determinante is" << det << std::endl;
+    THROW(fatal_error, "matrix of polarisation vectors in old spin basis is not invertible")
+  }
+
+  //inverse
+  array_old_basis_inv[0][0]=(Complex(1, 0) / det)*(old_basis[1][1]);
+  array_old_basis_inv[0][1]=(Complex(1, 0) / det)*(-old_basis[0][1]);
+  array_old_basis_inv[1][0]=(Complex(1, 0) / det)*(-old_basis[1][0]);
+  array_old_basis_inv[1][1]=(Complex(1, 0) / det)*(old_basis[0][0]);
+
+  for (size_t i(0); i<m_nhel; i++){
+    for (size_t j(0); j<m_nhel; j++){
+      array_new_basis[i][j] = (*this)[i][j+1];
+      array_old_basis[i][j] = old_basis[i][j+1];
+    }
+  }
+
+  // calculate basis transformation matrix: coeff = new_basis * (old_basis)^-1; each row contains the coeff for one
+  // polarisation vector in new basis
+  Complex tmp(0, 0);
+  Complex test(0, 0);
+  for (size_t i(0); i<m_nhel; i++){
+    Complex zero_comp(0, 0), one_comp(0, 0);
+    for (size_t j(0); j<m_nhel; j++){
+      tmp = Complex(0, 0);
+      test = Complex(0, 0);
+      for (size_t k(0); k<m_nhel; k++){
+        tmp += (array_new_basis[i][k] * array_old_basis_inv[k][j]);
+        test += (array_old_basis_inv[i][k] * array_old_basis[k][j]);
+      }
+
+      coeff[i][j] = tmp;
+
+      // test, whether inverse matrix is calculated correctly
+      if ((i==j && (abs(test.real()-1)>1e-8 || abs(test.imag())>1e-8)) || (i!=j &&
+                                                                           (abs(test.real())>1e-8 || abs(test.imag())>1e-8))){
+        THROW(fatal_error, "multiplication of matrix and its inverse does not result in identity matrix")
+      }
+      // test, whether transformation also works for the zeroth component of the polarisation vectors
+      zero_comp += coeff[i][j] * old_basis[j][0];
+      // test system of equation's solution
+      one_comp += coeff[i][j] * old_basis[j][1];
+      
+    }
+  }
 }
 
 vector<vector<Complex>> Polarization_Vector::BasisTrafo(const Polarization_Vector& old_basis, bool pol_checks) const {
