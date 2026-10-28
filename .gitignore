@@ -78,4 +78,4 @@ Tests/UFO/
 *.DS_Store
 EXTERNALINSTALL/
 EXTERNALSRC/
-/MODEL/Main/hadr5x26.f
+MODEL/Main/hadr5x*.f

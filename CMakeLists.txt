@@ -121,10 +121,7 @@ set( allenables ANALYSIS BINRELOC BLACKHAT CATCH2 CLANG_TIDY DIHIGGS DOXYGEN
 foreach (en IN LISTS allenables)
   message(STATUS "SHERPA: SHERPA_ENABLE_${en}=${SHERPA_ENABLE_${en}}")
 endforeach()
-# ALPHAQEDHAD compiles hadr5x19.f, so it needs Fortran just as much as the
-# internal PDFs do. Gating the language on INTERNAL_PDFS alone (as
-# ap-port-yfs-nlo-master still does) means -DSHERPA_ENABLE_ALPHAQEDHAD=ON on its
-# own configures happily and then fails at build time on an unknown source type.
+# ALPHAQEDHAD compiles hadr5x19.f, so it needs Fortran
 if (SHERPA_ENABLE_INTERNAL_PDFS OR SHERPA_ENABLE_ALPHAQEDHAD)
  set(SHERPA_ENABLE_FORTRAN ON)
  enable_language(Fortran)
@@ -133,12 +130,6 @@ else()
  message(STATUS "SHERPA: SHERPA_ENABLE_FORTRAN=${SHERPA_ENABLE_FORTRAN}")
 endif()
 if (SHERPA_ENABLE_ALPHAQEDHAD)
-  # Which of Jegerlehner's tabulations to build against. Both export the same
-  # subroutine -- hadr5x(e,st2,der,errdersta,errdersys,deg,errdegsta,errdegsys)
-  # -- so Running_AlphaQED.C is unchanged either way; what differs is the e+e-
-  # data behind the fit (2180 vs 2174 spacelike points, and a different COMMON
-  # block). 26 is the current one, 19 is kept selectable so an older result can
-  # be reproduced exactly.
   set(SHERPA_ALPHAQEDHAD_VERSION "26" CACHE STRING
       "Jegerlehner hadr5x tabulation to use for the hadronic alpha_QED (26 or 19)")
   set_property(CACHE SHERPA_ALPHAQEDHAD_VERSION PROPERTY STRINGS 26 19)
@@ -148,27 +139,21 @@ if (SHERPA_ENABLE_ALPHAQEDHAD)
   endif()
   set(ALPHAQEDHAD_SRC hadr5x${SHERPA_ALPHAQEDHAD_VERSION}.f)
 
-  # The routine declares its arguments `real`; these flags are what make that 8
-  # bytes, which is what the double* prototype in Running_AlphaQED.C assumes.
-  # Changing them breaks the interface silently. They must be set before
-  # add_subdirectory(MODEL) or they never reach the file.
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fdefault-real-8 -fdefault-double-8")
 
-  # Straight from the author's page rather than a mirror -- this is the file to
-  # cite. Fetched only when absent: ap-port-yfs-nlo-master downloads
-  # unconditionally, which makes `cmake` need the network, and this project is
-  # configured on cluster compute nodes that do not have it.
   if (NOT EXISTS ${PROJECT_SOURCE_DIR}/MODEL/Main/${ALPHAQEDHAD_SRC})
     message(STATUS "SHERPA: fetching ${ALPHAQEDHAD_SRC} for the hadronic alpha_QED")
-    execute_process(
-      COMMAND wget --no-check-certificate -O ${PROJECT_SOURCE_DIR}/MODEL/Main/${ALPHAQEDHAD_SRC}
-              https://people.physik.hu-berlin.de/~fjeger/${ALPHAQEDHAD_SRC}
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      RESULT_VARIABLE download_result
+    file(DOWNLOAD
+      https://people.physik.hu-berlin.de/~fjeger/${ALPHAQEDHAD_SRC}
+      ${PROJECT_SOURCE_DIR}/MODEL/Main/${ALPHAQEDHAD_SRC}
+      TLS_VERIFY ON
+      STATUS download_status
     )
+    list(GET download_status 0 download_result)
     if(NOT download_result EQUAL 0)
+      file(REMOVE ${PROJECT_SOURCE_DIR}/MODEL/Main/${ALPHAQEDHAD_SRC})
       message(FATAL_ERROR "SHERPA: could not download ${ALPHAQEDHAD_SRC} from "
-                          "people.physik.hu-berlin.de/~fjeger, and "
+                          "people.physik.hu-berlin.de/~fjeger (${download_status}), and "
                           "MODEL/Main/${ALPHAQEDHAD_SRC} is not present.")
     endif()
   endif()
