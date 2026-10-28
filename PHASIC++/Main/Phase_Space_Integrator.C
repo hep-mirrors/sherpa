@@ -116,7 +116,10 @@ void Phase_Space_Integrator::MPISync()
 double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror,
                                          bool _fin_opt)
 {
-  if (p_psh->Stats().size()>=m_nopt+m_maxopt+m_stopopt) return true;
+  // The first cycle is dropped by Process_Integrator::SetTotal, so never
+  // stop with no points kept (e.g. NOPT: 1, MAXOPT: 0, STOPOPT: 0).
+  if (p_psh->Stats().size()>=m_nopt+m_maxopt+m_stopopt &&
+      p_psh->Process()->Points()>0) return true;
   m_mn=m_mnstep=m_mncstep=0;
   m_maxerror=_maxerror;
   m_maxabserror=_maxabserror;
@@ -304,8 +307,10 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       (var!=0. && dabs(var*rpa->Picobarn())<m_maxabserror);
     if (!m_fin_opt && wannabreak && m_nopt>p_psh->Stats().size())
       m_nopt=p_psh->Stats().size();
-    if (wannabreak && p_psh->Stats().size()>=m_nopt+m_maxopt) return true;
-    if (p_psh->Stats().size()>=m_nopt+m_maxopt+m_stopopt) return true;
+    // never stop with no points kept, see the comment in Calculate
+    const bool kept(p_psh->Process()->Points()>0);
+    if (kept && wannabreak && p_psh->Stats().size()>=m_nopt+m_maxopt) return true;
+    if (kept && p_psh->Stats().size()>=m_nopt+m_maxopt+m_stopopt) return true;
   }
   return false;
 }

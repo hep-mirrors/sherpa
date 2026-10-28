@@ -79,7 +79,8 @@ Weight_Info *Process_Group::OneEvent(const int wmode,
   }
   double disc=p_int->SelectionWeight(wmode)*ATOOLS::ran->Get();
   for (size_t i=0;i<m_procs.size();++i) {
-    disc-=dabs(m_procs[i]->Integrator()->SelectionWeight(wmode));
+    // subprocesses without integration points (-1) are not selected
+    disc-=ATOOLS::Max(m_procs[i]->Integrator()->SelectionWeight(wmode),0.0);
     if (disc<=0.) {
       p_selected=m_procs[i];
       return p_selected->OneEvent(mode, varmode);

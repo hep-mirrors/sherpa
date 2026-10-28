@@ -73,6 +73,10 @@ double Process_Integrator::SelectionWeight(const int mode) const
   if (p_proc->EventReader()) return m_max*m_enhancefac;
   if (!p_proc->IsGroup()) {
     if (mode!=0) return m_max*m_enhancefac;
+    // No points: not integrated (e.g. the MC@NLO B processes) or reset by
+    // SetTotal because the result is zero. -1 is only a non-zero placeholder
+    // for the weight ratios in Matrix_Element_Handler and MCatNLO_Process,
+    // it is never used to select a subprocess.
     if (m_n+m_sn==0.0) return -1.0;
     if (m_totalxs==0.0) return 0.0;
     double selweight = m_swmode==0 ?
@@ -82,7 +86,7 @@ double Process_Integrator::SelectionWeight(const int mode) const
   }
   double sw(0.0);
   for (size_t i(0);i<p_proc->Size();++i) {
-    sw+=dabs((*p_proc)[i]->Integrator()->SelectionWeight(mode));
+    sw+=ATOOLS::Max((*p_proc)[i]->Integrator()->SelectionWeight(mode),0.0);
   }
   return sw;
 }
