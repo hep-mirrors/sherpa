@@ -110,6 +110,11 @@ namespace METOOLS {
     Current_Base * MakeCurrent(ATOOLS::Scoped_Settings s,
                                const std::vector<int> & idx);
     void AddExchange(const Diagram & d);
+    /// Give a pointlike-line current the v and a the card did not state,
+    /// from the model; give a hadronic current nothing. See the definition.
+    void PassVA(Current_Base * c,ATOOLS::Scoped_Settings J,
+                const ATOOLS::Flavour & bos,const bool contact,
+                const std::vector<int> & line);
 
     bool IsPhotonLeg(const int i) const;
     std::vector<int> StripPhotons(const std::vector<int> & idx) const;

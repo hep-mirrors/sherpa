@@ -85,6 +85,9 @@ namespace METOOLS {
     /// Current_Base::SetNIn, not from the constructor: which legs are
     /// incoming is context the constructor does not have.
     void CheckTopology() const override;
+    /// A pointlike line: its couplings are exactly v and a. See
+    /// Current_Base::UsesVA. The aliases below inherit this.
+    inline bool UsesVA() const override { return true; }
     /// Zero couplings (v = a = 0), e.g. a photon on a neutrino line. See
     /// Current_Base::Vanishes and the check in Exchange_ME.
     inline bool Vanishes() const override

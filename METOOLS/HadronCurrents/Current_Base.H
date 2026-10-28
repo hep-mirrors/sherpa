@@ -105,6 +105,22 @@ namespace METOOLS {
      */
     virtual void CheckTopology() const {}
 
+    /**
+     * Whether this current takes the couplings v and a. True only for a
+     * POINTLIKE fermion line (VA_0_FF), whose vertex is
+     * gamma^mu (v + a gamma_5): there the boson enters through those two
+     * numbers, so Exchange_ME defaults them from the model per exchange and
+     * the card may override them.
+     *
+     * A hadronic current returns false, the default. Its vector and axial
+     * parts are form factors with the quark-level couplings already built
+     * in, and which form factors appear depends on the boson, not on two
+     * numbers (the neutron has electromagnetic charge 0 but weak vector
+     * charge -1). Exchange_ME therefore neither computes defaults for it
+     * nor calls SetModelParameters on it a second time.
+     */
+    virtual bool UsesVA() const { return false; }
+
     /// True if the current is identically zero for its chosen model. Lets
     /// Exchange_ME stop a process whose every exchange vanishes, while a
     /// single vanishing exchange (e.g. the photon on a pointlike neutron

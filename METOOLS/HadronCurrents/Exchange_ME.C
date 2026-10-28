@@ -145,28 +145,7 @@ void Exchange_ME::AddExchange(const Diagram & d)
   Scoped_Settings j1 = e["J1"], j2 = e["J2"];
   const vector<int> & i1 = d.m_i1, & i2 = d.m_i2;
 
-  // Couplings: defaulted from the model where it knows them (photon, Z, and
-  // a W on a lepton line; see DefaultVA), and overridden by anything the
-  // card states. Asked of the LINE, not the current's legs: LineFlavour
-  // returns the first non-antiparticle, and a photon is not an antiparticle,
-  // so a current carrying a photon would otherwise be asked for the
-  // photon's couplings.
-  double v1(0.),a1(0.),v2(0.),a2(0.),g(1.);
-  const bool wantdefaults = !contact &&
-    !(HasKey(j1,"v") && HasKey(j1,"a") && HasKey(j2,"v") && HasKey(j2,"a"));
-  // Per line: a line stating both v and a needs no default, so a hadron
-  // line with explicit couplings next to a defaulted lepton line is fine.
-  if (wantdefaults) {
-    if (!(HasKey(j1,"v") && HasKey(j1,"a")))
-      DefaultVA(bos,LineFlavour(m_flavs,m_line1),v1,a1);
-    if (!(HasKey(j2,"v") && HasKey(j2,"a")))
-      DefaultVA(bos,LineFlavour(m_flavs,m_line2),v2,a2);
-  }
-  if (HasKey(j1,"v")) v1 = j1["v"].GetScalarWithOtherDefault<double>(v1);
-  if (HasKey(j1,"a")) a1 = j1["a"].GetScalarWithOtherDefault<double>(a1);
-  if (HasKey(j2,"v")) v2 = j2["v"].GetScalarWithOtherDefault<double>(v2);
-  if (HasKey(j2,"a")) a2 = j2["a"].GetScalarWithOtherDefault<double>(a2);
-
+  double g(1.);
   if (contact)                  g = Tools::GF/sqrt(2.);
   else if (!HasKey(e,"Coupling")) g = DefaultCoupling(bos);
   if (HasKey(e,"Coupling")) g = e["Coupling"].GetScalarWithOtherDefault<double>(g);
@@ -176,14 +155,8 @@ void Exchange_ME::AddExchange(const Diagram & d)
            : new Gauge_Propagator(bos.Mass(),bos.Width(),bos);
   x.p_j1   = MakeCurrent(j1,i1);
   x.p_j2   = MakeCurrent(j2,i2);
-  // v and a reach the current through MakeCurrent's sweep when the card
-  // states them; when they came from the model defaults they have to be
-  // pushed in separately.
-  if (wantdefaults) {
-    GeneralModel m1,m2;
-    m1["v"]=v1; m1["a"]=a1; x.p_j1->SetModelParameters(m1);
-    m2["v"]=v2; m2["a"]=a2; x.p_j2->SetModelParameters(m2);
-  }
+  PassVA(x.p_j1,j1,bos,contact,m_line1);
+  PassVA(x.p_j2,j2,bos,contact,m_line2);
   x.m_g  = g;
   x.m_M2 = contact ? 0. : sqr(bos.Mass());
   x.m_i1 = i1;
@@ -197,6 +170,49 @@ void Exchange_ME::AddExchange(const Diagram & d)
 
   msg_Debugging()<<"Exchange_ME: "<<(contact?Flavour(kf_none):bos)
                  <<" coupling "<<g<<"\n";
+}
+
+// v and a are the couplings of a POINTLIKE fermion line only (see
+// Current_Base::UsesVA): its vertex is gamma^mu (v + a gamma_5), and the
+// numbers depend on the boson, so they belong to the (boson, current) pair
+// and default from the model per exchange. Whatever the card states reached
+// the current already, through MakeCurrent's sweep; this supplies what the
+// card left out.
+//
+// A hadronic current gets nothing: no defaults, and no second call to
+// SetModelParameters. That second call used to carry ONLY v and a, and a
+// current that rebuilds itself on every call lost its card settings to it:
+// V_0_Isoscalar3Pi fell back to its default form factor (EE3Pi_ff_model 10
+// and 11 gave identical cross sections), and VA_0_PiPiPi would have read
+// FORM_FACTOR as 0 and vanished. DefaultVA is also never asked about a
+// hadron line, where it has nothing meaningful to say.
+//
+// The defaults are asked of the LINE, not the current's legs: LineFlavour
+// returns the first non-antiparticle, and a photon is not an antiparticle,
+// so a current carrying a photon would otherwise be asked for the photon's
+// couplings.
+void Exchange_ME::PassVA(Current_Base * c,Scoped_Settings J,
+                         const Flavour & bos,const bool contact,
+                         const vector<int> & line)
+{
+  const bool hasv(HasKey(J,"v")), hasa(HasKey(J,"a"));
+  if (!c->UsesVA()) {
+    if (hasv || hasa)
+      msg_Error()<<"Warning in "<<METHOD<<": current "<<c->Name()<<" takes "
+                 <<"its couplings from its form factors; the v and a given "
+                 <<"for it on the card are ignored.\n";
+    return;
+  }
+  // A contact term keeps the current's own default (V-A, a W in disguise),
+  // as it always has; a line that states both needs nothing more.
+  if (contact || (hasv && hasa)) return;
+  double v(0.), a(0.);
+  DefaultVA(bos,LineFlavour(m_flavs,line),v,a);
+  if (hasv) v = J["v"].GetScalarWithOtherDefault<double>(v);
+  if (hasa) a = J["a"].GetScalarWithOtherDefault<double>(a);
+  GeneralModel m;
+  m["v"] = v; m["a"] = a;
+  c->SetModelParameters(m);
 }
 
 bool Exchange_ME::IsPhotonLeg(const int i) const
