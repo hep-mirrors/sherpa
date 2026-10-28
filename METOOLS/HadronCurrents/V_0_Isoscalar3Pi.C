@@ -39,9 +39,8 @@ void V_0_Isoscalar3Pi::SetModelParameters(struct GeneralModel model) {
   // through about -2 sin^2(theta_W) times this PLUS a strange-quark piece
   // (the phi), which is a form factor of its own; a W does not produce this
   // final state through a vector current at all. kf_none is let through: it
-  // is what a current built outside Exchange_ME (the hard-coded EXTRA_XS
-  // ee_3pi process) carries, and also a contact term, which cannot be told
-  // apart from it here.
+  // is what a contact term carries, and also a current built outside
+  // Exchange_ME, which cannot be told apart from it here.
   const Flavour & bos = ExchangedBoson();
   if (bos.Kfcode()!=kf_none && bos.Kfcode()!=kf_photon)
     THROW(not_implemented,"V_0_Isoscalar3Pi implements the electromagnetic "
@@ -59,9 +58,9 @@ void V_0_Isoscalar3Pi::SetModelParameters(struct GeneralModel model) {
   // The parameterisation arrives as a FORM_FACTOR number, local to the
   // FF_0_Isoscalar3Pi family: 10, the default, is hep-ph/0512180 Eq. (10);
   // 11 is the Khuri-Treiman form. FORM_FACTOR is the key every other current
-  // reads; EE3Pi_ff_model, which the hard-coded EXTRA_XS ee_3pi process
-  // sets, is still accepted. Both, disagreeing, is an error rather than a
-  // silent choice.
+  // reads; EE3Pi_ff_model, the name this current used to read, is still
+  // accepted so older cards keep working. Both, disagreeing, is an error
+  // rather than a silent choice.
   const bool hasff(m_model.find("FORM_FACTOR")!=m_model.end());
   const bool hasee(m_model.find("EE3Pi_ff_model")!=m_model.end());
   const int ff(int(m_model("FORM_FACTOR",10.)+0.5));

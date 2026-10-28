@@ -1,0 +1,85 @@
+# e+ e- -> gamma* -> pi+ pi- pi0, built from two currents joined by a photon:
+#
+#   J1 = VA_FF_0           the e+ e- line (v = Q_e, a = 0 for the photon)
+#   J2 = V_0_Isoscalar3Pi  H^mu = eps^{mu al be ga} p+_al p-_be p0_ga F
+#
+# The hadronic side is anomalous, so the current is fixed up to the one
+# scalar form factor F(s; s+-, s+0, s-0); only the isoscalar part of the
+# electromagnetic current produces three pions. H is orthogonal to q by
+# construction, so no gauge term survives. This replaces the hard-coded
+# EXTRA_XS ee_3pi process: it builds the same current and form factor, and
+# reproduces its cross section exactly (1.53513e6 pb at sqrt(s) = 0.78 GeV
+# with the defaults).
+#
+# FORM FACTOR MODELS (FORM_FACTOR on J2; EE3Pi_ff_model is still accepted)
+#   10  hep-ph/0512180 Eq. (10), the default: omega, phi, omega', omega''
+#       (constant-width Breit-Wigners at the paper's own poles) times rho
+#       line shapes in the pi pi sub-masses, as a sum of products including
+#       the E and F terms. Couplings A-F refitted to Belle 2024 BELOW 2.5 GeV
+#       with these line shapes, not the paper's published values. Knowingly
+#       about 2.6x high above 2.5 GeV; see FF_0_Isoscalar3Pi.C.
+#   11  Khuri-Treiman: a(q^2) times a tabulated dispersive basis
+#       (arXiv:2212.11767), A and B refitted over its window, r fixed on the
+#       BESIII omega -> 3 pi Dalitz parameter. Valid for 0.454 <= m(3pi)
+#       <= 1.060 GeV only.
+#   Photon exchange only: a Z or W on this current stops the run.
+#
+# PARAMETERS, all on J2, all with these defaults built into the form factor.
+# The old EE_3PI: block of the hard-coded process maps onto them as
+#   EE_3PI key              J2 key                       default
+#   FormFactor 100 / 300    FORM_FACTOR 10 / 11          10
+#   A ... F                 EE3Pi_A ... EE3Pi_F           Eq.10: 18.20 -0.87 -0.5068 -1.1262
+#                                                          -0.1954 -0.6368; KT: A 13.14, B -0.895
+#   KT_r                    EE3Pi_KT_r                    0.03298 (m_pi^-2)
+#   Contact_a               EE3Pi_contact_a               0 (off)
+#   Contact_phase           EE3Pi_contact_phase           -2.91
+#   Contact_norm            EE3Pi_contact_norm            7.52
+#   Contact_preserve_norm   EE3Pi_contact_preserve_norm   1
+#   M_omega, G_omega, ...   EE3Pi_M_omega, EE3Pi_G_omega, and _phi, _omegaP,
+#                           _omegaPP: model poles, not particle properties
+#   Norm                    no current key: see NORMALISATION
+#
+# CONTACT TERM. A direct gamma* -> 3 pi coupling interfering with the rho pi
+# mechanism, which Dalitz analyses at the phi measure at the ~10% level and
+# Eq. (10) does not contain. Measured values:
+#   CMD-2 (Budker 2006-028, Eq. 39, Table 8): a = 0.101 +- 0.044 +- 0.017,
+#                                  phase = -2.91 +- 0.14 +- 0.07
+#   KLOE 2003:                     a = 0.104 +- 0.010 +- 0.020,
+#                                  phase = -2.47 +- 0.08 +- 0.08
+# The phase goes in in CMD-2's own sign convention. By default the term is
+# shape-preserving: CMD-2 normalise to the observed event count, so a and
+# phase measure the Dalitz SHAPE, not the rate. EE3Pi_contact_preserve_norm:
+# 0 adds it at amplitude level instead, which moves sigma at the phi by +17%
+# and would need A-F refitting. a, phase and norm were all measured AT THE
+# PHI; using them across 1.05-3.5 GeV is a modelling choice.
+#
+# NORMALISATION. The gamma -> 3 pi coupling is not perturbative, so the
+# absolute scale is fitted, and it sits in A-F. The hard-coded process also
+# had an overall factor Norm on |M|^2 (default 1). Here the photon coupling
+# is Exchange_ME's g = e^2 = 4 pi alpha; to scale |M|^2 by N, give the
+# exchange  Coupling: 4 pi alpha sqrt(N).
+#
+# RUNNING. No electron structure function, so this is the Born process at
+# fixed sqrt(s); with it on, events reach lower 3 pi masses (radiative
+# return), and for model 11 those leave its window. Flat phase space is fine
+# here (about 27% unweighting efficiency at the omega).
+
+BEAMS: [11, -11]
+BEAM_ENERGIES: 0.39          # sqrt(s) = 0.78 GeV, the omega peak
+
+PDF_LIBRARY: None
+
+ME_GENERATORS: [Internal]
+
+# The default scale setter has no 2 -> 2 core to cluster a 2 -> 3 back to.
+SCALES: VAR{sqr(E_CMS)}
+
+PROCESSES:
+- 11 -11 -> 211 -211 111:
+    Order: {QCD: 0, EW: 2}
+    Currents:
+      Exchange:
+      - Boson: 22
+        J1: {Type: VA_FF_0, Indices: [1, 0]}            # e+ (barred), e-
+        J2: {Type: V_0_Isoscalar3Pi, Indices: [2, 3, 4], # pi+, pi-, pi0
+             FORM_FACTOR: 10}

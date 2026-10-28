@@ -41,7 +41,7 @@ namespace EXTRAXS {
 
     METOOLS::Exchange_ME * p_me;
     // Exchange_ME keeps a REFERENCE to the flavours, so they have to outlive
-    // it. Same trap as in ee_3pi.
+    // it: hence this member copy rather than m_flavs.
     Flavour_Vector m_ffflavs;
     double         m_colfac, m_alpha;
 
