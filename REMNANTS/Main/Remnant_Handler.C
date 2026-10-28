@@ -215,9 +215,9 @@ bool Remnant_Handler::ConnectColours(ATOOLS::Blob *const showerblob) {
 
 Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
 						  const bool & isrescatter) {
-  // A retried event arrives  here with nothing extracted. Try extract the initiators again, the YFS
-  // initial-state blob first. A no-op for blobs already treated in
-  // this attempt.\
+  // A retried event arrives here with nothing extracted. Extract the
+  // initiators again, the YFS initial-state blob first. A no-op for blobs
+  // already treated in this attempt.
   if (!isrescatter) {
     for (Blob *blob : *bloblist)
       if (blob->Type() == btp::YFS_Initial && !ExtractShowerInitiators(blob))
@@ -225,6 +225,7 @@ Return_Value::code Remnant_Handler::MakeBeamBlobs(Blob_List* const bloblist,
     for (Blob *blob : *bloblist)
       if (blob->Type() == btp::Shower && !ExtractShowerInitiators(blob))
         return Return_Value::New_Event;
+  }
   // Adding the blobs related to the breakup of incident beams: one for each
   // beam, plus, potentially a third one to balance transverse momenta.
   InitBeamAndSoftBlobs(bloblist,isrescatter);
