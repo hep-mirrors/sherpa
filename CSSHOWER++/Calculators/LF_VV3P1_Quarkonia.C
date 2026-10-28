@@ -136,39 +136,45 @@ double LF_VV3P1_Quarkonia_FF::Z() {
 double LF_VV3P1_Quarkonia_FI::operator()(
   const double z, const double y, const double eta, const double scale,
   const double Q2) {
-  const double mj  =  m_flavs[2].Mass();
-  const double ma  =  m_flspec.Mass();
-  const double muj2 = sqr(m_flavs[2].Mass(true))/Q2;
-  const double yt = ((-Q2 - sqr(ma)) / (-Q2 - sqr(ma) - sqr(mj)) - (1.0 - y)) / (1.0 - y);
-  const double sij = sqr(mj) * (1.0 + yt) - yt * (-Q2 - sqr(ma));
-  const double M = 2*Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  const double xija = (1-y)*(-Q2-sqr(ma)-sqr(mj))/(-Q2-sqr(ma));
-  double value = 0;
+  if (z <= 0. || z >= 1. || y >= 1. || scale <= 0.) return 0.;
+  const double M = m_flavs[2].Mass(true);
+  const double ma2 = sqr(p_ms->Mass(m_flspec.Kfcode()));
+  const double yt = ((Q2+ma2)/(Q2+ma2+sqr(M))-(1-y))/(1-y);
+  const double sij = sqr(M)*(1+yt)+yt*(Q2+ma2);
+  if (sij < sqr(M)/(1-z)) return 0.;
+  double value = 0.0;
   value = 6*sqr(sij);
   value *= ( sqr(sij - sqr(M)) - 2*z*((1-z)*sij - sqr(M))*(sij - 2*sqr(M)) );
   value /= sqr(sqr(( sij - sqr(M))));
   value *= sqr(M/2)/sij;
-  msg_Out() << z << "  " << sij << "  " << value << std::endl;
-  value *= (1+muj2)/(1 + muj2 - xija) * ( 1 - xija - xija * z * muj2 / ( 1 - z ));
-  return sqr(p_cf->Coupling(scale, 0)) * value; // * JFI(y, eta, scale);
+  // Convert the paper's ds measure to the shower's dt/t measure.
+  value *= scale/(z*(1-z)*sij);
+  return sqr(p_cf->Coupling(scale, 0))*value*JFI(y, eta, scale);
 }
 
-double LF_VV3P1_Quarkonia_FI::OverIntegrated(const double zmin, const double zmax, const double scale, const double xbj) {
+double LF_VV3P1_Quarkonia_FI::OverIntegrated(const double zmin, const double zmax,
+                                           const double scale,
+                                           const double xbj) {
   m_zmin = std::max(zmin,ZMIN);
   m_zmax = std::min(zmax,1.);
-  m_Jmax = 1.; //5.;
-  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  const double prefactor = 4./27*GetLDME(m_flavs[2].Kfcode())/m;
-  return prefactor * sqr(p_cf->MaxCoupling(0)) / sqr(2*m) * (zmax - zmin) * m_Jmax;
+  m_Jmax = m_disablepdfrescaling ? 1. : 5.;
+  if (m_zmax <= m_zmin) return 0.;
+  const double M = m_flavs[2].Mass(true);
+  // PRD 50 (1994) 3176: L=(2J+1)*H1*(M/2)^4.
+  // Include alpha_s/4, dt/(2*pi*t), polarization /2 and both neighbours.
+  const double prefactor = 32.*M_PI/(27.*3.)
+    *GetLDME(m_flavs[2].Kfcode())/pow(M/2,5);
+  return prefactor * 0.5 * OverEstimated(0.5, 0.) * log(m_zmax/m_zmin);
 }
 
 double LF_VV3P1_Quarkonia_FI::OverEstimated(const double z, const double y) {
-  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  return sqr(p_cf->MaxCoupling(0)) /sqr(2*m) * m_Jmax;
+  if (z <= 0. || z >= 1.) return 0.;
+  // For M=mj and scheme 0, the PDF-free kernel is bounded by 1/z.
+  return sqr(p_cf->MaxCoupling(0))*m_Jmax/z;
 }
 
 double LF_VV3P1_Quarkonia_FI::Z() {
-  return m_zmin + (m_zmax - m_zmin) * ran->Get();
+  return m_zmin * pow(m_zmax/m_zmin, ran->Get());
 }
 
 double LF_VV3P1_Quarkonia_IF::operator()(const double z, const double y, const double eta, const double scale, const double Q2) {

@@ -139,45 +139,37 @@ double LF_VV1S0_Quarkonia_FF::Z() {
 double LF_VV1S0_Quarkonia_FI::operator()(
   double z, const double y, const double eta, const double scale,
   const double Q2) {
-  const double mi  =  0.;
-  const double mj  =  m_flavs[2].Mass();
-  const double ma  =  p_ms->Mass(m_flspec.Kfcode());
-  const double q2 = -Q2;
-  double xija = scale/(z*(1-z)) + sqr(mj)*z/(1-z);
-  xija /= (q2 - sqr(ma) - sqr(mj));
-  xija = 1./(1-xija);
-  // msg_Out() << "xija = " << xija << "  " << (1-y)*(q2-sqr(ma)-sqr(mj))/(q2-sqr(ma)) << std::endl; 
-  const double yt = (( q2 - sqr(ma)) / (q2 - sqr(ma) - sqr(mj)) - (1.0 - y)) / (1-y);
-  // msg_Out() << "yt = " << yt << "  " << (1-xija)/xija  << std::endl;
-  // msg_Out() << "xija = " << xija << "  " << 1.0/(1.0-(scale/(z*(1.0-z))+sqr(mi)*(1.0-z)/z+sqr(mj)*z/(1.0-z))/(q2-ma*ma-mi*mi-mj*mj)) << std::endl;
-  // msg_Out() << "1-xija / xija = " << (1-xija)/xija << "  " << -(scale/(z*(1.0-z))+sqr(mi)*(1.0-z)/z+sqr(mj)*z/(1.0-z))/(q2-ma*ma-mi*mi-mj*mj) << std::endl;
-  // msg_Out() << "t = " << -(1-xija)/xija*(q2-mj*mj)*(z*(1.0-z)) - sqr(mj*z) << "  " << scale << std::endl;
-  const double sij = sqr(mj) * (1.0 + yt) - yt * (q2 - sqr(ma));
-  const double M = 2*Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  const double muj2 = sqr(mj)/Q2;
-  const double mu2 = sqr(M)/Q2;
-  // if ( z > ((-1 + z) * (1 + muj2))/(-1 + z - muj2)) return 0;
-  if ( sij < sqr(mj)/(1-z)) return 0;
-  double value = 0;
-  value  = sqr(sij) + sqr(sqr(M)) - 2 * (1 - z) * (sij + sqr(M))*sij + 2*sqr(sij*(1-z));
+  const double M = m_flavs[2].Mass(true);
+  const double ma2 = sqr(p_ms->Mass(m_flspec.Kfcode()));
+  const double yt = ((Q2+ma2)/(Q2+ma2+sqr(M))-(1-y))/(1-y);
+  const double sij = sqr(M)*(1+yt)+yt*(Q2+ma2);
+  if (sij < sqr(M)/(1-z)) return 0.;
+  double value = sqr(sij) + sqr(sqr(M))
+    - 2*(1-z)*(sij+sqr(M))*sij + 2*sqr(sij*(1-z));
   value /= sij*sqr(sij-sqr(M));
-  value *= (1+muj2)/(1 + muj2 - xija) * ( 1 - xija - xija * z * muj2 / ( 1 - z ));
-  // msg_Out() << z << "  " << scale << "  " << "  " << q2 << "  " << mj << " --> " << yt << "  " << value << std::endl;
-  return sqr(p_cf->Coupling(scale, 0)) * value; // * JFI(y, eta, scale);
+  // Convert the paper's ds measure to the shower's dt/t measure.
+  value *= scale/(z*(1-z)*sij);
+  return sqr(p_cf->Coupling(scale, 0))*value*JFI(y, eta, scale);
 }
 
-double LF_VV1S0_Quarkonia_FI::OverIntegrated(const double zmin, const double zmax, const double scale, const double xbj) {
+double LF_VV1S0_Quarkonia_FI::OverIntegrated(const double zmin, const double zmax,
+                                           const double scale,
+                                           const double xbj) {
   m_zmin = std::max(zmin,ZMIN);
   m_zmax = std::min(zmax,ZMAX);
   m_Jmax = 5.;
-  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  const double prefactor = 4./27*GetLDME(m_flavs[2].Kfcode())/m;
-  return prefactor * sqr(p_cf->MaxCoupling(0)) / sqr(2*m) * (m_zmax - m_zmin) * m_Jmax;
+  if (m_zmax <= m_zmin) return 0.;
+  const double M = m_flavs[2].Mass(true);
+  // Same Braaten-Yuan normalization as FF: includes compensation for
+  // Coupling=alpha_s/4, polarization averaging and dt/(2 pi t).
+  // The inclusive parent-gluon rate sums both colour neighbours.
+  const double prefactor = 64.*M_PI/27*GetLDME(m_flavs[2].Kfcode())/M;
+  return prefactor * OverEstimated(0.5, 0.) * (m_zmax - m_zmin);
 }
 
 double LF_VV1S0_Quarkonia_FI::OverEstimated(const double z, const double y) {
-  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  return sqr(p_cf->MaxCoupling(0)) /sqr(2*m) * m_Jmax;
+  const double M = m_flavs[2].Mass(true);
+  return sqr(p_cf->MaxCoupling(0)) /sqr(M) * m_Jmax;
 }
 
 double LF_VV1S0_Quarkonia_FI::Z() {
@@ -235,7 +227,6 @@ double LF_VV1S0_Quarkonia_II::operator()(const double z, const double y, const d
   // msg_Out() << "z = " << z << ",  y = " << y << ",  scale = " << scale << ",  saj = " << saj << ", M = " << mj << ", v = " << value << std::endl;
   // value *=  fabs(1. / ( sqr(mj) / (sab - sqr(mb)) / y - 1)); // / ( 1. + sqr(M)/scale); //(1 - z - y) / (1 - z - 2*y); 
   // PRINT_VAR(value);
-  return 1.;
   return sqr(p_cf->Coupling(scale, 0)) * value; // * JII(z, y, eta, scale);
 }
 
@@ -252,7 +243,6 @@ double LF_VV1S0_Quarkonia_II::OverIntegrated(const double zmin, const double zma
 
 double LF_VV1S0_Quarkonia_II::OverEstimated(const double z, const double y) {
   const double m = m_flavs[2].Mass(true); //Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  return 1.;
   return sqr(p_cf->MaxCoupling(0)) * ( 5. ) / sqr(m)  * m_Jmax;
 }
 
