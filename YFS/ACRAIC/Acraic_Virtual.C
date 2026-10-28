@@ -148,7 +148,10 @@ void Acraic_Base::InfraredSubtractedME_0_1() {
 
   
   const Complex LE(CnuA(m_s,  m_mass_I, m_mass_I) - 1.);
-  const Complex LF(CnuA(m_sQ, m_mass_F, m_mass_F) - 1.);
+  // without FSR (YFS: MODE ISR) the final vertex is not used, and CnuA would
+  // refuse massless final-state fermions
+  const Complex LF(HasFSR() ? CnuA(m_sQ, m_mass_F, m_mass_F) - 1.
+                            : Complex(0., 0.));
   const Complex deltI(0.5 * sqr(m_qe) * m_alpha / Complex(M_PI, 0) * LE);
   const Complex deltF(HasFSR() ? 0.5 * sqr(m_qf) * m_alpha / Complex(M_PI, 0) * LF
                                : Complex(0., 0.));
