@@ -24,6 +24,7 @@ namespace CSSHOWER {
     int m_beam, m_col;
 
     double m_lastJ;
+    bool m_disablepdfrescaling;
 
     std::pair<double, double> m_pdfmin;
 

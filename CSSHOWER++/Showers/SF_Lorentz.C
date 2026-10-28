@@ -1,6 +1,7 @@
 #include "CSSHOWER++/Showers/SF_Lorentz.H"
 
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
 #include "MODEL/Main/Single_Vertex.H"
 
@@ -10,7 +11,9 @@ using namespace ATOOLS;
 double SF_Lorentz::s_kappa=2.0/3.0;
 
 SF_Lorentz::SF_Lorentz(const SF_Key &key):
-  p_ms(NULL), p_cf(key.p_cf), m_col(0), m_pdfmin{ key.m_pdfmin }
+  p_ms(NULL), p_cf(key.p_cf), m_col(0),
+  m_disablepdfrescaling(Settings::GetMainSettings()["SHOWER"]["DISABLE_PDF_RESCALING"].Get<bool>()),
+  m_pdfmin{ key.m_pdfmin }
 {
   m_flavs[0]=key.p_v->in[0].Bar();
   if (key.m_mode==0) {
@@ -50,6 +53,9 @@ double SF_Lorentz::JFI(const double &y,const double &eta,
 {
   if (scale < 0.0) {
     m_lastJ = 1.0;
+  } else if (m_disablepdfrescaling) {
+    // The explicit (1-y) cancels the x factors in the XPDF ratio.
+    m_lastJ = 1.0;
   } else {
     const double scalea(scale), scaleb(scale);
     const double fresh = p_sf->GetXPDF(scalea,eta/(1.0-y),m_flspec,m_beam);
@@ -66,6 +72,9 @@ double SF_Lorentz::JIF(const double &z,const double &y,const double &eta,
 		       const double &scale)
 {
   if (scale < 0.0) {
+    m_lastJ = 1.0 / z;
+  } else if (m_disablepdfrescaling) {
+    // Removing f(eta/z)/f(eta) leaves the XPDF momentum factor.
     m_lastJ = 1.0 / z;
   } else {
     const double scalea(scale), scaleb(scale);
@@ -84,6 +93,9 @@ double SF_Lorentz::JII(const double &z,const double &y,const double &eta,
 {
   if (scale < 0.0) {
     m_lastJ = 1.0 / z;
+  } else if (m_disablepdfrescaling) {
+    // Removing f(eta/z)/f(eta) leaves the XPDF momentum factor.
+    m_lastJ = 1.0 / z ;
   } else {
     const double scalea(scale), scaleb(scale);
     const double fresh = p_sf->GetXPDF(scalea,eta/z,m_flavs[0],m_beam);

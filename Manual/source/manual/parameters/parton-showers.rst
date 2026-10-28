@@ -208,6 +208,11 @@ This mode bypasses coupling scale shifts and renormalisation counterterms;
 alternative shower couplings used for reweighting also retain this
 constant. Matrix-element couplings and PDFs are unaffected. 
 
+For CS shower debugging, :option:`SHOWER:DISABLE_PDF_RESCALING` (default
+``false``) removes the PDF ratios from positive-scale evaluations of the
+shower splitting. Overestimates, beam momentum limits and
+hard-process PDFs are unchanged. 
+
 Likewise, the splitting kinematic can be biased using:
  - ``SHOWER: ENHANCE``, for flat enhancement
  - ``SHOWER: ENHANCE_FUNCTION`` with the same convention of the hard-event
