@@ -74,6 +74,11 @@ ME_GENERATORS: [Internal]
 # The default scale setter has no 2 -> 2 core to cluster a 2 -> 3 back to.
 SCALES: VAR{sqr(E_CMS)}
 
+# No parton shower: the final state is three pions, nothing to shower. With
+# the default shower on, the run integrates but then never accepts a single
+# event (0 events after 15 minutes); with it off, 200 events take seconds.
+SHOWER_GENERATOR: None
+
 PROCESSES:
 - 11 -11 -> 211 -211 111:
     Order: {QCD: 0, EW: 2}
