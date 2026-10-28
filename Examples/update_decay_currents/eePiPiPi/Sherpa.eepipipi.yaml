@@ -1,0 +1,62 @@
+EVENTS: 10k
+
+BEAMS: [11, -11]
+BEAM_ENERGIES: [0.3912, 0.3912]
+PDF_SET: [None, None] 
+
+PARTICLE_DATA:
+  11: {Massive: true}
+  211: {Massive: true}
+  111: {Massive: true}
+
+
+ME_GENERATORS: [Internal]
+
+SELECTORS:
+# - [PT, 11, 10.0, E_CMS]
+# - [PT, 13, 10.0, E_CMS]
+# - [Q2, 12, 12, 0.001, 1e12] #[observable, flavor1, flavor2, min, max] # technically no cut needed here due to Z mass
+# note that for minQ2=0.001 => XS ~ 1-2e-3 pb
+
+
+PROCESSES:
+- 11 -11 -> 211 -211 111:       
+    Sort_Flavors: 0
+    Order: {QCD: 0, EW: 2}
+    Currents:
+      Exchange:
+      - Boson: 22
+        J1: {Type: VA_FF_0, Indices: [1, 0]}   # e+=(e-)bar  e-
+        # J2: {Type: VA_0_PPP, Indices: [2, 3, 4], FORM_FACTOR: 10}   # pi+ pi- pi0
+        J2: {Type: V_0_Isoscalar3Pi, Indices: [2, 3, 4], EE3Pi_ff_model: 10}   # pi+ pi- pi0
+
+# note that PPP is more accurate at lower energies, but very inaccurate at higher
+# energies, since it doesnt include all the resonance structures and interferences, 
+# like the isoscalar 3pi model does.
+
+# settings for now for low energies
+
+SHOWER_GENERATOR: None
+SCALES: VAR{-Abs2(p[0]-p[1])}  # need if turning off shower
+
+FRAGMENTATION: None
+BEAM_REMNANTS: false
+MI_HANDLER: None
+HADRON_DECAYS:
+  Model: None
+YFS: {MODE: None}
+
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: Analysis
+
+RIVET:
+  --analyses: [my_MC_FSPARTICLES, MC_XS, SND_2003_I619011]
+  --pwd: /Users/tvcr49@durham.ac.uk/code_analysis/MyRivetAnalyses
+  --ignore_beams: 1
+
+# Across the full range: 
+# BABAR_2021_I1937349 and BELLE_2024_I2775022 (0.62–3.5 GeV), BESIII_2019_I1773081 (0.7–3.0 GeV).
+# φ region: CMD2_1998_I480170 (near the φ mass), SND_2002_I582183 (0.98–1.38 GeV).
+# Above 1 GeV: BABAR_2004_I656680 (1.05–2.325 GeV, the BaBar data the paper fits), SND_1999_I508003, SND_2015_I1389908, SND_2020_I1809286, DM2_1992_I339265, BESIII_2024_I2751832.
+# Shapes rather than cross sections: BESIII_2018_I1703033 (ω → π⁺π⁻π⁰ Dalitz plot) and SND_2001_I558279 (φ → π⁺π⁻π⁰ mass distributions). These test the H_ρ structure; they're decays, not e⁺e⁻ scans.
+# DM1_1980_I140174, CMD2_2000_I523691, SND_2003_I619011 (0.44-0.97)

@@ -10,6 +10,7 @@ namespace METOOLS {
   class VA_0_PiPiPi : public Current_Base {    
   private:
     double  m_norm;
+    bool    m_vanishes;
 
     FormFactor_Base * p_f1, * p_f2, * p_f3, * p_fS;
   public:
@@ -19,6 +20,7 @@ namespace METOOLS {
     ~VA_0_PiPiPi();
     void Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti);
     void SetModelParameters(struct GeneralModel model);
+    inline bool Vanishes() const override { return m_vanishes; }
   };
 }
 

@@ -27,6 +27,10 @@ void V_0_Isoscalar3Pi::Calc(const ATOOLS::Vec4D_Vector& moms, bool anti) {
 }
 
 void V_0_Isoscalar3Pi::SetModelParameters(struct GeneralModel model) {
+  // Exchange_ME calls this a second time with only the default v and a.
+  // Those are not used here, and must not rebuild the form factor with
+  // default settings.
+  if (p_ff) return;
   // Merged into what the current already has, not replacing it. A later call
   // carrying only some keys must not wipe the settings an earlier one made:
   // Exchange_ME used to call every current a second time with only v and a,

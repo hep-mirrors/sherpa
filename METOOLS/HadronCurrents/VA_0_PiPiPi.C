@@ -33,7 +33,7 @@ VA_0_PiPiPi::VA_0_PiPiPi(const ATOOLS::Flavour_Vector& flavs,
 			 const std::vector<int>& indices,
 			 const std::string& name) :
   Current_Base(flavs, indices, name),
-  m_norm(1.),
+  m_norm(1.), m_vanishes(false),
   p_f1(NULL), p_f2(NULL), p_f3(NULL), p_fS(NULL)
 {
   msg_Out()<<METHOD<<"(N_f = "<<m_flavs.size()<<"):\n";
@@ -103,6 +103,10 @@ void VA_0_PiPiPi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 }
 
 void VA_0_PiPiPi::SetModelParameters(struct GeneralModel model) {
+  // Exchange_ME calls this a second time with only the default v and a.
+  // Those are not used here, and must not rebuild the form factors with
+  // default settings.
+  if (p_fS) return;
   // I think we should add the parameters here, maybe from some
   // generic parameter.yaml structure or so?  Will resolve during
   // the MCnet school while chatting with Chris & Eno
@@ -118,6 +122,13 @@ void VA_0_PiPiPi::SetModelParameters(struct GeneralModel model) {
   p_f3 = FF_Getter::GetObject("FF_0_PPP",params);
   params.m_name = "FS_0_PPP";
   p_fS = FF_Getter::GetObject("FF_0_PPP",params);
+  // Exchange_ME stops the run only if every exchange vanishes.
+  m_vanishes = (!p_f1 && !p_f2 && !p_f3 && !p_fS);
+  if (m_vanishes)
+    msg_Error() << "Warning in " << METHOD << ": current " << m_name << ": no form factors for "
+                << m_flavs[p_i[0]] << " " << m_flavs[p_i[1]] << " " << m_flavs[p_i[2]]
+                << ", so the current vanishes identically. \n"
+                << "   Either, this final state is non-physical or Sherpa cant simulate this final state with " << m_name << " yet.\n";
 }
 
 // need to update the references once we have the tau's under control

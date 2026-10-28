@@ -46,6 +46,9 @@ namespace METOOLS {
     // pion, so FixMode requires this exact order.
     EtaPiPi_pi0       = 13,
     EtaprimePiPi_pi0  = 14,
+    // gamma^* -> pi^+(q1) pi^-(q2) pi^0(q3): G-parity leaves only the
+    // isospin-zero anomalous (FS) current, hep-ph/0512180 Eq.(1).
+    piP_piM_pi0       = 15,
     unknown           = 999
   };
   

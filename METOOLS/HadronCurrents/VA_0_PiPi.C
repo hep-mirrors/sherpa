@@ -63,6 +63,8 @@ void VA_0_PiPi::SetModelParameters(struct GeneralModel model) {
   p_fplus = FF_Getter::GetObject("FF_0_PP",params);
   params.m_name = "F0_0_PP";
   p_fzero = FF_Getter::GetObject("FF_0_PP",params);
+  if (!p_fplus || !p_fzero)
+  THROW(fatal_error, "No FF_0_PP (?PiPi?) form factor for this FORM_FACTOR/flavours.");
 }
 
 // need to update the references once we have the tau's under control

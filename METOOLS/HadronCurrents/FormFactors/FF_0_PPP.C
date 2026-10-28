@@ -115,6 +115,10 @@ void FF_0_PPP_Base::FixMode() {
   else if (m_flavs[m_pi[0]].Kfcode()==kf_eta_prime_958 &&
 	   m_flavs[m_pi[1]].Kfcode()==kf_pi_plus &&
 	   m_flavs[m_pi[2]].Kfcode()==kf_pi)         m_mode = FF_0_PPP_mode::EtaprimePiPi_pi0;
+  // pi^+(q1) pi^-(q2) pi^0(q3) from gamma^*, hep-ph/0512180.
+  else if (m_flavs[m_pi[0]].Kfcode()==kf_pi_plus &&
+	   m_flavs[m_pi[1]].Kfcode()==kf_pi_plus &&
+	   m_flavs[m_pi[2]].Kfcode()==kf_pi)         m_mode = FF_0_PPP_mode::piP_piM_pi0;
   msg_Out()<<METHOD<<"("<<m_pi[0]<<"/"<<m_pi[1]<<"/"<<m_pi[2]<<") --> "<<int(m_mode)<<"\n";
 }
 
@@ -2511,6 +2515,76 @@ FF_KS(const double & s123,const double & s12,const double & s13) {
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////
+//
+// gamma^* -> pi^+(q1) pi^-(q2) pi^0(q3), isospin-zero current only.
+// Czyz, Grzelinska, Kuehn, Rodrigo, hep-ph/0512180,
+// Eur.Phys.J.C47 (2006) 617: J^mu = eps^{mu a b c} q+_a q-_b q0_c F,
+// Eq.(1), with F from Eq.(10) truncated to its rho(770) terms,
+//   F = H_rho(Q0^2,Q+^2,Q-^2) * [A BW_omega + B BW_phi
+//                                + C BW_omega(1420) + D BW_omega(1650)](Q^2),
+// constant-width BW_V and P-wave running-width BW_rho, Eqs.(5),(6).
+// Masses, widths and couplings (GeV^-3) from Tables 1 and 2. Left out:
+// the rho'/rho'' terms E,F of Eq.(10) and the isospin-violating I=1
+// piece, Eq.(7). G-parity forbids F1,F2,F3, so the getter below reuses
+// the eta pi pi zero stubs for those slots.
+//
+//////////////////////////////////////////////////////////////////////////////////
+
+class FS_0_PiPlusPiMinusPiZero : public FF_0_PPP_Base {
+  double  m_Mrho, m_Grho, m_MV[4], m_GV[4], m_aV[4];
+
+  void    Construct(const FF_Parameters & params);
+  Complex BWrho(const double & s,const double & m2j,const double & m2k) const;
+  Complex FF_KS(const double & s123,const double & s12,const double & s13);
+  Complex FF_RChiPT(const double & s123,const double & s1,const double & s2) {
+    return Complex(1.,0.); // no RChiPT version - constant fallback
+  }
+public:
+  FS_0_PiPlusPiMinusPiZero(const FF_Parameters & params) : FF_0_PPP_Base(params)
+  {
+    Construct(params);
+  }
+};
+
+void FS_0_PiPlusPiMinusPiZero::Construct(const FF_Parameters & params) {
+  m_norm = Complex(1.,0.);
+  m_Mrho = (*params.p_model)("Mrho_ee3pi",0.77609);
+  m_Grho = (*params.p_model)("Grho_ee3pi",0.14446);
+  // omega(782), phi(1020), omega(1420), omega(1650) <-> A, B, C, D.
+  const std::string tag[4] = {"omega","phi","omegap","omegapp"};
+  const double M[4] = {0.7824,  1.01924, 1.375, 1.631};
+  const double G[4] = {0.00869, 0.00414, 0.250, 0.245};
+  const double a[4] = {18.20,  -0.87,   -0.77, -1.12};
+  for (size_t i(0);i<4;++i) {
+    m_MV[i] = (*params.p_model)("M"+tag[i]+"_ee3pi",M[i]);
+    m_GV[i] = (*params.p_model)("G"+tag[i]+"_ee3pi",G[i]);
+    m_aV[i] = (*params.p_model)("A"+tag[i]+"_ee3pi",a[i]);
+  }
+}
+
+Complex FS_0_PiPlusPiMinusPiZero::
+BWrho(const double & s,const double & m2j,const double & m2k) const {
+  // Eqs.(5),(6): P-wave running width, zero below the pi pi threshold.
+  const double thr(sqr(sqrt(m2j)+sqrt(m2k))), Mrho2(sqr(m_Mrho));
+  const double G(s>thr ? m_Grho*Mrho2/s*pow((s-thr)/(Mrho2-thr),1.5) : 0.);
+  return 1./Complex(s/Mrho2-1., sqrt(std::max(s,0.))*G/Mrho2);
+}
+
+Complex FS_0_PiPlusPiMinusPiZero::
+FF_KS(const double & s123,const double & s12,const double & s13) {
+  // p1=pi+, p2=pi-, p3=pi0: s12=Q0^2, s13=Q-^2, and Q+^2=(p2+p3)^2 is
+  // reconstructed via momentum conservation, Eq.(4).
+  const double m2p(m_masses2[m_pi[0]]), m2m(m_masses2[m_pi[1]]), m2z(m_masses2[m_pi[2]]);
+  const double s23(s123-s12-s13+m2p+m2m+m2z);
+  const Complex H(BWrho(s12,m2p,m2m)+BWrho(s23,m2m,m2z)+BWrho(s13,m2p,m2z));
+  Complex V(0.,0.);
+  for (size_t i(0);i<4;++i)
+    V += m_aV[i]/Complex(s123/sqr(m_MV[i])-1.,m_GV[i]/m_MV[i]);
+  return H*V;
+}
+
+
 DECLARE_FF_GETTER(FF_0_PPP_Base,"FF_0_PPP")
 
 FormFactor_Base * ATOOLS::Getter<FormFactor_Base,FF_Parameters,
@@ -2634,6 +2708,15 @@ operator()(const METOOLS::FF_Parameters &params) const
     if (params.m_name=="F2_0_EtaPiPi") return new F1_0_EtaPiPi_Stub(params);
     if (params.m_name=="F3_0_EtaPiPi") return new F3_0_EtaPiPi_Stub(params);
     if (params.m_name=="FS_0_EtaPiPi") return new FS_0_EtaPiPi(params);
+  }
+  //   pi^+ pi^- pi^0 from gamma^* (hep-ph/0512180) - only FS survives.
+  if (params.m_flavs[params.m_pi[0]].Kfcode()==kf_pi_plus &&
+      params.m_flavs[params.m_pi[1]].Kfcode()==kf_pi_plus &&
+      params.m_flavs[params.m_pi[2]].Kfcode()==kf_pi) {
+    if (params.m_name=="F1_0_PPP") return new F1_0_EtaPiPi_Stub(params);
+    if (params.m_name=="F2_0_PPP") return new F1_0_EtaPiPi_Stub(params);
+    if (params.m_name=="F3_0_PPP") return new F3_0_EtaPiPi_Stub(params);
+    if (params.m_name=="FS_0_PPP") return new FS_0_PiPlusPiMinusPiZero(params);
   }
   return NULL;
 }
