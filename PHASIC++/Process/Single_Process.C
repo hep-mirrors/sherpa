@@ -304,6 +304,7 @@ void Single_Process::AddISR(ATOOLS::Cluster_Sequence_Info &csi,
     //need to set born for YFS subtraction
     double yfsborn(m_lastxs);
     p_int->YFS()->SetBorn(yfsborn);
+    p_int->YFS()->SetChannelFlavours(m_flavs);
     p_int->YFS()->GenerateWeight();
     double yfsW = p_int->YFS()->GetWeight();
     if(IsBad(yfsW)){

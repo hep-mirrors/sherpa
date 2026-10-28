@@ -116,12 +116,15 @@ void YFS_Process::Init(const Process_Info &pi,
     }
     rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
     p_realproc = InitProcess(rpi, nlo_type::real, false);
-    // The real correction evaluates p_realproc directly, never one of its
-    // partonic subprocesses, so a container (e.g. 93 93) segfaults per event
-    if (p_realproc->IsGroup() && p_realproc->Size() > 1)
-      THROW(not_implemented, "YFS real corrections need explicit final-state "
-            "flavours, not containers like 93: list the processes one by one "
-            "(e.g. 11 -11 -> 1 -1, 11 -11 -> 2 -2, ...).");
+    // The real correction evaluates one partonic subprocess, which
+    // YFS_Handler::SetChannelFlavours picks per channel, but only with ISR
+    // (see there); the final-state masses enter the photon phase space
+    // otherwise.
+    if (p_realproc->IsGroup() && p_realproc->Size() > 1 &&
+        p_yfs->Mode() != YFS::yfsmode::isr)
+      THROW(not_implemented, "YFS real corrections with a container final "
+            "state (e.g. 93) need YFS: MODE: ISR; otherwise list the "
+            "processes one by one (e.g. 11 -11 -> 1 -1, 11 -11 -> 2 -2, ...).");
     // p_realproc->SetLookUp(false);
     p_realproc->SetParent(this);
     // p_realproc->FillProcessMap(p_apmap);

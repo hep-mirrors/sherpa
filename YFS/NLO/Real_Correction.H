@@ -86,6 +86,9 @@ public:
 
   inline bool FailCut() const { return m_failcut; }
   inline void SetProc(PHASIC::Process_Base *proc) { p_proc = proc; }
+  //! one channel (a member of a container group) of the process, with its flavours
+  inline void SetChannelProc(PHASIC::Process_Base *proc)
+  { p_proc = proc; m_flavs = proc->Flavours(); }
   inline size_t NPhotons() const { return m_nphotons; }
 
   //! Name of whichever generator actually supplies Calc_R's value: the

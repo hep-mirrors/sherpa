@@ -146,6 +146,27 @@ void YFS_Handler::SetLimits(const double &smin, const double &s) {
   }
 }
 
+void YFS_Handler::SetChannelFlavours(const ATOOLS::Flavour_Vector &flavs) {
+  if (m_flavs == flavs) return;
+  if (flavs.size() != m_flavs.size())
+    THROW(fatal_error, "YFS: a channel must have the same legs as its group.");
+  if (m_mode != yfsmode::isr)
+    THROW(not_implemented, "YFS: a container final state (e.g. 93 93) only "
+          "works with MODE: ISR, the final-state masses enter the photon "
+          "kinematics otherwise. List the processes one by one.");
+  for (size_t i(0); i < 2; ++i)
+    if (flavs[i] != m_flavs[i])
+      THROW(fatal_error, "YFS: a channel cannot change the initial state.");
+  for (size_t i(2); i < flavs.size(); ++i) {
+    m_flavs[i] = flavs[i];
+    m_mass[i] = flavs[i].Mass();
+  }
+  // the channel's Born and real processes, which the YFS.NLO providers need
+  // with or without ACRAIC (InitializeACRAIC sets them as well)
+  if (m_useacraic) InitializeACRAIC(m_flavs);
+  else SetAcraicChannelProcs(m_flavs);
+}
+
 void YFS_Handler::SetFlavours(const ATOOLS::Flavour_Vector &flavs) {
   if(m_setparticles && m_flavs == flavs) return;
   if (m_mode_from_acraic) {
@@ -178,7 +199,12 @@ void YFS_Handler::SetFlavours(const ATOOLS::Flavour_Vector &flavs) {
   if (m_useacraic && !m_hidephotons)
     THROW(fatal_error, "YFS: HIDE_PHOTONS false is incompatible with ACRAIC: the "
           "coherent sum needs one common soft region for all photons.");
-  if (m_useacraic) InitializeACRAIC(m_flavs);
+  // a container (e.g. 93 93) is no process: ACRAIC is built per channel by
+  // SetChannelFlavours
+  bool container(false);
+  for (size_t i(2); i < m_flavs.size(); ++i)
+    if (m_flavs[i].Kfcode() >= 90 && m_flavs[i].Kfcode() <= 99) container = true;
+  if (m_useacraic && !container) InitializeACRAIC(m_flavs);
 }
 
 void YFS_Handler::SetBornMomenta(const ATOOLS::Vec4D_Vector &p) {
@@ -227,20 +253,68 @@ void YFS_Handler::CreatMomentumMap() {
 void YFS_Handler::InitializeACRAIC(const ATOOLS::Flavour_Vector &fl) {
   std::string key;
   for (const Flavour &f : fl) key += ATOOLS::ToString((long)f) + ",";
-  if (p_acraic && key == m_acraickey) return;
+  if (p_acraic && key == m_acraickey) { SetAcraicChannelProcs(fl); return; }
   if (p_acraic) m_acraicstore[m_acraickey] = std::move(p_acraic);
   auto it(m_acraicstore.find(key));
   if (it != m_acraicstore.end()) { p_acraic = std::move(it->second); m_acraicstore.erase(it); }
   else p_acraic = std::make_unique<Acraic_Base>(fl);
   m_acraickey = key;
   p_acraic->SetBornMomenta(m_ev.m_bornMomenta);
-  p_acraic->SetBornProc(m_acraicborn);
-  p_acraic->SetRealProc(m_acraicreal);
+  SetAcraicChannelProcs(fl);
+}
+
+namespace {
+  /*
+    The member of a process group whose flavours are those of the channel
+    fl plus nextra photons: the Comix amplitudes of a group exist only for its
+    members. A single process, or a group of one, is returned as it is.
+  */
+  PHASIC::Process_Base *ChannelOf(PHASIC::Process_Base *group,
+                                  const ATOOLS::Flavour_Vector &fl,
+                                  const size_t nextra)
+  {
+    if (group == nullptr || !group->IsGroup() || group->Size() < 2) return group;
+    for (size_t i(0); i < group->Size(); ++i) {
+      PHASIC::Process_Base *c(ChannelOf((*group)[i], fl, nextra));
+      if (c->IsGroup()) continue;
+      const ATOOLS::Flavour_Vector &cf(c->Flavours());
+      if (cf.size() != fl.size() + nextra) continue;
+      bool same(true);
+      std::multiset<long> a, b;
+      for (size_t j(0); j < fl.size(); ++j) {
+        if (j < 2 && cf[j] != fl[j]) same = false;
+        if (j >= 2) { a.insert((long)fl[j]); b.insert((long)cf[j]); }
+      }
+      for (size_t j(0); j < nextra; ++j) a.insert((long)ATOOLS::Flavour(kf_photon));
+      for (size_t j(0); j < nextra; ++j) b.insert((long)cf[fl.size() + j]);
+      if (same && a == b) return c;
+    }
+    std::string name;
+    for (const ATOOLS::Flavour &f : fl) name += ATOOLS::ToString((long)f) + " ";
+    THROW(fatal_error, "YFS: no channel of " + group->Name()
+                       + " has the flavours " + name);
+    return nullptr;
+  }
+}
+
+void YFS_Handler::SetAcraicChannelProcs(const ATOOLS::Flavour_Vector &fl) {
+  m_acraicborn = ChannelOf(m_borngroup, fl, 0);
+  m_acraicreal = ChannelOf(m_realgroup, fl, 1);
+  if (p_acraic) {
+    p_acraic->SetBornProc(m_acraicborn);
+    p_acraic->SetRealProc(m_acraicreal);
+  }
+  if (p_nlo && m_acraicborn) p_nlo->SetBornProc(m_acraicborn);
+  if (p_nlo && m_realgroup && m_realgroup->IsGroup() && m_realgroup->Size() > 1)
+    if (YFS::Real_Correction *prov = p_nlo->RealProvider(1))
+      prov->SetChannelProc(m_acraicreal);
 }
 
 
 void YFS_Handler::SetAcraicProcs(PHASIC::Process_Base *born,
                                PHASIC::Process_Base *real) {
+  m_borngroup = born;
+  m_realgroup = real;
   m_acraicborn = born;
   m_acraicreal = real;
   if (p_acraic) { p_acraic->SetBornProc(born); p_acraic->SetRealProc(real); }

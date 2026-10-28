@@ -180,6 +180,8 @@ namespace YFS {
         //! beams (it is built once, and a beam spectrum moves the beams).
         bool IIDipoleIsCurrent();
         PHASIC::Process_Base *m_acraicborn = nullptr, *m_acraicreal = nullptr;
+        //! the Born and real process groups the channels above are drawn from
+        PHASIC::Process_Base *m_borngroup = nullptr, *m_realgroup = nullptr;
         //! YFS: REAL_BORN_PHOTON_MULTICHANNEL: this event's G (ACRAIC crude)
         double m_bpmc_evtG = 1.;  int m_bpmc_evtn = 0;
 
@@ -192,9 +194,20 @@ namespace YFS {
         bool MakeYFS();
         void SetLimits(const double &smin, const double &s);
         void SetFlavours(const Flavour_Vector &fl);
+        /*!
+         * The flavours of the channel of a process group whose weight is
+         * being evaluated (e.g. one of the 93 93 children). The group's phase
+         * point was made with the container flavours, so only the final-state
+         * flavours, masses and the ACRAIC object change: no particle store
+         * rebuild, which would discard the momenta. ISR mode only, as the
+         * final-state masses enter the photon kinematics otherwise.
+         */
+        void SetChannelFlavours(const Flavour_Vector &fl);
         void SetMomenta(const ATOOLS::Vec4D_Vector &plab);
         void SetBornMomenta(const ATOOLS::Vec4D_Vector &plab);
         void InitializeACRAIC(const ATOOLS::Flavour_Vector &fl);
+        //! Point ACRAIC (and the NLO base) at the Born and real channels of fl
+        void SetAcraicChannelProcs(const ATOOLS::Flavour_Vector &fl);
         //! Hand ACRAIC the Born and one-photon real processes, so it can take
         //! its spin amplitudes from Comix rather than hand-coded spinors.
         void SetAcraicProcs(PHASIC::Process_Base *born, PHASIC::Process_Base *real);
