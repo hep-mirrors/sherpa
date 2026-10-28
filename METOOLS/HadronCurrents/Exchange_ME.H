@@ -108,7 +108,8 @@ namespace METOOLS {
     int                   m_chan;       // 1 = s, 2 = t, 3 = u, 0 = neither
 
     Current_Base * MakeCurrent(ATOOLS::Scoped_Settings s,
-                               const std::vector<int> & idx);
+                               const std::vector<int> & idx,
+                               const ATOOLS::Flavour & bos);
     void AddExchange(const Diagram & d);
     /// Give a pointlike-line current the v and a the card did not state,
     /// from the model; give a hadronic current nothing. See the definition.

@@ -99,7 +99,8 @@ Exchange_ME::~Exchange_ME()
 }
 
 Current_Base * Exchange_ME::MakeCurrent(Scoped_Settings s,
-                                        const vector<int> & idx)
+                                        const vector<int> & idx,
+                                        const Flavour & bos)
 {
   const string tag = s["Type"].GetScalarWithOtherDefault<string>("Unknown");
   ME_Parameters pars(m_flavs,idx);
@@ -124,6 +125,10 @@ Current_Base * Exchange_ME::MakeCurrent(Scoped_Settings s,
   // in a scattering process. Setting it also runs the current's topology
   // check, so this must happen before the current is used.
   c->SetNIn(m_nin);
+  // Which boson this exchange carries, also context the current cannot
+  // know. Set before SetModelParameters, so a current can choose its form
+  // factors from it while reading the card.
+  c->SetExchangedBoson(bos);
 
   c->SetModelParameters(model);
   // Every current gets the emission coupling, photon or not: it costs
@@ -153,8 +158,9 @@ void Exchange_ME::AddExchange(const Diagram & d)
   Exchange x;
   x.p_prop = contact ? NULL
            : new Gauge_Propagator(bos.Mass(),bos.Width(),bos);
-  x.p_j1   = MakeCurrent(j1,i1);
-  x.p_j2   = MakeCurrent(j2,i2);
+  const Flavour exboson = contact ? Flavour(kf_none) : bos;
+  x.p_j1   = MakeCurrent(j1,i1,exboson);
+  x.p_j2   = MakeCurrent(j2,i2,exboson);
   PassVA(x.p_j1,j1,bos,contact,m_line1);
   PassVA(x.p_j2,j2,bos,contact,m_line2);
   x.m_g  = g;

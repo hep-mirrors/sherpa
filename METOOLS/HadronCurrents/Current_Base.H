@@ -53,6 +53,11 @@ namespace METOOLS {
     /// it explicitly from the context it was built in.
     size_t            m_nin;
 
+    /// The boson of the exchange this current sits on, kf_none for a
+    /// contact term or for a current built outside Exchange_ME. See
+    /// ExchangedBoson.
+    ATOOLS::Flavour   m_exboson;
+
     /// Conventions and coupling for a real photon emitted from inside this
     /// current. Unused unless the current is handed a photon leg; set by
     /// Exchange_ME. See Photon_Emission.H.
@@ -120,6 +125,21 @@ namespace METOOLS {
      * nor calls SetModelParameters on it a second time.
      */
     virtual bool UsesVA() const { return false; }
+
+    /**
+     * The boson exchanged by the Exchange: entry this current belongs to.
+     * Every entry builds its own currents, so with a photon and a Z in one
+     * block each current object is told its own boson: the couplings
+     * belong to the (boson, current) pair, not to the current class.
+     *
+     * Set by Exchange_ME BEFORE SetModelParameters, so a hadronic current
+     * can choose its form factors from it while reading its card settings
+     * -- the hadronic counterpart of the v and a a pointlike line gets.
+     * kf_none for a contact term (no boson: a W in disguise) and for a
+     * current built outside Exchange_ME.
+     */
+    inline void SetExchangedBoson(const ATOOLS::Flavour & b) { m_exboson = b; }
+    inline const ATOOLS::Flavour & ExchangedBoson() const    { return m_exboson; }
 
     /// True if the current is identically zero for its chosen model. Lets
     /// Exchange_ME stop a process whose every exchange vanishes, while a

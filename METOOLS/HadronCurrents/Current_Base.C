@@ -17,7 +17,8 @@ Current_Base::Current_Base(const ATOOLS::Flavour_Vector& flavs,
   Spin_Structure<ATOOLS::Vec4C>(flavs,decayindices),
   m_flavs(flavs),
   m_name(name),
-  m_nin(1)
+  m_nin(1),
+  m_exboson(kf_none)
 {
   p_i.resize(decayindices.size());
   p_masses = new double[decayindices.size()];
