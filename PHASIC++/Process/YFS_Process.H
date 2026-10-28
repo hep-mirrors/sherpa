@@ -117,6 +117,8 @@ namespace PHASIC {
                const std::string eobs,
                const std::string efunc) override;
     void OneRealEvent();
+    //! Pick a partonic channel of the Born group for the shower interface
+    void SelectBornChannel(ATOOLS::Weight_Info *winfo, const int wmode);
     inline Process_Base* GetBornProcess() {return p_bornproc;}
     inline Process_Base* GetRealProcess() {return p_realproc;}
     inline Process_Base* GetVirtProcess() {return p_virtproc;}

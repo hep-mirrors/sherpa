@@ -443,6 +443,45 @@ Cluster_Amplitude *YFS_Process::CreateAmplitude(const NLO_subevt *sub) const
 
 
 
+void YFS_Process::SelectBornChannel(Weight_Info *winfo, const int wmode)
+{
+  /*
+    The Born group is integrated as a whole, so Process_Group::OneEvent never
+    picks a partonic channel, and the shower interface and the event blob need
+    a Single_Process with the right flavours and colours. Pick one here the
+    way Process_Group::OneEvent does: with probability SelectionWeight(child) /
+    sum of them, the children's integrators being filled from the group's
+    points by Process_Integrator::AddPoint. The event then carries the child's
+    share of the group weight, Last(child)/Last(group), and the
+    Matrix_Element_Handler divides by the child's selection weight as for any
+    group, which together reproduces the group sum on average.
+  */
+  Process_Base *sel(p_bornproc);
+  double share(1.0);
+  while (sel->IsGroup()) {
+    double sum(0.0);
+    for (size_t i(0); i<sel->Size(); ++i)
+      sum+=Max(0.0,(*sel)[i]->Integrator()->SelectionWeight(wmode));
+    if (!(sum>0.0))
+      THROW(fatal_error,"No channel of "+sel->Name()+" has a selection weight.");
+    Process_Base *next(NULL);
+    double disc(sum*ran->Get());
+    for (size_t i(0); i<sel->Size(); ++i) {
+      const double sw((*sel)[i]->Integrator()->SelectionWeight(wmode));
+      if (!(sw>0.0)) continue;
+      next=(*sel)[i];
+      disc-=sw;
+      if (disc<=0.0) break;
+    }
+    share*=sel->Last()!=0.0 ? next->Last()/sel->Last() : 0.0;
+    sel=next;
+  }
+  p_bornproc->SetSelected(sel);
+  sel->Integrator()->SetMomenta(p_bornproc->Integrator()->Momenta());
+  winfo->m_weightsmap*=share;
+  winfo->m_dxs=sel->LastXS();
+}
+
 Weight_Info *YFS_Process::OneEvent(const int wmode,ATOOLS::Variations_Mode varmode,
                                    const int mode)
 {
@@ -452,6 +491,7 @@ Weight_Info *YFS_Process::OneEvent(const int wmode,ATOOLS::Variations_Mode varmo
   p_selected = p_bornproc;
   Weight_Info *winfo(NULL);
   winfo = p_int->PSHandler()->OneEvent(this, varmode, mode);
+  if (winfo) SelectBornChannel(winfo, wmode);
   // PRINT_VAR(METHOD);
   // if(p_realproc) OneRealEvent();
   return winfo;
