@@ -750,6 +750,8 @@ namespace LHEH5 {
       }
       std::string spec {"pp" + token};
       spec.append(n_out_jets, 'j');
+      if (spec == "ppeejjjjjj")
+        spec = "z6j_max_n_quarks_4.csv";
       return spec;
     }
 
