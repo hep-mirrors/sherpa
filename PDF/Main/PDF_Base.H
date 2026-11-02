@@ -92,7 +92,7 @@ namespace PDF {
     std::string m_type, m_set;
     int m_member, m_lhef_number, m_nf, m_force_4f;
 
-    double m_exponent, m_rescale;
+    double m_eps, m_delta, m_exponent, m_rescale;
     double m_xmin, m_xmax, m_q2min, m_q2max;
     bool   m_rescX;
 
@@ -108,9 +108,18 @@ namespace PDF {
     PDF_Base();
     virtual ~PDF_Base();
 
-    void   Calculate(double x,double Q2);
+    virtual void   Calculate(double x,double Q2);
     virtual double GetXPDF(const ATOOLS::Flavour& flavour) = 0;
     virtual double GetXPDF(const kf_code& kf, bool anti)   = 0;
+
+    virtual double GetIntPDF(const ATOOLS::Flavour& flavour,
+		             const double& eps, const double& Q2);
+    virtual double GetIntPDF(const kf_code& kf, bool anti,
+		             const double& eps, const double& Q2);
+    inline  double GetIntPDF(const int& id,
+		             const double& eps, const double& Q2)
+    { return GetIntPDF(abs(id),id<0,eps,Q2); }
+
     virtual double AlphaSPDF(const double &q2);
     inline  double GetXPDF(const int& id) { return GetXPDF(abs(id),id<0); }
 
@@ -181,11 +190,12 @@ namespace PDF {
     This is needed for the initial state shower of APACIC.
   */
   /*!
-    \fn void PDF_Base::Calculate(const double, const double)
+    \fn virtual void PDF_Base::Calculate(const double, const double)
     This calculates all parton densities inside a hadron or the structure
     function depending on the energy fraction \f$x\f$ and the scale squared
     \f$Q^2\f$. It should be noted that the result will be given - as usual - as
-    \f$x\f$ times the function.
+    \f$x\f$ times the function. Implemented in PDF_Base.C, overridden in
+    Electron/PDF_Electron.C.
   */
   /*!
     \fn double PDF_Base::GetXPDF(const ATOOLS::Flavour &)

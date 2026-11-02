@@ -138,6 +138,22 @@ void PDF_Base::RegisterDefaults()
   lhapdfsettings.DeclareVectorSettingsWithEmptyDefault({ "DISALLOW_FLAVOUR" });
 }
 
+double PDF_Base::GetIntPDF(const ATOOLS::Flavour& flavour,
+	                   const double& eps, const double& Q2)
+{
+  // this returns \int_{eta}^{eta/(1-eps)} dx/x f_a(eta/x)
+  THROW(not_implemented, "PDF doesn't implement integral on [x,x/(1-eps)].");
+  return 0.0;
+}
+
+double PDF_Base::GetIntPDF(const kf_code& kf, bool anti,
+	                   const double& eps, const double& Q2)
+{   
+  // this returns \int_{eta}^{eta/(1-eps)} dx/x f_a(eta/x)
+  THROW(not_implemented, "PDF doesn't implement integral on [x,x/(1-eps)].");
+  return 0.0;
+}
+
 double PDF_Base::AlphaSPDF(const double &q2)
 {
   THROW(not_implemented, "PDF doesn't implement alpha_s running.")
