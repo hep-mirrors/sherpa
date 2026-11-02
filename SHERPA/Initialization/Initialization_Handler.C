@@ -186,6 +186,9 @@ void Initialization_Handler::RegisterDefaults()
 
   s["ISR_E_ORDER"].SetDefault(1);
   s["ISR_E_SCHEME"].SetDefault(2);
+  double defeps = 1.e-6;
+  s["PDFE_EPS"].SetDefault(defeps);
+  s["PDFE_DELTA"].SetDefault(1.e2*defeps);
 
   s["KFACTOR"].SetDefault("None").UseNoneReplacements();
   s["SCALES"].SetDefault("METS{MU_F2}{MU_R2}{MU_Q2}");
@@ -236,6 +239,8 @@ void Initialization_Handler::RegisterDefaults()
   // Sherpa section on master for details
   pss["FS_PT2MIN"].SetDefault(1.0);
   pss["IS_PT2MIN"].SetDefault(2.0);
+  pss["QED_FS_PT2MIN"].SetDefault(1.e-6);
+  pss["QED_IS_PT2MIN"].SetDefault(1e-4);
   pss["PT2MIN_GSPLIT_FACTOR"].SetDefault(1.0);
   pss["FS_AS_FAC"].SetDefault(1.0);
   pss["IS_AS_FAC"].SetDefault(0.5);
@@ -259,8 +264,13 @@ void Initialization_Handler::RegisterDefaults()
   pss["RESPECT_Q2"].SetDefault(false);
   pss["CKFMODE"].SetDefault(1);
   pss["PDFCHECK"].SetDefault(1);
+  pss["OVERINTEGRATED_CUTOFF"].SetDefault(M_PI*2e3);
   pss["QCD_MODE"].SetDefault(1);
   pss["EW_MODE"].SetDefault(false);
+  pss["QED_ALLOW_II"].SetDefault(true);
+  pss["QED_ALLOW_FI"].SetDefault(false);
+  pss["QED_SPECTATOR_SCHEME"].SetDefault(1);
+  nlopss["QED_SPECTATOR_SCHEME"].SetDefault(2);
   pss["RECO_DECAYS"].SetDefault(0);
   pss["MAXPART"].SetDefault(std::numeric_limits<int>::max());
   pss["PDF_MIN"].SetDefault(1.0e-4);

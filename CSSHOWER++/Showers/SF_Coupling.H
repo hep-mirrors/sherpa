@@ -26,8 +26,6 @@ namespace CSSHOWER {
 
   public:
 
-
-    
     SF_Coupling(const SF_Key &key);
 
     virtual ~SF_Coupling();
@@ -50,6 +48,7 @@ namespace CSSHOWER {
 
     virtual double Coupling(const double &scale,const int pol) = 0;
     virtual bool AllowSpec(const ATOOLS::Flavour &fl,const int mode=0) = 0;
+    virtual inline double EMCharge() { return 0; }
 
     //! Last unpolarized coupling value
     double Last() const { return m_last; }
@@ -69,6 +68,7 @@ namespace CSSHOWER {
 
     inline double Last() { return m_last; }
 
+    inline CSSHOWER::cstp::code Type() { return m_type; }
   };
 
   typedef ATOOLS::Getter_Function<SF_Coupling,SF_Key,

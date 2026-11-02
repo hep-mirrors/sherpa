@@ -133,16 +133,19 @@ void Sudakov::AddDiQuarkSplittingFunctions(MODEL::Model_Base *md,const int kfmod
 }
 
 void Sudakov::SetCoupling(MODEL::Model_Base *md,
-			  const double &k0sqi,const double &k0sqf,
+			  const double k0sqi[2],const double k0sqf[2],
 			  const double &isfac,const double &fsfac,
-			  const double &k0sq_gsplit_fac)
+        const double &k0sq_gsplit_fac)
 {
-  m_k0sqi=k0sqi;
-  m_k0sqf=k0sqf;
+  for (size_t i=0;i<2;++i) {
+    m_k0sqi[i]=k0sqi[i];
+    m_k0sqf[i]=k0sqf[i];
+  }
   m_k0sq_gsplit_fac=k0sq_gsplit_fac;
   for (std::vector<Splitting_Function_Base*>::iterator
 	 sit(m_splittings.begin());sit!=m_splittings.end();)
-    if (!(*sit)->Coupling()->SetCoupling(md,m_k0sqi,m_k0sqf,isfac,fsfac)) {
+    // we call SetCoupling with the QCD k0sqi/f since CF_QED does not depend on these
+    if (!(*sit)->Coupling()->SetCoupling(md,m_k0sqi[0],m_k0sqf[0],isfac,fsfac)) {
       delete *sit;
       sit=m_splittings.erase(sit);
     }
@@ -151,7 +154,8 @@ void Sudakov::SetCoupling(MODEL::Model_Base *md,
     }
   for (std::vector<Splitting_Function_Base*>::iterator
 	 sit(m_addsplittings.begin());sit!=m_addsplittings.end();)
-    if (!(*sit)->Coupling()->SetCoupling(md,m_k0sqi,m_k0sqf,isfac,fsfac)) {
+    // we call SetCoupling with the QCD k0sqi/f since CF_QED does not depend on these
+    if (!(*sit)->Coupling()->SetCoupling(md,m_k0sqi[0],m_k0sqf[0],isfac,fsfac)) {
       delete *sit;
       sit=m_addsplittings.erase(sit);
     }
@@ -253,6 +257,7 @@ bool Sudakov::Generate(Parton* split, double kt2win)
        split->GetLeft()==NULL) ||
       ((cc==8 || (split->GetType()==pst::FS?cc:-cc)==-3) &&
        split->GetRight()==NULL)) {
+    msg_Error()<<METHOD<<":\n"<<(*split)<<".\n";
     THROW(fatal_error,"Invalid color flow.");
   }
   m_cfl  = split->GetFlavour();
@@ -273,21 +278,60 @@ bool Sudakov::Generate(Parton* split, double kt2win)
 	     <<" ("<<split->GetRight()->GetFlow(1)<<", "
 	     <<split->GetRight()->GetFlow(2)<<").\n";
   }
-  msg_IODebugging()<<"   ===> found "<<slist.size()<<" spectator(s).\n";
-  int sc=split->GetFlavour().IntCharge();
-  if (split->GetType()==pst::IS) sc=-sc;
-  if (sc!=0 || split->GetFlavour().IsPhoton() ||
-      split->GetFlavour().Kfcode()==kf_Z) {
+  if (m_ewmode) {
+    int sc=split->GetFlavour().IntCharge(); // splitter charge
     Singlet *sing(split->GetSing());
-    for (PLiter pit(sing->begin());pit!=sing->end();++pit) {
-      int cc=(*pit)->GetFlavour().IntCharge();
-      if ((*pit)->GetType()==pst::IS) cc=-cc;
-      if (*pit!=split->GetLeft() && *pit!=split->GetRight() &&
-	  cc!=0 && (sc==0 || sc*cc<0))
-	slist.push_back(*pit);
+    if (split->GetFlavour().IsPhoton()) {
+      // loop over spectators, add charged 
+      for (PLiter pit(sing->begin());pit!=sing->end();++pit) {
+        if (split == *pit) continue;
+        int cc=(*pit)->GetFlavour().IntCharge();
+        if (cc!=0) slist.push_back(*pit);
+      }
+      // keep track of number of possible spectators
+      split->SetNumSpecs(slist.size());
+    }
+    else if (sc!=0) {
+      double minv = 1.e10;
+      bool found = false;
+      for (PLiter pit(sing->begin());pit!=sing->end();++pit) {
+        if (split == *pit) continue;
+        int cc=(*pit)->GetFlavour().IntCharge();
+        if (cc!=0) {
+          // either add all possible spectators -
+          // CSS_QED_SPECTATOR_SCHEME: All
+          // or only antiparticle with smallest invariant mass -
+          // CSS_QED_SPECTATOR_SCHEME: One (default)
+          if (!m_oneQEDspec || ((*pit)->GetFlavour() == split->GetFlavour().Bar()
+              && ((*pit)->Momentum()+split->Momentum()).Abs2()<minv)) {
+            bool add = true;
+            if (split->GetType()+(*pit)->GetType() == -2) { // II splitting
+              if (!m_allowII) add = false;
+            }
+            else if (split->GetType()+(*pit)->GetType() == 0) { // FI splitting
+              if (!m_allowFI) add = false;
+              // IF/FI should be turned off if one-spectator mode is used
+              if (m_oneQEDspec) add = false;
+            }
+            if (add && (*pit!=split->GetLeft() && *pit!=split->GetRight())) {
+              if (m_oneQEDspec) {
+                if (found) slist.pop_back();
+                found = true;
+                minv = ((*pit)->Momentum()+split->Momentum()).Abs2();
+              }
+              slist.push_back(*pit);
+            }
+          }
+        }
+      }
     }
   }
-  double t0(Min(m_k0sqi,m_k0sqf)), t, y, z, phi;
+  msg_IODebugging()<<"   ===> found "<<slist.size()<<" spectator(s).\n";
+
+  // min of all 4 k0sq's if QED splittings are on, min of QCD k0sqi and k0sqf if not
+  double t0 = m_ewmode ? Min(m_k0sqi[1],Min(m_k0sqf[1],Min(m_k0sqi[0],m_k0sqf[0])))
+              : Min(m_k0sqi[0],m_k0sqf[0]);
+  double t, y, z, phi;
   Parton *spect(NULL);
   Splitting_Function_Base *selected(NULL);
   for (size_t i(0);i<slist.size();++i) {
@@ -417,7 +461,15 @@ int Sudakov::Generate(Parton *split,Parton *spect,
     SelectOne();
     split->SetSpect(p_spect=p_selected->SelectSpec());
     z = Z();
-    double k0sq(p_split->GetType()==pst::IS?m_k0sqi:m_k0sqf);
+    double k0sq;
+    // set k0sq correctly according to QCD or QED splitting
+    // quarks should not be involved below k0sq_QCD
+    if (p_selected->GetFlavourA().StrongCharge()
+        || p_selected->GetFlavourB().StrongCharge()
+        || p_selected->GetFlavourC().StrongCharge())
+      k0sq = p_split->GetType()==pst::IS?m_k0sqi[0]:m_k0sqf[0];
+    else
+      k0sq = p_split->GetType()==pst::IS?m_k0sqi[1]:m_k0sqf[1];
     if (t<Max(t0,k0sq))  return false;
     if (p_selected->GetFlavourA().IsGluon() &&
       p_selected->GetFlavourB().IsQuark() &&
@@ -465,7 +517,8 @@ int Sudakov::Generate(Parton *split,Parton *spect,
 				  (*m_splitter)->GetFlavourB(),
 				  (*m_splitter)->GetFlavourC());
       x = split->Xbj();
-      if (t<m_k0sqi || y<0.0 || y>1.0 || z<x) continue;
+      double k0sqi = m_ewmode ? Min(m_k0sqi[0],m_k0sqi[1]) : m_k0sqi[0];
+      if (t<k0sqi || y<0.0 || y>1.0 || z<x) continue;
     }
       break;
     case (cstp::II) : {
@@ -477,7 +530,8 @@ int Sudakov::Generate(Parton *split,Parton *spect,
 				  (*m_splitter)->GetFlavourB(),
 				  (*m_splitter)->GetFlavourC());
       x   = split->Xbj();
-      if (t<m_k0sqi || y<0.0 || y>1.0-z || z<x) continue;
+      double k0sqi = m_ewmode ? Min(m_k0sqi[0],m_k0sqi[1]) : m_k0sqi[0];
+      if (t<k0sqi || y<0.0 || y>1.0-z || z<x) continue;
     }
       break;
     default:
@@ -513,10 +567,11 @@ int Sudakov::Generate(Parton *split,Parton *spect,
 
 bool Sudakov::DefineFFBoundaries(double Q2,double x)
 {
-  if (4.*m_k0sqf>Q2) return false;
-
+  double k0sqf = m_ewmode ? Min(m_k0sqf[0],m_k0sqf[1]) : m_k0sqf[0];
+  if (4.*k0sqf>Q2) return false;
+  
   m_type=cstp::FF;
-  double deltaz(sqrt(1.-4.*m_k0sqf/Q2));
+  double deltaz(sqrt(1.-4.*k0sqf/Q2));
   m_zmin   = 0.5*(1.-deltaz);
   m_zmax   = 0.5*(1.+deltaz);
   m_scale  = p_split->KtStart();
@@ -532,15 +587,16 @@ bool Sudakov::DefineFFBoundaries(double Q2,double x)
 
 bool Sudakov::DefineFIBoundaries(double Q2,double x,int beam)
 {
+  double k0sqf = m_ewmode ? Min(m_k0sqf[0],m_k0sqf[1]) : m_k0sqf[0];
   if (p_pdf[beam]==NULL) return false;
-  double xmax = Min(0.999999,p_pdf[beam]->XMax());
+  double xmax = p_pdf[beam]->XMax(); 
   double xmin = Max(1.e-6,p_pdf[beam]->XMin());
   if (x>=xmax || x<=xmin)                                   return false;
-  if (m_k0sqf*x>Q2*(1.-x))                                   return false;
+  if (k0sqf*x>Q2*(1.-x))                                    return false;
   if (Q2<=p_pdf[beam]->Q2Min() || Q2>=p_pdf[beam]->Q2Max()) return false;
 
   m_type=cstp::FI;
-  double deltaz(1.0-4.0*Min(1.0,x/(1.0-x))*(m_k0sqf/Q2));
+  double deltaz(1.0-4.0*Min(1.0,x/(1.0-x))*(k0sqf/Q2));
   if (deltaz<0.0) return false;
   deltaz=sqrt(deltaz);
   m_zmin   = 0.5*(1.0-deltaz);
@@ -558,16 +614,17 @@ bool Sudakov::DefineFIBoundaries(double Q2,double x,int beam)
 
 bool Sudakov::DefineIFBoundaries(double Q2,double x,int beam)
 {
-  if (p_pdf[beam]==nullptr) return false;
-  double xmax = Min(0.999999,p_pdf[beam]->XMax());
+  if (p_pdf[beam]==NULL) return false;
+  double k0sqi = m_ewmode ? Min(m_k0sqi[0],m_k0sqi[1]) : m_k0sqi[0];
+  double xmax = p_pdf[beam]->XMax();
   double xmin = Max(1.e-6,p_pdf[beam]->XMin());
   if (x>=xmax || x<=xmin)                                   return false;
-  if (m_k0sqi>Q2)                                           return false;
+  if (k0sqi>Q2)                                             return false;
   if (Q2<=p_pdf[beam]->Q2Min() || Q2>=p_pdf[beam]->Q2Max()) return false;
 
   m_type=cstp::IF;
   m_zmin   = x/xmax;
-  m_zmax   = Q2/(Q2+m_k0sqi);
+  m_zmax   = Q2/(Q2+k0sqi);
   if (m_zmin>m_zmax) return false;
   m_scale  = p_split->KtStart();
   double over(OverIntegrated(m_zmin,m_zmax,m_scale,x,beam));
@@ -583,15 +640,16 @@ bool Sudakov::DefineIFBoundaries(double Q2,double x,int beam)
 bool Sudakov::DefineIIBoundaries(double Q2,double x,int beam)
 {
   if (p_pdf[beam]==NULL) return false;
-  double xmax = Min(0.999999,p_pdf[beam]->XMax());
+  double k0sqi = m_ewmode ? Min(m_k0sqi[0],m_k0sqi[1]) : m_k0sqi[0];
+  double xmax = p_pdf[beam]->XMax();
   double xmin = Max(1.e-6,p_pdf[beam]->XMin());
   if (x>=xmax || x<=xmin)                                   return false;
-  if (m_k0sqi>Q2)                                           return false;
+  if (k0sqi>Q2)                                             return false;
   if (Q2<=p_pdf[beam]->Q2Min() || Q2>=p_pdf[beam]->Q2Max()) return false;
 
   m_type=cstp::II;
   m_zmin   = x/xmax;
-  m_zmax   = Q2/(Q2+m_k0sqi);
+  m_zmax   = Q2/(Q2+k0sqi);
   if (m_zmin>m_zmax) return false;
   m_scale  = p_split->KtStart();
   double over(OverIntegrated(m_zmin,m_zmax,m_scale,x,beam));
@@ -608,10 +666,10 @@ bool Sudakov::DefineIIBoundaries(double Q2,double x,int beam)
 double Sudakov::OverIntegrated(const double zmin,const double zmax,
 			       const double scale,const double xbj,int beam) {
   for (m_splitter=m_splittings.begin();m_splitter!=m_splittings.end();m_splitter++) {
-    if ((*m_splitter)->GetType()==m_type &&
-	(p_split->GetLeft()==p_spect || p_split->GetRight()==p_spect ||
-	 (*m_splitter)->Coupling()->AllowSpec(m_flspec))) {
-      if ((*m_splitter)->PureQCD() &&
+    if (!IsEqual((*m_splitter)->EFac(),1.))
+      msg_Debugging() << "Sudakov::OverIntegrated: m_splitter->EFac() = "<<(*m_splitter)->EFac()<<"\n";
+    if ((*m_splitter)->GetType()==m_type && (*m_splitter)->Coupling()->AllowSpec(p_spect->GetFlavour())) {
+      if ((*m_splitter)->PureQCD() && 
 	  !(p_split->GetLeft()==p_spect || p_split->GetRight()==p_spect)) continue;
       bool match=false;
       switch (m_type) {
@@ -629,9 +687,13 @@ double Sudakov::OverIntegrated(const double zmin,const double zmax,
       if (match) {
 	(*m_splitter)->AddSpec(p_spect);
 	(*m_splitter)->SetSpec(p_spect);
+  (*m_splitter)->SetSplitter(p_split);
 	if (beam!=-1) (*m_splitter)->Lorentz()->SetBeam(beam);
 	m_lastint += (*m_splitter)->OverIntegrated(zmin,zmax,scale,xbj);
 	if (m_lastint>0. && m_lastint <0.) cout<<(*this);
+  if (IsNan(m_lastint) || m_lastint < 0.) {
+    msg_Error()<<"m_lastint = "<<m_lastint<<"\n";
+  }
       }
     }
   }
@@ -641,7 +703,7 @@ double Sudakov::OverIntegrated(const double zmin,const double zmax,
 double Sudakov::ProduceT(double t)
 {
   double ne=2.*M_PI/m_lastint;
-  return t * exp(log(ran->Get())*Max(ne,1.0e-3));
+  return t * exp(log(ran->Get())*Max(ne,2*M_PI/p_shower->OverintCut()));
 }
 
 bool Sudakov::Veto(double Q2,double x,double t,double y,double z) {
@@ -652,20 +714,27 @@ bool Sudakov::Veto(double Q2,double x,double t,double y,double z) {
 bool Sudakov::Splitting(double Q2,double x,double t,double y,double z) {
   double wt(RejectionWeight(z,y,x,t,Q2));
   double efac=p_selected->EFac();
+  int sign=p_selected->SFSign();
   if (ran->Get()>wt) {
-    if (efac!=1.0) {
-      m_weight*=(1.0-wt/efac)/(1.0-wt);
-      p_split->Weights().push_back
-	(std::make_pair(t,(1.0-wt/efac)/(1.0-wt)));
+    if (!IsEqual(efac,1) || sign!=1) {
+      m_weight*=(1.0-wt/(sign*efac))/(1.0-wt);
+      p_split->Weights().push_back(std::make_pair(t,(1.0-wt/(sign*efac))/(1.0-wt)));
     }
     return false;
   }
   else {
-    m_weight*=1.0/efac;
+    m_weight*=1.0/(sign*efac);
   }
   return true;
 }
 
+void Sudakov::SetQEDSpectatorScheme(csssp::code mode) {
+  if (mode==csssp::code::one) m_oneQEDspec = true;
+  else if (mode==csssp::code::all) m_oneQEDspec = false;
+  else THROW(fatal_error, "Unknown spectator scheme");
+}
+
+// the below functions are never used
 const SF_E_Map *Sudakov::HasKernel(const ATOOLS::Flavour &fli,
 				   const ATOOLS::Flavour &flj,
 				   const cstp::code type) const

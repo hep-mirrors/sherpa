@@ -22,6 +22,15 @@ namespace CSSHOWER {
     };
   };
 
+  struct csssp {
+    enum code {
+      one   = 1,
+      all   = 2,
+      unknown = 0
+    };
+  };
+  std::istream &operator>>(std::istream &str,csssp::code &spm);
+
   struct SF_Key {
   public:
     const MODEL::Single_Vertex *p_v;

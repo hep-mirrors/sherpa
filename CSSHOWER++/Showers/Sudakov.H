@@ -16,10 +16,11 @@ namespace CSSHOWER {
   class Shower;
 
   class Sudakov : public Splitting_Function_Group {
-    double m_k0sqi, m_k0sqf, m_k0sq_gsplit_fac, m_sphi;
+    double m_k0sqi[2], m_k0sqf[2], m_k0sq_gsplit_fac, m_sphi;
     double m_deltaz, m_st, m_sz, m_sy, m_ymin, m_ymax, m_scale;
     double m_zmin,m_zmax, m_weight;
     int m_qcdmode,m_ewmode;
+    bool m_allowFI, m_allowII, m_oneQEDspec;
     ATOOLS::Flavour m_cfl, m_flspec;
     Parton * p_split, * p_spect;
     SF_EEE_Map m_fffmap, m_ffimap, m_iffmap, m_ifimap, m_fifmap, m_fiimap;
@@ -47,9 +48,11 @@ namespace CSSHOWER {
 
     void InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
     void SetCoupling(MODEL::Model_Base *md,
-		     const double &k0sqi,const double &k0sqf,
+		     const double k0sqi[2],const double k0sqf[2],
 		     const double &isfac,const double &fsfac,
-		     const double &k0sq_gsplit_fac);
+         const double &k0sq_gsplit_fac);
+    inline void SetQEDInitialStateScheme(bool allowII, bool allowFI) { m_allowII = allowII; m_allowFI = allowFI; }
+    void SetQEDSpectatorScheme(csssp::code specmode);
     void SetKeepReweightingInfo(bool on)  { m_keeprewinfo = on; }
     void SetReweightScaleCutoff(double v) { m_reweightscalecutoff = v; }
     void SetPDFMin(std::pair<double, double>& m) { m_pdfmin = m; }
@@ -83,8 +86,10 @@ namespace CSSHOWER {
                   const ATOOLS::Flavour &flk,const cstp::code type,
 		  const int cpl,const double &mu2) const;
 
-    inline double FSPT2Min() const { return m_k0sqf; }
-    inline double ISPT2Min() const { return m_k0sqi; }
+    inline double FSPT2Min() const { return m_k0sqf[0]; }
+    inline double ISPT2Min() const { return m_k0sqi[0]; }
+    inline double FSQEDPT2Min() const { return m_k0sqf[1]; }
+    inline double ISQEDPT2Min() const { return m_k0sqi[1]; }
 
     inline void SetShower(Shower *const shower) { p_shower=shower; }
     inline double Weight() const { return m_weight; }

@@ -5,6 +5,7 @@
 #include "CSSHOWER++/Showers/SF_Coupling.H"
 #include "CSSHOWER++/Showers/SF_Lorentz.H"
 #include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 namespace ATOOLS { class Function_Base; }
 
@@ -28,8 +29,11 @@ namespace CSSHOWER {
     cstp::code m_type;
     double m_lastint, m_lastacceptwgt, m_lastscale;
     double m_symf, m_polfac, m_lpdf, m_efac, m_mth;
+    double m_overint_cut;
+    int m_sign;
     double m_facscalefactor;
     int m_on, m_qcd, m_scs;
+    Parton *p_split;
     std::vector<Parton*> m_specs;
     Parton *p_spec;
     PDF::PDF_Base **p_pdf;
@@ -75,18 +79,23 @@ namespace CSSHOWER {
     bool PureQCD() const;
 
     void SetEFac(Shower *const shower);
+    void SetSign(Parton *const spec);
 
-    double EFac() const;
+    double EFac();
+    inline int SFSign() { return m_sign; }
 
     Parton *SetSpec(Parton *const spec);
+    Parton *SetSplitter(Parton *const split);
 
     inline double     Last()                 const { return m_lastint;       } 
     virtual double    LastAcceptanceWeight() const { return m_lastacceptwgt; }
     virtual double    LastScale()            const { return m_lastscale;     }
     inline cstp::code GetType()              const { return m_type;          } 
+    inline double     OverintCut()           const { return m_overint_cut;   }
 
     inline void SetFlavourSpec(ATOOLS::Flavour flav) { p_lf->SetFlSpec(flav); }
     inline void AddSpec(Parton *const s) { m_specs.push_back(s); }
+    int NumSpecs();
 
     inline Parton *Spec() const { return p_spec; }
 

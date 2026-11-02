@@ -103,3 +103,8 @@ bool SF_Lorentz::PDFValueAllowedAsDenominator(const double& val,
     m_pdfmin.first * log(1.0 - eta) / log(1.0 - m_pdfmin.second) };
   return (std::abs(val) > dynamic_pdf_threshold);
 }
+
+int SF_Lorentz::NumSpecs()
+{
+  return p_sf->NumSpecs();
+}

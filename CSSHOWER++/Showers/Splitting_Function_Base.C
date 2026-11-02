@@ -18,7 +18,7 @@ using namespace ATOOLS;
 
 Splitting_Function_Base::Splitting_Function_Base():
   p_lf(NULL), p_cf(NULL), m_type(cstp::none), m_mth(0.0),
-  m_on(1), m_qcd(-1), m_facscalefactor(1.0)
+  m_on(1), m_qcd(-1), m_facscalefactor(1.0), m_efac(1.0)
 {
 }
 
@@ -29,6 +29,31 @@ void Splitting_Function_Base::SetEFac(Shower *const shower)
   m_efac=shower->EFac(id);
   if (m_efac!=1.0) msg_Info()<<"Enhance "<<id<<" with "<<m_efac<<"\n";
   if (m_efac==0.0) m_on=0;
+}
+
+void Splitting_Function_Base::SetSign(Parton *const spec)
+{
+  if (m_qcd) m_sign = 1;
+  else {
+    int thetas;
+    switch(p_cf->Type()) {
+      case cstp::FF:
+      case cstp::II:
+        thetas = 1;
+        break;
+      case cstp::IF:
+      case cstp::FI:
+        thetas = -1;
+        break;
+      default: 
+        thetas = 0;
+    }
+    double chargeCorrelator = thetas * (p_cf->EMCharge()) * (spec->GetFlavour().Charge());
+    if (-chargeCorrelator < 0) {
+      m_sign = -1.;
+    }
+    else m_sign = 1;
+  }
 }
 
 SF_Lorentz* Splitting_Function_Base::InitLorentzCalc(const MODEL::Single_Vertex& vertex,
@@ -90,9 +115,34 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
 	    (p_lf->FlB().Strong()!=0 || p_lf->FlB().IsDiQuark()) &&
 	    (p_lf->FlC().Strong()!=0 || p_lf->FlC().IsDiQuark()) );
   m_on=PureQCD()&&(ckey.m_qcdmode&1);// so far only qcd evolution
-  if (!m_on && (ckey.m_ewmode&1) &&
-      (p_lf->FlA().IsPhoton() || p_lf->FlB().IsPhoton() ||
-       p_lf->FlC().IsPhoton())) m_on=true;
+
+  if (!m_on && (ckey.m_ewmode&1)) {
+      if (p_lf->FlB().IsPhoton() ||
+       p_lf->FlC().IsPhoton()) m_on=true; // photon emission allowed if ewmode = 1 or 3
+      if (!m_on && !(ckey.m_ewmode&2) && // check NOT in photon-emission-only mode m_ewmode=3
+       (p_lf->FlA().IsPhoton())) m_on=true; // photon splitting
+  }
+
+
+  auto pss = Settings::GetMainSettings()["SHOWER"];
+  m_overint_cut = pss["OVERINTEGRATED_CUTOFF"].Get<double>();
+  // if electron structure function, read xmax
+  // to do: check what needs doing for FI splittings
+  double pdfexmax;
+  double cssexmax;
+  if (((key.m_type==cstp::IF || key.m_type==cstp::II) &&
+          p_lf->FlA().IsLepton() && ckey.m_ewmode&1) || 
+          key.m_type==cstp::FI && ckey.m_ewmode&1) {
+        Settings& s = Settings::GetMainSettings();
+        pdfexmax = 1.-s["PDFE_EPS"].Get<double>();
+        cssexmax = 1.-s["PDFE_DELTA"].Get<double>();
+  }
+  else {
+    pdfexmax = 1;
+    cssexmax = 1;
+  }
+  p_lf->SetPDFEXmax(pdfexmax,cssexmax);
+
   if (key.p_v->in[1].Mass()>10.0 &&
       key.p_v->in[2].Mass()>10.0) m_on=0;
   if (key.p_v->in[1]==key.p_v->in[2] &&
@@ -174,7 +224,7 @@ double Splitting_Function_Base::OverIntegrated
   return lastint;
 }
 
-double Splitting_Function_Base::EFac() const
+double Splitting_Function_Base::EFac()
 {
   if (m_efac!=1.0) return m_efac; 
   return 1.0;
@@ -213,9 +263,15 @@ void Splitting_Function_Base::SetMS(const ATOOLS::Mass_Selector *const ms)
   p_lf->SetMS(ms);
 }
 
+Parton *Splitting_Function_Base::SetSplitter(Parton *const split)
+{
+  return p_split=split;
+}
+
 Parton *Splitting_Function_Base::SetSpec(Parton *const spec)
 {
   SetFlavourSpec(spec->GetFlavour());
+  SetSign(spec);
   return p_spec=spec;
 }
 
@@ -229,6 +285,17 @@ Parton *Splitting_Function_Base::SelectSpec()
 void Splitting_Function_Base::ClearSpecs()
 {
   m_specs.clear();
+}
+
+int Splitting_Function_Base::NumSpecs()
+{
+  if (p_split) {
+    int n = p_split->NumSpecs();
+    return n ? n : 1;
+  }
+  else {
+    return 1;
+  }
 }
 
 double Splitting_Function_Base::GetXPDF

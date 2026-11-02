@@ -21,9 +21,13 @@ namespace CSSHOWER {
     Splitting_Function_Base *p_sf;
 
     double m_zmin, m_zmax;
+    double m_xbj;
     int m_beam, m_col;
 
     double m_lastJ;
+    double m_Jmax;
+    double m_pdfexmax;
+    double m_cssxmax;
 
     std::pair<double, double> m_pdfmin;
 
@@ -59,8 +63,9 @@ namespace CSSHOWER {
       */
     virtual double Z() = 0;
 
-    double LastJ() const { return m_lastJ; }
+    double LastJ() { return m_lastJ; }
     void SetLastJ(double J) { m_lastJ = J; }
+    double JMax() { return m_Jmax; }
     double JFF(const double &y,const double &mui2,const double &muj2,
 	       const double &muk2,const double &muij2);
     double JFI(const double &y,const double &eta,const double &scale);
@@ -68,6 +73,8 @@ namespace CSSHOWER {
 	       const double &eta,const double &scale);
     double JII(const double &z,const double &y,
 	       const double &eta,const double &scale);
+
+    int NumSpecs();
 
     inline const ATOOLS::Flavour &FlA() const { return m_flavs[0]; }
     inline const ATOOLS::Flavour &FlB() const { return m_flavs[1]; }
@@ -90,6 +97,10 @@ namespace CSSHOWER {
 
     inline static void SetKappa(const double &kap) { s_kappa=kap; }
 
+    inline void SetPDFEXmax(const double &xmax, const double &cssxmax) { 
+      m_pdfexmax = xmax;
+      m_cssxmax = cssxmax;
+    }
   };
 
   typedef ATOOLS::Getter_Function<SF_Lorentz,SF_Key,

@@ -32,6 +32,7 @@ namespace CSSHOWER {
 		     const double &isfac,const double &fsfac);
     double Coupling(const double &scale,const int pol);
     bool AllowSpec(const ATOOLS::Flavour &fl,const int mode);
+    inline double EMCharge() { return m_cfl.Charge(); }
 
   };
 
@@ -57,25 +58,29 @@ double CF_QED::Coupling(const double &scale,const int pol)
   if (pol!=0) return 0.0;
   if (scale<0.0)
     return m_last = m_cplmax.front()*m_q*dabs(p_lf->FlSpec().Charge());
-  double scl(CplFac(scale)*scale);
-  return m_last = (*p_cpl)(scl)*m_q*dabs(p_lf->FlSpec().Charge());
+  
+  if (p_cpl) { 
+    double scl; 
+    if (m_cfl.IsFermion()) scl = 0;
+    else scl = CplFac(scale)*scale;
+    // Qfac will collect all charge factors
+    double Qfac = m_q;
+    // If photon, Qfac = Q_i^2/Nspecs
+    if (m_cfl.IsPhoton()) Qfac *= m_q * 1./p_lf->NumSpecs();
+    // If fermion/scalar, Qfac = Q_\ijt Q_\kt
+    else Qfac *= dabs(p_lf->FlSpec().Charge());
+    m_last = (*p_cpl)(scl)*Qfac;
+  }
+  else THROW(fatal_error,"Internal error");
+
+  return m_last;
 }
 
 bool CF_QED::AllowSpec(const ATOOLS::Flavour &fl,const int mode) 
 {
   if (!fl.Strong() && fl.Mass()>10.0) return false;
-  if (m_cfl.IntCharge()==0) return fl.Charge();
-  
-  switch (m_type) {
-  case cstp::FF:
-  case cstp::II:
-    return fl.IntCharge()*m_cfl.IntCharge()<0;
-  case cstp::FI:
-  case cstp::IF:
-    return fl.IntCharge()*m_cfl.IntCharge()>0;
-  default:
-    return false;
-  }
+  if (m_cfl.IntCharge()==0) return fl.Charge(); // only charged particles allowed as spectator to photon
+  return fl.IntCharge()*m_cfl.IntCharge();
 }
 
 namespace CSSHOWER {

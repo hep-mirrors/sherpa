@@ -38,6 +38,7 @@ namespace CSSHOWER {
 
     bool m_reweight;
     double m_maxreweightfactor;
+    double m_overint_cut;
 
     double m_lastcpl;
 
@@ -73,6 +74,7 @@ namespace CSSHOWER {
     double EFac(const std::string &sfk) const;
     inline Sudakov *GetSudakov() { return &m_sudakov; }
     inline const Sudakov *GetSudakov() const { return &m_sudakov; }
+    inline double OverintCut() const { return m_overint_cut; }
 
     inline const Kinematics_FF *KinFF() const { return &m_kinFF; }
     inline const Kinematics_FI *KinFI() const { return &m_kinFI; }

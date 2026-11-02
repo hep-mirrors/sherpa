@@ -24,25 +24,32 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   const int evol{ pss["EVOLUTION_SCHEME"].Get<int>() };
   int kfmode{ pss["KFACTOR_SCHEME"].Get<int>() };
   const int scs{ pss["SCALE_SCHEME"].Get<int>() };
-  double k0sqf{ pss["FS_PT2MIN"].Get<double>() };
-  double k0sqi{ pss["IS_PT2MIN"].Get<double>() };
+  double k0sqf[2], k0sqi[2]; // first component QCD, second QED
+  k0sqf[0] = pss["FS_PT2MIN"].Get<double>();
+  k0sqi[0] = pss["IS_PT2MIN"].Get<double>();
+  k0sqf[1] = pss["QED_FS_PT2MIN"].Get<double>();
+  k0sqi[1] = pss["QED_IS_PT2MIN"].Get<double>();
   double gsplit_fac{ pss["PT2MIN_GSPLIT_FACTOR"].Get<double>() };
   double fs_as_fac{ pss["FS_AS_FAC"].Get<double>() };
   double is_as_fac{ pss["IS_AS_FAC"].Get<double>() };
   double is_pdf_fac{ pss["PDF_FAC"].Get<double>() };
   const double mth{ pss["MASS_THRESHOLD"].Get<double>() };
+  bool allowFI{ pss["QED_ALLOW_FI"].Get<bool>() };
+  bool allowII{ pss["QED_ALLOW_II"].Get<bool>() };
+  csssp::code spectator_mode { pss["QED_SPECTATOR_SCHEME"].Get<csssp::code>() };
   bool   forced_splittings{ pss["FORCED_IS_QUARK_SPLITTING"].Get<bool>() };
   double forced_splittings_gluon_scaling{ pss["FORCED_SPLITTING_GLUON_SCALING"].Get<double>() };
   m_reweight          = pss["REWEIGHT"].Get<bool>();
   m_maxreweightfactor = pss["MAX_REWEIGHT_FACTOR"].Get<double>();
+  m_overint_cut       = pss["OVERINTEGRATED_CUTOFF"].Get<double>();
   m_kscheme           = pss["KIN_SCHEME"].Get<int>();
   m_recdec            = pss["RECO_DECAYS"].Get<int>();
   m_maxpart           = pss["MAXPART"].Get<int>();
   m_scvmode           = pss["SCALE_VARIATION_SCHEME"].Get<int>();
   if (type) {
     kfmode=pss["MI_KFACTOR_SCHEME"].Get<int>();
-    k0sqf=pss["MI_FS_PT2MIN"].Get<double>();
-    k0sqi=pss["MI_IS_PT2MIN"].Get<double>();
+    k0sqf[0]=pss["MI_FS_PT2MIN"].Get<double>();
+    k0sqi[0]=pss["MI_IS_PT2MIN"].Get<double>();
     gsplit_fac=pss["MI_PT2MIN_GSPLIT_FACTOR"].Get<double>();
     fs_as_fac=pss["MI_FS_AS_FAC"].Get<double>();
     is_as_fac=pss["MI_IS_AS_FAC"].Get<double>();
@@ -68,6 +75,8 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   m_sudakov.SetReweightScaleCutoff(
       pss["REWEIGHT_SCALE_CUTOFF"].Get<double>());
   m_sudakov.SetForcedHQSplittings(forced_splittings,forced_splittings_gluon_scaling);
+  m_sudakov.SetQEDInitialStateScheme(allowII,allowFI);
+  m_sudakov.SetQEDSpectatorScheme(spectator_mode);
   m_kinFF.SetEvolScheme(evol-100*(evol/100));
   m_kinFI.SetEvolScheme(evol-100*(evol/100));
   m_kinIF.SetEvolScheme(evol/100);
@@ -801,3 +810,14 @@ void Shower::CheckAmplitude(const ATOOLS::Cluster_Amplitude *ampl){
 
 }
 
+std::istream &CSSHOWER::operator>>(std::istream &str,csssp::code &spm)
+{
+  std::string tag;
+  str>>tag;
+  if      (tag.find("One")!=std::string::npos)  spm=csssp::one;
+  else if (tag.find("All")!=std::string::npos)  spm=csssp::all;
+  else if (tag.find("1")!=std::string::npos)    spm=csssp::one;
+  else if (tag.find("2")!=std::string::npos)    spm=csssp::all;
+  else                                          spm=csssp::unknown;
+  return str;
+}
