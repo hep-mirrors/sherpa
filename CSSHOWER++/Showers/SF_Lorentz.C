@@ -3,6 +3,7 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
 #include "MODEL/Main/Single_Vertex.H"
+#include "ATOOLS/Org/Scoped_Settings.H"
 
 using namespace CSSHOWER;
 using namespace ATOOLS;
@@ -12,6 +13,9 @@ double SF_Lorentz::s_kappa=2.0/3.0;
 SF_Lorentz::SF_Lorentz(const SF_Key &key):
   p_ms(NULL), p_cf(key.p_cf), m_col(0), m_pdfmin{ key.m_pdfmin }
 {
+  Scoped_Settings s = Settings::GetMainSettings()["SHOWER"];
+  m_k0sqi[0] = s["IS_PT2MIN"].Get<double>();
+  m_k0sqi[1] = s["QED_IS_PT2MIN"].Get<double>();
   m_flavs[0]=key.p_v->in[0].Bar();
   if (key.m_mode==0) {
     m_flavs[1]=key.p_v->in[1];
@@ -51,7 +55,10 @@ double SF_Lorentz::JFI(const double &y,const double &eta,
   if (scale < 0.0) {
     m_lastJ = 1.0;
   } else {
-    const double scalea(scale), scaleb(scale);
+    // shower cutoff does not take into account spectator flavour
+    // so need to freeze PDF at IS cutoff to not go below validity range
+    double minpdfscale(m_flspec.Strong()?m_k0sqi[0]:m_k0sqi[1]);
+    const double scalea(Max(scale,minpdfscale)), scaleb(Max(scale,minpdfscale));
     const double fresh = p_sf->GetXPDF(scalea,eta/(1.0-y),m_flspec,m_beam);
     const double old = p_sf->GetXPDF(scaleb,eta,m_flspec,m_beam);
     if (fresh < 0.0 || old < 0.0 || !PDFValueAllowedAsDenominator(old, eta))

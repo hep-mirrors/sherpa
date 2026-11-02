@@ -29,6 +29,8 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   k0sqi[0] = pss["IS_PT2MIN"].Get<double>();
   k0sqf[1] = pss["QED_FS_PT2MIN"].Get<double>();
   k0sqi[1] = pss["QED_IS_PT2MIN"].Get<double>();
+  m_qcdefac = pss["QCD_ENHANCE"].Get<double>();
+  m_qedefac = pss["QED_ENHANCE"].Get<double>();
   double gsplit_fac{ pss["PT2MIN_GSPLIT_FACTOR"].Get<double>() };
   double fs_as_fac{ pss["FS_AS_FAC"].Get<double>() };
   double is_as_fac{ pss["IS_AS_FAC"].Get<double>() };
@@ -37,6 +39,8 @@ Shower::Shower(PDF::ISR_Handler* isr, const int qcd, const int qed, int type)
   bool allowFI{ pss["QED_ALLOW_FI"].Get<bool>() };
   bool allowII{ pss["QED_ALLOW_II"].Get<bool>() };
   csssp::code spectator_mode { pss["QED_SPECTATOR_SCHEME"].Get<csssp::code>() };
+  if (allowFI && spectator_mode==csssp::one)
+    THROW(not_implemented, "Single QED spectator mode is not fully tested with IF/FI dipoles");
   bool   forced_splittings{ pss["FORCED_IS_QUARK_SPLITTING"].Get<bool>() };
   double forced_splittings_gluon_scaling{ pss["FORCED_SPLITTING_GLUON_SCALING"].Get<double>() };
   m_reweight          = pss["REWEIGHT"].Get<bool>();

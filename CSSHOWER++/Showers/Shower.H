@@ -33,6 +33,7 @@ namespace CSSHOWER {
     ATOOLS::Cluster_Leg *p_old[2];
 
     std::map<std::string,double,ATOOLS::String_Sort> m_efac;
+    double m_qcdefac, m_qedefac;
 
     ATOOLS::Weights_Map m_weightsmap;
 
@@ -72,6 +73,8 @@ namespace CSSHOWER {
     double Reweight(ATOOLS::QCD_Variation_Params*, Parton& splitter);
     void SetMS(const ATOOLS::Mass_Selector *const ms);
     double EFac(const std::string &sfk) const;
+    inline double QCDEFac() const { return m_qcdefac; }
+    inline double QEDEFac() const { return m_qedefac; }
     inline Sudakov *GetSudakov() { return &m_sudakov; }
     inline const Sudakov *GetSudakov() const { return &m_sudakov; }
     inline double OverintCut() const { return m_overint_cut; }

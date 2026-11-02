@@ -292,33 +292,89 @@ bool Sudakov::Generate(Parton* split, double kt2win)
       split->SetNumSpecs(slist.size());
     }
     else if (sc!=0) {
-      double minv = 1.e10;
-      bool found = false;
-      for (PLiter pit(sing->begin());pit!=sing->end();++pit) {
-        if (split == *pit) continue;
-        int cc=(*pit)->GetFlavour().IntCharge();
-        if (cc!=0) {
-          // either add all possible spectators -
-          // CSS_QED_SPECTATOR_SCHEME: All
-          // or only antiparticle with smallest invariant mass -
-          // CSS_QED_SPECTATOR_SCHEME: One (default)
-          if (!m_oneQEDspec || ((*pit)->GetFlavour() == split->GetFlavour().Bar()
-              && ((*pit)->Momentum()+split->Momentum()).Abs2()<minv)) {
+      // either add all possible spectators -
+      // CSS_QED_SPECTATOR_SCHEME: All
+      // or only antiparticle with smallest invariant mass -
+      // CSS_QED_SPECTATOR_SCHEME: One (default)
+      if (m_oneQEDspec) {
+        bool found(false);
+        std::map<double,std::pair<Parton*,Parton*>> pairmasses;
+        // build all possible OSSF pairs
+        for (PLiter piti(sing->begin());piti!=sing->end();++piti) {
+          for (PLiter pitk(sing->begin());pitk!=sing->end();++pitk) {
+            if (*piti==*pitk) continue;
+            // IF/FI should be turned off if one-spectator mode is used
+            if ((*piti)->GetType()!=(*pitk)->GetType()) continue;
+            if ((*piti)->GetType()+(*pitk)->GetType() == -2 && !m_allowII) continue;
+            if ((*piti)->GetFlavour()!=(*pitk)->GetFlavour().Bar()) continue;
+            std::pair<Parton*,Parton*> pair(*piti,*pitk);
+            double mass(dabs(((*piti)->Momentum()+(*pitk)->Momentum()).Abs2()));
+            // if a pair with the same mass has already been filled, shift the bookkeeping mass to not overwrite anything
+            // this only affects the priority order of spectator assignment and does not feed back into kinematics
+            // the shift is small to minimise physics impact of any change in order
+            // by using a negative shift, we ensure that FF dipoles, which are added to the map last, are prioritised
+            while (pairmasses[mass].first) mass*=(1.+rpa->gen.Accu());
+            pairmasses[mass]=pair;
+          }
+        }
+        // pairs off partons, starting from pair with lowest invariant mass
+        std::vector<Parton*> used;
+        for (std::map<double,std::pair<Parton*,Parton*>>::const_iterator it=pairmasses.begin();it!=pairmasses.end();++it) {
+          bool valid(true);
+          for (size_t i(0);i<used.size();++i) {
+            if (used[i]==it->second.first || used[i]==it->second.second) {
+              // pair involves parton already assigned to a dipole
+              valid=false;
+              break;
+            }
+          }
+          if (!valid) continue;
+          used.push_back(it->second.first);
+          used.push_back(it->second.second);
+          if (it->second.first!=split && it->second.second!=split) {
+            continue; // valid pair that does not include current splitter
+          }
+          Parton *spec((it->second.first!=split)?it->second.first:it->second.second);
+          if (spec!=split->GetLeft() && spec!=split->GetRight()) {
+            slist.push_back(spec);
+          }
+          else split->SetConnectedQEDSpec(true);
+          found=true;
+          break;
+        }
+        if (!found) {
+          msg_IODebugging()<<" Can't assign OSSF partner. Grouping all unpaired charged partons.\n";
+          for (PLiter pitk(sing->begin());pitk!=sing->end();++pitk) {
+            if (*pitk==split || !(*pitk)->GetFlavour().Charge()) continue;
+            if (split->GetType()+(*pitk)->GetType()==-2) { // II splitting
+                if (!m_allowII) continue;
+            }
+            else if (split->GetType()+(*pitk)->GetType()==0) { // FI splitting
+              if (!m_allowFI) continue;
+            }
+            if (find(used.begin(),used.end(),*pitk)==used.end()) {
+              if (*pitk==split->GetLeft() && *pitk==split->GetRight()) {
+                split->SetConnectedQEDSpec(true);
+                continue;
+              }
+              slist.push_back(*pitk);
+            }
+          }
+        }
+      }
+      else {
+        for (PLiter pit(sing->begin());pit!=sing->end();++pit) {
+          if (split == *pit) continue;
+          int cc=(*pit)->GetFlavour().IntCharge();
+          if (cc!=0) {
             bool add = true;
             if (split->GetType()+(*pit)->GetType() == -2) { // II splitting
               if (!m_allowII) add = false;
             }
             else if (split->GetType()+(*pit)->GetType() == 0) { // FI splitting
               if (!m_allowFI) add = false;
-              // IF/FI should be turned off if one-spectator mode is used
-              if (m_oneQEDspec) add = false;
             }
-            if (add && (*pit!=split->GetLeft() && *pit!=split->GetRight())) {
-              if (m_oneQEDspec) {
-                if (found) slist.pop_back();
-                found = true;
-                minv = ((*pit)->Momentum()+split->Momentum()).Abs2();
-              }
+            if (add && (*pit!=split->GetLeft() && *pit!=split->GetRight())) { // checks spectator is not same as QCD spectators
               slist.push_back(*pit);
             }
           }
@@ -327,6 +383,10 @@ bool Sudakov::Generate(Parton* split, double kt2win)
     }
   }
   msg_IODebugging()<<"   ===> found "<<slist.size()<<" spectator(s).\n";
+  split->SetNumSpecs(slist.size());
+  for (size_t i(0);i<slist.size();i++) {
+    msg_IODebugging()<<*slist[i];
+  }
 
   // min of all 4 k0sq's if QED splittings are on, min of QCD k0sqi and k0sqf if not
   double t0 = m_ewmode ? Min(m_k0sqi[1],Min(m_k0sqf[1],Min(m_k0sqi[0],m_k0sqf[0])))
@@ -671,6 +731,10 @@ double Sudakov::OverIntegrated(const double zmin,const double zmax,
     if ((*m_splitter)->GetType()==m_type && (*m_splitter)->Coupling()->AllowSpec(p_spect->GetFlavour())) {
       if ((*m_splitter)->PureQCD() && 
 	  !(p_split->GetLeft()==p_spect || p_split->GetRight()==p_spect)) continue;
+    // for quark splitter, if it has two spectators, only use colour-disconnected one to avoid excess QED radiation
+    if (!(*m_splitter)->PureQCD() && p_split->GetFlavour().IsQuark() && m_oneQEDspec && 
+        (p_split->GetLeft()==p_spect || p_split->GetRight()==p_spect) && 
+        !p_split->ConnectedQEDSpec()) continue;
       bool match=false;
       switch (m_type) {
       case cstp::FF:

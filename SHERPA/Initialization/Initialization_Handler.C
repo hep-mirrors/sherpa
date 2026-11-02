@@ -267,6 +267,8 @@ void Initialization_Handler::RegisterDefaults()
   pss["OVERINTEGRATED_CUTOFF"].SetDefault(M_PI*2e3);
   pss["QCD_MODE"].SetDefault(1);
   pss["EW_MODE"].SetDefault(false);
+  pss["QCD_ENHANCE"].SetDefault(1.);
+  pss["QED_ENHANCE"].SetDefault(1.);
   pss["QED_ALLOW_II"].SetDefault(true);
   pss["QED_ALLOW_FI"].SetDefault(false);
   pss["QED_SPECTATOR_SCHEME"].SetDefault(1);

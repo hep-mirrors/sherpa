@@ -27,6 +27,10 @@ void Splitting_Function_Base::SetEFac(Shower *const shower)
   std::string id="S{"+ToString(p_lf->FlA())+"}{"
     +ToString(p_lf->FlB())+"}{"+ToString(p_lf->FlC())+"}";
   m_efac=shower->EFac(id);
+  if (PureQCD()) m_efac*=shower->QCDEFac();
+  if (p_lf->FlA().Kfcode()==kf_photon || 
+      p_lf->FlB().Kfcode()==kf_photon || 
+      p_lf->FlC().Kfcode()==kf_photon) m_efac*=shower->QEDEFac();
   if (m_efac!=1.0) msg_Info()<<"Enhance "<<id<<" with "<<m_efac<<"\n";
   if (m_efac==0.0) m_on=0;
 }

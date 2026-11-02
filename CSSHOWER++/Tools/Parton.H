@@ -50,6 +50,7 @@ namespace CSSHOWER {
     size_t          m_id;
     ATOOLS::Poincare_Sequence m_lt;
     int             m_numspecs; // only used for photon splitters
+    bool            m_connectedQEDspec; // if colour-connected spectator is also a QED spec
 
     std::vector<std::pair<double,double> > m_weights;
     Sudakov_Reweighting_Infos m_sudakovrewinfos;
@@ -98,6 +99,7 @@ namespace CSSHOWER {
     inline double                  Mass2()        const { return m_t; }
     inline double                  Phi()          const;
     inline bool                    ForcedSplitting() const;
+    inline bool                    ConnectedQEDSpec() const { return m_connectedQEDspec; }
     inline size_t                  ForcedTrials() const { return m_nforced; }
     inline Parton *                GetLeft();
     inline Parton *                GetRight();
@@ -137,6 +139,7 @@ namespace CSSHOWER {
     inline void SetCol(int col) { m_col=col; }
     inline void SetId(size_t);
     inline void SetNumSpecs(const int n) { m_numspecs = n; }
+    inline void SetConnectedQEDSpec(const bool val) { m_connectedQEDspec=val; }
     inline void SetFromDec(const bool &val){m_fromdec=val;}
     inline bool FromDec() const {return m_fromdec;}
     friend std::ostream& operator<<(std::ostream &,const Parton &);
@@ -150,7 +153,7 @@ namespace CSSHOWER {
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
-    m_id(0),m_fromdec(false),m_numspecs(0)
+    m_id(0),m_fromdec(false),m_numspecs(0), m_connectedQEDspec(false)
   { 
     m_kt_soft[0]=m_kt_soft[1]=std::numeric_limits<double>::max();
     m_flow.SetCode(1,0);
@@ -163,7 +166,7 @@ namespace CSSHOWER {
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
-    m_id(0), m_fromdec(false),m_numspecs(0)
+    m_id(0), m_fromdec(false),m_numspecs(0), m_connectedQEDspec(false)
   {
     m_kt_soft[0]=m_kt_soft[1]=std::numeric_limits<double>::max();
     m_flow.SetCode(1,0);
@@ -177,7 +180,7 @@ namespace CSSHOWER {
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
-    m_id(0), m_fromdec(part->FromDec()),m_numspecs(0)
+    m_id(0), m_fromdec(part->FromDec()),m_numspecs(0), m_connectedQEDspec(false)
   {
     m_kt_soft[0]=m_kt_soft[1]=std::numeric_limits<double>::max();
     if (m_pst==pst::FS) {
