@@ -1,6 +1,7 @@
 #include "METOOLS/HadronCurrents/Exchange_ME.H"
 #include "METOOLS/HadronCurrents/Tools.H"
 #include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Phys/Flavour_Tags.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/STL_Tools.H"
@@ -521,6 +522,23 @@ void Exchange_ME::CheckFlavourFlow(const bool contact,
     if (idx.size()!=2) continue;          // many-body currents: not a line
     const ATOOLS::Flavour & fa = m_flavs[idx[0]], & fb = m_flavs[idx[1]];
     if (fa.Kfcode()==fb.Kfcode()) continue;
+
+    // Allow supported electromagnetic nucleon-to-resonance transitions.
+    const kf_code a(fa.Kfcode()), b(fb.Kfcode());
+    const bool photon_transition =
+      bos.Kfcode()==kf_photon &&
+      (
+      (a==kf_p_plus       && b==kf_N_1440_plus) ||
+      (a==kf_N_1440_plus  && b==kf_p_plus)      ||
+      (a==kf_n            && b==kf_N_1440)      ||
+      (a==kf_N_1440       && b==kf_n)           ||
+      (a==kf_p_plus       && b==kf_N_1535_plus) ||
+      (a==kf_N_1535_plus  && b==kf_p_plus)      ||
+      (a==kf_n            && b==kf_N_1535)      ||
+      (a==kf_N_1535       && b==kf_n)
+      );
+    if (photon_transition) continue;
+
     THROW(fatal_error,"J"+ToString(w+1)+" of a "+ToString(bos)+" exchange "
           "joins legs "+ToString(idx[0])+" and "+ToString(idx[1])+", which "
           "are "+ToString(fa)+" and "+ToString(fb)+". "+ToString(bos)+" is "

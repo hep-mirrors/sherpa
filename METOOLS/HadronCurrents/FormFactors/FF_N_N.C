@@ -351,7 +351,8 @@ double FF_N_N::Axial(const double & Q2) const
 
 
 //histogram
-
+//this creates a data files which F1, F2, GE, GP and FA, FP for the chosen models callated up to Q2 = 2GeV
+//to access files, create a Results file where your Sherpa run file is and the data file will be created there
 
 void FF_N_N::CreateF1F2Histogram() const
 {
