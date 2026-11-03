@@ -67,6 +67,12 @@ double CF_QED::Coupling(const double &scale,const int pol)
     double Qfac = m_q;
     // If photon, Qfac = Q_i^2/Nspecs
     if (m_cfl.IsPhoton()) Qfac *= m_q * 1./p_lf->NumSpecs();
+    if (m_cfl.IsPhoton()) {
+      Q *= m_q * 1./p_lf->NumSpecs();
+      // also rescale "previous" alpha from alpha(0) to current virtuality
+      // note: assumes CSS_SCALE_SCHEME is the default
+      Q *= (*p_cpl)(scl)/(*p_cpl)(0.0);
+    }
     // If fermion/scalar, Qfac = Q_\ijt Q_\kt
     else Qfac *= dabs(p_lf->FlSpec().Charge());
     m_last = (*p_cpl)(scl)*Qfac;
