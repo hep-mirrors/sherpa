@@ -11,11 +11,10 @@ using namespace ATOOLS;
 
 // SelectRescuePartner picks the hadron that takes the recoil when
 // Soft_Cluster_Handler::Rescue turns a too-light 2-parton cluster into a single
-// hadron. A diquark-antidiquark pair has no such hadron; Rescue used to build a
-// kf_none particle for it whenever another hadron could take the recoil, and
-// Gluon_Decayer threw "Couldn't deal with 2-parton singlet" when none could.
-// The function only needs momenta and masses, so no particle table or hadpars
-// singleton is set up here.
+// hadron, and returns -1 when there is no hadron for the cluster to turn into
+// (e.g. a diquark-antidiquark pair) or none that can take the recoil; Rescue
+// then gives up and Gluon_Decayer asks for a new event. The function only needs
+// momenta and masses, so no particle table or hadpars singleton is set up here.
 TEST_CASE("SelectRescuePartner", "[AHADIC::Soft_Cluster_Handler]") {
   // a cluster of mass 2.27 at rest, e.g. [su_0b, sd_0] just above its
   // constituent masses, and a hadron of mass 2 to turn it into

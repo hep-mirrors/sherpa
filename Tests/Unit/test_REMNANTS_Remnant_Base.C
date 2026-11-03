@@ -1,13 +1,11 @@
 #include <catch2/catch_all.hpp>
 
+#include "Test_Setup.H"
 #include "REMNANTS/Main/Remnant_Base.H"
 #include "REMNANTS/Tools/Colour_Generator.H"
 #include "BEAM/Main/Beam_Base.H"
 #include "ATOOLS/Math/Poincare.H"
-#include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Settings.H"
-#include "ATOOLS/Phys/KF_Table.H"
 
 using namespace ATOOLS;
 using namespace REMNANTS;
@@ -17,13 +15,9 @@ namespace {
   void Boot() {
     static bool booted = false;
     if (booted) return;
-    if (!ATOOLS::msg) ATOOLS::msg = new ATOOLS::Message();
-    if (!ATOOLS::rpa) ATOOLS::rpa = new ATOOLS::Run_Parameter();
+    Test_Setup::InitGlobals();
     Settings::InitializeMainSettings("");
-    if (s_kftable.find(kf_photon) == s_kftable.end())
-      AddParticle(kf_photon, 0., 0., 0., 0, 2, true, 1, "P", "P");
-    if (s_kftable.find(kf_d) == s_kftable.end())
-      AddParticle(kf_d, 0.01, 0., 0., -1, 1, true, 1, "d", "d");
+    Test_Setup::RegisterParticles();
     booted = true;
   }
 
