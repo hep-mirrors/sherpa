@@ -37,3 +37,8 @@ double SF_Coupling::ColorWeight(const Color_Info &ci) const
 {
   return 1.0;
 }
+
+double SF_Coupling::AlphaQEDUsed() const 
+{
+  return -1.;
+}

@@ -14,9 +14,14 @@ using namespace MCATNLO;
 using namespace MODEL;
 using namespace ATOOLS;
 
+#ifdef CHECK_rejection_weight
+std::string Splitting_Function_Base::s_histo_base_name = "histos/";
+Histogram Splitting_Function_Base::s_histo_dipole = Histogram(10,1e-18,1e3,200,"");
+#endif
+
 Splitting_Function_Base::Splitting_Function_Base():
   p_lf(NULL), p_cf(NULL), m_type(cstp::none), m_mth(0.0),
-  m_on(1), m_qcd(-1), m_facscalefactor(1.0)
+  m_on(1), m_qcd(-1), m_qed(-1), m_facscalefactor(1.0)
 {
 }
 
@@ -42,12 +47,37 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   p_cf->SetLF(p_lf);
   p_lf->SetSF(this);
   m_qcd=p_lf->FlA().Strong()&&p_lf->FlB().Strong()&&p_lf->FlC().Strong();
-  m_on=PureQCD();// so far only qcd evolution
-  if (!m_on && (ckey.m_ewmode&1) &&
+  m_on=PureQCD()&&(ckey.m_qcdmode&1);// so far only qcd evolution
+  // check for QED splitting
+  m_qed=false;
+  if (!m_on && ckey.m_ewmode &&
       (p_lf->FlA().IsPhoton() || p_lf->FlB().IsPhoton() ||
-       p_lf->FlC().IsPhoton())) m_on=true;
-  // exclude all massive partons to split, but also Q->Qg
+       p_lf->FlC().IsPhoton())) {
+    m_on=true;
+    m_qed=true;
+  }
+
   Settings& s = Settings::GetMainSettings();
+  auto pss = Settings::GetMainSettings()["SHOWER"];
+
+  m_overint_cut = pss["OVERINTEGRATED_CUTOFF"].Get<double>();
+  
+  // if electron structure function, read xmax
+  // to do: check what needs doing for FI splittings
+  double pdfexmax;
+  double cssexmax;
+  if ((key.m_type==cstp::IF || key.m_type==cstp::II)
+        && p_lf->FlA().IsLepton() && ckey.m_ewmode&1) {
+        pdfexmax = 1.-s["PDFE_EPS"].Get<double>();
+        cssexmax = 1.-s["PDFE_DELTA"].Get<double>();
+  }
+  else {
+    pdfexmax = 1;
+    cssexmax = 1;
+  }
+  p_lf->SetPDFEXmax(pdfexmax,cssexmax);
+
+  // exclude all massive partons to split, but also Q->Qg
   bool massive_splittings =
     s["MCATNLO_MASSIVE_SPLITTINGS"].SetDefault(1).Get<int>();
   if (!massive_splittings &&
@@ -180,12 +210,17 @@ double Splitting_Function_Base::RejectionWeight
   if (scale>0.0) scale=p_lf->Scale(z,y,scale,Q2);
   m_lastacceptwgt = operator()(z,y,eta,scale,Q2)/Overestimated(z,y);
 #ifdef CHECK_rejection_weight
+  int precision = msg->Precision();
+  msg->SetPrecision(12);
   if (m_lastacceptwgt>1.0) {
     msg_Error()<<METHOD<<"(): Weight is "<<m_lastacceptwgt<<" in ("<<m_type<<") "
 	       <<p_lf->FlA()<<"->"<<p_lf->FlB()<<p_lf->FlC()
 	       <<" at z = "<<z<<", y = "<<y<<", x = "
-	       <<eta<<", Q = "<<sqrt(Q2)<<std::endl;
+	       <<eta<<", Q = "<<sqrt(Q2)<<", t = "<<scale<<std::endl;
+    // fill histo
+    s_histo_dipole.Insert(scale,m_lastacceptwgt);
   }
+  msg->SetPrecision(precision);
 #endif
   return m_lastacceptwgt;
 }
@@ -230,8 +265,10 @@ double Splitting_Function_Base::GetXPDF
   double Q2(scale*m_facscalefactor);
   if (Q2<p_lf->MS()->Mass2(a) || x<p_pdf[beam]->XMin() ||
       x>p_pdf[beam]->XMax()*p_pdf[beam]->RescaleFactor() ||
-      Q2<p_pdf[beam]->Q2Min() || Q2>p_pdf[beam]->Q2Max())
+      Q2<p_pdf[beam]->Q2Min() || Q2>p_pdf[beam]->Q2Max()) {
+    msg_Error()<<METHOD<<"(): x-range or Q2-range violation. Return -1.\n";
     return m_lpdf=-1.0;
+  }
   p_pdf[beam]->Calculate(x,Q2);
   return m_lpdf=p_pdf[beam]->GetXPDF(a);
 }
@@ -275,6 +312,12 @@ bool Splitting_Function_Base::PureQCD() const
 { 
   if (m_qcd<0) THROW(fatal_error,"Invalid request");
   return m_qcd;
+}
+
+bool Splitting_Function_Base::QED() const
+{ 
+  if (m_qed<0) THROW(fatal_error,"Invalid request");
+  return m_qed;
 }
 
 std::string SF_Key::ID(const int mode) const

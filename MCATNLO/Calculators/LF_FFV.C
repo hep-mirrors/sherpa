@@ -300,8 +300,16 @@ double LF_FFV_FI::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
   m_zmin = zmin; m_zmax = zmax;
-  m_Jmax=5.;
-  return (2.0*p_cf->MaxCoupling(0)*2. + 0.5*p_cf->MaxCoupling(1))*log((1.-zmin)/(1.-zmax)) * m_Jmax;
+  m_Jmax = m_flspec.Kfcode()<3?5.:1.;
+  double Gp = (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))*log((1.-zmin)/(1.-zmax))*m_Jmax;
+  if (IsNan(Gp) || Gp < 0.) msg_Error() << "OverIntegrated = "<<Gp<<"\n";
+  // check Gp is not too big
+  if (Gp > p_sf->OverintCut()) {
+    msg_Tracking()<<METHOD<<": OverIntegrated too big! "<<Gp
+                  <<", setting OverIntegrated to max.\n";
+    Gp = p_sf->OverintCut();
+  }
+  return Gp;
 }
 
 double LF_FFV_FI::OverEstimated(const double z,const double y)
@@ -326,19 +334,47 @@ double LF_FFV_IF::operator()
 double LF_FFV_IF::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
-  m_zmin = zmin; m_zmax = zmax;
+  m_zmin = zmin; m_zmax = zmax; m_xbj = xbj;
   m_Jmax = m_flavs[0].Kfcode()<3?5.:1.; 
-  return (2.0*p_cf->MaxCoupling(0)*2. + 0.5*p_cf->MaxCoupling(1)) * log((1.-zmin)/(1.-zmax)) * m_Jmax;
+  double zdep = log((1.-zmin)/(1.-zmax)) * m_Jmax;
+  // Lepton colliders only
+  if (m_flavs[0].Kfcode() >= 11 && m_flavs[0].Kfcode() <= 15) {
+    if (xbj >= m_cssxmax) return 0;
+    // lepton structure function/PDF is very different 
+    // integral of 10/(z-x) when combined with the usual 4/(1-z)
+    zdep = 10.*log((1.-zmin)/(1.-zmax)*(zmax-xbj)/(zmin-xbj))/(1-xbj);
+  }
+  double Gp = (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * zdep;
+  if (IsNan(Gp) || Gp < 0.) msg_Error() << "OverIntegrated = "<<Gp<<"\n";
+  // check Gp is not too big
+  if (Gp > p_sf->OverintCut()) {
+    msg_Tracking()<<METHOD<<": OverIntegrated too big! "<<Gp
+                  <<", setting OverIntegrated to max.\n";
+    Gp = p_sf->OverintCut();
+  }
+  return Gp;
 }
 
 double LF_FFV_IF::OverEstimated(const double z,const double y)
 {
-  return (2.0*p_cf->MaxCoupling(0)*2. + 0.5*p_cf->MaxCoupling(1))/(1.-z) * m_Jmax;
+  double Jfac = m_Jmax;
+  // Lepton colliders only
+  if (m_flavs[0].Kfcode() >= 11 && m_flavs[0].Kfcode() <= 15) {
+    Jfac = 5./(z-m_xbj);
+  }
+  return (2.0*p_cf->MaxCoupling(0)*2. + 0.5*p_cf->MaxCoupling(1))/(1.-z) * Jfac;
 }
 
 double LF_FFV_IF::Z()
 {
-  return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),ATOOLS::ran->Get());
+  double r = ATOOLS::ran->Get();
+  // Lepton colliders only
+  if (m_flavs[0].Kfcode() >= 11 && m_flavs[0].Kfcode() <= 15) {
+    double frac = (m_zmin-m_xbj)/(1.-m_zmin) 
+      * pow(((1.-m_zmin)*(m_zmax-m_xbj))/((1.-m_zmax)*(m_zmin-m_xbj)),r);
+    return (m_xbj+frac)/(1.+frac);
+  }
+  return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),r);
 }
 
 double LF_FFV_II::operator()
@@ -353,19 +389,47 @@ double LF_FFV_II::operator()
 double LF_FFV_II::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
-  m_zmin = zmin; m_zmax = zmax; 
+  m_zmin = zmin; m_zmax = zmax; m_xbj = xbj;
   m_Jmax = m_flavs[0].Kfcode()<3?5.:1.;
-  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * log((1.-zmin)/(1.-zmax)) * m_Jmax;
+  double zdep = log((1.-zmin)/(1.-zmax));
+  // Lepton colliders only
+  if (m_flavs[0].Kfcode() >= 11 && m_flavs[0].Kfcode() <= 15) {
+    if (xbj >= m_cssxmax) return 0;
+    // lepton structure function/PDF is very different 
+    // integral of 10/(z-x) when combined with the usual 1/(1-z)
+    zdep = 10.*log((1.-zmin)/(1.-zmax)*(zmax-xbj)/(zmin-xbj))/(1-xbj);
+  }
+  double Gp = (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * zdep * m_Jmax;
+  if (IsNan(Gp) || Gp < 0.) msg_Error() << "OverIntegrated = "<<Gp<<"\n";
+  // check Gp is not too big
+  if (Gp > p_sf->OverintCut()) {
+    msg_Tracking()<<METHOD<<": OverIntegrated too big! "<<Gp
+                  <<", setting OverIntegrated to max.\n";
+    Gp = p_sf->OverintCut();
+  }
+  return Gp;
 }
 
 double LF_FFV_II::OverEstimated(const double z,const double y)
 {
-  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/(1.-z) * m_Jmax;
+  double Jfac = m_Jmax;
+  // Lepton colliders only
+  if (m_flavs[0].Kfcode() >= 11 && m_flavs[0].Kfcode() <= 15) {
+    Jfac = 10./(z-m_xbj);
+  }
+  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/(1.-z) * Jfac;
 }
 
 double LF_FFV_II::Z()
 {
-  return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),ATOOLS::ran->Get());
+  double r = ATOOLS::ran->Get();
+  // Lepton colliders only
+  if (m_flavs[0].Kfcode() >= 11 && m_flavs[0].Kfcode() <= 15) {
+    double frac = (m_zmin-m_xbj)/(1.-m_zmin) 
+      * pow(((1.-m_zmin)*(m_zmax-m_xbj))/((1.-m_zmax)*(m_zmin-m_xbj)),r);
+    return (m_xbj+frac)/(1.+frac);
+  }
+  return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),r);
 }
 
 double LF_FVF_FF::operator()
@@ -438,7 +502,7 @@ double LF_FVF_FI::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
   m_zmin = zmin; m_zmax = zmax;
-  m_Jmax=5.;
+  m_Jmax = 5.;
   return (2.0*p_cf->MaxCoupling(0)*2. + 0.5*p_cf->MaxCoupling(1)) * log(zmax/zmin) * m_Jmax;
 }
 
@@ -493,6 +557,13 @@ double LF_FVF_IF::OverIntegrated
   if (fresh < 0.0 || old < 0.0 || !PDFValueAllowedAsDenominator(old, xbj))
     return 0.0;
   m_Jmax = 5.*fresh/old;
+  // Lepton colliders only
+  if (m_flavs[0].Kfcode() >= 11 && m_flavs[0].Kfcode() <= 15) {
+    double xmax = m_pdfexmax;
+    if (xbj > xmax) return m_Jmax=0;
+    // check for photon PDF being zero
+    if (ATOOLS::IsEqual(old,0.)) m_Jmax = 0;
+  }
   return (2.0*p_cf->MaxCoupling(0)*2. + 0.5*p_cf->MaxCoupling(1)) * log(zmax/zmin) * m_Jmax;
 }
 
@@ -534,6 +605,13 @@ double LF_FVF_II::OverIntegrated
   if (fresh < 0.0 || old < 0.0 || !PDFValueAllowedAsDenominator(old, xbj))
     return 0.0;
   m_Jmax = 5.*fresh/old;
+  // Lepton colliders only
+  if (m_flavs[0].Kfcode() >= 11 && m_flavs[0].Kfcode() <= 15) {
+    double xmax = m_pdfexmax;
+    if (xbj > xmax) return m_Jmax=0;
+    // check for photon PDF being zero
+    if (ATOOLS::IsEqual(old,0.)) m_Jmax = 0;
+  }
   return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))* log(zmax/zmin) * m_Jmax;
 }
 
@@ -684,6 +762,13 @@ double LF_VFF_IF::OverIntegrated
   if (fresh < 0.0 || old < 0.0 || !PDFValueAllowedAsDenominator(old, xbj))
     return 0.0;
   m_Jmax = 5.*fresh/old; 
+  // Lepton colliders only
+  if (m_flavs[0].Kfcode() >= 11 && m_flavs[0].Kfcode() <= 15) {
+    double xmax = m_pdfexmax;
+    if (xbj > xmax) return m_Jmax=0;
+    // check for photon PDF being zero
+    if (ATOOLS::IsEqual(fresh,0.)) m_Jmax = 0;
+  }
   return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * (m_zmax-m_zmin) * m_Jmax;
 }
 
@@ -725,6 +810,13 @@ double LF_VFF_II::OverIntegrated
   if (fresh < 0.0 || old < 0.0 || !PDFValueAllowedAsDenominator(old, xbj))
     return 0.0;
   m_Jmax = 5.*fresh/old;
+  // Lepton colliders only
+  if (m_flavs[0].Kfcode() >= 11 && m_flavs[0].Kfcode() <= 15) {
+    double xmax = m_pdfexmax;
+    if (xbj > xmax) return m_Jmax=0;
+    // check for photon PDF being zero
+    if (ATOOLS::IsEqual(fresh,0.)) m_Jmax = 0;
+  }
   return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * (m_zmax-m_zmin) * m_Jmax;
 }
 

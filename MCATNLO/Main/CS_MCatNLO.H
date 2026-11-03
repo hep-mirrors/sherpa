@@ -18,7 +18,7 @@ namespace MCATNLO {
   private:
  
     PDF::ISR_Handler * p_isr;
-    size_t m_maxem, m_nem, m_psmode;
+    size_t m_maxem, m_nem, m_psmode, m_qcdmode, m_ewmode;
     double m_maxweight;
     
     Shower          * p_mcatnlo;

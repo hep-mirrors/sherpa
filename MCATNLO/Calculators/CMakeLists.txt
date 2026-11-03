@@ -1,4 +1,5 @@
 set(MCatNLOCalculators_SOURCES CF_QCD.C
+                        CF_QED.C
                         LF_FFV.C
                         LF_VVV.C)
 

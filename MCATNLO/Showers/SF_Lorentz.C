@@ -10,7 +10,8 @@ using namespace ATOOLS;
 double SF_Lorentz::s_kappa=2.0/3.0;
 
 SF_Lorentz::SF_Lorentz(const SF_Key &key):
-  p_ms(key.p_ms), p_cf(key.p_cf), m_col(0), m_pdfmin{ key.m_pdfmin }
+  p_ms(key.p_ms), p_cf(key.p_cf), m_col(0), m_pdfmin{ key.m_pdfmin },
+  m_xbj(1.)
 {
   m_flavs[0]=key.p_v->in[0].Bar();
   if (key.m_mode==0) {

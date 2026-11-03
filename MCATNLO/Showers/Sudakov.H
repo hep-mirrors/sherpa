@@ -16,10 +16,11 @@ namespace MCATNLO {
   class Shower;
 
   class Sudakov : public Splitting_Function_Group {
-    double m_k0sqi, m_k0sqf, m_k0sq_gsplit_fac, m_phi;
+    double m_k0sqi[2], m_k0sqf[2], m_k0sq_gsplit_fac, m_phi;
     double m_deltaz, m_kperp2, m_z, m_y, m_x, m_ymin, m_ymax, m_scale;
     double m_zmin,m_zmax, m_weight;
-    int m_ewmode, m_scalescheme;
+    int m_qcdmode, m_ewmode, m_scalescheme;
+    double m_alphaQED;
     const ATOOLS::Mass_Selector *  p_rms;
     ATOOLS::Flavour m_cfl, m_flspec;
     Parton * p_split, * p_spect;
@@ -43,12 +44,12 @@ namespace MCATNLO {
     void Add(Splitting_Function_Base * split);
     void AddToMaps(Splitting_Function_Base * split,const int mode=1);
   public:
-    Sudakov(PDF::ISR_Handler *isr,const int qed);
+    Sudakov(PDF::ISR_Handler *isr,const int qcd,const int qed);
     ~Sudakov();
 
     void InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
     void SetCoupling(MODEL::Model_Base *md,
-		     const double &k0sqi,const double &k0sqf,
+		     const double k0sqi[2],const double k0sqf[2],
 		     const double &isfac,const double &fsfac,
 		     const double &k0sq_gsplit_fac);
     void SetKeepReweightingInfo(bool on)  { m_keeprewinfo = on; }
@@ -59,6 +60,8 @@ namespace MCATNLO {
 			  const double=1.,const int=-1);
 
     inline void GetSplittingParameters(double &,double &,double &,double &);
+
+    inline double AlphaQED() { return m_alphaQED; }
 
     inline void SetMS(const ATOOLS::Mass_Selector *const ms) { p_rms=ms; }
 
@@ -80,8 +83,10 @@ namespace MCATNLO {
                   const ATOOLS::Flavour &flk,
                   const cstp::code type) const;
 
-    inline double FSPT2Min() const { return m_k0sqf; }
-    inline double ISPT2Min() const { return m_k0sqi; }
+    inline double FSPT2Min() const { return m_k0sqf[0]; }
+    inline double ISPT2Min() const { return m_k0sqi[0]; }
+    inline double FSQEDPT2Min() const { return m_k0sqf[1]; }
+    inline double ISQEDPT2Min() const { return m_k0sqi[1]; }
 
     inline void SetShower(Shower *const shower) { p_shower=shower; }
     inline double Weight() const { return m_weight; }

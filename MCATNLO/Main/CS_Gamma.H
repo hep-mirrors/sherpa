@@ -82,14 +82,14 @@ namespace MCATNLO {
                                     =ATOOLS::nlo_type::lo,
 			      const std::string add="") const;
 
-    Trial_Weight TrialWeight(ATOOLS::Cluster_Amplitude *const ampl);
+    Trial_Weight TrialWeight(ATOOLS::Cluster_Amplitude *const ampl, bool qcd);
 
   public:
 
     CS_Gamma(CS_MCatNLO *const css,Shower *const shower,
 	     CS_Cluster_Definitions *const clus);
 
-    bool Reject();
+    bool Reject(bool qcd);
 
     inline void SetOn(const int on) { m_on=on; }
 

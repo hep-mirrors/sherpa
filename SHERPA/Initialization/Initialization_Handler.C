@@ -272,7 +272,6 @@ void Initialization_Handler::RegisterDefaults()
   pss["QED_ALLOW_II"].SetDefault(true);
   pss["QED_ALLOW_FI"].SetDefault(false);
   pss["QED_SPECTATOR_SCHEME"].SetDefault(1);
-  nlopss["QED_SPECTATOR_SCHEME"].SetDefault(2);
   pss["RECO_DECAYS"].SetDefault(0);
   pss["MAXPART"].SetDefault(std::numeric_limits<int>::max());
   pss["PDF_MIN"].SetDefault(1.0e-4);

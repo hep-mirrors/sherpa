@@ -4,6 +4,9 @@
 #include "MCATNLO/Showers/SF_Key.H"
 #include "MCATNLO/Showers/SF_Coupling.H"
 #include "MCATNLO/Showers/SF_Lorentz.H"
+#include "ATOOLS/Math/Histogram.H"
+
+// #define CHECK_rejection_weight
 
 namespace ATOOLS { 
   class Cluster_Amplitude;
@@ -24,11 +27,16 @@ namespace MCATNLO {
     double m_lastint, m_lastacceptwgt, m_lastscale;
     double m_symf, m_polfac, m_lpdf, m_mth;
     double m_facscalefactor;
-    int m_on, m_qcd, m_scs;
+    int m_on, m_qcd, m_qed, m_scs;
+    double m_overint_cut;
     std::vector<Parton*> m_specs;
     std::vector<double> m_lastints;
     Parton *p_spec;
     PDF::PDF_Base **p_pdf;
+    double m_pdfexmax;
+
+    static std::string          s_histo_base_name;
+    static ATOOLS::Histogram    s_histo_dipole;
   public:
 
     Splitting_Function_Base();
@@ -72,6 +80,7 @@ namespace MCATNLO {
 
     Parton *SelectSpec();
     bool PureQCD() const;
+    bool QED() const;
 
     Parton *SetSpec(Parton *const spec);
 
@@ -83,6 +92,7 @@ namespace MCATNLO {
     virtual double    LastAcceptanceWeight() const { return m_lastacceptwgt; }
     virtual double    LastScale()            const { return m_lastscale;     }
     inline cstp::code GetType()              const { return m_type;          } 
+    inline double     OverintCut()           const { return m_overint_cut;   }
 
     inline void SetFlavourSpec(ATOOLS::Flavour flav) { p_lf->SetFlSpec(flav); }
     inline void AddSpec(Parton *const s) { m_specs.push_back(s); }

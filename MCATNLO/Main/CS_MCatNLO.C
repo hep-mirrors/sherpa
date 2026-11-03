@@ -30,8 +30,10 @@ CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,
   m_maxweight=nlopss["MAXWEIGHT"].SetDefault(1.0e3).Get<double>();
   m_maxem=nlopss["MAXEM"].Get<int>();
   SF_Lorentz::SetKappa(s["DIPOLES"]["KAPPA"].Get<double>());
+  m_qcdmode=s["NLO_SUBTRACTION_MODE"].Get<sbt::subtype>()&1;
+  m_ewmode=s["NLO_SUBTRACTION_MODE"].Get<sbt::subtype>()&2;
 
-  p_mcatnlo = new Shower(_isr,0);
+  p_mcatnlo = new Shower(_isr,m_qcdmode,m_ewmode);
   p_next = new All_Singlets();
   p_cluster = new CS_Cluster_Definitions(p_mcatnlo,1);
   p_gamma = new CS_Gamma(this,p_mcatnlo,p_cluster);

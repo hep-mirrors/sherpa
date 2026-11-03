@@ -73,6 +73,8 @@ namespace MCATNLO {
 
     virtual double ColorWeight(const Color_Info &ci) const;
 
+    virtual double AlphaQEDUsed() const;
+
     inline double MaxCoupling(const int mode) const { return s_qfac*m_cplmax[mode]; }
 
     inline void SetLF(SF_Lorentz *const lf) { p_lf=lf; }

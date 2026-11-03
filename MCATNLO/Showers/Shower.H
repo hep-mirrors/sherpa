@@ -37,6 +37,7 @@ namespace MCATNLO {
     ATOOLS::Weights_Map m_weightsmap;
     bool m_reweight;
     double m_maxreweightfactor;
+    double m_overint_cut;
 
     void   ResetScales(Parton *const split);
     void   SetSplitInfo(const ATOOLS::Vec4D &psplit,
@@ -55,7 +56,7 @@ namespace MCATNLO {
 		       double &jcv);
 
   public:
-    Shower(PDF::ISR_Handler *,const int qed);
+    Shower(PDF::ISR_Handler *,const int qcd,const int qed);
     ~Shower();
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
     double Reweight(ATOOLS::QCD_Variation_Params*, Parton& splitter);
@@ -74,6 +75,8 @@ namespace MCATNLO {
     inline Kinematics_FI *KinFI() { return &m_kinFI; }
     inline Kinematics_IF *KinIF() { return &m_kinIF; }
     inline Kinematics_II *KinII() { return &m_kinII; }
+
+    inline double OverintCut() const { return m_overint_cut; }
 
     inline int KinScheme() const { return m_kscheme; }
 

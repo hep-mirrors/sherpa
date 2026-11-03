@@ -225,9 +225,7 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
           msg_Out()<<"types: "<<ststr<<std::endl;
         }
         for (size_t s(0);s<stypes.size();++s) {
-	  if ((m_pinfo.m_ckkw || m_pinfo.m_nlomode==nlo_mode::mcatnlo) &&
-              m_pinfo.m_special.find("EnforceQEDRealSubtraction")==std::string::npos &&
-	      stypes[s]==sbt::qed) continue;
+          if (m_pinfo.m_ckkw && stypes[s]==sbt::qed) continue;
           Single_DipoleTerm *pdummy
             = new Single_DipoleTerm(cinfo,i,j,k,stypes[s],p_int);
           msg_Debugging()<<stypes[s]<<"[("<<i<<","<<j<<");"<<k<<"]("

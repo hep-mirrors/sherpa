@@ -19,6 +19,7 @@ using namespace PDF;
 using namespace ATOOLS;
 
 #define DEBUG__Trial_Weight
+#define DEBUG__Differential
 
 Weight_Key::Weight_Key(const size_t &ij,const size_t &k,
 		       const ATOOLS::Flavour &flij,
@@ -177,7 +178,7 @@ int CS_Gamma::SingleWeight
   return 1;
 }
 
-bool CS_Gamma::Reject()
+bool CS_Gamma::Reject(bool qcd)
 {
   if (p_css->PSMode()) {
     m_weight=1.0;
@@ -185,7 +186,7 @@ bool CS_Gamma::Reject()
   }
   if (m_on==0) return false;
   Cluster_Amplitude *rampl=p_css->GetRealEmissionAmplitude(1);
-  Trial_Weight wgt(TrialWeight(rampl));
+  Trial_Weight wgt(TrialWeight(rampl,qcd));
   rampl->Delete();
   if (wgt.MC()>ran->Get()) {
     m_weight=wgt.Accept();
@@ -197,7 +198,7 @@ bool CS_Gamma::Reject()
   return true;
 }
 
-Trial_Weight CS_Gamma::TrialWeight(Cluster_Amplitude *const ampl)
+Trial_Weight CS_Gamma::TrialWeight(Cluster_Amplitude *const ampl, bool qcd)
 {
   DEBUG_FUNC("");
   p_ms=ampl->MS();
@@ -252,7 +253,9 @@ Trial_Weight CS_Gamma::TrialWeight(Cluster_Amplitude *const ampl)
       if (i<0) i=l;
       else j=l;
     }
-  std::string nadd("__QCD(S)_RS");
+  std::string nadd;
+  if (qcd) { nadd = "__QCD(S)_RS"; }
+  else     { nadd = "__EW(S)_RS"; }
   nadd+=ToString(i)+"_"+ToString(j)+"_"+ToString(k);
   double rme(Differential(ampl,nlo_type::rsub,nadd).m_me);
   msg_Debugging()<<"me / ecss = "<<rme<<" / "<<wact.m_me

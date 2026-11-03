@@ -16,16 +16,19 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-Shower::Shower(PDF::ISR_Handler * isr,const int qed) :
-  p_actual(NULL), m_sudakov(isr,qed), p_isr(isr)
+Shower::Shower(PDF::ISR_Handler * isr,const int qcd,const int qed) :
+  p_actual(NULL), m_sudakov(isr,qcd,qed), p_isr(isr)
 {
   auto pss = Settings::GetMainSettings()["SHOWER"];
   auto nlopss = Settings::GetMainSettings()["MC@NLO"];
   const int evol{ pss["EVOLUTION_SCHEME"].Get<int>() };
   const int kfmode{ pss["KFACTOR_SCHEME"].Get<int>() };
   const int scs{ pss["SCALE_SCHEME"].Get<int>() };
-  const double k0sqf{ pss["FS_PT2MIN"].Get<double>() };
-  const double k0sqi{ pss["IS_PT2MIN"].Get<double>() };
+  double k0sqf[2], k0sqi[2]; // first component QCD, second QED
+  k0sqf[0] = pss["FS_PT2MIN"].Get<double>();
+  k0sqi[0] = pss["IS_PT2MIN"].Get<double>();
+  k0sqf[1] = pss["QED_FS_PT2MIN"].Get<double>();
+  k0sqi[1] = pss["QED_IS_PT2MIN"].Get<double>();
   const double gsplit_fac{ pss["PT2MIN_GSPLIT_FACTOR"].Get<double>() };
   const double fs_as_fac{ pss["FS_AS_FAC"].Get<double>() };
   const double is_as_fac{ pss["IS_AS_FAC"].Get<double>() };
@@ -33,6 +36,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed) :
   const double mth{ pss["MASS_THRESHOLD"].Get<double>() };
   m_reweight = pss["REWEIGHT"].Get<bool>();
   m_maxreweightfactor = pss["MAX_REWEIGHT_FACTOR"].Get<double>();
+  m_overint_cut       = pss["OVERINTEGRATED_CUTOFF"].Get<double>();
   m_kscheme = nlopss["KIN_SCHEME"].Get<int>();
   std::vector<size_t> disallowflavs{
     nlopss["DISALLOW_FLAVOUR"].GetVector<size_t>() };
@@ -127,7 +131,9 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   split->SetFlow(2,newpB->GetFlow(2));
   split->SetMEFlow(1,newpB->GetMEFlow(1));
   split->SetMEFlow(2,newpB->GetMEFlow(2));
-  if (rd==1) rd=p_gamma->Reject()?-1:1;
+  // test if dipole is QCD, if not then it must be EW
+  bool qcd = m_flavA.Strong() && m_flavB.Strong() && m_flavC.Strong();
+  if (rd==1) rd=p_gamma->Reject(qcd)?-1:1;
   const double gamma_weight {p_gamma->Weight()};
   m_weightsmap["Sudakov"] *= gamma_weight;
   if (rd==1 && split->KtTest()>split->KtMax())
