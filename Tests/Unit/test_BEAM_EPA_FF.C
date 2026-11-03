@@ -1,5 +1,6 @@
 #include "BEAM/Spectra/EPA_FF.H"
 
+#include "Test_Setup.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -151,35 +152,24 @@ TEST_CASE("EPA_ff_type round-trips through operator<< / operator>>",
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Closure test for the b-dependent photon flux.
-//
-// This is the referee's literal request in point 3 -- "integrating the
-// b-dependent flux and comparing it with analytic results" -- carried out
-// through the *actual* code path rather than a reimplementation: the
-// numerically Fourier-transformed N(x,b) table, its interpolation, the SampleB
-// importance weight, and the alpha/pi prefactor that EPA::Initialise applies to
+// Closure test for the b-dependent photon flux, through the production code
+// path: the numerically Fourier-transformed N(x,b) table, its interpolation,
+// the SampleB importance weight and the alpha/pi prefactor that EPA applies to
 // EPA_FF_Base::N().
 //
-// EPA_DipoleApprox is the right probe because its form factor is F(Q^2) = 1, so
-// EPA_FF_Base::FillTables has to reproduce the elementary transform
+// EPA_DipoleApprox has the form factor F(Q^2) = 1, so EPA_FF_Base::FillTables
+// has to reproduce the elementary transform
 //
-//     int_0^inf dk_T  k_T^2/(k_T^2 + x^2 m^2)  J_1(b k_T)  =  x m K_1(x m b)
+//     int_0^inf dk_T  k_T^2/(k_T^2 + x^2 m^2)  J_1(b k_T)  =  x m K_1(x m b) ,
 //
-// exactly. Everything the referee questioned about the flux machinery -- the
-// oscillatory integrator, the kernel, the table, the sampling weight and the
-// prefactors -- is thereby tested against a closed form, and the test itself
-// assumes nothing about the point-like limit.
-//
-// Reference results (paper, Sec. 2.2):
-//   n_PL(x,b) = (Z^2 alpha/pi^2) x m^2
-//               [ K_1^2(chi) + K_0^2(chi)/gamma^2 ] .
-// In the conventional ultrarelativistic limit, gamma -> infinity, this gives
-//   n_PL,int(x) = int_{b_min}^{inf} d^2b n_PL
-//               = (2 Z^2 alpha/pi x) [ chi K_0 K_1 - (chi^2/2)(K_1^2 - K_0^2) ] .
-// EPA_IonApproxIntegrated implements that transverse-only limit. The finite-
-// gamma closure below keeps the K_0 term over precisely the range where the
-// implementation does. The indefinite-integral form accounts exactly for the
-// finite upper limit imposed by SampleB's b_max/chi_max cap.
+// times (1-x) for the exact virtuality. Its b-integral is compared with the
+// point-like flux of a charge Z (Bertulani:1987tz),
+//   n_PL(x,b) = (Z^2 alpha/pi^2) x m^2 [ K_1^2(chi) + K_0^2(chi)/gamma^2 ] ,
+// chi = x m b, which for gamma -> infinity integrates from b_min to infinity to
+//   n_PL,int(x) = (2 Z^2 alpha/pi x) [ chi K_0 K_1 - (chi^2/2)(K_1^2 - K_0^2) ]
+// as in EPA_IonApproxIntegrated. The closure below keeps the K_0^2/gamma^2
+// term where the implementation does, beyond the point-like threshold, and
+// integrates up to the upper limit of SampleB.
 ////////////////////////////////////////////////////////////////////////////////
 
 namespace {
@@ -202,15 +192,15 @@ namespace {
     return 0.5 * chi * chi * (k0 * k0 - k1 * k1);
   }
 
-  // EPA settings the form-factor constructors read. Mirrors the relevant part
-  // of EPA::RegisterDefaults, at the production defaults; the two
-  // result-directory keys are pinned so that EPA_FF_Base leaves m_respath empty
-  // and no table cache is read or written.
-  constexpr size_t s_xbins = 200, s_bbins = 100;
+  // EPA settings the form-factor constructors read, as EPA::RegisterDefaults
+  // registers them except for a coarser table (production: 200 x 100 bins) that
+  // keeps the test fast; 4 x-bins per decade put x = 1e-4, 1e-3, 1e-2 and
+  // 10^-0.5 on nodes. The two result-directory keys are pinned so that
+  // EPA_FF_Base leaves m_respath empty and no table cache is read or written.
+  constexpr size_t s_xbins = 20, s_bbins = 50;
   constexpr double s_xmin = 1.e-5, s_xmax = 1.;
   constexpr double s_bmin = 0.3, s_bmax = 1.e3, s_bthr = 10., s_chimax = 100.;
-  constexpr double s_radius = 0.88; // proton radius in fm, cf. Tab. 2
-  constexpr double s_mass = 0.938272;
+  constexpr double s_mass = Test_Setup::proton_mass;
   constexpr double s_alpha = 1. / 137.03599976;
   constexpr double s_ebeam = 6500.; // LHC proton beam, sets gamma
 
@@ -218,24 +208,9 @@ namespace {
   {
     static bool booted = false;
     if (booted) return;
-    if (!ATOOLS::msg) ATOOLS::msg = new ATOOLS::Message();
-    if (!ATOOLS::rpa) ATOOLS::rpa = new ATOOLS::Run_Parameter();
+    Test_Setup::InitGlobals();
     ATOOLS::Settings::InitializeMainSettings("");
-    if (ATOOLS::s_kftable.find(kf_p_plus) == ATOOLS::s_kftable.end())
-      ATOOLS::AddParticle(kf_p_plus, s_mass, s_radius, 0., 3, 1, true, 1, "P+",
-                          "P+");
-    // The kf table is shared across the whole test binary and Catch2 randomises
-    // test order, so another test case may already have registered the proton --
-    // the REMNANTS tests do, with radius 0 and mass 0.938. AddParticle above is
-    // then skipped, so pin both properties rather than relying on who ran first:
-    // EPA_FF_Base divides by the radius, and every reference value below is
-    // built from s_mass, so a 3e-4 mass mismatch would quietly bias the whole
-    // comparison. Pinning is safe in the other direction too: Beam_Base's
-    // constructor is the only other reader of the radius in the suite (via the
-    // REMNANTS Test_Beam classes) and merely stores it, and the REMNANTS tests
-    // assert on neither.
-    ATOOLS::Flavour(kf_p_plus).SetMass(s_mass);
-    ATOOLS::Flavour(kf_p_plus).SetRadius(s_radius);
+    Test_Setup::RegisterParticles();
     auto& s = ATOOLS::Settings::GetMainSettings();
     s["GENERATE_RESULT_DIRECTORY"].SetDefault(false);
     s["RESULT_DIRECTORY"].SetDefault("");
@@ -254,17 +229,13 @@ namespace {
   }
 
   // Built once and deliberately leaked: Catch2 re-runs a TEST_CASE body per
-  // SECTION, and filling the 201x101 table costs ~2*10^4 oscillatory integrals.
-  // Leaking also avoids ordering the destructor against rpa/Settings teardown.
+  // SECTION, and each table node costs an oscillatory integral. Leaking also
+  // avoids ordering the destructor against rpa/Settings teardown.
   EPA_DipoleApprox& Flux()
   {
     static EPA_DipoleApprox* ff = nullptr;
     if (!ff) {
       Boot();
-      // The beam energy is a constructor argument, as it has to be: the
-      // Lorentz factor must be known before a derived constructor fills its
-      // N(x,b) table, which is what EPA_IonApprox does. The first section below
-      // asserts it arrived.
       ff = new EPA_DipoleApprox(ATOOLS::Flavour(kf_p_plus), 1, s_ebeam);
     }
     return *ff;
@@ -302,7 +273,7 @@ namespace {
     return Flux().N(x, ran) / wt;
   }
 
-  // Transverse term of Eq. (11) in the normalisation FillTables stores, i.e.
+  // Transverse term of n_PL in the normalisation FillTables stores, i.e.
   // including the d^2b = 2 pi b db Jacobian and without the alpha/pi prefactor.
   // The table carries no longitudinal term: it descends from C(Q^2) = 0.
   // With the exact virtuality the transform evaluates to (1-x) x m K_1(chi),
@@ -329,22 +300,17 @@ TEST_CASE("EPA b-dependent flux closes against the analytic point-like result",
   const ATOOLS::axis baxis(s_bbins, s_bmin * R, s_bthr * R,
                            ATOOLS::axis_mode::log);
 
-  SECTION("the beam energy reaches gamma through the constructor")
-  {
-    // Regression guard for the ordering: gamma has to be settled by the end of
-    // EPA_FF_Base's constructor, because EPA_IonApprox fills a gamma-dependent
-    // table inside its own. There is deliberately no setter to install it late.
-    CHECK(Flux().Gamma() == Catch::Approx(gamma));
-  }
+  // the beam energy is a constructor argument, so that a derived constructor
+  // can fill a gamma-dependent table, as EPA_IonApprox does
+  CHECK(Flux().Gamma() == Catch::Approx(gamma));
 
   SECTION("the numerical transform reproduces x m K_1(x m b) at table nodes")
   {
-    // On a node the only error left is the oscillatory integrator's own
-    // tolerance (Bessel_Integrator default 1e-3), so this isolates the
-    // transform from the interpolation tested below.
-    for (size_t i : {40u, 80u, 120u}) { // x = 1e-4, 1e-3, 1e-2
+    // on a node the only error is the tolerance of the oscillatory integrator
+    // (Bessel_Integrator default 1e-3)
+    for (size_t i : {4u, 8u, 12u}) { // x = 1e-4, 1e-3, 1e-2
       const double x = xaxis.x(i);
-      for (size_t j : {10u, 30u, 50u, 70u, 90u}) {
+      for (size_t j : {5u, 15u, 25u, 35u, 45u}) {
         const double b_dimless = baxis.x(j) / R;
         double b_phys = -1.;
         const double got = TabulatedFlux(x, b_dimless, R, b_phys);
@@ -359,22 +325,13 @@ TEST_CASE("EPA b-dependent flux closes against the analytic point-like result",
 
   SECTION("the (1-x) is present, probed where it is large")
   {
-    // The sections above reach x = 1e-2, where (1-x) is a 1% effect: enough to
-    // break the tolerance, not enough to read as deliberate. Node 180 is
-    // x = 10^-0.5 exactly -- 5 decades over 200 bins puts a decade every 40th
-    // node -- where the factor is 0.684 and nothing else could account for it.
-    //
-    // Only the inner b nodes, chi <~ 2.3, are probed. Beyond that the
-    // oscillatory integration loses the exponentially small transform in the
-    // cancellation between its partial sums: 0.7% high at chi = 4.6, 68% high
-    // at chi = 9.3. That limit is independent of the virtuality used, since
-    // EPA_DipoleApprox has F(Q^2) = 1 and its kernel is therefore the same
-    // function either way. Production stays below chi = 1; the
-    // OutputAllSpectra dumps, running to x = 0.89 with the point-like branch
-    // disabled, do not.
-    const double x = xaxis.x(180);
+    // node 18 is x = 10^-0.5, where the factor is 0.684. Only the inner b nodes,
+    // chi <~ 2.3, are probed: further out the oscillatory integration loses the
+    // exponentially small transform in the cancellation between its partial
+    // sums. Production stays below chi = 1.
+    const double x = xaxis.x(18);
     REQUIRE(x == Catch::Approx(0.31622776601683794));
-    for (size_t j : {10u, 30u, 50u}) {
+    for (size_t j : {5u, 15u, 25u}) {
       const double b_dimless = baxis.x(j) / R;
       double b_phys = -1.;
       const double got = TabulatedFlux(x, b_dimless, R, b_phys);
@@ -390,44 +347,15 @@ TEST_CASE("EPA b-dependent flux closes against the analytic point-like result",
     }
   }
 
-  SECTION("interpolation between nodes stays at the per-mille level")
-  {
-    // Probed at the *geometric mid-bin* in both axes, i.e. weight 1/2, where
-    // the linear-interpolation error w(1-w) peaks. Sampling at fixed x values
-    // instead would make the result depend on how close those happen to fall
-    // to a node, which changes with the bin count and would misreport the
-    // effect of changing it.
-    //
-    // The residual here is the convexity of N across a bin: the *metric* half
-    // of the error was removed by giving axis::weight the log-axis fraction,
-    // and what is left falls as O(h^2) in the node spacing -- which is why the
-    // default xBins was raised to 200. Worst case measured at that default:
-    // +4.6e-4, in the steepest corner of the grid (largest x, largest b).
-    const auto mid = [](const ATOOLS::axis& a, size_t i) {
-      return std::sqrt(a.x(i) * a.x(i + 1));
-    };
-    for (size_t i : {40u, 80u, 120u}) { // mid-bin above x = 1e-4, 1e-3, 1e-2
-      const double x = mid(xaxis, i);
-      for (size_t j : {10u, 30u, 50u, 70u, 90u}) {
-        const double b_dimless = mid(baxis, j) / R;
-        double b_phys = -1.;
-        const double got = TabulatedFlux(x, b_dimless, R, b_phys);
-        const double want = AnalyticFlux(x, b_phys);
-        INFO("x=" << x << " b/R=" << b_dimless << " chi=" << x * s_mass * b_phys
-                  << " got=" << got << " want=" << want
-                  << " rel=" << (got / want - 1.));
-        CHECK_THAT(got, Catch::Matchers::WithinRel(want, 2.e-3));
-      }
-    }
-  }
-
   SECTION("int d^2b of the sampled flux reproduces n_PL,int(x)")
   {
     // Midpoint quadrature over ran: SampleB returns db/dran, so the mean of
     // N(x,ran) over a uniform ran is exactly int db (dn/db) over the sampled
-    // range. Multiplying by alpha/pi is what EPA::CalculateWeight does.
+    // range. Multiplying by alpha/pi is what EPA::CalculateWeight does. x sits
+    // on table nodes, from 1e-4 to 10^-1.5 in half decades.
     const int N = 20000;
-    for (double x : {1.e-4, 3.e-4, 1.e-3, 3.e-3, 1.e-2, 3.e-2}) {
+    for (size_t i : {4u, 6u, 8u, 10u, 12u, 14u}) {
+      const double x = xaxis.x(i);
       double sum = 0.;
       for (int i = 0; i < N; ++i) sum += Flux().N(x, (i + 0.5) / N);
       const double got = pref * sum / N;

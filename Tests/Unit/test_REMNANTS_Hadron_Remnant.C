@@ -1,42 +1,24 @@
 #include <catch2/catch_all.hpp>
 
+#include "Test_Setup.H"
 #include "REMNANTS/Main/Hadron_Remnant.H"
 #include "REMNANTS/Tools/Remnants_Parameters.H"
 #include "PDF/Main/PDF_Base.H"
 #include "BEAM/Main/Beam_Base.H"
 #include "ATOOLS/Math/Poincare.H"
-#include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Settings.H"
-#include "ATOOLS/Phys/KF_Table.H"
 
 using namespace ATOOLS;
 using namespace REMNANTS;
 
 namespace {
 
-  void Register(kf_code kf, double mass, int icharge, int spin,
-                const std::string& name) {
-    if (s_kftable.find(kf) == s_kftable.end())
-      AddParticle(kf, mass, 0., 0., icharge, spin, true, 1, name, name);
-  }
-
   void Boot() {
     static bool booted = false;
     if (booted) return;
-    if (!ATOOLS::msg) ATOOLS::msg = new ATOOLS::Message();
-    if (!ATOOLS::rpa) ATOOLS::rpa = new ATOOLS::Run_Parameter();
+    Test_Setup::InitGlobals();
     Settings::InitializeMainSettings("");
-    Register(kf_photon, 0., 0, 2, "P");
-    Register(kf_gluon, 0., 0, 2, "G");
-    Register(kf_d, 0.01, -1, 1, "d");
-    Register(kf_u, 0.005, 2, 1, "u");
-    Register(kf_e, 0.000511, -3, 1, "e-");
-    Register(kf_mu, 0.1057, -3, 1, "mu-");
-    Register(kf_pi, 0.135, 0, 0, "pi");
-    Register(kf_pi_plus, 0.1396, 3, 0, "pi+");
-    Register(kf_n, 0.9396, 0, 1, "n");
-    Register(kf_p_plus, 0.938, 3, 1, "P+");
+    Test_Setup::RegisterParticles();
     if (!rempars) rempars = new Remnants_Parameters();
     booted = true;
   }

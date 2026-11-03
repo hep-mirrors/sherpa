@@ -1,11 +1,9 @@
 #include <catch2/catch_all.hpp>
 
+#include "Test_Setup.H"
 #include "ATOOLS/Math/Gauss_Integrator.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Settings.H"
-#include "ATOOLS/Phys/KF_Table.H"
 #include "BEAM/Main/Collider_Weight.H"
 #include "BEAM/Spectra/Gaussian.H"
 
@@ -21,12 +19,9 @@ namespace {
   {
     static bool booted = false;
     if (booted) return;
-    if (!ATOOLS::msg) ATOOLS::msg = new ATOOLS::Message();
-    if (!ATOOLS::rpa) ATOOLS::rpa = new ATOOLS::Run_Parameter();
+    Test_Setup::InitGlobals();
     Settings::InitializeMainSettings("");
-    if (s_kftable.find(kf_e) == s_kftable.end())
-      AddParticle(kf_e, 0.000511, .0, .0, -3, 0, 1, 0, 1, 1, 0, "e-", "e+",
-                  "e^{-}", "e^{+}");
+    Test_Setup::RegisterParticles();
     booted = true;
   }
 

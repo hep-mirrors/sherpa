@@ -1,11 +1,8 @@
 #include <catch2/catch_all.hpp>
 
+#include "Test_Setup.H"
 #include "PHASIC++/Process/Massive_Kernels.H"
-#include "MODEL/Main/Model_Base.H"
-#include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Settings.H"
-#include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Phys/NLO_Types.H"
 
 #include <cmath>
@@ -18,45 +15,20 @@ using Catch::Matchers::WithinRel;
 
 namespace {
 
-  void Register(kf_code kf, double mass, int icharge, const std::string& name) {
-    if (s_kftable.find(kf) == s_kftable.end())
-      AddParticle(kf, mass, 0., 0., icharge, 1, true, 1, name, name);
-  }
-
   void Boot() {
     static bool booted = false;
     if (booted) return;
-    if (!ATOOLS::msg) ATOOLS::msg = new ATOOLS::Message();
-    if (!ATOOLS::rpa) ATOOLS::rpa = new ATOOLS::Run_Parameter();
+    Test_Setup::InitGlobals();
     Settings::InitializeMainSettings("");
-    // the same records as the other unit tests, so the shared table does not
-    // depend on the test order; the q <- g kernels need neither colour nor masses
-    Register(kf_d, 0.01, -1, "d");
-    Register(kf_u, 0.005, 2, "u");
-    Register(kf_s, 0.2, -1, "s");
-    Register(kf_c, 1.42, 2, "c");
-    Register(kf_b, 4.92, -1, "b");
+    Test_Setup::RegisterParticles();
     booted = true;
   }
 
-  // SetNC sums Q^2 over the model's massless charged flavours; only the
-  // quarks matter, and only for the I-operator constants, not the KP kernels.
-  class Quark_Model : public MODEL::Model_Base {
-  public:
-    Quark_Model() : Model_Base(true) {
-      for (long kf = 1; kf <= 5; ++kf) {
-        m_fls.push_back(Flavour(kf));
-        m_fls.push_back(Flavour(kf).Bar());
-      }
-    }
-    void InitVertices() override {}
-    void ParticleInit() override {}
-    bool ModelInit() override { return true; }
-  };
-
-  // Massive_Kernels with N_C = 3 set the way KP_Terms does it
+  // Massive_Kernels with N_C = 3 set the way KP_Terms does it; SetNC sums Q^2
+  // over the model's massless charged flavours, which enters the I-operator
+  // constants, not the KP kernels
   struct Kernels {
-    Quark_Model model;
+    Test_Setup::Quark_Model model;
     MODEL::Model_Base *saved;
     Massive_Kernels kernels;
     explicit Kernels(sbt::subtype st) : saved(MODEL::s_model), kernels(st, 5, 0) {

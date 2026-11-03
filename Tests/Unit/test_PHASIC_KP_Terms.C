@@ -1,5 +1,6 @@
 #include <catch2/catch_all.hpp>
 
+#include "Test_Setup.H"
 #include "PHASIC++/Process/KP_Terms.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -7,13 +8,9 @@
 #include "PDF/Main/PDF_Base.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "PDF/Main/Structure_Function.H"
-#include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Coupling_Data.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Settings.H"
-#include "ATOOLS/Phys/KF_Table.H"
 #include "ATOOLS/Phys/NLO_Types.H"
 #include "ATOOLS/Phys/Weights.H"
 
@@ -34,12 +31,6 @@ CATCH_TRANSLATE_EXCEPTION(const ATOOLS::Exception& e) {
 
 namespace {
 
-  void Register(kf_code kf, double mass, int icharge, int spin,
-                const std::string& name) {
-    if (s_kftable.find(kf) == s_kftable.end())
-      AddParticle(kf, mass, 0., 0., icharge, spin, true, 1, name, name);
-  }
-
   // the settings KP_Terms reads, registered as Sherpa's initialisation and
   // the ME generators do, except for the subtraction scheme: plain
   // Catani-Seymour (Sherpa's default is CSS)
@@ -58,18 +49,11 @@ namespace {
   // seeds the settings anew in every test case, as the other test files
   // reinitialise them
   void Boot(const std::string& yaml = "") {
-    if (!ATOOLS::msg) ATOOLS::msg = new ATOOLS::Message();
-    if (!ATOOLS::rpa) ATOOLS::rpa = new ATOOLS::Run_Parameter();
+    Test_Setup::InitGlobals();
     Seed(yaml);
     static bool booted = false;
     if (booted) return;
-    // the same records as the REMNANTS tests, so the shared table does not
-    // depend on the order the test files run in
-    Register(kf_photon, 0., 0, 2, "P");
-    Register(kf_gluon, 0., 0, 2, "G");
-    Register(kf_d, 0.01, -1, 1, "d");
-    Register(kf_u, 0.005, 2, 1, "u");
-    Register(kf_p_plus, 0.938, 3, 1, "P+");
+    Test_Setup::RegisterParticles();
     // KP_Terms only counts the light flavours in this container; it cannot
     // hold both u and d here, as the shared records give them different masses
     if (s_kftable.find(kf_quark) == s_kftable.end()) {
@@ -80,20 +64,6 @@ namespace {
     }
     booted = true;
   }
-
-  // Massive_Kernels::SetNC reads the model's flavours
-  class Test_Model : public MODEL::Model_Base {
-  public:
-    Test_Model() : Model_Base(true) {
-      for (kf_code kf : {kf_d, kf_u}) {
-        m_fls.push_back(Flavour(kf));
-        m_fls.push_back(Flavour(kf).Bar());
-      }
-    }
-    void InitVertices() override {}
-    void ParticleInit() override {}
-    bool ModelInit() override { return true; }
-  };
 
   class Fixed_Scale : public PHASIC::Scale_Setter_Base {
   public:
@@ -199,7 +169,7 @@ namespace {
   }
 
   struct Setup {
-    Test_Model model;
+    Test_Setup::Quark_Model model;
     MODEL::Model_Base* saved_model;
     Flavour saved_bunch[2];
     Test_Process proc;

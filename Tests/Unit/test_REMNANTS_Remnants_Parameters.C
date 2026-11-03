@@ -2,59 +2,21 @@
 
 #include <sstream>
 
+#include "Test_Setup.H"
 #include "REMNANTS/Tools/Remnants_Parameters.H"
 #include "ATOOLS/Org/Settings.H"
-#include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Flavour.H"
-#include "ATOOLS/Phys/KF_Table.H"
 
 using namespace REMNANTS;
 using namespace ATOOLS;
-
-namespace {
-  // The bare unit-test binary never runs Sherpa's main, so the global message
-  // singleton is null; the settings machinery dereferences it. Create it once.
-  void EnsureMessage()
-  {
-    if (!msg) msg = new Message();
-  }
-
-  // Register the handful of particles that Remnants_Parameters builds in its
-  // constructor (and a few exotics used by the fallback specs). The KF table is
-  // a process-global shared with every other test case in this binary, and
-  // AddParticle throws on a duplicate kf code, so skip codes already present.
-  // AddParticle reads PARTICLE_DATA from the main settings, so the settings
-  // singleton must be seeded first.
-  void Add(kf_code kfc, double mass, int icharge, int spin,
-           const std::string& name, const std::string& antiname)
-  {
-    if (s_kftable.find(kfc) != s_kftable.end()) return;
-    AddParticle(kfc, mass, 0., 0., icharge, 0, spin, 0, 1, 1, 1,
-                name, antiname, name, antiname, 0, 0);
-  }
-
-  void EnsureParticles()
-  {
-    //  kfc   mass    ich spin  names
-    Add(2212, 0.938,   3,  1, "P+", "P-");
-    Add(2112, 0.940,   0,  1, "n", "nb");
-    Add( 211, 0.140,   3,  0, "pi+", "pi-");
-    Add( 111, 0.135,   0,  0, "pi", "pi");
-    Add(  22, 0.,      0,  2, "P", "P");
-    Add(  11, 5.1e-4, -3,  1, "e-", "e+");
-    Add(  13, 0.106,  -3,  1, "mu-", "mu+");
-    Add(3122, 1.116,   0,  1, "Lambda", "Lambdab");
-    Add( 321, 0.494,   3,  0, "K+", "K-");
-  }
-}
 
 TEST_CASE("Remnants_Parameters serves the hardcoded per-flavour default tune",
           "[REMNANTS::Remnants_Parameters]") {
 
   SECTION("no YAML override -> the built-in defaults per flavour") {
-    EnsureMessage();
+    Test_Setup::InitGlobals();
     Settings::InitializeMainSettings(std::string{"REMNANTS: {}"});
-    EnsureParticles();
+    Test_Setup::RegisterParticles();
     Remnants_Parameters rp;
 
     const Flavour proton(kf_p_plus), pion(kf_pi_plus), photon(kf_photon),
@@ -83,9 +45,9 @@ TEST_CASE("Remnants_Parameters serves the hardcoded per-flavour default tune",
   }
 
   SECTION("flavours absent from the table fall back by hadron class") {
-    EnsureMessage();
+    Test_Setup::InitGlobals();
     Settings::InitializeMainSettings(std::string{"REMNANTS: {}"});
-    EnsureParticles();
+    Test_Setup::RegisterParticles();
     Remnants_Parameters rp;
 
     const Flavour lambda(3122), kaon(321), none(kf_none);
@@ -107,10 +69,10 @@ TEST_CASE("Remnants_Parameters serves the hardcoded per-flavour default tune",
   }
 
   SECTION("a per-pid YAML entry overrides the default for that flavour") {
-    EnsureMessage();
+    Test_Setup::InitGlobals();
     Settings::InitializeMainSettings(std::string{
         "REMNANTS: {2212: {MATTER_RADIUS_1: 1.234, MATTER_FORM: Single_Gaussian}}"});
-    EnsureParticles();
+    Test_Setup::RegisterParticles();
     Remnants_Parameters rp;
 
     const Flavour proton(kf_p_plus);
@@ -124,10 +86,10 @@ TEST_CASE("Remnants_Parameters serves the hardcoded per-flavour default tune",
   }
 
   SECTION("a per-pid override now applies to the antiparticle too") {
-    EnsureMessage();
+    Test_Setup::InitGlobals();
     Settings::InitializeMainSettings(std::string{
         "REMNANTS: {2212: {MATTER_RADIUS_1: 1.234}}"});
-    EnsureParticles();
+    Test_Setup::RegisterParticles();
     Remnants_Parameters rp;
 
     const Flavour antiproton = Flavour(kf_p_plus).Bar();
@@ -137,10 +99,10 @@ TEST_CASE("Remnants_Parameters serves the hardcoded per-flavour default tune",
   }
 
   SECTION("SOFT_EXPONENT is read from YAML") {
-    EnsureMessage();
+    Test_Setup::InitGlobals();
     Settings::InitializeMainSettings(std::string{
         "REMNANTS: {2212: {SOFT_EXPONENT: 0.5}}"});
-    EnsureParticles();
+    Test_Setup::RegisterParticles();
     Remnants_Parameters rp;
 
     CHECK(rp.Get(Flavour(kf_p_plus), "SOFT_EXPONENT") == Catch::Approx(0.5));
@@ -156,9 +118,9 @@ TEST_CASE("Remnants_Parameters serves the on-the-fly variation vectors",
   // returning the nominal value for all of them.
 
   SECTION("no YAML override -> the single-element default vector") {
-    EnsureMessage();
+    Test_Setup::InitGlobals();
     Settings::InitializeMainSettings(std::string{"REMNANTS: {}"});
-    EnsureParticles();
+    Test_Setup::RegisterParticles();
     Remnants_Parameters rp;
 
     const Flavour proton(kf_p_plus);
@@ -180,11 +142,11 @@ TEST_CASE("Remnants_Parameters serves the on-the-fly variation vectors",
   }
 
   SECTION("a YAML list yields the full variation vector, Get() the nominal") {
-    EnsureMessage();
+    Test_Setup::InitGlobals();
     Settings::InitializeMainSettings(std::string{
         "REMNANTS: {2212: {MATTER_RADIUS_1: [0.85, 0.80, 0.90], "
         "MATTER_FRACTION_1: [0.65, 0.60, 0.70]}}"});
-    EnsureParticles();
+    Test_Setup::RegisterParticles();
     Remnants_Parameters rp;
 
     const Flavour proton(kf_p_plus);
@@ -208,10 +170,10 @@ TEST_CASE("Remnants_Parameters serves the on-the-fly variation vectors",
   }
 
   SECTION("a scalar YAML value is auto-wrapped into a one-element vector") {
-    EnsureMessage();
+    Test_Setup::InitGlobals();
     Settings::InitializeMainSettings(std::string{
         "REMNANTS: {2212: {MATTER_RADIUS_1: 1.234}}"});
-    EnsureParticles();
+    Test_Setup::RegisterParticles();
     Remnants_Parameters rp;
 
     const Flavour proton(kf_p_plus);
@@ -223,9 +185,9 @@ TEST_CASE("Remnants_Parameters serves the on-the-fly variation vectors",
   }
 
   SECTION("keys without variations report an empty vector") {
-    EnsureMessage();
+    Test_Setup::InitGlobals();
     Settings::InitializeMainSettings(std::string{"REMNANTS: {}"});
-    EnsureParticles();
+    Test_Setup::RegisterParticles();
     Remnants_Parameters rp;
 
     const Flavour proton(kf_p_plus);
@@ -240,10 +202,10 @@ TEST_CASE("Remnants_Parameters serves the on-the-fly variation vectors",
   }
 
   SECTION("variation lists follow the hadron-class fallback and |kfcode|") {
-    EnsureMessage();
+    Test_Setup::InitGlobals();
     Settings::InitializeMainSettings(std::string{
         "REMNANTS: {2212: {MATTER_RADIUS_1: [0.85, 0.80]}}"});
-    EnsureParticles();
+    Test_Setup::RegisterParticles();
     Remnants_Parameters rp;
 
     // keyed on |kfcode|, so the 2212 list reaches the antiproton

@@ -1,12 +1,11 @@
 #include <catch2/catch_all.hpp>
 
+#include "Test_Setup.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Math/Poincare.H"
-#include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Settings.H"
-#include "ATOOLS/Phys/KF_Table.H"
 
 using namespace ATOOLS;
 
@@ -15,10 +14,9 @@ namespace {
   void Boot() {
     static bool booted = false;
     if (booted) return;
-    if (!ATOOLS::msg) ATOOLS::msg = new ATOOLS::Message();
+    Test_Setup::InitGlobals();
     Settings::InitializeMainSettings("");
-    if (s_kftable.find(kf_d) == s_kftable.end())
-      AddParticle(kf_d, 0.01, 0., 0., -1, 1, true, 1, "d", "d");
+    Test_Setup::RegisterParticles();
     booted = true;
   }
 
