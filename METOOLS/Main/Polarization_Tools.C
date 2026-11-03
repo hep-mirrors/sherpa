@@ -1,5 +1,6 @@
 #include <iomanip>
 #include <array>
+#include <vector>
 #include "ATOOLS/Math/Vector.H"
 #include "METOOLS/Currents/C_Spinor.H"
 #include "METOOLS/Main/Polarization_Tools.H"
@@ -18,6 +19,7 @@
 using namespace METOOLS;
 using namespace ATOOLS;
 using namespace std;
+using SpinorBasis = std::vector<Polarization_Spinor>;
 
 
 Polarization_Vector::Polarization_Vector(Vec4D p, bool anti,
@@ -42,33 +44,50 @@ Polarization_Vector::Polarization_Vector(Vec4D p, Vec4D ref_mom) : std::vector<V
   pop_back();
 }
 
-Polarization_Spinor::Polarization_Spinor(Vec4D p, bool anti,
-                                         bool out)
+//Polarization_Spinor::Polarization_Spinor(Vec4D p, int h, bool anti,
+//                                         bool out) 
+//{
+//  Init(p);
+//}
+
+Polarization_Spinor::Polarization_Spinor(
+    Vec4D p, int h, Vec4D ref_mom, bool anti, bool out)
+  : METOOLS::CSpinor<double>(anti ? -1 : 1, out ? -1 : 1, h, p),
+    m_hel(h)
 {
-  Init(p);
+  Init(p, ref_mom); // ref_mom must be available here
 }
 
-Polarization_Spinor::Polarization_Spinor(Vec4D p, double M2, bool anti,
-                                         bool out)
+
+Polarization_Spinor::Polarization_Spinor(Vec4D p, double M2, int h,  Vec4D ref_mom, bool anti,
+                                         bool out): METOOLS::CSpinor<double>(anti?-1:1, out?-1:1, h, p, 0, 0, 0, 0, M2),
+    m_hel(h)
 {
   //if(!IsZero((p.Abs2()-M2)/(fabs(p[0])+fabs(M2)), 1e-6)) {
     //PRINT_INFO("Undefined for p.Abs2()="<<p.Abs2()<<" and m2="<<M2);
   //}
-  Init(p);
+  Init(p, ref_mom);
 }
 
-Polarization_Spinor::Polarization_Spinor(Vec4D p, double M2, Vec4D ref_mom)
+Polarization_Spinor::Polarization_Spinor(Vec4D p, double M2, int h, Vec4D ref_mom)
 {
   Init(p, ref_mom);
   // delete auxiliary polarization vector
   //pop_back();
 }
 
-void Polarization_Spinor::Init(ATOOLS::Vec4D p, ATOOLS::Vec4D ref_mom)
+Polarization_Spinor::Polarization_Spinor(Vec4D p, int h, Vec4D ref_mom)
 {
-  m_k = ref_mom;
-  
+  Init(p, ref_mom);
+  // delete auxiliary polarization vector
+  //pop_back();
 }
+
+//void Polarization_Spinor::Init(ATOOLS::Vec4D p, ATOOLS::Vec4D ref_mom)
+//{
+//  m_k = ref_mom;
+  
+//}
 
 void Polarization_Vector::Init(Vec4D p, Vec4D ref_mom)
 {
@@ -258,19 +277,19 @@ void Polarization_Vector::Test(Vec4D p)
   }
   std::cout<<METHOD<<"... "<<(success?"passed":"failed")<<std::endl<<std::endl;
 }
-vector<vector<Complex>> Polarization_Spinor::BasisTrafo_Spinor(const Polarization_Spinor& old_basis, bool pol_checks) const{
+vector<vector<Complex>> Polarization_Spinor::BasisTrafo_Spinor(const SpinorBasis& old_basis, const SpinorBasis& new_basis, bool pol_checks) const{
   //int m_nhel = old_basis.size();
-  const std::size_t m_nhel = this->size();
+  const std::size_t m_nhel = new_basis.size();
+  //const std::size_t n(2);
 
-  if (m_nhel != 2 || old_basis.size() != 2) {
+  if (m_nhel!=2 || old_basis.size()!=2) {
     THROW(fatal_error, "BasisTrafo_Spinor expects two spinors in each basis")
   }
 
   //erstellt coeff matrix, erstmal mit 0 befüllen
   vector<vector<Complex>> coeff(m_nhel, vector<Complex>(m_nhel, Complex(0, 0)));
-  if (m_nhel != this->size()){
-    THROW(fatal_error, "polarisation vectors in new and old basis describes particles with different helicity "
-                       "degrees of freedom!")
+  if (old_basis.size() != new_basis.size()) {
+  THROW(fatal_error, "old and new spinor bases have different sizes")
   }
 
   std::array<std::array<Complex,2>, 2> array_old_basis;
@@ -278,6 +297,14 @@ vector<vector<Complex>> Polarization_Spinor::BasisTrafo_Spinor(const Polarizatio
   std::array<std::array<Complex,2>, 2> array_new_basis;
 
   //for (std::)
+  // components 0 and 1 of the spinors are used to solve the system of equations,
+  // components 2 and 3 are used as a check
+  for (size_t i(0); i<m_nhel; i++){
+    for (size_t j(0); j<m_nhel; j++){
+      array_new_basis[i][j] = new_basis[i][j];
+      array_old_basis[i][j] = old_basis[i][j];
+    }
+  }
 
   Complex det = old_basis[0][0] * old_basis[1][1] - old_basis[1][0] * old_basis[0][1];
   if (abs(det.real()) < 1e-8 && abs(det.imag()) < 1e-8){
@@ -293,7 +320,7 @@ vector<vector<Complex>> Polarization_Spinor::BasisTrafo_Spinor(const Polarizatio
 
   for (size_t i(0); i<m_nhel; i++){
     for (size_t j(0); j<m_nhel; j++){
-      array_new_basis[i][j] = (*this)[i][j+1];
+      array_new_basis[i][j] = new_basis[i][j+1];
       array_old_basis[i][j] = old_basis[i][j+1];
     }
   }
@@ -325,7 +352,53 @@ vector<vector<Complex>> Polarization_Spinor::BasisTrafo_Spinor(const Polarizatio
       one_comp += coeff[i][j] * old_basis[j][1];
       
     }
+    if (pol_checks) {
+      if (((fabs(zero_comp.real()) > 1e-8 || fabs(new_basis[i][0].real()) > 1e-8) &&
+           ((new_basis[i][0] - zero_comp).real() > fabs(zero_comp.real()) * 1e-8)) ||
+          ((fabs(zero_comp.imag()) > 1e-8 || fabs(new_basis[i][0].imag()) > 1e-8) &&
+           ((new_basis[i][0] - zero_comp).imag() > fabs(zero_comp.imag()) * 1e-8))) {
+        std::cout << "Polarization_Warning in " << METHOD <<
+                  ": Testing polarisation spinor transformation's system of equations - "
+                  "zeroth component of polarization spinor failed..." << std::endl;
+        msg_Out() << "zeroth component of the new polarization spinr calculated from linear superposition "
+                  << std::setprecision(20) << new_basis[i][0] << std::endl;
+        msg_Out() << "has to be the same as the zeroth component in new "
+                     "polarization spinor" << std::setprecision(20) <<
+                  zero_comp << std::endl;
+      }
+      if (((fabs(one_comp.real()) > 1e-8 || fabs(new_basis[i][1].real()) > 1e-8) &&
+           ((new_basis[i][1] - one_comp).real() > fabs(one_comp.real()) * 1e-8)) ||
+          ((fabs(one_comp.imag()) > 1e-8 || fabs(new_basis[i][1].imag()) > 1e-8) &&
+           ((new_basis[i][1] - one_comp).imag() > fabs(one_comp.imag()) * 1e-8))) {
+        std::cout << "Polarization_Warning in " << METHOD <<
+                  ": Testing polarisation spinor transformation's system of equations - "
+                  "first component of polarization spinor failed..." << std::endl;
+        msg_Out() << "first component of the new polarization spinor calculated from linear superposition "
+                  << std::setprecision(20) << new_basis[i][1] << std::endl;
+        msg_Out() << "has to be the same as the first component in new polarization spinor" <<
+                  std::setprecision(20) << one_comp << std::endl;
+      }
+    }
   }
+  // test, whether transformation matrix is unitary
+  if (pol_checks){
+    for (size_t i(0); i<m_nhel; i++){
+      for (size_t j(0); j<m_nhel; j++){
+        tmp = Complex(0,0);
+        for (size_t k(0); k<m_nhel; k++){
+          tmp += coeff[i][k] * conj(coeff[j][k]);
+        }
+        if ((i==j && (abs((tmp-Complex(1, 0)).real()) > 1e-8 || abs(tmp.imag()) > 1e-8)) ||
+            (i!=j && (abs(tmp.real()) > 1e-8 || abs(tmp.imag()) > 1e-8))) {
+          std::cout<<"Polarization_Warning in "<< METHOD <<
+                   ": Testing unitarity of transformation matrix failed..." << std::endl;
+          msg_Out() << "failed for matrix entry" << i << j << "of unit matrix" << std::endl;
+          msg_Out() << std::setprecision(20) << "actual value of this entry is " << tmp << std::endl;
+        }
+      }
+    }
+  }
+  return coeff;
 }
 
 vector<vector<Complex>> Polarization_Vector::BasisTrafo(const Polarization_Vector& old_basis, bool pol_checks) const {
@@ -582,4 +655,29 @@ void Polarization_Tensor::Test(Vec4D p)
     }
   }
   std::cout<<"... "<<(success?"passed":"failed")<<std::endl<<std::endl;
+}
+
+void METOOLS::BoostBack(METOOLS::CSpinor<double> &s, const ATOOLS::Vec4D &l) 
+{
+  //TODO: Spinor boost back (spinor is not a 4vector - another representation of Lorentz group)
+  // need rapidity
+  double m(sqrt(l.Abs2()));
+  //if (s.B()<0) {
+  //  METOOLS::CSpinor<double> k(s.Bar());
+  //  BoostBack(k);
+  //  s=k.Bar();
+  //  return;
+  //}
+  double n(1.0/sqrt(2.0*m*(l[0]+m)));
+  // cosh(eta)
+  double c(n*(l[0]+m));
+  // sinh * vec(n)
+  double sx(n*l[1]), sy(n*l[2]), sz(n*l[3]);
+  double sgn(-1.0);
+  for (int i(0);i<4;i+=2,sgn=-sgn) {
+    Complex a(s[i]), b(s[i+1]);
+    s[i] = c*a+sgn*(sz*a+Complex(sx,-sy)*b);
+    s[i+1] = c*b+sgn*(Complex(sx,sy)*a-sz*b);
+  }
+
 }

@@ -332,7 +332,21 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
         coeff_in.push_back(std::vector<Complex>(1,1));
         coeff_out.push_back(std::vector<Complex>(1,1));
       }
+      // hier weitermachen
       else if (spin==0.5){
+        //METOOLS::Polarization_Spinor new_polarization(mom,new_ref_mom);
+
+        //TODO: need a method that boosts back the spinors (momboost.Boostback equivalent for spinors in Poincare.C)
+        //if (beta != ATOOLS::Vec4D(0.0, 0.0, 0.0, 0.0)) {
+        //  for (size_t i(0); i < 3; ++i) {
+        //    momboost.BoostBack(new_polarization[i]);
+        //  }
+        //  momboost.BoostBack(mom);
+        //}
+
+        //TODO: Basis-Transformation 
+
+  
         coeff_vec.push_back(std::vector<std::vector<Complex>>(2, std::vector<Complex>(2,1)));
         conj_coeff_vec.push_back(std::vector<std::vector<Complex>>(2, std::vector<Complex>(2,1)));
         coeff_in.push_back(std::vector<Complex>(2,1));
@@ -379,6 +393,7 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
             if (anti) decay_matrix.PolBasisTrafo(coeff_out, coeff_in);
             else decay_matrix.PolBasisTrafo(coeff_in, coeff_out);
           }
+          // TODO: include spin=0.5
           trafo_decay_matrices.push_back(decay_matrix);
           break;
         }

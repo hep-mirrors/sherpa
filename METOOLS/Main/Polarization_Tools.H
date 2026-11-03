@@ -40,25 +40,34 @@ namespace METOOLS
     vector<vector<Complex>> BasisTrafo(const Polarization_Vector& old_basis, bool pol_checks=0) const;
   };
 
-  class Polarization_Spinor : public std::vector<METOOLS::CSpinor<double>> {
+  class Polarization_Spinor : public METOOLS::CSpinor<double> {
     SpinorType m_kp;
     SpinorType m_km;
     ATOOLS::Vec4D m_k;
+    int m_hel; //helicity of spinor (+-1)
 
-    void Init(ATOOLS::Vec4D p, ATOOLS::Vec4D ref_mom=ATOOLS::Vec4D(1.0,SQRT_05,SQRT_05,0.0)); //default vector prüfen
-    METOOLS::CSpinor<double> SP(const ATOOLS::Vec4D &p, int h); //spinor mit Helizität h
+    void Init(ATOOLS::Vec4D p, const ATOOLS::Vec4D &ref_mom); //default vector prüfen
+    //METOOLS::CSpinor<double> SP(const ATOOLS::Vec4D &p, int h) const; //spinor mit Helizität h
+    //typedef ATOOLS::Spinor<double> SpinorType; 
+    SpinorType SP(const ATOOLS::Vec4D &p, int h) const;
+    using SpinorBasis = std::vector<Polarization_Spinor>;
 
+    
   public:
-    Polarization_Spinor(ATOOLS::Vec4D p, bool anti=false, bool out=false);
-    Polarization_Spinor(ATOOLS::Vec4D p, double M2, bool anti=false, bool out=false);
-    Polarization_Spinor(ATOOLS::Vec4D p, double M2, ATOOLS::Vec4D ref_mom);
+    Polarization_Spinor(ATOOLS::Vec4D p, int h, ATOOLS::Vec4D ref_mom, bool anti=false, bool out=false);
+    Polarization_Spinor(ATOOLS::Vec4D p, double M2, int h, ATOOLS::Vec4D ref_mom, bool anti=false, bool out=false);
+    Polarization_Spinor(ATOOLS::Vec4D p, double M2, int h, ATOOLS::Vec4D ref_mom);
+    Polarization_Spinor(ATOOLS::Vec4D p, int h, ATOOLS::Vec4D ref_mom);
     void Test(ATOOLS::Vec4D p=ATOOLS::Vec4D(3.0399e+00, 1.7523e+00,-1.4883e-01, 3.1938e-01));
 
-    //TODO: Polrization_Spinor has to be transformed in .C , BasisTrafo_Spinor
-    std::vector<std::vector<Complex>> BasisTrafo_Spinor(const Polarization_Spinor& old_basis, bool pol_checks=0) const;
-  
-  };
+    int Hel() const {return m_hel; }
 
+    //TODO: Polrization_Spinor has to be transformed in .C , BasisTrafo_Spinor
+    std::vector<std::vector<Complex>> BasisTrafo_Spinor(const SpinorBasis& old_basis, const SpinorBasis& new_basis, bool pol_checks=0) const;
+    // Polarization_Tools.H
+    
+  };
+  void BoostBack(METOOLS::CSpinor<double> &s, const ATOOLS::Vec4D &l);
   class Polarization_Tensor : public std::vector<ATOOLS::CMatrix> {
   public:
     Polarization_Tensor(ATOOLS::Vec4D p, double M2, bool anti=false, bool out=false);

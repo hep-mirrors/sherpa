@@ -1,7 +1,9 @@
+#include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Math/Poincare.H"
 
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
+#include "METOOLS/Currents/C_Spinor.H"
 
 using namespace ATOOLS;
 
@@ -50,10 +52,17 @@ void Poincare::BoostBack(Vec4D &v) const
 }
 
 void Poincare::BoostBack(Vec4C &v) const
-{
+{ 
+  // m_l is 4vector of boost, m_rsq is invar. mass 
+  // takes 4vector v in restframe m_l and transform to system where m_l=(E,vec(p))
+
+  // scalarproduct of space part
   Complex lv(m_l[1]*v[1]+m_l[2]*v[2]+m_l[3]*v[3]);
+  // time component
   Complex v0((m_l[0]*v[0]+lv)/m_rsq);
+  //coefficient
   Complex c1((v[0]+v0)/(m_rsq+m_l[0]));
+  // new space component (with v0 we get 4vector)
   v=Vec4<Complex>(v0,Vec3<Complex>(v)+c1*Vec3<Complex>(m_l));
 }
 

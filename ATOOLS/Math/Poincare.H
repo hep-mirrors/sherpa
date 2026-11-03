@@ -2,6 +2,8 @@
 #define ATOOLS_Math_Poincare_H
 
 #include "ATOOLS/Math/Vector.H"
+#include "METOOLS/Currents/C_Spinor.H"
+#include <type_traits>
 
 namespace ATOOLS {
 
@@ -20,6 +22,8 @@ namespace ATOOLS {
     void Boost(Vec4D &v) const;
     void BoostBack(Vec4D &v) const;
     void BoostBack(Vec4C &v) const;
+
+    void BoostBack(METOOLS::CSpinor<double> &s) const;
 
     void Rotate(Vec4D &v) const;
     void RotateBack(Vec4D &v) const;
