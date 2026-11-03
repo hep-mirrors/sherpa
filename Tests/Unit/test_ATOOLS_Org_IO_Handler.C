@@ -2,6 +2,7 @@
 #include "ATOOLS/Org/IO_Handler.H"
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include <cstdio>
 #include <fstream>
 #include <string>
@@ -13,6 +14,16 @@ namespace {
   // reads it back with IO_Handler::MatrixInput<Complex>
   Complex** ReadMatrix(const std::string& row0, const std::string& row1) {
     if (!msg) msg = new Message();
+    // in MPI builds My_File broadcasts the file from rank 0, so reading it
+    // needs MPI and the mpi global, which only Sherpa's main sets up
+    if (!mpi) {
+#ifdef USING__MPI
+      int initialised(0);
+      MPI_Initialized(&initialised);
+      if (!initialised) MPI_Init(NULL,NULL);
+#endif
+      mpi = new My_MPI();
+    }
     const std::string file("test_ATOOLS_Org_IO_Handler.dat");
     {
       std::ofstream out(file);
