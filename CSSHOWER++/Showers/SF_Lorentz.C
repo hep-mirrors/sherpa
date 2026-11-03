@@ -57,7 +57,8 @@ double SF_Lorentz::JFI(const double &y,const double &eta,
   } else {
     // shower cutoff does not take into account spectator flavour
     // so need to freeze PDF at IS cutoff to not go below validity range
-    double minpdfscale(m_flspec.Strong()?m_k0sqi[0]:m_k0sqi[1]);
+    // nb. initial state leptons have their own prescription in PDF_Electron.
+    double minpdfscale(m_flspec.Strong()?m_k0sqi[0]:0);
     const double scalea(Max(scale,minpdfscale)), scaleb(Max(scale,minpdfscale));
     const double fresh = p_sf->GetXPDF(scalea,eta/(1.0-y),m_flspec,m_beam);
     const double old = p_sf->GetXPDF(scaleb,eta,m_flspec,m_beam);
