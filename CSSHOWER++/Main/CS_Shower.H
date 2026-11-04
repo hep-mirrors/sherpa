@@ -10,6 +10,17 @@
 namespace REMNANTS { class Remnant_Handler; }
 
 namespace CSSHOWER {
+  struct ew {
+    enum mode {
+      off       = 0,
+      all       = 1,
+      photons   = 2
+    };
+  };
+
+  std::ostream & operator<<(std::ostream & s,const ew::mode & ws);
+  std::istream & operator>>(std::istream & s, ew::mode &ws);
+
   struct partcomp{
     bool operator() (const Parton * part1, const Parton * part2) const
     {

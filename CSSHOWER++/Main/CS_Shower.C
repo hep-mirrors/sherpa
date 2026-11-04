@@ -45,7 +45,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler* const _isr,
   const int ckfmode { pss["CKFMODE"].Get<bool>() };
   const int pdfcheck{ pss["PDFCHECK"].Get<bool>() };
   const int _qcd    { pss["QCD_MODE"].Get<bool>() };
-  const int _qed    { pss["EW_MODE"].Get<int>() }; // do not change this to bool
+  const ew::mode _qed { pss["EW_MODE"].Get<ew::mode>() };
   m_cluster_qed = pss["CLUSTER_QED"].SetDefault(false).Get<bool>() || _qed;
 
   if (_qed) {
@@ -766,4 +766,50 @@ void ATOOLS::Getter<PDF::Jet_Criterion,PDF::JetCriterion_Key,CSSHOWER::CSS_Jet_C
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str << "The CSS jet criterion";
+}
+
+std::ostream & CSSHOWER::operator<<(std::ostream & s,
+                               const CSSHOWER::ew::mode & em)
+{
+  if (em==ew::mode::off)          s<<"Off";
+  else if (em==ew::mode::all)     s<<"Full";
+  else if (em==ew::mode::photons) s<<"Photon emissions only";
+  else                            s<<"Undefined";
+  return s;
+}
+
+std::istream &CSSHOWER::operator>>(std::istream &s,
+                              CSSHOWER::ew::mode &em)
+{
+  std::string tag;
+  getline(s,tag);
+  em=ew::mode::off;
+  if (tag.find("Full")!=std::string::npos)
+    em=ew::mode::all;
+  if (tag.find("full")!=std::string::npos)
+    em=ew::mode::all;
+  if (tag.find("All")!=std::string::npos)
+    em=ew::mode::all;
+  if (tag.find("all")!=std::string::npos)
+    em=ew::mode::all;
+  if (tag.find("On")!=std::string::npos)
+    em=ew::mode::all;
+  if (tag.find("on")!=std::string::npos)
+    em=ew::mode::all;
+  if (tag.find("1")!=std::string::npos)
+    em=ew::mode::all;
+  if (tag.find("True")!=std::string::npos)
+    em=ew::mode::all;
+  if (tag.find("true")!=std::string::npos)
+    em=ew::mode::all;
+  if (tag.find("Photons")!=std::string::npos)
+    em=ew::mode::photons;
+  if (tag.find("photons")!=std::string::npos)
+    em=ew::mode::photons;
+  if (tag.find("2")!=std::string::npos)
+    em=ew::mode::photons;
+  if (tag.find("3")!=std::string::npos) // legacy option
+    em=ew::mode::photons;
+  // default is off
+  return s;
 }

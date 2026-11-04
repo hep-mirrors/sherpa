@@ -120,11 +120,11 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
 	    (p_lf->FlC().Strong()!=0 || p_lf->FlC().IsDiQuark()) );
   m_on=PureQCD()&&(ckey.m_qcdmode&1);// so far only qcd evolution
 
-  if (!m_on && (ckey.m_ewmode&1)) {
+  if (!m_on && (ckey.m_ewmode>0)) {
       if (p_lf->FlB().IsPhoton() ||
-       p_lf->FlC().IsPhoton()) m_on=true; // photon emission allowed if ewmode = 1 or 3
-      if (!m_on && !(ckey.m_ewmode&2) && // check NOT in photon-emission-only mode m_ewmode=3
-       (p_lf->FlA().IsPhoton())) m_on=true; // photon splitting
+       p_lf->FlC().IsPhoton()) m_on=true;
+      if (!m_on && ckey.m_ewmode==1 && // check in "all" mode = 1
+       (p_lf->FlA().IsPhoton())) m_on=true;
   }
 
 
