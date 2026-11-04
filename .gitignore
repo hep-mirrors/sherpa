@@ -94,6 +94,14 @@ Examples/*/*/*/Results.zip~
 Examples/*/*/*/rivet*
 Examples/*/*/*/Analysis*
 
+Examples/update_decay_currents/eePiPiPi/SN*/*
+Examples/update_decay_currents/eePiPiPi/BABAR*/*
+Examples/update_decay_currents/eePiPiPi/BELLE*/*
+Examples/update_decay_currents/*/MIN*/*
+Examples/update_decay_currents/*/*MIN*/*
+Examples/update_decay_currents/*/JEFF*/*
+Examples/update_decay_currents/*/*JEFF*/*
+
 # (local) make install targets
 
 /bin/

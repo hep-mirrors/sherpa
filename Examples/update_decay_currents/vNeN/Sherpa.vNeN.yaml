@@ -5,7 +5,7 @@
 
 TAGS: {VFF: 10, AFF: 20}
 
-EVENTS: 100k
+EVENTS: 10k
 
 BEAMS: [12, 2112]
 BEAM_ENERGIES: [3.6, 0.938272] 
@@ -53,7 +53,8 @@ ANALYSIS: Rivet
 ANALYSIS_OUTPUT: Analysis_V$(VFF)_A$(AFF)
 
 RIVET:
-  --analyses: [my_MC_FSPARTICLES, MC_DIS, MC_NU_DIS, MC_XS, MINERVA_2015_I1393997, MINERVA_2015_I1393997T6]
+  --analyses: [MC_XS, MINERVA_2015_I1393997]
   --pwd: /Users/tvcr49@durham.ac.uk/code_analysis/MyRivetAnalyses
   --ignore_beams: 1
 
+# , MINERVA_2015_I1393997T6, my_MC_FSPARTICLES, MC_DIS, MC_NU_DIS, 
