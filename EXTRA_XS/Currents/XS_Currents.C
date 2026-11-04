@@ -155,6 +155,10 @@ XS_Currents::XS_Currents(const External_ME_Args& args) : ME2_Base(args)
   m_aworst[0] = m_aworst[1] = m_gworst[0] = m_gworst[1] = 0.;
   m_ia = m_ib = m_ic = m_id = m_ig = -1;
 
+  // A SM (massless) neutrino has one helicity, not the 2s+1 = 2 that ISSymmetryFactor averages over. 
+  for (size_t i(0);i<2;++i)
+    if (m_flavs[i].IsNeutrino() && m_flavs[i].Mass()==0.) m_symfac /= 2.;
+
   std::vector<int> pi(m_flavs.size());
   for (size_t i(0);i<pi.size();++i) pi[i] = i;
   // 2: this is a scattering process, so legs 0 and 1 are the beams. The
@@ -276,6 +280,17 @@ double XS_Currents::operator()(const ATOOLS::Vec4D_Vector& mom)
 
   double sum(0.);
   for (size_t n(0);n<p_me->size();++n) sum += std::norm((*p_me)[n]);
+
+  // A vertex with a right-handed neutrino piece breaks the current helicity summing structure: refuse it.
+  for (size_t i(0);i<m_flavs.size();++i) {
+    if (!m_flavs[i].IsNeutrino() || m_flavs[i].Mass()>0.) continue;
+    double h[2] = {0.,0.};
+    for (size_t n(0);n<p_me->size();++n)
+      h[p_me->GetSpinCombination(n)[i]] += std::norm((*p_me)[n]);
+    if (std::min(h[0],h[1])>1.e-12*sum)
+      THROW(fatal_error,"XS_Currents: "+ToString(m_flavs[i])
+            +" has amplitudes in both LH and RH neutrino helicities, so our helicity spin average does not hold. Implement a new helicity averaging scheme for your current.");
+  }
 
   // m_symfac is ISSymmetryFactor(in) * FSSymmetryFactor(out). Despite the
   // name the first is not a symmetry factor at all: it is the product of
