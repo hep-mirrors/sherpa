@@ -96,10 +96,12 @@ ATOOLS::Weights_Map Process_Group::Differential(const Vec4D_Vector &p,
 {
   m_last = Weights_Map {0.0};
   m_lastb = Weights_Map {0.0};
+  m_lastbvalue = Weights_Map {0.0};
   p_int->SetMomenta(p);
   for (size_t i(0);i<m_procs.size();++i) {
     m_last += m_procs[i]->Differential(p, varmode);
     m_lastb += m_procs[i]->LastB();
+    m_lastbvalue += m_procs[i]->LastBValue();
   }
   if (IsNan(m_last.Nominal()))
     msg_Error()<<METHOD<<"(): "<<om::red

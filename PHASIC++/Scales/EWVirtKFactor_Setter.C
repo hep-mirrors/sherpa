@@ -97,12 +97,12 @@ void EWVirtKFactor_Setter::InitEWVirt()
   loop_pi.m_fi.m_nlotype=nlo_type::loop;
   loop_pi.m_maxcpl=p_proc->MaxOrders();
   loop_pi.m_mincpl=p_proc->MinOrders();
-  for (size_t i(0);i<loop_pi.m_fi.m_nlocpl.size();++i)
-    loop_pi.m_fi.m_nlocpl[i]=(i==1?1:0);
+  for (size_t i(0);i<loop_pi.m_fi.m_nlocpl[0].size();++i)
+    loop_pi.m_fi.m_nlocpl[0][i]=(i==1?1:0);
   for (size_t i(0);i<Min(loop_pi.m_maxcpl.size(),
-                         p_proc->Info().m_fi.m_nlocpl.size());++i) {
-    loop_pi.m_maxcpl[i]+=loop_pi.m_fi.m_nlocpl[i]-p_proc->Info().m_fi.m_nlocpl[i];
-    loop_pi.m_mincpl[i]+=loop_pi.m_fi.m_nlocpl[i]-p_proc->Info().m_fi.m_nlocpl[i];
+                         p_proc->Info().m_fi.m_nlocpl[0].size());++i) {
+    loop_pi.m_maxcpl[i]+=loop_pi.m_fi.m_nlocpl[0][i]-p_proc->Info().m_fi.m_nlocpl[0][i];
+    loop_pi.m_mincpl[i]+=loop_pi.m_fi.m_nlocpl[0][i]-p_proc->Info().m_fi.m_nlocpl[0][i];
   }
   msg_Debugging()<<"Load "<<loop_pi.m_loopgenerator
                  <<" process for "<<p_proc->Name()

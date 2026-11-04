@@ -162,7 +162,7 @@ double Single_Process::NfSchemeConversionTerms() const
   MODEL::Coupling_Data *qedcpl(m_cpls.Get("Alpha_QED"));
   double aqed(qedcpl->Default()*qedcpl->Factor());
   double res(0.);
-  double p(m_maxcpl[0]-m_pinfo.m_fi.m_nlocpl[0]);
+  double p(m_maxcpl[0]-m_pinfo.m_fi.m_nlocpl[0][0]);
   double facqcd(as/3./M_PI*MODEL::as->TR()), facqed(aqed/3/M_PI);
   msg_Debugging()<<"p="<<p<<", facqcd="<<facqcd<<", facqed="<<facqed<<std::endl;
   double muR2(ScaleSetter(1)->Scale(stp::ren));
@@ -594,10 +594,12 @@ Weights_Map Single_Process::Differential(const Vec4D_Vector& p,
 
     nominal = m_lastxs + NfSchemeConversionTerms() - m_lastbxs * m_csi.m_ct;
     m_lastb = m_lastbxs;
+    m_lastbvalue = m_lastbxsvalue;
     if (m_use_biweight) {
       double prefac {m_csi.m_pdfwgt * m_csi.m_flux};
       nominal *= prefac;
       m_lastb *= prefac;
+      m_lastbvalue *= prefac;
     }
 
     // update results
@@ -781,6 +783,7 @@ void Single_Process::ResetResultsForDifferential(Variations_Mode varmode)
   m_mewgtinfo.Reset();
   m_last.Clear();
   m_lastb.Clear();
+  m_lastbvalue.Clear();
   if (varmode != Variations_Mode::nominal_only) {
     m_last["Main"] = Weights {Variations_Type::qcd};
     m_lastb["Main"] = Weights {Variations_Type::qcd};
@@ -789,6 +792,7 @@ void Single_Process::ResetResultsForDifferential(Variations_Mode varmode)
   }
   m_last = 1.0;
   m_lastb = 0.0;
+  m_lastbvalue = 0.0;
 
   if (m_dads) {
     m_dadswgtmap.Clear();

@@ -362,10 +362,10 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
     if      (m_stype==sbt::qcd)               p_reqborn=&m_dsijqcd[0][0];
     else if (m_stype==sbt::qed)               p_reqborn=&m_dsijew[0][0];
     else if (m_stype==(sbt::qcd|sbt::qed)) {
-      if      (m_pinfo.m_fi.m_nlocpl[0]==1 &&
-               m_pinfo.m_fi.m_nlocpl[1]==0)   p_reqborn=&m_dsijqcd[0][0];
-      else if (m_pinfo.m_fi.m_nlocpl[0]==0 &&
-               m_pinfo.m_fi.m_nlocpl[1]==1)   p_reqborn=&m_dsijew[0][0];
+      if      (m_pinfo.m_fi.m_nlocpl[0][0]==1 &&
+               m_pinfo.m_fi.m_nlocpl[0][1]==0)   p_reqborn=&m_dsijqcd[0][0];
+      else if (m_pinfo.m_fi.m_nlocpl[0][0]==0 &&
+               m_pinfo.m_fi.m_nlocpl[0][1]==1)   p_reqborn=&m_dsijew[0][0];
       else THROW(fatal_error,"Cannot assign correct Born for mixed correction.");
     }
     else THROW(fatal_error,"Cannot assign correct Born.");
@@ -376,7 +376,7 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
 
   // init ME_Weight_Info
   // wgts needed: 2 for muR qcd, 0 for muR ew, 16 for muF qcd, 16 for muF ew
-  m_mewgtinfo.m_relqcdcpl=m_pinfo.m_fi.m_nlocpl[0];
+  m_mewgtinfo.m_relqcdcpl=m_pinfo.m_fi.m_nlocpl[0][0];
   if (m_pinfo.m_fi.m_nlotype&nlo_type::born)
     m_mewgtinfo.m_type|=mewgttype::B;
   if (m_pinfo.m_fi.m_nlotype&nlo_type::loop ||
@@ -535,7 +535,7 @@ double Single_Virtual_Correction::Partonic(const Vec4D_Vector &moms,
                                            int mode)
 {
   if (mode==1) THROW(fatal_error,"Invalid call");
-  if (!Selector()->Result()) return m_lastxs = m_lastdxs = m_lastbxs = 0.0;
+  if (!Selector()->Result()) return m_lastxs = m_lastdxs = m_lastbxs = m_lastbxsvalue = 0.0;
   return DSigma(moms,m_lookup,varmode,mode);
 }
 
@@ -545,7 +545,7 @@ double Single_Virtual_Correction::DSigma(const Vec4D_Vector &_moms,
                                          const int mode)
 {
   DEBUG_FUNC(Name());
-  m_lastxs = m_lastdxs = m_lastbxs = 0.;
+  m_lastxs = m_lastdxs = m_lastbxs = m_lastbxsvalue = 0.;
   double wgt(1.0);
   int bvimode(p_partner->m_bvimode);
   if (!lookup && m_user_bvimode!=0) {
@@ -572,6 +572,7 @@ double Single_Virtual_Correction::DSigma(const Vec4D_Vector &_moms,
     if (lookup) {
       m_lastdxs = p_partner->LastDXS()*m_sfactor;
       m_lastbxs = p_partner->m_lastbxs*m_sfactor / p_partner->m_Norm;
+      m_lastbxsvalue = p_partner->m_lastbxsvalue*m_sfactor / p_partner->m_Norm;
     }
     else {
       p_LO_process->Integrator()->SetMomenta(p_int->Momenta());
@@ -579,6 +580,7 @@ double Single_Virtual_Correction::DSigma(const Vec4D_Vector &_moms,
       m_lastdxs = m_Norm*p_partner->operator()(_moms,varmode,mode)*m_sfactor;
       p_partner->SetCalcV(1);
       m_lastbxs = p_partner->m_lastbxs*m_sfactor;
+      m_lastbxsvalue = p_partner->m_lastbxsvalue*m_sfactor;
     }
     m_lastb=p_partner->m_lastb*m_sfactor;
     m_lastv=Calc_V_WhenMapped(_moms, varmode);
@@ -616,6 +618,7 @@ double Single_Virtual_Correction::DSigma(const Vec4D_Vector &_moms,
   p_partner->m_bvimode=bvimode;
 
   m_lastbxs*=m_Norm;
+  m_lastbxsvalue*=m_Norm;
   size_t precision(msg->Out().precision());
   msg->SetPrecision(16);
   DEBUG_VAR(m_lastb);
@@ -1021,7 +1024,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
                                              const int mode)
 {
   DEBUG_FUNC("bvimode="<<m_bvimode);
-  m_lastxs = m_lastdxs = m_lastbxs = 0.;
+  m_lastxs = m_lastdxs = m_lastbxs = m_lastbxsvalue = 0.;
   if (p_partner!=this) {
     p_partner->Integrator()->SetMomenta(p_int->Momenta());
     return p_partner->operator()(mom,varmode,mode)*m_sfactor;
@@ -1058,6 +1061,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
   double kfactorb((m_bvimode&1)?KFactor(1|2):1.0);
   double kfactorvi(m_lastki=m_lastk=(m_bvimode&6)?KFactor((m_bvimode&1)?0:2):1.0);
   m_lastb=Calc_B()*kfactorb;
+  m_lastbvalue=m_lastb*kfactorb; // same value as B but always calculated
 
   if ((m_stype!=sbt::none) && (m_pinfo.m_fi.m_nlotype&nlo_type::born) &&
       (m_bvimode&1)) {

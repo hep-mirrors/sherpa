@@ -81,7 +81,7 @@ operator()(const Process_Info &pi) const
   if (pi.m_loopgenerator!="Internal") return NULL;
   if (pi.m_fi.m_nlotype==nlo_type::loop) {
     if (pi.m_mincpl[0]!=1. || pi.m_maxcpl[0]!=1.) return NULL;
-    if (pi.m_fi.m_nlocpl[0]!=1. || pi.m_fi.m_nlocpl[1]!=0.) return NULL;
+    if (pi.m_fi.m_nlocpl[0][0]!=1. || pi.m_fi.m_nlocpl[0][1]!=0.) return NULL;
     if (pi.m_mincpl[1]!=2. || pi.m_maxcpl[1]!=2.) {
       Flavour_Vector fl=pi.ExtractFlavours();
       for (size_t i(0);i<fl.size();++i)

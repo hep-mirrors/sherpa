@@ -38,8 +38,8 @@ Single_Dipole_Term::Single_Dipole_Term
   m_maxcpl=rs->MaxOrders();
   m_mincpl=rs->MinOrders();
   for (size_t i(0);i<m_maxcpl.size();++i) {
-    m_maxcpl[i]=m_maxcpl[i]-info.m_fi.m_nlocpl[i];
-    m_mincpl[i]=m_mincpl[i]-info.m_fi.m_nlocpl[i];
+    m_maxcpl[i]=m_maxcpl[i]-info.m_fi.m_nlocpl[0][i];
+    m_mincpl[i]=m_mincpl[i]-info.m_fi.m_nlocpl[0][i];
   }
   p_bg->FillCombinations(m_ccombs,m_cflavs,&m_brs,p_sub);
   if (rs->IsMapped())

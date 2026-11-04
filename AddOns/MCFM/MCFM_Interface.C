@@ -230,7 +230,7 @@ operator()(const Process_Info &pi) const
 {
   if (pi.m_loopgenerator!="MCFM") return NULL;
   if (!(pi.m_fi.m_nlotype&nlo_type::loop)) return NULL;
-  if (pi.m_fi.m_nlocpl[1]!=0.) return NULL;
+  if (pi.m_fi.m_nlocpl[0][1]!=0.) return NULL;
   Flavour_Vector fl(pi.ExtractFlavours());
   std::vector<int> ids(fl.size());
   for (size_t i(0);i<fl.size();++i) ids[i]=(long int)(fl[i]);

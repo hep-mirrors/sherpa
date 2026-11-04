@@ -202,9 +202,16 @@ void CS_Cluster_Definitions::KernelWeight
     return;
   }
   double Q2=dabs((i->Mom()+j->Mom()+k->Mom()).Abs2());
-  if (Q2<(cs.m_mode&1?
-	  p_shower->GetSudakov()->ISPT2Min():
-	  p_shower->GetSudakov()->FSPT2Min())) {
+  double k0sq(0.);
+  if (cs.m_mode&1) {
+    k0sq=(cdip->PureQCD()?p_shower->GetSudakov()->ISPT2Min():
+            Min(p_shower->GetSudakov()->ISPT2Min(),p_shower->GetSudakov()->ISQEDPT2Min()));
+  }
+  else {
+    k0sq=(cdip->PureQCD()?p_shower->GetSudakov()->FSPT2Min():
+            Min(p_shower->GetSudakov()->FSPT2Min(),p_shower->GetSudakov()->FSQEDPT2Min()));
+  }
+  if (Q2<k0sq) {
     msg_Debugging()<<"Small Q2 "<<Q2<<"\n";
     cs.m_wk=0.0;
     return;
@@ -213,9 +220,7 @@ void CS_Cluster_Definitions::KernelWeight
   p_shower->SetMS(p_ms);
   cdip->SetFlavourSpec(fls);
   cs.m_mu2=cdip->Lorentz()->Scale(cs.m_z,cs.m_y,cs.m_kt2,Q2);
-  cs.m_mu2=Max(cs.m_mu2,cs.m_mode&1?
-	       p_shower->GetSudakov()->ISPT2Min():
-	       p_shower->GetSudakov()->FSPT2Min());
+  cs.m_mu2=Max(cs.m_mu2,k0sq);
   if (m_kfmode && !(kmode&16))
   cs.m_mu2*=cdip->Coupling()->CplFac(cs.m_mu2);
   // m_cpl encodes the coupling type for the scale setters (MEPS/VBF/E_Gamma):

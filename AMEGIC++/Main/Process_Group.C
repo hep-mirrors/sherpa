@@ -55,7 +55,8 @@ PHASIC::Process_Base *AMEGIC::Process_Group::GetProcess(const PHASIC::Process_In
   // QCD/EW subtraction
   // dont do for YFS!
   // if(pi.m_nlomode!=nlo_mode::yfs){
-  if (nlotype!=nlo_type::lo && pi.m_nlomode!=nlo_mode::yfs) {
+  if (nlotype!=nlo_type::lo && nlotype!=(nlo_type::lo|nlo_type::qed) &&
+      pi.m_nlomode!=nlo_mode::yfs) {
     if (nlotype&nlo_type::real || nlotype&nlo_type::rsub) {
       Single_Real_Correction *src = new Single_Real_Correction();
       if (!(nlotype&nlo_type::real)) src->SetNoTree(true);
@@ -70,7 +71,9 @@ PHASIC::Process_Base *AMEGIC::Process_Group::GetProcess(const PHASIC::Process_In
     }
   }
   // LO processes
-  else if (nlotype==nlo_type::lo || nlotype==nlo_type::real || pi.m_nlomode==nlo_mode::yfs) {
+  else if (nlotype==nlo_type::lo || nlotype==(nlo_type::lo|nlo_type::qed) || 
+           nlotype==nlo_type::real || nlotype==(nlo_type::real|nlo_type::qed) || 
+           pi.m_nlomode==nlo_mode::yfs) {
     if (pi.m_amegicmhv>0) {
       if (pi.m_amegicmhv==10 ||
           pi.m_amegicmhv==12) return new Single_Process_External();

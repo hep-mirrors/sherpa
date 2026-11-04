@@ -205,7 +205,7 @@ operator()(const Process_Info &pi) const
         <<"associated contributions "<<pi.m_fi.m_asscontribs<<std::endl;
       return NULL;
     }
-    if (pi.m_fi.m_nlocpl[1]!=0.) return NULL;
+    if (pi.m_fi.m_nlocpl[0][1]!=0.) return NULL;
     Settings& s = Settings::GetMainSettings();
     int io = s["HIGGS_INTERFERENCE_ONLY"].Get<int>();
     int mode = s["HIGGS_INTERFERENCE_MODE"].Get<int>();

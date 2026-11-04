@@ -224,8 +224,8 @@ namespace ML5 {
 	card<<"> ";
 	for (size_t i(nin);i<flavs.size();++i)
 	  card<<(long int)(flavs[i])<<" ";
-	int loqcd=pi.m_fi.m_nlocpl[0]==1;
-	int loew=pi.m_fi.m_nlocpl[1]==1;
+	int loqcd=pi.m_fi.m_nlocpl[0][0]==1;
+	int loew=pi.m_fi.m_nlocpl[0][1]==1;
 	if (pi.m_maxcpl[0]!=99) card<<"QCD="<<(pi.m_maxcpl[0]-loqcd)<<" ";
 	if (pi.m_maxcpl[1]!=99) card<<"QED="<<(pi.m_maxcpl[1]-loew)<<" ";
 	if (loqcd) card<<"[virt=QCD]";

@@ -356,7 +356,7 @@ double MEPS_Scale_Setter::Calculate
   ClusterAmplitude_Vector ampls;
   p_sproc=p_proc->Caller()->Get<Single_Process>();
   ampl->SetLKF(1.0);
-  int mm(p_proc->Caller()->Generator()->SetMassMode(m_nproc?0:1));
+  int mm(p_proc->Caller()->Generator()->SetMassMode((m_nproc || p_proc->MCMode())?0:1));
   if (!m_nproc && p_proc->Caller()->Generator()->ShiftMasses(ampl)!=1) {
     p_proc->Caller()->Generator()->SetMassMode(mm);
     ampl->Delete();
@@ -670,7 +670,10 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
     double cas(MODEL::as->BoundedAlphaS(m_rsf*mu2));
     mmur2=Max(mmur2,m_rsf*mu2);
     mas=Min(mas,cas);
-    if (ampl->OrderQCD()-(m_vproc?1:0)) {
+    int nloqcd(0);
+    // subtract QCD virtual from core QCD order, if present
+    if (m_vproc && p_proc->Info().m_fi.m_nlocpl[0][0]==1) nloqcd=1;
+    if (ampl->OrderQCD()-nloqcd) {
       if (mu2<mup2) {
 	msg_Debugging()<<"  unordered history, redefine k_{T,0} = "
 		       <<sqrt(mu2)<<" -> k_{T,0} = "
@@ -678,7 +681,7 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
 	if (p_uoscale) mu2=muuo2;
 	else mu2=mup2;
       }
-      int coqcd(ampl->OrderQCD()-(m_vproc?1:0));
+      int coqcd(ampl->OrderQCD()-nloqcd);
       msg_Debugging()<<"  \\mu_{0} = "<<sqrt(m_rsf)<<" * "<<sqrt(mu2)
 		     <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";
       mur2*=pow(m_rsf*mu2,coqcd);
@@ -689,7 +692,7 @@ double MEPS_Scale_Setter::SetScales(Cluster_Amplitude *ampl)
     else {
       mur2=pow(mur2,1.0/oqcd);
       as=pow(as,1.0/oqcd);
-      if (m_nproc) {
+      if (m_nproc || p_proc->MCMode()) {
 	if (s_nlocpl&2) {
 	  msg_Debugging()<<"  as_{NLO} = "<<mas<<"\n";
 	  mur2=pow(pow(mur2,oqcd)*mmur2,1.0/(oqcd+1.0));

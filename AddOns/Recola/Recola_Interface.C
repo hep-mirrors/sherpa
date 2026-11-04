@@ -500,10 +500,10 @@ size_t Recola::Recola_Interface::RegisterProcess(const Process_Info& pi,
           else if (outflavs[i].IsGluon()) gluoncount++;
         }
         tempQCD-=gluoncount;
-        if ((pi.m_fi.m_nlocpl[1]==1) && (quarkcount>=4) && (pi.m_maxcpl[0]>=2)){
+        if ((pi.m_fi.m_nlocpl[0][1]==1) && (quarkcount>=4) && (pi.m_maxcpl[0]>=2)){
           s_interference[procIndex]=true;
         }
-        if ((pi.m_fi.m_nlocpl[0]==1) && (quarkcount>=4) && (pi.m_maxcpl[1]>=2)){    
+        if ((pi.m_fi.m_nlocpl[0][0]==1) && (quarkcount>=4) && (pi.m_maxcpl[1]>=2)){    
           s_interference[procIndex]=true;
           tempQCD-=1;
         }
@@ -514,14 +514,14 @@ size_t Recola::Recola_Interface::RegisterProcess(const Process_Info& pi,
       if (s_interference[procIndex]){
         int maxBqcd, minBqcd;
 
-        if ((tempQCD+2*pi.m_fi.m_nlocpl[0])>tempEW)
-          maxBqcd=pi.m_maxcpl[0]+tempEW-pi.m_fi.m_nlocpl[0];
+        if ((tempQCD+2*pi.m_fi.m_nlocpl[0][0])>tempEW)
+          maxBqcd=pi.m_maxcpl[0]+tempEW-pi.m_fi.m_nlocpl[0][0];
         else
-          maxBqcd=pi.m_maxcpl[0]+tempQCD+pi.m_fi.m_nlocpl[0];
-        if ((tempEW+2*pi.m_fi.m_nlocpl[1])>tempQCD)
-          minBqcd=pi.m_maxcpl[0]-tempQCD-pi.m_fi.m_nlocpl[0];
+          maxBqcd=pi.m_maxcpl[0]+tempQCD+pi.m_fi.m_nlocpl[0][0];
+        if ((tempEW+2*pi.m_fi.m_nlocpl[0][1])>tempQCD)
+          minBqcd=pi.m_maxcpl[0]-tempQCD-pi.m_fi.m_nlocpl[0][0];
         else
-          minBqcd=pi.m_maxcpl[0]-tempEW-pi.m_fi.m_nlocpl[0]-2*pi.m_fi.m_nlocpl[1];
+          minBqcd=pi.m_maxcpl[0]-tempEW-pi.m_fi.m_nlocpl[0][0]-2*pi.m_fi.m_nlocpl[0][1];
 
         while (quarkcount>=2 && maxBqcd>=minBqcd){
           select_gs_power_LoopAmpl_rcl(procIndex,2.*pi.m_maxcpl[0]-maxBqcd);
@@ -535,9 +535,9 @@ size_t Recola::Recola_Interface::RegisterProcess(const Process_Info& pi,
       // EW or QCD NLO
       else{
         // now set the requested powers for the amplitude
-        if (pi.m_fi.m_nlocpl[0]==1) {
-          double borngspower=pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0];
-          double loopgspower=pi.m_maxcpl[0]+pi.m_fi.m_nlocpl[0];
+        if (pi.m_fi.m_nlocpl[0][0]==1) {
+          double borngspower=pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0][0];
+          double loopgspower=pi.m_maxcpl[0]+pi.m_fi.m_nlocpl[0][0];
           
           msg_Debugging()<<"QCD Tree gs-power = "<<borngspower<<std::endl
                         <<"    Loop gs-power = "<<loopgspower<<std::endl;
@@ -546,7 +546,7 @@ size_t Recola::Recola_Interface::RegisterProcess(const Process_Info& pi,
           select_gs_power_LoopAmpl_rcl(procIndex,loopgspower);
         }
       
-        else if (pi.m_fi.m_nlocpl[1]==1) {
+        else if (pi.m_fi.m_nlocpl[0][1]==1) {
           msg_Debugging()<<"EW Tree gs-power = "<<pi.m_maxcpl[0]<<std::endl
                           <<"   Loop gs-power = "<<pi.m_maxcpl[0]<<std::endl;
           select_gs_power_BornAmpl_rcl(procIndex,pi.m_maxcpl[0]);
@@ -677,7 +677,7 @@ void Recola::Recola_Interface::EvaluateLoop(int id, const Vec4D_Vector& momenta,
   }
   */
 
-  double boqcd = pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0];
+  double boqcd = pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0][0];
   double voqcd = pi.m_maxcpl[0];
 
 

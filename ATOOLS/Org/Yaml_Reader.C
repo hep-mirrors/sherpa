@@ -123,7 +123,13 @@ std::vector<std::string> Yaml_Reader::GetKeys(const Settings_Keys& scopekeys)
     return keys;
   assert(node.IsMap());
   for (const auto& subnode : node) {
-    keys.push_back(subnode.first.as<std::string>());
+    if (!subnode && subnode.first) keys.push_back(subnode.first.as<std::string>());
+    else { // if input is list of lists, need to break down subnodes further
+      for (const auto& subsubnode : subnode) {
+        std::string keystring(subsubnode.first.as<std::string>());
+        if (std::find(keys.begin(), keys.end(), keystring)==keys.end()) keys.push_back(keystring);
+      }
+    }
   }
   return keys;
 }

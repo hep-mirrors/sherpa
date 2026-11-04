@@ -48,7 +48,7 @@ Virtual_ME2_Base *ATOOLS::Getter
 operator()(const Process_Info &pi) const
 {
   if (pi.m_loopgenerator.find("Dummy")!=0) return NULL;
-  double def(pi.m_fi.m_nlocpl[0]==1.?0.3:0.03);
+  double def(pi.m_fi.m_nlocpl[0][0]==1.?0.3:0.03);
   double eps2(def), eps(def), fin(def);
   std::string args(pi.m_loopgenerator);
   size_t pos(args.find('['));

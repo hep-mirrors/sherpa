@@ -126,13 +126,13 @@ bool COMIX::Single_Process::Initialize
   int stype(0), smode(0);
   // stype -> 0 QCD, 1 QED
   // smode -> 0 LO, 1 RS, 2 I, 4 B, 8 Polecheck, 16 V
-  if (m_pinfo.m_fi.m_nlocpl.size()) {
+  if (m_pinfo.m_fi.m_nlocpl[0].size()) {
     if (m_user_stype&sbt::qcd ||
-	(m_pinfo.m_fi.m_nlocpl[0]==1. &&
-	 m_pinfo.m_fi.m_nlocpl[1]==0.)) stype|=1;
+	(m_pinfo.m_fi.m_nlocpl[0][0]==1. &&
+	 m_pinfo.m_fi.m_nlocpl[0][1]==0.)) stype|=1;
     if (m_user_stype&sbt::qed ||
-	(m_pinfo.m_fi.m_nlocpl[0]==0. &&
-	 m_pinfo.m_fi.m_nlocpl[1]==1.)) stype|=2;
+	(m_pinfo.m_fi.m_nlocpl[0][0]==0. &&
+	 m_pinfo.m_fi.m_nlocpl[0][1]==1.)) stype|=2;
     msg_Debugging()<<"Subtraction type: "<<(sbt::subtype)(stype)<<"\n";
   }
   if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) smode=1;
@@ -154,10 +154,10 @@ bool COMIX::Single_Process::Initialize
   for (size_t i(0);i<maxacpl.size();++i) maxacpl[i]=m_pinfo.m_maxacpl[i];
   if (smode&22)
     for (int i(0);i<2;++i) {
-      maxcpl[i]-=m_pinfo.m_fi.m_nlocpl[i]*2;
-      mincpl[i]-=m_pinfo.m_fi.m_nlocpl[i]*2;
-      maxacpl[i]-=m_pinfo.m_fi.m_nlocpl[i];
-      minacpl[i]-=m_pinfo.m_fi.m_nlocpl[i];
+      maxcpl[i]-=m_pinfo.m_fi.m_nlocpl[0][i]*2;
+      mincpl[i]-=m_pinfo.m_fi.m_nlocpl[0][i]*2;
+      maxacpl[i]-=m_pinfo.m_fi.m_nlocpl[0][i];
+      minacpl[i]-=m_pinfo.m_fi.m_nlocpl[0][i];
     }
   if (p_bg->Initialize(m_nin,m_nout,m_flavs,isf,fsf,mapstream,
            &*p_model,&m_cpls,stype,smode,m_user_imode,
@@ -201,8 +201,8 @@ bool COMIX::Single_Process::Initialize
       Process_Info cinfo(m_pinfo);
       cinfo.m_fi.m_nlotype=nlo_type::loop;
       for (size_t i(0);i<m_maxcpl.size();++i) {
-	cinfo.m_mincpl[i]=p_bg->MinCpl()[i]/2.0+cinfo.m_fi.m_nlocpl[i];
-	cinfo.m_maxcpl[i]=p_bg->MaxCpl()[i]/2.0+cinfo.m_fi.m_nlocpl[i];
+	cinfo.m_mincpl[i]=p_bg->MinCpl()[i]/2.0+cinfo.m_fi.m_nlocpl[0][i];
+	cinfo.m_maxcpl[i]=p_bg->MaxCpl()[i]/2.0+cinfo.m_fi.m_nlocpl[0][i];
       }
       p_loop = PHASIC::Virtual_ME2_Base::GetME2(cinfo);
       if (p_loop==NULL) {
@@ -219,8 +219,8 @@ bool COMIX::Single_Process::Initialize
     p_bg->FillCombinations(m_ccombs,m_cflavs);
     if (m_pinfo.m_fi.m_nlotype&(nlo_type::loop|nlo_type::vsub))
       for (size_t i(0);i<m_maxcpl.size();++i) {
-	m_mincpl[i]=p_bg->MinCpl()[i]/2.0+m_pinfo.m_fi.m_nlocpl[i];
-	m_maxcpl[i]=p_bg->MaxCpl()[i]/2.0+m_pinfo.m_fi.m_nlocpl[i];
+	m_mincpl[i]=p_bg->MinCpl()[i]/2.0+m_pinfo.m_fi.m_nlocpl[0][i];
+	m_maxcpl[i]=p_bg->MaxCpl()[i]/2.0+m_pinfo.m_fi.m_nlocpl[0][i];
       }
     (*pmap)[m_name]=m_name;
     if (m_pinfo.m_cls==cls::sum) ConstructColorMatrix();

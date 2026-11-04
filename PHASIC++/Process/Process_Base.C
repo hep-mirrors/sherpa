@@ -41,6 +41,7 @@ Process_Base::Process_Base():
   m_nin(0), m_nout(0), m_maxcpl(2,99), m_mincpl(2,0),
   m_mcmode(0), m_cmode(0),
   m_lookup(false), m_use_biweight(true),
+  m_lastbvalue(0.), m_lastbxsvalue(0.),
   m_hasinternalscale(false), m_internalscale(sqr(rpa->gen.Ecms())),
   p_apmap(NULL), p_read(NULL), m_owns_reader(false)
 {
@@ -394,9 +395,15 @@ std::string Process_Base::GenerateName(const Subprocess_Info &info)
   for (size_t i(1);i<info.m_ps.size();++i)
     name+="__"+GenerateName(info.m_ps[i]);
   if (info.m_nlotype!=nlo_type::lo) {
-    if      (info.m_nlocpl[0]==1. && info.m_nlocpl[1]==0.) name+="__QCD(";
-    else if (info.m_nlocpl[0]==0. && info.m_nlocpl[1]==1.) name+="__EW(";
-    else                                                   name+="__QCDEW(";
+    double qcd(0),ew(0);
+    for (size_t i(0);i<info.m_nlocpl.size();++i) {
+      if (info.m_nlocpl[i][0]==1. && info.m_nlocpl[i][1]==0.) qcd+=1.;
+      if (info.m_nlocpl[i][0]==0. && info.m_nlocpl[i][1]==1.) ew+=1.;
+    }
+    if      (qcd==1. && ew==0.) name+="__QCD(";
+    else if (qcd==0. && ew==1.) name+="__EW(";
+    else if (qcd==1. && ew==1.) name+="__QCD__EW("; // NLO QCD+EW
+    else                        name+="__QCDEW("; // leave available for mixed O(a.as) corrections
     name+=ToString(info.m_nlotype)+info.m_sv+")";
   }
   return name+="]";
@@ -410,9 +417,15 @@ std::string Process_Base::GenerateName
   for (size_t i(0);i<ii.m_ps.size();++i) name+="__"+GenerateName(ii.m_ps[i]);
   for (size_t i(0);i<fi.m_ps.size();++i) name+="__"+GenerateName(fi.m_ps[i]);
   if (fi.m_nlotype!=nlo_type::lo) {
-    if      (fi.m_nlocpl[0]==1. && fi.m_nlocpl[1]==0.) name+="__QCD(";
-    else if (fi.m_nlocpl[0]==0. && fi.m_nlocpl[1]==1.) name+="__EW(";
-    else                                               name+="__QCDEW(";
+    double qcd(0),ew(0);
+    for (size_t i(0);i<fi.m_nlocpl.size();++i) {
+      if (fi.m_nlocpl[i][0]==1. && fi.m_nlocpl[i][1]==0.) qcd+=1.;
+      if (fi.m_nlocpl[i][0]==0. && fi.m_nlocpl[i][1]==1.) ew+=1.;
+    }
+    if      (qcd==1. && ew==0.) name+="__QCD(";
+    else if (qcd==0. && ew==1.) name+="__EW(";
+    else if (qcd==1. && ew==1.) name+="__QCD__EW("; // NLO QCD+EW
+    else                        name+="__QCDEW("; // leave available for mixed O(a.as) corrections
     name+=ToString(fi.m_nlotype)+fi.m_sv+")";
   }
   return name;
@@ -685,8 +698,8 @@ void Process_Base::FillProcessMap(NLOTypeStringProcessMap_Map *apmap)
     if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
     pos=fname.find("QCD");
     if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
-    if (nlot&nlo_type::vsub) nlot=nlo_type::vsub;
-    if (nlot&nlo_type::rsub) nlot=nlo_type::rsub;
+    if (nlot&nlo_type::vsub) nlot&=(nlo_type::vsub|nlo_type::qed);
+    if (nlot&nlo_type::rsub) nlot&=(nlo_type::rsub|nlo_type::qed);
     if (apmap->find(nlot)==apmap->end())
       (*apmap)[nlot] = new StringProcess_Map();
     StringProcess_Map *cmap((*apmap)[nlot]);

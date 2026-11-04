@@ -90,7 +90,7 @@ void BlackHat_Virtual::AddCouplings
   }
   for (size_t j(pi.m_mincpl[i]);j<=pi.m_maxcpl[i];++j) {
     cpls[i].second=j;
-    if (i<2 && pi.m_fi.m_nlotype&nlo_type::loop) cpls[i].second+=pi.m_fi.m_nlocpl[i];
+    if (i<2 && pi.m_fi.m_nlotype&nlo_type::loop) cpls[i].second+=pi.m_fi.m_nlocpl[0][i];
     AddCouplings(pi,couplings,cpls,i+1);
   }
 }
@@ -108,7 +108,7 @@ operator()(const PHASIC::Process_Info &pi) const
                  <<"associated contributions "<<pi.m_fi.m_asscontribs<<std::endl;
       return NULL;
     }
-    if (pi.m_fi.m_nlocpl[1]!=0.) return NULL;
+    if (pi.m_fi.m_nlocpl[0][1]!=0.) return NULL;
     if (pi.m_fi.m_sv=="FullColor")
       BlackHat_Virtual::Interface()->set("COLOR_MODE",std::string("full_color"));
     else if (pi.m_fi.m_sv=="LeadingColor")

@@ -30,7 +30,7 @@ namespace Recola {
     m_UVscale=s["RECOLA_UV_SCALE"].Get<double>();
     m_modebackup=m_mode=Recola_Interface::s_vmode;
     m_voqcd = pi.m_maxcpl[0];
-    m_boqcd = pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0];
+    m_boqcd = pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0][0];
 
     // init associated contribs
     size_t n(0);

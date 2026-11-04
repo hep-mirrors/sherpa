@@ -74,7 +74,7 @@ void BBar_Multi_Channel::AddPoint(double value)
 { 
   m_lastdice=-1;
   Multi_Channel::AddPoint(value);
-  p_fsmc->AddPoint(value*p_proc->LastB()/p_proc->Last());
+  p_fsmc->AddPoint(value*p_proc->LastBValue()/p_proc->Last());
   m_eeg.AddPoint(value/p_proc->Last());
 }
 

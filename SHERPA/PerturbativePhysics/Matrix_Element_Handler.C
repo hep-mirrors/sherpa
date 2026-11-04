@@ -208,7 +208,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
   m_sum=0.0;
   psum.resize(m_procs.size());
   for (size_t i(0);i<m_procs.size();++i)
-    psum[i]=m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
+      psum[i]=m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
 
   // generate trial events until we accept one
   for (size_t n(1);true;++n) {
@@ -436,10 +436,11 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	rpi.m_fi.SetNLOType(pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop|
 					       nlo_type::born));
 	if (m_nloadd) {
-	  if (rpi.m_fi.m_nlocpl.size()<2) THROW(fatal_error,"NLO_Order not set.");
+    if (rpi.m_fi.m_nlocpl.size()!=1) THROW(fatal_error, "Only one NLO order expected for fixed order");
+	  if (rpi.m_fi.m_nlocpl[0].size()<2) THROW(fatal_error,"NLO_Order not set.");
 	  for (int i(0);i<2;++i) {
-	    rpi.m_maxcpl[i]+=rpi.m_fi.m_nlocpl[i];
-	    rpi.m_mincpl[i]+=rpi.m_fi.m_nlocpl[i];
+	    rpi.m_maxcpl[i]+=rpi.m_fi.m_nlocpl[0][i];
+	    rpi.m_mincpl[i]+=rpi.m_fi.m_nlocpl[0][i];
 	  }
 	}
 	procs.push_back(m_gens.InitializeProcess(rpi,true));
@@ -459,12 +460,13 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	rpi.m_itmin=rpi.m_rsitmin;
         rpi.m_itmax=rpi.m_rsitmax;
 	if (m_nloadd) {
-	  if (rpi.m_fi.m_nlocpl.size()<2) THROW(fatal_error,"NLO_Order not set.");
+	  if (rpi.m_fi.m_nlocpl.size()!=1) THROW(fatal_error, "Only one NLO order expected for fixed order");
+	  if (rpi.m_fi.m_nlocpl[0].size()<2) THROW(fatal_error,"NLO_Order not set.");
 	  for (int i(0);i<2;++i) {
-	    rpi.m_maxcpl[i]+=rpi.m_fi.m_nlocpl[i];
-	    rpi.m_mincpl[i]+=rpi.m_fi.m_nlocpl[i];
+	    rpi.m_maxcpl[i]+=rpi.m_fi.m_nlocpl[0][i];
+	    rpi.m_mincpl[i]+=rpi.m_fi.m_nlocpl[0][i];
 	  }
-	  if (pi.m_fi.m_nlocpl[0]==0. && pi.m_fi.m_nlocpl[1]==1.) {
+	  if (pi.m_fi.m_nlocpl[0][0]==0. && pi.m_fi.m_nlocpl[0][1]==1.) {
 	    if (m_ewaddmode==0)
 	      rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_ewjet,"",""));
 	    else if (m_ewaddmode==1)
@@ -474,7 +476,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	    else
 	      THROW(fatal_error,"Unknown MEH_EWADDMODE.");
 	  }
-	  else if (pi.m_fi.m_nlocpl[0]==1. && pi.m_fi.m_nlocpl[1]==0.) {
+	  else if (pi.m_fi.m_nlocpl[0][0]==1. && pi.m_fi.m_nlocpl[0][1]==0.) {
 	    if (m_qcdaddmode==0)
 	      rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_ewjet,"",""));
 	    else if (m_qcdaddmode==1)
@@ -484,7 +486,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
 	    else
 	      THROW(fatal_error,"Unknown MEH_QCDADDMODE.");
 	  }
-	  else THROW(not_implemented,"Cannot do NLO QCD+EW yet.");
+	  else THROW(not_implemented,"Invalid NLO order.");
 	}
         procs.push_back(m_gens.InitializeProcess(rpi,true));
 	if (procs.back()==NULL) {
@@ -841,9 +843,10 @@ void Matrix_Element_Handler::ReadFinalStateMultiSpecificProcessSettings(
         || subkey == "Min_Order"
         || subkey == "Amplitude_Order"
         || subkey == "Max_Amplitude_Order"
-        || subkey == "Min_Amplitude_Order"
-        || subkey == "NLO_Order") {
+        || subkey == "Min_Amplitude_Order") {
       value = MakeOrderString(proc[rawsubkey]);
+    } else if (subkey == "NLO_Order") {
+      value = MakeNLOOrderString(proc[rawsubkey]);
     } else if (subkey == "Associated_Contributions") {
       value = MakeString(
           proc[rawsubkey].SetDefault<std::string>({}).GetVector<std::string>());
@@ -1087,8 +1090,9 @@ void Matrix_Element_Handler::BuildSingleProcessList(
             cpi.m_fi.m_nlotype=ToType<nlo_type::code>(ds);
           }
           if (GetMPvalue(args.pbi.m_vnlocpl,nfs,pnid,ds)) {
-            cpi.m_fi.m_nlocpl = ToVector<double>(ds);
-            if (cpi.m_fi.m_nlocpl.size()<2) cpi.m_fi.m_nlocpl.resize(2,0);
+            cpi.m_fi.m_nlocpl = ToVectorVector<double>(ds);
+            for (size_t i(0);i<cpi.m_fi.m_nlocpl.size();++i)
+              if (cpi.m_fi.m_nlocpl[i].size()<2) cpi.m_fi.m_nlocpl[i].resize(2,0);
           }
         }
 	if (GetMPvalue(args.pbi.m_vnlosubv,nfs,pnid,ds)) cpi.m_fi.m_sv=ds;
@@ -1362,6 +1366,46 @@ std::string Matrix_Element_Handler::MakeOrderString(Scoped_Settings&& s) const
     ordervalues[orderidx] = order;
   }
   return MakeString(ordervalues);
+}
+
+
+std::string Matrix_Element_Handler::MakeNLOOrderString(Scoped_Settings&& s) const
+{
+  auto orderkeys = s.GetKeys();
+  int items(s.GetItemsCount()); // 0 if NLO orders input as single list
+  std::vector<std::vector<std::string>> ordervalues(items?items:1, std::vector<std::string>(orderkeys.size(),"-1"));
+  for (auto orderkey : orderkeys) {
+    int itemnum(0);
+    if (items) for (auto s_item : s.GetItems()) {
+      const auto order = s_item[orderkey]
+        .SetDefault("-1")
+        .SetReplacementList(String_Map{{"Any", "-1"}})
+        .Get<std::string>();
+      const auto orderidx = p_model->IndexOfOrderKey(orderkey);
+      
+      if (itemnum + 1 > ordervalues.size()) ordervalues.resize(itemnum + 1, std::vector<std::string>(orderkeys.size(),"-1"));
+      if (orderidx + 1 > ordervalues[itemnum].size()) ordervalues[itemnum].resize(orderidx + 1, "-1");
+      ordervalues[itemnum][orderidx] = order;
+      itemnum++;
+    }
+    else {
+      const auto order = s[orderkey]
+        .SetDefault("-1")
+        .SetReplacementList(String_Map{{"Any", "-1"}})
+        .Get<std::string>();
+      const auto orderidx = p_model->IndexOfOrderKey(orderkey);
+      if (orderidx + 1 > ordervalues[0].size()) ordervalues[0].resize(orderidx + 1, "-1");
+      ordervalues[0][orderidx]=order;
+    }
+  }
+  std::vector<std::string> orderstrings(ordervalues.size(),"-1");
+  for (int i(0); i<ordervalues.size(); i++) {
+    // add separator between each set of orders
+    if (i < ordervalues.size()-1) ordervalues[i].push_back(";");
+    orderstrings[i]=MakeString(ordervalues[i]);
+  }
+  // each set of orders separated by ';', QCD/EW separated by ' '
+  return MakeString(orderstrings);
 }
 
 double Matrix_Element_Handler::GetWeight

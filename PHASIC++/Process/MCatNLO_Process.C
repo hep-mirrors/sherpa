@@ -34,8 +34,11 @@ using namespace PDF;
 
 MCatNLO_Process::MCatNLO_Process
 (ME_Generators& gens,NLOTypeStringProcessMap_Map *pmap):
-  m_gens(gens), p_bviproc(NULL), p_rsproc(NULL),
-  p_bproc(NULL), p_rproc(NULL), p_ddproc(NULL),
+  m_gens(gens), p_bviproc(NULL),
+  p_viprocqcd(NULL), p_rsprocqcd(NULL), p_ddprocqcd(NULL),
+  p_viprocew(NULL), p_rsprocqed(NULL), p_ddprocqed(NULL),
+  p_bproc(NULL), p_rprocqcd(NULL), p_rprocqed(NULL),
+  m_qcd(false), m_ew(false),
   p_ampl(NULL)
 {
   static bool ref(false);
@@ -51,10 +54,15 @@ MCatNLO_Process::MCatNLO_Process
 MCatNLO_Process::~MCatNLO_Process()
 {
   if (p_ampl) p_ampl->Delete();
-  if (p_rproc) delete p_rproc;
+  if (p_rprocqcd) delete p_rprocqcd;
+  if (p_rprocqed) delete p_rprocqed;
   if (p_bproc) delete p_bproc;
-  if (p_ddproc) delete p_ddproc;
-  if (p_rsproc) delete p_rsproc;
+  if (p_ddprocqcd) delete p_ddprocqcd;
+  if (p_ddprocqed) delete p_ddprocqed;
+  if (p_rsprocqcd) delete p_rsprocqcd;
+  if (p_rsprocqed) delete p_rsprocqed;
+  if (p_viprocqcd) delete p_viprocqcd;
+  if (p_viprocew) delete p_viprocew;
   if (p_bviproc) delete p_bviproc;
 }
 
@@ -66,6 +74,18 @@ void MCatNLO_Process::Init(const Process_Info &pi,
 {
   RegisterDefaults();
   Scoped_Settings s{ Settings::GetMainSettings()["MC@NLO"] };
+  nlo_type::code bvicode = (nlo_type::code) s["PP_BVI_MODE"].Get<int>();
+  if (!bvicode&nlo_type::born) THROW(not_implemented, "B required for MC@NLO");
+
+  // build process infos for every process needed, then initialise this process
+  // we need: B, VI, DD, and RS for S, DA-DS, and H events, respectively
+  // in addition we need B and R for later interface to shower,
+  // possible spin correlations etc.
+
+  // 1) build a process info for this MCatNLO_Process,
+  //    add the extra parton according to NLO corrections type,
+  //    and then init ourselves
+  //    -> this will become m_pinfo
   Process_Info cpi(pi);
   // book-keep user settings,
   // if not set, need Amegic for BVI and DADS, Comix for RS, B, R
@@ -75,16 +95,32 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   std::string defrsmegen("Comix"), defbmegen("Amegic"), defrmegen("Comix");
   cpi.m_fi.SetNLOType(nlo_type::born|nlo_type::loop|
 		      nlo_type::vsub|nlo_type::real|nlo_type::rsub);
-  if (pi.m_fi.m_nlocpl[0]==0. && pi.m_fi.m_nlocpl[1]==1.)
+
+  if (pi.m_fi.m_nlocpl.size()>2) THROW(fatal_error, "MC@NLO only valid for 1 or 2 sets of NLO orders");
+  // identify whether we want QCD, EW or both
+  for (size_t i(0);i<pi.m_fi.m_nlocpl.size();++i) {
+    if      (pi.m_fi.m_nlocpl[i][0]==1. && pi.m_fi.m_nlocpl[i][1]==0.) m_qcd=true;
+    else if (pi.m_fi.m_nlocpl[i][0]==0. && pi.m_fi.m_nlocpl[i][1]==1.) m_ew=true;
+    else msg_Error() << "Ignoring invalid NLO order " << m_pinfo.m_fi.m_nlocpl[i] << '\n';
+  }
+  if (!m_qcd && !m_ew) THROW(fatal_error, "No valid NLO orders found");
+  if (p_read && m_ew) THROW(not_implemented, "HDF5 readin is only available for MC@NLO QCD");
+
+  if (m_ew) // MC@NLO (QCD+)EW
     cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_ewjet,"",""));
-  else if (pi.m_fi.m_nlocpl[0]==1. && pi.m_fi.m_nlocpl[1]==0.)
+  else // MC@NLO QCD only
     cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
-  else THROW(not_implemented,"Cannot do NLO QCD+EW yet.");
+
   Process_Base::Init(cpi,beam,isr,yfs);
   m_pinfo.m_fi.SetNLOType(pi.m_fi.NLOType());
+
+  // 2) build a process info for generating the name of this MCatNLO_Process,
+  //    remove the extra parton again to avoid confusion in the output
   Process_Info npi(m_pinfo);
   npi.m_fi.m_ps.pop_back();
   m_name=GenerateName(m_pinfo.m_ii,npi.m_fi);
+
+  // sanity check modes are set correctly
   if (pi.Has(nlo_type::real)!=pi.Has(nlo_type::rsub))
     THROW(fatal_error, "R/S can't be initialised separately.");
 
@@ -97,46 +133,105 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_bproc=InitProcess(bpi,nlo_type::lo,false);
   if (p_bproc==NULL) return;
 
-  for (size_t i(0);i<m_pinfo.m_fi.m_nlocpl.size();++i) {
-    spi.m_maxcpl[i]+=spi.m_fi.m_nlocpl[i];
-    spi.m_mincpl[i]+=spi.m_fi.m_nlocpl[i];
+  // build process infos
+  Process_Info bvipi(spi), sqcdpi(spi), sewpi(spi);
+  bvipi.m_fi.m_nlocpl={{0.,0.}};
+  sqcdpi.m_fi.m_nlocpl={{1.,0.}};
+  sqcdpi.m_maxcpl[0]+=1.;
+  sqcdpi.m_mincpl[0]+=1.;
+  sewpi.m_fi.m_nlocpl={{0.,1.}};
+  sewpi.m_maxcpl[1]+=1.;
+  sewpi.m_mincpl[1]+=1.;
+
+  // QCD BVI can't be separated for HDF5 so we don't use p_viprocqcd
+  if (bvipi.m_megenerator=="") bvipi.m_megenerator=defbvimegen;
+  if (p_read) {
+    bvipi.m_fi.m_nlocpl={{1.,0.}};
+    p_bviproc=InitProcess(bvipi,bvicode,false);
+  }
+  else p_bviproc=InitProcess(bvipi,nlo_type::lo,false);
+
+  if (m_qcd) {
+    // init R proc
+    Process_Info rqcdpi(sqcdpi);
+    rqcdpi.m_megenerator=rqcdpi.m_rsmegenerator;
+    if (rqcdpi.m_megenerator=="") rqcdpi.m_megenerator=defrmegen;
+    p_rprocqcd=InitProcess(rqcdpi,nlo_type::lo,true);
+
+    if (!p_read) {
+      // init VI proc
+      Process_Info viqcdpi(sqcdpi);
+      if (viqcdpi.m_megenerator=="") viqcdpi.m_megenerator=defbvimegen;
+      p_viprocqcd=InitProcess(viqcdpi, bvicode&(nlo_type::loop|nlo_type::vsub), false);
+      p_viprocqcd->FillProcessMap(p_apmap);
+    }
+
+    // init DADS proc
+    Process_Info ddqcdpi(sqcdpi);
+    if (ddqcdpi.m_megenerator=="") ddqcdpi.m_megenerator=defddmegen;
+    p_ddprocqcd=InitProcess(ddqcdpi,nlo_type::rsub,1);
+
+    // init RS proc
+    Process_Info rsqcdpi(sqcdpi);
+    rsqcdpi.m_integrator=rsqcdpi.m_rsintegrator;
+    rsqcdpi.m_itmin=rsqcdpi.m_rsitmin;
+    rsqcdpi.m_itmax=rsqcdpi.m_rsitmax;
+    rsqcdpi.m_megenerator=rsqcdpi.m_rsmegenerator;
+    if (rsqcdpi.m_megenerator=="") rsqcdpi.m_megenerator=defrsmegen;
+    p_rsprocqcd=InitProcess(rsqcdpi,nlo_type::real|nlo_type::rsub,1|2);
+
+    p_rsprocqcd->FillProcessMap(p_apmap);
+    p_ddprocqcd->FillProcessMap(p_apmap);
+    p_rprocqcd->FillProcessMap(p_apmap);
+
+    // set flags to book keeping processes
+    p_rprocqcd->SetLookUp(false);
+    p_rprocqcd->SetParent(this);
   }
 
-  // init R proc
-  Process_Info rpi(spi);
-  rpi.m_megenerator=rpi.m_rsmegenerator;
-  if (rpi.m_megenerator=="") rpi.m_megenerator=defrmegen;
-  p_rproc=InitProcess(rpi,nlo_type::lo,true);
+  if (m_ew) {
+    // init R proc
+    Process_Info rqedpi(sewpi);
+    rqedpi.m_megenerator=rqedpi.m_rsmegenerator;
+    if (rqedpi.m_megenerator=="") rqedpi.m_megenerator=defrmegen;
+    p_rprocqed=InitProcess(rqedpi,nlo_type::lo|nlo_type::qed,true);
 
-  // init BVI proc
-  nlo_type::code bvicode = (nlo_type::code) s["PP_BVI_MODE"].Get<int>();
-  Process_Info bvipi(spi);
-  if (bvipi.m_megenerator=="") bvipi.m_megenerator=defbvimegen;
-  p_bviproc=InitProcess(bvipi, bvicode, false);
+    // init VI proc
+    Process_Info viewpi(sewpi);
+    if (viewpi.m_megenerator=="") viewpi.m_megenerator=defbvimegen;
+    p_viprocew=InitProcess(viewpi, bvicode&(nlo_type::loop|nlo_type::vsub)|nlo_type::qed, false);
 
-  // init DADS proc
-  Process_Info ddpi(spi);
-  if (ddpi.m_megenerator=="") ddpi.m_megenerator=defddmegen;
-  p_ddproc=InitProcess(ddpi,nlo_type::rsub,1);
+    // init DADS proc
+    Process_Info ddqedpi(sewpi);
+    if (ddqedpi.m_megenerator=="") ddqedpi.m_megenerator=defddmegen;
+    p_ddprocqed=InitProcess(ddqedpi,nlo_type::rsub|nlo_type::qed,1);
 
-  // init RS proc
-  Process_Info rspi(spi);
-  rspi.m_integrator=rspi.m_rsintegrator;
-  rspi.m_itmin=rspi.m_rsitmin;
-  rspi.m_itmax=rspi.m_rsitmax;
-  rspi.m_megenerator=rspi.m_rsmegenerator;
-  if (rspi.m_megenerator=="") rspi.m_megenerator=defrsmegen;
-  p_rsproc=InitProcess(rspi,nlo_type::real|nlo_type::rsub,1|2);
+    // init RS proc
+    Process_Info rsqedpi(sewpi);
+    rsqedpi.m_integrator=rsqedpi.m_rsintegrator;
+    rsqedpi.m_itmin=rsqedpi.m_rsitmin;
+    rsqedpi.m_itmax=rsqedpi.m_rsitmax;
+    rsqedpi.m_megenerator=rsqedpi.m_rsmegenerator;
+    if (rsqedpi.m_megenerator=="") rsqedpi.m_megenerator=defrsmegen;
+    p_rsprocqed=InitProcess(rsqedpi,nlo_type::real|nlo_type::rsub|nlo_type::qed,1|2);
 
-  p_rsproc->FillProcessMap(p_apmap);
+    p_rsprocqed->FillProcessMap(p_apmap);
+    p_viprocew->FillProcessMap(p_apmap);
+    p_ddprocqed->FillProcessMap(p_apmap);
+    p_rprocqed->FillProcessMap(p_apmap);
+
+    // set flags to book keeping processes
+    p_rprocqed->SetLookUp(false);
+    p_rprocqed->SetParent(this);
+  }
+
   p_bviproc->FillProcessMap(p_apmap);
-  p_ddproc->FillProcessMap(p_apmap);
-  p_bproc->SetLookUp(false);
-  p_rproc->SetLookUp(false);
-  p_bproc->SetParent(this);
-  p_rproc->SetParent(this);
   p_bproc->FillProcessMap(p_apmap);
-  p_rproc->FillProcessMap(p_apmap);
+
+  // set flags to book keeping processes
+  p_bproc->SetLookUp(false);
+  p_bproc->SetParent(this);
+
   m_psmode   = s["PSMODE"].Get<int>();
   m_hpsmode  = s["HPSMODE"].Get<int>();
   if (m_hpsmode == -1) {
@@ -147,18 +242,28 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   m_fomode   = s["FOMODE"].Get<int>();
   m_rsscale  = s["RS_SCALE"].Get<std::string>();
   if (m_fomode!=2) {
-    p_bviproc->SetSProc(p_ddproc);
     p_bviproc->SetMCMode(1);
-    p_ddproc->SetMCMode(2);
-    p_rsproc->SetMCMode(2);
+    if (m_qcd) {
+      if (p_read){
+        p_bviproc->SetSProc(p_ddprocqcd);
+      }
+      else {
+        p_viprocqcd->SetSProc(p_ddprocqcd);
+        p_viprocqcd->SetMCMode(1);
+      }
+      p_ddprocqcd->SetMCMode(2);
+      p_rsprocqcd->SetMCMode(2);
+    }
+    if (m_ew) {
+      p_viprocew->SetSProc(p_ddprocqed);
+      p_viprocew->SetMCMode(1);
+      p_ddprocqed->SetMCMode(2);
+      p_rsprocqed->SetMCMode(2);
+    }
   }
-  if (p_rsproc->Size()!=p_rproc->Size()) {
-    for (size_t i(0);i<p_rproc->Size();++i)
-      msg_Debugging()<<"["<<i<<"]R : "<<(*p_rproc)[i]->Name()<<std::endl;
-    for (size_t i(0);i<p_rsproc->Size();++i)
-      msg_Debugging()<<"["<<i<<"]RS:  "<<(*p_rsproc)[i]->Name()<<std::endl;
-    THROW(fatal_error,"R and RS have different size");
-  }
+
+  // sanity checks:
+  // whether we have a corresponding B/R process for every BVI/RS process
   if (p_bproc->Size()!=p_bviproc->Size()) {
     for (size_t i(0);i<p_bproc->Size();++i)
       msg_Debugging()<<"["<<i<<"]B:   "<<(*p_bproc)[i]->Name()<<std::endl;
@@ -166,15 +271,56 @@ void MCatNLO_Process::Init(const Process_Info &pi,
       msg_Debugging()<<"["<<i<<"]BVI: "<<(*p_bviproc)[i]->Name()<<std::endl;
     THROW(fatal_error,"B and BVI have different size");
   }
-  for (size_t i(0);i<p_rsproc->Size();++i)
-    if ((*p_rsproc)[i]->Flavours()!=(*p_rproc)[i]->Flavours())
-      THROW(fatal_error,"Ordering differs in R and RS");
-  for (size_t i(0);i<p_bviproc->Size();++i)
-    if ((*p_bviproc)[i]->Flavours()!=(*p_bproc)[i]->Flavours())
-      THROW(fatal_error,"Ordering differs in B and BVI");
+  if (m_qcd) {
+    if (p_rsprocqcd->Size()!=p_rprocqcd->Size()) {
+      for (size_t i(0);i<p_rprocqcd->Size();++i)
+        msg_Debugging()<<"["<<i<<"]R_QCD: "<<(*p_rprocqcd)[i]->Name()<<std::endl;
+      for (size_t i(0);i<p_rsprocqcd->Size();++i)
+        msg_Debugging()<<"["<<i<<"]RS_QCD:  "<<(*p_rsprocqcd)[i]->Name()<<std::endl;
+      THROW(fatal_error,"QCD R and RS have different size");
+    }
+    if (p_bproc->Size()!=p_viprocqcd->Size()) {
+      for (size_t i(0);i<p_bproc->Size();++i)
+        msg_Debugging()<<"["<<i<<"]B:   "<<(*p_bproc)[i]->Name()<<std::endl;
+      for (size_t i(0);i<p_viprocqcd->Size();++i)
+        msg_Debugging()<<"["<<i<<"]VI_QCD: "<<(*p_viprocqcd)[i]->Name()<<std::endl;
+      THROW(fatal_error,"B and VI_QCD have different size");
+    }
+    for (size_t i(0);i<p_rsprocqcd->Size();++i)
+      if ((*p_rsprocqcd)[i]->Flavours()!=(*p_rprocqcd)[i]->Flavours())
+        THROW(fatal_error,"Ordering differs in QCD R and RS");
+    if (!p_read) for (size_t i(0);i<p_viprocqcd->Size();++i)
+      if ((*p_viprocqcd)[i]->Flavours()!=(*p_bproc)[i]->Flavours())
+        THROW(fatal_error,"Ordering differs in B and VI_QCD");
+  }
+  if (m_ew) {
+    if (p_rsprocqed->Size()!=p_rprocqed->Size()) {
+      for (size_t i(0);i<p_rprocqed->Size();++i)
+        msg_Debugging()<<"["<<i<<"]R_QED: "<<(*p_rprocqed)[i]->Name()<<std::endl;
+      for (size_t i(0);i<p_rsprocqed->Size();++i)
+        msg_Debugging()<<"["<<i<<"]RS_QED:  "<<(*p_rsprocqed)[i]->Name()<<std::endl;
+      THROW(fatal_error,"QED R and RS have different size");
+    }
+    if (p_bproc->Size()!=p_viprocew->Size()) {
+      for (size_t i(0);i<p_bproc->Size();++i)
+        msg_Debugging()<<"["<<i<<"]B:   "<<(*p_bproc)[i]->Name()<<std::endl;
+      for (size_t i(0);i<p_viprocqcd->Size();++i)
+        msg_Debugging()<<"["<<i<<"]VI_EW: "<<(*p_viprocew)[i]->Name()<<std::endl;
+      THROW(fatal_error,"B and VI_EW have different size");
+    }
+    for (size_t i(0);i<p_rsprocqed->Size();++i)
+      if ((*p_rsprocqed)[i]->Flavours()!=(*p_rprocqed)[i]->Flavours())
+        THROW(fatal_error,"Ordering differs in QED R and RS");
+    for (size_t i(0);i<p_viprocew->Size();++i)
+      if ((*p_viprocew)[i]->Flavours()!=(*p_bproc)[i]->Flavours())
+        THROW(fatal_error,"Ordering differs in B and VI_EW");
+  }
 
-  for (size_t i(0);i<p_rsproc->Size();++i)
-    (*p_rsproc)[i]->GetMEwgtinfo()->m_type=mewgttype::H;
+  // set the correct type for the reweighting
+  if (m_qcd) for (size_t i(0);i<p_rsprocqcd->Size();++i)
+    (*p_rsprocqcd)[i]->GetMEwgtinfo()->m_type=mewgttype::H;
+  if (m_ew) for (size_t i(0);i<p_rsprocqed->Size();++i)
+    (*p_rsprocqed)[i]->GetMEwgtinfo()->m_type=mewgttype::H;
 }
 
 void MCatNLO_Process::RegisterDefaults() const
@@ -193,10 +339,10 @@ Process_Base* MCatNLO_Process::InitProcess
   Process_Info cpi(pi);
   cpi.m_fi.SetNLOType(nlotype);
   if (real) {
-    if (pi.m_fi.m_nlocpl[1]==0. && pi.m_fi.m_nlocpl[0]==1.)
-      cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
-    else if (pi.m_fi.m_nlocpl[0]==0. && pi.m_fi.m_nlocpl[1]==1.)
+    if (m_ew)
       cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_ewjet,"",""));
+    else if (m_qcd)
+      cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
     else THROW(fatal_error, "Internal error.");
   }
   Process_Base* proc = m_gens.InitializeProcess(cpi,false);
@@ -205,12 +351,25 @@ Process_Base* MCatNLO_Process::InitProcess
 
 bool MCatNLO_Process::InitSubtermInfo()
 {
-  for (size_t i(0);i<p_ddproc->Size();++i) {
-    NLO_subevtlist *subs((*p_ddproc)[i]->GetSubevtList());
+  if (m_qcd) for (size_t i(0);i<p_ddprocqcd->Size();++i) {
+    NLO_subevtlist *subs((*p_ddprocqcd)[i]->GetSubevtList());
     for (size_t j(0);j<subs->size()-1;++j) {
       NLO_subevt *sub((*subs)[j]);
       for (size_t ij(0);ij<sub->m_n;++ij)
-	for (size_t k(0);k<sub->m_n;++k)
+	      for (size_t k(0);k<sub->m_n;++k)
+          if (k != ij && sub->p_fl[k] == sub->p_fl[sub->m_kt] &&
+              sub->p_fl[ij]==sub->p_fl[sub->m_ijt]) {
+	    m_iinfo[sub->m_pname].insert(IDip_ID(ij,k));
+	  }
+      m_dinfo[subs->back()->m_pname].insert(*sub);
+    }
+  }
+  if (m_ew) for (size_t i(0);i<p_ddprocqed->Size();++i) {
+    NLO_subevtlist *subs((*p_ddprocqed)[i]->GetSubevtList());
+    for (size_t j(0);j<subs->size()-1;++j) {
+      NLO_subevt *sub((*subs)[j]);
+      for (size_t ij(0);ij<sub->m_n;++ij)
+	      for (size_t k(0);k<sub->m_n;++k)
           if (k != ij && sub->p_fl[k] == sub->p_fl[sub->m_kt] &&
               sub->p_fl[ij]==sub->p_fl[sub->m_ijt]) {
 	    m_iinfo[sub->m_pname].insert(IDip_ID(ij,k));
@@ -230,17 +389,29 @@ Process_Base *MCatNLO_Process::FindProcess
   if (pit!=p_apmap->find(type)->second->end()) {
     if (type==nlo_type::lo) {
       for (size_t i(0);i<p_bproc->Size();++i)
-	if ((*p_bproc)[i]==pit->second) return pit->second;
-      for (size_t i(0);i<p_rproc->Size();++i)
-	if ((*p_rproc)[i]==pit->second) return pit->second;
+	      if ((*p_bproc)[i]==pit->second) return pit->second;
+      for (size_t i(0);i<p_bviproc->Size();++i)
+	      if ((*p_bviproc)[i]==pit->second) return pit->second;
+      for (size_t i(0);i<p_rprocqcd->Size();++i)
+	      if ((*p_rprocqcd)[i]==pit->second) return pit->second;
+    }
+    if (type==(nlo_type::lo|nlo_type::qed)) {
+      for (size_t i(0);i<p_rprocqed->Size();++i)
+	      if ((*p_rprocqed)[i]==pit->second) return pit->second;
     }
     if (type&nlo_type::vsub) {
-      for (size_t i(0);i<p_bviproc->Size();++i)
-	if ((*p_bviproc)[i]==pit->second) return pit->second;
+      if (p_read) for (size_t i(0);i<p_bviproc->Size();++i)
+	      if ((*p_bviproc)[i]==pit->second) return pit->second;
+      if (!p_read) for (size_t i(0);i<p_viprocqcd->Size();++i)
+	      if ((*p_viprocqcd)[i]==pit->second) return pit->second;
+      for (size_t i(0);i<p_viprocew->Size();++i)
+	      if ((*p_viprocew)[i]==pit->second) return pit->second;
     }
     if (type&nlo_type::rsub) {
-      for (size_t i(0);i<p_rsproc->Size();++i)
-	if ((*p_rsproc)[i]==pit->second) return pit->second;
+      for (size_t i(0);i<p_rsprocqcd->Size();++i)
+	      if ((*p_rsprocqcd)[i]==pit->second) return pit->second;
+      for (size_t i(0);i<p_rsprocqed->Size();++i)
+	      if ((*p_rsprocqed)[i]==pit->second) return pit->second;
     }
   }
   if (error)
@@ -252,7 +423,7 @@ Cluster_Amplitude *MCatNLO_Process::CreateAmplitude(const NLO_subevt *sub) const
 {
   Cluster_Amplitude *ampl = Cluster_Amplitude::New();
   ampl->SetNIn(m_nin);
-  ampl->SetMS(p_rsproc->Generator());
+  ampl->SetMS(m_qcd?p_rsprocqcd->Generator():p_rsprocqed->Generator());
   ampl->SetMuF2(sub->m_mu2[stp::fac]);
   ampl->SetMuR2(sub->m_mu2[stp::ren]);
   Int_Vector ci(sub->m_n,0), cj(sub->m_n,0);
@@ -453,38 +624,48 @@ Weights_Map MCatNLO_Process::OneHEvent(const int wmode)
 {
   msg_Debugging()<<"H event\n";
   m_wassevent=false;
+  Process_Base *rsproc(NULL), *_rproc(NULL);
+  if (m_evttype==1) {
+    p_selected=p_rprocqcd;
+    _rproc=p_rprocqcd;
+    rsproc=p_rsprocqcd;
+  }
+  if (m_evttype==2) {
+    p_selected=p_rprocqed;
+    _rproc=p_rprocqed;
+    rsproc=p_rsprocqed;
+  }
   if (p_ampl) p_ampl->Delete();
-  p_selected=p_rproc;
-  const size_t selectedindex(p_rproc->SynchronizeSelectedIndex(*p_rsproc));
+  const size_t selectedindex(_rproc->SynchronizeSelectedIndex(*rsproc));
   assert(selectedindex != std::numeric_limits<size_t>::max());
-  Process_Base *rproc((*p_rproc)[selectedindex]);
-  rproc->SetLastXS(p_rsproc->Selected()->LastXS());
+  Process_Base *rproc((*_rproc)[selectedindex]);
+  rproc->SetLastXS(rsproc->Selected()->LastXS());
   rproc->Integrator()->SetMax
-    (p_rsproc->Selected()->Integrator()->Max());
-  Vec4D_Vector &p(p_rsproc->Selected()->Integrator()->Momenta());
-  rproc->SetFixedScale(p_rsproc->Selected()->ScaleSetter(1)->Scales());
+    (rsproc->Selected()->Integrator()->Max());
+  Vec4D_Vector &p(rsproc->Selected()->Integrator()->Momenta());
+  rproc->SetFixedScale(rsproc->Selected()->ScaleSetter(1)->Scales());
   rproc->ScaleSetter(1)->CalculateScale(Vec4D_Vector());
   rproc->SetFixedScale(std::vector<double>());
   rproc->GetMEwgtinfo()->m_mur2=
-    p_rsproc->Selected()->GetMEwgtinfo()->m_mur2;
+    rsproc->Selected()->GetMEwgtinfo()->m_mur2;
   rproc->GetMEwgtinfo()->m_muf2=
-    p_rsproc->Selected()->GetMEwgtinfo()->m_muf2;
+    rsproc->Selected()->GetMEwgtinfo()->m_muf2;
   rproc->Integrator()->SetMomenta(p);
   Color_Integrator *ci(rproc->Integrator()->ColorIntegrator().get()),
-    *rci(p_rsproc->Selected()->Integrator()->ColorIntegrator().get());
+    *rci(rsproc->Selected()->Integrator()->ColorIntegrator().get());
   if (ci && rci) {
     ci->SetI(rci->I());
     ci->SetJ(rci->J());
   }
-  p_ampl=p_rsproc->Selected()->GetSubevtList()->back()->p_ampl;
+  p_ampl=rsproc->Selected()->GetSubevtList()->back()->p_ampl;
   if (p_ampl) p_ampl=p_ampl->CopyAll();
   else p_ampl=((Single_Process*)(rproc))->Cluster(p,1);
-  p_selected->Selected()->SetMEwgtinfo(*p_rsproc->Selected()->GetMEwgtinfo());
+  p_selected->Selected()->SetMEwgtinfo(*rsproc->Selected()->GetMEwgtinfo());
   if (p_ampl==NULL) {
     msg_Error()<<METHOD<<"(): No valid clustering. Skip event."<<std::endl;
     return {0};
   }
-  Scale_Setter_Base *scs(p_rsproc->Selected()->ScaleSetter(1));
+  Scale_Setter_Base *scs(rsproc->Selected()->ScaleSetter(1));
   for (Cluster_Amplitude *ampl(p_ampl);ampl;ampl=ampl->Next()) {
     ampl->SetMuR2(scs->Scale(stp::ren));
     ampl->SetMuF2(scs->Scale(stp::fac));
@@ -494,7 +675,7 @@ Weights_Map MCatNLO_Process::OneHEvent(const int wmode)
     p_ampl->Next()->SetNLO
       (p_ampl->Next()->NLO()|m_hpsmode);
   }
-  Selector_Base *jf=p_rsproc->Selected()->
+  Selector_Base *jf=rsproc->Selected()->
     Selector()->GetSelector("Jetfinder");
   Weights_Map wgtmap;
   wgtmap.insert({"QCUT", Weights {Variations_Type::qcut}});
@@ -521,21 +702,25 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
 {
   msg_Debugging()<<"S event\n";
   m_wassevent=true;
+  Process_Base *bviproc(NULL);
+  if (m_evttype==0) bviproc=p_bviproc;
+  if (m_evttype==1) bviproc=p_viprocqcd;
+  if (m_evttype==2) bviproc=p_viprocew;
   if (p_ampl) p_ampl->Delete();
   p_ampl=NULL;
-  const size_t selectedindex(p_bproc->SynchronizeSelectedIndex(*p_bviproc));
+  const size_t selectedindex(p_bproc->SynchronizeSelectedIndex(*bviproc));
   assert(selectedindex != std::numeric_limits<size_t>::max());
   Process_Base *bproc((*p_bproc)[selectedindex]);
   bproc->Integrator()->SetMax
-    (p_bviproc->Selected()->Integrator()->Max());
+    (bviproc->Selected()->Integrator()->Max());
   bproc->Integrator()->SetEnhanceFactor
-    (p_bviproc->Selected()->Integrator()->EnhanceFactor());
-  bproc->SetSubEvt(p_bviproc->Selected()->SubEvt());
-  bproc->SubEvt()->p_proc=p_bviproc->Selected();
-  bproc->SetLastXS(p_bviproc->Selected()->LastXS());
-  Vec4D_Vector &p(p_bviproc->Selected()->Integrator()->Momenta());
+    (bviproc->Selected()->Integrator()->EnhanceFactor());
+  bproc->SetSubEvt(bviproc->Selected()->SubEvt());
+  if (bproc->SubEvt()) bproc->SubEvt()->p_proc=bviproc->Selected();
+  bproc->SetLastXS(bviproc->Selected()->LastXS());
+  Vec4D_Vector &p(bviproc->Selected()->Integrator()->Momenta());
   p_ampl = dynamic_cast<Single_Process*>
-    (p_bviproc->Selected())->Cluster(p);
+    (bviproc->Selected())->Cluster(p);
   SortFlavours(p_ampl);
   p_ampl->SetProcs(p_apmap);
   p_ampl->SetIInfo(&m_iinfo);
@@ -544,7 +729,7 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
   if (p_ampl->JF<void>())
     for (Cluster_Amplitude *sampl(p_ampl);
 	 sampl;sampl=sampl->Next()) sampl->SetNLO(2);
-  double lkf(p_bviproc->Selected()->Last()/p_bviproc->Selected()->LastB());
+  double lkf(bviproc->Selected()->Last()/bviproc->Selected()->LastBValue());
   for (Cluster_Amplitude *ampl(p_ampl);
        ampl;ampl=ampl->Next()) ampl->SetLKF(lkf);
   int stat(1);
@@ -564,14 +749,21 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
     for (size_t i(0);i<afl.size();++i) {
       afl[i]=i<m_nin?ampl->Leg(i)->Flav().Bar():ampl->Leg(i)->Flav();
     }
-    for (size_t i(0);i<p_rproc->Size();++i)
-      if (afl==(*p_rproc)[i]->Flavours()) {
-	rproc=(*p_rproc)[i];
-	break;
+    if (m_qcd) for (size_t i(0);i<p_rprocqcd->Size();++i)
+      if (afl==(*p_rprocqcd)[i]->Flavours()) {
+        rproc=(*p_rprocqcd)[i];
+        p_selected=p_rprocqcd;
+        p_rprocqcd->SetSelected(rproc);
+        break;
+      }
+    if (m_ew && !rproc) for (size_t i(0);i<p_rprocqed->Size();++i)
+      if (afl==(*p_rprocqed)[i]->Flavours()) {
+        rproc=(*p_rprocqed)[i];
+        p_selected=p_rprocqed;
+        p_rprocqed->SetSelected(rproc);
+        break;
       }
     if (rproc==NULL) THROW(fatal_error,"Invalid splitting");
-    p_selected=p_rproc;
-    p_rproc->SetSelected(rproc);
     rproc->Integrator()->PSHandler()->SetEnhanceWeight(
         bproc->Integrator()->PSHandler()->EnhanceWeight());
     rproc->Integrator()->SetMax(bproc->Integrator()->Max());
@@ -596,11 +788,11 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
     Cluster_Definitions_Base *clus(p_shower->GetClusterDefinitions());
     Cluster_Param kt2=clus->Cluster
       (Cluster_Config(campl,ids[0],ids[1],ids[2],lij->Flav(),
-		      p_bviproc->Generator(),NULL,1));
+		      bviproc->Generator(),NULL,1));
     if (kt2.m_kt2<=0.0) {
       kt2=clus->Cluster
 	(Cluster_Config(campl,ids[1],ids[0],ids[2],lij->Flav(),
-			p_bviproc->Generator(),NULL,1));
+			bviproc->Generator(),NULL,1));
     }
     campl->Delete();
     ampl->SetKT2(kt2.m_kt2);
@@ -634,7 +826,7 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
     }
     msg_Debugging()<<"R selected via Sudakov "<<*p_ampl
 		   <<" ( w = "<<mcwgt.Nominal()<<" )\n";
-    p_selected->Selected()->SetMEwgtinfo(*p_bviproc->Selected()->GetMEwgtinfo());
+    p_selected->Selected()->SetMEwgtinfo(*bviproc->Selected()->GetMEwgtinfo());
     return mcwgt;
   }
   p_selected=p_bproc;
@@ -646,7 +838,7 @@ Weights_Map MCatNLO_Process::OneSEvent(const int wmode)
 		 <<" ( w = "<<mcwgt.Nominal()<<" )\n";
   for (Cluster_Amplitude *campl(p_ampl->Next());campl;
        campl=campl->Next()) msg_Debugging()<<*campl<<"\n";
-  bproc->SetMEwgtinfo(*p_bviproc->Selected()->GetMEwgtinfo());
+  bproc->SetMEwgtinfo(*bviproc->Selected()->GetMEwgtinfo());
   if (m_psmode&2) return Weights_Map{1.0};
   return stat ? mcwgt : Weights_Map{0.0};
 }
@@ -656,11 +848,18 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,
                                        const int mode)
 {
   DEBUG_FUNC(m_name<<" "<<p_read);
-  double S(0), H(0);
+  double SB(0), SQCD(0), SEW(0), HQCD(0), HQED(0);
   Weight_Info *winfo(NULL);
   if (p_read==NULL) {
-    S=p_bviproc->Integrator()->SelectionWeight(wmode);
-    H=p_rsproc->Integrator()->SelectionWeight(wmode);
+    SB=p_bviproc->Integrator()->SelectionWeight(wmode);
+    if (m_qcd) {
+      SQCD=p_viprocqcd->Integrator()->SelectionWeight(wmode);
+      HQCD=p_rsprocqcd->Integrator()->SelectionWeight(wmode);
+    }
+    if (m_ew) {
+      SEW=p_viprocew->Integrator()->SelectionWeight(wmode);
+      HQED=p_rsprocqed->Integrator()->SelectionWeight(wmode);
+    }
   }
   else {
     msg_Debugging()<<"Reader type is "<<Demangle(typeid(*p_read).name())<<"\n";
@@ -673,15 +872,15 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,
       p_bviproc->SetEventReader(p_read);
       winfo = p_bviproc->OneEvent(wmode);
       p_bviproc->SetEventReader(NULL);
-      S=1; H=0;
+      SB=1;
     }
     else {
       msg_Debugging()<<"H event\n";
       p_read->SetAmpl(ampl);
-      p_rsproc->SetEventReader(p_read);
-      winfo = p_rsproc->OneEvent(wmode);
-      p_rsproc->SetEventReader(NULL);
-      S=0; H=1;
+      p_rsprocqcd->SetEventReader(p_read);
+      winfo = p_rsprocqcd->OneEvent(wmode);
+      p_rsprocqcd->SetEventReader(NULL);
+      HQCD=1;
     }
     if (winfo==NULL) {
       msg_Debugging()<<"No weight info\n";
@@ -689,14 +888,20 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,
     }
     msg_Debugging()<<"Weight info: "<<*winfo<<"\n";
   }
-  if (S > ran->Get() * (S + H)) {
+  // msg_Debugging()<<METHOD<<" qcd: "<<m_qcd<<", ew: "<<m_ew<<", SB: "<<SB<<", "
+  const double r(ran->Get() * (SB + SQCD + SEW + HQCD + HQED));
+  if (SB > r) {
+    msg_Debugging()<<METHOD<<" SB\n";
     p_selected = p_bviproc;
+    m_evttype=0;
     if (p_read==NULL) winfo = p_bviproc->OneEvent(wmode, varmode, mode);
     if (winfo && m_fomode != 2) {
       // calculate and apply weight factor
       const Weights_Map Swgts {OneSEvent(wmode)};
       assert(p_ampl);
+      msg_Debugging()<<METHOD<<" B:\n";
       const double Bsel(p_bproc->Selected()->Integrator()->SelectionWeight(wmode));
+      msg_Debugging()<<METHOD<<" BVI:\n";
       const double Ssel(p_bviproc->Selected()->Integrator()->SelectionWeight(wmode));
       const double selwgtratio(Bsel / Ssel);
       const double wgtfac(selwgtratio);
@@ -704,14 +909,72 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,
       winfo->m_weightsmap *= Swgts;
       *(p_selected->Selected()->GetMEwgtinfo()) *= Swgts.Nominal()*wgtfac;
     }
-  } else {
-    p_selected = p_rsproc;
-    if (p_read==NULL) winfo = p_rsproc->OneEvent(wmode, varmode, mode);
+  } else if (SB + SQCD > r) {
+    msg_Debugging()<<METHOD<<" SQCD\n";
+    p_selected = p_viprocqcd;
+    m_evttype=1;
+    if (p_read==NULL) winfo = p_viprocqcd->OneEvent(wmode, varmode, mode);
+    if (winfo && m_fomode != 2) {
+      // calculate and apply weight factor
+      const Weights_Map Swgts {OneSEvent(wmode)};
+      assert(p_ampl);
+      msg_Debugging()<<METHOD<<" B:\n";
+      const double Bsel(p_bproc->Selected()->Integrator()->SelectionWeight(wmode));
+      msg_Debugging()<<METHOD<<" VI QCD:\n";
+      const double Ssel(p_viprocqcd->Selected()->Integrator()->SelectionWeight(wmode));
+      const double selwgtratio(Bsel / Ssel);
+      const double wgtfac(selwgtratio);
+      winfo->m_weightsmap *= wgtfac;
+      winfo->m_weightsmap *= Swgts;
+      *(p_selected->Selected()->GetMEwgtinfo()) *= Swgts.Nominal()*wgtfac;
+    }
+  } else if (SB + SQCD + SEW > r) {
+    msg_Debugging()<<METHOD<<" SEW\n";
+    p_selected = p_viprocew;
+    m_evttype=2;
+    if (p_read==NULL) winfo = p_viprocew->OneEvent(wmode, varmode, mode);
+    if (winfo && m_fomode != 2) {
+      // calculate and apply weight factor
+      const Weights_Map Swgts {OneSEvent(wmode)};
+      assert(p_ampl);
+      msg_Debugging()<<METHOD<<" B:\n";
+      const double Bsel(p_bproc->Selected()->Integrator()->SelectionWeight(wmode));
+      msg_Debugging()<<METHOD<<" VI EW:\n";
+      const double Ssel(p_viprocew->Selected()->Integrator()->SelectionWeight(wmode));
+      const double selwgtratio(Bsel / Ssel);
+      const double wgtfac(selwgtratio);
+      winfo->m_weightsmap *= wgtfac;
+      winfo->m_weightsmap *= Swgts;
+      *(p_selected->Selected()->GetMEwgtinfo()) *= Swgts.Nominal()*wgtfac;
+    }
+  } else if (SB + SQCD + SEW + HQCD > r) {
+    msg_Debugging()<<METHOD<<" HQCD\n";
+    p_selected = p_rsprocqcd;
+    m_evttype=1;
+    if (p_read==NULL) winfo = p_rsprocqcd->OneEvent(wmode, varmode, mode);
     if (winfo && m_fomode != 2) {
       // calculate and apply weight factor
       const Weights_Map Hwgts {OneHEvent(wmode)};
-      const double Rsel(p_rproc->Selected()->Integrator()->SelectionWeight(wmode));
-      const double RSsel(p_rsproc->Selected()->Integrator()->SelectionWeight(wmode));
+      msg_Debugging()<<METHOD<<" R QCD:\n";
+      const double Rsel(p_rprocqcd->Selected()->Integrator()->SelectionWeight(wmode));
+      msg_Debugging()<<METHOD<<" RS QCD:\n";
+      const double RSsel(p_rsprocqcd->Selected()->Integrator()->SelectionWeight(wmode));
+      const double selwgtratio(Rsel / RSsel);
+      const double wgtfac(selwgtratio);
+      winfo->m_weightsmap *= wgtfac;
+      winfo->m_weightsmap *= Hwgts;
+      *p_selected->Selected()->GetMEwgtinfo() *= Hwgts.Nominal()*wgtfac;
+    }
+  } else {
+    msg_Debugging()<<METHOD<<" HQED\n";
+    p_selected = p_rsprocqed;
+    m_evttype=2;
+    if (p_read==NULL) winfo = p_rsprocqed->OneEvent(wmode, varmode, mode);
+    if (winfo && m_fomode != 2) {
+      // calculate and apply weight factor
+      const Weights_Map Hwgts {OneHEvent(wmode)};
+      const double Rsel(p_rprocqed->Selected()->Integrator()->SelectionWeight(wmode));
+      const double RSsel(p_rsprocqed->Selected()->Integrator()->SelectionWeight(wmode));
       const double selwgtratio(Rsel / RSsel);
       const double wgtfac(selwgtratio);
       winfo->m_weightsmap *= wgtfac;
@@ -748,41 +1011,84 @@ void MCatNLO_Process::InitPSHandler
 (const double &maxerror,const std::string eobs,const std::string efunc)
 {
   p_bviproc->InitPSHandler(maxerror,eobs,efunc);
-  p_ddproc->InitPSHandler(maxerror,eobs,efunc);
-  p_rsproc->InitPSHandler(maxerror,eobs,efunc);
-  p_rsproc->Integrator()->SetEnhanceFactor
-    (p_rsproc->Integrator()->EnhanceFactor()*p_int->RSEnhanceFactor());
-  p_rproc->Integrator()->SetPSHandler
-    (p_rsproc->Integrator()->PSHandler());
   p_bproc->Integrator()->SetPSHandler
     (p_bviproc->Integrator()->PSHandler());
+  if (m_qcd) {
+    p_viprocqcd->InitPSHandler(maxerror,eobs,efunc);
+    p_ddprocqcd->InitPSHandler(maxerror,eobs,efunc);
+    p_rsprocqcd->InitPSHandler(maxerror,eobs,efunc);
+    p_rsprocqcd->Integrator()->SetEnhanceFactor
+      (p_rsprocqcd->Integrator()->EnhanceFactor()*p_int->RSEnhanceFactor());
+    p_rprocqcd->Integrator()->SetPSHandler
+      (p_rsprocqcd->Integrator()->PSHandler());
+  }
+  if (m_ew) {
+    p_viprocew->InitPSHandler(maxerror,eobs,efunc);
+    p_ddprocqed->InitPSHandler(maxerror,eobs,efunc);
+    p_rsprocqed->InitPSHandler(maxerror,eobs,efunc);
+    p_rsprocqed->Integrator()->SetEnhanceFactor
+      (p_rsprocqed->Integrator()->EnhanceFactor()*p_int->RSEnhanceFactor());
+    p_rprocqed->Integrator()->SetPSHandler
+      (p_rsprocqed->Integrator()->PSHandler());
+  }
 }
 
 bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
                                          const bool         create)
 {
-  Vec4D_Vector p(p_rsproc->NIn()+p_rsproc->NOut());
+  Vec4D_Vector p(m_qcd?p_rsprocqcd->NIn()+p_rsprocqcd->NOut():
+                       p_rsprocqed->NIn()+p_rsprocqed->NOut());
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   for (int i(0);i<p.size();++i) {
     ampl->CreateLeg(Vec4D(),Flavour(kf_jet));
   }
-  auto psh = p_ddproc->Integrator()->PSHandler();
+  PHASIC::Phase_Space_Handler *psh(NULL);
   do {
-    psh->TestPoint(&p.front(),&p_ddproc->Info(),p_ddproc->Generator());
-    for (size_t i(0);i<p.size();++i) ampl->Leg(i)->SetMom(p[i]);
-    p_ddproc->Differential(*ampl,Variations_Mode::nominal_only,4);
+    if (m_qcd) {
+      psh = p_ddprocqcd->Integrator()->PSHandler();
+      psh->TestPoint(&p.front(),&p_ddprocqcd->Info(),p_ddprocqcd->Generator());
+      for (size_t i(0);i<p.size();++i) ampl->Leg(i)->SetMom(p[i]);
+      p_ddprocqcd->Differential(*ampl,Variations_Mode::nominal_only,4);
+    }
+    if (m_ew) {
+      psh = p_ddprocqed->Integrator()->PSHandler();
+      psh->TestPoint(&p.front(),&p_ddprocqed->Info(),p_ddprocqed->Generator());
+      for (size_t i(0);i<p.size();++i) ampl->Leg(i)->SetMom(p[i]);
+      p_ddprocqed->Differential(*ampl,Variations_Mode::nominal_only,4);
+    }
   } while (!InitSubtermInfo());
   ampl->Delete();
+
   p_bviproc->SetEventReader(p_read);
   bool res(p_bviproc->CalculateTotalXSec(resultpath,create));
   p_bviproc->SetEventReader(NULL);
-  psh=p_rsproc->Integrator()->PSHandler();
-  if (!p_read && psh->AbsError()==0.0)
-    psh->SetAbsError(psh->Error()*rpa->Picobarn()*
-		     dabs(p_bviproc->Integrator()->TotalResult()));
-  p_rsproc->SetEventReader(p_read);
-  if (!p_rsproc->CalculateTotalXSec(resultpath,create)) res=false;
-  p_rsproc->SetEventReader(NULL);
+  if (m_qcd) {
+    if (!p_read) {
+      p_viprocqcd->SetEventReader(p_read);
+      res &= p_viprocqcd->CalculateTotalXSec(resultpath,create);
+      p_viprocqcd->SetEventReader(NULL);
+    }
+    psh=p_rsprocqcd->Integrator()->PSHandler();
+    if (!p_read && psh->AbsError()==0.0)
+      psh->SetAbsError(psh->Error()*rpa->Picobarn()*
+          dabs(p_bviproc->Integrator()->TotalResult()));
+    p_rsprocqcd->SetEventReader(p_read);
+    res &= p_rsprocqcd->CalculateTotalXSec(resultpath,create);
+    p_rsprocqcd->SetEventReader(NULL);
+  }
+  if (m_ew) {
+    p_viprocew->SetEventReader(p_read);
+    res &= p_viprocew->CalculateTotalXSec(resultpath,create);
+    p_viprocew->SetEventReader(NULL);
+    psh=p_rsprocqed->Integrator()->PSHandler();
+    if (!p_read && psh->AbsError()==0.0)
+      psh->SetAbsError(psh->Error()*rpa->Picobarn()*
+          dabs(p_bviproc->Integrator()->TotalResult()));
+    p_rsprocqed->SetEventReader(p_read);
+    res &= p_rsprocqed->CalculateTotalXSec(resultpath,create);
+    p_rsprocqed->SetEventReader(NULL);
+  }
+
   if (p_read) {
     p_read->WarmUp();
     p_int->SetMax(p_read->UnitWeight()/rpa->Picobarn());
@@ -799,73 +1105,139 @@ void MCatNLO_Process::FinalizeEventReader()
   // OneEvent / CalculateTotalXSec); clear them before the base class
   // deletes the reader we own.
   if (p_bviproc) p_bviproc->FinalizeEventReader();
-  if (p_rsproc) p_rsproc->FinalizeEventReader();
+  if (p_viprocqcd) p_viprocqcd->FinalizeEventReader();
+  if (p_viprocew) p_viprocew->FinalizeEventReader();
+  if (p_rsprocqcd) p_rsprocqcd->FinalizeEventReader();
+  if (p_rsprocqed) p_rsprocqed->FinalizeEventReader();
   if (p_bproc) p_bproc->FinalizeEventReader();
-  if (p_rproc) p_rproc->FinalizeEventReader();
-  if (p_ddproc) p_ddproc->FinalizeEventReader();
+  if (p_rprocqcd) p_rprocqcd->FinalizeEventReader();
+  if (p_rprocqed) p_rprocqed->FinalizeEventReader();
+  if (p_ddprocqcd) p_ddprocqcd->FinalizeEventReader();
+  if (p_ddprocqed) p_ddprocqed->FinalizeEventReader();
   Process_Base::FinalizeEventReader();
 }
 
 void MCatNLO_Process::SetLookUp(const bool lookup)
 {
   m_lookup=lookup;
+    if (m_qcd) {
+    if (!p_read) p_viprocqcd->SetLookUp(lookup);
+    p_ddprocqcd->SetLookUp(lookup);
+    p_rsprocqcd->SetLookUp(lookup);
+  }
+  if (m_ew) {
+    p_viprocew->SetLookUp(lookup);
+    p_ddprocqed->SetLookUp(lookup);
+    p_rsprocqed->SetLookUp(lookup);
+  }
   p_bviproc->SetLookUp(lookup);
-  p_ddproc->SetLookUp(lookup);
-  p_rsproc->SetLookUp(lookup);
 }
 
 bool MCatNLO_Process::InitScale()
 {
   bool res(true);
+  if (m_qcd) {
+    if (!p_read && !p_viprocqcd->InitScale()) res=false;
+    if (!p_ddprocqcd->InitScale()) res=false;
+    if (!p_rsprocqcd->InitScale()) res=false;
+    if (!p_rprocqcd->InitScale()) res=false;
+  }
+  if (m_ew) {
+    if (!p_viprocew->InitScale()) res=false;
+    if (!p_ddprocqed->InitScale()) res=false;
+    if (!p_rsprocqed->InitScale()) res=false;
+    if (!p_rprocqed->InitScale()) res=false;
+  }
   if (!p_bviproc->InitScale()) res=false;
-  if (!p_ddproc->InitScale()) res=false;
-  if (!p_rsproc->InitScale()) res=false;
-  if (!p_rproc->InitScale()) res=false;
   if (!p_bproc->InitScale()) res=false;
   return res;
 }
 
 void MCatNLO_Process::SetScale(const Scale_Setter_Arguments &scale)
 {
+  if (m_qcd) {
+    if (!p_read) p_viprocqcd->SetScale(scale);
+    p_ddprocqcd->SetScale(scale);
+    if (m_rsscale!="") {
+      Scale_Setter_Arguments rsscale(scale);
+      rsscale.m_scale=m_rsscale;
+      p_rsprocqcd->SetScale(rsscale);
+      p_rprocqcd->SetScale(rsscale);
+    }
+    else {
+      p_rsprocqcd->SetScale(scale);
+      p_rprocqcd->SetScale(scale);
+    }
+  }
+  if (m_ew) {
+    p_viprocew->SetScale(scale);
+    p_ddprocqed->SetScale(scale);
+    if (m_rsscale!="") {
+      Scale_Setter_Arguments rsscale(scale);
+      rsscale.m_scale=m_rsscale;
+      p_rsprocqed->SetScale(rsscale);
+      p_rprocqed->SetScale(rsscale);
+    }
+    else {
+      p_rsprocqed->SetScale(scale);
+      p_rprocqed->SetScale(scale);
+    }
+  }
   p_bviproc->SetScale(scale);
-  p_ddproc->SetScale(scale);
-  if (m_rsscale!="") {
-    Scale_Setter_Arguments rsscale(scale);
-    rsscale.m_scale=m_rsscale;
-    p_rsproc->SetScale(rsscale);
-    p_rproc->SetScale(rsscale);
-  }
-  else {
-    p_rsproc->SetScale(scale);
-    p_rproc->SetScale(scale);
-  }
   p_bproc->SetScale(scale);
 }
 
 void MCatNLO_Process::SetKFactor(const KFactor_Setter_Arguments &args)
 {
+  if (m_qcd) {
+    if (!p_read) p_viprocqcd->SetKFactor(args);
+    p_ddprocqcd->SetKFactor(args);
+    p_rsprocqcd->SetKFactor(args);
+    p_rprocqcd->SetKFactor(args);
+  }
+  if (m_ew) {
+    p_viprocew->SetKFactor(args);
+    p_ddprocqed->SetKFactor(args);
+    p_rsprocqed->SetKFactor(args);
+    p_rprocqed->SetKFactor(args);
+  }
   p_bviproc->SetKFactor(args);
-  p_ddproc->SetKFactor(args);
-  p_rsproc->SetKFactor(args);
-  p_rproc->SetKFactor(args);
   p_bproc->SetKFactor(args);
 }
 
 void MCatNLO_Process::InitializeTheReweighting(ATOOLS::Variations_Mode mode)
 {
+  if (m_qcd) {
+    if (!p_read) p_viprocqcd->InitializeTheReweighting(mode);
+    p_ddprocqcd->InitializeTheReweighting(mode);
+    p_rsprocqcd->InitializeTheReweighting(mode);
+    p_rprocqcd->InitializeTheReweighting(mode);  
+  }
+  if (m_ew) {
+    p_viprocew->InitializeTheReweighting(mode);
+    p_ddprocqed->InitializeTheReweighting(mode);
+    p_rsprocqed->InitializeTheReweighting(mode);
+    p_rprocqed->InitializeTheReweighting(mode);
+  }
   p_bviproc->InitializeTheReweighting(mode);
-  p_ddproc->InitializeTheReweighting(mode);
-  p_rsproc->InitializeTheReweighting(mode);
-  p_rproc->InitializeTheReweighting(mode);
   p_bproc->InitializeTheReweighting(mode);
 }
 
 void MCatNLO_Process::SetFixedScale(const std::vector<double> &s)
 {
+  if (m_qcd) {
+    if (!p_read) p_viprocqcd->SetFixedScale(s);
+    p_ddprocqcd->SetFixedScale(s);
+    p_rsprocqcd->SetFixedScale(s);
+    p_rprocqcd->SetFixedScale(s);
+  }
+  if (m_ew) {
+    p_viprocew->SetFixedScale(s);
+    p_ddprocqed->SetFixedScale(s);
+    p_rsprocqed->SetFixedScale(s);
+    p_rprocqed->SetFixedScale(s);
+  }
   p_bviproc->SetFixedScale(s);
-  p_ddproc->SetFixedScale(s);
-  p_rsproc->SetFixedScale(s);
-  p_rproc->SetFixedScale(s);
   p_bproc->SetFixedScale(s);
 }
 
@@ -876,40 +1248,77 @@ bool MCatNLO_Process::IsGroup() const
 
 size_t MCatNLO_Process::Size() const
 {
-  return 2;
+  if (p_read) return 2;
+  if (m_qcd&m_ew) return 5;
+  return 3;
 }
 
 Process_Base *MCatNLO_Process::operator[](const size_t &i)
 {
-  if (i==1) return p_rsproc;
-  return p_bviproc;
+  if (i==0) return p_bviproc;
+  if (m_qcd) {
+    if (i==1) return p_rsprocqcd;
+    if (i==2 && !p_read) return p_viprocqcd;
+  }
+  if (m_ew) {
+    if (i==1+2*m_qcd) return p_rsprocqed;
+    if (i==2+2*m_qcd) return p_viprocew;
+  }
+  THROW(fatal_error,"Invalid MCatNLO_Process index");
 }
 
 void MCatNLO_Process::SetSelector(const Selector_Key &key)
 {
+  if (m_qcd) {
+    if (!p_read) p_viprocqcd->SetSelector(key);
+    p_ddprocqcd->SetSelector(key);
+    p_rsprocqcd->SetSelector(key);
+    p_rprocqcd->SetSelector(key);
+  }
+  if (m_ew) {
+    p_viprocew->SetSelector(key);
+    p_ddprocqed->SetSelector(key);
+    p_rsprocqed->SetSelector(key);
+    p_rprocqed->SetSelector(key);
+  }
   p_bviproc->SetSelector(key);
-  p_ddproc->SetSelector(key);
-  p_rsproc->SetSelector(key);
-  p_rproc->SetSelector(key);
   p_bproc->SetSelector(key);
 }
 
 void MCatNLO_Process::SetShower(PDF::Shower_Base *const ps)
 {
   p_shower=ps;
+  if (m_qcd) {
+    if (!p_read) p_viprocqcd->SetShower(ps);
+    p_ddprocqcd->SetShower(ps);
+    p_rsprocqcd->SetShower(ps);
+    p_rprocqcd->SetShower(ps);
+  }
+  if (m_ew) {
+    p_viprocew->SetShower(ps);
+    p_ddprocqed->SetShower(ps);
+    p_rsprocqed->SetShower(ps);
+    p_rprocqed->SetShower(ps);
+  }
   p_bviproc->SetShower(ps);
-  p_ddproc->SetShower(ps);
-  p_rsproc->SetShower(ps);
-  p_rproc->SetShower(ps);
   p_bproc->SetShower(ps);
 }
 
 void MCatNLO_Process::SetNLOMC(PDF::NLOMC_Base *const mc)
 {
   p_nlomc=mc;
+  if (m_qcd) {
+    if (!p_read) p_viprocqcd->SetNLOMC(mc);
+    p_ddprocqcd->SetNLOMC(mc);
+    p_rsprocqcd->SetNLOMC(mc);
+    p_rprocqcd->SetNLOMC(mc);
+  }
+  if (m_ew) {
+    p_viprocew->SetNLOMC(mc);
+    p_ddprocqed->SetNLOMC(mc);
+    p_rsprocqed->SetNLOMC(mc);
+    p_rprocqed->SetNLOMC(mc);
+  }
   p_bviproc->SetNLOMC(mc);
-  p_ddproc->SetNLOMC(mc);
-  p_rsproc->SetNLOMC(mc);
-  p_rproc->SetNLOMC(mc);
   p_bproc->SetNLOMC(mc);
 }

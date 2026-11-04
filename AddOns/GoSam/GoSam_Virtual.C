@@ -90,10 +90,10 @@ operator()(const PHASIC::Process_Info &pi) const
   if (pi.m_loopgenerator!="GoSam") return NULL;
   if (!(pi.m_fi.m_nlotype==nlo_type::loop)) return NULL;
 
-  DEBUG_VAR(pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0]);
-  DEBUG_VAR(pi.m_fi.m_nlocpl[0]);
-  DEBUG_VAR(pi.m_maxcpl[1]-pi.m_fi.m_nlocpl[1]);
-  DEBUG_VAR(pi.m_fi.m_nlocpl[1]);
+  DEBUG_VAR(pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0][0]);
+  DEBUG_VAR(pi.m_fi.m_nlocpl[0][0]);
+  DEBUG_VAR(pi.m_maxcpl[1]-pi.m_fi.m_nlocpl[0][1]);
+  DEBUG_VAR(pi.m_fi.m_nlocpl[0][1]);
 //  GoSam_Interface::SetParameter
 //    ("CouplingPower QCD Born", (int) pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0]);
 //  GoSam_Interface::SetParameter

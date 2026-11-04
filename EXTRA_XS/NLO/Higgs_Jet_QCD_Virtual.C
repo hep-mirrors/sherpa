@@ -183,7 +183,7 @@ operator()(const Process_Info &pi) const
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="Internal") return NULL;
   if (pi.m_fi.m_nlotype&nlo_type::loop) {
-    if (pi.m_fi.m_nlocpl[1]!=0.) return NULL;
+    if (pi.m_fi.m_nlocpl[0][1]!=0.) return NULL;
     if (pi.m_fi.m_asscontribs!=asscontrib::none) {
       msg_Error()<<"Higgs_Jet_QCD_Virtual(): Error: cannot provide requested "
                  <<"associated contributions "<<pi.m_fi.m_asscontribs<<std::endl;

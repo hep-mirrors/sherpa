@@ -60,7 +60,7 @@ void YFS_Process::Init(const Process_Info &pi,
   p_yfs = yfs;
   p_yfs->SetFlavours(pi.ExtractFlavours());
   Process_Info ypi(pi), vpi(pi);
-  if (pi.m_fi.m_nlocpl[0] != 0) THROW(not_implemented, "YFS cannot do NLO QCD.");
+  if (pi.m_fi.m_nlocpl[0][0] != 0) THROW(not_implemented, "YFS cannot do NLO QCD.");
   if (pi.Has(nlo_type::rsub) || pi.Has(nlo_type::vsub)) {
     THROW(fatal_error, "YFS subtraction terms cannot be seperated. Only use BVR in NLO_Part");
   }
@@ -69,10 +69,10 @@ void YFS_Process::Init(const Process_Info &pi,
   p_bornproc = InitProcess(ypi, nlo_type::born, false);
   if (pi.Has(nlo_type::real)) {
     Process_Info rpi(pi); // real process info
-    for (size_t i = 0; i < pi.m_fi.m_nlocpl.size(); ++i)
+    for (size_t i = 0; i < pi.m_fi.m_nlocpl[0].size(); ++i)
     {
-      rpi.m_maxcpl[i] += rpi.m_fi.m_nlocpl[i];
-      rpi.m_mincpl[i] += rpi.m_fi.m_nlocpl[i];
+      rpi.m_maxcpl[i] += rpi.m_fi.m_nlocpl[0][i];
+      rpi.m_mincpl[i] += rpi.m_fi.m_nlocpl[0][i];
     }
     rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon, "", ""));
     p_yfs->p_nlo->InitializeReal(rpi);

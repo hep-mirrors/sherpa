@@ -99,6 +99,21 @@ namespace ATOOLS {
     return converted;
   }
 
+
+  template <class Value_Type>
+  std::vector<std::vector<Value_Type>> ToVectorVector(const std::string &values,
+                                   const char separator=';')
+  {
+    std::vector<std::vector<Value_Type>> converted;
+    MyStrStream converter(values);
+    std::string token;
+    while(std::getline(converter, token, separator)) {
+      if (token != "")
+        converted.push_back(ToVector<Value_Type>(token));
+    }
+    return converted;
+  }
+
   /**
    * this specialization is necessary, because the template code above will
    * truncate the input string after the first whitespace

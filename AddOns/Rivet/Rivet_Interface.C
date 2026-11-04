@@ -39,13 +39,13 @@ namespace SHERPARIVET {
 
     size_t m_nevt, m_histointerval;
     bool   m_finished;
-    bool   m_splitjetconts, m_splitSH, m_splitpm, m_splitcoreprocs, m_usehepmcshort;
+    bool   m_splitjetconts, m_splitpm, m_splitcoreprocs, m_usehepmcshort;
     bool   m_outputmeonlyvariations;
 #ifdef HAVE_HDF5
     bool   m_useH5;
 #endif
 
-    int m_loglevel, m_ignorebeams, m_skipmerge, m_skipweights;
+    int m_loglevel, m_ignorebeams, m_skipmerge, m_skipweights, m_splitSH;
     double m_weightcap, m_nlosmearing;
     std::string m_matchweights, m_unmatchweights, m_nomweight;
     std::vector<std::string> m_analyses, m_thresholds;
@@ -154,7 +154,7 @@ Rivet_Interface::Rivet_Interface(const std::string &outpath,
   Analysis_Interface("Rivet"),
   m_outpath(outpath), m_tag(tag),
   m_nevt(0), m_finished(false),
-  m_splitjetconts(false), m_splitSH(false), m_splitpm(false),
+  m_splitjetconts(false), m_splitSH(0), m_splitpm(false),
   m_splitcoreprocs(false), m_ignoreblobs(ignoreblobs)
 {
   // create output path if necessary
@@ -426,12 +426,28 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
         GetRivet(GetCoreProc(sp->TypeSpec()),parts)->analyze(event);
       }
     }
-    if (m_splitSH && sp) {
+    if ((m_splitSH&1) && sp) {
       std::string typespec=sp->TypeSpec();
-      typespec=typespec.substr(typespec.length()-2, 2);
+      typespec=typespec.substr(typespec.length()-3, 2);
       std::string type="";
       if (typespec=="+S") type="S";
       else if (typespec=="+H") type="H";
+      if (type!="") {
+        GetRivet(type,0)->analyze(event);
+        if (m_splitjetconts) {
+          GetRivet(type,parts)->analyze(event);
+        }
+      }
+    }
+    if ((m_splitSH&2) && sp) {
+      std::string typespec=sp->TypeSpec();
+      typespec=typespec.substr(typespec.length()-3, 3);
+      std::string type="";
+      if (typespec=="+S0") type="SB";
+      else if (typespec=="+S1") type="SQCD";
+      else if (typespec=="+S2") type="SEW";
+      else if (typespec=="+H1") type="HQCD";
+      else if (typespec=="+H2") type="HEW";
       if (type!="") {
         GetRivet(type,0)->analyze(event);
         if (m_splitjetconts) {

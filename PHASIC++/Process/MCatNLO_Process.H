@@ -28,7 +28,9 @@ namespace PHASIC {
     ME_Generators &m_gens;
 
     //! Pointers to the contributing processes
-    Process_Base     *p_bviproc, *p_rsproc, *p_bproc, *p_rproc, *p_ddproc;
+    Process_Base     *p_viprocqcd, *p_rsprocqcd, *p_ddprocqcd;
+    Process_Base     *p_viprocew,  *p_rsprocqed, *p_ddprocqed;
+    Process_Base     *p_bviproc, *p_bproc, *p_rprocqcd, *p_rprocqed;
     //! Pointer to the MC@@NLO shower
     PDF::NLOMC_Base  *p_nlomc;
 
@@ -36,8 +38,11 @@ namespace PHASIC {
     double m_lastrs, m_lastb, m_lastvi;
     //! Switches for the behaviour of this class
     int    m_fomode, m_psmode, m_hpsmode, m_kfacmode;
+    //! Book-keeping for NLO corrections
+    bool   m_qcd, m_ew;
     //! Book-keeping to track whether event was S or H
     bool   m_wassevent;
+    size_t m_evttype;
     //! Separate scale for RS events
     std::string m_rsscale;
     
@@ -307,6 +312,7 @@ namespace PHASIC {
      * This method returns whether last generated event was S-Event or not
      */
     bool WasSEvent() const { return m_wassevent; }
+    size_t EventType() const { return m_evttype; }
     Process_Base* BVIProc() { return p_bviproc; }
 
   };// end of class MCatNLO_Process

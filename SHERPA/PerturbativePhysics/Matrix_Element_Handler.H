@@ -123,6 +123,7 @@ namespace SHERPA {
     void BuildSingleProcessList(Single_Process_List_Args&);
 
     std::string MakeOrderString(ATOOLS::Scoped_Settings&&) const;
+    std::string MakeNLOOrderString(ATOOLS::Scoped_Settings&&) const;
     std::string MakeString(const std::vector<std::string>&) const;
 
     template <typename Type> Type ExtractMPvalue(const std::string& str);

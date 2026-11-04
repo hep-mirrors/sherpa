@@ -86,7 +86,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     MCatNLO_Process* mcatnloproc=dynamic_cast<MCatNLO_Process*>(proc->Parent());
     if (mcatnloproc) {
       if (mcatnloproc->WasSEvent()) {
-        blob->SetTypeSpec(proc->Parent()->Name()+"+S");
+        blob->SetTypeSpec(proc->Parent()->Name()+"+S"+ToString(mcatnloproc->EventType()));
 
         if (m_adddocumentation) {
           // If documentation mode is enabled, add disconnected blob of original
@@ -112,7 +112,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
         }
       }
       else {
-        blob->SetTypeSpec(proc->Parent()->Name()+"+H");
+        blob->SetTypeSpec(proc->Parent()->Name()+"+H"+ToString(mcatnloproc->EventType()));
       }
       if (m_setcolors) ampl=mcatnloproc->GetAmplitude();
     }
@@ -254,7 +254,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   blob->AddData("NLOType",new Blob_Data<std::string>
                 (ToString(proc->Info().m_fi.m_nlotype)));
   blob->AddData("NLOOrder",new Blob_Data<std::vector<double> >
-                (proc->Info().m_fi.m_nlocpl));
+                (proc->Info().m_fi.m_nlocpl[0]));
   blob->AddData("Process",new Blob_Data<PHASIC::Process_Base*>
 		(p_mehandler->Process()));
 
