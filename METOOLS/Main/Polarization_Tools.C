@@ -44,8 +44,7 @@ Polarization_Vector::Polarization_Vector(Vec4D p, Vec4D ref_mom) : std::vector<V
   pop_back();
 }
 
-//Polarization_Spinor::Polarization_Spinor(Vec4D p, int h, bool anti,
-//                                         bool out) 
+//Polarization_Spinor::Polarization_Spinor(Vec4D p, int h)  : METOOLS::CSpinor<double>(1, 1, h, p), m_hel(h)
 //{
 //  Init(p);
 //}
@@ -69,19 +68,19 @@ Polarization_Spinor::Polarization_Spinor(Vec4D p, double M2, int h,  Vec4D ref_m
   Init(p, ref_mom);
 }
 
-Polarization_Spinor::Polarization_Spinor(Vec4D p, double M2, int h, Vec4D ref_mom)
-{
-  Init(p, ref_mom);
+//Polarization_Spinor::Polarization_Spinor(Vec4D p, double M2, int h, Vec4D ref_mom)
+//{
+  //Init(p, ref_mom);
   // delete auxiliary polarization vector
   //pop_back();
-}
+//}
 
-Polarization_Spinor::Polarization_Spinor(Vec4D p, int h, Vec4D ref_mom)
-{
-  Init(p, ref_mom);
+//Polarization_Spinor::Polarization_Spinor(Vec4D p, int h, Vec4D ref_mom)
+//{
+  //Init(p, ref_mom);
   // delete auxiliary polarization vector
   //pop_back();
-}
+//}
 
 //void Polarization_Spinor::Init(ATOOLS::Vec4D p, ATOOLS::Vec4D ref_mom)
 //{
@@ -277,7 +276,7 @@ void Polarization_Vector::Test(Vec4D p)
   }
   std::cout<<METHOD<<"... "<<(success?"passed":"failed")<<std::endl<<std::endl;
 }
-vector<vector<Complex>> Polarization_Spinor::BasisTrafo_Spinor(const SpinorBasis& old_basis, const SpinorBasis& new_basis, bool pol_checks) const{
+vector<vector<Complex>> Polarization_Spinor::BasisTrafo_Spinor(const SpinorBasis& old_basis, const SpinorBasis& new_basis, bool pol_checks) {
   //int m_nhel = old_basis.size();
   const std::size_t m_nhel = new_basis.size();
   //const std::size_t n(2);

@@ -334,23 +334,49 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
       }
       // hier weitermachen
       else if (spin==0.5){
-        //METOOLS::Polarization_Spinor new_polarization(mom,new_ref_mom);
+        METOOLS::Polarization_Spinor new_polarization(mom,1,new_ref_mom);
+        std::vector<METOOLS::Polarization_Spinor> new_basis;
+        new_basis.push_back(METOOLS::Polarization_Spinor(mom, +1, new_ref_mom));
+        new_basis.push_back(METOOLS::Polarization_Spinor(mom, -1, new_ref_mom));
+
+        //new_polarization is single component of spinor
 
         //TODO: need a method that boosts back the spinors (momboost.Boostback equivalent for spinors in Poincare.C)
-        //if (beta != ATOOLS::Vec4D(0.0, 0.0, 0.0, 0.0)) {
-        //  for (size_t i(0); i < 3; ++i) {
-        //    momboost.BoostBack(new_polarization[i]);
-        //  }
-        //  momboost.BoostBack(mom);
-        //}
+        if (beta != ATOOLS::Vec4D(0.0, 0.0, 0.0, 0.0)) {
+          for (size_t i(0); i < new_basis.size(); ++i) {
+            METOOLS::BoostBack(new_basis[i],beta);
+          }
+          momboost.BoostBack(mom);
+        }
+        // QUESTION: what exactly is momboost?
+        std::vector<METOOLS::Polarization_Spinor> default_spinors;
+        //METOOLS::SpinorBasis default_spinors;
+        default_spinors.push_back(Polarization_Spinor(mom, +1)); //brauche noch passenden spinor in polarization tools
+        default_spinors.push_back(Polarization_Spinor(mom, -1));
+
 
         //TODO: Basis-Transformation 
-
+        coeff_in = new_polarization.BasisTrafo_Spinor(
+            default_spinors, new_basis, m_pol_checks);
+        coeff_out = std::vector<std::vector<Complex>>(coeff_in);
+        // determine complex conjugate coefficients
+        for (size_t i(0); i < coeff_in.size(); ++i) {
+          for (size_t j(0); j < coeff_in[i].size(); ++j) {
+            coeff_out[i][j] = conj(coeff_in[i][j]);
+          }
+        }
+        if ((out && !anti) || (!out && anti)) {
+          coeff_vec.push_back(coeff_out);
+          conj_coeff_vec.push_back(coeff_in);
+        } else {
+          coeff_vec.push_back(coeff_in);
+          conj_coeff_vec.push_back(coeff_out);
+        }
   
-        coeff_vec.push_back(std::vector<std::vector<Complex>>(2, std::vector<Complex>(2,1)));
-        conj_coeff_vec.push_back(std::vector<std::vector<Complex>>(2, std::vector<Complex>(2,1)));
-        coeff_in.push_back(std::vector<Complex>(2,1));
-        coeff_out.push_back(std::vector<Complex>(2,1));
+        //coeff_vec.push_back(std::vector<std::vector<Complex>>(2, std::vector<Complex>(2,1)));
+        //conj_coeff_vec.push_back(std::vector<std::vector<Complex>>(2, std::vector<Complex>(2,1)));
+        //coeff_in.push_back(std::vector<Complex>(2,1));
+        //coeff_out.push_back(std::vector<Complex>(2,1));
       }
       else if (spin==1){
         // calculate polarization vectors with new reference momentum
