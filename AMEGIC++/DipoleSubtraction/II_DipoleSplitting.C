@@ -75,7 +75,8 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
     THROW(fatal_error, "DipoleSplitting can not handle splitting type "
         + ToString(m_ftype) + ".");
   }
-  if (m_kt2<(p_nlomc?p_nlomc->KT2Min(1):0.0)) m_av=1.0;
+  if ((m_stype==sbt::qcd && m_kt2<(p_nlomc?p_nlomc->KT2Min(0):0.0)) ||
+      (m_stype==sbt::qed && m_kt2<(p_nlomc?p_nlomc->QEDKT2Min(0):0.0))) m_av=1.0;
 }
 
 double II_DipoleSplitting::GetValue()

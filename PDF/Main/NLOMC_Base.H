@@ -31,7 +31,7 @@ namespace PDF {
 
     Shower_Base *p_shower;
 
-    double m_kt2min[2];
+    double m_kt2min[2], m_qedkt2min[2];
 
     ATOOLS::Weights_Map m_weightsmap;
 
@@ -54,6 +54,7 @@ namespace PDF {
     inline const std::string &Name() const { return m_name; }
 
     inline double KT2Min(const int mode) const { return m_kt2min[mode]; }
+    inline double QEDKT2Min(const int mode) const { return m_qedkt2min[mode]; }
 
     inline const ATOOLS::Weights_Map& WeightsMap() const { return m_weightsmap; }
 
