@@ -288,6 +288,16 @@ bool Cluster_Amplitude::CheckColors
 (const ATOOLS::Cluster_Leg *li,const ATOOLS::Cluster_Leg *lj,
  const ATOOLS::Cluster_Leg *lk,const ATOOLS::Flavour &mo)
 {
+  if (li->Flav().IsPhoton() || lj->Flav().IsPhoton() || mo.IsPhoton())
+  // no colour relations between i,j,k for photon emissions
+  if (li->Flav().IsPhoton() || lj->Flav().IsPhoton()) return true;
+  // photon splitting products must be colour connected/colourless
+  if (mo.IsPhoton()) {
+    ColorID ci(li->Col()), cj(lj->Col());
+    if (ci.m_i==-1 && cj.m_i==-1) return true;
+    if (ci.m_i==cj.m_j && ci.m_j==0 && cj.m_i==0) return true;
+    if (ci.m_j==cj.m_i && ci.m_i==0 && cj.m_j==0) return true;
+  }
   if (mo.StrongCharge()==8) {
     if (!lk->Flav().Strong()) return false;
   }
