@@ -6,6 +6,7 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
+#include "METOOLS/SpinCorrelations/Spin_Density.H"
 
 using namespace METOOLS;
 
@@ -116,8 +117,9 @@ const{
   }
   std::map<int, METOOLS::Polarization_Vector> default_polarization_vectors =
     std::map<int,METOOLS::Polarization_Vector>();
-  std::map<int, SpinorType> default_spinors = std::map<int, SpinorType>();
+  //std::map<int, SpinorType> default_spinors = std::map<int, SpinorType>();
   // Calculate polarization fractions for each desired reference system
+  std::map<int, std::vector<METOOLS::Polarization_Spinor>> default_spinors;
   std::vector<METOOLS::PolWeights_Map*> polweights;
   for (const auto & current_refsystem : m_refsystem){
     ATOOLS::Vec4D beta = ATOOLS::Vec4D();
@@ -236,7 +238,7 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
                                                              const METOOLS::Amplitude2_Tensor* prod_amps,
                                                              const std::vector<METOOLS::Decay_Matrix>& decay_matrices,
                                                              std::map<int, METOOLS::Polarization_Vector>& default_polarization_vectors,
-                                                             std::map<int, SpinorType>& default_spinors,
+                                                             std::map<int, METOOLS::Polarization_Spinor_Basis>& default_spinors,
                                                              ATOOLS::Vec4D beta, std::string refsystem) const {
 
   METOOLS::Amplitude2_Tensor* pol_amps = new METOOLS::Amplitude2_Tensor(*prod_amps);
@@ -254,7 +256,7 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
     std::vector<std::vector<std::vector<Complex>>> conj_coeff_vec;
     do {
       if (tmp_amps->SpinDegreesofFreedom() != 3 && tmp_amps->SpinDegreesofFreedom() != 1
-      && !(tmp_amps->CurrentParticle().Flav().IsFermion() && refsystem == "Lab"))
+      && !(tmp_amps->CurrentParticle().Flav().IsFermion() && (refsystem == "Lab" || refsystem == "COM" )))
         THROW(fatal_error, "basis transformation for polarization definition is currently only implemented for "
                            "massive vector bosons")
       if (tmp_amps->SpinDegreesofFreedom()==3) require_trafo = true;
@@ -334,30 +336,23 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
       }
       // hier weitermachen
       else if (spin==0.5){
-        METOOLS::Polarization_Spinor new_polarization(mom,1,new_ref_mom);
-        std::vector<METOOLS::Polarization_Spinor> new_basis;
-        new_basis.push_back(METOOLS::Polarization_Spinor(mom, +1, new_ref_mom));
-        new_basis.push_back(METOOLS::Polarization_Spinor(mom, -1, new_ref_mom));
+        
+        const double M2 = mom.Abs2();            // vor dem Boost, M2 ist invariant
 
-        //new_polarization is single component of spinor
-
-        //TODO: need a method that boosts back the spinors (momboost.Boostback equivalent for spinors in Poincare.C)
+        // new basis
+        //METOOLS::Polarization_Spinor new_spinor(mom,M2,+1,new_ref_mom);
+        METOOLS::Polarization_Spinor_Basis new_spinor(mom,M2,new_ref_mom);
+      
         if (beta != ATOOLS::Vec4D(0.0, 0.0, 0.0, 0.0)) {
-          for (size_t i(0); i < new_basis.size(); ++i) {
-            METOOLS::BoostBack(new_basis[i],beta);
-          }
+      
+          new_spinor.BoostBack(beta);
           momboost.BoostBack(mom);
         }
-        // QUESTION: what exactly is momboost?
-        std::vector<METOOLS::Polarization_Spinor> default_spinors;
-        //METOOLS::SpinorBasis default_spinors;
-        default_spinors.push_back(Polarization_Spinor(mom, +1)); //brauche noch passenden spinor in polarization tools
-        default_spinors.push_back(Polarization_Spinor(mom, -1));
+        auto it = default_spinors.find(tmp_amps->CurrentParticle().Number());
+        if (it == default_spinors.end()) THROW(fatal_error, "no default spinors for this particle")
+  
+        coeff_in = new_spinor.BasisTrafo(it->second, m_pol_checks);
 
-
-        //TODO: Basis-Transformation 
-        coeff_in = new_polarization.BasisTrafo_Spinor(
-            default_spinors, new_basis, m_pol_checks);
         coeff_out = std::vector<std::vector<Complex>>(coeff_in);
         // determine complex conjugate coefficients
         for (size_t i(0); i < coeff_in.size(); ++i) {
@@ -372,11 +367,6 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
           coeff_vec.push_back(coeff_in);
           conj_coeff_vec.push_back(coeff_out);
         }
-  
-        //coeff_vec.push_back(std::vector<std::vector<Complex>>(2, std::vector<Complex>(2,1)));
-        //conj_coeff_vec.push_back(std::vector<std::vector<Complex>>(2, std::vector<Complex>(2,1)));
-        //coeff_in.push_back(std::vector<Complex>(2,1));
-        //coeff_out.push_back(std::vector<Complex>(2,1));
       }
       else if (spin==1){
         // calculate polarization vectors with new reference momentum

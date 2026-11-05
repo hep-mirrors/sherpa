@@ -13,7 +13,7 @@ namespace METOOLS {
 
   class PolWeights_Map : public std::map<std::string, Complex> {
     Complex m_unpolcrosssec;
-    bool m_massive_vb, m_pol_checks;
+    bool m_massive_vb, m_massive_fer, m_pol_checks;
     int m_trans_mode;
     std::map<std::string, std::string> m_custom_weights;
     std::string m_singlepol_channel;

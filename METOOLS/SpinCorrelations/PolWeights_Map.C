@@ -16,7 +16,7 @@
 using namespace METOOLS;
 
 PolWeights_Map::PolWeights_Map():
-  m_unpolcrosssec(Complex(0., 0.)), m_massive_vb(true), m_custom_weights(std::map<std::string, std::string>()),
+  m_unpolcrosssec(Complex(0., 0.)), m_massive_vb(true), m_massive_fer(true), m_custom_weights(std::map<std::string, std::string>()),
   m_singlepol_channel("no channel"), m_trans_mode(1), m_interference_weights(std::set<std::string>()),
   p_all_weights(NULL), m_pol_checks(false) {
 }
@@ -40,6 +40,7 @@ PolWeights_Map::PolWeights_Map(const METOOLS::Amplitude2_Tensor* amps, int trans
   delete tmpTensor;
 
   m_massive_vb = false;
+  m_massive_fer = false;
   p_all_weights = new PolWeights_Map();
 
   // FILL MAP
@@ -84,6 +85,7 @@ void PolWeights_Map::LabelAndSeparate(const METOOLS::Amplitude2_Tensor* amps, co
     if (m_nhel>3) THROW(not_implemented, "Particles with spin bigger than 1 are not implemented for polarized cross "
                                          "sections yet")
     if (m_nhel == 3) m_massive_vb = true;
+    if (m_nhel == 2) m_massive_fer = true;
 
     // list of strings for the different possible polarization
     std::vector<std::string> spin_strings;
@@ -211,7 +213,7 @@ std::set<std::string> PolWeights_Map::TransverseKeys(std::set<std::string> keys,
     auto parts = ATOOLS::ToVector<std::string>(label_parts[level]);
     std::string new_string(prefix);
 
-    if ((parts[0]=="W+" || parts[0]=="W-" || parts[0]=="Z") && (parts[1]=="++" || parts[1]=="--")){
+    if ((parts[0]=="W+" || parts[0]=="W-" || parts[0]=="Z" || parts[0]=="t" || parts[0]=="tb") && (parts[1]=="++" || parts[1]=="--")){
       // generate the spin label for the new transverse weight
       // string of particles at smaller levels
       for (size_t j(0); j<level; ++j) {
@@ -265,7 +267,7 @@ std::vector<std::string> PolWeights_Map::ExpandLabels(const std::vector<std::str
     // replace by ++, -- and for the coherent transverse signal definition also: +-,-+
     // next call of the method than runs on the intermediate spin labels to add obtained in the call before such that
     // each +, - combination is covered
-    if ((parts[0] == "W+" || parts[0] == "W-" || parts[0] == "Z") && (parts[1] == "T" || parts[1] == "t")) {
+    if ((parts[0] == "W+" || parts[0] == "W-" || parts[0] == "Z" || parts[0]=="t" || parts[0]=="tb") && (parts[1] == "T" || parts[1] == "t")) {
       std::vector<std::string> expanded_labels;
       int number_contributing_weights;
       if (parts[1] == "T") number_contributing_weights = 4;
