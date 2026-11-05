@@ -85,7 +85,9 @@ namespace PHASIC {
 
     ATOOLS::ME_Weight_Info m_mewgtinfo;
 
-    ATOOLS::Weights_Map m_last, m_lastb, m_lastbvalue;
+    ATOOLS::Weights_Map m_last, m_lastb;
+    // same as m_last_b but remains non-zero  if B is not needed in the final result
+    ATOOLS::Weights_Map m_lastbvalue;
     double m_lastxs, m_lastbxsvalue;
     double m_symfac, m_issymfac;
     bool   m_lookup, m_use_biweight;

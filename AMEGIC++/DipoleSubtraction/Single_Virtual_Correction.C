@@ -583,6 +583,7 @@ double Single_Virtual_Correction::DSigma(const Vec4D_Vector &_moms,
       m_lastbxsvalue = p_partner->m_lastbxsvalue*m_sfactor;
     }
     m_lastb=p_partner->m_lastb*m_sfactor;
+    m_lastbvalue=p_partner->m_lastbvalue*m_sfactor;
     m_lastv=Calc_V_WhenMapped(_moms, varmode);
     m_lasti=p_partner->m_lasti*m_sfactor;
     for (size_t i(0);i<m_wass.size();++i)
@@ -1061,7 +1062,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,
   double kfactorb((m_bvimode&1)?KFactor(1|2):1.0);
   double kfactorvi(m_lastki=m_lastk=(m_bvimode&6)?KFactor((m_bvimode&1)?0:2):1.0);
   m_lastb=Calc_B()*kfactorb;
-  m_lastbvalue=m_lastb*kfactorb; // same value as B but always calculated
+  m_lastbxsvalue=m_lastb*kfactorb; // same value as B but always calculated
 
   if ((m_stype!=sbt::none) && (m_pinfo.m_fi.m_nlotype&nlo_type::born) &&
       (m_bvimode&1)) {

@@ -787,8 +787,10 @@ void Single_Process::ResetResultsForDifferential(Variations_Mode varmode)
   if (varmode != Variations_Mode::nominal_only) {
     m_last["Main"] = Weights {Variations_Type::qcd};
     m_lastb["Main"] = Weights {Variations_Type::qcd};
+    m_lastbvalue["Main"] = Weights {Variations_Type::qcd};
     m_last["All"] = Weights {Variations_Type::qcd};
     m_lastb["All"] = Weights {Variations_Type::qcd};
+    m_lastbvalue["All"] = Weights {Variations_Type::qcd};
   }
   m_last = 1.0;
   m_lastb = 0.0;
@@ -862,6 +864,8 @@ void Single_Process::ReweightBVI(ClusterAmplitude_Vector& ampls)
     if (varweight == 0.0) {
       m_lastb["Main"].Variation(varindex) = 0.0;
       m_lastb["All"].Variation(varindex) = 0.0;
+      m_lastbvalue["Main"].Variation(varindex) = 0.0;
+      m_lastbvalue["All"].Variation(varindex) = 0.0;
       return m_last["All"].Variation(varindex) = 0.0;
     }
     double K {1.0};
@@ -875,6 +879,9 @@ void Single_Process::ReweightBVI(ClusterAmplitude_Vector& ampls)
       m_lastb["Main"].Variation(varindex) =
       m_lastb["All"].Variation(varindex) =
           (m_lastbxs != 0.0) ? res / m_lastb.BaseWeight() : 0.0;
+      m_lastbvalue["Main"].Variation(varindex) =
+      m_lastbvalue["All"].Variation(varindex) =
+          (m_lastbxsvalue != 0.0) ? res / m_lastbvalue.BaseWeight() : 0.0;
       return m_last["All"].Variation(varindex) = K * res / m_last.BaseWeight();
 
     } else {
@@ -928,6 +935,9 @@ void Single_Process::ReweightBVI(ClusterAmplitude_Vector& ampls)
       m_lastb["All"].Variation(varindex) =
       m_lastb["Main"].Variation(varindex) =
           (m_lastbxs != 0.0) ? resb / m_lastb.BaseWeight() : 0.0;
+      m_lastbvalue["All"].Variation(varindex) =
+      m_lastbvalue["Main"].Variation(varindex) =
+          (m_lastbxsvalue != 0.0) ? resb / m_lastbvalue.BaseWeight() : 0.0;
       return m_last["All"].Variation(varindex) = res / m_last.BaseWeight();
     }
   });
