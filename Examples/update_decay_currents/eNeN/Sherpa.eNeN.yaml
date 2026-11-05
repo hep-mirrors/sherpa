@@ -86,7 +86,8 @@ ANALYSIS: Rivet
 ANALYSIS_OUTPUT: Analysis_V$(VFF)_A$(AFF)_N$(nucleon)
 
 RIVET:
-  --analyses: [my_MC_FSPARTICLES, MC_XS, JEFFERSON_2004_I643262]
+  # --analyses: [MC_XS, JEFFERSON_2004_I643262]
+  --analyses: [MC_XS, SLAC_1994_I360764]
   --pwd: /Users/tvcr49@durham.ac.uk/code_analysis/MyRivetAnalyses
   --ignore_beams: 1
 
