@@ -39,8 +39,10 @@ CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,
   p_gamma = new CS_Gamma(this,p_mcatnlo,p_cluster);
   p_gamma->SetOEF(pss["OEF"].Get<double>());
   p_mcatnlo->SetGamma(p_gamma);
-  m_kt2min[1]=m_ewmode?p_mcatnlo->GetSudakov()->ISQEDPT2Min():p_mcatnlo->GetSudakov()->ISPT2Min();
-  m_kt2min[0]=m_ewmode?p_mcatnlo->GetSudakov()->FSQEDPT2Min():p_mcatnlo->GetSudakov()->FSPT2Min();
+  m_kt2min[1]=p_mcatnlo->GetSudakov()->ISPT2Min();
+  m_kt2min[0]=p_mcatnlo->GetSudakov()->FSPT2Min();
+  m_qedkt2min[1]=p_mcatnlo->GetSudakov()->ISQEDPT2Min();
+  m_qedkt2min[0]=p_mcatnlo->GetSudakov()->FSQEDPT2Min();
 }
 
 CS_MCatNLO::~CS_MCatNLO()

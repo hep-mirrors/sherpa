@@ -131,12 +131,11 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   auto pss = Settings::GetMainSettings()["SHOWER"];
   m_overint_cut = pss["OVERINTEGRATED_CUTOFF"].Get<double>();
   // if electron structure function, read xmax
-  // to do: check what needs doing for FI splittings
   double pdfexmax;
   double cssexmax;
   if (((key.m_type==cstp::IF || key.m_type==cstp::II) &&
-          p_lf->FlA().IsLepton() && ckey.m_ewmode&1) || 
-          key.m_type==cstp::FI && ckey.m_ewmode&1) {
+          p_lf->FlA().IsLepton() && ckey.m_ewmode>0) || 
+          key.m_type==cstp::FI && ckey.m_ewmode>0) {
         Settings& s = Settings::GetMainSettings();
         pdfexmax = 1.-s["PDFE_EPS"].Get<double>();
         cssexmax = 1.-s["PDFE_DELTA"].Get<double>();

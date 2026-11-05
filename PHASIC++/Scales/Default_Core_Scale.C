@@ -89,10 +89,18 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   else if (!fl[0].Strong() && !fl[1].Strong()) {// ll collision
     if (fl[2].Strong() && fl[3].Strong()) {
       msg_Debugging()<<"ll->jets like\n";
-    } else {
-      msg_Debugging()<<"ll->unknown, Mandelstam s will be used as the scale\n";
+      muq2=muf2=mur2=(campl->Leg(0)->Mom()+campl->Leg(1)->Mom()).Abs2();
     }
-    muq2=muf2=mur2=(campl->Leg(0)->Mom()+campl->Leg(1)->Mom()).Abs2();
+    else if (fl[2].Charge() && fl[3].Charge()) {
+      msg_Debugging()<<"l+l- -> l+l-, setting mu^2 = s\n";
+      muq2=muf2=mur2=(campl->Leg(0)->Mom()+campl->Leg(1)->Mom()).Abs2();
+    }
+    else {
+      msg_Debugging()<<"ll->colour & charge neutral\n";
+      msg_Debugging() << "{"<<campl->Leg(0)->Flav()<<","<<campl->Leg(1)->Flav()<<","
+          <<campl->Leg(2)->Flav()<<","<<campl->Leg(3)->Flav()<<"}\n";
+      muq2=muf2=mur2=(campl->Leg(2)->Mom()+campl->Leg(3)->Mom()).Abs2();
+    }
   }
   else {
     if (!fl[0].Strong() && !fl[2].Strong()) {

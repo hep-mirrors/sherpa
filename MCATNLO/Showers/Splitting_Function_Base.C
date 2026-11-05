@@ -67,7 +67,7 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   double pdfexmax;
   double cssexmax;
   if ((key.m_type==cstp::IF || key.m_type==cstp::II)
-        && p_lf->FlA().IsLepton() && ckey.m_ewmode&1) {
+        && p_lf->FlA().IsLepton() && m_qed) {
         pdfexmax = 1.-s["PDFE_EPS"].Get<double>();
         cssexmax = 1.-s["PDFE_DELTA"].Get<double>();
   }
