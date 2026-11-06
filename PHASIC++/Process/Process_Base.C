@@ -41,7 +41,6 @@ Process_Base::Process_Base():
   m_nin(0), m_nout(0), m_maxcpl(2,99), m_mincpl(2,0),
   m_mcmode(0), m_cmode(0),
   m_lookup(false), m_use_biweight(true),
-  m_lastbvalue(0.), m_lastbxsvalue(0.),
   m_hasinternalscale(false), m_internalscale(sqr(rpa->gen.Ecms())),
   p_apmap(NULL), p_read(NULL), m_owns_reader(false)
 {
