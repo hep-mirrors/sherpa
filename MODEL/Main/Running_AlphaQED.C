@@ -25,12 +25,6 @@ namespace MODEL {
   const double Running_AlphaQED::m_C[4]={1.0,3.927,1.0,1.0};
  #ifdef USING__HADALPHAQED
     extern "C"{
-      // hadr5x declares its arguments `real` (hadr5x19.f:54), but the file is
-      // built with -fdefault-real-8, so `real` is 8 bytes and double* is the
-      // correct prototype. (dhadr5x_qedc19 is the explicit real*8 wrapper and
-      // would work too; it is redundant under these flags.) If those Fortran
-      // flags ever change, this breaks silently - Tests/Unit/
-      // test_MODEL_Running_AlphaQED.C pins the value that would catch it.
       void hadr5x_(double *e, double *st2,
                   double *der, double *errdersta,
                   double *errdersys, double *deg,
@@ -49,7 +43,13 @@ Running_AlphaQED::Running_AlphaQED(const double _alpha0) :
   m_name  = "Alpha_QED";
   m_defval = _alpha0;
   Scoped_Settings s{ Settings::GetMainSettings()[m_name] };
-  m_mode     = s["VPMODE"].SetDefault(vpmode::off).Get<vpmode::code>();
+  m_mode     = s["VPMODE"].SetDefault("Default").Get<vpmode::code>();
+#ifndef USING__HADALPHAQED
+  if (m_mode==vpmode::full || m_mode==vpmode::hp || m_mode==vpmode::lp)
+    THROW(fatal_error, "Alpha_QED: VPMODE: Full, HP and LP need Jegerlehner's "
+                       "hadr5x, i.e. Sherpa configured with "
+                       "-DSHERPA_ENABLE_ALPHAQEDHAD=ON.");
+#endif
 }
 
 
@@ -63,38 +63,29 @@ double Running_AlphaQED::operator()(double t)
   else if (Q2<3.0)   i=1;
   else if (Q2<100.0) i=2;
 
-  if(IsZero(t) || m_mode==vpmode::off) return m_alpha0;
+  if (IsZero(t) || m_mode==vpmode::off) return m_alpha0;
 
   double sig_lep_gg = m_alpha0/(3.*M_PI) * 
     (PiGamma(Flavour(kf_e),Q2)+PiGamma(Flavour(kf_mu),Q2)+PiGamma(Flavour(kf_tau),Q2));
   double sig_ha_gg  = m_A[i] + m_B[i]*log(1+m_C[i]*Q2);
-  double sig_top_gg = m_alpha0/(3.*M_PI) * 3. * (PiGamma(Flavour(kf_t),Q2));
+  double sig_top_gg = m_alpha0/(3.*M_PI) * 3.*4./9. * (PiGamma(Flavour(kf_t),Q2));  // N_c Q_t^2
   double sigma_gg   = sig_lep_gg+sig_ha_gg+sig_top_gg;
 
   #ifdef USING__HADALPHAQED
     double delta_r(0.),errdersta,errdersys,deg,errdegsta,errdegsys;
-    double sin2 = 0.23153;// MODEL::m_model->ComplexConstant("csin2_thetaW").real();
-    if(m_mode!=vpmode::lp){
+    // Reference value of sin^2(theta_W) for hadr5x (hadr5x19.f: "st2=0.23153 is
+    // the reference value")
+    double sin2 = 0.23153;
+    if (m_mode==vpmode::full || m_mode==vpmode::hp) {
       // The routine takes E = signed ENERGY in GeV:
       //   "E energy ( momentum transfer ): E>0 timelike , E<0 spacelike"
       //   (hadr5x19.f:40)
-      // NOT Q^2 in GeV^2. Passing Q^2 straight through evaluated
-      // Delta_alpha_had at E = 8315 GeV instead of 91.19 at the Z pole (giving
-      // 0.0542 where the measured value is 0.02766). The argument of this
-      // operator is the signed Lorentz invariant - s>0 timelike, t<0 spacelike -
-      // so the energy is sign(t)*sqrt(|t|).
       double e = (t<0. ? -sqrt(Q2) : sqrt(Q2));
       hadr5x_(&e, &sin2, &delta_r, &errdersta,
               &errdersys, &deg, &errdegsta, &errdegsys);
     }
     switch(m_mode){
       case vpmode::full:
-        // delta_r is the 5-flavour HADRONIC piece alone ("the routine returns
-        // the hadronic contribution of 5 flavors (u,d,s,c,b)", hadr5x19.f:43),
-        // so the leptonic and top parts have to be added explicitly. They used
-        // to be dropped here, which made `full` identical to `hp` and silently
-        // discarded the leptonic contribution - at M_Z the LARGER half
-        // (0.0314 leptonic vs 0.0277 hadronic).
         sigma_gg = sig_lep_gg + delta_r + sig_top_gg;
         break;
       case vpmode::lp:
@@ -104,13 +95,16 @@ double Running_AlphaQED::operator()(double t)
         sigma_gg = delta_r;
         break;
       case vpmode::off:
-        break;   // unreachable, handled by the early return above
+      case vpmode::builtin:
+        break;   // off returned above; builtin keeps the built-in sigma_gg
       }
   #endif
 
   return m_alpha0/(1.-sigma_gg);
 }  
 
+// Delta alpha_f = alpha/(3 pi) N_c Q_f^2 G = Re Pi_2(q^2) (Peskin-Schroeder 7.5);
+// (alpha/3pi) q^2 G is Berestetskii-Lifshitz-Pitaevskii's P(t), eq. (113.12):
 double Running_AlphaQED::PiGamma(const Flavour & fl,double scale) {
   double mass2  = sqr(fl.Mass(true)); // onshell mass
   if(mass2==0.) THROW(fatal_error, "Cannot evolve QED coupling with zero fermion masses");    
@@ -121,8 +115,11 @@ double Running_AlphaQED::PiGamma(const Flavour & fl,double scale) {
     double beta = sqrt(1.-4.*mqs);
     return (1./3.-(1.+2.*mqs)*(2.+beta*log((1.-beta)/(1.+beta))));
   } 
-  else { 
-    return 0.; 
+  else {
+    // far below threshold the closed form cancels: its leading term
+    if (mqs>1.e3) return -1./(5.*mqs);
+    const double b(sqrt(4.*mqs-1.));
+    return (1./3.-(1.+2.*mqs)*(2.-2.*b*atan(1./b)));
   }
 }
 
@@ -137,13 +134,13 @@ std::istream &MODEL::operator>>(std::istream &str,vpmode::code &vp)
 {
   std::string tag;
   str>>tag;
-  vp=vpmode::off;
-  if      (tag.find("None")!=std::string::npos) vp=vpmode::off;
-  else if (tag.find("Full")!=std::string::npos) vp=vpmode::full;
-  else if (tag.find("1")!=std::string::npos)    vp=vpmode::full;
-  else if (tag.find("HP")!=std::string::npos)   vp=vpmode::hp;
-  else if (tag.find("2")!=std::string::npos)    vp=vpmode::hp;
-  else if (tag.find("LP")!=std::string::npos)   vp=vpmode::lp;
-  else if (tag.find("3")!=std::string::npos)    vp=vpmode::lp;
+  if      (tag=="None"    || tag=="0") vp=vpmode::off;
+  else if (tag=="Full"    || tag=="1") vp=vpmode::full;
+  else if (tag=="HP"      || tag=="2") vp=vpmode::hp;
+  else if (tag=="LP"      || tag=="3") vp=vpmode::lp;
+  else if (tag=="Default" || tag=="4") vp=vpmode::builtin;
+  else
+    THROW(fatal_error, "Unknown Alpha_QED: VPMODE '"+tag+
+                       "'. Use None (0), Full (1), HP (2), LP (3) or Default (4).");
   return str;
 }

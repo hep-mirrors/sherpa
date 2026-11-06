@@ -7,12 +7,14 @@
 namespace MODEL {
 
 
+ 
     struct vpmode {
     enum code {
       off        = 0,
       full       = 1,
       hp         = 2,
-      lp         = 3
+      lp         = 3,
+      builtin    = 4
       };
     };
 
