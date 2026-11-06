@@ -888,7 +888,8 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,
     }
     msg_Debugging()<<"Weight info: "<<*winfo<<"\n";
   }
-  // msg_Debugging()<<METHOD<<" qcd: "<<m_qcd<<", ew: "<<m_ew<<", SB: "<<SB<<", "
+  msg_Debugging()<<METHOD<<" qcd: "<<m_qcd<<", ew: "<<m_ew<<", SB: "<<SB
+    <<", SQCD: "<<SQCD<<", HQCD: "<<HQCD<<", SEW: "<<SEW<<", HQED: "<<HQED<<"\n";
   const double r(ran->Get() * (SB + SQCD + SEW + HQCD + HQED));
   if (SB > r) {
     msg_Debugging()<<METHOD<<" SB\n";
