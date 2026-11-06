@@ -1,4 +1,5 @@
 set(BeamMain_SOURCES Beam_Base.C
+                 Beam_Rejection.C
                  Transverse_Profile.C
                  Beam_Parameters.C
                  Kinematics_Base.C

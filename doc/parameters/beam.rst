@@ -723,7 +723,24 @@ The following modes are available:
     where :math:`\sqrt{s}` is the nucleon-nucleon center-of-mass energy. Events
     are accepted with probability :math:`P_{\text{surv}}(b)`.
 
-  **Proton-nucleus and nucleus-nucleus collisions:**
+  **Collisions of identical nuclei:**
+    Uses the optical Glauber model, see e.g. :cite:`Loizides:2017ack`:
+
+    .. math::
+
+       P_{\text{surv}}(b) = \exp\left[-\sigma_{NN}\,T_{AA}(b)\right],
+       \quad
+       T_{AA}(b) = \int \mathrm{d}^2\mathbf{s}\; T_A(s)\, T_A(|\mathbf{b}-\mathbf{s}|),
+       \quad
+       T_A(s) = \int \mathrm{d}z\; \rho\left(\sqrt{s^2+z^2}\right)
+
+    where :math:`\rho` is the Woods-Saxon density normalised to the mass number,
+    with :option:`WoodsSaxon_R` and :option:`WoodsSaxon_d` as for the photon flux,
+    and :math:`\sigma_{NN} = [25.0 + 0.146 \ln^2(s_{NN}/\text{GeV}^2)]` mb is the
+    inelastic nucleon-nucleon cross section :cite:`Loizides:2017ack`. Events are
+    weighted with :math:`P_{\text{surv}}(b)`.
+
+  **Proton-nucleus collisions and collisions of different nuclei:**
     Currently not implemented. Please contact the authors if you require these
     modes for your analysis.
 
@@ -732,8 +749,8 @@ The default value is ``0`` (no rejection).
 .. note::
 
    For UPC processes with impact-parameter-dependent fluxes (see above), setting
-   ``BEAM_OVERLAP_REJECTION: 1`` (or `2` for proton-proton)
-   is **strongly recommended** to obtain
+   ``BEAM_OVERLAP_REJECTION: 2`` (or ``1`` for proton-nucleus collisions and
+   collisions of different nuclei) is **strongly recommended** to obtain
    physically meaningful cross sections. Without this, the calculated cross
    section will include unphysical contributions from small impact parameters
    where hadronic interactions dominate.

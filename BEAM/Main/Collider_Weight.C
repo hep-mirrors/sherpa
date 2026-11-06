@@ -67,19 +67,30 @@ Collider_Weight::Collider_Weight(Kinematics_Base* kinematics)
 
   const ATOOLS::Flavour& b0 = p_beams[0]->Beam();
   const ATOOLS::Flavour& b1 = p_beams[1]->Beam();
+  // ions store per-nucleon momenta
+  const double sNN =
+      (p_beams[0]->InMomentum() + p_beams[1]->InMomentum()).Abs2();
   if (m_rejection == 1)
     p_rejector = new Radius_Rejection(b0, b1);
   else if (b0.Kfcode() == kf_p_plus && b1.Kfcode() == kf_p_plus)
-    p_rejector = new Proton_Proton_Rejection(
-        b0, b1, (p_beams[0]->InMomentum() + p_beams[1]->InMomentum()).Abs2());
+    p_rejector = new Proton_Proton_Rejection(b0, b1, sNN);
   else if ((b0.Kfcode() == kf_p_plus && b1.IsIon()) ||
            (b0.IsIon() && b1.Kfcode() == kf_p_plus)) {
     // fail fast at setup rather than aborting at the first weight evaluation
     THROW(not_implemented,
           "Proton-nucleon beam overlap rejection is not implemented.");
   } else if (b0.IsIon() && b1.IsIon()) {
-    THROW(not_implemented,
-          "Nucleon-nucleon beam overlap rejection is not implemented.");
+    if (!(b0 == b1))
+      THROW(not_implemented,
+            "Overlap rejection between different nuclei is not implemented.");
+    // the density of the Woods-Saxon photon flux
+    const auto& epa = ATOOLS::Settings::GetMainSettings()["EPA"];
+    const size_t i = p_beams[0]->Type() == beamspectrum::EPA ? 0 : 1;
+    p_rejector = new Nucleus_Nucleus_Rejection(
+        b0, b1,
+        epa["WoodsSaxon_R"].GetTwoVector<double>()[i] / ATOOLS::rpa->hBar_c(),
+        epa["WoodsSaxon_d"].GetTwoVector<double>()[i] / ATOOLS::rpa->hBar_c(),
+        sNN);
   }
 
   if (p_rejector == nullptr)

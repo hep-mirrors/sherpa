@@ -521,3 +521,86 @@ TEST_CASE("Woods-Saxon overlap agrees with independent spatial integration",
   }
   CHECK(sum / n == Catch::Approx(.246528499636890).margin(8.e-4));
 }
+
+TEST_CASE("Optical Glauber overlap agrees with independent integration",
+          "[BEAM::Beam_Rejection]")
+{
+  BeamSettings settings("");
+  if (s_kftable.find(kf_lead208) == s_kftable.end())
+    AddParticle(kf_lead208, 193.75, 5.5012, 0., 246, 0, true, 1, "Pb208", "Pb208");
+  const Flavour pb(kf_lead208);
+  const double hbarc = rpa->hBar_c(), sNN = sqr(5020.);
+  Nucleus_Nucleus_Rejection rejector(pb, pb, 6.62 / hbarc, .546 / hbarc, sNN);
+
+  // T_AA in 1/fm^2 from brute-force polar integration of the same density
+  const std::vector<std::pair<double, double>> reference = {
+      {0., 305.0015},    {5., 181.3027},      {10., 33.31511},
+      {14., 1.016553},   {15., .2720558},     {15.7, .1006603},
+      {17., .01431648},  {20., 1.195729e-4},  {23., 8.186443e-7}};
+  const double sigmaNN = (25.0 + .146 * sqr(std::log(sNN))) * .1; // in fm^2
+  for (const auto& [b, TAA] : reference) {
+    CHECK(rejector.TAA(b / hbarc) / sqr(hbarc) ==
+          Catch::Approx(TAA).epsilon(1.e-3));
+    CHECK(rejector(b / hbarc) ==
+          Catch::Approx(std::exp(-sigmaNN * TAA)).margin(5.e-4));
+  }
+
+  // the integral of T_AA over the transverse plane is A^2, and P(b) is monotonic
+  const double db = .01 / hbarc;
+  double integral = 0., last = 0.;
+  for (double b = .5 * db; b < 60. / hbarc; b += db) {
+    integral += 2. * M_PI * b * db * rejector.TAA(b);
+    CHECK(rejector(b) >= last);
+    last = rejector(b);
+  }
+  CHECK(integral == Catch::Approx(208. * 208.).epsilon(2.e-4));
+  CHECK(last == 1.);
+}
+
+TEST_CASE("Identical nuclei use the optical Glauber overlap as event weight",
+          "[BEAM::Beam_Rejection]")
+{
+  BeamSettings settings(
+      "BEAM_OVERLAP_REJECTION: 2\n"
+      "EPA: {Form_Factor: 16, xBins: 4, bBins: 5, CacheTables: false}\n"
+      "BEAM_TRANSVERSE_PROFILE: {RMS_RADIUS: 4.5}\n");
+  Settings::GetMainSettings()["GENERATE_RESULT_DIRECTORY"].SetDefault(false);
+  Settings::GetMainSettings()["RESULT_DIRECTORY"].SetDefault("");
+  if (s_kftable.find(kf_lead208) == s_kftable.end())
+    AddParticle(kf_lead208, 193.75, 5.5012, 0., 246, 0, true, 1, "Pb208", "Pb208");
+  const Flavour pb(kf_lead208);
+  EPA emitter(pb, 100., 0., 1);
+  Monochromatic target(pb, 100., 0., -1);
+  TestKinematics kinematics(&emitter, &target);
+  Collider_Weight weight(&kinematics);
+
+  // the default density of the Woods-Saxon flux, whichever form factor is used
+  const double hbarc = rpa->hBar_c();
+  Nucleus_Nucleus_Rejection rejector(
+      pb, pb, 1.118 * std::cbrt(208.) / hbarc, .54 / hbarc,
+      (emitter.InMomentum() + target.InMomentum()).Abs2());
+  bool transition = false;
+  for (int i = 1; i < 100; ++i) {
+    emitter.SetERan(.01 * i);
+    REQUIRE(emitter.CalculateWeight(1.e-3, 1.));
+    target.SetERan(.3);
+    weight.SetERan(.2);
+    const double b1 = emitter.ImpactParameter(), b2 = target.ImpactParameter();
+    const double P = rejector(std::sqrt(
+        b1 * b1 + b2 * b2 - 2. * b1 * b2 * std::cos(2. * M_PI * .2)));
+    CHECK(weight.OverlapWeight() == Catch::Approx(P));
+    CHECK(weight() == Catch::Approx(emitter.Weight() * target.Weight() * P));
+    transition = transition || (P > .01 && P < .99);
+  }
+  CHECK(transition);
+
+  // the other beam combinations fail at set-up
+  if (s_kftable.find(kf_gold197) == s_kftable.end())
+    AddParticle(kf_gold197, 183.5, 6.9823, 0., 237, 0, true, 1, "Au197", "Au197");
+  GaussianEmitter gold(Flavour(kf_gold197), 15., 1);
+  TestKinematics different(&gold, &target);
+  CHECK_THROWS(Collider_Weight(&different));
+  GaussianEmitter proton(Flavour(kf_p_plus), 15., 1);
+  TestKinematics pA(&proton, &target);
+  CHECK_THROWS(Collider_Weight(&pA));
+}
