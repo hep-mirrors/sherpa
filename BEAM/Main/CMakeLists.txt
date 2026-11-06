@@ -1,4 +1,5 @@
 set(BeamMain_SOURCES Beam_Base.C
+                 Transverse_Profile.C
                  Beam_Parameters.C
                  Kinematics_Base.C
                  Collider_Kinematics.C
@@ -11,6 +12,7 @@ set(BeamMain_SOURCES Beam_Base.C
                  Beam_Spectra_Handler.C)
 
 set(BeamMain_HEADERS Beam_Base.H
+                 Transverse_Profile.H
                  Beam_Rejection.H
                  Kinematics_Base.H
                  Collider_Kinematics.H

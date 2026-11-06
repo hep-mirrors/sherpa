@@ -91,6 +91,39 @@ If desired, you can also specify spectra for beamstrahlung through
 :option:`Reggeon`
   This enables the Proton--Reggeon flux, see details below.
 
+.. _Beam Transverse Profiles:
+
+Transverse parton profiles
+==========================
+
+.. index:: BEAM_TRANSVERSE_PROFILE
+.. index:: BEAM_TRANSVERSE_PROFILE:TYPE
+.. index:: BEAM_TRANSVERSE_PROFILE:RMS_RADIUS
+
+``BEAM_TRANSVERSE_PROFILE`` controls the transverse distribution of partons in
+non-EPA beams when :option:`BEAM_OVERLAP_REJECTION` is enabled. EPA beams retain
+their photon-emission profiles and are not affected by these settings.
+
+For example, to use a projected uniform sphere for the target in a
+photonuclear calculation:
+
+.. code-block:: yaml
+
+   BEAM_SPECTRA: [EPA, Monochromatic]
+   BEAM_OVERLAP_REJECTION: 1
+   BEAM_TRANSVERSE_PROFILE:
+     TYPE: UniformSphere
+
+:option:`TYPE`
+  Profile shape: ``Gaussian`` (default) or ``UniformSphere``, the transverse
+  projection of a uniform three-dimensional sphere.
+
+:option:`RMS_RADIUS`
+  Transverse RMS radius in fm. If omitted, it is derived from the beam radius
+  as :math:`\sqrt{2/3}\,R_{\rm beam}`. Set it to zero for a pointlike profile.
+
+Currently, the options are only used in photonuclear jets, i.e. setups including one EPA photon flux with impact parameter and a nuclear PDF.
+
 .. _Gaussian Energy Spread:
 
 Gaussian Energy Spread

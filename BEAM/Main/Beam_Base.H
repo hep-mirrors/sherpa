@@ -5,6 +5,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "BEAM/Main/Beam_Parameters.H"
+#include "BEAM/Main/Transverse_Profile.H"
 
 namespace BEAM {
 
@@ -20,7 +21,7 @@ namespace BEAM {
     double             m_energy, m_polarisation;
     double             m_x, m_Q2, m_weight;
     bool               m_on;
-    double m_R;
+    Transverse_Profile m_transverse_profile;
     double m_eran;
 
   public:
@@ -75,8 +76,16 @@ namespace BEAM {
 
     void SetERan(double eran) { m_eran = eran; }
 
-    // Default impact parameter: sampled uniformly over radius
-    virtual double ImpactParameter() const { return m_R * m_eran; }
+    const Transverse_Profile& TransverseProfile() const
+    {
+      return m_transverse_profile;
+    }
+
+    // Normalised transverse parton profile; EPA overrides photon sampling.
+    virtual double ImpactParameter() const
+    {
+      return m_transverse_profile.SampleRadius(m_eran);
+    }
 
     virtual void SetInMomentum(const ATOOLS::Vec4D& in) { m_lab = in; }
     virtual void SetOutMomentum(const ATOOLS::Vec4D& out)
