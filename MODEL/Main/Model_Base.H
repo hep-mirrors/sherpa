@@ -72,6 +72,7 @@ namespace MODEL {
     std::string               m_name;
     bool                      m_elementary;
     bool                      m_hasnegativecouplingorders;
+    bool                      m_mixedalpha;
     bool                      implements_variations = false;
 
     ScalarNumbersMap        * p_numbers;
@@ -181,7 +182,7 @@ namespace MODEL {
     inline bool HasNegativeCouplingOrders() const 
     { return m_hasnegativecouplingorders; }
 
-
+    inline bool MixedAlphaQEDScheme() const { return m_mixedalpha; }
     /*
     Things for variations of parameters, per default Models dont implement them
     */

@@ -8,6 +8,8 @@
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
+#include "MODEL/Main/Running_AlphaQED.H"
+#include "MODEL/Main/Model_Base.H"
 
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -690,6 +692,11 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
 
   m_lastxs = M2 * df * p_dipole->SPFac() * Norm();
   if (m_lastxs) m_lastxs*=m_lastk=KFactor(2|((m_mcmode&2)?4:0));
+  if (s_model->MixedAlphaQEDScheme()) {
+    msg_Debugging() << "Mixed alphaQED scheme: correcting default alpha to alpha0 in "<<METHOD<<"\n";
+    if (p_nlomc) m_lastxs *= p_nlomc->AlphaQED()/Coupling();
+    else m_lastxs *= MODEL::aqed->AqedThomson()/Coupling();
+  }
   m_subevt.m_K = m_lastk;
   m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
   m_subevt.m_mu2[stp::fac] = p_scale->Scale(stp::fac);

@@ -72,7 +72,7 @@ Model_Base::Model_Base(bool _elementary) :
   m_elementary(_elementary),
   m_hasnegativecouplingorders(false),
   p_numbers(NULL), p_constants(NULL), p_complexconstants(NULL),
-  p_functions(NULL)
+  p_functions(NULL), m_mixedalpha(false)
 {
   p_numbers          = new MODEL::ScalarNumbersMap();
   p_constants        = new MODEL::ScalarConstantsMap();
@@ -127,6 +127,7 @@ void Model_Base::RegisterDefaults() const
     s["ALPHAQED_DEFAULT_SCALE"].SetDefault(sqr(Flavour(kf_Z).Mass()));
   else
     s["ALPHAQED_DEFAULT_SCALE"].SetDefault(0.0);
+  s["MIXED_ALPHA_SCHEME"].SetDefault(false);
   if (s["MODEL_VARIATIONS"].SetDefault("None").IsMap() && !implements_variations) msg_Out() << "\x1b[31mThe model does not implement variations, ignoring them...\x1b[0m" << std::endl;
 }
 

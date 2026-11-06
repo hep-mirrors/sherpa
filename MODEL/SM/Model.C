@@ -364,6 +364,10 @@ void Standard_Model::FixEWParameters()
     break;
   }
 
+  // possibility for mixed alphaQED scheme
+  // read by NLO corrections in Amegic and Comix
+  m_mixedalpha = s["MIXED_ALPHA_SCHEME"].Get<bool>();
+
   msg_Info()<<"Fixed electroweak parameters\n";
   msg_Info()<<"  Input scheme: "<<ewschemename<<std::endl;
   msg_Info()<<"  Ren. scheme:  "<<ewrenscheme<<std::endl;

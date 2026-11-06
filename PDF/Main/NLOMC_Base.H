@@ -48,6 +48,8 @@ namespace PDF {
     virtual double KT2(const ATOOLS::NLO_subevt &sub,
 		       const double &x,const double &y,
 		       const double &Q2) = 0;
+    
+    virtual double AlphaQED() const;
 
     static void ShowSyntax(const int mode);
 

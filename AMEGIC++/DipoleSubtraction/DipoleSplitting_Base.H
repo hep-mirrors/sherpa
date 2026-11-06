@@ -52,6 +52,7 @@ namespace AMEGIC {
     inline std::string Name() const                 { return m_name; }
 
     void SetCoupling(const MODEL::Coupling_Map *cpls);
+    inline double Coupling() { return p_cpl->Default(); }
     inline void   SetChargeFactor(double f) { m_spfdef*=f; }
     inline double SPFac()                   { return m_spfdef*p_cpl->Factor(); }
 

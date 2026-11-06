@@ -20,6 +20,10 @@ NLOMC_Base::~NLOMC_Base()
 {
 }
 
+double NLOMC_Base::AlphaQED() const {
+  return -1.;
+}
+
 void NLOMC_Base::ShowSyntax(const int mode)
 {
   if (!msg_LevelIsInfo() || mode==0) return;

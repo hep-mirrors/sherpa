@@ -149,6 +149,7 @@ namespace AMEGIC {
     int            Type() { return 15; }
     void PrintLOmom();
     inline void SetSmearThreshold(const double &th) { m_smth=th; }
+    inline double Coupling() { return p_dipole->Coupling(); }
   };
 }
 

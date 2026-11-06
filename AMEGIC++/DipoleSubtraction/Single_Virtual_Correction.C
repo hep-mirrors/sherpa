@@ -12,6 +12,8 @@
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
+#include "MODEL/Main/Running_AlphaQED.H"
+#include "MODEL/Main/Model_Base.H"
 
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -712,6 +714,11 @@ double Single_Virtual_Correction::Calc_V(const ATOOLS::Vec4D_Vector &mom,
     res = cplfac*p_loopme->ME_Finite();
   }
   else THROW(not_implemented,"Unknown mode");
+  if (s_model->MixedAlphaQEDScheme()) {
+    msg_Debugging() << "Mixed alphaQED scheme: correcting default alpha to alpha0 in "<<METHOD<<"\n";
+    if (p_nlomc) res *= p_nlomc->AlphaQED()/p_loopme->AlphaQED();
+    else res *= MODEL::aqed->AqedThomson()/p_loopme->AlphaQED();
+  }
   return res;
 }
 
@@ -827,6 +834,11 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::sbt::subtype st,
   finite*=-cpl;
   singlepole*=-cpl;
   doublepole*=-cpl;
+  if (s_model->MixedAlphaQEDScheme()) {
+    msg_Debugging() << "Mixed alphaQED scheme: correcting default alpha to alpha0 in "<<METHOD<<"\n";
+    if (p_nlomc) finite = finite * p_nlomc->AlphaQED()/p_loopme->AlphaQED();
+    else finite = finite * MODEL::aqed->AqedThomson()/p_loopme->AlphaQED();
+  }
   msg_Debugging()<<"I_"<<st<<"_fin = "<<m_Norm*finite<<std::endl;
   msg_Debugging()<<"I_"<<st<<"_e1  = "<<m_Norm*singlepole<<std::endl;
   msg_Debugging()<<"I_"<<st<<"_e2  = "<<m_Norm*doublepole<<std::endl;
@@ -928,8 +940,17 @@ double Single_Virtual_Correction::Get_KPTerms(PDF_Base *pdfa, PDF_Base *pdfb,
   double muf2(ScaleSetter()->Scale(stp::fac,1));
   if (p_kpterms_qcd && p_LO_process->HasInitialStateQCDEmitter())
     res+=p_kpterms_qcd->Get(pdfa,pdfb,m_x0,m_x1,eta0,eta1,muf2,muf2,sf,sf,fl0,fl1);
-  if (p_kpterms_ew  && p_LO_process->HasInitialStateQEDEmitter())
-    res+=p_kpterms_ew->Get(pdfa,pdfb,m_x0,m_x1,eta0,eta1,muf2,muf2,sf,sf,fl0,fl1);
+  if (p_kpterms_ew  && p_LO_process->HasInitialStateQEDEmitter()) {
+    double kpew = p_kpterms_ew->Get(pdfa,pdfb,m_x0,m_x1,eta0,eta1,muf2,muf2,sf,sf,fl0,fl1);
+    if (s_model->MixedAlphaQEDScheme()) {
+      msg_Debugging() << "Mixed alphaQED scheme: correcting default alpha to alpha0 in "<<METHOD<<"\n";
+      if (p_nlomc) {
+        kpew *= p_nlomc->AlphaQED()/p_loopme->AlphaQED();
+      }
+      else kpew *= MODEL::aqed->AqedThomson()/p_loopme->AlphaQED();
+    }
+    res += kpew;
+  }
   return res * p_partner->m_lastki;
 }
 

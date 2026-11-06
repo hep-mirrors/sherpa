@@ -11,6 +11,8 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
+#include "MODEL/Main/Running_AlphaQED.H"
+#include "MODEL/Main/Model_Base.H"
 
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -537,6 +539,11 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
     if (res && realtrg) {
       double real = p_tree_process->operator()(&mom.front())*p_tree_process->Norm();
       if (IsBad(real) || real == 0. ) res=false;
+      if (s_model->MixedAlphaQEDScheme()) {
+        msg_Debugging() << "Mixed alphaQED scheme: correcting default alpha to alpha0 in "<<METHOD<<"\n";
+        if (p_nlomc) real *= p_nlomc->AlphaQED()/m_subtermlist[0]->Coupling();
+        else real *= MODEL::aqed->AqedThomson()/m_subtermlist[0]->Coupling();
+      }
       m_realevt.m_me = real;
       m_realevt.m_mewgt = real;
       m_realevt.m_K = p_tree_process->LastK();

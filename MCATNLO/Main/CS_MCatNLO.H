@@ -61,6 +61,8 @@ namespace MCATNLO {
 
     inline size_t PSMode() const { return m_psmode; }
 
+    inline double AlphaQED() const { return p_mcatnlo->GetSudakov()->AlphaQED(); }
+
   };
 
 }

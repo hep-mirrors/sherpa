@@ -3,6 +3,8 @@
 #include "COMIX/Main/Process_Group.H"
 #include "COMIX/Main/Single_Dipole_Term.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "MODEL/Main/Running_AlphaQED.H"
+#include "MODEL/Main/Model_Base.H"
 #include "COMIX/Phasespace/PS_Generator.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
@@ -491,6 +493,19 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
               campl->Leg(i)->SetFlav(ReMap(campl->Leg(i)->Flav(),0));
         }
 	m_subs.MultME(m_w);
+      }
+      if (s_model->MixedAlphaQEDScheme()) {
+        msg_Debugging() << "Mixed alphaQED scheme: correcting default alpha to alpha0 in "<<METHOD<<"\n";
+        if (p_nlomc) {
+          m_dxs *= p_nlomc->AlphaQED()/m_cpls.Get("Alpha_QED")->Default();
+          if (p_map) m_subs.MultME(MODEL::aqed->AqedThomson()/m_cpls.Get("Alpha_QED")->Default());
+          else p_bg->SubEvts().MultME(MODEL::aqed->AqedThomson()/m_cpls.Get("Alpha_QED")->Default());
+        }
+        else {
+          m_dxs *= MODEL::aqed->AqedThomson()/m_cpls.Get("Alpha_QED")->Default();
+          if (p_map) m_subs.MultME(MODEL::aqed->AqedThomson()/m_cpls.Get("Alpha_QED")->Default());
+          else p_bg->SubEvts().MultME(MODEL::aqed->AqedThomson()/m_cpls.Get("Alpha_QED")->Default());
+        }
       }
     }
   }
