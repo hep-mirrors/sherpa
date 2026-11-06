@@ -28,7 +28,6 @@ namespace CSSHOWER {
     double m_Jmax;
     double m_pdfexmax;
     double m_cssxmax;
-    double m_k0sqi[2];
 
     std::pair<double, double> m_pdfmin;
 

@@ -4,7 +4,6 @@
 #include "MODEL/Main/Color_Function.H"
 #include "MODEL/Main/Single_Vertex.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Scoped_Settings.H"

@@ -5,6 +5,7 @@
 #include "MCATNLO/Showers/SF_Coupling.H"
 #include "MCATNLO/Showers/SF_Lorentz.H"
 #include "ATOOLS/Math/Histogram.H"
+#include "PDF/Main/PDF_Base.H"
 
 // #define CHECK_rejection_weight
 

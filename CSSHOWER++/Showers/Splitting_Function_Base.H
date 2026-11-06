@@ -6,6 +6,7 @@
 #include "CSSHOWER++/Showers/SF_Lorentz.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "PDF/Main/PDF_Base.H"
 
 namespace ATOOLS { class Function_Base; }
 
