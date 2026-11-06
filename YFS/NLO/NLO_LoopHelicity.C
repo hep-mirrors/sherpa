@@ -214,7 +214,7 @@ void NLO_Base::ReportLoopHelicity()
   const double n(buf[0] > 0. ? buf[0] : 1.);
   const double rmean(buf[4]/n), rrms(sqrt(Max(0., buf[5]/n - rmean*rmean)));
   const double imean(buf[6]/n), irms(sqrt(Max(0., buf[7]/n - imean*imean)));
-  msg_Out()<<std::setprecision(6)
+  msg_Debugging()<<std::setprecision(6)
            <<"ACRAIC_Virtual: helicity - "<<(long)buf[0]<<" events with helicity"
            <<" factors, "<<(long)buf[1]<<" fell back to delta = v/2 entirely.\n"
            <<"  helicity configurations below VIRT_HEL_MINBORN (delta = v/2): "
@@ -225,8 +225,8 @@ void NLO_Base::ReportLoopHelicity()
            <<"  IR diag   sub_eps - sub_lambda - 2ReK ln(mu^2/lambda^2) : mean "
            <<imean<<"  rms "<<irms<<"  max |.| "<<mx[2]<<"\n"
            <<"  identity |residual| histogram (0 exactly, then decades from 1e-17):\n   ";
-  for (int b(0); b < 20; ++b) msg_Out()<<" "<<(long)hist[b];
-  msg_Out()<<std::endl;
+  for (int b(0); b < 20; ++b) msg_Debugging()<<" "<<(long)hist[b];
+  msg_Debugging()<<std::endl;
 }
 
 
@@ -364,7 +364,7 @@ void NLO_Base::ReportRealVirtualHelicity()
   const double n(buf[0] > 0. ? buf[0] : 1.);
   const double rmean(buf[5]/n), rrms(sqrt(Max(0., buf[6]/n - rmean*rmean)));
   const double dmean(buf[7]/n), drms(sqrt(Max(0., buf[8]/n - dmean*dmean)));
-  msg_Out()<<std::setprecision(6)
+  msg_Debugging()<<std::setprecision(6)
            <<"ACRAIC: REAL_VIRTUAL helicity - "<<(long)buf[0]<<" photons with"
            <<" helicity remainders, "<<(long)buf[1]<<" without (averaged dv).\n"
            <<"  (n+1) configurations below VIRT_HEL_MINBORN (rem = dv/2): "

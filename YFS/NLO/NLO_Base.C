@@ -182,8 +182,8 @@ NLO_Base::~NLO_Base() {
                <<(100.*m_rvBlowupRtree0/m_rvBlowup)<<"%"
                <<" (mechanism confirmed if ~100%)"<<std::endl;
   }
-  msg_Out()<<"Total zero real amplitudes: "<<m_zero_real_amp<<std::endl;
-  msg_Out()<<"Total events : "<<m_evts<<std::endl;
+  msg_Debugging()<<"Total zero real amplitudes: "<<m_zero_real_amp<<std::endl;
+  msg_Debugging()<<"Total events : "<<m_evts<<std::endl;
   ReportLoopHelicity();
   ReportRealVirtualHelicity();
   ReportVVPoles();

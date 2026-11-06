@@ -252,6 +252,8 @@ public:
   // headline YFS.LO / YFS.NLO / YFS.NNLO are emitted. Set the card option
   // YFS: NLO_Weight_Breakdown: true to get the individual contributions back.
   bool m_nlo_weight_breakdown;
+  // YFS: NLO_Columns: the YFS.NLO and YFS.NLO_EW named weights, off by default
+  bool m_nlo_columns;
   bool m_ladder_weights;
   int m_dump_dipoles;
   int m_check_real_sub, m_check_rr_sub, m_check_virt_born;

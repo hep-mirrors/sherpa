@@ -8,19 +8,10 @@
 
 /*
   The external on-shell photon's charge counterterm, as OpenLoops
-  computes it (source: OpenLoops lib_src/openloops/src/renormalisation_ew.F90;
-  line numbers below are that file's). With Sherpa's interface OpenLoops runs
-  with ew_scheme 2 (the alpha Sherpa passes is taken as alpha(M_Z) - for a
-  G_mu card that is alpha_Gmu), ew_renorm_scheme = Sherpa's EW_REN_SCHEME,
-  the complex-mass scheme (cms_on 1), massless u, d, s, c, and whatever b mass
-  Sherpa passes (0 for a massless b). For a photon registered as pdg 2002
-  photon_factors (2711-2764) multiplies the tree by alpha(0)/alpha_in and
-  adds to the loop
+  computes it (lib_src/openloops/src/renormalisation_ew.F90, line numbers
+  in brackets). In units of the tree, 2 x loopfactor goes on V_fin/T, with
 
     loopfactor = [dZe0QEDEWnreg - dZeQEDEW] alpha_in/(4 pi)          (2750)
-
-  in units of the tree, i.e. 2 x loopfactor on V_fin/T. With
-
     dZe0QEDEWnreg = -dZAAEWnreg/2 - (sw/cw) SiAZ0/MZ2                 (1496)
     dZAAEWnreg    = -(dSiAAheavy0 + PiAAlightZ/Re MZ2 + dAlpha)       (1283)
     dAlpha        = (4 pi/alpha_in)(1 - alpha(0)/alpha(MZ)),
@@ -32,19 +23,6 @@
     dsw/sw = -(cw2/sw2) dcw/cw,  dcw = (cw/2)(dZMW2/MW2 - dZMZ2/MZ2)  (1487-1488)
     CMS: dZMW2 = SiW + (MW2 - Re MW2) dSiW + 4 (Re MW2 - MW2),
          dZMZ2 = SiZZ - (Re MZ2 - MZ2) dSiZZ                           (1297-1320)
-
-  and the self-energies SiW(Re MW2), dSiW, SiW0 = SiW(0), SiZZ(Re MZ2),
-  dSiZZ, SiAZ0 (bosonic 690-749, fermionic 1100-1257; Denner92 in units of
-  alpha/4pi, 't Hooft-Feynman gauge), B0 with Delta_UV = 0 at real p^2
-  (calcB0: p2 = real(p2)) and, for calcRB0/calcRdB0, the real part above
-  the threshold Re p^2 > Re(m1^2 + m2^2). The combination is UV finite and
-  mu independent (checked). In the alpha(0) renormalisation scheme the
-  photon needs nothing (c = 0); in the alpha(M_Z) scheme
-  c = 1 - alpha(0)/alpha_in; in the G_mu scheme it is Delta r with the
-  light-fermion Delta alpha replaced by 1 - alpha(0)/alpha_in: at the Z pole
-  (alpha_in = 1/131.931) c = 0.0075211, against 0.0075209 from the soft-limit
-  calibration and 0.00752 from pyol's 2002 - 22 difference (NOTES-yfsnlo-
-  realvirtual-2026-09-28.md, sec. 8).
 */
 
 using namespace YFS;

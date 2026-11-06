@@ -200,6 +200,7 @@ void YFS_Base::RegisterDefaults(){
   s["M1_SQUARE"].SetDefault(m1square::averaged);
   Settings::GetMainSettings()["ACRAIC"]["EW_HIGHER_ORDER_HELICITY"].SetDefault(ewhohel::none);
   s["NLO_Weight_Breakdown"].SetDefault(false);
+  s["NLO_Columns"].SetDefault(false);
   s["Ladder_Weights"].SetDefault(false);
   s["Dump_Dipoles"].SetDefault(0);
   /*
@@ -364,6 +365,7 @@ void YFS_Base::RegisterSettings(){
   m_coll_real = s["Collinear_Real"].Get<bool>();
   m_resonace_max = s["CLUSTERING_THRESHOLD"].Get<double>();
   m_nlo_weight_breakdown = s["NLO_Weight_Breakdown"].Get<bool>();
+  m_nlo_columns = s["NLO_Columns"].Get<bool>();
   m_ladder_weights = s["Ladder_Weights"].Get<bool>();
   m_dump_dipoles = s["Dump_Dipoles"].Get<int>();
   m_no_born_setting = s["No_Born"].Get<bool>();
