@@ -501,7 +501,8 @@ TEST_CASE("Woods-Saxon overlap agrees with independent spatial integration",
           "[BEAM::Transverse_Profile]")
 {
   BeamSettings settings(
-      "BEAM_OVERLAP_REJECTION: 1\nBEAM_TRANSVERSE_PROFILE: {TYPE: WoodsSaxon}\n");
+      "BEAM_OVERLAP_REJECTION: 1\n"
+      "BEAM_TRANSVERSE_PROFILE: {TYPE: WoodsSaxon, RMS_RADIUS: 4.491711}\n");
   if (s_kftable.find(kf_lead208) == s_kftable.end())
     AddParticle(kf_lead208, 193.75, 5.5012, 0., 246, 0, true, 1, "Pb208", "Pb208");
   GaussianEmitter emitter(Flavour(kf_lead208), 8., 1);
@@ -520,6 +521,17 @@ TEST_CASE("Woods-Saxon overlap agrees with independent spatial integration",
     sum += weight();
   }
   CHECK(sum / n == Catch::Approx(.246528499636890).margin(8.e-4));
+}
+
+TEST_CASE("Ion radii are read as uniform spheres for the default width",
+          "[BEAM::Transverse_Profile]")
+{
+  BeamSettings settings("");
+  if (s_kftable.find(kf_lead208) == s_kftable.end())
+    AddParticle(kf_lead208, 193.75, 5.5012, 0., 246, 0, true, 1, "Pb208", "Pb208");
+  Monochromatic lead(Flavour(kf_lead208), 100., 0., 1);
+  CHECK(lead.TransverseProfile().RMSRadius() ==
+        Catch::Approx(std::sqrt(2. / 5.) * lead.Beam().Radius() / rpa->hBar_c()));
 }
 
 TEST_CASE("Optical Glauber overlap agrees with independent integration",

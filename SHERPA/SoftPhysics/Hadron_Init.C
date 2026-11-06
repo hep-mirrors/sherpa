@@ -264,6 +264,8 @@ void Hadron_Init::Init() {
   // ##################################################################################################
   // ##################################################################################################
   // - will assume they are all stable and have spin 0.
+  // - radii are those of the equivalent uniform sphere, 1.2 A^(1/3) fm, as a
+  //   minimum distance and in sharp-sphere formulae; the deuteron is the exception.
   // ##################################################################################################
   constexpr double A = 0.93149410372;
   AddHadron(kf_deuterium,   2.014    *A,2.1   ,0.,  3,0,false,true,1,"deuterium", "H$_2$");

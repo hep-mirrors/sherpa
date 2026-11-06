@@ -120,8 +120,10 @@ photonuclear calculation:
   projection of a uniform three-dimensional sphere), or ``WoodsSaxon``.
 
 :option:`RMS_RADIUS`
-  Transverse RMS radius in fm. If omitted, it is derived from the beam radius
-  as :math:`\sqrt{2/3}\,R_{\rm beam}`. Set it to zero for a pointlike profile.
+  Transverse RMS radius in fm. If omitted, it is derived from the beam radius,
+  as :math:`\sqrt{2/5}\,R_{\rm beam}` for ions, whose radius is that of the
+  equivalent uniform sphere, and as :math:`\sqrt{2/3}\,R_{\rm beam}` for other
+  beams, whose radius is an RMS radius. Set it to zero for a pointlike profile.
 
 :option:`SKIN_DEPTH`
   Woods-Saxon diffuseness in fm (default: ``0.54``). The half-density radius is

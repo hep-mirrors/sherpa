@@ -30,7 +30,9 @@ namespace {
                         !s["RMS_RADIUS"].GetVector<double>().empty();
     const double rms_fm = has_rms
         ? s["RMS_RADIUS"].GetTwoVector<double>()[index]
-        : std::sqrt(2. / 3.) * beam.Radius();
+        // the radius of an ion is that of a uniform sphere, <s^2> = 2 R^2 / 5,
+        // that of other beams an RMS radius, <s^2> = 2 R^2 / 3
+        : std::sqrt(beam.IsIon() ? 2. / 5. : 2. / 3.) * beam.Radius();
     const double skin_fm = models[index] == Transverse_Profile_Type::WoodsSaxon
         ? s["SKIN_DEPTH"].SetDefault(0.54).GetTwoVector<double>()[index] : 0.;
     return Transverse_Profile(models[index], rms_fm / ATOOLS::rpa->hBar_c(),
