@@ -31,7 +31,10 @@ namespace {
     const double rms_fm = has_rms
         ? s["RMS_RADIUS"].GetTwoVector<double>()[index]
         : std::sqrt(2. / 3.) * beam.Radius();
-    return Transverse_Profile(models[index], rms_fm / ATOOLS::rpa->hBar_c());
+    const double skin_fm = models[index] == Transverse_Profile_Type::WoodsSaxon
+        ? s["SKIN_DEPTH"].SetDefault(0.54).GetTwoVector<double>()[index] : 0.;
+    return Transverse_Profile(models[index], rms_fm / ATOOLS::rpa->hBar_c(),
+                              skin_fm / ATOOLS::rpa->hBar_c());
   }
 
 } // namespace
@@ -76,7 +79,11 @@ Beam_Base::Beam_Base(beamspectrum _type, const ATOOLS::Flavour& _beam,
                << ", transverse RMS radius = "
                << m_transverse_profile.RMSRadius() * ATOOLS::rpa->hBar_c()
                << " fm"
-               << (m_transverse_profile.RMSRadius() == 0. ? " (pointlike)" : "")
-               << "; used only by overlap geometry.\n";
+               << (m_transverse_profile.RMSRadius() == 0. ? " (pointlike)" : "");
+    if (m_transverse_profile.Type() == Transverse_Profile_Type::WoodsSaxon)
+      msg_Info() << ", skin depth = "
+                 << m_transverse_profile.SkinDepth() * ATOOLS::rpa->hBar_c()
+                 << " fm";
+    msg_Info() << "; used only by overlap geometry.\n";
   }
 }

@@ -99,6 +99,7 @@ Transverse parton profiles
 .. index:: BEAM_TRANSVERSE_PROFILE
 .. index:: BEAM_TRANSVERSE_PROFILE:TYPE
 .. index:: BEAM_TRANSVERSE_PROFILE:RMS_RADIUS
+.. index:: BEAM_TRANSVERSE_PROFILE:SKIN_DEPTH
 
 ``BEAM_TRANSVERSE_PROFILE`` controls the transverse distribution of partons in
 non-EPA beams when :option:`BEAM_OVERLAP_REJECTION` is enabled. EPA beams retain
@@ -115,12 +116,17 @@ photonuclear calculation:
      TYPE: UniformSphere
 
 :option:`TYPE`
-  Profile shape: ``Gaussian`` (default) or ``UniformSphere``, the transverse
-  projection of a uniform three-dimensional sphere.
+  Profile shape: ``Gaussian`` (default), ``UniformSphere`` (the transverse
+  projection of a uniform three-dimensional sphere), or ``WoodsSaxon``.
 
 :option:`RMS_RADIUS`
   Transverse RMS radius in fm. If omitted, it is derived from the beam radius
   as :math:`\sqrt{2/3}\,R_{\rm beam}`. Set it to zero for a pointlike profile.
+
+:option:`SKIN_DEPTH`
+  Woods-Saxon diffuseness in fm (default: ``0.54``). The half-density radius is
+  determined automatically to match ``RMS_RADIUS``. Set the diffuseness to zero
+  for the uniform-sphere limit. Incompatible size and diffuseness are rejected.
 
 Currently, the options are only used in photonuclear jets, i.e. setups including one EPA photon flux with impact parameter and a nuclear PDF.
 
