@@ -1,0 +1,46 @@
+# general settings
+EVENT_GENERATION_MODE: Weighted
+EVENTS: 300k
+EVENT_DISPLAY_INTERVAL: 10000
+
+# collider setup
+BEAMS: [11, -11]
+BEAM_ENERGIES: 45.6
+PDF_LIBRARY: None
+BEAM_REMNANTS: false
+FRAGMENTATION: None
+SHOWER_GENERATOR: None
+SCALES: VAR{E_CMS*E_CMS}
+EW_SCHEME: alpha0
+PARTICLE_DATA:
+  11: {Massive: true}
+  13: {Massive: true}
+
+# YFS soft-photon resummation, amplitude-level (ACRAIC) nominal weight;
+# YFS.LO comes along as a named weight (YFS.NLO, YFS.NLO_EW: YFS: NLO_Columns true)
+YFS:
+  MODE: ISRFSR
+  BETA: 1
+  ACRAIC: 1
+  ACRAIC_Virtual: acraic
+  Integrate_NLO: 1
+
+ACRAIC:
+  ORDER: 2
+  BETA0_2: two_loop
+
+PROCESSES:
+- 11 -11 -> 13 -13:
+    Order: {QCD: 0, EW: 2}
+    NLO_Mode: YFS
+    NLO_Part: BR
+    NLO_Order: {EW: 1, QCD: 0}
+
+SELECTORS:
+- [Mass, 13, -13, 10, E_CMS]
+
+ANALYSIS: Rivet
+RIVET:
+  --analyses:
+    - MC_ZINC:LMODE=MU
+    - MC_PHOTONS
