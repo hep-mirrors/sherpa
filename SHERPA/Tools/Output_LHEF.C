@@ -149,10 +149,35 @@ void Output_LHEF::Output(Blob_List* blobs)
   }
   m_outstream<<"'>"<<std::endl;
   Poincare cms(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
+  // YFS ISR: the signal blob starts from the reduced legs; write the
+  // full-energy leptons as incoming and the ISR photons as outgoing instead,
+  // so that the event conserves four-momentum with respect to the beams.
+  // YFS FSR (non-coloured final states): the signal blob ends at the pre-FSR
+  // legs; write the post-FSR legs and the FSR photons in their place.
+  Blob *isr(blobs->FindFirst(btp::YFS_Initial));
+  Blob *fsr(NULL);
+  for (Blob_List::const_iterator blit=blobs->begin();blit!=blobs->end();++blit)
+    if ((*blit)->Type()==btp::QED_Radiation && (*blit)->TypeSpec()=="YFS_FSR") {
+      fsr=*blit;
+      break;
+    }
   for (Blob_List::const_iterator blit=blobs->begin();blit!=blobs->end();++blit){
     if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
+      Blob *in(isr?isr:*blit);
       //LHE event information
-      int NUP = (*blit)->NInP()+(*blit)->NOutP();
+      // the legs that radiated are replaced by the FSR blob's outgoing ones;
+      // the ISR blob's outgoing particles are its photons
+      Particle_Vector outs;
+      for (int i=0;i<(*blit)->NOutP();i++)
+	if (!fsr || (*blit)->OutParticle(i)->DecayBlob()!=fsr)
+	  outs.push_back((*blit)->OutParticle(i));
+      if (fsr)
+	for (int i=0;i<fsr->NOutP();i++) outs.push_back(fsr->OutParticle(i));
+      if (isr)
+	for (int i=0;i<isr->NOutP();i++)
+	  if (isr->OutParticle(i)->Flav().IsPhoton())
+	    outs.push_back(isr->OutParticle(i));
+      int NUP = in->NInP()+outs.size();
       int IDPRUP = 1;
       double XWGTUP = weight;
       double SCALUP = sqrt((*(*blit))["Factorisation_Scale"]->Get<double>());
@@ -170,30 +195,30 @@ void Output_LHEF::Output(Blob_List* blobs)
 		 <<std::setw(18)<<SCALUP<<" "
 		 <<std::setw(18)<<AQEDUP<<" "
 		 <<std::setw(18)<<AQCDUP<<std::endl;
-      for (int i=0;i<(*blit)->NInP();i++) {
-	Vec4D p((*blit)->InParticle(i)->Momentum());
+      for (int i=0;i<in->NInP();i++) {
+	Vec4D p(in->InParticle(i)->Momentum());
 	if (m_bntp) cms.Boost(p);
-	m_outstream<<std::setw(8)<<(long int)(*blit)->InParticle(i)->Flav()<<" -1  0  0 "
-		   <<std::setw(4)<<(*blit)->InParticle(i)->GetFlow(1)<<" "
-		   <<std::setw(4)<<(*blit)->InParticle(i)->GetFlow(2)<<" "
+	m_outstream<<std::setw(8)<<(long int)in->InParticle(i)->Flav()<<" -1  0  0 "
+		   <<std::setw(4)<<in->InParticle(i)->GetFlow(1)<<" "
+		   <<std::setw(4)<<in->InParticle(i)->GetFlow(2)<<" "
 		   <<std::setw(18)<<p[1]<<" "
 		   <<std::setw(18)<<p[2]<<" "
 		   <<std::setw(18)<<p[3]<<" "
 		   <<std::setw(18)<<p[0]<<" "
-		   <<std::setw(18)<<(*blit)->InParticle(i)->FinalMass()<<" "
+		   <<std::setw(18)<<in->InParticle(i)->FinalMass()<<" "
 		   <<" 0  9"<<std::endl;
       }
-      for (int i=0;i<(*blit)->NOutP();i++) {
-	Vec4D p((*blit)->OutParticle(i)->Momentum());
+      for (const Particle *part : outs) {
+	Vec4D p(part->Momentum());
 	if (m_bntp) cms.Boost(p);
-	m_outstream<<std::setw(8)<<(long int)(*blit)->OutParticle(i)->Flav()<<"  1  1  2 "
-		   <<std::setw(4)<<(*blit)->OutParticle(i)->GetFlow(1)<<" "
-		   <<std::setw(4)<<(*blit)->OutParticle(i)->GetFlow(2)<<" "
+	m_outstream<<std::setw(8)<<(long int)part->Flav()<<"  1  1  2 "
+		   <<std::setw(4)<<part->GetFlow(1)<<" "
+		   <<std::setw(4)<<part->GetFlow(2)<<" "
 		   <<std::setw(18)<<p[1]<<" "
 		   <<std::setw(18)<<p[2]<<" "
 		   <<std::setw(18)<<p[3]<<" "
 		   <<std::setw(18)<<p[0]<<" "
-		   <<std::setw(18)<<(*blit)->OutParticle(i)->FinalMass()<<" "
+		   <<std::setw(18)<<part->FinalMass()<<" "
 		   <<" 0  9"<<std::endl;
       }
       m_outstream<<std::resetiosflags(std::ios::fixed);

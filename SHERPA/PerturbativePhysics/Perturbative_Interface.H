@@ -78,6 +78,9 @@ namespace SHERPA {
 
     long int m_fails_Moms, m_fails_Ampls, m_fails_Masses;
     bool LocalKFactor(ATOOLS::Cluster_Amplitude* ampl);
+    //! YFS: the amplitude takes the signal blob's momenta, and any FSR
+    //! photons off coloured partons as colourless legs
+    void DressAmplitudeForYFS();
 
   public :
 

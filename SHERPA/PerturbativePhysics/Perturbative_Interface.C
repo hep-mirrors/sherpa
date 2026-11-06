@@ -16,12 +16,68 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/Random.H"
+#include "YFS/Main/YFS_Handler.H"
 
 #include <cassert>
 
 using namespace SHERPA;
 using namespace PHASIC;
 using namespace ATOOLS;
+
+/*
+  With YFS the amplitude clustered from the Born need not match the signal
+  blob, which FillBlobs turns into the incoming particles of the shower
+  blob: Single_Process::Cluster copies the scale setter's amplitude from
+  the channel's last evaluation, which with ACRAIC is one of its partition
+  points rather than the event, and YFS FSR off a coloured final state
+  leaves the post-FSR partons and the FSR photons in the signal blob
+  (Signal_Processes::FillYFSBlobs), while the Born is pre-FSR. Take the
+  momenta of the amplitude's legs from the blob and add the photons as
+  colourless legs, so that the shower starts from what the blob holds and
+  passes the photons through (no colour, so no emission and no recoil).
+*/
+void Perturbative_Interface::DressAmplitudeForYFS()
+{
+  Cluster_Amplitude *const ampl(p_ampl);
+  Blob *const blob(p_hard);
+  if (ampl->Prev() || ampl->Next())
+    THROW(not_implemented, "YFS with a clustered shower history.");
+  const size_t nin(ampl->NIn());
+  std::vector<bool> usedin(blob->NInP(), false), usedout(blob->NOutP(), false);
+  for (size_t i(0); i < ampl->Legs().size(); ++i) {
+    Cluster_Leg *cl(ampl->Leg(i));
+    const bool is(i < nin);
+    // incoming legs are crossed: flavour and momentum enter with a sign
+    const Flavour fl(is ? cl->Flav().Bar() : cl->Flav());
+    const Vec4D p(is ? -cl->Mom() : cl->Mom());
+    // the same flavour can appear more than once: take the closest
+    int best(-1);
+    double dbest(std::numeric_limits<double>::max());
+    const size_t n(is ? blob->NInP() : blob->NOutP());
+    for (size_t j(0); j < n; ++j) {
+      const Particle *part(is ? blob->InParticle(j) : blob->OutParticle(j));
+      if ((is ? usedin[j] : usedout[j]) || part->Flav() != fl) continue;
+      const double d((part->Momentum() - p).PSpat2());
+      if (d < dbest) { dbest = d; best = j; }
+    }
+    if (best < 0)
+      THROW(fatal_error, "YFS: no particle in the signal blob for an"
+            " amplitude leg of flavour " + fl.IDName() + ".");
+    (is ? usedin : usedout)[best] = true;
+    const Vec4D q(is ? blob->InParticle(best)->Momentum()
+                     : blob->OutParticle(best)->Momentum());
+    cl->SetMom(is ? -q : q);
+  }
+  for (size_t j(0); j < blob->NOutP(); ++j) {
+    const Particle *part(blob->OutParticle(j));
+    if (usedout[j] || part->DecayBlob()) continue;
+    if (!part->Flav().IsPhoton())
+      THROW(fatal_error, "YFS: an unmatched " + part->Flav().IDName()
+            + " in the signal blob.");
+    ampl->CreateLeg(part->Momentum(), part->Flav(), ColorID(0, 0),
+                    size_t(1) << ampl->Legs().size());
+  }
+}
 
 std::ostream & SHERPA::operator<<(std::ostream & s,
                                   const SHERPA::mets_bbar_mode::code & mm)
@@ -176,6 +232,8 @@ Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob* blob,
     m_fails_Ampls++;
     return Return_Value::New_Event;
   }
+  if (p_me->GetYFS() && p_me->GetYFS()->Mode()!=YFS::yfsmode::off)
+    DressAmplitudeForYFS();
   if (p_ampl->Leg(0)->Mom()[3]*p_ampl->Leg(1)->Mom()[3]>0.0) {
     m_fails_Moms++;
     return Return_Value::New_Event;
