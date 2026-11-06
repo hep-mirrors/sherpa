@@ -177,12 +177,9 @@ void CV<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			   const int cr,const int ca,const int mode)
 {
   this->m_p=p;
-  this->m_p2=sqr(this->m_mass);
   if (this->m_fl.Mass()==0.0 && p[1]==0.0 && p[2]==0.0)
     this->m_p[0]=this->m_p[0]<0.0?
       -std::abs(this->m_p[3]):std::abs(this->m_p[3]);
-  // after the on-axis energy fix-up, not before
-  this->SetPWide();
   this->ResetJ();
   if (ch>=0) {
     if (this->m_msv && (ch==0 || ch==3)) {
@@ -243,23 +240,8 @@ template <typename SType>
 void CV<SType>::AddPropagator()
 {
   // add propagator for off-shell leg
-  // m_p2, not m_p.Abs2(): see Current::Evaluate().
-  SComplex p2(SType(this->m_p2));
-  // The pole may be moved off the current's own p^2; see Current::m_p2prop.
-  const SComplex pp2(this->m_p2prop > 0.0
-                     ? SComplex(SType(this->m_p2prop))
-                     : this->m_haveshift
-                       ? SComplex(SType((this->m_p + this->m_pshift).Abs2()))
-                       : p2);
-  SComplex prop(-M_I/(pp2-m_cmass2));
-  // ACRAIC: RESONANCE_EXPONENTIATION, see Current::m_resexp
-  if (this->m_resexp != 0.0) {
-    const SComplex il(SType(this->m_resexp)*log((m_cmass2-pp2)/m_cmass2));
-    prop*=(this->m_reslinear ? SComplex(SType(1.0))+il : exp(il));
-  }
+  SComplex p2(SType(this->m_p.Abs2())), prop(-M_I/(p2-m_cmass2));
   if (this->m_osd) prop=SComplex(M_I);
-  // YFS: IFI false, see Current::m_propveto
-  if (this->m_propveto) prop=SComplex(SType(0.0));
 #ifdef DEBUG__BG
   msg_Debugging()<<"propagator: "<<prop<<"\n";
 #endif
@@ -379,16 +361,15 @@ PrintInfo(std::ostream &str,const size_t width) const
   str<<"vector current (double)";
 }
 
-// YFS: COMIX_STABLE_PROPAGATORS -- see METOOLS/Currents/YFS_Stable_Current.H
 #include "METOOLS/Currents/YFS_Stable_Current.H"
 
 namespace METOOLS {
 
   /*!
-    The vector current of the YFS real-emission processes: the pole of a
-    shifted line from YFS_Stable_Current::StableLine, and the current's own
-    p^2 (for the projection, and the pole of an unshifted line) from the
-    invariant table. The base class does the rest; its state is restored.
+    The vector current of the YFS processes (YFS_Stable_Current.H): p^2 for
+    the projection and the pole from the double-double virtuality (with an
+    invariant table, from the table), the pole optionally at a fixed scale
+    or shifted.
   */
   template <typename SType>
   class CV_YFS: public CV<SType>, public YFS_Stable_Current {
@@ -397,36 +378,54 @@ namespace METOOLS {
     typedef typename CV<SType>::Vec4Type Vec4Type;
     typedef typename CV<SType>::CVec4Type CVec4Type;
     typedef typename CV<SType>::CVec4Type_Vector CVec4Type_Vector;
-    CV_YFS(const Current_Key &key): CV<SType>(key) {}
-    // CV::AddPropagator with p^2 (projection, unshifted pole) from the table
-    // and the shifted pole from StableLine
+
+    CV_YFS(const Current_Key &key):
+      CV<SType>(key), YFS_Stable_Current(key.m_fl.Mass()) {}
+
+    void SumMomenta() override
+    { SumWideMomenta(this->m_in.front()->J(),this->m_p); }
+
+    void ConstructJ(const ATOOLS::Vec4D &p,const int ch,
+                    const int cr,const int ca,const int mode) override
+    {
+      CV<SType>::ConstructJ(p,ch,cr,ca,mode);
+      // after the on-axis energy fix-up of the base class
+      SetExternal(this->m_p,this->m_mass);
+    }
+
     void AddPropagator() override
     {
       typedef ATOOLS::DDouble DD;
-      DD p2s; ATOOLS::Vec4<DD> ph; bool shifted(false);
-      if (!this->StableLine(*this,p2s,ph,shifted)) { CV<SType>::AddPropagator(); return; }
-      const SComplex p2(SType((double)p_inv->Virtuality(this->m_cid)));
-      const SComplex pp2(this->m_p2prop > 0.0 ? SComplex(SType(this->m_p2prop))
-                         : shifted ? SComplex(SType((double)p2s)) : p2);
+      SComplex p2(SType(this->m_p2));
+      SComplex pp2(this->m_haveshift
+                   ?SComplex(SType((this->m_p+m_pshift).Abs2())):p2);
+      DD sp2; ATOOLS::Vec4<DD> sph; bool shifted(false);
+      if (StableLine(*this,sp2,sph,shifted)) {
+        p2=SComplex(SType((double)p_inv->Virtuality(this->m_cid)));
+        pp2=shifted?SComplex(SType((double)sp2)):p2;
+      }
+      if (m_p2prop>0.0) pp2=SComplex(SType(m_p2prop));
       SComplex prop(-M_I/(pp2-this->m_cmass2));
-      if (this->m_resexp != 0.0) {
-        const SComplex il(SType(this->m_resexp)*log((this->m_cmass2-pp2)/this->m_cmass2));
-        prop*=(this->m_reslinear ? SComplex(SType(1.0))+il : exp(il));
+      if (m_resexp!=0.0) {
+        const SComplex il(SType(m_resexp)*log((this->m_cmass2-pp2)/this->m_cmass2));
+        prop*=(m_reslinear?SComplex(SType(1.0))+il:exp(il));
       }
       if (this->m_osd) prop=SComplex(M_I);
-      if (this->m_propveto) prop=SComplex(SType(0.0));
+      if (m_propveto) prop=SComplex(SType(0.0));
       for (size_t i(0);i<this->m_j.size();++i) {
         CVec4Type_Vector *j(this->m_j[i].template Get<CVec4Type>());
         if (!this->m_fl.IsGluon()) {
           if (!this->m_msv)
-            for (typename CVec4Type_Vector::iterator jit(j->begin());jit!=j->end();++jit)
+            for (typename CVec4Type_Vector::iterator
+                   jit(j->begin());jit!=j->end();++jit)
               **jit-=(**jit*Vec4Type(this->m_p))*CVec4Type(this->m_p)/p2;
           else
-            for (typename CVec4Type_Vector::iterator jit(j->begin());jit!=j->end();++jit)
+            for (typename CVec4Type_Vector::iterator
+                   jit(j->begin());jit!=j->end();++jit)
               **jit-=(**jit*Vec4Type(this->m_p))*CVec4Type(this->m_p)/this->m_cmass2;
         }
-        for (typename CVec4Type_Vector::iterator jit(j->begin());jit!=j->end();++jit)
-          **jit*=prop;
+        for (typename CVec4Type_Vector::iterator
+               jit(j->begin());jit!=j->end();++jit) **jit*=prop;
       }
     }
   };// end of class CV_YFS
@@ -445,5 +444,5 @@ operator()(const Current_Key &key) const
 void ATOOLS::Getter<Current,Current_Key,CV_YFS<double> >::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"vector current, YFS stable propagators (double)";
+  str<<"vector current, YFS (double)";
 }

@@ -87,12 +87,15 @@ namespace COMIX {
     ATOOLS::Vec4D_Vector   m_p;
     
     std::vector<ATOOLS::Vec4<ATOOLS::DDouble> > m_pw;
-    // YFS: COMIX_STABLE_PROPAGATORS (YFS_Stable_Current.H): "Y" currents
-    // and their invariant table, for the processes YFS marks YFSStable
+    // YFS (METOOLS/Currents/YFS_Stable_Current.H): the "Y" currents of the
+    // processes YFS marks "YFS", and for those it marks "YFSStable"
+    // (COMIX_STABLE_PROPAGATORS) their invariant table
     METOOLS::Invariant_Table m_inv;
-    bool m_yfsstable=false, m_invattached=false;
+    bool m_yfs=false, m_yfsstable=false, m_invattached=false;
     void FillInvariants();
     METOOLS::Current *NewCurrent(const METOOLS::Current_Key &key) const;
+    static METOOLS::YFS_Stable_Current *YFSPart(METOOLS::Current *const c);
+    static void SetPropScale(METOOLS::Current *const c,const double &s);
 
     ATOOLS::DecayInfo_Vector m_decid;
 
@@ -201,43 +204,7 @@ namespace COMIX {
       Scoped_Prop_Scale(const Scoped_Prop_Scale &) = delete;
       Scoped_Prop_Scale &operator=(const Scoped_Prop_Scale &) = delete;
     };
-    /*!
-      The vector form: every internal current built from the whole initial
-      state (and no final fermion) has dini added to its momentum before the
-      pole is evaluated, every one built from both final fermions (ffmask,
-      and no initial leg) has dfin added. See Current::m_pshift.
-    */
-    class Scoped_Prop_Shift {
-    private:
-      Amplitude *p_amp;
-    public:
-      Scoped_Prop_Shift(Amplitude *const amp, const ATOOLS::Vec4D &dini,
-                        const ATOOLS::Vec4D &dfin, const size_t ffmask);
-      ~Scoped_Prop_Shift();
-      Scoped_Prop_Shift(const Scoped_Prop_Shift &) = delete;
-      Scoped_Prop_Shift &operator=(const Scoped_Prop_Shift &) = delete;
-    };
-    /*!
-      The general form: a list of stages, each a mask of external legs that
-      radiate coherently (the initial state; the decay products of one
-      resonance; ...) with the summed momentum of the photons the current
-      partition assigns to it. Every internal current whose legs contain a
-      stage entirely has that stage's photons added to its momentum before
-      the pole is evaluated; a current whose complement is the smaller side
-      also takes the photons of the stages it contains only partly (the
-      fermion line next to an emission is the external fermion plus the
-      photon, whatever the recursion built it from). Two stages, initial and
-      final.
-    */
     typedef std::vector<std::pair<size_t, ATOOLS::Vec4D> > Prop_Shifts;
-    /*!
-      Switch ProjectWideMomenta off for the evaluations inside the scope.
-      ACRAIC hands Comix legs that do not balance by construction (the other
-      photons of the event are elsewhere in the partition sum), and the
-      projection would move them; every other evaluation in the run keeps
-      the projection, which is Comix's collinear-stability fix for the real
-      matrix elements the fixed-order side needs.
-    */
     class Scoped_No_Projection {
     private:
       Amplitude *p_amp; bool m_old;
@@ -261,23 +228,10 @@ namespace COMIX {
 
   private:
 
-    void SetPropShift(const ATOOLS::Vec4D &dini, const ATOOLS::Vec4D &dfin,
-                      const size_t ffmask);
     void SetPropShifts(const Prop_Shifts &shifts);
-    //! ACRAIC: RESONANCE_EXPONENTIATION - the resonance entries of a shift
-    //! list (see PHASIC::Process_Base::s_propshiftresonance); called by
-    //! SetPropShifts, an empty list clears every current
     void SetResonanceExponents(const Prop_Shifts &resonances);
-    //! YFS: IFI false - the veto entries of a shift list (see
-    //! PHASIC::Process_Base::s_propshiftveto); called by SetPropShifts, an
-    //! empty list clears every current
     void SetLineVetoes(const Prop_Shifts &vetoes);
 
-    /*!
-      Move the pole of every INTERNAL current's propagator to s, or back to
-      the current's own p^2 with s <= 0. External currents are left alone -
-      they carry no propagator. Reachable only through Scoped_Prop_Scale.
-    */
     void SetPropScale(const double &s, const double &sdec = -1.0,
                       const size_t deccid = 0);
 
@@ -373,8 +327,9 @@ namespace COMIX {
     inline const ATOOLS::Flavour_Vector &Flavours() const { return m_fl; }
 
     inline const Current_Matrix &Currents() const { return m_cur; }
-    // before Initialize: build the YFS stable-propagator currents
-    inline void SetYFSStable(const bool on) { m_yfsstable=on; }
+    // before Initialize: build the YFS currents, and their invariant table
+    inline void SetYFS(const bool on) { m_yfs=on; }
+    inline void SetYFSStable(const bool on) { m_yfsstable=on; if (on) m_yfs=true; }
 
     inline void SetDecayInfos(const ATOOLS::DecayInfo_Vector &id) 
     { m_decid=id; m_dec=m_decid.size(); }

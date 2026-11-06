@@ -117,7 +117,9 @@ bool COMIX::Single_Process::Initialize
   p_model->GetCouplings(m_cpls);
   p_bg = new Amplitude();
   p_bg->SetCTS(p_cts);
-  // YFS: COMIX_STABLE_PROPAGATORS: the real-emission processes YFS marks
+  // the processes YFS builds get the YFS currents (YFS_Stable_Current.H),
+  // and those it marks YFSStable their invariant table
+  if (m_pinfo.m_special.find("YFS")!=std::string::npos) p_bg->SetYFS(true);
   if (m_pinfo.m_special.find("YFSStable")!=std::string::npos) p_bg->SetYFSStable(true);
   double isf(m_pinfo.m_ii.ISSymmetryFactor());
   double fsf(m_pinfo.m_fi.FSSymmetryFactor());
@@ -829,16 +831,6 @@ bool COMIX::Single_Process::BornSpinAmplitudes
   return !amps.empty();
 }
 
-ATOOLS::Weights_Map COMIX::Single_Process::DifferentialWithPropShift
-(const ATOOLS::Cluster_Amplitude &ampl, ATOOLS::Variations_Mode varmode,
- int mode, const Vec4D &dini, const Vec4D &dfin, const size_t ffmask)
-{
-  Amplitude *bg(p_map != NULL ? p_map->p_bg : p_bg);
-  Amplitude::Scoped_No_Projection noproj(bg);
-  Amplitude::Scoped_Prop_Shift guard(bg, dini, dfin, ffmask);
-  return Differential(ampl, varmode, mode);
-}
-
 ATOOLS::Weights_Map COMIX::Single_Process::DifferentialWithPropShifts
 (const ATOOLS::Cluster_Amplitude &ampl, ATOOLS::Variations_Mode varmode,
  int mode, const Prop_Shifts &shifts)
@@ -860,28 +852,6 @@ bool COMIX::Single_Process::BornSpinAmplitudesShifts
   const Vec4D_Vector pold(bg->Momenta());
   if (!bg->SetMomenta(p)) { bg->SetMomenta(pold); return false; }
   Amplitude::Scoped_Prop_Shifts guard(bg, shifts);
-  const double s_lastxs(m_lastxs), s_dxs(m_dxs), s_w(m_w);
-  const double xs(Partonic(p, Variations_Mode::nominal_only, 0));
-  amps.clear();
-  std::vector<std::vector<Complex> > cols;
-  FillAmplitudes(amps, cols);
-  m_lastxs = s_lastxs; m_dxs = s_dxs; m_w = s_w;
-  bg->SetMomenta(pold);
-  if (me2) *me2 = xs;
-  return !amps.empty();
-}
-
-bool COMIX::Single_Process::BornSpinAmplitudesShifted
-(const Vec4D_Vector &p, std::vector<Spin_Amplitudes> &amps, double *me2,
- const Vec4D &dini, const Vec4D &dfin, const size_t ffmask)
-{
-  if (p.size() != Flavours().size()) return false;
-  Amplitude *bg(p_map != NULL ? p_map->p_bg : p_bg);
-  if (bg == NULL) return false;
-  Amplitude::Scoped_No_Projection noproj(bg);
-  const Vec4D_Vector pold(bg->Momenta());
-  if (!bg->SetMomenta(p)) { bg->SetMomenta(pold); return false; }
-  Amplitude::Scoped_Prop_Shift guard(bg, dini, dfin, ffmask);
   const double s_lastxs(m_lastxs), s_dxs(m_dxs), s_w(m_w);
   const double xs(Partonic(p, Variations_Mode::nominal_only, 0));
   amps.clear();

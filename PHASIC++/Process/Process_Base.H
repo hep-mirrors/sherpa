@@ -292,8 +292,7 @@ namespace PHASIC {
 
     /*!
       \param propscale > 0 moves the pole of every internal propagator to this
-             value, leaving the spinors at p. That combination is not an
-             S-matrix element at any momentum configuration - it is what the
+             value, leaving the spinors at p. it is what the
              ACRAIC partition sum asks for, and the recursion can supply it
              because it carries the propagator as a separate factor.
     */
@@ -324,35 +323,11 @@ namespace PHASIC {
      double *me2 = NULL, const double propscale = -1.0,
      const double decscale = -1.0, const size_t deccid = 0) { return false; }
 
-    /*!
-      The vector-shift form of the two above: initial-side s-channel lines get
-      dini added to their momentum, final-side ones dfin (ffmask names the
-      final fermion pair), before the pole is evaluated. External momenta
-      and spinors are left exactly as given. See COMIX::Amplitude::SetPropShift.
-    */
-    virtual ATOOLS::Weights_Map DifferentialWithPropShift
-    (const ATOOLS::Cluster_Amplitude &ampl,
-     ATOOLS::Variations_Mode varmode, int mode,
-     const ATOOLS::Vec4D &dini, const ATOOLS::Vec4D &dfin,
-     const size_t ffmask)
-    { return Differential(ampl, varmode, mode); }
-    virtual bool BornSpinAmplitudesShifted
-    (const ATOOLS::Vec4D_Vector &p,
-     std::vector<METOOLS::Spin_Amplitudes> &amps, double *me2,
-     const ATOOLS::Vec4D &dini, const ATOOLS::Vec4D &dfin,
-     const size_t ffmask) { return false; }
     //! The general form: one (leg mask, photon sum) per radiating stage.
     typedef std::vector<std::pair<size_t, ATOOLS::Vec4D> > Prop_Shifts;
-    /*!
-      An entry whose mask carries this bit is a LINE shift, not a stage: it
-      applies to the internal currents whose charged-leg content is exactly
-      the mask or its complement (the t-channel line of Bhabha, {1,3} or
-      {0,2}), which then take this shift INSTEAD of the stage rule. See
-      COMIX::Amplitude::SetPropShifts.
-    */
     static const size_t s_propshiftline = ((size_t)1) << (8*sizeof(size_t) - 1);
     /*
-      A LEG entry: mask = one external leg plus this flag, vector = the
+      A mask = one external leg plus this flag, vector = the
       difference between that leg's reduced and physical momentum in
       Comix's all-outgoing sign convention. COMIX::Amplitude::SetPropShifts
       sums them over the legs of every space-like exchange line.
@@ -385,11 +360,7 @@ namespace PHASIC {
       A VETO entry (YFS: IFI false): mask = a set of legs plus this flag. It
       moves no pole. Every internal current whose leg content is exactly the
       mask, or exactly its complement, gets a zero propagator, so every
-      diagram through that line drops out of the amplitude. With the mask
-      the final fermion pair (with or without the photon), this keeps only
-      the initial-state (or only the final-state) emission of e+e- -> f fbar
-      gamma, each gauge invariant for a neutral s-channel. The vector is
-      unused. Build entries only through VetoEntry().
+      diagram through that line drops out of the amplitude. 
     */
     static const size_t s_propshiftveto = ((size_t)1) << (8*sizeof(size_t) - 4);
     static inline std::pair<size_t, ATOOLS::Vec4D>

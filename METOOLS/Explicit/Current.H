@@ -4,7 +4,6 @@
 #include "METOOLS/Explicit/C_Object.H"
 #include "METOOLS/Main/Polarization_Index.H"
 #include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Math/DDouble.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Getter_Function.H"
 #include "MODEL/Main/Model_Base.H"
@@ -50,17 +49,6 @@ namespace METOOLS {
     Int_Vector    m_id, m_fid;
 
     ATOOLS::Vec4D  m_p;
-    // Double-double shadow of m_p, used only for the p^2 bookkeeping below.
-    // m_p itself stays double on purpose.
-    ATOOLS::Vec4<ATOOLS::DDouble> m_ph;
-    // Externally supplied wide momentum (Amplitude's joint on-shell /
-    // conserving projection). When set it wins over the per-leg
-    // reconstruction in SetPWide(), because only a joint projection can
-    // satisfy sum(p)=0 and p^2=m^2 at the same time.
-    ATOOLS::Vec4<ATOOLS::DDouble> m_phx;
-    bool m_hasphx;
-
-    ATOOLS::DDouble m_p2;
     CObject_Matrix m_j;
 
     Polarization_Index m_h;
@@ -80,6 +68,11 @@ namespace METOOLS {
     mutable std::string m_psinfo;
 
     virtual std::string CLabel() const;
+
+    //! the outgoing momentum m_p from the sub-currents of the first vertex;
+    //! the YFS currents (METOOLS/Currents/YFS_Stable_Current.H) also carry
+    //! its virtuality
+    virtual void SumMomenta();
 
     void CollectGraphs(Graph_Node *graph,
 		       const std::string &lastv) const;
@@ -128,23 +121,7 @@ namespace METOOLS {
     // inline functions
     inline const CObject_Matrix &J() const { return m_j; }
 
-    inline void SetPWideExt(const ATOOLS::Vec4<ATOOLS::DDouble> &ph)
-    { m_phx=ph; m_hasphx=true; }
-
-    inline void SetPWide()
-    {
-      if (m_hasphx) { m_ph=m_phx; return; }
-      typedef ATOOLS::DDouble DD;
-      DD pp(DD(m_p[0])+DD(m_p[3])), pm(DD(m_p[0])-DD(m_p[3]));
-      const DD pt2(DD(m_p[1])*DD(m_p[1])+DD(m_p[2])*DD(m_p[2]));
-      if (abs(pp)>abs(pm)) { if (pp!=DD(0.0)) pm=(m_p2+pt2)/pp; }
-      else                 { if (pm!=DD(0.0)) pp=(m_p2+pt2)/pm; }
-      m_ph=ATOOLS::Vec4<DD>(DD(0.5)*(pp+pm),DD(m_p[1]),DD(m_p[2]),
-                            DD(0.5)*(pp-pm));
-    }
-
-    inline void SetP(const ATOOLS::Vec4D &p)
-    { m_p=p; m_p2=ATOOLS::sqr(m_mass); SetPWide(); }
+    inline void SetP(const ATOOLS::Vec4D &p) { m_p=p; }
 
     inline void SetFId(const Int_Vector &fid) { m_fid=fid; }
     inline void SetKey(const size_t &key)     { m_key=key; }
@@ -166,59 +143,6 @@ namespace METOOLS {
     { return m_fl.IsAnti()?m_fl:m_fl.Bar(); }
 
     inline ATOOLS::Vec4D P() const { return m_p; }
-
-    inline double P2() const { return (double)m_p2; }
-
-  
-    double m_p2prop = -1.0;
-    inline void SetPropScale(const double &s) { m_p2prop = s; }
-    inline double PropScale() const { return m_p2prop; }
-    /*!
-      A momentum shift for the pole: p^2 -> (p + d)^2 with
-      p this current's own all-outgoing momentum. This is what a ACRAIC
-      partition needs when the external legs do not balance: the photons the
-      partition counts as initial-state are added to every initial-side
-      current, the final-state ones to every final-side current, and each
-      s-channel line then sits at the partition invariant
-    */
-    ATOOLS::Vec4D m_pshift;
-    bool m_haveshift = false;
-    inline void SetPropShift(const ATOOLS::Vec4D &d)
-    { m_pshift = d; m_haveshift = (d[0]!=0.||d[1]!=0.||d[2]!=0.||d[3]!=0.); }
-    inline const ATOOLS::Vec4D &PropShift() const { return m_pshift; }
-    inline bool HavePropShift() const { return m_haveshift; }
-    /*!
-      ACRAIC: RESONANCE_EXPONENTIATION. With a non-zero coefficient a the
-      propagator of this (resonant) current is multiplied by
-      exp(a ln((M~^2 - q^2)/M~^2)), M~^2 = M^2 - i M Gamma its own complex
-      mass and q^2 the momentum its pole sits at (shift and scale included):
-      the resonant initial-final big log of Greco, Pancheri and Srivastava,
-      exponentiated. Set by COMIX::Amplitude::SetPropShifts from a resonance
-      entry (PHASIC::Process_Base::s_propshiftresonance); 0 = no factor.
-    */
-    double m_resexp = 0.;
-    //! the linear 1 + a ln(...) instead of the exponential (the O(alpha)
-    //! part of the factor, which ACRAIC needs to take the log out of a virtual)
-    bool m_reslinear = false;
-    inline void SetResonanceExponent(const double a, const bool linear = false)
-    { m_resexp = a; m_reslinear = linear; }
-    inline double ResonanceExponent() const { return m_resexp; }
-    /*!
-      YFS: IFI false. A vetoed current's propagator is zero: the diagrams
-      through it drop out. Set by COMIX::Amplitude::SetPropShifts from a veto
-      entry (PHASIC::Process_Base::s_propshiftveto); false = untouched.
-    */
-    bool m_propveto = false;
-    inline void SetPropVeto(const bool v) { m_propveto = v; }
-    inline bool PropVeto() const { return m_propveto; }
-
-    inline const ATOOLS::Vec4<ATOOLS::DDouble> &PH() const { return m_ph; }
-
-    template <typename SType>
-    inline ATOOLS::Vec4<SType> PW() const
-    { return ATOOLS::Vec4<SType>((SType)m_ph[0],(SType)m_ph[1],
-                                 (SType)m_ph[2],(SType)m_ph[3]); }
-    inline const ATOOLS::DDouble &P2H() const { return m_p2; }
 
     inline const Int_Vector &Id() const   { return m_id;   }
     inline const Int_Vector &FId() const  { return m_fid;  }
@@ -272,7 +196,7 @@ namespace METOOLS {
 
   };// end of class Current
 
-  template <class SType> inline void
+  template <class SType> inline void 
   Current::Contract(const Current &c,const Int_Vector &pols,
 		    std::vector<std::complex<SType> > &ress,
 		    const size_t &offset) const

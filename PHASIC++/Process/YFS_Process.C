@@ -86,7 +86,9 @@ void YFS_Process::Init(const Process_Info &pi,
       yfs->SetInFlav(pi.ExtractFlavours()[beam]);
       // yfs->SetBeam(p_beamspectra);
   }
-  m_gens.InitializeProcess(pi, true);
+  Process_Info mpi(pi);
+  mpi.m_special+=" YFS";
+  m_gens.InitializeProcess(mpi, true);
   p_yfs = yfs;
   PRINT_VAR(pi.ExtractFlavours());
   p_yfs->resetparticles();
@@ -340,13 +342,14 @@ Process_Base* YFS_Process::InitProcess
   Process_Info cpi(pi);
   cpi.m_fi.SetNLOType(nlotype);
   /*
-    YFS: COMIX_STABLE_PROPAGATORS: the real-emission processes get Comix
-    currents whose propagators take their p^2 from cancellation-free external
-    invariants (METOOLS/Currents/YFS_Stable_Current.H, arXiv:2406.07671).
-    Default off: every process is then built exactly as before.
+    Every process YFS builds gets the YFS Comix currents
+    (METOOLS/Currents/YFS_Stable_Current.H). YFS: COMIX_STABLE_PROPAGATORS:
+    the real-emission processes also take their propagators' p^2 from
+    cancellation-free external invariants (arXiv:2406.07671).
   */
   static const bool stable(Settings::GetMainSettings()["YFS"]
                            ["COMIX_STABLE_PROPAGATORS"].SetDefault(false).Get<bool>());
+  cpi.m_special+=" YFS";
   if (stable && nlotype==nlo_type::real) cpi.m_special+=" YFSStable";
   Process_Base* proc = m_gens.InitializeProcess(cpi, false);
   if (!proc)
@@ -480,7 +483,22 @@ void YFS_Process::SelectBornChannel(Weight_Info *winfo, const int wmode)
     sel=next;
   }
   p_bornproc->SetSelected(sel);
-  sel->Integrator()->SetMomenta(p_bornproc->Integrator()->Momenta());
+  const Vec4D_Vector &p(p_bornproc->Integrator()->Momenta());
+  sel->Integrator()->SetMomenta(p);
+  /*
+    Single_Process::Cluster takes the amplitude of the channel's scale
+    setter, which processes mapped onto each other share and which last saw
+    whichever channel the group evaluated last, or an ACRAIC partition point.
+    Recompute it here for this channel at the event, as evaluating the
+    selected channel would in Process_Group::OneEvent.
+  */
+  Scale_Setter_Base *scale(sel->ScaleSetter(1));
+  if (scale) {
+    Process_Base *owner(scale->Process());
+    owner->SetCaller(sel);
+    scale->CalculateScale(p);
+    owner->SetCaller(owner);
+  }
   winfo->m_weightsmap*=share;
   winfo->m_dxs=sel->LastXS();
 }

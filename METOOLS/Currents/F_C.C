@@ -103,7 +103,6 @@ namespace METOOLS {
 #include "METOOLS/Explicit/Dipole_Color.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 
@@ -127,21 +126,18 @@ void CF<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			   const int cr,const int ca,const int mode)
 {
   this->m_p=p;
-  this->m_p2=sqr(this->m_mass);
-  this->SetPWide();
   this->ResetJ();
-  const ATOOLS::Vec4<SType> pw(this->template PW<SType>());
   bool anti(this->m_fl.IsAnti());
   if (this->m_fl.Majorana()) anti=(mode&1)?this->m_dir<0:this->m_dir>0;
   if (ch>=0) {
     CSpinorType j(anti^(this->m_dir>0)?
 		  CSpinorType(this->m_fl.Majorana()?-2:-1,-this->m_dir,
 			      this->m_fl.Majorana()?(mode?1:-1):1,
-			      pw,cr,ca,0,0,sqr(this->m_mass),
+			      p,cr,ca,0,0,sqr(this->m_mass),
 			      this->m_fl.MassSign()):
 		  CSpinorType(this->m_fl.Majorana()?2:1,this->m_dir,
 			      this->m_fl.Majorana()?(mode?-1:1):1,
-			      pw,cr,ca,0,0,sqr(this->m_mass),
+			      p,cr,ca,0,0,sqr(this->m_mass),
 			      this->m_fl.MassSign()));
     j.SetH(anti^(this->m_dir>0)?1:0);
 #ifdef DEBUG__BG
@@ -158,11 +154,11 @@ void CF<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
     CSpinorType j(anti^(this->m_dir>0)?
 		  CSpinorType(this->m_fl.Majorana()?-2:-1,-this->m_dir,
 			      this->m_fl.Majorana()?(mode?-1:1):-1,
-			      pw,cr,ca,0,0,sqr(this->m_mass),
+			      p,cr,ca,0,0,sqr(this->m_mass),
 			      this->m_fl.MassSign()):
 		  CSpinorType(this->m_fl.Majorana()?2:1,this->m_dir,
 			      this->m_fl.Majorana()?(mode?1:-1):-1,
-			      pw,cr,ca,0,0,sqr(this->m_mass),
+			      p,cr,ca,0,0,sqr(this->m_mass),
 		              this->m_fl.MassSign()));
     j.SetH(anti^(this->m_dir>0)?0:1);
 #ifdef DEBUG__BG
@@ -190,44 +186,15 @@ void CF<SType>::AddPropagator()
 {
   const CSpinorType hs;
   // add propagator for off-shell leg
-  /*
-    With a propagator shift set (Current::m_pshift) the WHOLE momentum of
-    this line is (p + d): numerator and pole alike, as the two-leg momentum
-    KKMC's spinor chains carry when the external legs do not balance.
-  */
-  const bool sh(this->m_haveshift);
-  const ATOOLS::Vec4D ps(this->m_p + this->m_pshift);
-  SComplex prop(M_I/((sh ? SComplex(SType(ps.Abs2())) : SComplex(SType(this->m_p2)))
-                     -m_cmass2));
-  // momentum-conservation floor left by Amplitude::ProjectWideMomenta -- only
-  // printed when the denominator is small enough to be near that floor, so
-  // this stays quiet outside the region under investigation.
-  { static const bool dg(ATOOLS::Settings::GetMainSettings()["COMIX"]
-                         ["PROP_DUMP"].SetDefault(0).Get<int>()!=0);
-    static constexpr double PROP_DUMP_THRESHOLD_GEV2 = 1e-6;
-    const double denom((double)this->m_p2-m_cmass2.real());
-    if (dg && std::abs(denom)<PROP_DUMP_THRESHOLD_GEV2 && !this->m_osd) {
-      std::cerr<<"@@@ PROP id="<<this->Id()<<" fl="<<this->Flav()
-               <<" p2="<<std::setprecision(17)<<(double)this->m_p2
-               <<" m2="<<m_cmass2.real()
-               <<" denom="<<denom<<std::endl;
-    } }
+  SComplex prop(M_I/(SType(this->m_p.Abs2())-m_cmass2));
   if (this->m_osd) prop=SComplex(M_I);
-  const size_t r1(Spinor<SType>::R1()),r2(Spinor<SType>::R2()),
-               r3(Spinor<SType>::R3());
-  const ATOOLS::DDouble hpp(sh ? ATOOLS::DDouble(ps[0]+ps[r3])
-                               : this->m_ph[0]+this->m_ph[r3]);
-  const ATOOLS::DDouble hpm(sh ? ATOOLS::DDouble(ps[0]-ps[r3])
-                               : this->m_ph[0]-this->m_ph[r3]);
-  // braces, not parens: SComplex pp(SType(x)) parses as a function declaration
-  const SType tr1(sh ? SType(ps[r1]) : SType(this->m_ph[r1]));
-  const SType tr2(sh ? SType(ps[r2]) : SType(this->m_ph[r2]));
-  SComplex pp{SType(hpp)}, pm{SType(hpm)};
-  SComplex pt{tr1,tr2}, ptc{tr1,-tr2};
+  SComplex pp(Spinor<SType>::PPlus(this->m_p));
+  SComplex pm(Spinor<SType>::PMinus(this->m_p));
+  SComplex pt(Spinor<SType>::PT(this->m_p));
+  SComplex ptc(Spinor<SType>::PTC(this->m_p));
 #ifdef DEBUG__BG
   msg_Debugging()<<"propagator: "<<prop
-		 <<" <- p^2 = "<<this->m_p2<<" (Abs2 "<<this->m_p.Abs2()
-		 <<"), m = "<<m_cmass<<"\n";
+		 <<" <- p^2 = "<<this->m_p.Abs2()<<", m = "<<m_cmass<<"\n";
   msg_Debugging()<<"pp = "<<pp<<", pm = "<<pm<<", pt = "<<pt<<"\n";
 #endif
   for (size_t i(0);i<m_j.size();++i) {
@@ -343,44 +310,132 @@ PrintInfo(std::ostream &str,const size_t width) const
   str<<"fermion current (double)";
 }
 
-// YFS: COMIX_STABLE_PROPAGATORS -- see METOOLS/Currents/YFS_Stable_Current.H
 #include "METOOLS/Currents/YFS_Stable_Current.H"
 
 namespace METOOLS {
 
   /*!
-    The fermion current of the YFS real-emission processes: CF with the
-    propagator's p^2 and, for a shifted line, its momentum from
-    YFS_Stable_Current::StableLine. The small light-cone component of a
-    shifted line is recovered from p+ p- = p^2 + pT^2. The base class does
-    the rest; its state is restored afterwards.
+    The fermion current of the YFS processes (YFS_Stable_Current.H): spinors
+    from the projected double-double momentum, the propagator from the
+    double-double p^2, a shifted line at (p + d), and with an invariant
+    table the stable p^2 of YFS_Stable_Current::StableLine.
   */
   template <typename SType>
   class CF_YFS: public CF<SType>, public YFS_Stable_Current {
   public:
-    CF_YFS(const Current_Key &key): CF<SType>(key) {}
+    typedef typename CF<SType>::SComplex SComplex;
+    typedef typename CF<SType>::CSpinorType CSpinorType;
+    typedef typename CF<SType>::CSpinorType_Vector CSpinorType_Vector;
+
+    CF_YFS(const Current_Key &key):
+      CF<SType>(key), YFS_Stable_Current(key.m_fl.Mass()) {}
+
+    void SumMomenta() override
+    { SumWideMomenta(this->m_in.front()->J(),this->m_p); }
+
+    void ConstructJ(const ATOOLS::Vec4D &p,const int ch,
+                    const int cr,const int ca,const int mode) override
+    {
+      this->m_p=p;
+      SetExternal(p,this->m_mass);
+      this->ResetJ();
+      const ATOOLS::Vec4<SType> pw((SType)m_ph[0],(SType)m_ph[1],
+                                   (SType)m_ph[2],(SType)m_ph[3]);
+      bool anti(this->m_fl.IsAnti());
+      if (this->m_fl.Majorana()) anti=(mode&1)?this->m_dir<0:this->m_dir>0;
+      if (ch>=0) {
+        CSpinorType j(anti^(this->m_dir>0)?
+                      CSpinorType(this->m_fl.Majorana()?-2:-1,-this->m_dir,
+                                  this->m_fl.Majorana()?(mode?1:-1):1,
+                                  pw,cr,ca,0,0,sqr(this->m_mass),
+                                  this->m_fl.MassSign()):
+                      CSpinorType(this->m_fl.Majorana()?2:1,this->m_dir,
+                                  this->m_fl.Majorana()?(mode?-1:1):1,
+                                  pw,cr,ca,0,0,sqr(this->m_mass),
+                                  this->m_fl.MassSign()));
+        j.SetH(anti^(this->m_dir>0)?1:0);
+        CSpinorType *c(CSpinorType::New(j));
+        this->AddJ(c);
+        if (this->p_sub) static_cast<Dipole_Color*>
+          (this->p_sub->In().front()->Color().front())->AddJJK(c);
+      }
+      if (ch<=0) {
+        CSpinorType j(anti^(this->m_dir>0)?
+                      CSpinorType(this->m_fl.Majorana()?-2:-1,-this->m_dir,
+                                  this->m_fl.Majorana()?(mode?-1:1):-1,
+                                  pw,cr,ca,0,0,sqr(this->m_mass),
+                                  this->m_fl.MassSign()):
+                      CSpinorType(this->m_fl.Majorana()?2:1,this->m_dir,
+                                  this->m_fl.Majorana()?(mode?1:-1):-1,
+                                  pw,cr,ca,0,0,sqr(this->m_mass),
+                                  this->m_fl.MassSign()));
+        j.SetH(anti^(this->m_dir>0)?0:1);
+        CSpinorType *c(CSpinorType::New(j));
+        this->AddJ(c);
+        if (this->p_sub) static_cast<Dipole_Color*>
+          (this->p_sub->In().front()->Color().front())->AddJJK(c);
+      }
+    }
+
     void AddPropagator() override
     {
       typedef ATOOLS::DDouble DD;
-      DD p2; ATOOLS::Vec4<DD> ph; bool shifted(false);
-      if (!this->StableLine(*this,p2,ph,shifted)) { CF<SType>::AddPropagator(); return; }
-      if (shifted) {
-        const size_t r1(ATOOLS::Spinor<SType>::R1()), r2(ATOOLS::Spinor<SType>::R2()),
-                     r3(ATOOLS::Spinor<SType>::R3());
-        DD pp(ph[0]+ph[r3]), pm(ph[0]-ph[r3]);
-        const DD pt2(ph[r1]*ph[r1]+ph[r2]*ph[r2]);
-        if (abs(pp)>abs(pm)) { if (pp!=DD(0.0)) pm=(p2+pt2)/pp; }
-        else                 { if (pm!=DD(0.0)) pp=(p2+pt2)/pm; }
-        DD c[4]={ph[0],ph[1],ph[2],ph[3]};
-        c[0]=DD(0.5)*(pp+pm); c[r3]=DD(0.5)*(pp-pm);
-        ph=ATOOLS::Vec4<DD>(c[0],c[1],c[2],c[3]);
+      const size_t r1(Spinor<SType>::R1()), r2(Spinor<SType>::R2()),
+                   r3(Spinor<SType>::R3());
+      DD p2(m_p2);
+      ATOOLS::Vec4<DD> ph(m_ph);
+      bool sh(m_haveshift);
+      DD sp2; ATOOLS::Vec4<DD> sph; bool shifted(false);
+      if (StableLine(*this,sp2,sph,shifted)) {
+        if (shifted) {
+          // the small light-cone component from p+ p- = p^2 + pT^2
+          DD pp(sph[0]+sph[r3]), pm(sph[0]-sph[r3]);
+          const DD pt2(sph[r1]*sph[r1]+sph[r2]*sph[r2]);
+          if (abs(pp)>abs(pm)) { if (pp!=DD(0.0)) pm=(sp2+pt2)/pp; }
+          else                 { if (pm!=DD(0.0)) pp=(sp2+pt2)/pm; }
+          DD c[4]={sph[0],sph[1],sph[2],sph[3]};
+          c[0]=DD(0.5)*(pp+pm); c[r3]=DD(0.5)*(pp-pm);
+          sph=ATOOLS::Vec4<DD>(c[0],c[1],c[2],c[3]);
+        }
+        p2=sp2; ph=sph; sh=false;
       }
-      const DD p2o(this->m_p2);
-      const ATOOLS::Vec4<DD> pho(this->m_ph);
-      const bool sho(this->m_haveshift);
-      this->m_p2=p2; this->m_ph=ph; this->m_haveshift=false;
-      CF<SType>::AddPropagator();
-      this->m_p2=p2o; this->m_ph=pho; this->m_haveshift=sho;
+      // with a shift the whole momentum of the line is (p + d), numerator
+      // and pole alike
+      const ATOOLS::Vec4D ps(this->m_p+m_pshift);
+      SComplex prop(M_I/((sh?SComplex(SType(ps.Abs2())):SComplex(SType(p2)))
+                         -this->m_cmass2));
+      if (this->m_osd) prop=SComplex(M_I);
+      const DD hpp(sh?DD(ps[0]+ps[r3]):ph[0]+ph[r3]);
+      const DD hpm(sh?DD(ps[0]-ps[r3]):ph[0]-ph[r3]);
+      // braces, not parens: SComplex pp(SType(x)) parses as a function declaration
+      const SType tr1(sh?SType(ps[r1]):SType(ph[r1]));
+      const SType tr2(sh?SType(ps[r2]):SType(ph[r2]));
+      SComplex pp{SType(hpp)}, pm{SType(hpm)};
+      SComplex pt{tr1,tr2}, ptc{tr1,-tr2};
+      for (size_t i(0);i<this->m_j.size();++i) {
+        CSpinorType_Vector *j(this->m_j[i].template Get<CSpinorType>());
+        for (typename CSpinorType_Vector::iterator
+               jit(j->begin());jit!=j->end();++jit) {
+          CSpinorType j((*jit)->R(),(*jit)->B(),(**jit)(0),(**jit)(1),
+                        (*jit)->H(),(*jit)->S(),
+                        ((*jit)->On()&1)<<1|((*jit)->On()&2)>>1);
+          if ((*jit)->B()>0) {// S(-p)
+            j[0]=-pm*(**jit)[2]+ptc*(**jit)[3];
+            j[1]=pt*(**jit)[2]-pp*(**jit)[3];
+            j[2]=-pp*(**jit)[0]-ptc*(**jit)[1];
+            j[3]=-pt*(**jit)[0]-pm*(**jit)[1];
+          }
+          else {// S(p)
+            j[0]=(**jit)[2]*pp+(**jit)[3]*pt;
+            j[1]=(**jit)[2]*ptc+(**jit)[3]*pm;
+            j[2]=(**jit)[0]*pm-(**jit)[1]*pt;
+            j[3]=-(**jit)[0]*ptc+(**jit)[1]*pp;
+          }
+          if (this->m_fl.MassSign()>=0)
+            **jit=(this->m_msv?j+**jit*this->m_cmass:j)*prop;
+          else **jit=(this->m_msv?j-**jit*this->m_cmass:j)*prop;
+        }
+      }
     }
   };// end of class CF_YFS
 
@@ -398,5 +453,5 @@ operator()(const Current_Key &key) const
 void ATOOLS::Getter<Current,Current_Key,CF_YFS<double> >::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"fermion current, YFS stable propagators (double)";
+  str<<"fermion current, YFS (double)";
 }

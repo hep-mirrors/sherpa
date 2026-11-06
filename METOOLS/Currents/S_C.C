@@ -86,8 +86,6 @@ void CS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			   const int cr,const int ca,const int mode)
 {
   this->m_p=p;
-  this->m_p2=sqr(this->m_mass);
-  this->SetPWide();
   this->ResetJ();
   if (ch==0) {
     CScalarType *j(CScalarType::New(CScalarType(1.0,cr,ca,0,0)));
@@ -108,23 +106,11 @@ template <typename SType>
 void CS<SType>::AddPropagator()
 {
   // add propagator for off-shell leg
-  // m_p2, not m_p.Abs2(): see Current::Evaluate().
-  const SComplex pp2(this->m_haveshift
-                     ? SComplex(SType((this->m_p + this->m_pshift).Abs2()))
-                     : SComplex(SType(this->m_p2)));
-  SComplex prop(M_I/(pp2-m_cmass2));
-  // ACRAIC: RESONANCE_EXPONENTIATION, see Current::m_resexp
-  if (this->m_resexp != 0.0) {
-    const SComplex il(SType(this->m_resexp)*log((m_cmass2-pp2)/m_cmass2));
-    prop*=(this->m_reslinear ? SComplex(SType(1.0))+il : exp(il));
-  }
+  SComplex prop(M_I/(SType(this->m_p.Abs2())-m_cmass2));
   if (this->m_osd) prop=SComplex(M_I);
-  // YFS: IFI false, see Current::m_propveto
-  if (this->m_propveto) prop=SComplex(SType(0.0));
 #ifdef DEBUG__BG
   msg_Debugging()<<"propagator: "<<prop<<" <- p^2 = "
-		 <<this->m_p2<<" (Abs2 "<<this->m_p.Abs2()
-		 <<"), m = "<<sqrt(m_cmass2)<<"\n";
+		 <<this->m_p.Abs2()<<", m = "<<sqrt(m_cmass2)<<"\n";
 #endif
   for (size_t i(0);i<m_j.size();++i) {
   CScalarType_Vector *j(m_j[i].template Get<CScalarType>());
@@ -220,26 +206,52 @@ PrintInfo(std::ostream &str,const size_t width) const
   str<<"scalar current (double)";
 }
 
-// YFS: COMIX_STABLE_PROPAGATORS -- see METOOLS/Currents/YFS_Stable_Current.H
 #include "METOOLS/Currents/YFS_Stable_Current.H"
 
 namespace METOOLS {
 
-  //! The scalar current of the YFS real-emission processes: p^2 from StableLine.
+  //! The scalar current of the YFS processes (YFS_Stable_Current.H).
   template <typename SType>
   class CS_YFS: public CS<SType>, public YFS_Stable_Current {
   public:
-    CS_YFS(const Current_Key &key): CS<SType>(key) {}
+    typedef typename CS<SType>::SComplex SComplex;
+    typedef typename CS<SType>::CScalarType CScalarType;
+    typedef typename CS<SType>::CScalarType_Vector CScalarType_Vector;
+
+    CS_YFS(const Current_Key &key):
+      CS<SType>(key), YFS_Stable_Current(key.m_fl.Mass()) {}
+
+    void SumMomenta() override
+    { SumWideMomenta(this->m_in.front()->J(),this->m_p); }
+
+    void ConstructJ(const ATOOLS::Vec4D &p,const int ch,
+                    const int cr,const int ca,const int mode) override
+    {
+      CS<SType>::ConstructJ(p,ch,cr,ca,mode);
+      SetExternal(p,this->m_mass);
+    }
+
     void AddPropagator() override
     {
       typedef ATOOLS::DDouble DD;
-      DD p2; ATOOLS::Vec4<DD> ph; bool shifted(false);
-      if (!this->StableLine(*this,p2,ph,shifted)) { CS<SType>::AddPropagator(); return; }
-      const DD p2o(this->m_p2);
-      const bool sho(this->m_haveshift);
-      this->m_p2=p2; this->m_haveshift=false;
-      CS<SType>::AddPropagator();
-      this->m_p2=p2o; this->m_haveshift=sho;
+      DD p2(m_p2);
+      bool sh(m_haveshift);
+      DD sp2; ATOOLS::Vec4<DD> sph; bool shifted(false);
+      if (StableLine(*this,sp2,sph,shifted)) { p2=sp2; sh=false; }
+      const SComplex pp2(sh?SComplex(SType((this->m_p+m_pshift).Abs2()))
+                         :SComplex(SType(p2)));
+      SComplex prop(M_I/(pp2-this->m_cmass2));
+      if (m_resexp!=0.0) {
+        const SComplex il(SType(m_resexp)*log((this->m_cmass2-pp2)/this->m_cmass2));
+        prop*=(m_reslinear?SComplex(SType(1.0))+il:exp(il));
+      }
+      if (this->m_osd) prop=SComplex(M_I);
+      if (m_propveto) prop=SComplex(SType(0.0));
+      for (size_t i(0);i<this->m_j.size();++i) {
+        CScalarType_Vector *j(this->m_j[i].template Get<CScalarType>());
+        for (typename CScalarType_Vector::iterator
+               jit(j->begin());jit!=j->end();++jit) **jit*=prop;
+      }
     }
   };// end of class CS_YFS
 
@@ -257,5 +269,5 @@ operator()(const Current_Key &key) const
 void ATOOLS::Getter<Current,Current_Key,CS_YFS<double> >::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"scalar current, YFS stable propagators (double)";
+  str<<"scalar current, YFS (double)";
 }
