@@ -347,13 +347,13 @@ namespace EXTAMP {
       {
 	m_x0 = m_eta0+ATOOLS::ran->Get()*(1.-m_eta0);
 	//m_x0 = m_eta0+0.2               *(1.-m_eta0); // set ran to 0.2 for unit tests
-	w *= (1.-m_eta0);
+	// w *= (1.-m_eta0);
       }
     if(m_flavs[1].Strong())
       {
 	m_x1 = m_eta1+ATOOLS::ran->Get()*(1.-m_eta1);
 	//m_x1 = m_eta1+               0.8*(1.-m_eta1); // set ran to 0.8 for unit tests
-	w *= (1.-m_eta1);
+	// w *= (1.-m_eta1);
       }
 
     /* Populate a 2D array with color correlated MEs for KP_Terms.
@@ -369,8 +369,15 @@ namespace EXTAMP {
 	if(i!=j) dsij[i][j] = p_corr_me->GetValue(PartonIndices()[i],PartonIndices()[j]);
     dsij[0][0] = p_corr_me->GetBorn2();
 
+    /*
+    void Calculate(const ATOOLS::Vec4D_Vector &mom,
+                   const std::vector<std::vector<double > > &dsij,
+                   const double &x0,const double &x1,
+                   const double &eta0,const double &eta1,
+                   const double &etar0,const double &etar1);
+    */
     /* Let KP_Terms class calculate */
-    p_kpterms->Calculate(p,dsij,m_x0,m_x1,m_eta0,m_eta1,w);
+    p_kpterms->Calculate(p,dsij,m_x0,m_x1,m_eta0,m_eta1,m_eta0,m_eta1,w);
 
     /* Set all relevant members of ME_Weight_Info */
     bool swap = p_int->Momenta()[0][3]<p_int->Momenta()[1][3];

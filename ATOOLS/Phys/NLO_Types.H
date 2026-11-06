@@ -138,7 +138,8 @@ namespace ATOOLS {
       Kb   = 1,
       KFS  = 2,
       t    = 4,
-      Kt   = 8
+      Kt   = 8,
+      Keps = 16
     };
   };// end of struct cs_kcontrib
 

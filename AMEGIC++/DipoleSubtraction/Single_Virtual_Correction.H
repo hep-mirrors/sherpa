@@ -40,7 +40,8 @@ namespace AMEGIC {
 
     double *                p_reqborn;
     std::vector<double>     m_cmur,m_wass;
-    double                  m_x0,m_x1,m_eta0,m_eta1,m_z0,m_z1;
+    double                  m_x0,m_x1,m_eta0,m_eta1,m_z0,m_z1,
+                            m_etar0,m_etar1,m_eps0,m_eps1;
 
     bool   m_force_init, m_sccmur, m_murcoeffvirt, m_loopmapped;
     bool   m_checkborn, m_checkpoles, m_checkfinite;

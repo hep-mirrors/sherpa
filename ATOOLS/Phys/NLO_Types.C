@@ -124,6 +124,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const cs_kcontrib::type &c)
   if (c&cs_kcontrib::KFS) out+="S";
   if (c&cs_kcontrib::t)   out+="G";
   if (c&cs_kcontrib::Kt)  out+="T";
+  if (c&cs_kcontrib::Keps)out+="E";
   return str<<out;
 }
 
@@ -136,6 +137,7 @@ std::istream &ATOOLS::operator>>(std::istream &str,cs_kcontrib::type &c)
   if (tag.find('S')!=std::string::npos) c|=cs_kcontrib::KFS;
   if (tag.find('G')!=std::string::npos) c|=cs_kcontrib::t;
   if (tag.find('T')!=std::string::npos) c|=cs_kcontrib::Kt;
+  if (tag.find('E')!=std::string::npos) c|=cs_kcontrib::Keps;
   return str;
 }
 

@@ -172,6 +172,7 @@ void ME_Generator_Base::RegisterDipoleParameters()
   s["PFF_FS_SPLIT_SCHEME"].SetDefault(0);
   s["PFF_IS_RECOIL_SCHEME"].SetDefault(0);
   s["PFF_FS_RECOIL_SCHEME"].SetDefault(0);
+  s["EPSILON_KP_X_RANGE"].SetDefault(0.);
   s["IS_CLUSTER_TO_LEPTONS"].SetDefault(0);
   s["LIST"].SetDefault(0);
   s.DeclareVectorSettingsWithEmptyDefault({ "BORN_FLAVOUR_RESTRICTIONS" });

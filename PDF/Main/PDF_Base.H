@@ -147,6 +147,8 @@ namespace PDF {
     inline PDF_Base *operator->()     { return GetBasicPDF(); }
     inline PDF_AS_Info ASInfo() const { return m_asinfo; }
     inline double Exponent() const    { return m_exponent; }
+    inline double Epsilon() const     { return m_eps;   }
+    inline double Delta() const       { return m_delta; }
     inline double XMin() const        { return m_xmin;  }
     inline double XMax() const        { return m_xmax;  }
     inline double Q2Min() const       { return m_rq2min; }

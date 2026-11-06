@@ -11,11 +11,12 @@ using namespace ATOOLS;
 KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
                    const std::vector<size_t>& partonlist):
   m_stype(st), m_itype(cs_itype::K|cs_itype::P),
-  m_kcontrib(cs_kcontrib::Kb|cs_kcontrib::KFS|cs_kcontrib::t|cs_kcontrib::Kt),
+  m_kcontrib(cs_kcontrib::Kb|cs_kcontrib::KFS|cs_kcontrib::t|cs_kcontrib::Kt|cs_kcontrib::Keps),
   m_subtype(subscheme::CS),
   p_proc(proc), p_nlomc(NULL), p_kernel(NULL),
   p_cpl(NULL), m_flavs(p_proc->Flavours()),
   m_massive(true), m_cemode(false), m_cpldef(0.), m_NC(3.),
+  m_epsa(0.), m_epsb(0.), m_epsdefa(0.), m_epsdefb(0.),
   m_Vsubmode(1), m_facscheme(0),
   m_sa(false), m_sb(false),
   m_typea(m_flavs[0].IntSpin()), m_typeb(m_flavs[1].IntSpin()),
@@ -59,11 +60,15 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
     fs="DIS";
     THROW(not_implemented,"DIS factorisation scheme not implemented yet.");
     break;
+  case 2:
+    fs="Delta";
+    msg_Info() << "Delta factorisation scheme for PDFe not implemented yet, will return zero.\n";
+    break;
   default:
     THROW(fatal_error,"Unknown factorisation scheme.");
     break;
   }
-  msg_Tracking()<<"Set KP-term factorisation scheme to "<<m_facscheme<<".\n";
+  msg_Tracking()<<"Set KP-term factorisation scheme to "<<fs<<".\n";
 
   m_NC = s["N_COLOR"].Get<double>();
   if (m_NC!=3.) msg_Out()<<"Set N_color="<<m_NC<<"."<<std::endl;
@@ -83,6 +88,14 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
   msg_Tracking()<<"Set dipole kappa="<<kappa<<" . "<<std::endl;
   SetAlpha(dalpha_ff,dalpha_fi,dalpha_if,dalpha_ii);
   SetKappa(kappa);
+
+  double eps(s["KP"]["EPSILON_KP_X_RANGE"].Get<double>());
+  m_epsdefa = s["KP"]["EPSILON_KP_X_RANGE_1"].Get<double>();
+  m_epsdefb = s["KP"]["EPSILON_KP_X_RANGE_2"].Get<double>();
+  if (eps>0. && m_epsdefa==0.) m_epsdefa=eps;
+  if (eps>0. && m_epsdefb==0.) m_epsdefb=eps;
+  msg_Tracking()<<METHOD<<"(): Set epsilon_1 = "<<m_epsdefa
+	                <<", epsilon_2 = "<<m_epsdefb<<std::endl;
 
   m_Vsubmode = s["DIPOLES"]["V_SUBTRACTION_MODE"].Get<int>();
   msg_Tracking()<<"Use "<<(m_Vsubmode?"fermionic":"scalar")
@@ -105,9 +118,10 @@ KP_Terms::KP_Terms(Process_Base *const proc,const sbt::subtype st,
   m_sb=((m_stype==sbt::qcd && m_flavs[1].Strong()) ||
         (m_stype==sbt::qed && (m_flavs[1].Charge() || m_flavs[1].IsPhoton())));
 
-
   for (int i=0;i<8;i++) m_kpca[i]=0.;
   for (int i=0;i<8;i++) m_kpcb[i]=0.;
+  for (int i=0;i<8;i++) m_kpcta[i]=0.;
+  for (int i=0;i<8;i++) m_kpctb[i]=0.;
 }
 
 KP_Terms::~KP_Terms()
@@ -118,10 +132,13 @@ KP_Terms::~KP_Terms()
 void KP_Terms::RegisterDefaults() const
 {
   Scoped_Settings s{ Settings::GetMainSettings()["KP"] };
-  s["KCONTRIB"].SetDefault("BSGT");
+  s["KCONTRIB"].SetDefault("BSGTE");
   s["CHECK_ENERGY"].SetDefault(false);
   s["ACCEPT_NEGATIVE_PDF"].SetDefault(true);
   s["FACTORISATION_SCHEME"].SetDefault(0);
+  s["EPSILON_KP_X_RANGE"].SetDefault(0.);
+  s["EPSILON_KP_X_RANGE_1"].SetDefault(0.);
+  s["EPSILON_KP_X_RANGE_2"].SetDefault(0.);
 }
 
 void KP_Terms::SetColourFactors()
@@ -169,6 +186,8 @@ void KP_Terms::SetMassive()
 
   m_xpa.resize(p_kernel->Nmf()*fsgluons);
   m_xpb.resize(p_kernel->Nmf()*fsgluons);
+  m_xpta.resize(p_kernel->Nmf()*fsgluons);
+  m_xptb.resize(p_kernel->Nmf()*fsgluons);
 }
 
 void KP_Terms::SetCoupling(const MODEL::Coupling_Map *cpls)
@@ -198,15 +217,22 @@ void KP_Terms::SetKappa(const double &kappa)
 
 void KP_Terms::Calculate
 (const Vec4D_Vector &mom,const std::vector<std::vector<double > > &dsij,
- const double &x0,const double &x1,const double &eta0,const double &eta1,
+ const double &x0,const double &x1,
+ const double &eta0,const double &eta1,
+ const double &etar0,const double &etar1,
  const double &wgt)
 {
   DEBUG_FUNC(m_itype<<": type(a)="<<m_typea<<", beam(a)="<<m_sa
                     <<", type(b)="<<m_typeb<<", beam(b)="<<m_sb);
   msg_Debugging()<<"x0="<<x0<<", x1="<<x1
-                 <<", eta0="<<eta0<<", eta1="<<eta1<<std::endl;
+                 <<", eta0="<<eta0<<", eta1="<<eta1
+                 <<", etar0="<<etar0<<", etar1="<<etar1<<std::endl;
   if (!m_sa && !m_sb) return;
   if ((m_sa && x0<eta0) || (m_sb && x1<eta1)) return;
+  if (m_facscheme==2) {
+    msg_Debugging() << "Returning zero from KP terms\n";
+    return;
+  }
   double cpl(Coupling());
   msg_Debugging()<<"cpl="<<Coupling()<<std::endl;
   size_t pls=1;
@@ -214,6 +240,8 @@ void KP_Terms::Calculate
   double muf2(p_proc->ScaleSetter()->Scale(stp::fac,1));
   for (int i=0;i<8;i++) m_kpca[i]=0.;
   for (int i=0;i<8;i++) m_kpcb[i]=0.;
+  msg_Debugging()<<"kernel->Cpl(0): "<<p_kernel->Cpl(0)
+	         <<", dsij[0][0] = "<<dsij[0][0]<<std::endl;
 
   msg_Debugging()<<"parton list: "<<m_plist<<std::endl;
 
@@ -223,36 +251,37 @@ void KP_Terms::Calculate
   // itype&P
   // P = as/2pi [ sum TaTk P(k)*log(muf2/xsak) + TaTb P*log(muf2/xsab) ]
   if (m_sa) {
-    double w(1.-eta0);
+    double w(1.-etar0);
+    msg_Debugging()<<"w="<<w<<std::endl;
     if (m_itype&cs_itype::K) {
       if (m_kcontrib&cs_kcontrib::Kb) {
         // Kbar terms
         msg_Debugging()<<"sa: Kbar"<<std::endl;
-        m_kpca[0]=-w*p_kernel->Kb1(m_typea,x0)
+        m_kpca[0]=-(w?w*p_kernel->Kb1(m_typea,x0):0.)
                   +p_kernel->Kb2(m_typea)
                   -p_kernel->Kb4(m_typea,eta0);
-        m_kpca[1]=w*(p_kernel->Kb1(m_typea,x0)
-                     +p_kernel->Kb3(m_typea,x0));
-        m_kpca[2]=-w*p_kernel->Kb1(m_typea+2,x0)
+        m_kpca[1]=(w?w*(p_kernel->Kb1(m_typea,x0)
+                        +p_kernel->Kb3(m_typea,x0)):0.);
+        m_kpca[2]=-(w?w*p_kernel->Kb1(m_typea+2,x0):0.)
                   +p_kernel->Kb2(m_typea+2)
                   -p_kernel->Kb4(m_typea+2,eta0);
-        m_kpca[3]=w*(p_kernel->Kb1(m_typea+2,x0)
-                     +p_kernel->Kb3(m_typea+2,x0));
+        m_kpca[3]=(w?w*(p_kernel->Kb1(m_typea+2,x0)
+                        +p_kernel->Kb3(m_typea+2,x0)):0.);
       }
       if (m_kcontrib&cs_kcontrib::KFS) {
         // KFS terms (only if not MSbar)
         if (m_facscheme>0) {
           msg_Debugging()<<"sa: KFS"<<std::endl;
-          m_kpca[0]+=-w*p_kernel->KFS1(m_typea,x0)
+          m_kpca[0]+=-(w?w*p_kernel->KFS1(m_typea,x0):0.)
                      +p_kernel->KFS2(m_typea)
                      -p_kernel->KFS4(m_typea,eta0);
-          m_kpca[1]+=w*(p_kernel->KFS1(m_typea,x0)
-                        +p_kernel->KFS3(m_typea,x0));
-          m_kpca[2]+=-w*p_kernel->KFS1(m_typea+2,x0)
+          m_kpca[1]+=(w?w*(p_kernel->KFS1(m_typea,x0)
+                           +p_kernel->KFS3(m_typea,x0)):0.);
+          m_kpca[2]+=-(w?w*p_kernel->KFS1(m_typea+2,x0):0.)
                      +p_kernel->KFS2(m_typea+2)
                      -p_kernel->KFS4(m_typea+2,eta0);
-          m_kpca[3]+=w*(p_kernel->KFS1(m_typea+2,x0)
-                        +p_kernel->KFS3(m_typea+2,x0));
+          m_kpca[3]+=(w?w*(p_kernel->KFS1(m_typea+2,x0)
+                           +p_kernel->KFS3(m_typea+2,x0)):0.);
         }
       }
       for (int i=0;i<4;i++) m_kpca[i]*=p_kernel->Cpl(0)*dsij[0][0];
@@ -277,32 +306,32 @@ void KP_Terms::Calculate
           double muq2x=sajx;
           if (spin!=2) muq2=sqr(m_flavs[m_plist[i]].Mass())/saj;
           if (spin!=2) muq2x=sqr(m_flavs[m_plist[i]].Mass())/sajx;
-          m_kpca[0]+=dsij[0][i]*(-w*p_kernel->t1(m_typea,spin,muq2,x0)
+          m_kpca[0]+=dsij[0][i]*(-(w?w*p_kernel->t1(m_typea,spin,muq2,x0):0.)
                                  +p_kernel->t2(m_typea,spin,muq2)
                                  -p_kernel->t4(m_typea,spin,muq2,eta0));
-          m_kpca[1]+=dsij[0][i]*(w*(p_kernel->t1(m_typea,spin,muq2x,x0)
-                                    +p_kernel->t3(m_typea,spin,muq2x,x0)));
-          m_kpca[2]+=dsij[0][i]*(-w*p_kernel->t1(m_typea+2,spin,muq2,x0)
+          m_kpca[1]+=dsij[0][i]*(w?w*(p_kernel->t1(m_typea,spin,muq2x,x0)
+                                      +p_kernel->t3(m_typea,spin,muq2x,x0)):0.);
+          m_kpca[2]+=dsij[0][i]*(-(w?w*p_kernel->t1(m_typea+2,spin,muq2,x0):0.)
                                  +p_kernel->t2(m_typea+2,spin,muq2)
                                  -p_kernel->t4(m_typea+2,spin,muq2,eta0));
-          m_kpca[3]+=dsij[0][i]*(w*(p_kernel->t1(m_typea+2,spin,muq2x,x0)
-                                    +p_kernel->t3(m_typea+2,spin,muq2x,x0)));
+          m_kpca[3]+=dsij[0][i]*(w?w*(p_kernel->t1(m_typea+2,spin,muq2x,x0)
+                                      +p_kernel->t3(m_typea+2,spin,muq2x,x0)):0.);
 	  m_kpca[m_typea*2-2]+=dsij[0][i]*p_kernel->t2c
 	    (m_typea,spin,sqr(m_flavs[m_plist[i]].Mass())/saj,saj);
 	  if (spin!=2) {
-	    m_kpca[1]-=dsij[0][i]*w*p_kernel->Kbc3(m_typea,muq2x,x0);
-	    m_kpca[3]-=dsij[0][i]*w*p_kernel->Kbc3(m_typea+2,muq2x,x0);
+	    m_kpca[1]-=dsij[0][i]*(w?w*p_kernel->Kbc3(m_typea,muq2x,x0):0.);
+	    m_kpca[3]-=dsij[0][i]*(w?w*p_kernel->Kbc3(m_typea+2,muq2x,x0):0.);
 	  }
           if (spin==2) {
             for (size_t j=0;j<p_kernel->Nmf();j++) {
               m_xpa[xpcnt].xp=1.-4.*sqr(p_kernel->FMass(j))/saj;
               if (m_xpa[xpcnt].xp>eta0) {
                 m_kpca[0]+=dsij[0][i]*p_kernel->t6(m_typea,m_xpa[xpcnt].xp);
-                m_kpca[1]+=dsij[0][i]*w*p_kernel->t5(m_typea,x0,m_xpa[xpcnt].xp);
+                m_kpca[1]+=dsij[0][i]*(w?w*p_kernel->t5(m_typea,x0,m_xpa[xpcnt].xp):0.);
                 m_kpca[2]+=dsij[0][i]*p_kernel->t6(m_typea+2,m_xpa[xpcnt].xp);
-                m_kpca[3]+=dsij[0][i]*w*p_kernel->t5(m_typea+2,x0,m_xpa[xpcnt].xp);
+                m_kpca[3]+=dsij[0][i]*(w?w*p_kernel->t5(m_typea+2,x0,m_xpa[xpcnt].xp):0.);
 
-                m_xpa[xpcnt].kpc=dsij[0][i]*(-w*p_kernel->t5(m_typea,x0,m_xpa[xpcnt].xp)
+                m_xpa[xpcnt].kpc=dsij[0][i]*(-(w?w*p_kernel->t5(m_typea,x0,m_xpa[xpcnt].xp):0.)
                                              -p_kernel->t6(m_typea,m_xpa[xpcnt].xp)
                                              -p_kernel->t7(m_typea,eta0,m_xpa[xpcnt].xp));
               }
@@ -319,16 +348,16 @@ void KP_Terms::Calculate
         // Ktilde terms
         if (m_sb) {
           msg_Debugging()<<"sa: Ktilde"<<std::endl;
-          m_kpca[0]-=dsij[0][1]*(-w*p_kernel->Kt1(m_typea,x0)
+          m_kpca[0]-=dsij[0][1]*(-(w?w*p_kernel->Kt1(m_typea,x0):0.)
                                  +p_kernel->Kt2(m_typea)
                                  -p_kernel->Kt4(m_typea,eta0));
-          m_kpca[1]-=dsij[0][1]*w*(p_kernel->Kt1(m_typea,x0)
-                                   +p_kernel->Kt3(m_typea,x0));
-          m_kpca[2]-=dsij[0][1]*(-w*p_kernel->Kt1(m_typea+2,x0)
+          m_kpca[1]-=dsij[0][1]*(w?w*(p_kernel->Kt1(m_typea,x0)
+                                      +p_kernel->Kt3(m_typea,x0)):0.);
+          m_kpca[2]-=dsij[0][1]*(-(w?w*p_kernel->Kt1(m_typea+2,x0):0.)
                                  +p_kernel->Kt2(m_typea+2)
                                  -p_kernel->Kt4(m_typea+2,eta0));
-          m_kpca[3]-=dsij[0][1]*w*(p_kernel->Kt1(m_typea+2,x0)
-                                   +p_kernel->Kt3(m_typea+2,x0));
+          m_kpca[3]-=dsij[0][1]*(w?w*(p_kernel->Kt1(m_typea+2,x0)
+                                      +p_kernel->Kt3(m_typea+2,x0)):0.);
 	  m_kpca[m_typeb*2-2]+=dsij[0][1]*p_kernel->t2c(m_typea,m_typeb,0.,0.);
         }
         msg_Debugging()
@@ -336,9 +365,6 @@ void KP_Terms::Calculate
             <<" ,  kpca[2]="<<m_kpca[2]<<" ,  kpca[3]="<<m_kpca[3]<<std::endl;
       }
     }
-    msg_Debugging()
-            <<"    kpca[0]="<<m_kpca[0]<<" ,  kpca[1]="<<m_kpca[1]
-            <<" ,  kpca[2]="<<m_kpca[2]<<" ,  kpca[3]="<<m_kpca[3]<<std::endl;
 
     if (m_itype&cs_itype::P) {
       // P terms
@@ -348,16 +374,16 @@ void KP_Terms::Calculate
         fsum+=dsij[0][i];
         asum+=dsij[0][i]*log(muf2/dabs(2.*mom[m_plist[0]]*mom[m_plist[i]]));
       }
-      double p4(-w*p_kernel->P1(m_typea,x0)
+      double p4(-(w?w*p_kernel->P1(m_typea,x0):0.)
                 +p_kernel->P2(m_typea)
                 -p_kernel->P4(m_typea,eta0));
-      double p5(w*(p_kernel->P1(m_typea,x0)
-                   +p_kernel->P3(m_typea,x0)));
-      double p6(-w*p_kernel->P1(m_typea+2,x0)
+      double p5(w?w*(p_kernel->P1(m_typea,x0)
+                     +p_kernel->P3(m_typea,x0)):0.);
+      double p6(-(w?w*p_kernel->P1(m_typea+2,x0):0.)
                 +p_kernel->P2(m_typea+2)
                 -p_kernel->P4(m_typea+2,eta0));
-      double p7(w*(p_kernel->P1(m_typea+2,x0)
-                   +p_kernel->P3(m_typea+2,x0)));
+      double p7(w?w*(p_kernel->P1(m_typea+2,x0)
+                     +p_kernel->P3(m_typea+2,x0)):0.);
       // TODO: fix muf2 dependence
       m_kpca[0]+=asum*p4;
       m_kpca[1]+=asum*p5;
@@ -374,36 +400,37 @@ void KP_Terms::Calculate
   }
 
   if (m_sb) {
-    double w(1.-eta1);
+    double w(1.-etar1);
+    msg_Debugging()<<"w="<<w<<std::endl;
     if (m_itype&cs_itype::K) {
       if (m_kcontrib&cs_kcontrib::Kb) {
         // Kbar terms
         msg_Debugging()<<"sb: Kbar"<<std::endl;
-        m_kpcb[0]=-w*p_kernel->Kb1(m_typeb,x1)
+        m_kpcb[0]=-(w?w*p_kernel->Kb1(m_typeb,x1):0.)
                   +p_kernel->Kb2(m_typeb)
                   -p_kernel->Kb4(m_typeb,eta1);
-        m_kpcb[1]=w*(p_kernel->Kb1(m_typeb,x1)
-                     +p_kernel->Kb3(m_typeb,x1));
-        m_kpcb[2]=-w*p_kernel->Kb1(m_typeb+2,x1)
+        m_kpcb[1]=(w?w*(p_kernel->Kb1(m_typeb,x1)
+                        +p_kernel->Kb3(m_typeb,x1)):0.);
+        m_kpcb[2]=-(w?w*p_kernel->Kb1(m_typeb+2,x1):0.)
                   +p_kernel->Kb2(m_typeb+2)
                   -p_kernel->Kb4(m_typeb+2,eta1);
-        m_kpcb[3]=w*(p_kernel->Kb1(m_typeb+2,x1)
-                     +p_kernel->Kb3(m_typeb+2,x1));
+        m_kpcb[3]=(w?w*(p_kernel->Kb1(m_typeb+2,x1)
+                        +p_kernel->Kb3(m_typeb+2,x1)):0.);
       }
       if (m_kcontrib&cs_kcontrib::KFS) {
         // KFS terms (only if not MSbar)
         if (m_facscheme>0) {
           msg_Debugging()<<"sb: KFS"<<std::endl;
-          m_kpcb[0]+=-w*p_kernel->KFS1(m_typeb,x1)
+          m_kpcb[0]+=-(w?w*p_kernel->KFS1(m_typeb,x1):0.)
                      +p_kernel->KFS2(m_typeb)
                      -p_kernel->KFS4(m_typeb,eta1);
-          m_kpcb[1]+=w*(p_kernel->KFS1(m_typeb,x1)
-                        +p_kernel->KFS3(m_typeb,x1));
-          m_kpcb[2]+=-w*p_kernel->KFS1(m_typeb+2,x1)
+          m_kpcb[1]+=(w?w*(p_kernel->KFS1(m_typeb,x1)
+                           +p_kernel->KFS3(m_typeb,x1)):0.);
+          m_kpcb[2]+=-(w?w*p_kernel->KFS1(m_typeb+2,x1):0.)
                      +p_kernel->KFS2(m_typeb+2)
                      -p_kernel->KFS4(m_typeb+2,eta1);
-          m_kpcb[3]+=w*(p_kernel->KFS1(m_typeb+2,x1)
-                        +p_kernel->KFS3(m_typeb+2,x1));
+          m_kpcb[3]+=(w?w*(p_kernel->KFS1(m_typeb+2,x1)
+                           +p_kernel->KFS3(m_typeb+2,x1)):0.);
         }
       }
       for (int i=0;i<4;i++) m_kpcb[i]*=p_kernel->Cpl(1)*dsij[0][0];
@@ -428,32 +455,32 @@ void KP_Terms::Calculate
           double muq2x=sajx;
           if (spin!=2) muq2=sqr(m_flavs[m_plist[i]].Mass())/saj;// mu-tilde
           if (spin!=2) muq2x=sqr(m_flavs[m_plist[i]].Mass())/sajx;// mu
-          m_kpcb[0]+=dsij[pls-1][i]*(-w*p_kernel->t1(m_typeb,spin,muq2,x1)
+          m_kpcb[0]+=dsij[pls-1][i]*(-(w?w*p_kernel->t1(m_typeb,spin,muq2,x1):0.)
                                      +p_kernel->t2(m_typeb,spin,muq2)
                                      -p_kernel->t4(m_typeb,spin,muq2,eta1));
-          m_kpcb[1]+=dsij[pls-1][i]*(w*(p_kernel->t1(m_typeb,spin,muq2x,x1)
-                                        +p_kernel->t3(m_typeb,spin,muq2x,x1)));
-          m_kpcb[2]+=dsij[pls-1][i]*(-w*p_kernel->t1(m_typeb+2,spin,muq2,x1)
+          m_kpcb[1]+=dsij[pls-1][i]*(w?w*(p_kernel->t1(m_typeb,spin,muq2x,x1)
+                                          +p_kernel->t3(m_typeb,spin,muq2x,x1)):0.);
+          m_kpcb[2]+=dsij[pls-1][i]*(-(w?w*p_kernel->t1(m_typeb+2,spin,muq2,x1):0.)
                                      +p_kernel->t2(m_typeb+2,spin,muq2)
                                      -p_kernel->t4(m_typeb+2,spin,muq2,eta1));
-          m_kpcb[3]+=dsij[pls-1][i]*(w*(p_kernel->t1(m_typeb+2,spin,muq2x,x1)
-                                        +p_kernel->t3(m_typeb+2,spin,muq2x,x1)));
+          m_kpcb[3]+=dsij[pls-1][i]*(w?w*(p_kernel->t1(m_typeb+2,spin,muq2x,x1)
+                                          +p_kernel->t3(m_typeb+2,spin,muq2x,x1)):0.);
 	  m_kpcb[m_typeb*2-2]+=dsij[pls-1][i]*p_kernel->t2c
 	    (m_typeb,spin,sqr(m_flavs[m_plist[i]].Mass())/saj,saj);
 	  if (spin!=2) {
-	    m_kpcb[1]-=dsij[pls-1][i]*w*p_kernel->Kbc3(m_typeb,muq2x,x1);
-	    m_kpcb[3]-=dsij[pls-1][i]*w*p_kernel->Kbc3(m_typeb+2,muq2x,x1);
+	    m_kpcb[1]-=dsij[pls-1][i]*(w?w*p_kernel->Kbc3(m_typeb,muq2x,x1):0.);
+	    m_kpcb[3]-=dsij[pls-1][i]*(w?w*p_kernel->Kbc3(m_typeb+2,muq2x,x1):0.);
 	  }
           if (spin==2) {
             for (size_t j=0;j<p_kernel->Nmf();j++) {
               m_xpb[xpcnt].xp=1.-4.*sqr(p_kernel->FMass(j))/saj;
               if (m_xpb[xpcnt].xp>eta1) {
                 m_kpcb[0]+=dsij[pls-1][i]*p_kernel->t6(m_typeb,m_xpb[xpcnt].xp);
-                m_kpcb[1]+=dsij[pls-1][i]*w*p_kernel->t5(m_typeb,x1,m_xpb[xpcnt].xp);
+                m_kpcb[1]+=dsij[pls-1][i]*(w?w*p_kernel->t5(m_typeb,x1,m_xpb[xpcnt].xp):0.);
                 m_kpcb[2]+=dsij[pls-1][i]*p_kernel->t6(m_typeb+2,m_xpb[xpcnt].xp);
-                m_kpcb[3]+=dsij[pls-1][i]*w*p_kernel->t5(m_typeb+2,x1,m_xpb[xpcnt].xp);
+                m_kpcb[3]+=dsij[pls-1][i]*(w?w*p_kernel->t5(m_typeb+2,x1,m_xpb[xpcnt].xp):0.);
 
-                m_xpb[xpcnt].kpc=dsij[pls-1][i]*(-w*p_kernel->t5(m_typeb,x1,m_xpb[xpcnt].xp)
+                m_xpb[xpcnt].kpc=dsij[pls-1][i]*(-(w?w*p_kernel->t5(m_typeb,x1,m_xpb[xpcnt].xp):0.)
                                                  -p_kernel->t6(m_typeb,m_xpb[xpcnt].xp)
                                                  -p_kernel->t7(m_typeb,eta1,m_xpb[xpcnt].xp));
               }
@@ -470,25 +497,22 @@ void KP_Terms::Calculate
         // Ktilde terms
         if (m_sa) {
           msg_Debugging()<<"sb: Ktilde"<<std::endl;
-          m_kpcb[0]-=dsij[0][1]*(-w*p_kernel->Kt1(m_typeb,x1)
+          m_kpcb[0]-=dsij[0][1]*(-(w?w*p_kernel->Kt1(m_typeb,x1):0.)
                                  +p_kernel->Kt2(m_typeb)
                                  -p_kernel->Kt4(m_typeb,eta1));
-          m_kpcb[1]-=dsij[0][1]*w*(p_kernel->Kt1(m_typeb,x1)
-                                   +p_kernel->Kt3(m_typeb,x1));
-          m_kpcb[2]-=dsij[0][1]*(-w*p_kernel->Kt1(m_typeb+2,x1)
+          m_kpcb[1]-=dsij[0][1]*(w?w*(p_kernel->Kt1(m_typeb,x1)
+                                      +p_kernel->Kt3(m_typeb,x1)):0.);
+          m_kpcb[2]-=dsij[0][1]*(-(w?w*p_kernel->Kt1(m_typeb+2,x1):0.)
                                  +p_kernel->Kt2(m_typeb+2)
                                  -p_kernel->Kt4(m_typeb+2,eta1));
-          m_kpcb[3]-=dsij[0][1]*w*(p_kernel->Kt1(m_typeb+2,x1)
-                                   +p_kernel->Kt3(m_typeb+2,x1));
+          m_kpcb[3]-=dsij[0][1]*(w?w*(p_kernel->Kt1(m_typeb+2,x1)
+                                      +p_kernel->Kt3(m_typeb+2,x1)):0.);
         }
         msg_Debugging()
             <<"    kpcb[0]="<<m_kpcb[0]<<" ,  kpcb[1]="<<m_kpcb[1]
             <<" ,  kpcb[2]="<<m_kpcb[2]<<" ,  kpcb[3]="<<m_kpcb[3]<<std::endl;
       }
     }
-    msg_Debugging()
-            <<"    kpcb[0]="<<m_kpcb[0]<<" ,  kpcb[1]="<<m_kpcb[1]
-            <<" ,  kpcb[2]="<<m_kpcb[2]<<" ,  kpcb[3]="<<m_kpcb[3]<<std::endl;
 
     if (m_itype&cs_itype::P) {
       // P terms
@@ -499,16 +523,16 @@ void KP_Terms::Calculate
         asum+=dsij[pls-1][i]*log(muf2/dabs(2.*mom[m_plist[pls-1]]
                                              *mom[m_plist[i]]));
       }
-      double p4(-w*p_kernel->P1(m_typeb,x1)
+      double p4(-(w?w*p_kernel->P1(m_typeb,x1):0.)
                 +p_kernel->P2(m_typeb)
                 -p_kernel->P4(m_typeb,eta1));
-      double p5(w*(p_kernel->P1(m_typeb,x1)
-                   +p_kernel->P3(m_typeb,x1)));
-      double p6(-w*p_kernel->P1(m_typeb+2,x1)
+      double p5(w?w*(p_kernel->P1(m_typeb,x1)
+                     +p_kernel->P3(m_typeb,x1)):0.);
+      double p6(-(w?w*p_kernel->P1(m_typeb+2,x1):0.)
                 +p_kernel->P2(m_typeb+2)
                 -p_kernel->P4(m_typeb+2,eta1));
-      double p7(w*(p_kernel->P1(m_typeb+2,x1)
-                   +p_kernel->P3(m_typeb+2,x1)));
+      double p7(w?w*(p_kernel->P1(m_typeb+2,x1)
+                     +p_kernel->P3(m_typeb+2,x1)):0.);
       // TODO: fix muf2 dependence
       m_kpcb[0]+=asum*p4;
       m_kpcb[1]+=asum*p5;
@@ -524,9 +548,7 @@ void KP_Terms::Calculate
     }
   }
 
-  double cplfac(wgt*cpl);
-  if (m_sa) cplfac/=(1.-eta0);
-  if (m_sb) cplfac/=(1.-eta1);
+  double cplfac(cpl);
 
   if (m_sa) {
     for (int i=0;i<8;i++) m_kpca[i]*=cplfac;
@@ -544,6 +566,309 @@ void KP_Terms::Calculate
   msg_Debugging()
       <<"    kpcb[0]="<<m_kpcb[0]<<" ,  kpcb[1]="<<m_kpcb[1]
       <<" ,  kpcb[2]="<<m_kpcb[2]<<" ,  kpcb[3]="<<m_kpcb[3]<<std::endl;
+
+}
+
+void KP_Terms::CalculateEpsilon
+(const Vec4D_Vector &mom,const std::vector<std::vector<double > > &dsij,
+ const double &etaa,const double &etab,const double &epsa,const double &epsb)
+{
+  m_epsa=0.; m_epsb=0;
+  if (!epsa && !epsb) return;
+  // if (!(m_kcontrib&cs_kcontrib::Keps)) return;
+  DEBUG_FUNC(m_itype<<": type(a)="<<m_typea<<", beam(a)="<<m_sa
+  <<", type(b)="<<m_typeb<<", beam(b)="<<m_sb);
+  msg_Debugging()<<"etaa="<<etaa<<", etab="<<etab<<std::endl
+	         <<"epsa="<<epsa<<", epsb="<<epsb<<std::endl;
+  m_epsa=epsa; m_epsb=epsb;
+  if (!m_sa && !m_sb) return;
+  double cpl(Coupling());
+  msg_Debugging()<<"cpl="<<Coupling()<<std::endl;
+  size_t pls=1;
+  if (m_sa&&m_sb) pls++;
+  double muf2(p_proc->ScaleSetter()->Scale(stp::fac,1));
+  for (int i=0;i<8;i++) m_kpcta[i]=0.;
+  for (int i=0;i<8;i++) m_kpctb[i]=0.;
+
+  msg_Debugging()<<"parton list: "<<m_plist<<std::endl;
+
+  // itype&K
+  // K = as/2pi [ Ti^2*(Kbar+K_FS) - sum TiTa Kcal(i)
+  //              - sum TaTk KbarM(k) + TaTb Ktilde ]
+  // itype&P
+  // P = as/2pi [ sum TaTk P(k)*log(muf2/xsak) + TaTb P*log(muf2/xsab) ]
+  if (m_sa && epsa) {
+    if (m_itype&cs_itype::K) {
+      if (m_kcontrib&(cs_kcontrib::Kb|cs_kcontrib::Keps)) {
+        // Kbar terms
+        msg_Debugging()<<"sa: Kbar"<<std::endl;
+        m_kpcta[0]=-p_kernel->Kb1(m_typea,etaa);
+        m_kpcta[1]=p_kernel->Kb1(m_typea,etaa)
+                   +p_kernel->Kb3(m_typea,etaa);
+        m_kpcta[2]=-p_kernel->Kb1(m_typea+2,etaa);
+        m_kpcta[3]=p_kernel->Kb1(m_typea+2,etaa)
+                   +p_kernel->Kb3(m_typea+2,etaa);
+      }
+      if (m_kcontrib&(cs_kcontrib::KFS|cs_kcontrib::Keps)) {
+        // KFS terms (only if not MSbar)
+        if (m_facscheme>0) {
+          msg_Debugging()<<"sa: KFS"<<std::endl;
+          m_kpcta[0]+=-p_kernel->KFS1(m_typea,etaa);
+          m_kpcta[1]+=p_kernel->KFS1(m_typea,etaa)
+                      +p_kernel->KFS3(m_typea,etaa);
+          m_kpcta[2]+=-p_kernel->KFS1(m_typea+2,etaa);
+          m_kpcta[3]+=p_kernel->KFS1(m_typea+2,etaa)
+                      +p_kernel->KFS3(m_typea+2,etaa);
+        }
+      }
+      for (int i=0;i<4;i++) m_kpcta[i]*=p_kernel->Cpl(0)*dsij[0][0];
+      msg_Debugging()
+      <<"    kpcta[0]="<<m_kpcta[0]<<" ,  kpcta[1]="<<m_kpcta[1]
+      <<" ,  kpcta[2]="<<m_kpcta[2]<<" ,  kpcta[3]="<<m_kpcta[3]<<std::endl;
+
+      if (m_kcontrib&(cs_kcontrib::t|cs_kcontrib::Keps)) {
+        size_t xpcnt(0);
+        // (1/(1-x)_+ + delta(1-x)) terms
+        msg_Debugging()<<"sa: t"<<std::endl;
+        for (size_t i=pls;i<m_plist.size();i++) {
+          int spin=m_flavs[m_plist[i]].IntSpin();
+          if (m_stype==sbt::qed && m_flavs[m_plist[i]].IsMassive() &&
+            m_flavs[m_plist[i]].IsVector()) {
+            if (m_Vsubmode==0) spin=0;
+            else               spin=1;
+            }
+            double saj=dabs(2.*mom[m_plist[0]]*mom[m_plist[i]]);
+          double muq2=saj;
+          if (spin!=2) muq2=sqr(m_flavs[m_plist[i]].Mass())/saj;
+          m_kpcta[0]+=dsij[0][i]*(-p_kernel->t1(m_typea,spin,muq2,etaa));
+          m_kpcta[1]+=dsij[0][i]*(p_kernel->t1(m_typea,spin,muq2,etaa)
+                                  +p_kernel->t3(m_typea,spin,muq2,etaa));
+          m_kpcta[2]+=dsij[0][i]*(-p_kernel->t1(m_typea+2,spin,muq2,etaa));
+          m_kpcta[3]+=dsij[0][i]*(p_kernel->t1(m_typea+2,spin,muq2,etaa)
+                                  +p_kernel->t3(m_typea+2,spin,muq2,etaa));
+          m_kpcta[m_typea*2-2]+=dsij[0][i]*p_kernel->t2c
+          (m_typea,spin,sqr(m_flavs[m_plist[i]].Mass())/saj,saj);
+          if (spin!=2) {
+            m_kpcta[1]-=dsij[0][i]*p_kernel->Kbc3(m_typea,muq2,etaa);
+            m_kpcta[3]-=dsij[0][i]*p_kernel->Kbc3(m_typea+2,muq2,etaa);
+          }
+          if (spin==2) {
+            if (p_kernel->Nmf())
+	      THROW(not_implemented,
+                    "Epsilon contribution to massive splittings not implemented.");
+            // for (size_t j=0;j<p_kernel->Nmf();j++) {
+            //   m_xpa[xpcnt].xp=1.-4.*sqr(p_kernel->FMass(j))/saj;
+            //   if (m_xpa[xpcnt].xp>etaa) {
+            //     m_kpcta[0]+=dsij[0][i]*p_kernel->t6(m_typea,m_xpa[xpcnt].xp);
+            //     m_kpcta[1]+=dsij[0][i]*p_kernel->t5(m_typea,etaa,m_xpa[xpcnt].xp);
+            //     m_kpcta[2]+=dsij[0][i]*p_kernel->t6(m_typea+2,m_xpa[xpcnt].xp);
+            //     m_kpcta[3]+=dsij[0][i]*p_kernel->t5(m_typea+2,etaa,m_xpa[xpcnt].xp);
+
+            //     m_xpa[xpcnt].kpc=dsij[0][i]*(-p_kernel->t5(m_typea,etaa,m_xpa[xpcnt].xp));
+            //   }
+            //   xpcnt++;
+            // }
+          }
+        }
+        msg_Debugging()
+        <<"    kpcta[0]="<<m_kpcta[0]<<" ,  kpcta[1]="<<m_kpcta[1]
+        <<" ,  kpcta[2]="<<m_kpcta[2]<<" ,  kpcta[3]="<<m_kpcta[3]<<std::endl;
+      }
+
+      if (m_kcontrib&(cs_kcontrib::Kt|cs_kcontrib::Keps)) {
+        // Ktilde terms
+        if (m_sb) {
+          msg_Debugging()<<"sa: Ktilde"<<std::endl;
+          m_kpcta[0]-=dsij[0][1]*(-p_kernel->Kt1(m_typea,etaa));
+          m_kpcta[1]-=dsij[0][1]*(p_kernel->Kt1(m_typea,etaa)
+                                  +p_kernel->Kt3(m_typea,etaa));
+          m_kpcta[2]-=dsij[0][1]*(-p_kernel->Kt1(m_typea+2,etaa));
+          m_kpcta[3]-=dsij[0][1]*(p_kernel->Kt1(m_typea+2,etaa)
+                                  +p_kernel->Kt3(m_typea+2,etaa));
+          m_kpcta[m_typeb*2-2]+=dsij[0][1]*p_kernel->t2c(m_typea,m_typeb,0.,0.);
+        }
+        msg_Debugging()
+        <<"    kpcta[0]="<<m_kpcta[0]<<" ,  kpcta[1]="<<m_kpcta[1]
+        <<" ,  kpcta[2]="<<m_kpcta[2]<<" ,  kpcta[3]="<<m_kpcta[3]<<std::endl;
+      }
+    }
+
+    if (m_itype&cs_itype::P) {
+      // P terms
+      msg_Debugging()<<"sa: P"<<std::endl;
+      double asum=0.,fsum=0.;
+      for (size_t i=1;i<m_plist.size();i++) {
+        fsum+=dsij[0][i];
+        asum+=dsij[0][i]*log(muf2/dabs(2.*mom[m_plist[0]]*mom[m_plist[i]]));
+      }
+      double p4(-p_kernel->P1(m_typea,etaa));
+      double p5(p_kernel->P1(m_typea,etaa)
+                +p_kernel->P3(m_typea,etaa));
+      double p6(-p_kernel->P1(m_typea+2,etaa));
+      double p7(p_kernel->P1(m_typea+2,etaa)
+                +p_kernel->P3(m_typea+2,etaa));
+      // TODO: fix muf2 dependence
+      m_kpcta[0]+=asum*p4;
+      m_kpcta[1]+=asum*p5;
+      m_kpcta[2]+=asum*p6;
+      m_kpcta[3]+=asum*p7;
+      m_kpcta[4]=fsum*p4;
+      m_kpcta[5]=fsum*p5;
+      m_kpcta[6]=fsum*p6;
+      m_kpcta[7]=fsum*p7;
+      msg_Debugging()
+      <<"    kpcta[0]="<<m_kpcta[0]<<" ,  kpcta[1]="<<m_kpcta[1]
+      <<" ,  kpcta[2]="<<m_kpcta[2]<<" ,  kpcta[3]="<<m_kpcta[3]<<std::endl;
+    }
+  }
+
+  if (m_sb && epsb) {
+    if (m_itype&cs_itype::K) {
+      if (m_kcontrib&(cs_kcontrib::Kb|cs_kcontrib::Keps)) {
+        // Kbar terms
+        msg_Debugging()<<"sb: Kbar"<<std::endl;
+        m_kpctb[0]=-p_kernel->Kb1(m_typeb,etab);
+        m_kpctb[1]=p_kernel->Kb1(m_typeb,etab)
+                   +p_kernel->Kb3(m_typeb,etab);
+        m_kpctb[2]=-p_kernel->Kb1(m_typeb+2,etab);
+        m_kpctb[3]=p_kernel->Kb1(m_typeb+2,etab)
+                   +p_kernel->Kb3(m_typeb+2,etab);
+      }
+      if (m_kcontrib&(cs_kcontrib::KFS|cs_kcontrib::Keps)) {
+        // KFS terms (only if not MSbar)
+        if (m_facscheme>0) {
+          msg_Debugging()<<"sb: KFS"<<std::endl;
+          m_kpctb[0]+=-p_kernel->KFS1(m_typeb,etab);
+          m_kpctb[1]+=p_kernel->KFS1(m_typeb,etab)
+                      +p_kernel->KFS3(m_typeb,etab);
+          m_kpctb[2]+=-p_kernel->KFS1(m_typeb+2,etab);
+          m_kpctb[3]+=p_kernel->KFS1(m_typeb+2,etab)
+                      +p_kernel->KFS3(m_typeb+2,etab);
+        }
+      }
+      for (int i=0;i<4;i++) m_kpctb[i]*=p_kernel->Cpl(1)*dsij[0][0];
+      msg_Debugging()
+      <<"    kpctb[0]="<<m_kpctb[0]<<" ,  kpctb[1]="<<m_kpctb[1]
+      <<" ,  kpctb[2]="<<m_kpctb[2]<<" ,  kpctb[3]="<<m_kpctb[3]<<std::endl;
+
+      if (m_kcontrib&(cs_kcontrib::t|cs_kcontrib::Keps)) {
+        size_t xpcnt(0);
+        // (1/(1-x)_+ + delta(1-x)) terms
+        msg_Debugging()<<"sb: t"<<std::endl;
+        for (size_t i=pls;i<m_plist.size();i++) {
+          int spin=m_flavs[m_plist[i]].IntSpin();
+          if (m_stype==sbt::qed && m_flavs[m_plist[i]].IsMassive() &&
+            m_flavs[m_plist[i]].IsVector()) {
+            if (m_Vsubmode==0) spin=0;
+            else               spin=1;
+          }
+          double saj=dabs(2.*mom[m_plist[pls-1]]*mom[m_plist[i]]);
+          double muq2=saj;
+          if (spin!=2) muq2=sqr(m_flavs[m_plist[i]].Mass())/saj;// mu-tilde
+          m_kpctb[0]+=dsij[pls-1][i]*(-p_kernel->t1(m_typeb,spin,muq2,etab));
+          m_kpctb[1]+=dsij[pls-1][i]*(p_kernel->t1(m_typeb,spin,muq2,etab)
+                                      +p_kernel->t3(m_typeb,spin,muq2,etab));
+          m_kpctb[2]+=dsij[pls-1][i]*(-p_kernel->t1(m_typeb+2,spin,muq2,etab));
+          m_kpctb[3]+=dsij[pls-1][i]*(p_kernel->t1(m_typeb+2,spin,muq2,etab)
+                                      +p_kernel->t3(m_typeb+2,spin,muq2,etab));
+          m_kpctb[m_typeb*2-2]+=dsij[pls-1][i]*p_kernel->t2c
+          (m_typeb,spin,sqr(m_flavs[m_plist[i]].Mass())/saj,saj);
+          if (spin!=2) {
+            m_kpctb[1]-=dsij[pls-1][i]*p_kernel->Kbc3(m_typeb,muq2,etab);
+            m_kpctb[3]-=dsij[pls-1][i]*p_kernel->Kbc3(m_typeb+2,muq2,etab);
+          }
+          if (spin==2) {
+            if (p_kernel->Nmf()) 
+              THROW(not_implemented,
+                    "Epsilon contribution to massive splittings not implemented.");
+            // for (size_t j=0;j<p_kernel->Nmf();j++) {
+            //   m_xpb[xpcnt].xp=1.-4.*sqr(p_kernel->FMass(j))/saj;
+            //   if (m_xpb[xpcnt].xp>etab) {
+            //     m_kpctb[0]+=dsij[pls-1][i]*p_kernel->t6(m_typeb,m_xpb[xpcnt].xp);
+            //     m_kpctb[1]+=dsij[pls-1][i]*p_kernel->t5(m_typeb,etab,m_xpb[xpcnt].xp);
+            //     m_kpctb[2]+=dsij[pls-1][i]*p_kernel->t6(m_typeb+2,m_xpb[xpcnt].xp);
+            //     m_kpctb[3]+=dsij[pls-1][i]*p_kernel->t5(m_typeb+2,etab,m_xpb[xpcnt].xp);
+
+            //     m_xpb[xpcnt].kpc=dsij[pls-1][i]*(-p_kernel->t5(m_typeb,etab,m_xpb[xpcnt].xp));
+            //   }
+            //   xpcnt++;
+            // }
+          }
+        }
+        msg_Debugging()
+        <<"    kpctb[0]="<<m_kpctb[0]<<" ,  kpctb[1]="<<m_kpctb[1]
+        <<" ,  kpctb[2]="<<m_kpctb[2]<<" ,  kpctb[3]="<<m_kpctb[3]<<std::endl;
+      }
+
+      if (m_kcontrib&(cs_kcontrib::Kt|cs_kcontrib::Keps)) {
+        // Ktilde terms
+        if (m_sa) {
+          msg_Debugging()<<"sb: Ktilde"<<std::endl;
+          m_kpctb[0]-=dsij[0][1]*(-p_kernel->Kt1(m_typeb,etab));
+          m_kpctb[1]-=dsij[0][1]*(p_kernel->Kt1(m_typeb,etab)
+                      +p_kernel->Kt3(m_typeb,etab));
+          m_kpctb[2]-=dsij[0][1]*(-p_kernel->Kt1(m_typeb+2,etab));
+          m_kpctb[3]-=dsij[0][1]*(p_kernel->Kt1(m_typeb+2,etab)
+                      +p_kernel->Kt3(m_typeb+2,etab));
+        }
+        msg_Debugging()
+        <<"    kpctb[0]="<<m_kpctb[0]<<" ,  kpctb[1]="<<m_kpctb[1]
+        <<" ,  kpctb[2]="<<m_kpctb[2]<<" ,  kpctb[3]="<<m_kpctb[3]<<std::endl;
+      }
+    }
+
+    if (m_itype&cs_itype::P) {
+      // P terms
+      msg_Debugging()<<"sb: P"<<std::endl;
+      double asum=0.,fsum=0.;
+      for (size_t i=0;i<m_plist.size();i++) if (i!=pls-1) {
+        fsum+=dsij[pls-1][i];
+        asum+=dsij[pls-1][i]*log(muf2/dabs(2.*mom[m_plist[pls-1]]
+        *mom[m_plist[i]]));
+      }
+      double p4(-p_kernel->P1(m_typeb,etab));
+      double p5(p_kernel->P1(m_typeb,etab)
+                +p_kernel->P3(m_typeb,etab));
+      double p6(-p_kernel->P1(m_typeb+2,etab));
+      double p7(p_kernel->P1(m_typeb+2,etab)
+                +p_kernel->P3(m_typeb+2,etab));
+      // TODO: fix muf2 dependence
+      m_kpctb[0]+=asum*p4;
+      m_kpctb[1]+=asum*p5;
+      m_kpctb[2]+=asum*p6;
+      m_kpctb[3]+=asum*p7;
+      m_kpctb[4]=fsum*p4;
+      m_kpctb[5]=fsum*p5;
+      m_kpctb[6]=fsum*p6;
+      m_kpctb[7]=fsum*p7;
+      msg_Debugging()
+      <<"    kpctb[0]="<<m_kpctb[0]<<" ,  kpctb[1]="<<m_kpctb[1]
+      <<" ,  kpctb[2]="<<m_kpctb[2]<<" ,  kpctb[3]="<<m_kpctb[3]<<std::endl;
+    }
+  }
+
+  double cplfac(cpl);
+  
+  if (m_sa) {
+    double fac(epsa*etaa);
+    for (size_t i=0;i<8;i+=2) m_kpcta[i]*=fac;
+    for (size_t i=0;i<8;i++)  m_kpcta[i]*=cplfac;
+    //for (size_t i=0;i<m_xpa.size();i++) m_xpa[i].kpc*=cplfac;
+  }
+  if (m_sb) {
+    double fac(epsb*etab);
+    for (size_t i=0;i<8;i+=2) m_kpctb[i]*=fac;
+    for (size_t i=0;i<8;i++)  m_kpctb[i]*=cplfac;
+    //for (size_t i=0;i<m_xpb.size();i++) m_xpb[i].kpc*=cplfac;
+  }
+
+  msg_Debugging()<<"sa & sb: final"<<std::endl;
+  msg_Debugging()
+  <<"    kpca[0]="<<m_kpca[0]<<" ,  kpca[1]="<<m_kpca[1]
+  <<" ,  kpca[2]="<<m_kpca[2]<<" ,  kpca[3]="<<m_kpca[3]<<std::endl;
+  msg_Debugging()
+  <<"    kpcb[0]="<<m_kpcb[0]<<" ,  kpcb[1]="<<m_kpcb[1]
+  <<" ,  kpcb[2]="<<m_kpcb[2]<<" ,  kpcb[3]="<<m_kpcb[3]<<std::endl;
 }
 
 double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
@@ -567,8 +892,8 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
   if (m_sa&&m_sb) pls++;
   Flavour gluon(m_stype==sbt::qcd?kf_gluon:kf_photon);
   Flavour quark(kf_quark);
-  double fa(0.),faq(0.),fag(0.),faqx(0.),fagx(0.);
-  double fb(0.),fbq(0.),fbg(0.),fbqx(0.),fbgx(0.);
+  double fa(0.),faq(0.),fag(0.),faqx(0.),fagx(0.), intfaq(0.), intfag(0.);
+  double fb(0.),fbq(0.),fbg(0.),fbqx(0.),fbgx(0.), intfbq(0.), intfbg(0.);
   double g2massq(0.);
 
   // assumption: a/a' = gluon/photon, quark only
@@ -584,7 +909,7 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
     // a' = gluon/photon
     if (pdfa->Contains(gluon))                fagx = pdfa->GetXPDF(gluon)/eta0;
     // a' = quark (if a = quark)
-    if (fl0.IsQuark() && pdfa->Contains(fl0)) faqx = pdfa->GetXPDF(fl0)/eta0;
+    if (fl0.IsFermion() && pdfa->Contains(fl0)) faqx = pdfa->GetXPDF(fl0)/eta0;
     // a' = quark (if a = gluon,photon)
     // in QCD CF/CA already in kpca/b[1]
     // in QED -Q_i^2 needs to be multiplied in
@@ -596,6 +921,28 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
                                                       *pdfa->GetXPDF(quark[i]);
         }
       faqx/=eta0;
+    }
+    // contribution if [eta,eta/(1-eps)] region is treated analytically
+    // \int_{eta}^{eta/(1-eps)} dx/x f_a'(eta/x)
+    if (m_epsa) {
+      // a' = gluon/photon
+      if (pdfa->Contains(gluon))   intfag = pdfa->GetIntPDF(gluon,m_epsa,
+		                                            muf02*muf02fac);
+      // a' = quark/lepton (if a = quark)
+      if (fl0.IsFermion() && pdfa->Contains(fl0))
+	                           intfaq = pdfa->GetIntPDF(fl0,m_epsa,
+						            muf02*muf02fac);
+      // a' = quark/lepton (if a = photon/gluon)
+      else {
+	for (size_t i=0;i<quark.Size();i++)
+          if (pdfa->Contains(quark[i])) {
+            if (m_stype==sbt::qcd) intfaq += pdfa->GetIntPDF(quark[i],m_epsa,
+			                                     muf02*muf02fac);
+            else                   intfaq += sqr(quark[i].Charge())
+                                             *pdfa->GetIntPDF(quark[i],m_epsa,
+							      muf02*muf02fac);
+	  }
+      }
     }
     // f_a(eta), f_a'(eta)
     pdfa->Calculate(eta0,muf02*muf02fac);
@@ -610,7 +957,7 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
       return 0.;
     }
     if (pdfa->Contains(gluon))                fag = pdfa->GetXPDF(gluon)/eta0;
-    if (fl0.IsQuark() && pdfa->Contains(fl0)) faq = fa;
+    if (fl0.IsFermion() && pdfa->Contains(fl0)) faq = fa;
     // a' = quark (if a = gluon)
     // in QCD CF/CA already in kpca/b[1]
     // in QED -Q_i^2 needs to be multiplied in
@@ -642,7 +989,7 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
     // b' = gluon/photon
     if (pdfb->Contains(gluon))                fbgx = pdfb->GetXPDF(gluon)/eta1;
     // b' = quark (if b = quark)
-    if (fl1.IsQuark() && pdfb->Contains(fl1)) fbqx = pdfb->GetXPDF(fl1)/eta1;
+    if (fl1.IsFermion() && pdfb->Contains(fl1)) fbqx = pdfb->GetXPDF(fl1)/eta1;
     // b' = quark (if b = gluon)
     // in QCD CF/CA already in kpca/b[1]
     // in QED -Q_i^2 needs to be multiplied in
@@ -655,7 +1002,29 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
         }
       fbqx/=eta1;
     }
-    // f_a(eta), f_a'(eta)
+    // contribution if [eta,eta/(1-eps)] region is treated analytically
+    // \int_{eta}^{eta/(1-eps)} dx/x f_b'(eta/x)
+    if (m_epsb) {
+      // b' = gluon/photon
+      if (pdfb->Contains(gluon))   intfbg = pdfb->GetIntPDF(gluon,m_epsb,
+		                                            muf12*muf12fac);
+      // b' = quark/lepton (if b = quark)
+      if (fl1.IsFermion() && pdfb->Contains(fl1))
+                                   intfbq = pdfb->GetIntPDF(fl1,m_epsb,
+						            muf12*muf12fac);
+      // b' = quark/lepton (if b = photon/gluon)
+      else {
+        for (size_t i=0;i<quark.Size();i++)
+          if (pdfb->Contains(quark[i])) {
+            if (m_stype==sbt::qcd) intfbq += pdfb->GetIntPDF(quark[i],m_epsb,
+			                                     muf12*muf12fac);
+            else                   intfbq += sqr(quark[i].Charge())
+                                             *pdfb->GetIntPDF(quark[i],m_epsb,
+							      muf12*muf12fac);
+          }
+      }       
+    }
+    // f_b(eta), f_b'(eta)
     pdfb->Calculate(eta1,muf12*muf12fac);
     if (pdfb->Contains(fl1)) fb = pdfb->GetXPDF(fl1)/eta1;
     // TODO: check whether this check is sensible (fa>0.)
@@ -668,7 +1037,7 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
       return 0.;
     }
     if (pdfb->Contains(gluon))                fbg = pdfb->GetXPDF(gluon)/eta1;
-    if (fl1.IsQuark() && pdfb->Contains(fl1)) fbq = fb;
+    if (fl1.IsFermion() && pdfb->Contains(fl1)) fbq = fb;
     // b' = quark (if b = gluon)
     // in QCD CF/CA already in kpca/b[1]
     // in QED -Q_i^2 needs to be multiplied in
@@ -679,7 +1048,7 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
           else                                fbq += sqr(quark[i].Charge())
                                                      *pdfb->GetXPDF(quark[i]);
         }
-      fbq/=eta0;
+      fbq/=eta1;
     }
 
     for (size_t i=0;i<m_xpb.size();i++) if (m_xpb[i].xp>eta1) {
@@ -700,18 +1069,34 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
   // from the ME generator's Partonic functions.
   if (m_sa && fa) {
     double a(m_kpca[0]*faq + m_kpca[1]*faqx + m_kpca[2]*fag + m_kpca[3]*fagx);
+    if (m_epsa) {
+      a += m_kpcta[0]*faq  + m_kpcta[2]*fag;
+      a += m_kpcta[1]*intfaq + m_kpcta[3]*intfag;
+    }
     if (muf02fac != 1.) {
       const double lF(log(muf02fac));
       a += (m_kpca[4]*faq + m_kpca[5]*faqx + m_kpca[6]*fag + m_kpca[7]*fagx) * lF;
+      if (m_epsa) {
+        a += (m_kpcta[4]*faq +  m_kpcta[6]*fag) * lF;
+        a += (m_kpcta[5]*intfaq + m_kpcta[7]*intfag) *lF;
+      }
     }
     a /= fa;
     res += a;
   }
   if (m_sb && fb) {
     double b(m_kpcb[0]*fbq + m_kpcb[1]*fbqx + m_kpcb[2]*fbg + m_kpcb[3]*fbgx);
+    if (m_epsb) {
+      b += m_kpctb[0]*fbq  + m_kpctb[2]*fbg ;
+      b += m_kpctb[1]*intfbq + m_kpctb[3]*intfbg;
+    }
     if (muf12fac != 1.) {
       const double lF(log(muf12fac));
       b += (m_kpcb[4]*fbq + m_kpcb[5]*fbqx + m_kpcb[6]*fbg + m_kpcb[7]*fbgx) * lF;
+      if (m_epsb) {
+        b += (m_kpctb[4]*fbq  + m_kpctb[6]*fbg ) * lF;
+        b += (m_kpctb[5]*intfbq + m_kpctb[7]*intfbg) * lF;
+      }
     }
     b /= fb;
     res += b;

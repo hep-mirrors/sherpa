@@ -45,6 +45,7 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   p_kernel_qcd(NULL), p_kernel_ew(NULL),
   p_kpterms_qcd(NULL), p_kpterms_ew(NULL), p_loopme(NULL), p_reqborn(NULL),
   m_x0(1.), m_x1(1.), m_eta0(1.), m_eta1(1.), m_z0(0.), m_z1(0.),
+  m_etar0(1.),m_etar1(1.),m_eps0(0.), m_eps1(0.),
   m_loopmapped(false),
   m_pspisrecscheme(0), m_pspfsrecscheme(0),
   m_pspissplscheme(0), m_pspfssplscheme(0),
@@ -852,20 +853,46 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
   if (!((m_user_imode&cs_itype::K) || (m_user_imode&cs_itype::P))) return;
   if (!p_LO_process->HasInitialStateEmitter()) return;
   DEBUG_FUNC("");
-  m_x0=1.,m_x1=1.,m_eta0=1.,m_eta1=1.;
+  m_x0=1.,m_x1=1.,m_eta0=1.,m_eta1=1.,m_etar0=1.,m_etar1=1.,m_eps0=0.,m_eps1=0.;
   double weight(1.);
-  // dice eta0 and eta1, incorporate phase space weight in weight
+  // Split interval from [eta,1] into [eta,eta/(1-eps)] and [eta/(1-eps),1],
+  // eps in [0,1). Calculate the former analytically, the latter numerically
+  // with the help of integration variable x below.
+  // If eta > 1-eps we need to temporarily reset eps to 1-eta to have both
+  // regions well defined.
   if (p_int->ISR()->PDF(0) && p_int->ISR()->PDF(0)->Contains(m_flavs[0])) {
     m_eta0=mom[0][3]>0.0?mom[0].PPlus()/rpa->gen.PBunch(0).PPlus():
       mom[0].PMinus()/rpa->gen.PBunch(1).PMinus();
     if (m_z0 > 0.) {
-      m_x0 = m_z0;
+      msg_Debugging()<<"m_z0 > 0\n";
+      m_eps0=p_kpterms_ew?p_kpterms_ew->EpsilonA():0.;
+      if (m_eta0>1.-m_eps0) {
+        m_x0=1.;
+        m_eps0=1.-m_eta0;
+        m_etar0=1.;
+        msg_Debugging()<<"eta0 > 1-eps0"<<std::endl;
+      }
+      else {
+        // QCD KP terms will always get here
+        m_etar0=m_eta0/(1.-m_eps0);
+        m_x0 = m_z0;
+      }
     } else if (p_read) {
       m_x0 = m_eta0 + p_read->SubEvt()->m_x1 * (1. - m_eta0);
       msg_Debugging() << "read in x0 = " << m_x0 << " ("
                       << p_read->SubEvt()->m_x1 << ") " << m_eta0 << "\n";
     } else {
-      m_x0 = m_eta0 + p_fsmc->ERan("z_1") * (1. - m_eta0);
+      msg_Debugging()<<"m_z0 <= 0\n";
+      if (m_eta0>1.-m_eps0) {
+        m_x0=1.;
+        m_eps0=1.-m_eta0;
+        m_etar0=1.;
+        msg_Debugging()<<"eta0 > 1-eps0"<<std::endl;
+      }
+      else {
+          m_x0 = m_etar0+p_fsmc->ERan("z_1")*(1.-m_etar0);
+          msg_Debugging()<<"eta0 < 1-eps0"<<std::endl;
+      }
     }
     weight*=(1.-m_eta0);
     msg_Debugging()<<"x0="<<m_x0<<std::endl;
@@ -874,23 +901,49 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
     m_eta1=mom[1][3]<0.0?mom[1].PMinus()/rpa->gen.PBunch(1).PMinus():
       mom[1].PPlus()/rpa->gen.PBunch(0).PPlus();
     if (m_z1 > 0.) {
-      m_x1 = m_z1;
+      msg_Debugging()<<"m_z1 > 0\n";
+      m_eps1=p_kpterms_ew?p_kpterms_ew->EpsilonB():0.;
+      if (m_eta1>1.-m_eps1) {
+        m_x1=1.;
+        m_eps1=1.-m_eta1;
+        m_etar1=1.;
+        msg_Debugging()<<"eta1 > 1-eps1"<<std::endl;
+      }
+      else {
+        // QCD KP terms will always get here
+        m_etar1=m_eta1/(1.-m_eps1);
+        m_x1 = m_z1;
+      }
     } else if (p_read) {
       m_x1 = m_eta1 + p_read->SubEvt()->m_x2 * (1. - m_eta1);
       msg_Debugging() << "read in x1 = " << m_x1 << " ("
                       << p_read->SubEvt()->m_x2 << ") " << m_eta1 << "\n";
     } else {
-      m_x1 = m_eta1 + p_fsmc->ERan("z_2") * (1. - m_eta1);
+      msg_Debugging()<<"m_z1 <= 0\n";
+      if (m_eta1>1.-m_eps1) {
+        m_x1=1.;
+        m_eps1=1.-m_eta1;
+        m_etar1=1.;
+        msg_Debugging()<<"eta1 > 1-eps1"<<std::endl;
+      }
+      else {
+          m_x1 = m_etar1+p_fsmc->ERan("z_2")*(1.-m_etar1);
+          msg_Debugging()<<"eta1 < 1-eps1"<<std::endl;
+      }
     }
-    weight*=(1.-m_eta1);
     msg_Debugging()<<"x1="<<m_x1<<std::endl;
   }
   if (p_kpterms_qcd && p_LO_process->HasInitialStateQCDEmitter())
     p_kpterms_qcd->Calculate(p_int->Momenta(),m_dsijqcd,
-                             m_x0,m_x1,m_eta0,m_eta1,weight);
+                             m_x0,m_x1,m_eta0,m_eta1,m_etar0,m_etar1,weight);
   if (p_kpterms_ew  && p_LO_process->HasInitialStateQEDEmitter())
     p_kpterms_ew->Calculate(p_int->Momenta(),m_dsijew,
-                            m_x0,m_x1,m_eta0,m_eta1,weight);
+                            m_x0,m_x1,m_eta0,m_eta1,m_etar0,m_etar1,weight);
+
+  // also calculate eps bits
+  if (p_kpterms_ew  && p_LO_process->HasInitialStateQEDEmitter())
+    p_kpterms_ew->CalculateEpsilon(p_int->Momenta(),m_dsijew,
+                                   m_eta0,m_eta1,m_eps0,m_eps1);
 }
 
 double Single_Virtual_Correction::KPTerms
