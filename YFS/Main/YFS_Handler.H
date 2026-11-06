@@ -182,6 +182,9 @@ namespace YFS {
         PHASIC::Process_Base *m_acraicborn = nullptr, *m_acraicreal = nullptr;
         //! the Born and real process groups the channels above are drawn from
         PHASIC::Process_Base *m_borngroup = nullptr, *m_realgroup = nullptr;
+        //! the process group each n-photon real provider was built with, the
+        //! channels of a container being drawn from it
+        std::map<YFS::Real_Correction*, PHASIC::Process_Base*> m_realprovgroups;
         //! YFS: REAL_BORN_PHOTON_MULTICHANNEL: this event's G (ACRAIC crude)
         double m_bpmc_evtG = 1.;  int m_bpmc_evtn = 0;
 

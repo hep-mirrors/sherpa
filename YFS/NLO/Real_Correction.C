@@ -188,7 +188,7 @@ double Real_Correction::Calc_R(const ATOOLS::Vec4D_Vector& p)
     // null) nothing below assigns it, yet the m_check comparisons read it.
     double external_real(0.);
     m_failcut = false;
-    if(m_nlocuts && !p_proc->Trigger(p)) {
+    if(m_nlocuts && !p_proc->Trigger(ToProcessOrder(p))) {
       m_failcut = true;
       msg_Debugging()<<"Rejecting real event, failed cuts"<<std::endl;
       return 0;
@@ -219,6 +219,7 @@ double Real_Correction::Calc_R(const ATOOLS::Vec4D_Vector& p)
       std::vector<std::vector<Complex> > cols;
       m_spinamps.clear();
       p_proc->FillAmplitudes(m_spinamps, cols);
+      ToYFSOrder(m_spinamps);
     }
     // gauge-flip error estimator: re-evaluate the same point with the spinor
     // reference axis rotated. The result is gauge invariant analytically, so
@@ -386,11 +387,12 @@ Real_Correction::ComixAmplitudes(const ATOOLS::Vec4D_Vector &p,
   const int rmode(128 + 2 + 1);
   Weights_Map w(p_proc->DifferentialWithPropScale(
                   *ampl, Variations_Mode::nominal_only, rmode,
-                  propscale, decscale, deccid));
+                  propscale, decscale, ToProcessMask(deccid)));
   m_lastcomix = w.Nominal();
   m_spinamps.clear();
   std::vector<std::vector<Complex> > cols;
   p_proc->FillAmplitudes(m_spinamps, cols);
+  ToYFSOrder(m_spinamps);
   ampl->Delete();
   if (m_spinamps.empty()) return NULL;
   return &m_spinamps;
@@ -405,15 +407,99 @@ Real_Correction::ComixAmplitudesShifts(const ATOOLS::Vec4D_Vector &p,
   m_keepamps = true;
   Cluster_Amplitude *ampl(CreateAmplitude(p));
   const int rmode(128 + 2 + 1);
+  // the masks are ACRAIC's, in YFS leg order
+  PHASIC::Process_Base::Prop_Shifts pshifts(shifts);
+  for (std::pair<size_t, Vec4D> &s : pshifts) s.first = ToProcessMask(s.first);
   Weights_Map w(p_proc->DifferentialWithPropShifts(
-                  *ampl, Variations_Mode::nominal_only, rmode, shifts));
+                  *ampl, Variations_Mode::nominal_only, rmode, pshifts));
   m_lastcomix = w.Nominal();
   m_spinamps.clear();
   std::vector<std::vector<Complex> > cols;
   p_proc->FillAmplitudes(m_spinamps, cols);
+  ToYFSOrder(m_spinamps);
   ampl->Delete();
   if (m_spinamps.empty()) return NULL;
   return &m_spinamps;
+}
+
+void Real_Correction::UpdatePermutation() const
+{
+  if (p_permproc == p_proc) return;
+  p_permproc = p_proc;
+  const Flavour_Vector &pf(p_proc->Flavours());
+  const size_t n(m_flavs.size()), nin(p_proc->NIn());
+  m_perm.resize(n);
+  m_permid = true;
+  for (size_t j(0); j < n; ++j) m_perm[j] = j;
+  if (pf.size() != n) return;
+  // each YFS leg to the first unused process leg of its flavour, on the same
+  // side; equal flavours keep their relative order, so a process already in
+  // YFS order gets the identity
+  std::vector<size_t> perm(n);
+  std::vector<bool> used(n, false);
+  for (size_t j(0); j < n; ++j) {
+    size_t hit(n);
+    for (int pass(0); pass < 2 && hit == n; ++pass)
+      for (size_t i(0); i < n; ++i) {
+        if (used[i] || (i < nin) != (j < nin)) continue;
+        // a container in m_flavs (the group's own legs) takes what it includes
+        if (pass == 0 ? pf[i] == m_flavs[j] : m_flavs[j].Includes(pf[i])) {
+          hit = i;
+          break;
+        }
+      }
+    if (hit == n)
+      THROW(fatal_error, "YFS: no leg of " + p_proc->Name() + " for the "
+            + m_flavs[j].IDName() + " of the real correction.");
+    used[hit] = true;
+    perm[j] = hit;
+    if (hit != j) m_permid = false;
+  }
+  m_perm = perm;
+}
+
+Vec4D_Vector Real_Correction::ToProcessOrder(const Vec4D_Vector &p) const
+{
+  UpdatePermutation();
+  if (m_permid || p.size() != m_perm.size()) return p;
+  Vec4D_Vector pp(p.size());
+  for (size_t j(0); j < p.size(); ++j) pp[m_perm[j]] = p[j];
+  return pp;
+}
+
+size_t Real_Correction::ToProcessMask(size_t mask) const
+{
+  UpdatePermutation();
+  if (m_permid) return mask;
+  const size_t n(m_perm.size()), legs((size_t(1) << n) - 1);
+  // the flag bits (Process_Base::s_propshift*) sit far above the legs
+  size_t out(mask & ~legs);
+  for (size_t j(0); j < n; ++j)
+    if (mask & (size_t(1) << j)) out |= size_t(1) << m_perm[j];
+  return out;
+}
+
+void Real_Correction::ToYFSOrder(std::vector<METOOLS::Spin_Amplitudes> &amps) const
+{
+  UpdatePermutation();
+  if (m_permid) return;
+  const size_t n(m_perm.size());
+  for (METOOLS::Spin_Amplitudes &sa : amps) {
+    const std::vector<int> &spins(sa.Spins());
+    if (spins.size() != n)
+      THROW(fatal_error, "YFS: spin amplitudes of " + p_proc->Name()
+            + " do not have one entry per leg.");
+    std::vector<int> yspins(n);
+    for (size_t j(0); j < n; ++j) yspins[j] = spins[m_perm[j]];
+    METOOLS::Spin_Amplitudes ya(yspins, Complex(0., 0.));
+    std::vector<int> ys(n);
+    for (size_t i(0); i < sa.size(); ++i) {
+      const std::vector<int> ps(sa(i));
+      for (size_t j(0); j < n; ++j) ys[j] = ps[m_perm[j]];
+      ya[ya(ys)] = sa[i];
+    }
+    sa = ya;
+  }
 }
 
 Cluster_Amplitude *Real_Correction::CreateAmplitude(const ATOOLS::Vec4D_Vector &p) const
@@ -442,8 +528,10 @@ Cluster_Amplitude *Real_Correction::CreateAmplitude(const ATOOLS::Vec4D_Vector &
   // invisible except where a mass term matters - i.e. inside the dead cone
   // theta <~ m/E, which is exactly where the real ME disagreed with OpenLoops.
   const size_t nin(p_proc->NIn());
-  for (size_t i = 0; i < p.size(); ++i) {
-    ampl->CreateLeg(i<nin?-p[i]:p[i], p_proc->Flavours()[i]);
+  // the legs in the process's order (see m_perm)
+  const Vec4D_Vector pp(ToProcessOrder(p));
+  for (size_t i = 0; i < pp.size(); ++i) {
+    ampl->CreateLeg(i<nin?-pp[i]:pp[i], p_proc->Flavours()[i]);
   }
   ampl->SetProc(p_proc);
   return ampl;
@@ -508,7 +596,7 @@ void Real_Correction::SoftScan(const ATOOLS::Vec4D_Vector &p)
     Cluster_Amplitude *a(CreateAmplitude(pn));
     const double cx(p_proc->Differential
                     (*a,Variations_Mode::nominal_only,128+2+1).Nominal());
-    const double dmax(MaxMomentumChange(pn, a, p_proc->NIn()));
+    const double dmax(MaxMomentumChange(ToProcessOrder(pn), a, p_proc->NIn()));
     if (dmax>0.0)
       std::cerr<<"@@@ MOMCHANGE thr="<<th/mth<<" max|dp|="<<dmax<<std::endl;
     a->Delete();

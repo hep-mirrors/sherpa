@@ -59,14 +59,14 @@ YFS_Handler::~YFS_Handler()
         msg_Out()<<"    "<<f.second<<"  "<<f.first<<"\n";
     }
     if (cs.m_oen > 0)
-      msg_Out()<<"YFS: ACRAIC supplied the O(alpha) weight on "
+      msg_Debugging()<<"YFS: ACRAIC supplied the O(alpha) weight on "
                <<cs.m_oen<<" events; mean (ACRAIC factor)/(EEX factor) = "
                <<cs.m_oesum/cs.m_oen
                <<(cs.m_bad ? " ("+ATOOLS::ToString(cs.m_bad)
                              +" events fell back to EEX)" : "")
                <<std::endl;
     if(m_negskip!=0){
-      msg_Out()<<"Total Events Skipped: "<<m_negskip<<std::endl;
+      msg_Debugging()<<"Total Events Skipped: "<<m_negskip<<std::endl;
     }
     if(m_regcheck_zero > 0)
       msg_Out()<<"YFS: SOFT_REGION_CHECK (this rank): "<<m_regcheck_zero
@@ -78,34 +78,34 @@ YFS_Handler::~YFS_Handler()
                  <<" photons handed to ACRAIC lie inside the common soft region (E_P < IR_CUTOFF/2);"
                  <<" smallest E_P/Emin = "<<m_regcheck_min[w]<<std::endl;
     if(m_nonfinite!=0)
-      msg_Out()<<"YFS (this rank): "<<m_nonfinite<<" events with a non-finite weight, "
+      msg_Debugging()<<"YFS (this rank): "<<m_nonfinite<<" events with a non-finite weight, "
                <<"set to zero"<<std::endl;
     if(m_ifireal && p_dipoles && p_dipoles->IFIClipped()!=0){
-      msg_Out()<<"IFI real reweight: "<<p_dipoles->IFIClipped()
+      msg_Debugging()<<"IFI real reweight: "<<p_dipoles->IFIClipped()
                <<" photon factors clamped to ["<<p_dipoles->IFIRClip()
                <<", "<<1./p_dipoles->IFIRClip()<<"]"<<std::endl;
     }
     if(m_ifireal && p_nlo && p_nlo->m_ifi_n>0){
       const double mean = p_nlo->m_ifi_sum/p_nlo->m_ifi_n;
       const double var  = p_nlo->m_ifi_sum2/p_nlo->m_ifi_n - mean*mean;
-      msg_Out()<<"IFI real restoration: n="<<p_nlo->m_ifi_n
+      msg_Debugging()<<"IFI real restoration: n="<<p_nlo->m_ifi_n
                <<"  subloc/subb mean="<<mean
                <<" rms="<<(var>0.?sqrt(var):0.)
                <<" min="<<p_nlo->m_ifi_min
                <<" max="<<p_nlo->m_ifi_max<<std::endl;
-      msg_Out()<<"  profiled in x = E_gamma/sqrt(s):"<<std::endl;
+      msg_Debugging()<<"  profiled in x = E_gamma/sqrt(s):"<<std::endl;
       for(int i=0;i<5;++i){
         if(p_nlo->m_ifi_x_n[i]==0) continue;
         const double rr = p_nlo->m_ifi_x_r[i]/p_nlo->m_ifi_x_n[i];
         const double ee = p_nlo->m_ifi_x_e[i]/p_nlo->m_ifi_x_n[i];
-        msg_Out()<<"    x="<<0.1*i<<"-"<<0.1*(i+1)
+        msg_Debugging()<<"    x="<<0.1*i<<"-"<<0.1*(i+1)
                  <<"  n="<<p_nlo->m_ifi_x_n[i]
                  <<"  applied="<<rr<<"  exact="<<ee
                  <<"  residue="<<(rr-ee)<<std::endl;
       }
     }
     if(m_ifireal && p_nlo && p_nlo->m_ifi_eligible>0){
-      msg_Out()<<"IFI real restoration skipped on "
+      msg_Debugging()<<"IFI real restoration skipped on "
                <<(p_nlo->m_ifi_skip_emin+p_nlo->m_ifi_skip_momcons
                   +p_nlo->m_ifi_skip_unusable+p_nlo->m_ifi_skip_other)
                <<" of "<<p_nlo->m_ifi_eligible<<" photons above omega:"
@@ -305,9 +305,23 @@ void YFS_Handler::SetAcraicChannelProcs(const ATOOLS::Flavour_Vector &fl) {
     p_acraic->SetRealProc(m_acraicreal);
   }
   if (p_nlo && m_acraicborn) p_nlo->SetBornProc(m_acraicborn);
-  if (p_nlo && m_realgroup && m_realgroup->IsGroup() && m_realgroup->Size() > 1)
-    if (YFS::Real_Correction *prov = p_nlo->RealProvider(1))
-      prov->SetChannelProc(m_acraicreal);
+  if (!p_nlo) return;
+  // every n-photon real provider (the real, the double real, ACRAIC's tree
+  // residuals) on its channel; the group it was built with is remembered the
+  // first time it is seen, before it is re-pointed
+  for (size_t n(1); n <= p_nlo->MaxRealPhotons(); ++n) {
+    YFS::Real_Correction *prov(p_nlo->RealProvider(n));
+    if (prov == nullptr) continue;
+    auto it(m_realprovgroups.find(prov));
+    if (it == m_realprovgroups.end())
+      it = m_realprovgroups.emplace(prov, prov->p_proc).first;
+    PHASIC::Process_Base *group(it->second);
+    if (group == nullptr || !group->IsGroup() || group->Size() < 2) continue;
+    // the order YFS hands the real its momenta in: the channel, then the photons
+    ATOOLS::Flavour_Vector rfl(fl);
+    for (size_t j(0); j < n; ++j) rfl.push_back(ATOOLS::Flavour(kf_photon));
+    prov->SetChannelProc(ChannelOf(group, fl, n), rfl);
+  }
 }
 
 

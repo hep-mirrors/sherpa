@@ -85,10 +85,12 @@ public:
   ATOOLS::Cluster_Amplitude *CreateAmplitude(const ATOOLS::Vec4D_Vector &p) const;
 
   inline bool FailCut() const { return m_failcut; }
-  inline void SetProc(PHASIC::Process_Base *proc) { p_proc = proc; }
-  //! one channel (a member of a container group) of the process, with its flavours
-  inline void SetChannelProc(PHASIC::Process_Base *proc)
-  { p_proc = proc; m_flavs = proc->Flavours(); }
+  inline void SetProc(PHASIC::Process_Base *proc) { p_proc = proc; p_permproc = NULL; }
+  //! one channel (a member of a container group) of the process, with its
+  //! flavours in YFS order (the Born channel's legs, then the photons)
+  inline void SetChannelProc(PHASIC::Process_Base *proc,
+                             const ATOOLS::Flavour_Vector &flavs)
+  { p_proc = proc; m_flavs = flavs; p_permproc = NULL; }
   inline size_t NPhotons() const { return m_nphotons; }
 
   //! Name of whichever generator actually supplies Calc_R's value: the
@@ -171,7 +173,26 @@ public:
   //! drift in it means the amplitudes and the ME are not the same object.
   double m_lastcomix = 0.;
 
+  /*!
+    YFS hands momenta (and ACRAIC leg masks) in YFS order, m_flavs: the Born
+    legs, then the photons. The process's own legs are in Sherpa's canonical
+    order, which puts a photon before massless quarks (e- e+ P d db for the
+    real of e- e+ -> d db). m_perm[j] is the process leg of YFS leg j;
+    momenta, masks and spin amplitudes go through it on the way in and out.
+  */
+  ATOOLS::Vec4D_Vector ToProcessOrder(const ATOOLS::Vec4D_Vector &p) const;
+  size_t ToProcessMask(size_t mask) const;
+
 protected:
+
+  //! built lazily per process, hence mutable
+  mutable std::vector<size_t> m_perm;
+  mutable bool m_permid = true;
+  //! the process m_perm was built for
+  mutable const PHASIC::Process_Base *p_permproc = NULL;
+  void UpdatePermutation() const;
+  //! the spin amplitudes of the process, relabelled into YFS leg order
+  void ToYFSOrder(std::vector<METOOLS::Spin_Amplitudes> &amps) const;
 
   size_t m_nphotons;
   //! Not owned: points into the static per-multiplicity config table.
