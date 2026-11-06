@@ -515,6 +515,9 @@ public:
   //! RV_MODE 1: (lab photon, v_{n+1} - v_B) for every photon whose RV was
   //! evaluated this event - read by ACRAIC: REAL_VIRTUAL 2
   std::vector<std::pair<ATOOLS::Vec4D, double> > m_rvdv;
+  //! the beams' invariant mass squared at each m_rvdv entry's (n+1)-point: below s
+  //! when other initial-state photons were taken out of the beams
+  std::vector<double> m_rvdv_spt;
   //! the last RealVirtualFactor's loop over tree, before its subtraction,
   //! that subtraction (B~/kappa on the point's legs), and the point in the
   //! loop frame

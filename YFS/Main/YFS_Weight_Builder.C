@@ -53,6 +53,62 @@ namespace {
                          ["FIXED_ORDER_STREAM"].SetDefault(false).Get<bool>());
     return on;
   }
+  //! ACRAIC: TNP_BAND_STREAMS - the TNP band as shifted named weights
+  bool AcraicTnpBandStreams()
+  {
+    static const bool on(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
+                         ["TNP_BAND_STREAMS"].SetDefault(false).Get<bool>());
+    return on;
+  }
+  //! ACRAIC: TNP_BAND_INCOMPLETE - the incomplete-second-order parameters
+  //! RV_ISR and B0_2L (the real-virtual beyond REAL_VIRTUAL factorisable, the
+  //! non-logarithmic two-loop vertex) in the O(alpha^2) band
+  bool AcraicTnpBandIncomplete()
+  {
+    static const bool on(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
+                         ["TNP_BAND_INCOMPLETE"].SetDefault(true).Get<bool>());
+    return on;
+  }
+  /*
+    ACRAIC: TNP_BAND_STREAMS. One theory nuisance parameter: its norm N and
+    the template classes it scales (the ACRAIC_TNP1_/ACRAIC_TNP2_ columns of
+    TNP_STREAMS), for the initial state. The named weights
+    ACRAIC_TNPB_<name>_UP/_DN are nominal +- N x the summed templates, so
+    rivet-mkhtml's BandComponentEnv (one component per parameter, added in
+    quadrature) draws sigma +- sqrt(sum (N T)^2).
+  */
+  struct TnpBandParam {
+    std::string name;
+    double norm;
+    std::vector<int> classes;
+  };
+  /*
+    The initial-state parameters of a run truncated at O(alpha^k), with
+    g = (alpha(0)/pi)(ln(s/m_e^2) - 1). Halved: T_c responds to an amplitude
+    rescaling, which moves |B_c|^2 twice as fast. beta02: ACRAIC: BETA0_2 is
+    in the prediction, so beta_0 first misses order k+1 at k = 2 too.
+  */
+  std::vector<TnpBandParam> TnpBandParams(double s, double me, int k,
+                                          bool beta02, bool incomplete)
+  {
+    typedef YFS::Acraic_Base A;
+    const double a(1./137.035999/M_PI), g(a*(log(s/(me*me)) - 1.));
+    const int mb(k == 1 || beta02 ? k + 1 : k);
+    auto fact = [](int n) { double f(1.); for (int i(2); i <= n; ++i) f *= i; return f; };
+    std::vector<TnpBandParam> b;
+    b.push_back({"B0_ISR", 0.5*pow(g, mb)/fact(mb), {A::tnp_b0}});
+    b.push_back({"ISR",    0.5*pow(g, k)/fact(k),   {A::tnp_isr}});
+    b.push_back({"MULTI",  0.5*pow(g, k)/fact(k),   {A::tnp_multi}});
+    if (k == 2) {
+      // the two-photon classes share one parameter
+      b.push_back({"B2", 0.5*g, {A::tnp_b2i, A::tnp_b2f, A::tnp_b2m}});
+      if (incomplete) {
+        b.push_back({"RV_ISR", 0.5*a,                {A::tnp_isr}});
+        b.push_back({"B0_2L",  0.5*a*a*M_PI*M_PI,    {A::tnp_b0}});
+      }
+    }
+    return b;
+  }
 }
 
 void YFS_Weight_Builder::CalculateBeta() {
@@ -343,6 +399,56 @@ void YFS_Weight_Builder::InitNLO(){
   }
 }
 /*
+  The ACRAIC photon list (AllPhotonsLab, initial-state photons first) and
+  YFS.NLO's are built independently, so each ACRAIC photon takes the dv of
+  the NLO photon with the same lab momentum (to 1e-6 of its energy). An
+  initial-state photon's v_B is the provider's at the post-ISR Born point,
+  while ACRAIC's v has its initial vertex moved to s (ISR_VERTEX_AT_S), so
+  its dv drops that shift. The shift goes to the beams of the photon's own
+  (n+1)-point, s_pt (m_rvdv_spt), which lies below s when other
+  initial-state photons were taken out of the beams: the provider's v_{n+1}
+  has its initial vertex there. Returns the number of photons matched; entry
+  (if given) gets each ACRAIC photon's m_rvdv index, -1 without a match.
+*/
+int YFS_Weight_Builder::MatchRealVirtualDV(std::vector<double> &dv, std::vector<long> *entry)
+{
+  const Vec4D_Vector &cph(m_h.p_acraic->AllPhotonsLab());
+  const std::vector<std::pair<Vec4D,double> > &nd(m_h.p_nlo->m_rvdv);
+  const std::vector<double> &spt(m_h.p_nlo->m_rvdv_spt);
+  const size_t nisr(m_h.p_acraic->NISRPhotons());
+  if (entry) entry->assign(cph.size(), -1);
+  int nmatch(0);
+  for (size_t b(0); b < nd.size(); ++b) {
+    long a(-1); double best(1e30);
+    for (size_t c(0); c < cph.size(); ++c) {
+      const Vec4D d(cph[c] - nd[b].first);
+      const double m(Max(Max(dabs(d[0]),dabs(d[1])),Max(dabs(d[2]),dabs(d[3]))));
+      if (m < best) { best = m; a = (long)c; }
+    }
+    if (a < 0 || !(best < 1e-6*Max(nd[b].first.E(), 1e-30))) { ++m_h.m_acrv_nomatch; continue; }
+    if (!m_h.p_acraic->PhotonHasM1(a)) { ++m_h.m_acrv_nom1; continue; }
+    const double dvisr((size_t)a < nisr && b < spt.size() ? IsrVertexShift(spt[b]) : 0.);
+    dv[a] = nd[b].second - dvisr;
+    if (entry) (*entry)[a] = (long)b;
+    ++nmatch;
+  }
+  return nmatch;
+}
+
+double YFS_Weight_Builder::IsrVertexShift() const
+{
+  return IsrVertexShift(m_h.m_s);
+}
+
+double YFS_Weight_Builder::IsrVertexShift(double spt) const
+{
+  static const bool isrvs(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
+                          ["ISR_VERTEX_AT_S"].Get<bool>());
+  if (!isrvs || m_h.m_ev.m_plab.size() < 2) return 0.;
+  return m_h.p_acraic->InitialVertexShift(spt, (m_h.m_ev.m_plab[0] + m_h.m_ev.m_plab[1]).Abs2());
+}
+
+/*
   ACRAIC: REAL_VIRTUAL 2. The ACRAIC photon list (m_h.m_ev.m_ISRPhotons +
   m_h.m_ev.m_FSRPhotons, AllPhotonsLab) and YFS.NLO's (m_ISRPhotons +
   m_me_photons) are built independently, so each ACRAIC photon takes the dv of
@@ -357,19 +463,7 @@ double YFS_Weight_Builder::AcraicRealVirtualRemainder()
   const Vec4D_Vector &cph(m_h.p_acraic->AllPhotonsLab());
   const std::vector<std::pair<Vec4D,double> > &nd(m_h.p_nlo->m_rvdv);
   std::vector<double> dv(cph.size(), 0.);
-  int nmatch(0);
-  for (size_t b(0); b < nd.size(); ++b) {
-    long a(-1); double best(1e30);
-    for (size_t c(0); c < cph.size(); ++c) {
-      const Vec4D d(cph[c] - nd[b].first);
-      const double m(Max(Max(dabs(d[0]),dabs(d[1])),Max(dabs(d[2]),dabs(d[3]))));
-      if (m < best) { best = m; a = (long)c; }
-    }
-    if (a < 0 || !(best < 1e-6*Max(nd[b].first.E(), 1e-30))) { ++m_h.m_acrv_nomatch; continue; }
-    if (!m_h.p_acraic->PhotonHasM1(a)) { ++m_h.m_acrv_nom1; continue; }
-    dv[a] = nd[b].second;
-    ++nmatch;
-  }
+  const int nmatch(MatchRealVirtualDV(dv));
   ++m_h.m_acrv_n;
   const double r(m_h.p_acraic->RealVirtualRemainderRho(dv));
   static const bool probe(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_PROBE"]
@@ -440,22 +534,23 @@ double YFS_Weight_Builder::AcraicRealVirtualHelicityRemainder()
   std::vector<std::vector<Complex> > r(cph.size(),
                                        std::vector<Complex>(nhel, Complex(0., 0.)));
   bool anyhel(false);
-  for (size_t b(0); b < nd.size(); ++b) {
-    long a(-1); double best(1e30);
-    for (size_t c(0); c < cph.size(); ++c) {
-      const Vec4D d(cph[c] - nd[b].first);
-      const double m(Max(Max(dabs(d[0]),dabs(d[1])),Max(dabs(d[2]),dabs(d[3]))));
-      if (m < best) { best = m; a = (long)c; }
-    }
-    if (a < 0 || !(best < 1e-6*Max(nd[b].first.E(), 1e-30))) { ++m_h.m_acrv_nomatch; continue; }
-    if (!m_h.p_acraic->PhotonHasM1(a)) { ++m_h.m_acrv_nom1; continue; }
-    dv[a] = nd[b].second;
+  std::vector<long> entry;
+  MatchRealVirtualDV(dv, &entry);
+  for (size_t a(0); a < cph.size(); ++a) {
+    if (entry[a] < 0) continue;
+    const size_t b(entry[a]);
+    // the ISR vertex shift MatchRealVirtualDV took off dv is helicity-blind:
+    // half of it off every amplitude-level remainder
+    const Complex shift(0.5*(nd[b].second - dv[a]), 0.);
     const Complex half(0.5*dv[a], 0.);
     if (force || b >= nh.size() ||
         !m_h.p_acraic->RealVirtualHelicityToAcraic(nh[b], m_h.p_acraic->PhotonHelicity(a),
                                                half, r[a]))
       r[a].assign(nhel, half);
-    else anyhel = true;
+    else {
+      for (Complex &rh : r[a]) rh -= shift;
+      anyhel = true;
+    }
   }
   ++m_h.m_acrv_n;
   // ACRAIC: LOOP_BETA_MAX 2: the two-photon one-loop residual, built on the
@@ -707,8 +802,8 @@ void YFS_Weight_Builder::GenerateWeight() {
                           m_h.m_acraicvirtsrc == acraicvirt::automatic) && m_h.p_acraic &&
       m_h.p_nlo && m_h.p_nlo->HasVirtual() && m_h.m_ev.m_nlo_current && m_h.m_born != 0.)
     ApplyExternalVirtual(c);
-  // With ACRAIC: ORDER 2 the stored amplitudes are the O(alpha^2) ones; the
-  // helicity virtual is built and validated for ORDER 1 only.
+  // With ACRAIC: ORDER 2 the helicity virtual goes into A_2, on the amplitude
+  // the external one multiplies (Acraic_Base::HelicityVirtualRho).
   if (m_h.p_acraic) for (double &x : m_h.p_acraic->m_lhcol) x = 0.;
   /*
     ACRAIC_Virtual: helicity (ACRAIC) - the same insertion with a complex,
@@ -826,11 +921,7 @@ void YFS_Weight_Builder::ApplyExternalVirtual(AcraicColumns &c)
   const double rcr(m_h.p_acraic->GetRhoCrude());
   // ACRAIC: ISR_VERTEX_AT_S - the initial vertex from the post-ISR Born point
   // (m_plab, where the provider's virtual was taken) to the full s
-  static const bool isrvs(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
-                          ["ISR_VERTEX_AT_S"].Get<bool>());
-  double dvisr(0.);
-  if (isrvs && m_h.m_ev.m_plab.size() >= 2)
-    dvisr = m_h.p_acraic->InitialVertexShift(m_h.m_s, (m_h.m_ev.m_plab[0] + m_h.m_ev.m_plab[1]).Abs2());
+  const double dvisr(IsrVertexShift());
   /*
     ACRAIC: RESONANCE_EXPONENTIATION greco: the resonant initial-final log is
     in the resonance propagators of the ACRAIC amplitudes now, so it leaves
@@ -943,7 +1034,7 @@ void YFS_Weight_Builder::ApplyHelicityVirtual(AcraicColumns &c)
   const double rho1(m_h.p_acraic->GetResult());
   const double add(rcr > 0. ? (m_h.p_acraic->HelicityVirtualRho(d) - rho1)/rcr : 0.);
   // the external form on the same event, and rho_V(v/2) against it
-  const double ext(v*m_h.p_acraic->GetResult01() + 0.25*v*v*m_h.p_acraic->GetResult0());
+  const double ext(v*m_h.p_acraic->GetResult01() + 0.25*v*v*m_h.p_acraic->GetResultVV());
   const std::vector<Complex> dh(Amplitude::NHel(), Complex(0.5*v, 0.));
   /*
     ACRAIC: BETA0_2 per helicity: delta^h -> delta^h + delta^(2)(delta^h),
@@ -1035,6 +1126,26 @@ void YFS_Weight_Builder::ApplyHelicityVirtual(AcraicColumns &c)
   if (!IsBad(add)) c.corr_acraic += add;
   else ++m_h.m_acraicstats.m_bad;
   if (!IsBad(gho_acraic)) c.corr_acraic += gho_acraic;
+  /*
+    ORDER 2: the helicity analogues of the external compositions of the same
+    event, delta^h in place of v/2. ACRAIC_O1 |A_1 + d A_0|^2, ACRAIC_O1V1
+    |A_1 + d A_1|^2, ACRAIC_O2V0/V1 |A_2 + d A_0|^2 and |A_2 + d A_1|^2, and
+    ACRAIC_O2V2 the nominal with |A_2 + d A_2|^2 in place of |A_2 + d A_v|^2.
+  */
+  if (c.acraico2 && rcr > 0.) {
+    YFS::Acraic_Base &a(*m_h.p_acraic);
+    const double rho2(a.GetResult()), r1(a.GetResult1());
+    const double o1((a.HelicityInsertionRho(d, 1, 0) - r1)/rcr);
+    const double o1v1((a.HelicityInsertionRho(d, 1, 1) - r1)/rcr);
+    const double v0((a.HelicityInsertionRho(d, 2, 0) - rho2)/rcr);
+    const double v1((a.HelicityInsertionRho(d, 2, 1) - rho2)/rcr);
+    const double d2((a.HelicityInsertionRho(d, 2, 2) - a.HelicityVirtualRho(d))/rcr);
+    if (!IsBad(o1)) c.corr_acraic_o1 += o1;
+    if (!IsBad(o1v1)) c.corr_acraic_o1v1 += o1v1;
+    if (!IsBad(v0)) c.corr_acraic_v0 += v0;
+    if (!IsBad(v1)) c.corr_acraic_v1 += v1;
+    if (!IsBad(d2)) c.dv2_acraic = d2;
+  }
 }
 
 void YFS_Weight_Builder::FinalizeAcraicBeta02VP(AcraicColumns &c)
@@ -1139,7 +1250,10 @@ void YFS_Weight_Builder::RegisterColumnNames(std::vector<std::string> &names,
   const bool hasnlo (m_h.p_nlo && m_h.p_nlo->HasNLO());
   const bool hasnnlo(m_h.p_nlo && m_h.p_nlo->HasNNLO());
   if (m_h.m_nlotype != nlo_type::born && (hasnlo || hasnnlo)) {
-    if (hasnlo)  names.push_back("LO"), names.push_back("NLO");
+    if (hasnlo) {
+      names.push_back("LO");
+      if (m_h.m_nlo_columns) names.push_back("NLO");
+    }
     if (hasnnlo) names.push_back("NNLO");
     if (m_h.m_nlo_weight_breakdown) {
       if (hasnlo)
@@ -1169,7 +1283,8 @@ void YFS_Weight_Builder::RegisterColumnNames(std::vector<std::string> &names,
   if (m_h.m_useacraic) names.push_back("ACRAIC");
   // ACRAIC nominal (YFS: ACRAIC_WEIGHT, default with ACRAIC on): the squared-level
   // YFS.NLO weight the event would otherwise carry, as a named column
-  if (m_h.m_useacraic && m_h.m_acraic_weight) names.push_back("NLO_EW");
+  if (m_h.m_useacraic && m_h.m_acraic_weight && m_h.m_nlo_columns)
+    names.push_back("NLO_EW");
   // YFS: DIFF_BUDGET_STREAMS: the per-event ingredients (filled further down)
   if (DiffBudgetStreamsOn())
     for (const char *n : s_diffbudgetnames) names.push_back(n);
@@ -1210,6 +1325,33 @@ void YFS_Weight_Builder::RegisterColumnNames(std::vector<std::string> &names,
       for (int c(0); c < YFS::Acraic_Base::tnp_nclass; ++c)
         tnpnames.push_back(std::string("ACRAIC_TNP2_") + YFS::Acraic_Base::TnpClassName(c));
     names.insert(names.end(), tnpnames.begin(), tnpnames.end());
+  }
+  // ACRAIC: TNP_BAND_STREAMS - nominal +- N T per parameter, 1 (no shift) on
+  // events without an ACRAIC weight
+  if (AcraicTnpBandStreams() && m_h.m_useacraic && m_h.p_acraic) {
+    if (!m_h.p_acraic->TnpOn())
+      THROW(fatal_error, "ACRAIC: TNP_BAND_STREAMS needs ACRAIC: TNP_STREAMS true.");
+    if (m_h.HasFSR())
+      THROW(not_implemented, "ACRAIC: TNP_BAND_STREAMS has the initial-state "
+            "parameters only (YFS: MODE ISR); with FSR combine the "
+            "ACRAIC_TNP1_/ACRAIC_TNP2_ template weights instead.");
+    const int k(m_h.p_acraic->Order());
+    static bool shown(false);
+    if (!shown) {
+      shown = true;
+      if (k == 1)
+        msg_Info()<<"ACRAIC: TNP_BAND_STREAMS at O(alpha): the two-photon classes "
+                  <<"missing entirely at this order need an ORDER 2 run "
+                  <<"and are not in the band."<<std::endl;
+    }
+    const double me(m_h.m_flavs[0].Mass() > 0. ? m_h.m_flavs[0].Mass() : 0.000510999);
+    for (const TnpBandParam &b :
+           TnpBandParams(sqr(rpa->gen.Ecms()), me, k,
+                         m_h.p_nlo && m_h.p_nlo->Beta02Acraic().On(),
+                         AcraicTnpBandIncomplete())) {
+      names.push_back("ACRAIC_TNPB_" + b.name + "_UP");
+      names.push_back("ACRAIC_TNPB_" + b.name + "_DN");
+    }
   }
   if (m_h.m_ladder_weights) {
     if (m_h.m_coulomb && m_h.p_coulomb) names.push_back("NoCoulomb");
@@ -1278,6 +1420,26 @@ void YFS_Weight_Builder::FillTnpColumns(ATOOLS::Weights &wyfs,
       if (!IsBad(m_h.m_ev.m_tnp1[c])) wyfs[tnpnames[c]] = m_h.m_ev.m_tnp1[c]/m_h.m_ev.m_corr_nominal;
     for (size_t c(0); c < m_h.m_ev.m_tnp2.size() && n1 + c < tnpnames.size(); ++c)
       if (!IsBad(m_h.m_ev.m_tnp2[c])) wyfs[tnpnames[n1 + c]] = m_h.m_ev.m_tnp2[c]/m_h.m_ev.m_corr_nominal;
+  }
+  // ACRAIC: TNP_BAND_STREAMS - 1 +- N sum_c T_c/corr, from the templates of
+  // the run's own order (registered, and so checked, in RegisterColumnNames)
+  if (AcraicTnpBandStreams() && m_h.p_acraic && m_h.p_acraic->TnpOn() &&
+      !IsZero(m_h.m_ev.m_corr_nominal)) {
+    const int k(m_h.p_acraic->Order());
+    const std::vector<double> &t(k == 2 ? m_h.m_ev.m_tnp2 : m_h.m_ev.m_tnp1);
+    if (t.empty()) return;
+    const double me(m_h.m_flavs[0].Mass() > 0. ? m_h.m_flavs[0].Mass() : 0.000510999);
+    for (const TnpBandParam &b :
+           TnpBandParams(sqr(rpa->gen.Ecms()), me, k,
+                         m_h.p_nlo && m_h.p_nlo->Beta02Acraic().On(),
+                         AcraicTnpBandIncomplete())) {
+      double r(0.);
+      for (int c : b.classes) if (c < (int)t.size()) r += t[c];
+      r *= b.norm/m_h.m_ev.m_corr_nominal;
+      if (IsBad(r)) continue;
+      wyfs["ACRAIC_TNPB_" + b.name + "_UP"] = 1. + r;
+      wyfs["ACRAIC_TNPB_" + b.name + "_DN"] = 1. - r;
+    }
   }
 }
 

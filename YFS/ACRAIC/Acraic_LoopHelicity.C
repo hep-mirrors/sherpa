@@ -140,11 +140,29 @@ int Acraic_Base::PhysicalHelicity(int f, size_t i) const
 }
 
 
-// 1/4 sum_f |A_1[f] + d[f] A_0[f]|^2 with A_0 = m_AmpExpo0 (partition-summed
-// Born); d[f] = v/2 reproduces the external form.
+const Amplitude &Acraic_Base::AmpExpo(int n) const
+{
+  return n == 2 ? m_AmpExpo2 : n == 1 ? m_AmpExpo1 : m_AmpExpo0;
+}
+
+
+// The composition of the external virtual (Acraic_Base::MakeRho): d on A_0
+// into A_1 at ORDER 1, on A_v into A_2 at ORDER 2 (A_v = A_1 under
+// VirtualOnBeta1, else A_0), so that d[f] = v/2 reproduces the external form
+// at either order.
 double Acraic_Base::HelicityVirtualRho(const std::vector<Complex> &d,
                                      double P1, double P2) const
 {
+  if (m_order == 2) return HelicityInsertionRho(d, 2, m_vonbeta1 ? 1 : 0, P1, P2);
+  return HelicityInsertionRho(d, 1, 0, P1, P2);
+}
+
+
+// 1/4 sum_f |A_x[f] + d[f] A_a[f]|^2, A_0 the partition-summed Born
+double Acraic_Base::HelicityInsertionRho(const std::vector<Complex> &d, int x, int a,
+                                       double P1, double P2) const
+{
+  const Amplitude &ax(AmpExpo(x)), &aa(AmpExpo(a));
   const int nh(Amplitude::NHel());
   const bool pol(P1 != 0. || P2 != 0.);
   double sum(0.);
@@ -155,7 +173,7 @@ double Acraic_Base::HelicityVirtualRho(const std::vector<Complex> &d,
       if (l1 == 0 || l2 == 0) return -1.;
       w = (1. + l1*P1)*(1. + l2*P2);
     }
-    sum += w*std::norm(m_AmpExpo1.m_A[f] + d[f]*m_AmpExpo0.m_A[f]);
+    sum += w*std::norm(ax.m_A[f] + d[f]*aa.m_A[f]);
   }
   return sum/4.;
 }
@@ -220,8 +238,8 @@ void Acraic_Base::HelicityVirtualSplit(const std::vector<Complex> &d, double vha
   split[0] = split[1] = split[2] = 0.;
   const int nh(Amplitude::NHel());
   for (int f = 0; f < nh && f < (int)d.size(); ++f) {
-    const Complex D(d[f] - vhalf), a0(m_AmpExpo0.m_A[f]);
-    const Complex b(m_AmpExpo1.m_A[f] + vhalf*a0);
+    const Complex D(d[f] - vhalf), a0(AmpExpo(m_order == 2 && m_vonbeta1 ? 1 : 0).m_A[f]);
+    const Complex b(AmpExpo(m_order == 2 ? 2 : 1).m_A[f] + vhalf*a0);
     split[0] += 2.*std::real(std::conj(b)*D*a0);
     split[1] += sqr(D.real())*std::norm(a0);
     split[2] += sqr(D.imag())*std::norm(a0);

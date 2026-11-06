@@ -172,6 +172,8 @@ namespace YFS {
                             PropShifts &sh) const;
     //! YFS: IFI false: why this process cannot have it (empty = it can)
     std::string NoIFIRefusal();
+    //! the Born processes NoIFIRefusal has accepted
+    std::map<const PHASIC::Process_Base*, bool> m_noifiok;
     /*!
       YFS: MODE ISR with charged final-state particles: ISR only. Every photon
       sits on the production stage, and the final-stage emission diagrams are
@@ -730,9 +732,15 @@ namespace YFS {
                               const std::vector<Complex> &delta,
                               const ATOOLS::Vec4D_Vector &p, Complex vhalf,
                               std::vector<Complex> &d);
-    //! helicity sum weighted by (1 + l1 P1)(1 + l2 P2), l_i physical beam helicities
+    //! helicity sum weighted by (1 + l1 P1)(1 + l2 P2), l_i physical beam helicities,
+    //! of |A_X + d A_v|^2 as the external virtual composes it (A_X = A_2 at ORDER 2)
     double HelicityVirtualRho(const std::vector<Complex> &d,
                               double P1 = 0., double P2 = 0.) const;
+    //! the same with the amplitudes named: |A_x + d A_a|^2, x, a in {0, 1, 2}
+    double HelicityInsertionRho(const std::vector<Complex> &d, int x, int a,
+                                double P1 = 0., double P2 = 0.) const;
+    //! A_0, A_1 or A_2 (the latter built in MakeRho at ORDER 2 only)
+    const Amplitude &AmpExpo(int n) const;
     //! physical helicity (+-1) of leg i in ACRAIC index f, 0 if unknown
     int    PhysicalHelicity(int f, size_t i) const;
     //! 1/4 sum_f |A_X[f] + vhalf A_v[f] + e[f] A_0[f]|^2 (YFS: DYSON_VP),
@@ -754,8 +762,9 @@ namespace YFS {
     //! run totals of the helicity and external additions and their regression
     void   AccumulateLoopHelicity(bool ok, double addhel, double addext,
                                   double reg, const double split[3]);
-    //! rho_V(d) - rho_V(v/2), D = d - v/2, split into 1/4 sum 2 Re[(A_1 + v/2
-    //! A_0)^* D A_0], 1/4 sum (Re D)^2 |A_0|^2 and 1/4 sum (Im D)^2 |A_0|^2
+    //! rho_V(d) - rho_V(v/2), D = d - v/2, split into 1/4 sum 2 Re[(A_X + v/2
+    //! A_v)^* D A_v], 1/4 sum (Re D)^2 |A_v|^2 and 1/4 sum (Im D)^2 |A_v|^2
+    //! (A_X, A_v as in HelicityVirtualRho)
     void   HelicityVirtualSplit(const std::vector<Complex> &d, double vhalf,
                                 double split[3]) const;
     double m_lh_split[3] = {0., 0., 0.};
@@ -774,6 +783,8 @@ namespace YFS {
     { return m_result0 > 0. ? m_resultbr/m_result0 : 1.; }
     //! the photons in the lab, before the boost into the ACRAIC frame
     inline const ATOOLS::Vec4D_Vector &AllPhotonsLab() const { return m_allphotons_lab; }
+    //! the initial-state photons lead AllPhotonsLab()
+    inline size_t NISRPhotons() const { return m_isrphotons.size(); }
     //! rho(Born + photon j's real)/rho(Born) - 1, for that photon alone.
     double RealFactorPhoton(size_t j) const;
     inline void SetISRPhotons(Vec4D_Vector &k) {m_isrphotons=k;}

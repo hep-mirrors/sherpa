@@ -53,6 +53,12 @@ namespace YFS {
     double CalculateNLO();
     double AcraicRealVirtualRemainder();
     double AcraicRealVirtualHelicityRemainder();
+    //! ACRAIC's photon index -> YFS.NLO's real-virtual dv (and its m_rvdv entry)
+    int MatchRealVirtualDV(std::vector<double> &dv, std::vector<long> *entry = nullptr);
+    //! ACRAIC: ISR_VERTEX_AT_S: the initial vertex shift from the post-ISR Born
+    //! point to s (the Born virtual), or to s_pt (an (n+1)-point's beams)
+    double IsrVertexShift() const;
+    double IsrVertexShift(double spt) const;
     double AcraicBeta02Rho(double d2, double v, double r0x, double r0v) const;
     void BuildNamedWeights(double w_lo, double w_full);
     //! the YFS.* column names this configuration emits, and wyfs/m_wnames defaults

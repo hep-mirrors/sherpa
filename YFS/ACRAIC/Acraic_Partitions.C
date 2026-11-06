@@ -761,11 +761,7 @@ void Acraic_Base::Calculate() {
                         .SetDefault(true).Get<bool>());
   m_ifi_coherent = coh || m_order == 2;
   // YFS: IFI false: incoherent at every order, with placement vetoes in M_1, M_2
-  if (!m_ifi) {
-    static const std::string why(NoIFIRefusal());
-    if (!why.empty()) THROW(fatal_error, "YFS: IFI false is not available: "+why);
-    m_ifi_coherent = false;
-  }
+  if (!m_ifi) m_ifi_coherent = false;
   m_inc00 = m_inc11 = m_inc01 = 0.;
   m_inc22 = m_inc12 = m_inc02 = m_incbv = m_incbo = 0.;
   BuildAcraicMomenta();
@@ -796,6 +792,16 @@ void Acraic_Base::Calculate() {
 
   
   BuildComixBornAlignment();
+  /*
+    YFS: IFI false: refused once per Born process, here where its stages and
+    momenta exist. The exchange-line probe may not resolve on the first event
+    (BornHasExchangeLine), and then the check runs again on the next one.
+  */
+  if (!m_ifi && !m_noifiok.count(p_bornproc)) {
+    const std::string why(NoIFIRefusal());
+    if (!why.empty()) THROW(fatal_error, "YFS: IFI false is not available: "+why);
+    if (!HasFSR() || m_exchline.count(p_bornproc)) m_noifiok[p_bornproc] = true;
+  }
   BuildResonanceBornDelta();   // after the alignment: it uses m_comixflip
   // ACRAIC: TCHANNEL_REDUCED_BORN
   ResolveReducedBorn();

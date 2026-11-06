@@ -487,7 +487,10 @@ double NLO_Base::CalculateRealVirtualRemainder(size_t i, const Vec4D &k) {
     THROW(fatal_error, "YFS: RV_PROBE_TERM must be none, vB_minus_v, form_factor, "
           "form_factor_only or old");
   const double contrib(m_born*info.rho*use*others);
-  if (!IsBad(dv_own)) m_rvdv.push_back(std::make_pair(k, dv_own));
+  if (!IsBad(dv_own)) {
+    m_rvdv.push_back(std::make_pair(k, dv_own));
+    m_rvdv_spt.push_back((info.p[0] + info.p[1]).Abs2());
+  }
   // ACRAIC: REAL_VIRTUAL helicity - the same loop call resolved by helicity,
   // on the same remainder convention as dv_own (own legs on both points)
   if (!IsBad(dv_own) && RealVirtualHelicityRequested()) {
@@ -538,6 +541,7 @@ double NLO_Base::CalculateRealVirtual() {
   if (RVIsRemainder()) {
     double rv(0.);
     m_rvdv.clear();
+    m_rvdv_spt.clear();
     m_rvhel.clear();
     m_loopnhel.clear();
     m_vborn_own_ok = m_vborn_ok && BornVirtualOnOwnLegs(m_vborn_own);

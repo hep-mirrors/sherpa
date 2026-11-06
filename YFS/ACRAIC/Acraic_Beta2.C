@@ -27,6 +27,7 @@
 #include "ATOOLS/Math/Poincare.H"
 
 #include <algorithm>
+#include <set>
 #include <iostream>
 #include <iomanip>
 
@@ -117,12 +118,20 @@ static std::string TreeProviderRefusal(YFS::Real_Correction *prov,
            "contain W, and YFS builds the m-photon processes up to "
            "max(YFS: NLO_MAX_PHOTONS, ACRAIC: TREE_BETA_MAX))";
   const Flavour_Vector &pf(prov->p_proc->Flavours());
-  const size_t nl(flavs.size());
+  const size_t nl(flavs.size()), nin(prov->p_proc->NIn());
   if (pf.size() != nl + m) return "the provider's process has the wrong leg count";
-  for (size_t i(0); i < nl; ++i)
+  for (size_t i(0); i < nin; ++i)
     if (pf[i] != flavs[i]) return "the provider's process has different legs";
-  for (size_t i(nl); i < nl + m; ++i)
-    if (pf[i].Kfcode() != kf_photon) return "the provider's extra legs are not photons";
+  /*
+    The final legs in any order: Sherpa sorts them (a photon goes before
+    massless quarks, e- e+ P P d db), and Real_Correction maps the Born legs
+    plus photons onto them (m_perm).
+  */
+  std::multiset<long> want, have;
+  for (size_t i(nin); i < nl; ++i) want.insert((long)flavs[i]);
+  for (size_t j(0); j < m; ++j) want.insert((long)Flavour(kf_photon));
+  for (size_t i(nin); i < pf.size(); ++i) have.insert((long)pf[i]);
+  if (want != have) return "the provider's process has different legs";
   return "";
 }
 
@@ -196,13 +205,19 @@ bool Acraic_Base::PrepareBeta2()
                            ["BETA2_XCUT"].Get<double>());
   const double rs(m_s > 0. ? sqrt(m_s) : 0.);
   if (!(rs > 0.)) return false;
+  /*
+    A collapsed (soft) photon has no beta_2. With a single radiating stage
+    every photon is "fixed" only because there is one stage to put it on
+    (PartitionStart), and its total eikonal is that stage's: nu nu, MODE ISR,
+    and MODE FSR with one final stage. Those fixed photons stay eligible.
+  */
+  int nradiating(0);
+  for (int g(0); g < m_nstages && g < (int)m_stagelegs.size(); ++g)
+    for (size_t l(0); l < m_stagelegs[g].size(); ++l)
+      if (m_stagelegs[g][l].w != 0.) { ++nradiating; break; }
   size_t ne(0);
   for (size_t i(0); i < n; ++i) {
-    // a collapsed (soft) photon has no beta_2; without FSR every photon is
-    // "fixed" only because there is one stage to put it on (PartitionStart)
-    // - nu nu, ISR only - and before 2026-10-08 that silently left those
-    // processes with no beta_2 at ORDER 2
-    if (HasFSR() && m_fixedstage.size() == n && m_fixedstage[i]) continue;
+    if (nradiating > 1 && m_fixedstage.size() == n && m_fixedstage[i]) continue;
     if (2.*m_allphotons[i][0]/rs > xcut) { m_b2elig[i] = 1; ++ne; }
   }
   if (ne < 2) return false;
@@ -369,11 +384,19 @@ bool Acraic_Base::ComixInfraredSubtracted_N_0(const PhotonSet &S)
       coef.push_back(SoftProduct(Without(S, sub[a])));
     }
   }
-  bool allreducing(true);
-  for (size_t q(0); q < m; ++q)
-    if (!m_stagereduces[m_stage[S[q]]]) allreducing = false;
+  /*
+    M_|S| goes on the one partition per assignment of the others with every
+    enumerated photon of S on a reducing stage. A fixed photon is never
+    enumerated, so it counts as placed (as for M_1 in
+    ComixInfraredSubtracted_1_0): MODE FSR fixes every photon on a final stage.
+  */
+  bool placed(true);
+  for (size_t q(0); q < m; ++q) {
+    const bool fixed(m_fixedstage.size() == m_stage.size() && m_fixedstage[S[q]]);
+    if (!fixed && !m_stagereduces[m_stage[S[q]]]) placed = false;
+  }
   // YFS: IFI false: every partition carries its placement's share of M_|S|
-  const bool addm(!m_ifi || allreducing);
+  const bool addm(!m_ifi || placed);
   Amplitude M;
   if (addm) {
     static const beta1legs::code legsmode(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
@@ -641,9 +664,12 @@ void Acraic_Base::TreeBetaClosure()
   Vec4D_Vector pp(m_pacraic);
   for (size_t j(0); j < n; ++j) pp.push_back(m_allphotons[j]);
   Amplitude Mex;
-  PropShifts none;
+  // one radiating side (MODE ISR or FSR): M_n without the other side's
+  // emission, as the generator's M_m (AddTreeBetas)
+  PropShifts shifts;
+  if (SingleSided()) AddPlacementVetoes(PhotonRange(n), shifts);
   const bool haveM(RealProvider(n) != NULL
-                   && ComixRealNShifted(pp, PhotonRange(n), Mex, none, true));
+                   && ComixRealNShifted(pp, PhotonRange(n), Mex, shifts, shifts.empty()));
   const int nh(Amplitude::NHel());
   double nM(0.), maxM(0.);
   for (int f = 0; f < nh; ++f) {
