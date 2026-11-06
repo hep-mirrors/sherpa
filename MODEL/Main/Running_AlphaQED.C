@@ -113,8 +113,13 @@ double Running_AlphaQED::PiGamma(const Flavour & fl,double scale) {
     double beta = sqrt(1.-4.*mqs);
     return (1./3.-(1.+2.*mqs)*(2.+beta*log((1.-beta)/(1.+beta))));
   } 
-  else { 
-    return 0.; 
+  else {
+    // /Vol 4 - Landau, Lifshitz P(t), eq. (113.12):
+    // $\epsilon = (\beta-1)/(\beta+1)$
+    // far below threshold the closed form cancels: its leading term
+    if (mqs>1.e3) return -1./(5.*mqs);
+    const double b(sqrt(4.*mqs-1.));
+    return (1./3.-(1.+2.*mqs)*(2.-2.*b*atan(1./b)));
   }
 }
 
