@@ -256,7 +256,7 @@ double LHAPDF_CPP_Interface::GetXPDF(const kf_code& kf, bool anti) {
   if (!m_calculated[kfc]) {
     m_xfx[kfc]=p_pdf->xfxQ2(kfc,m_x,m_Q2);
     if (IsBad(m_xfx[kfc])) {
-      msg_Error()<<METHOD<<"(): "<<m_set<<" returns "<<m_xfx[kfc]
+      msg_Debugging()<<METHOD<<"(): "<<m_set<<" returns "<<m_xfx[kfc]
                  <<" for flavour "<<kfc<<" at (x,Q2) = ("<<m_x<<","<<m_Q2
                  <<"). Set to zero."<<std::endl;
       m_xfx[kfc]=0.;
