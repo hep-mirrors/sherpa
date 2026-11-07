@@ -61,8 +61,8 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   if (m_bunch.IsIon()) m_A = m_bunch.GetMassNumber();
   else {
     // initialise parton mapping, dependent on bunch flavour
-    PDF_Id_Maps partonmapper; 
-    m_kfmap = partonmapper.GetIdMap(m_bunch.Kfcode()); 
+    PDF_Id_Maps partonmapper;
+    m_kfmap = partonmapper.GetIdMap(m_bunch.Kfcode());
   }
   static std::set<std::string> s_init;
   if (s_init.find(m_set)==s_init.end()) {
@@ -255,6 +255,12 @@ double LHAPDF_CPP_Interface::GetXPDF(const kf_code& kf, bool anti) {
   if (m_calculated[kfc]==-1) return 0.;
   if (!m_calculated[kfc]) {
     m_xfx[kfc]=p_pdf->xfxQ2(kfc,m_x,m_Q2);
+    if (IsBad(m_xfx[kfc])) {
+      msg_Error()<<METHOD<<"(): "<<m_set<<" returns "<<m_xfx[kfc]
+                 <<" for flavour "<<kfc<<" at (x,Q2) = ("<<m_x<<","<<m_Q2
+                 <<"). Set to zero."<<std::endl;
+      m_xfx[kfc]=0.;
+    }
     m_calculated[kfc]=1;
   }
   return m_rescale*m_xfx[kfc]*m_A;

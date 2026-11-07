@@ -651,7 +651,7 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
       fagx=1.;
     }
 
-    for (size_t i=0;i<m_xpa.size();i++) if (m_xpa[i].xp>eta0) {
+    if (fa) for (size_t i=0;i<m_xpa.size();i++) if (m_xpa[i].xp>eta0) {
       pdfa->Calculate(eta0/m_xpa[i].xp,muf02*muf02fac);
       g2massq+=m_xpa[i].kpc*pdfa->GetXPDF(fl0)/eta0/fa;
     }
@@ -711,7 +711,7 @@ double KP_Terms::Get(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
 
     if (m_photonsplittingonly && rpa->gen.Bunch(m_beam[1]).IsPhoton()) { fbg=0.; fbgx=1.; }
 
-    for (size_t i=0;i<m_xpb.size();i++) if (m_xpb[i].xp>eta1) {
+    if (fb) for (size_t i=0;i<m_xpb.size();i++) if (m_xpb[i].xp>eta1) {
       pdfb->Calculate(eta1/m_xpb[i].xp,muf12*muf12fac);
       g2massq+=m_xpb[i].kpc*pdfb->GetXPDF(fl1)/eta1/fb;
     }
