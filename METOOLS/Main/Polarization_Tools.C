@@ -7,6 +7,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "assert.h"
+#include "ATOOLS/Math/Poincare_Spinor.H"
 
 #ifndef SQRT_05
 #define SQRT_05 0.70710678118654757
@@ -19,7 +20,7 @@
 using namespace METOOLS;
 using namespace ATOOLS;
 using namespace std;
-using SpinorBasis = std::vector<Polarization_Spinor>;
+//using SpinorBasis = std::vector<Polarization_Spinor>;
 
 
 Polarization_Vector::Polarization_Vector(Vec4D p, bool anti,
@@ -43,48 +44,48 @@ Polarization_Vector::Polarization_Vector(Vec4D p, Vec4D ref_mom) : std::vector<V
   // delete auxiliary polarization vector
   pop_back();
 }
-Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, double M2,
+
+void Polarization_Spinor::Init(Vec4D p, Vec4D ref_mom)
+{
+  if (std::fabs(ref_mom.Abs2()) > 1e-8) {      // vorher: ref_mom.Abs2() > 1e-8
+    THROW(fatal_error, "new reference vector has to be light-like")
+  }
+  m_k  = ref_mom;
+  m_kp = SpinorType(1,  m_k);
+  m_km = SpinorType(-1, m_k);
+}
+/*Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, double M2,
     const ATOOLS::Vec4D& ref_mom, bool anti, bool out) {
   m_s.push_back(Polarization_Spinor(p, M2, +1, ref_mom, anti, out));
   m_s.push_back(Polarization_Spinor(p, M2, -1, ref_mom, anti, out));
   }
-
+  //nicht konst, weil sie ja spinoren verändert, methode soll jeden spinor boosten
   void Polarization_Spinor_Basis::BoostBack(const ATOOLS::Vec4D& beta) {
     for (size_t i(0); i<m_s.size(); ++i) METOOLS::BoostBack_Spinor(m_s[i], beta);
-}
+}*/
 
-Polarization_Spinor::Polarization_Spinor(Vec4D p, double M2, int h, Vec4D ref_mom, bool anti, bool out)
-  : m_hel(h), m_p(p), m_ref(ref_mom), m_M2(M2), m_anti(anti), m_out(out)
-{
-  if (h != 1 && h != -1) {
-    THROW(fatal_error, "helicity must be +1 or -1")
-  }
-  Init(p, ref_mom);     // setzt m_k, m_kp, m_km (die Zeilen davor sind doppelt, kannst du löschen)
-  FillComponents();     // schreibt m_u[0..3]
-  std::cout << "u = " << (*this)[0] << " " << (*this)[1] << " " << (*this)[2] << " " << (*this)[3] << "\n";
-  double nrm(0.0); for (size_t a(0); a<4; ++a) nrm += std::norm((*this)[a]);
-  std::cout << "|u|^2 = " << nrm << "  (erwartet 2E = " << 2.0*p[0] << ")\n";
-}
+Polarization_Spinor::Polarization_Spinor(const METOOLS::CSpinor<double>& s, int h)
+  : METOOLS::CSpinor<double>(s), m_hel(h), m_M2(0.0), m_anti(false), m_out(false) {}
 
-Polarization_Spinor::Polarization_Spinor(Vec4D p, int h, Vec4D ref_mom, bool anti, bool out)
-  : m_hel(h), m_p(p), m_ref(ref_mom), m_M2(0.0), m_anti(anti), m_out(out)
-{ 
-  if (h != 1 && h != -1) {
-    THROW(fatal_error, "helicity must be +1 or -1")
-  }
-  Init(p, ref_mom);
-  FillComponents();
+Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, double M2) {
+  m_s.reserve(2);
+  m_s.emplace_back(METOOLS::CSpinor<double>(1, 1, +1, p, 0, 0, 0, 0, M2), +1);
+  m_s.emplace_back(METOOLS::CSpinor<double>(1, 1, -1, p, 0, 0, 0, 0, M2), -1);
 }
 
 void Polarization_Spinor::FillComponents()
 {
   typedef std::complex<double> C;
+  //std::cout << "FC 1: start, m_k=" << m_k << " m_p=" << m_p << " hel=" << m_hel << std::endl;
   const double m = sqrt(std::max(m_M2, 0.0));
 
   // masseloser Spinor zur Referenz k mit entgegengesetzter Helizität
   METOOLS::CSpinor<double> uk(1, 1, -m_hel, m_k);
+  //std::cout << "FC 2: uk gebaut " << uk[0] << " " << uk[1] << " " << uk[2] << " " << uk[3] << std::endl;
 
   const double pk = m_p * m_k;            // Minkowski-Produkt
+  //std::cout << "FC 3: p.k=" << pk << std::endl;
+
   if (pk < 1e-12) {
     THROW(fatal_error, "p and ref_mom are (anti)parallel: p.k = 0")
   }
@@ -105,7 +106,55 @@ void Polarization_Spinor::FillComponents()
   t[3] = s10*uk[0] + (p0 + s11)*uk[1];
 
   for (size_t a(0); a<4; ++a) m_u[a] = (t[a] + m*uk[a]) / N;
+  //std::cout << "FC 4: fertig" << std::endl;
 }
+
+
+Polarization_Spinor::Polarization_Spinor(Vec4D p, double M2, int h, Vec4D ref_mom, bool anti, bool out)
+  : m_hel(h), m_p(p), m_ref(ref_mom), m_M2(M2), m_anti(anti), m_out(out)
+{
+  if (h != 1 && h != -1) {
+    THROW(fatal_error, "helicity must be +1 or -1")
+  }
+  //std::cout << "P1: ctor hel=" << h << std::endl;
+  Init(p, ref_mom);     // setzt m_k, m_kp, m_km (die Zeilen davor sind doppelt, kannst du löschen)
+  //std::cout << "P2: Init ok" << std::endl;
+  FillComponents();     // schreibt m_u[0..3]
+  //std::cout << "P3: FillComponents ok" << std::endl;
+  //std::cout << "u = " << (*this)[0] << " " << (*this)[1] << " " << (*this)[2] << " " << (*this)[3] << "\n";
+  double nrm(0.0); for (size_t a(0); a<4; ++a) nrm += std::norm((*this)[a]);
+  //std::cout << "|u|^2 = " << nrm << "  (erwartet 2E = " << 2.0*p[0] << ")\n";
+}
+
+Polarization_Spinor::Polarization_Spinor(Vec4D p, int h, Vec4D ref_mom, bool anti, bool out)
+  : m_hel(h), m_p(p), m_ref(ref_mom), m_M2(0.0), m_anti(anti), m_out(out)
+{ 
+  if (h != 1 && h != -1) {
+    THROW(fatal_error, "helicity must be +1 or -1")
+  }
+  Init(p, ref_mom);
+  FillComponents();
+}
+
+Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, double M2,
+    const ATOOLS::Vec4D& ref_mom, bool anti, bool out)
+{
+  m_s.reserve(2);                                        // keine Reallokation, kein Umkopieren
+  m_s.emplace_back(p, M2, +1, ref_mom, anti, out);       // baut direkt im Vektor
+  m_s.emplace_back(p, M2, -1, ref_mom, anti, out);
+}
+
+void METOOLS::Polarization_Spinor_Basis::BoostBack(const ATOOLS::Vec4D& beta) {
+  //std::cout << "B1: Basis::BoostBack, size=" << m_s.size() << std::endl;
+  //ATOOLS::Poincare_Spinor spinboost(beta);       // wie Poincare momboost(beta)
+  if (beta== ATOOLS::Vec4D(0.,0.,0.,0.)) return;
+  ATOOLS::Spinor_Boost boost(beta);
+  //std::cout << "B3: Spinor " << i << " geboostet" << std::endl;
+  for (size_t i(0); i<m_s.size(); ++i) boost.BoostBack(m_s[i]);
+  
+}
+
+
 
 void Polarization_Vector::Init(Vec4D p, Vec4D ref_mom)
 {
@@ -296,7 +345,7 @@ void Polarization_Vector::Test(Vec4D p)
   std::cout<<METHOD<<"... "<<(success?"passed":"failed")<<std::endl<<std::endl;
 }
 
-void Polarization_Spinor::BoostBack(const ATOOLS::Vec4D& beta) {
+/*void Polarization_Spinor::BoostBack(const ATOOLS::Vec4D& beta) {
   if (beta == ATOOLS::Vec4D(0.,0.,0.,0.)) return;
   METOOLS::BoostBack_Spinor(*this, beta);   // boostet m_u von *this
   m_beta = beta;                            // m_p und m_ref bleiben CM-Werte
@@ -325,26 +374,26 @@ void METOOLS::BoostBack_Spinor(METOOLS::CSpinor<double> &s, const ATOOLS::Vec4D 
     s[i+1] = c*b+sgn*(Complex(sx,sy)*a-sz*b);
   }
 
-}
+}*/
 
 std::vector<std::vector<Complex>>
-Polarization_Spinor::BasisTrafo_Spinor(const SpinorBasis& old_basis, bool pol_checks) const {
+Polarization_Spinor_Basis::BasisTrafo(const Polarization_Spinor_Basis& old_basis, bool pol_checks) const {
   if (old_basis.size() != 2) {
     THROW(fatal_error, "BasisTrafo_Spinor expects two spinors in old basis")
   }
   
-  int m_nhel = old_basis.size();
-  Polarization_Spinor partner(m_p,m_M2,-m_hel,m_ref,m_anti,m_out);
-  if (m_beta != ATOOLS::Vec4D(0.,0.,0.,0.)){
-    METOOLS::BoostBack_Spinor(partner, m_beta);
-  }
-  std::array<const Polarization_Spinor*,2> new_spinor;
+  const size_t m_nhel = old_basis.size();
+  //Polarization_Spinor partner(m_p,m_M2,-m_hel,m_ref,m_anti,m_out);
+  //if (m_beta != ATOOLS::Vec4D(0.,0.,0.,0.)){
+    // BoostBack_Spinor(partner, m_beta);
+  //}
+  /*std::array<const Polarization_Spinor*,2> new_spinor;
   new_spinor[0] = (m_hel > 0) ? this : &partner;
   new_spinor[1] = (m_hel > 0) ? &partner : this;
   std::cout << "p = " << m_p << ", hel = " << m_hel << ", ref = " << m_ref << "\n";
   std::cout << "m_kp = " << m_kp << "\n m_km = " << m_km << "\n";
   std::cout << "this[0..3] = " << (*this)[0] << ", " << (*this)[1] << ", "
-          << (*this)[2] << ", " << (*this)[3] << "\n";
+          << (*this)[2] << ", " << (*this)[3] << "\n";*/
   // erstelle koeffizientenmatrix
   vector<vector<Complex>> coeff(m_nhel, vector<Complex>(m_nhel, Complex(0, 0)));
 
@@ -352,13 +401,16 @@ Polarization_Spinor::BasisTrafo_Spinor(const SpinorBasis& old_basis, bool pol_ch
   std::array<std::array<Complex,2>, 2> array_old_basis;
   std::array<std::array<Complex,2>, 2> array_old_basis_inv;
   std::array<std::array<Complex,2>, 2> array_new_basis;
+
+  // for debugging
   for (size_t i(0); i<2; i++)
   std::cout << "old[" << i << "] = ( "
             << old_basis[i][0] << ", " << old_basis[i][1] << ", "
             << old_basis[i][2] << ", " << old_basis[i][3] << " )\n";
   //determinante
   Complex det = old_basis[0][0] * old_basis[1][1] - old_basis[1][0] * old_basis[0][1];
-  if (abs(det.real()) < 1e-8 && abs(det.imag()) < 1e-8){
+  //if (abs(det.real()) < 1e-8 && abs(det.imag()) < 1e-8){
+  if (std::abs(det) < 1e-8){
     std::cout << "determinante is" << det << std::endl;
     THROW(fatal_error, "matrix of polarisation vectors in old spin basis is not invertible")
   }
@@ -371,8 +423,8 @@ Polarization_Spinor::BasisTrafo_Spinor(const SpinorBasis& old_basis, bool pol_ch
 
   for (size_t i(0); i<m_nhel; i++){
     for (size_t j(0); j<m_nhel; j++){
-      array_new_basis[i][j] = (*new_spinor[i])[j+1];
-      array_old_basis[i][j] = old_basis[i][j+1];
+      array_new_basis[i][j] = (*this)[i][j];
+      array_old_basis[i][j] = old_basis[i][j];
     }
   }
   
@@ -406,7 +458,19 @@ Polarization_Spinor::BasisTrafo_Spinor(const SpinorBasis& old_basis, bool pol_ch
       //std::cout << "i=" << i << " j=" << j << " test=" << test << " det=" << det << std::endl;
       
     }
+    pol_checks=true;
     if (pol_checks) {
+  for (size_t k(0); k<4; k++) {
+    Complex rec(0,0);
+    for (size_t j(0); j<m_nhel; j++) rec += coeff[i][j] * old_basis[j][k];
+    const Complex ref = (*this)[i][k];
+    if (std::abs(rec - ref) > 1e-8 * std::max(1.0, std::abs(ref))) {
+      std::cout << "Polarization_Warning: spinor " << i << " component " << k
+                << ": rekonstruiert " << rec << " vs. tatsaechlich " << ref << std::endl;
+    }
+  }
+}
+    /*if (pol_checks) {
       if (((fabs(zero_comp.real()) > 1e-8 || fabs(array_new_basis[i][0].real()) > 1e-8) &&
            ((array_new_basis[i][0] - zero_comp).real() > fabs(zero_comp.real()) * 1e-8)) ||
           ((fabs(zero_comp.imag()) > 1e-8 || fabs(array_new_basis[i][0].imag()) > 1e-8) &&
@@ -432,13 +496,14 @@ Polarization_Spinor::BasisTrafo_Spinor(const SpinorBasis& old_basis, bool pol_ch
         msg_Out() << "has to be the same as the first component in new polarization spinor" <<
                   std::setprecision(20) << one_comp << std::endl;
       }
-    }
-    if (pol_checks) {
+    }*/
+   
+   /* if (pol_checks) {
       if (std::abs(array_new_basis[i][2] - two_comp)   > 1e-8 * std::max(1.0, std::abs(array_new_basis[i][2])) ||
       std::abs(array_new_basis[i][3] - three_comp) > 1e-8 * std::max(1.0, std::abs(array_new_basis[i][3]))) {
       msg_Out() << "Polarization_Warning in " << METHOD << ": components 2/3 of the transformed spinor do not match" << std::endl;
       }
-    } 
+    } */
   }
  
   return coeff;

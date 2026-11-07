@@ -49,7 +49,7 @@ namespace METOOLS
     ATOOLS::Vec4D m_beta;
     double m_M2;
     bool m_anti, m_out;
-    typedef std::vector<Polarization_Spinor> SpinorBasis;
+    //typedef std::vector<Polarization_Spinor> SpinorBasis;
 
     void Init(ATOOLS::Vec4D p, ATOOLS::Vec4D ref_mom); //default vector prüfen
     void FillComponents();   // schreibt m_u[0..3] aus m_p, m_ref, m_M2, m_hel
@@ -57,21 +57,22 @@ namespace METOOLS
     SpinorType SP(const ATOOLS::Vec4D &p, int h) const;
  
   public:
+    Polarization_Spinor(const METOOLS::CSpinor<double>& s, int h);
     Polarization_Spinor(ATOOLS::Vec4D p, int h, ATOOLS::Vec4D ref_mom=ATOOLS::Vec4D(1.0,SQRT_05,SQRT_05,0.0), bool anti=false, bool out=false);
     Polarization_Spinor(ATOOLS::Vec4D p, double M2, int h, ATOOLS::Vec4D ref_mom=ATOOLS::Vec4D(1.0,SQRT_05,SQRT_05,0.0), bool anti=false, bool out=false);
     void Test(ATOOLS::Vec4D p=ATOOLS::Vec4D(3.0399e+00, 1.7523e+00,-1.4883e-01, 3.1938e-01));
 
     int Hel() const {return m_hel; }
     void BoostBack(const ATOOLS::Vec4D& beta);
-    std::vector<std::vector<Complex>> BasisTrafo_Spinor(const SpinorBasis& old_basis, bool pol_checks=0) const;
+    //std::vector<std::vector<Complex>> BasisTrafo_Spinor(const SpinorBasis& old_basis, bool pol_checks=0) const;
     
   };
-  void BoostBack_Spinor(METOOLS::CSpinor<double> &s, const ATOOLS::Vec4D &l);
-
 
   class Polarization_Spinor_Basis {
+    // member
     std::vector<Polarization_Spinor> m_s;   // [0]: hel +1, [1]: hel -1
   public:
+    Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, double M2);   // Helizitätsbasis wie in der Amplitude
     Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, double M2,
                             const ATOOLS::Vec4D& ref_mom,
                             bool anti=false, bool out=false);
@@ -83,7 +84,7 @@ namespace METOOLS
     // wie momboost.BoostBack(new_polarization[i]) bei Spin 1
     void BoostBack(const ATOOLS::Vec4D& beta);
 
-    // *this = neue Basis, old_basis = alte Basis
+    // *this = neue Basis, old_basis = alte Basis, alte basis wird nicht verändert, weil const
     std::vector<std::vector<Complex>> BasisTrafo(const Polarization_Spinor_Basis& old_basis,
                                                bool pol_checks=false) const;
   };

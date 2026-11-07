@@ -23,7 +23,7 @@ namespace ATOOLS {
     void BoostBack(Vec4D &v) const;
     void BoostBack(Vec4C &v) const;
 
-    void BoostBack(METOOLS::CSpinor<double> &s) const;
+    //void BoostBack(METOOLS::CSpinor<double> &s) const;
 
     void Rotate(Vec4D &v) const;
     void RotateBack(Vec4D &v) const;
