@@ -71,11 +71,6 @@ void Define_Dipoles::MakeDipolesIF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec
   m_set.BuildIF(fl, mom, born, m_alpha);
 }
 
-void Define_Dipoles::MakeDipolesFF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born) {
-  // Never built FF dipoles, only checks the input. MakeDipoles builds them.
-  Dipole_FF(fl, mom);
-}
-
 void Define_Dipoles::MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born ) {
   if ((mom.size() != fl.size()) || (born.size() != fl.size()))
     THROW(fatal_error, "Incorrect dipole size in YFS for final-state dipoles");
@@ -301,34 +296,6 @@ double Define_Dipoles::RealSoftSum(double K) {
     sum += D.ChargeNorm()*one(D);
   }
   return sum;
-}
-
-std::string Define_Dipoles::RealSoftSumReport(double K, const Vec4D_Vector &dirs) {
-  std::ostringstream o;
-  auto one = [&](YFS::Dipole &D, double KK) {
-    Vec4D p1, p2;
-    D.LegsBeforeRadiation(p1, p2);
-    double lam(m_photonMass);
-    if (m_dim_reg == 1 && p_yfsFormFact->p_virt) {
-      const double eps(p_yfsFormFact->p_virt->Eps_Scheme_Factor({p1, p2}));
-      lam = sqrt(4.*M_PI*sqr(p_yfsFormFact->p_virt->IRscale())/eps);
-    }
-    return p_yfsFormFact->BVR_full(p1*p2, p1.E(), p2.E(), D.GetMass(0), D.GetMass(1), KK, lam, 0); };
-  auto rep = [&](YFS::Dipole &D, const char *name) {
-    const double h(0.5);
-    const double d((one(D, K*exp(h)) - one(D, K*exp(-h)))/(2.*h));
-    // angular integral of this dipole's eikonal at |k| = K, charge factor ChargeNorm
-    double I(0.);
-    for (const Vec4D &q : dirs) I += D.Eikonal(q, D.GetMomenta(0), D.GetMomenta(1));
-    I *= 4.*M_PI/dirs.size();
-    o<<" "<<name<<(D.IsFinite()?"(fin)":"")<<":cn="<<D.ChargeNorm()<<",dB="<<D.ChargeNorm()*d
-     <<",I="<<I<<",r="<<(I != 0. ? D.ChargeNorm()*d/I : 0.);
-    Vec4D a, b; D.LegsBeforeRadiation(a, b);
-    o<<",dleg="<<(a - D.GetMomenta(0)).PSpat() + (b - D.GetMomenta(1)).PSpat(); };
-  for (auto &D : m_set.ByType(dipoletype::initial)) rep(D, "II");
-  for (auto &D : m_set.FF()) rep(D, D.IsResonance() ? "FFres" : "FF");
-  for (auto &D : m_set.IF()) rep(D, "IF");
-  return o.str();
 }
 
 double Define_Dipoles::CalculateVirtualSubEps() {

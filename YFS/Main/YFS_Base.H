@@ -160,7 +160,7 @@ public:
   double m_exchange_tmin;
   //! YFS: EXCHANGE_T_MIN_FINAL, GeV^2: the same bound on the physical event
   double m_exchange_tmin_final = 0.;
-  double m_alpha, m_alpi, m_hardmin, m_gp, m_g;
+  double m_alpha, m_alpi, m_gp, m_g;
   bool m_isr_debug, m_fsr_debug, m_coulomb;
   //! YFS: COULOMB_HIGHER_ORDER (flat four-fermion W pairs, see YFS_Options.H)
   coulombho::code m_coulombho;

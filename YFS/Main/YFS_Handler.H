@@ -305,10 +305,7 @@ namespace YFS {
           the daughters of a four-fermion final state paired by flavour (CKM
           diagonal): W+ -> nu_l l+ or u-type quark + d-type antiquark of the
           same generation, W- the charge conjugates. False if neither exists.
-          Replaces MakeWWVecs (2026-10-10), which grouped by particle /
-          antiparticle (u into W-, ubar into W+; an on-shell W+ into W-, against
-          BVV_WW's p1 = W+) and read m_plab whatever it was given; for four
-          leptons the two agree exactly.
+          wp is BVV_WW's p1.
         */
         bool WPairMomenta(const Vec4D_Vector &p, Vec4D &wp, Vec4D &wm) const;
         //! hand ACRAIC its W decay groups (ACRAIC: W_STAGES); false = flat groups

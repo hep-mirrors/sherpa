@@ -52,8 +52,6 @@ namespace YFS {
                             const double decscale = -1.0);
     //! Per-event quantities the weight probe reports; see ACRAIC: WEIGHT_PROBE.
     inline size_t NPhot()  const { return m_allphotons.size(); }
-    inline double SvarQ()  const { return m_svarQ; }
-    inline double SvarY()  const { return m_svarY; }
     inline void SetLabMomenta(const ATOOLS::Vec4D_Vector &p) { m_plabmom = p; }
     //! final legs before FSR (YFS m_reallab), where m_born sits
     inline void SetPreFSRMomenta(const ATOOLS::Vec4D_Vector &p) { m_prefsr = p; }
@@ -141,8 +139,6 @@ namespace YFS {
     void EmulateKKMCFlux();
     //! the partition count against m_nstages^(enumerated photons)
     void CheckPartitionCount(const long nparts);
-    bool ReducedBeams(const ATOOLS::Vec4D &k,
-                      ATOOLS::Vec4D_Vector &pb) const;
     bool BornLegsAt(const ATOOLS::Vec4D &X,
                     ATOOLS::Vec4D_Vector &pb) const;
     //! Beams back-to-back at X, the radiating pair at Y, spectators as they are
@@ -514,15 +510,10 @@ namespace YFS {
     bool ComixRealNShifted(const ATOOLS::Vec4D_Vector &pp, const PhotonSet &S,
                            Amplitude &M, const PropShifts &shifts,
                            bool noshift = false);
-    //! the two-photon case of ComixRealNShifted (soft-limit diagnostics)
-    bool ComixReal2Shifted(const ATOOLS::Vec4D_Vector &pp, int hj, int hl,
-                           Amplitude &M2, const PropShifts &shifts,
-                           bool noshift = false);
     //! the photons the current partition puts on stage, except those in S
     ATOOLS::Vec4D StagePhotonSumExcept(int stage, const PhotonSet &S) const;
     //! StageShifts with every photon of S left out
     PropShifts SubsetStageShifts(const PhotonSet &S) const;
-    PropShifts StageShifts2(int j, int l) const;
     //! PartitionLegs with every photon of S left out (balanced with sum_S k)
     bool SubsetPartitionLegs(const PhotonSet &S, ATOOLS::Vec4D_Vector &pb) const;
     void AddSubsetExchangeLineShifts(const PhotonSet &S, PropShifts &sh) const;
@@ -694,7 +685,7 @@ namespace YFS {
     //! \param Mf3,Mf4 final-leg spinor masses (< 0: from the flavours; 0 for a photon)
     void BornAmplitude(const Vec4D_Vector &k, Amplitude &T,
                        double Mf3=-1., double Mf4=-1., int slot=-1);
-    //! spinor structures cached per call site (slot 0 Born, photon j 1+4j..4+4j)
+    //! the Born's spinor structures, cached for the event (slot 0)
     struct SpinorSet { Complex T[2][2][2][2], U[2][2][2][2]; };
     std::vector<SpinorSet> m_spincache;
     std::vector<char>      m_spinvalid;
@@ -792,15 +783,6 @@ namespace YFS {
     inline void SetBorn (const double &born) {m_born=born;}
     inline void SetISRFormFactor (double &form) {m_isrformfactor =form;}
     //! t-channel diagnostics: t invariants of the ACRAIC legs, hardest photon's cos
-    inline double T02() const
-    { return m_pacraic.size() > 3 ? (m_pacraic[0]-m_pacraic[2]).Abs2() : 0.; }
-    inline double T13() const
-    { return m_pacraic.size() > 3 ? (m_pacraic[1]-m_pacraic[3]).Abs2() : 0.; }
-    inline double HardestPhotonCosTheta() const
-    { double e(-1.), c(0.);
-      for (size_t j(0); j < m_allphotons.size(); ++j)
-        if (m_allphotons[j][0] > e) { e = m_allphotons[j][0]; c = m_allphotons[j].CosTheta(); }
-      return c; }
     double Xi(const Vec4D p, const Vec4D q);
   };
 }

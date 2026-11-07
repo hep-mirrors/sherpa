@@ -578,36 +578,6 @@ void Acraic_Base::AddFactorisedRemainder()
 }
 
 /*
-  The legs for photon k when the event has other photons: Comix does not
-  check momentum balance, so the beams are rebuilt back to back on shell at
-  (final legs + k)^2, keeping the final legs and k. The missing momentum goes
-  into the beams, not the pair, so beta_0 is unchanged and the eikonal nearly
-  so (p/(p.k) is invariant under p -> x p). Physical beams at one photon.
-*/
-bool Acraic_Base::ReducedBeams(const Vec4D &k, Vec4D_Vector &pb) const
-{
-  pb = m_pacraic;
-  Vec4D S(k);
-  for (size_t i(2); i < m_pacraic.size(); ++i) S += m_pacraic[i];
-  const double S2(S.Abs2());
-  const double ma(m_flavs[0].Mass()), mb(m_flavs[1].Mass());
-  if (S2 <= sqr(ma + mb)) return false;
-  Poincare cms(S);
-  Vec4D pa(m_pacraic[0]);
-  cms.Boost(pa);
-  const double pap(Vec3D(pa).Abs());
-  if (!(pap > 0.)) return false;
-  const Vec3D dir(Vec3D(pa)/pap);
-  const double kal(sqr(S2 - ma*ma - mb*mb) - 4.*ma*ma*mb*mb);
-  if (kal <= 0.) return false;
-  const double rs(sqrt(S2)), ps(sqrt(kal)/(2.*rs));
-  Vec4D pa2(sqrt(ps*ps + ma*ma), ps*dir), pb2(sqrt(ps*ps + mb*mb), -ps*dir);
-  cms.BoostBack(pa2); cms.BoostBack(pb2);
-  pb[0] = pa2; pb[1] = pb2;
-  return true;
-}
-
-/*
   Total eikonal sum_l Q_l theta_l SfactorLeg(p_l) (eq. 6.4); equals
   sum_g m_Sfac[g][j] on the physical legs, recomputed here on reduced legs.
 */

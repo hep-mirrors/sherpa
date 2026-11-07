@@ -140,7 +140,6 @@ public:
   */
   std::vector<METOOLS::Spin_Amplitudes> m_spinamps;
   bool m_keepamps = false;
-  inline void KeepAmplitudes(bool k) { m_keepamps = k; }
 
   /*!
     Comix's per-helicity amplitudes at ONE arbitrary phase-space point,

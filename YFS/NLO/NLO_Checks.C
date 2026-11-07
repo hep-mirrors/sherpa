@@ -622,36 +622,6 @@ void NLO_Base::CheckMasses(Vec4D_Vector &p, int realmode) {
   }
 }
 
-bool NLO_Base::CheckPhotonForReal(const Vec4D &k) {
-  for (int i = 0; i < m_plab.size(); ++i) {
-    if (m_flavs[i].IsChargedLepton()) {
-      double sik = (k + m_plab[i]).Abs2();
-      if (sik  < m_hardmin*m_plab[i].Abs2()) {
-        msg_Out() << "Rejecting photon k = " << k << std::endl
-                  << "sik = " << sik << std::endl;
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
-bool NLO_Base::CheckPhotonForReal(const Vec4D &k, const Vec4D_Vector &p) {
-  for (int i = 0; i < p.size(); ++i) {
-    if (m_flavs[i].IsChargedLepton()) {
-      double sik = (k + p[i]).Abs2();
-      if (sik < m_hardmin * p[i].Abs2()) {
-        msg_Out() << "Rejecting photon k = " << k << std::endl
-                  << "sik = " << sik << std::endl;
-        return false;
-      }
-      // if(p[i].PPerp() < m_hardmin) return false;
-    }
-  }
-  // if(k.PPerp() < m_hardmin) return false;
-  return true;
-}
-
 bool NLO_Base::CheckMomentumConservation(Vec4D_Vector p) {
   Vec4D incoming = p[0] + p[1];
   Vec4D outgoing;

@@ -17,9 +17,8 @@
 using namespace YFS;
 
 
-// Spinor structures m_Tamp/m_Uamp are cached per call site for one event;
-// only m_TC/m_UC depend on the partition. Slot 0 is the Born, photon j owns
-// 1+4j..4+4j (its two ISR and two FSR arms).
+// The spinor structures m_Tamp/m_Uamp are cached in slot 0 for the event;
+// only m_TC/m_UC depend on the partition. slot < 0: not cached.
 void Acraic_Base::BornAmplitude(const Vec4D_Vector &k, Amplitude &M,
                              double Mf3, double Mf4, int slot) {
   Complex amp;
@@ -163,9 +162,6 @@ bool Acraic_Base::ComixBornShifted(const Vec4D_Vector &p, Amplitude &A,
   return true;
 }
 
-// Adds this partition's Born, e^2 (flux) beta_0(X_wp) prod_i s_i^{wp_i}, and
-// stores it without the soft-factor product (m_partborn0) so beta_1 subtracts
-// exactly what was added.
 void Acraic_Base::InfraredSubtractedME_0_0() {
   // this partition's Born, squared on its own and added to the incoherent sum
   double rc(0.);

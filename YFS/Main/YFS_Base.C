@@ -1,3 +1,4 @@
+#include <strings.h>
 #include "YFS/Main/YFS_Base.H"
 #include "ATOOLS/Math/Random.H" 
 // #include "ATOOLS/Org/Run_Parameter.H" 
@@ -121,7 +122,6 @@ void YFS_Base::RegisterDefaults(){
   s["USE_MODEL_ALPHA"].SetDefault(false);
   s["KKMC_ANG"].SetDefault(0);
   s["WEIGHT_MODE"].SetDefault(wgt::full);
-  s["HARD_MIN"].SetDefault(0.);
   s["PHOTON_MASS"].SetDefault(0.1);
   // ACRAIC is the nominal weight wherever YFS is on. The default
   // does NOT switch YFS on: only an explicit ACRAIC: true implies MODE (below).
@@ -355,7 +355,6 @@ void YFS_Base::RegisterSettings(){
   m_use_model_alpha = s["USE_MODEL_ALPHA"].Get<bool>();
   m_kkmcAngles =  s["KKMC_ANG"].Get<int>();
   m_fixed_weight = s["WEIGHT_MODE"].Get<wgt::code>();
-  m_hardmin = s["HARD_MIN"].Get<double>();
   m_photonMass = s["PHOTON_MASS"].Get<double>();
   m_useacraic = m_mode != yfsmode::off && s["ACRAIC"].Get<bool>();
   const tristate::code acraicweight(s["ACRAIC_WEIGHT"].Get<tristate::code>());
@@ -477,9 +476,9 @@ std::istream &YFS::operator>>(std::istream &str,submode::code &sub)
   return str;
 }
 
-// YFS: MODE. Names are matched whole and case-insensitively, and an unknown
-// value is an error: the old substring test switched YFS off silently for
-// e.g. "isrfsr", and read the "ISR+FSR" this printer used to write back as ISR.
+// YFS: MODE, matched whole and case-insensitively, by name only. Photons++
+// reads the same key (None, Soft, Full or 0, 1, 2), so any other value,
+// numbers included, leaves YFS off rather than being an error.
 static const std::vector<YFS::Option_Name> s_yfsmode{
   {"Off", yfsmode::off}, {"ISR", yfsmode::isr}, {"ISRFSR", yfsmode::isrfsr},
   {"ISR+FSR", yfsmode::isrfsr}, {"FSR", yfsmode::fsr}};
@@ -488,7 +487,10 @@ std::istream &YFS::operator>>(std::istream &str, yfsmode::code &mode)
 {
   std::string tag;
   str>>tag;
-  mode=static_cast<yfsmode::code>(ParseOptionName(tag, s_yfsmode, "YFS: MODE"));
+  mode=yfsmode::off;
+  for (const YFS::Option_Name &n : s_yfsmode)
+    if (strcasecmp(tag.c_str(), n.name) == 0)
+      mode=static_cast<yfsmode::code>(n.value);
   return str;
 }
 

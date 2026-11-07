@@ -775,7 +775,7 @@ void Acraic_Base::Calculate() {
     return;
   }
   BuildResonanceExponents();   // ACRAIC: RESONANCE_EXPONENTIATION
-  m_spincache.resize(1 + 4*m_allphotons.size());
+  m_spincache.resize(1);
   m_spinvalid.assign(m_spincache.size(), 0);
   m_realphot.assign(m_allphotons.size(), Amplitude());
   m_realphotM1.assign(RealVirtualMode() == acraicrv::averaged ||

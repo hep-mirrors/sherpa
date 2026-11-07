@@ -278,14 +278,6 @@ bool Acraic_Base::ComixRealNShifted(const Vec4D_Vector &pp, const PhotonSet &S,
   return ComixRealNHel(pp, hel, M, shifts, noshift);
 }
 
-bool Acraic_Base::ComixReal2Shifted(const Vec4D_Vector &pp, int hj, int hl,
-                                  Amplitude &M2, const PropShifts &shifts,
-                                  bool noshift)
-{
-  return ComixRealNHel(pp, std::vector<int>{hj, hl}, M2, shifts, noshift);
-}
-
-
 Vec4D Acraic_Base::StagePhotonSumExcept(int stage, const PhotonSet &S) const
 {
   Vec4D K;
@@ -308,12 +300,6 @@ Acraic_Base::PropShifts Acraic_Base::SubsetStageShifts(const PhotonSet &S) const
   AddResonanceEntries(sh);   // ACRAIC: RESONANCE_EXPONENTIATION (else none)
   return sh;
 }
-
-Acraic_Base::PropShifts Acraic_Base::StageShifts2(int j, int l) const
-{
-  return SubsetStageShifts(PhotonSet{Min(j, l), Max(j, l)});
-}
-
 
 bool Acraic_Base::SubsetPartitionLegs(const PhotonSet &S, Vec4D_Vector &pb) const
 {

@@ -566,8 +566,6 @@ public:
   double RealRealRemainder(size_t i, size_t j);
   //! YFS: RR_MODE singles_product (v x RR is then left out of the weight)
   bool RRSinglesProduct() const;
-  //! the event's v = V/B - B(generation legs), as VIRTUAL_COMBINE uses it
-  double VBornEvent() const { return m_vborn; }
   //! the pair's (n+2)-body point from the event, the other photons reduced
   bool EventPairPoint(size_t i, size_t j, ATOOLS::Vec4D_Vector &P);
   //! EventPairPoint for any photon set: Born legs, then the photons of S in S order
@@ -745,8 +743,6 @@ public:
   void SoftSumsOnBothLegs(const Vec4D_Vector &legs, const double K,
                           double &bt_pt, double &bt_gen,
                           double &dY_pt, double &dY_gen);
-  bool CheckPhotonForReal(const Vec4D &k);
-  bool CheckPhotonForReal(const Vec4D &k, const Vec4D_Vector &p);
   void CheckMasses(Vec4D_Vector &p, int realmode=0);
   bool CheckMomentumConservation(Vec4D_Vector p);
   void CheckRealSub(Vec4D k, int mode);

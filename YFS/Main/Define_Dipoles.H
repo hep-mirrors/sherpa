@@ -47,7 +47,6 @@ namespace YFS {
       void MakeDipolesII(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom, ATOOLS::Vec4D_Vector const &born);
       void MakeDipolesIF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const mom, ATOOLS::Vec4D_Vector const born);
       void MakeDipoles(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom,  ATOOLS::Vec4D_Vector const &born);
-      void MakeDipolesFF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom,ATOOLS::Vec4D_Vector const &born);
       void Dipole_FF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom);
       // Flags the subset of m_dipolesFF that may radiate: a matching of the
       // charged final state, so each leg enters FSR exactly once.
@@ -68,8 +67,6 @@ namespace YFS {
       //! energies below K in the frame of the legs, in the IR regularisation
       //! of that subtraction (dim-reg finite part: lambda^2 = 4 pi mu^2/eps).
       double RealSoftSum(double K);
-      //! diagnostic for RealSoftSum: per dipole type and IR-finite flag
-      std::string RealSoftSumReport(double K, const Vec4D_Vector &dirs);
       double CalculateVirtualSubEps();
       double CalculateRealVirtualSubEps(const Vec4D &k);
       double CalculateEEX();
@@ -153,7 +150,6 @@ namespace YFS {
       inline Dipole & GetDipoleII() { return m_set.II(); }
       inline YFS::DipoleView GetDipoleFF() { return m_set.FF(); }
       inline void SetProcResMap(std::map<std::string,MODEL::Vertex_List> map) {m_proc_restab_map=map;}
-      inline double Get_Finite() {return m_virtSub.GetFinite();}
       inline double Get_E1() {return m_virtSub.GetIR();}
   };
 
