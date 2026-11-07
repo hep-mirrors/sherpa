@@ -487,7 +487,9 @@ bool Recola::Recola_Interface::Initialize(MODEL::Model_Base *const model,
   if (recolaCollierMode<1 || recolaCollierMode>3)
     THROW(fatal_error, "Invalid value for RECOLA_COLLIER_MODE"
                        " (1=COLI, 2=DD, 3=COLI+DD check)");
+#ifdef USING__RECOLA2
   set_reduction_mode_rcl(recolaCollierMode);
+#endif
   s_vmode = s["RECOLA_VMODE"].Get<int>();
   msg_Tracking()<<METHOD<<"(): Set V-mode to "<<s_vmode<<endl;
   s_use_decay   = s["RECOLA_USE_DECAY"].Get<bool>();
