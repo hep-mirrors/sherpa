@@ -91,7 +91,7 @@ namespace YFS {
     inline int ComixLegFlips(size_t n) const { return LowLegs(m_comixflip, n); }
     //! 1 if m_comixflip reverses the photon helicity (leg n), else 0
     inline int ComixPhotonFlip(size_t n) const { return LegBitOf(m_comixflip, n); }
-    //! ACRAIC: COMIX_REAL_PHOTON_FLIP: the photon bit the Born cannot fix
+    //! the photon bit of a derived flip mask, which the Born cannot fix: set
     int m_comixphoflip = 1;
     //! ACRAIC: COMIX_REAL_NORM: Comix's amplitude in ACRAIC's normalisation
     double m_comixnorm = -1.;
@@ -453,7 +453,7 @@ namespace YFS {
     void PartitionStartCollapsed(int &last);
     //! ACRAIC: CRUDE_FROM_GENERATOR: the crude on the generator's stages (< 0: none)
     double CrudeFromGenerator();
-    //! no beta_1 for photon j in any partition (ACRAIC: NEXT_TO_SOFT_FLUX)
+    //! no beta_1 for photon j in any partition (it carries its next-to-soft flux)
     bool Beta1NeverEvaluated(size_t j) const;
     //! photon j's next-to-soft flux: its stage invariant with over without it
     double NextToSoftFlux(size_t j) const;
@@ -492,9 +492,8 @@ namespace YFS {
     //! sorted photon indices (tree residuals beta-hat_S)
     typedef std::vector<int> PhotonSet;
     int m_treebetamax = 1;            //!< ACRAIC: TREE_BETA_MAX resolved (1 or ORDER)
-    //! ACRAIC: LOOP_BETA_MAX / _PLACEMENT / _XCUT (one-loop N-photon matching)
+    //! ACRAIC: LOOP_BETA_MAX / _XCUT (one-loop N-photon matching)
     int m_loopbetamax = 1;
-    loopbetaplace::code m_loopbetaplace = loopbetaplace::resonance_aware;
     double m_loopbetaxcut = 0.05;
     int m_treebetacap = 0;            //!< this event's cap (providers, eligibility)
     std::map<PhotonSet, Amplitude> m_treebeta;   //!< this partition's beta_S, |S| >= 2

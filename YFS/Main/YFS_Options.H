@@ -111,14 +111,6 @@ namespace YFS {
   //! has the O(alpha) Coulomb term: none, second (O(alpha^2), eq. (7) of
   //! hep-ph/9507422) or all (the non-relativistic all-orders factor, eq. (2)),
   //! each minus its O(alpha) term.
-  //! ACRAIC: LOOP_BETA_PLACEMENT - how the one-loop n-photon residual of a
-  //! set is placed on the partition amplitudes (step 3 of the N-photon
-  //! one-loop matching, NOTES-acraic-oneloop-nphoton.md): ratio (the loop
-  //! over tree delta_S times the shifted tree), resonance_aware (default),
-  //! exact_partition.
-  struct loopbetaplace {
-    enum code { ratio = 0, resonance_aware = 1, exact_partition = 2 };
-  };
   struct coulombho {
     enum code { none = 0, second = 1, all = 2 };
   };
@@ -279,8 +271,6 @@ namespace YFS {
   std::ostream &operator<<(std::ostream &str, const bornphotonmc::code &c);
   std::istream &operator>>(std::istream &str, ewhigherorder::code &c);
   std::ostream &operator<<(std::ostream &str, const ewhigherorder::code &c);
-  std::istream &operator>>(std::istream &str, loopbetaplace::code &c);
-  std::ostream &operator<<(std::ostream &str, const loopbetaplace::code &c);
   std::istream &operator>>(std::istream &str, coulombho::code &c);
   std::ostream &operator<<(std::ostream &str, const coulombho::code &c);
   std::istream &operator>>(std::istream &str, beta02::code &c);

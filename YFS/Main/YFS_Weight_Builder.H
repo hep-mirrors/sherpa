@@ -43,7 +43,7 @@ namespace YFS {
     void ApplyHelicityVirtual(AcraicColumns &c);
     //! beta_0^(2) and Dyson VP, added after either virtual above; TNP templates
     void FinalizeAcraicBeta02VP(AcraicColumns &c);
-    //! ACRAIC: IF_FORMFACTOR_CUT
+    //! exp(Y_IF) cut at the generation cutoff (see GenerateWeight)
     void ApplyIFFormFactorCut(AcraicColumns &c);
     //! ACRAIC: FIXED_ORDER_STREAM
     void ComputeFixedOrderColumn(AcraicColumns &c);

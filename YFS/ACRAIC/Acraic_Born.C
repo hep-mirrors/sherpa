@@ -31,10 +31,7 @@ void Acraic_Base::BornAmplitude(const Vec4D_Vector &k, Amplitude &M,
   const size_t i1(k.size() > 4 ? m_if1 : 2), i2(k.size() > 4 ? m_if2 : 3);
   const double m3(Mf3 >= 0. ? Mf3 : m_flavs[i1].Mass());
   const double m4(Mf4 >= 0. ? Mf4 : m_flavs[i2].Mass());
-  static const bool exactisrmass(
-      Settings::GetMainSettings()["ACRAIC"]["EXACT_ISR_SPINOR_MASS"]
-      .SetDefault(false).Get<bool>());
-  const double mi(exactisrmass || m_bhabha ? m1 : 0.);
+  const double mi(m_bhabha ? m1 : 0.);
   const bool cached(slot >= 0 && slot < (int)m_spinvalid.size()
                     && m_spinvalid[slot]);
   if (cached) {

@@ -119,47 +119,16 @@ double Acraic_Base::LoopNRemainderRho(const std::vector<LoopNHelicityFactors> &p
     }
     const std::vector<Complex> &ra((size_t)S[0] < r1.size() ? r1[S[0]] : std::vector<Complex>());
     const std::vector<Complex> &rb((size_t)S[1] < r1.size() ? r1[S[1]] : std::vector<Complex>());
-    double rpair(0.), nX(0.), nD(0.), nQ(0.), nA(0.), nP(0.), dmax(0.);
-    // the two halves of X: soft S[1] leaves dP - ra Qa (-> 0) and rb Qb (-> 0)
-    double n1(0.), n2(0.), ramax(0.), rbmax(0.);
+    double rpair(0.);
     for (int h = 0; h < nh; ++h) {
       const Complex tD(d[h]*iP->second.m_A[h]);
       const Complex tQ((h < (int)ra.size() ? ra[h] : Complex(0., 0.))*iA->second.m_A[h]
                        + (h < (int)rb.size() ? rb[h] : Complex(0., 0.))*iB->second.m_A[h]);
       const Complex X(tD - tQ);
-      const Complex ta((h < (int)ra.size() ? ra[h] : Complex(0., 0.))*iA->second.m_A[h]);
-      n1 += std::norm(tD - ta); n2 += std::norm(tQ - ta);
-      if (h < (int)ra.size()) ramax = Max(ramax, std::abs(ra[h]));
-      if (h < (int)rb.size()) rbmax = Max(rbmax, std::abs(rb[h]));
       rpair += 2.*std::real(conj(A.m_A[h])*X)/4.;
-      nX += std::norm(X); nD += std::norm(tD); nQ += std::norm(tQ);
-      nA += std::norm(A.m_A[h]); nP += std::norm(iP->second.m_A[h]);
-      if (iP->second.m_A[h] != Complex(0., 0.)) dmax = Max(dmax, std::abs(d[h]));
     }
     rho += rpair;
     ++m_lpn_pairs;
-    /*
-      ACRAIC: LOOP_BETA_PROBE: one line per pair. The soft limit is the check:
-      as the softer photon's x -> 0 the two terms of X cancel, |X| << |dP|,
-      |Q| (X -> -s rem M_1 of the harder photon's partner -> 0).
-    */
-    static const int probe(Settings::GetMainSettings()["ACRAIC"]["LOOP_BETA_PROBE"]
-                           .SetDefault(0).Get<int>());
-    static int nprobe(0);
-    if (probe > 0 && nprobe < 10*probe) {
-      ++nprobe;
-      const double rs(sqrt(m_s));
-      std::ostringstream o;
-      o<<std::setprecision(6)<<"@@@ LOOPNX xa="<<2.*cph[a][0]/rs<<" xb="<<2.*cph[b][0]/rs
-       <<" x0="<<2.*cph[S[0]][0]/rs<<" x1="<<2.*cph[S[1]][0]/rs
-       <<" |dP-raQa|/|dP|="<<(nD > 0. ? sqrt(n1/nD) : 0.)<<" |rbQb|/|dP|="<<(nD > 0. ? sqrt(n2/nD) : 0.)
-       <<" max|ra|="<<ramax<<" max|rb|="<<rbmax<<" cos0="<<cph[S[0]].CosTheta()<<" cos1="<<cph[S[1]].CosTheta()
-       <<" v2="<<f.v2<<" |X|="<<sqrt(nX)<<" |dP|="<<sqrt(nD)<<" |Q|="<<sqrt(nQ)
-       <<" |X|/|dP|="<<(nD > 0. ? sqrt(nX/nD) : 0.)<<" |P|/|A|="<<(nA > 0. ? sqrt(nP/nA) : 0.)
-       <<" max|delta_S-delta_0|="<<dmax<<" rho_pair/(|A|^2/4)="<<(nA > 0. ? 4.*rpair/nA : 0.)
-       <<" rho_pair/rho_crude="<<(GetRhoCrude() > 0. ? rpair/GetRhoCrude() : 0.)<<"\n";
-      std::cerr<<o.str();
-    }
   }
   ++m_lpn_ev;
   const double rcr(GetRhoCrude());

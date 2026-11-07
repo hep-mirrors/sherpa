@@ -517,15 +517,11 @@ double YFS_Weight_Builder::AcraicRealVirtualRemainder()
   j's remainder resolved by helicity: r_j^h from NLO_Base::m_rvhel (filled
   next to m_rvdv, same index), mapped to ACRAIC's index at the photon's drawn
   helicity. A photon without per-helicity factors keeps dv_j/2 on every h,
-  i.e. the averaged remainder. ACRAIC: RV_HEL_FORCE_AVERAGE 1 sets dv_j/2 on
-  every photon: the regression against REAL_VIRTUAL averaged through this
-  code path.
+  i.e. the averaged remainder.
 */
 double YFS_Weight_Builder::AcraicRealVirtualHelicityRemainder()
 {
   if (!m_h.p_acraic || !m_h.p_nlo || !m_h.p_nlo->RVRemainder()) return 0.;
-  static const bool force(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
-                          ["RV_HEL_FORCE_AVERAGE"].SetDefault(false).Get<bool>());
   const Vec4D_Vector &cph(m_h.p_acraic->AllPhotonsLab());
   const std::vector<std::pair<Vec4D,double> > &nd(m_h.p_nlo->m_rvdv);
   const std::vector<RVHelicityFactors> &nh(m_h.p_nlo->m_rvhel);
@@ -543,7 +539,7 @@ double YFS_Weight_Builder::AcraicRealVirtualHelicityRemainder()
     // half of it off every amplitude-level remainder
     const Complex shift(0.5*(nd[b].second - dv[a]), 0.);
     const Complex half(0.5*dv[a], 0.);
-    if (force || b >= nh.size() ||
+    if (b >= nh.size() ||
         !m_h.p_acraic->RealVirtualHelicityToAcraic(nh[b], m_h.p_acraic->PhotonHelicity(a),
                                                half, r[a]))
       r[a].assign(nhel, half);
@@ -827,7 +823,6 @@ void YFS_Weight_Builder::GenerateWeight() {
     with the exponent cut at the generation cutoff it is +1.03/+1.06% at 1e-5
     and 1e-7. So the ACRAIC column swaps exp(Y_IF(IFIOmega)) for
     exp(Y_IF(omega_gen)); with IFI_Real on the two coincide and this is 1.
-    ACRAIC: IF_FORMFACTOR_CUT: false restores the old behaviour.
   */
   FinalizeAcraicBeta02VP(c);
   ApplyIFFormFactorCut(c);
@@ -1010,12 +1005,10 @@ void YFS_Weight_Builder::ApplyExternalVirtual(AcraicColumns &c)
 //! ACRAIC_EXTV/L/R named-weight columns).
 void YFS_Weight_Builder::ApplyHelicityVirtual(AcraicColumns &c)
 {
-  static const bool forcehalf(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
-                              ["VIRT_HEL_FORCE_HALF_V"].SetDefault(0).Get<int>() != 0);
   const double rcr(m_h.p_acraic->GetRhoCrude());
   const double vfull(m_h.m_ev.m_nlo_virtual/m_h.m_born);
   std::vector<Complex> d;
-  bool ok(!forcehalf && m_h.p_nlo->m_lhelok &&
+  bool ok(m_h.p_nlo->m_lhelok &&
           m_h.p_acraic->LoopHelicityToAcraic(m_h.p_nlo->m_lhel, m_h.p_nlo->m_la0,
                                      m_h.p_nlo->m_ldelta, m_h.p_nlo->m_lhelmom,
                                      Complex(0.5*vfull, 0.), d));
@@ -1175,9 +1168,7 @@ void YFS_Weight_Builder::FinalizeAcraicBeta02VP(AcraicColumns &c)
 
 void YFS_Weight_Builder::ApplyIFFormFactorCut(AcraicColumns &c)
 {
-  static const bool ifcut(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
-                          ["IF_FORMFACTOR_CUT"].SetDefault(true).Get<bool>());
-  if (ifcut && c.corr_acraic != 0. && m_h.m_ifisub && m_h.m_fullform >= 1 &&
+  if (c.corr_acraic != 0. && m_h.m_ifisub && m_h.m_fullform >= 1 &&
       m_h.p_dipoles) {
     const double wgen(0.5*sqrt(m_h.m_s)*m_h.m_isrcut);
     const double dy(m_h.p_dipoles->FormFactorSumIF(wgen)
@@ -1477,9 +1468,7 @@ void YFS_Weight_Builder::FillDiffBudgetColumns(ATOOLS::Weights &wyfs)
     if (m_h.p_acraic && m_h.m_ev.m_corr_acraic != 0. && !IsZero(cnom) && m_h.m_born != 0. &&
         m_h.p_acraic->GetRhoCrude() > 0.) {
       double ifcut(1.);
-      static const bool ifcuton(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
-                                ["IF_FORMFACTOR_CUT"].Get<bool>());
-      if (ifcuton && m_h.m_ifisub && m_h.m_fullform >= 1 && m_h.p_dipoles) {
+      if (m_h.m_ifisub && m_h.m_fullform >= 1 && m_h.p_dipoles) {
         const double dy(m_h.p_dipoles->FormFactorSumIF(0.5*sqrt(m_h.m_s)*m_h.m_isrcut)
                         - m_h.p_dipoles->FormFactorSumIF());
         if (!IsBad(dy)) ifcut = exp(dy);

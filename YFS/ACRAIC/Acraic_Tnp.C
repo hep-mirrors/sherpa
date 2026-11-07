@@ -4,17 +4,8 @@
   ACRAIC: TNP_STREAMS - templates for theory nuisance parameters
   (Tackmann, arXiv:2411.18606) in the YFS beta-hat expansion.
 
-  The YFS exponent is exact to all orders; what a truncated ACRAIC lacks is
-  the next order of the IR-finite residues beta-hat. Each residue class c
-  gets a nuisance parameter theta_c that rescales it at the next order,
-
       B_c -> B_c (1 + theta_c N_c) ,
 
-  with N_c the expansion parameter of that class (chosen offline, e.g.
-  (alpha/pi) L_e for the production stage). The weight is linear in
-  theta_c to the order that matters,
-
-      w(theta) = w + sum_c theta_c N_c T_c ,   T_c = 2 Re<B_c^F, F>/4 ,
 
   where F is the amplitude the nominal squares and B_c^F the part of F that
   B_c contributes. Every term the partition loop adds to A_1 or to the

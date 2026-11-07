@@ -266,7 +266,6 @@ double NLO_Base::RealRealRemainder(size_t i, size_t j)
   if (!CheckMomentumConservation(P) || !BalanceOnBeams(P, m_flavs)) { m_zeroRR++; return 0.; }
   const double r2(p_realreal->Calc_R(P)/(2.*pow(2.*M_PI, 6))*BornPhotonSym(2));
   if (p_realreal->FailCut()) { m_failcut = true; return 0.; }
-  ProbeLoopN(P);    // ACRAIC: LOOP_BETA_PROBE (no effect on the weight)
   if (IsBad(r2)) { m_zeroRR++; return 0.; }
   /*
     Each photon's density c is that of its own single-real point: for an

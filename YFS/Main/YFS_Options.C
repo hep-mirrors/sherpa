@@ -119,9 +119,6 @@ namespace {
   const std::vector<Option_Name> s_ewhigherorder{
     {"none", ewhigherorder::none}, {"griffin", ewhigherorder::griffin}};
 
-  const std::vector<Option_Name> s_loopbetaplace{
-    {"ratio", loopbetaplace::ratio}, {"resonance_aware", loopbetaplace::resonance_aware},
-    {"exact_partition", loopbetaplace::exact_partition}};
 
   const std::vector<Option_Name> s_coulombho{
     {"none", coulombho::none}, {"second", coulombho::second}, {"all", coulombho::all}};
@@ -315,10 +312,6 @@ std::istream &YFS::operator>>(std::istream &s, ewhigherorder::code &c)
 std::ostream &YFS::operator<<(std::ostream &s, const ewhigherorder::code &c)
 { return WriteOption(s, c, s_ewhigherorder); }
 
-std::istream &YFS::operator>>(std::istream &s, loopbetaplace::code &c)
-{ return ReadOption(s, c, s_loopbetaplace, "ACRAIC: LOOP_BETA_PLACEMENT"); }
-std::ostream &YFS::operator<<(std::ostream &s, const loopbetaplace::code &c)
-{ return WriteOption(s, c, s_loopbetaplace); }
 
 std::istream &YFS::operator>>(std::istream &s, coulombho::code &c)
 { return ReadOption(s, c, s_coulombho, "YFS: COULOMB_HIGHER_ORDER"); }

@@ -20,9 +20,6 @@ Acraic_Base::Acraic_Base(const Flavour_Vector &flavs)
 {
   // The amplitude container's extent. 2 -> 2 gives 4 legs and 16 helicity
   // entries, which is what the fixed m_A[2][2][2][2] used to hold.
-  // Counts the legs that carry two helicity states, not the legs: a scalar
-  // in the final state is not packed, which is what makes the container size
-  // agree with Comix's Spin_Amplitudes.
   Amplitude::SetLegs(flavs);
 
   RegisterDefaults();
@@ -33,7 +30,6 @@ Acraic_Base::Acraic_Base(const Flavour_Vector &flavs)
   m_checkxs = s["CHECK_XS"].Get<int>();
   m_comixflip = s["COMIX_REAL_FLIP"].Get<int>();
   m_comixnorm = s["COMIX_REAL_NORM"].Get<double>();
-  m_comixphoflip = s["COMIX_REAL_PHOTON_FLIP"].Get<int>();
   m_tnp          = s["TNP_STREAMS"].Get<bool>();
   m_comixborn    = s["COMIX_BORN"].Get<bool>();
   m_wstages      = s["W_STAGES"].Get<tristate::code>();
@@ -49,9 +45,6 @@ Acraic_Base::Acraic_Base(const Flavour_Vector &flavs)
     m_resexpmode = acraicresexp::none;
   }
   if (ResonanceExponentiation()) {
-    // charged resonance stages (ACRAIC: W_STAGES, active only for W+W- -> 4f)
-    // are refused by the first event that activates them
-    // (BuildResonanceExponents)
     if (s["BETA1_LEGS"].Get<beta1legs::code>() == beta1legs::balanced)
       THROW(fatal_error, "ACRAIC: RESONANCE_EXPONENTIATION: greco needs "
             "ACRAIC: BETA1_LEGS physical; the balanced legs evaluate M_1 "
@@ -74,15 +67,12 @@ Acraic_Base::Acraic_Base(const Flavour_Vector &flavs)
     msg_Info()<<"ACRAIC: ORDER 2 - tree-level double real beta_2 from Comix "
               <<"two-photon amplitudes, pairs with x = 2E/sqrt(s) > "
               <<s["BETA2_XCUT"].Get<double>()<<"."<<std::endl;
-  // ACRAIC: TREE_BETA_MAX: -1 (default) follows ORDER, so nothing changes
-  // unless it is set; above 2 it needs ORDER 2 (A_2 is where beta_m lives)
   m_treebetamax = s["TREE_BETA_MAX"].Get<int>();
   if (m_treebetamax < 0) m_treebetamax = m_order;
   if (m_treebetamax > 1 && m_order != 2)
     THROW(fatal_error, "ACRAIC: TREE_BETA_MAX > 1 needs ACRAIC: ORDER 2: the tree "
           "residuals beta_m, m >= 2, enter only the ORDER 2 amplitude A_2.");
   m_loopbetamax = s["LOOP_BETA_MAX"].Get<int>();
-  m_loopbetaplace = s["LOOP_BETA_PLACEMENT"].Get<loopbetaplace::code>();
   m_loopbetaxcut = s["LOOP_BETA_XCUT"].Get<double>();
   // a pair below BETA2_XCUT has no tree beta_2 to carry the residual
   m_loopbetaxcut = Max(m_loopbetaxcut, s["BETA2_XCUT"].Get<double>());
@@ -102,20 +92,13 @@ Acraic_Base::Acraic_Base(const Flavour_Vector &flavs)
             "amplitude is out of reach (NOTES-acraic-oneloop-nphoton.md).");
     msg_Info()<<"ACRAIC: LOOP_BETA_MAX "<<m_loopbetamax<<" - one-loop "
               <<m_loopbetamax<<"-photon providers built (x > "<<m_loopbetaxcut
-              <<", placement "<<m_loopbetaplace<<"). The two-photon one-loop residual "
-              <<"enters the amplitude (ratio placement; resonance_aware and "
-              <<"exact_partition are not implemented yet and fall back to it)."<<std::endl;
+              <<"). The two-photon one-loop residual enters the amplitude."<<std::endl;
   }
   if (m_order == 2 && m_treebetamax != 2)
     msg_Info()<<"ACRAIC: TREE_BETA_MAX "<<m_treebetamax<<" - tree residuals "
               <<"beta_m for 2 <= m <= "<<m_treebetamax<<" from Comix m-photon "
               <<"amplitudes, photons with x > BETA2_XCUT."<<std::endl;
   m_treeprobe = s["TREE_BETA_PROBE"].Get<int>() > 0;
-   /*
-    COMIX: MOMENTUM_PROJECTION used to be switched off GLOBALLY here, because
-    ACRAIC hands Comix legs that do not balance. That also removed Comix's
-    collinear-stability fix from every other evaluation in the run
-  */
   string widthscheme = ss["WIDTH_SCHEME"].Get<string>();
   m_fixedwidth = (widthscheme == "Fixed" || widthscheme == "CMS");
   m_flavs = flavs;
@@ -163,8 +146,6 @@ Acraic_Base::Acraic_Base(const Flavour_Vector &flavs)
   }
 
   m_QIQF  = flavs[0].Charge() * flavs[m_if1].Charge();
-  // Bhabha: the final pair is the beam pair, so a t-channel gamma/Z is exchanged
-  // between the two fermion lines on top of the s-channel annihilation.
   m_bhabha = (flavs[0] == flavs[m_if1]);
   m_MZ = Flavour(kf_Z).Mass();
   m_gZ = Flavour(kf_Z).Width();
@@ -182,8 +163,6 @@ Acraic_Base::Acraic_Base(const Flavour_Vector &flavs)
   m_qf       = m_flavs[m_if1].Charge();
   m_ae       = 2.*m_flavs[0].IsoWeak();
   m_af       = 2.*m_flavs[m_if1].IsoWeak();
-  // Keep 2*T3 and 4*Q*sw^2 separately: the electroweak kappa factors multiply
-  // only the sin^2 piece (GPS_EWFFact), so the two cannot be pre-combined.
   m_t3e2 = m_ae;
   m_t3f2 = m_af;
   m_qesw = 4.*m_qe * m_sin2tw;
@@ -207,44 +186,25 @@ void Acraic_Base::RegisterDefaults()
   s["ONLYZ"].SetDefault(false);
   s["ONLYG"].SetDefault(false);
   s["CHECK_XS"].SetDefault(0);
-  // false: tree-level couplings in ACRAIC's hand-coded Born; the weak virtual
-  // comes from the loop provider (ACRAIC_Virtual: auto/external)
   s["WEAK"].SetDefault(false);
   /*
       COMIX_REAL_FLIP  < 0  derive the fermion bits from the Born and take
-                            the photon bit from COMIX_REAL_PHOTON_FLIP
+                            set the photon bit
       COMIX_REAL_NORM <= 0  derive from sum|A_comix|^2 / sum|e^2 A_hand|^2
 
   */
   s["COMIX_REAL_FLIP"].SetDefault(-1);
-  s["COMIX_REAL_PHOTON_FLIP"].SetDefault(1);
   s["COMIX_REAL_NORM"].SetDefault(-1.);
   /*
     ACRAIC: TNP_STREAMS (default false): per-event theory-nuisance-parameter
-    templates, one named weight per beta-hat class (YFS_Handler:
-    ACRAIC_TNP1_* at O(alpha), ACRAIC_TNP2_* at ORDER 2; Acraic_Tnp.C). The
-    nominal weight is untouched.
   */
   s["TNP_STREAMS"].SetDefault(false);
   s["BETA1_XCUT"].SetDefault(1e-3);          // beta_1 soft threshold
-  /*
-    NEXT_TO_SOFT_FLUX (default true): a photon that gets no beta_1 in any
-    partition (y below BETA1_XCUT even with every other photon initial-state)
-    carries the next-to-soft flux of its stage.
-  */
-  s["NEXT_TO_SOFT_FLUX"].SetDefault(true);
   /*
     x_gamma = 2E/sqrt(s) below which a photon is not enumerated in the
     partition sum but fixed to the stage with the largest eikonal 
   */
   s["SOFT_PARTITION_CUT"].SetDefault(0.);
-  /*
-    MOMENTUM_REPAIR (true): project the final legs and all photons onto exact
-    momentum conservation against the beams and onto their mass shells before
-    anything is evaluated on them; false = use the event's momenta as handed
-    over. See Acraic_Base::RepairMomentumBalance.
-  */
-  s["MOMENTUM_REPAIR"].SetDefault(true);
   /*
     Legs for beta_1's M_1 (name or old integer):
       physical (0, default): the physical legs with the s-channel propagator
@@ -399,10 +359,8 @@ void Acraic_Base::RegisterDefaults()
   /*
     Diagnostics. All off by default,
   */
-  s["PIN_PHOTON_HEL"].SetDefault(0);   // pin photon helicity (+1/-1) for sums
   s["DUMP_XMIN"].SetDefault(0.0);      // min x_gamma for the point dump
   s["DUMP_NPHOT"].SetDefault(1);       // photon multiplicity to dump at
-  s["DUMP_XMIN_EACH"].SetDefault(0.0); // min x_gamma of EVERY dumped photon
   /*
     The perturbative order of the ACRAIC amplitude. 1 (default): beta_0 +
     beta_1
@@ -427,20 +385,13 @@ void Acraic_Base::RegisterDefaults()
     ACRAIC: LOOP_BETA_MAX (integer, default 1): the highest photon multiplicity
     whose one-loop amplitude enters. 1 = the present real-virtual (REAL_VIRTUAL);
     2 builds the two-photon one-loop provider (RV_Generator, Recola in practice),
-    needs ORDER 2 and <= TREE_BETA_MAX. STEP 2 (2026-10-10): the providers are
-    built and probed (LOOP_BETA_PROBE); STEP 3: the residual beta_2^[1] enters
-    A_2 (Acraic_LoopN.C).
+    needs ORDER 2 and <= TREE_BETA_MAX. The residual beta_2^[1] enters A_2
+    (Acraic_LoopN.C).
     ACRAIC: LOOP_BETA_XCUT (-1 = BETA2_XCUT, never below it): photons of a set
     below it give the set no one-loop residual.
-    ACRAIC: LOOP_BETA_PLACEMENT ratio (default) | resonance_aware | exact_partition;
-    only ratio is implemented, the other two fall back to it.
-    ACRAIC: LOOP_BETA_PROBE N: the first N two-photon points of the double real
-    also call the two-photon loop (@@@ LOOPN: loop/tree, helicity sums, time).
   */
   s["LOOP_BETA_MAX"].SetDefault(1);
   s["LOOP_BETA_XCUT"].SetDefault(-1.);
-  s["LOOP_BETA_PLACEMENT"].SetDefault(loopbetaplace::ratio);
-  s["LOOP_BETA_PROBE"].SetDefault(0);
   /*
     ACRAIC: LOOP_LADDER_PROBE N: the first N events with one or two photons,
     every one with its one-loop record, print @@@ LLCLOS: the one-loop
@@ -635,8 +586,6 @@ void Acraic_Base::BuildAcraicMomenta()
 
 
 void Acraic_Base::ZerAmplit() {
-  // Every helicity entry the container actually holds, not the 16 a 2 -> 2
-  // final state happens to need.
   const int nh(Amplitude::NHel());
   for (int f = 0; f < nh; ++f) {
     m_AmpExpo0.m_A[f]    = Complex(0., 0.);
@@ -682,14 +631,7 @@ void Acraic_Base::MakeRho() {
   m_result0x   = m_result01;
   m_result0v   = m_result0;
   m_vonbeta1   = false;
-  /*
-    ORDER 2: A_2 = A_1 + the beta_2 sum, and the weight (m_result) becomes
-    rho_2. m_result01/m_resultV are what an external virtual composes with
-    (YFS_Handler): v Re<A_v, A_2> + (v/2)^2 |A_v|^2 with A_v = A_0, or A_1
-    under ORDER2_VIRTUAL_ON_BETA1. At ORDER 1 none of this runs and every
-    number above is the one it always was.
-  */
-  // ACRAIC: REAL_VIRTUAL >= 1 at ORDER 1: v/2 on A_1 as a whole
+  
   if (m_order == 1 && RealVirtualMode() != acraicrv::off) {
     m_result01 = m_result1;
     m_resultV  = m_result1;
@@ -806,20 +748,6 @@ double Acraic_Base::RealFactorPhoton(size_t j) const
   return sum/4./m_result0 - 1.;
 }
 
-/*
-  Where the outgoing fermion pair sits. At 2 -> 2 this is legs 2 and 3 and
-  the whole coupling layer said so literally. With anything else in the
-  final state it is not: for e+e- -> H l+ l- leg 2 is the HIGGS, so
-  m_qf = flavs[2].Charge() made the final-state Z coupling that of a
-  neutral scalar and CouplingZ reported "Z coupling is Zero!".
-*/
-
-/*
-  The outgoing FERMION pair, by inspection rather than by position. Neutral
-  fermions count - e+e- -> nu nubar is a legitimate ACRAIC process - so the
-  test is on being a fermion, not on carrying charge. At 2 -> 2 this
-  returns 2 and 3 and nothing downstream changes.
-*/
 void Acraic_Base::FindOutgoingFermionPair(const ATOOLS::Flavour_Vector &flavs)
 {
   size_t n(0);

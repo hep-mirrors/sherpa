@@ -793,65 +793,6 @@ double NLO_Base::CalculateRealVirtual(Vec4D k) {
 
 
 /*
-  ACRAIC: LOOP_BETA_PROBE (step 2 of the one-loop N-photon matching): the
-  two-photon one-loop provider at the double real's pair point P (lab; the
-  Born legs, then the two photons), in the same loop frame as the one-photon
-  real-virtual. Prints @@@ LOOPN on std::cerr: the photon energy fractions, the
-  provider's loop over tree lt = (alpha/2pi) V_fin/T, its tree and pole
-  coefficients, and the helicity amplitudes' sums (sum |a0|^2 and the
-  tree-weighted loop 2 Re(a0^* a1)/|a0|^2, which step 3 uses per helicity),
-  with the time per call. Changes no weight.
-*/
-void NLO_Base::ProbeLoopN(const Vec4D_Vector &P)
-{
-  static const int nprobe(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
-                          ["LOOP_BETA_PROBE"].SetDefault(0).Get<int>());
-  if (nprobe <= 0) return;
-  YFS::RealVirtual *rv(RealVirtualProvider(2));
-  if (rv == NULL || P.size() < 4) return;
-  if (m_loopn_calls + m_loopn_fail >= nprobe) return;   // soft pairs do not use up the probe
-  static const double sfloor(ATOOLS::Settings::GetMainSettings()["YFS"]
-                             ["LOOP_SOFT_FLOOR"].SetDefault(1e-4).Get<double>());
-  static double xcut(-1.);
-  if (xcut < 0.) {
-    ATOOLS::Settings &s(ATOOLS::Settings::GetMainSettings());
-    xcut = s["ACRAIC"]["LOOP_BETA_XCUT"].SetDefault(-1.).Get<double>();
-    if (xcut < 0.) xcut = s["ACRAIC"]["BETA2_XCUT"].SetDefault(0.05).Get<double>();
-  }
-  const size_t n(P.size());
-  const double rs(sqrt((P[0] + P[1]).Abs2()));
-  const double x1(2.*P[n-2][0]/rs), x2(2.*P[n-1][0]/rs);
-  if (Min(x1, x2) < sfloor) { ++m_loopn_soft; return; }
-  if (Min(x1, x2) < xcut) return;          // not an eligible set: not probed
-  const Vec4D_Vector q(RVLoopPoint(P, RVLoopFrame()));
-  double mur2(sqr(rpa->gen.Ecms()));
-  if (m_looptool && p_virt && p_virt->p_loop_me->IRscale() > 0.)
-    mur2 = sqr(p_virt->p_loop_me->IRscale());
-  const auto t0(std::chrono::steady_clock::now());
-  double lt(0.);
-  const bool ok(rv->LoopOverTree(P, q, mur2, lt));
-  const double dt(std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count());
-  std::vector<Complex> a0, a1;
-  std::vector<std::vector<int> > hel;
-  const bool hok(ok && rv->p_loop_me->HelicityAmplitudes(a0, a1, hel)
-                 && !a0.empty() && a0.size() == a1.size());
-  double s0(0.), s1(0.);
-  if (hok) for (size_t i(0); i < a0.size(); ++i) {
-    s0 += std::norm(a0[i]);
-    s1 += 2.*std::real(std::conj(a0[i])*a1[i]);
-  }
-  std::cerr<<"@@@ LOOPN n=2 x1="<<x1<<" x2="<<x2<<" ok="<<ok<<" lt="<<lt
-           <<" tree="<<rv->p_loop_me->ME_Born()<<" fin="<<rv->p_loop_me->ME_Finite()
-           <<" e1="<<rv->p_loop_me->ME_E1()<<" e2="<<rv->p_loop_me->ME_E2()
-           <<" nhel="<<a0.size()<<" sum|a0|^2="<<s0
-           <<" 2Re(a0*a1)/|a0|^2="<<(s0 > 0. ? s1/s0 : 0.)
-           <<" ms="<<1e3*dt<<"\n";
-  if (ok) { ++m_loopn_calls; m_loopn_time += dt; }
-  else ++m_loopn_fail;
-}
-
-
-/*
   ACRAIC: LOOP_BETA_MAX 2 (step 3 of NOTES-acraic-oneloop-nphoton.md): the
   two-photon one-loop record of every photon pair with both x = 2E/sqrt(s)
   above LOOP_BETA_XCUT (and BETA2_XCUT, LOOP_SOFT_FLOOR). Needs REAL_VIRTUAL
@@ -1004,15 +945,5 @@ bool NLO_Base::BuildLoopNSetFactors(const std::vector<size_t> &S, LoopNHelicityF
   out.v2 = v2;
   out.hel.swap(hel); out.a0.swap(a0); out.rem.swap(rem);
   out.ok = true;
-  static const int probe(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["LOOP_BETA_PROBE"].SetDefault(0).Get<int>());
-  static int nprobe(0);
-  if (probe > 0 && nprobe < probe) {
-    ++nprobe;
-    std::ostringstream o;
-    o<<std::setprecision(8)<<"@@@ LOOPNHEL x1="<<2.*ki.E()/sqrt(m_s)<<" x2="<<2.*kj.E()/sqrt(m_s)
-     <<" lt="<<lt<<" sub="<<sub<<" v2="<<v2<<" vB="<<m_vborn_own<<" identity="<<res
-     <<" E1loop="<<e1l<<" E1sub="<<e1s<<"\n";
-    std::cerr<<o.str();
-  }
   return true;
 }

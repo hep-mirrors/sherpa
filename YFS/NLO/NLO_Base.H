@@ -122,9 +122,6 @@ public:
   //! One-loop (real-virtual) providers by photon multiplicity: [1] aliases
   //! p_realvirt, [n >= 2] exist if ACRAIC: LOOP_BETA_MAX asked for them.
   std::vector<YFS::RealVirtual*> m_rvprov;
-  //! @@@ LOOPN probe counters (per rank; reported in the destructor)
-  long m_loopn_calls = 0, m_loopn_fail = 0, m_loopn_soft = 0;
-  double m_loopn_time = 0.;
   Vec4D_Vector m_plab, m_reallab, m_FSRPhotons, m_ISRPhotons, m_bornMomenta;
   // m_ISRPhotons ++ m_FSRPhotons, each carrying the dipole it came from.
   YFS::Photon_Vector m_photons;
@@ -381,12 +378,6 @@ public:
   //! ACRAIC: LOOP_BETA_MAX when ACRAIC is on at ORDER 2, else 1: the highest
   //! multiplicity to BUILD a one-loop provider for.
   static size_t RequestedMaxLoopPhotons();
-  /*!
-    ACRAIC: LOOP_BETA_PROBE: evaluate the two-photon one-loop provider at the
-    double real's pair point P (lab, Born legs then the two photons) and print
-    @@@ LOOPN. No effect on any weight.
-  */
-  void ProbeLoopN(const Vec4D_Vector &P);
   //! one record per eligible photon pair (filled by CalculateRealVirtual)
   std::vector<LoopNHelicityFactors> m_loopnhel;
   //! the pair (i, j) of m_photons; false (and !out.ok) if it cannot be built

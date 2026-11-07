@@ -420,12 +420,11 @@ void Acraic_Base::CalculateSfactors() {
 }
 
 
-// Exact momentum conservation of what Comix is handed (ACRAIC: MOMENTUM_REPAIR).
+// Exact momentum conservation of what Comix is handed: the final legs and all
+// photons projected onto the beams' momentum and onto their mass shells.
 bool Acraic_Base::RepairMomentumBalance()
 {
-  static const bool on(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
-                      ["MOMENTUM_REPAIR"].Get<bool>());
-  if (!on || m_pacraic.size() < 3) return false;
+  if (m_pacraic.size() < 3) return false;
   std::vector<Vec4D*> v;
   std::vector<double> m2;
   for (size_t i(2); i < m_pacraic.size(); ++i) {
@@ -553,12 +552,9 @@ void Acraic_Base::PartitionPlus(int &last) {
 
 
 void Acraic_Base::MakePhotonHel() {
-  static const int pinned(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["PIN_PHOTON_HEL"].Get<int>());
   m_PhoHel.clear();
-  for (size_t i(0); i < m_allphotons.size(); ++i) {
-    const int h(ran->Get() < 0.5 ? 1 : -1);
-    m_PhoHel.push_back(pinned ? pinned : h);
-  }
+  for (size_t i(0); i < m_allphotons.size(); ++i)
+    m_PhoHel.push_back(ran->Get() < 0.5 ? 1 : -1);
 }
 
 
@@ -813,12 +809,9 @@ void Acraic_Base::Calculate() {
   const bool dobeta2(m_order == 2 && PrepareBeta2());
   if (dobeta2) ++m_b2events;
   Amplitude snap0, snap1, snap2, snapbv, snapbo;
-  // ACRAIC: NEXT_TO_SOFT_FLUX - which photons carry their next-to-soft flux
-  static const bool nexttosoft(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
-                               ["NEXT_TO_SOFT_FLUX"].Get<bool>());
+  // which photons carry their next-to-soft flux (no beta_1 in any partition)
   std::vector<char> nextsoft(m_allphotons.size(), 0);
-  if (nexttosoft)
-    for (size_t j(0); j < m_allphotons.size(); ++j) nextsoft[j] = Beta1NeverEvaluated(j);
+  for (size_t j(0); j < m_allphotons.size(); ++j) nextsoft[j] = Beta1NeverEvaluated(j);
   for (;;) {
     ++nparts;
     if (!m_ifi_coherent) {
@@ -982,14 +975,7 @@ void Acraic_Base::Calculate() {
   static const size_t dumpn(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["DUMP_NPHOT"].Get<int>());
   const double xgam(!m_allphotons.empty() && m_momenta.size() >= 2 ?
                     2.*m_allphotons[0][0]/(m_momenta[0]+m_momenta[1]).Mass() : 0.);
-  // DUMP_XMIN_EACH: every photon above this x (a multi-hard-photon point)
-  static const double dumpxeach(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["DUMP_XMIN_EACH"].Get<double>());
-  bool dumpeach(true);
-  if (dumpxeach > 0. && m_momenta.size() >= 2)
-    for (size_t i(0); i < m_allphotons.size(); ++i)
-      if (!(2.*m_allphotons[i][0]/(m_momenta[0]+m_momenta[1]).Mass() > dumpxeach))
-        dumpeach = false;
-  if (m_checkxs && !m_acraicdumped && m_allphotons.size() == dumpn && dumpeach &&
+  if (m_checkxs && !m_acraicdumped && m_allphotons.size() == dumpn &&
       xgam > dumpxmin && m_momenta.size() >= 6 && m_result0 != 0.) {
     
     Vec4D bal(m_momenta[0] + m_momenta[1] - m_momenta[4] - m_momenta[5]);

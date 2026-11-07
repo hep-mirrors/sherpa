@@ -107,11 +107,6 @@ NLO_Base::~NLO_Base() {
   ReportBeta02();
   if (p_virt && p_virt->p_massif) p_virt->p_massif->Report();
   if (p_realvirt && p_realvirt->p_massif) p_realvirt->p_massif->Report();
-  if (m_loopn_calls > 0 || m_loopn_fail > 0)
-    msg_Info()<<"ACRAIC: LOOP_BETA_PROBE (this rank): "<<m_loopn_calls
-              <<" two-photon loop calls, "<<m_loopn_fail<<" failed, "<<m_loopn_soft
-              <<" below LOOP_SOFT_FLOOR; mean "
-              <<(m_loopn_calls > 0 ? 1e3*m_loopn_time/m_loopn_calls : 0.)<<" ms/call"<<std::endl;
   msg_Out()<<"Total zero V: "<<m_zeroV<<std::endl;
   msg_Out()<<"Total zero RV: "<<m_zeroRV<<std::endl;
   msg_Out()<<"Total zero RR: "<<m_zeroRR<<std::endl;
