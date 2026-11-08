@@ -107,11 +107,11 @@ NLO_Base::~NLO_Base() {
   ReportBeta02();
   if (p_virt && p_virt->p_massif) p_virt->p_massif->Report();
   if (p_realvirt && p_realvirt->p_massif) p_realvirt->p_massif->Report();
-  msg_Out()<<"Total zero V: "<<m_zeroV<<std::endl;
-  msg_Out()<<"Total zero RV: "<<m_zeroRV<<std::endl;
-  msg_Out()<<"Total zero RR: "<<m_zeroRR<<std::endl;
-  msg_Out()<<"Total non-zero RR: "<<m_nonZeroRR<<std::endl;
-  msg_Out()<<"Total non-zero RV: "<<m_nonZeroRV<<std::endl;
+  msg_Debugging()<<"Total zero V: "<<m_zeroV<<std::endl;
+  msg_Debugging()<<"Total zero RV: "<<m_zeroRV<<std::endl;
+  msg_Debugging()<<"Total zero RR: "<<m_zeroRR<<std::endl;
+  msg_Debugging()<<"Total non-zero RR: "<<m_nonZeroRR<<std::endl;
+  msg_Debugging()<<"Total non-zero RV: "<<m_nonZeroRV<<std::endl;
 #ifdef USING__MPI
   if (mpi->Size() > 1) {
     int gbuf[3] = {m_softRV, m_rvUnstable, m_softRR};
@@ -121,8 +121,8 @@ NLO_Base::~NLO_Base() {
     m_softRR = gbuf[2];
   }
 #endif
-  msg_Out()<<"Total soft RV skipped: "<<m_softRV<<std::endl;
-  msg_Out()<<"Total unstable-ME RV skipped (RV_ME_MAX_RATIO): "<<m_rvUnstable<<std::endl;
+  msg_Debugging()<<"Total soft RV skipped: "<<m_softRV<<std::endl;
+  msg_Debugging()<<"Total unstable-ME RV skipped (RV_ME_MAX_RATIO): "<<m_rvUnstable<<std::endl;
   if (RVIsRemainder() && m_realvirt) {
 #ifdef USING__MPI
     if (mpi->Size() > 1) {
@@ -132,22 +132,22 @@ NLO_Base::~NLO_Base() {
       m_rvNoVirt = rb[1];
     }
 #endif
-    msg_Out()<<"RV_MODE 1: pole mismatches > 1e-6: "<<m_rvPoleFail
+    msg_Debugging()<<"RV_MODE 1: pole mismatches > 1e-6: "<<m_rvPoleFail
              <<", photons without a Born virtual: "<<m_rvNoVirt<<std::endl;
-    msg_Out()<<"RV_MODE 1 (this rank): loop frame "<<RVLoopFrame()
+    msg_Debugging()<<"RV_MODE 1 (this rank): loop frame "<<RVLoopFrame()
              <<", two-frame checks "<<m_rvLoopChecked<<", dropped as unstable "
              <<m_rvLoopUnstable<<", skipped in the beam cone (RV_BEAM_CONE) "
              <<m_rvBeamCone<<std::endl;
   }
   if (m_lnh_n + m_lnh_fail > 0)
-    msg_Out()<<"ACRAIC: LOOP_BETA_MAX (this rank): photon-pair records "<<m_lnh_n
+    msg_Debugging()<<"ACRAIC: LOOP_BETA_MAX (this rank): photon-pair records "<<m_lnh_n
              <<", failed "<<m_lnh_fail<<" (of these: in RV_BEAM_CONE "<<m_lnh_cone
              <<", unstable in two frames "<<m_lnh_unstable<<" of "<<m_lnh_checked
              <<" checked); pole mismatches "<<m_lnh_polefail<<", helicities on the "
              <<"averaged fallback "<<m_lnh_nfall<<"; (n+2)-point identity residual mean "
              <<(m_lnh_n > 0 ? m_lnh_res_sum/m_lnh_n : 0.)<<" max "<<m_lnh_res_max<<std::endl;
   ReportVirtualCheck();
-  msg_Out()<<"Total soft RR pairs skipped: "<<m_softRR<<std::endl;
+  msg_Debugging()<<"Total soft RR pairs skipped: "<<m_softRR<<std::endl;
   if (m_rv_cancel_hist) {
 #ifdef USING__MPI
     if (mpi->Size() > 1) {
@@ -162,18 +162,18 @@ NLO_Base::~NLO_Base() {
       m_rvBlowupHardWide = buf[5];
     }
 #endif
-    msg_Out()<<"RV photons with C>=1 (subtraction not cancelling): "<<m_rvHiC<<std::endl;
-    msg_Out()<<"RV blow-ups |tot|>1e3*|Born|: "<<m_rvBlowup
+    msg_Debugging()<<"RV photons with C>=1 (subtraction not cancelling): "<<m_rvHiC<<std::endl;
+    msg_Debugging()<<"RV blow-ups |tot|>1e3*|Born|: "<<m_rvBlowup
              <<"  (of these: rtree==0: "<<m_rvBlowupRtree0
              <<", C>=1: "<<m_rvBlowupHiC
              <<", soft E/sqrt(s)<0.01: "<<m_rvBlowupSoft
              <<", HARD WIDE-ANGLE: "<<m_rvBlowupHardWide<<")"<<std::endl;
     if (m_rvBlowup>0)
-      msg_Out()<<"  -> hard wide-angle fraction of blow-ups: "
+      msg_Debugging()<<"  -> hard wide-angle fraction of blow-ups: "
                <<(100.*m_rvBlowupHardWide/m_rvBlowup)<<"%"
                <<" (if >0, instability is NOT confined to soft/collinear)"<<std::endl;
     if (m_rvBlowup>0)
-      msg_Out()<<"  -> rtree==0 fraction of blow-ups: "
+      msg_Debugging()<<"  -> rtree==0 fraction of blow-ups: "
                <<(100.*m_rvBlowupRtree0/m_rvBlowup)<<"%"
                <<" (mechanism confirmed if ~100%)"<<std::endl;
   }

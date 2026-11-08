@@ -32,10 +32,22 @@ YFS_Handler::YFS_Handler()
       THROW(not_implemented, "YFS: PHOTON_SPLITTER_MODE is not supported with"
             " YFS: its photons are in the YFS_Initial and QED_Radiation blobs,"
             " which the photon splitter does not handle.");
+    RefuseUnweightedWithoutIntegratedNLO();
     m_rmode = 0;
     m_negskip = 0;
     rpa->gen.AddCitation(1,"The automation of YFS ISR is published in  \\cite{Krauss:2022ajk}. Which is based on \\cite{Jadach:1988gb}");
   }
+}
+
+void YFS_Handler::RefuseUnweightedWithoutIntegratedNLO() const
+{
+  const int weighted(0);   // EVENT_GENERATION_MODE: Weighted
+  if (m_int_nlo) return;
+  if (ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE")) == weighted) return;
+  THROW(fatal_error, "YFS: Integrate_NLO false needs EVENT_GENERATION_MODE: "
+        "Weighted. Unweighted and PartiallyUnweighted events are unweighted "
+        "against an integration without the beta, ACRAIC or YFS.NLO "
+        "correction. Set YFS: Integrate_NLO: true, or generate weighted events.");
 }
 
 YFS_Handler::~YFS_Handler()
@@ -404,13 +416,9 @@ void YFS_Handler::MakeACRAIC() {
     if (p_nlo) {
       for (size_t n(1); n <= p_nlo->MaxRealPhotons(); ++n)
         p_acraic->SetRealProvider(n, p_nlo->RealProvider(n));
-      // Whether a virtual was requested at all, so ACRAIC's weight carries the
-      // same perturbative content the card asked for.
       p_acraic->SetHasVirtual(p_nlo->HasVirtual() ||
                             (p_nlo->VirtualRequested() &&
                              p_nlo->AcraicSuppliesVirtual()));
-      // YFS: ACRAIC_Virtual auto, per process: the external provider when
-      // there is one, else ACRAIC's own, which exists for f fbar only
       const bool autoown(m_acraicvirtsrc == acraicvirt::automatic &&
                          p_nlo->AcraicSuppliesVirtual());
       if (autoown && !p_acraic->IsFFbar())

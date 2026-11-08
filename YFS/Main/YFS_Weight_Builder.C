@@ -2,6 +2,7 @@
 #include "YFS/Main/YFS_Handler.H"
 #include "YFS/Main/ISR.H"
 #include "YFS/Main/Beta0_2.H"
+#include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include <sstream>
@@ -82,23 +83,17 @@ namespace {
     double norm;
     std::vector<int> classes;
   };
-  /*
-    The initial-state parameters of a run truncated at O(alpha^k), with
-    g = (alpha(0)/pi)(ln(s/m_e^2) - 1). Halved: T_c responds to an amplitude
-    rescaling, which moves |B_c|^2 twice as fast. beta02: ACRAIC: BETA0_2 is
-    in the prediction, so beta_0 first misses order k+1 at k = 2 too.
-  */
+
   std::vector<TnpBandParam> TnpBandParams(double s, double me, int k,
                                           bool beta02, bool incomplete)
   {
     typedef YFS::Acraic_Base A;
     const double a(1./137.035999/M_PI), g(a*(log(s/(me*me)) - 1.));
     const int mb(k == 1 || beta02 ? k + 1 : k);
-    auto fact = [](int n) { double f(1.); for (int i(2); i <= n; ++i) f *= i; return f; };
     std::vector<TnpBandParam> b;
-    b.push_back({"B0_ISR", 0.5*pow(g, mb)/fact(mb), {A::tnp_b0}});
-    b.push_back({"ISR",    0.5*pow(g, k)/fact(k),   {A::tnp_isr}});
-    b.push_back({"MULTI",  0.5*pow(g, k)/fact(k),   {A::tnp_multi}});
+    b.push_back({"B0_ISR", 0.5*pow(g, mb)/Factorial(mb), {A::tnp_b0}});
+    b.push_back({"ISR",    0.5*pow(g, k)/Factorial(k),   {A::tnp_isr}});
+    b.push_back({"MULTI",  0.5*pow(g, k)/Factorial(k),   {A::tnp_multi}});
     if (k == 2) {
       // the two-photon classes share one parameter
       b.push_back({"B2", 0.5*g, {A::tnp_b2i, A::tnp_b2f, A::tnp_b2m}});
@@ -138,14 +133,6 @@ void YFS_Weight_Builder::CalculateBeta() {
   bool   haveacraic(false);
   if (m_h.m_useacraic) {
     m_h.MakeACRAIC();
-    /*
-      YFS: REAL_BORN_PHOTON_MULTICHANNEL, the ACRAIC half: rho_crude becomes the
-      sum of the crudes of every assignment of photons to Born pair and ISR
-      that the generator could have produced this final state with
-      (NLO_Base::BornPhotonChannelSum, all Born-pair choices). on applies
-      it, report only computes it. G = 1 exactly without
-      Born photons or when no ISR photon passes the Born cuts.
-    */
     m_h.m_bpmc_evtG = 1.; m_h.m_bpmc_evtn = 0;
     static const bornphotonmc::code bpmc(ATOOLS::Settings::GetMainSettings()["YFS"]
       ["REAL_BORN_PHOTON_MULTICHANNEL"].SetDefault(bornphotonmc::on)
@@ -1212,6 +1199,11 @@ void YFS_Weight_Builder::ComputeFixedOrderColumn(AcraicColumns &c)
 // w_full : the weight the event actually carries, before the clamps below
 void YFS_Weight_Builder::BuildNamedWeights(double w_lo, double w_full) {
   m_h.m_ev.m_nlo_weightsmap = Weights_Map{1.0};
+  // YFS: NLO_Weight_Breakdown false: the nominal weight only, no YFS.* columns
+  if (!m_h.m_nlo_weight_breakdown) {
+    RefuseStreamsWithoutBreakdown();
+    return;
+  }
   Weights wyfs{1.0};
   bool any(false);
 
@@ -1230,6 +1222,31 @@ void YFS_Weight_Builder::BuildNamedWeights(double w_lo, double w_full) {
   if (any) m_h.m_ev.m_nlo_weightsmap["YFS"] = wyfs;
 }
 
+//! A YFS.* stream asked for by name is not dropped silently when
+//! YFS: NLO_Weight_Breakdown is false: the run stops instead.
+void YFS_Weight_Builder::RefuseStreamsWithoutBreakdown() const
+{
+  static bool checked(false);
+  if (checked) return;
+  checked = true;
+  std::vector<std::string> asked;
+  if (m_h.m_nlo_columns) asked.push_back("YFS: NLO_Columns");
+  if (m_h.m_ladder_weights) asked.push_back("YFS: Ladder_Weights");
+  if (DiffBudgetStreamsOn()) asked.push_back("YFS: DIFF_BUDGET_STREAMS");
+  if (m_h.m_useacraic) {
+    if (AcraicO0Stream()) asked.push_back("ACRAIC: WEIGHT_O0");
+    if (AcraicFixedOrderStream()) asked.push_back("ACRAIC: FIXED_ORDER_STREAM");
+    if (AcraicStrictO1Stream()) asked.push_back("ACRAIC: STRICT_O1_STREAM");
+    if (m_h.p_acraic && m_h.p_acraic->TnpOn()) asked.push_back("ACRAIC: TNP_STREAMS");
+    if (AcraicTnpBandStreams()) asked.push_back("ACRAIC: TNP_BAND_STREAMS");
+  }
+  if (asked.empty()) return;
+  std::string list;
+  for (const std::string &a : asked) list += (list.empty() ? "" : ", ") + a;
+  THROW(fatal_error, list + " write YFS.* named weights, which need "
+        "YFS: NLO_Weight_Breakdown true.");
+}
+
 //! The YFS.* column names this configuration emits. Fixed once per event
 //! from configuration alone, and the only names emit() will write -- a
 //! per-event code path must not be able to conjure a column that other
@@ -1246,26 +1263,24 @@ void YFS_Weight_Builder::RegisterColumnNames(std::vector<std::string> &names,
       if (m_h.m_nlo_columns) names.push_back("NLO");
     }
     if (hasnnlo) names.push_back("NNLO");
-    if (m_h.m_nlo_weight_breakdown) {
-      if (hasnlo)
-        for (const char *n : {"Real","Virtual","BR","BV","NLO_1g",
-                              "NLO_2g","NLO_FixedOrder"})
-          names.push_back(n);
-      // EEX only when the beta expansion ran: m_ev.m_eex is assigned solely inside
-      // CalculateBeta's `if (m_betaorder > 0)`, so at BETA:0 the column would
-      // be a no-op 1.0 masquerading as a measurement. m_betaorder is
-      // configuration, so gating the name on it keeps the set constant.
-      if (hasnlo && m_h.m_betaorder > 0) names.push_back("EEX");
-      if (hasnnlo)
-        for (const char *n : {"RealVirtual","RealReal","NLO+RR","NLO+RV",
-                              "NNLO_1g","NNLO_2g","NNLO_FixedOrder"})
-          names.push_back(n);
-      // the EEX estimate of the double virtual, retired by YFS: BETA0_2
-      // (its LL part, without the NLL and the 100% envelope); never both
-      if (hasnnlo && !m_h.p_nlo->Beta02Nlo().On())
-        for (const char *n : {"VV_EEX","NNLO_VV","NNLO_VV_up","NNLO_VV_down"})
-          names.push_back(n);
-    }
+    if (hasnlo)
+      for (const char *n : {"Real","Virtual","BR","BV","NLO_1g",
+                            "NLO_2g","NLO_FixedOrder"})
+        names.push_back(n);
+    // EEX only when the beta expansion ran: m_ev.m_eex is assigned solely inside
+    // CalculateBeta's `if (m_betaorder > 0)`, so at BETA:0 the column would
+    // be a no-op 1.0 masquerading as a measurement. m_betaorder is
+    // configuration, so gating the name on it keeps the set constant.
+    if (hasnlo && m_h.m_betaorder > 0) names.push_back("EEX");
+    if (hasnnlo)
+      for (const char *n : {"RealVirtual","RealReal","NLO+RR","NLO+RV",
+                            "NNLO_1g","NNLO_2g","NNLO_FixedOrder"})
+        names.push_back(n);
+    // the EEX estimate of the double virtual, retired by YFS: BETA0_2
+    // (its LL part, without the NLL and the 100% envelope); never both
+    if (hasnnlo && !m_h.p_nlo->Beta02Nlo().On())
+      for (const char *n : {"VV_EEX","NNLO_VV","NNLO_VV_up","NNLO_VV_down"})
+        names.push_back(n);
   }
   /*
     ACRAIC gets its own column whenever ACRAIC is on, independently of the NLO
@@ -1300,8 +1315,9 @@ void YFS_Weight_Builder::RegisterColumnNames(std::vector<std::string> &names,
   if (m_h.m_useacraic && AcraicFixedOrderStream()) names.push_back("ACRAIC_FixedOrder");
   if (m_h.m_useacraic && AcraicStrictO1Stream()) names.push_back("ACRAIC_O1S");
   // ACRAIC: ORDER 2 also carries the O(alpha^1) ACRAIC column of each event
-  if (m_h.m_useacraic && ATOOLS::Settings::GetMainSettings()["ACRAIC"]["ORDER"]
-      .SetDefault(1).Get<int>() == 2) {
+  static const bool acraicorder2(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["ORDER"]
+                                 .SetDefault(1).Get<int>() == 2);
+  if (m_h.m_useacraic && acraicorder2) {
     names.push_back("ACRAIC_O1");
     names.push_back("ACRAIC_O1V1");
     names.push_back("ACRAIC_O2V0");

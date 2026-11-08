@@ -36,6 +36,7 @@ namespace YFS {
     public:
          // constructor
         YFS_Handler();
+        void RefuseUnweightedWithoutIntegratedNLO() const;
 
         // destructor
         ~YFS_Handler();

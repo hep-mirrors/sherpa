@@ -523,16 +523,6 @@ std::istream &YFS::operator>>(std::istream &str, wgt::code &mode)
   return str;
 }
 
-// YFS: Fixed_Order. The old substring test matched "NLO" inside "NNLO", so
-// NNLO could never be selected; LO and NNLO were never implemented.
-// NLO is refused too (2026-10-11): it was never confirmed to work, and it does
-// not - the total cross section depends on IR_CUTOFF at O(alpha) (Z-pole
-// mu mu: 1311, 1096, 690 pb at IR_CUTOFF 1e-5, 1e-3, 1e-1 GeV), because the ISR
-// spectrum keeps its resummed form gamma v^(gamma-1) while exp(Y) becomes 1+Y.
-// The fixed-order O(alpha) result is the named weight YFS.ACRAIC_FixedOrder
-// (ACRAIC: FIXED_ORDER_STREAM). The FixedOrder()==nlo branches in ISR.C,
-// FSR.C, Define_Dipoles.C and YFS_Handler.C are unreachable now and can be
-// removed.
 std::istream &YFS::operator>>(std::istream &str, fixed_order::code &mode)
 {
   std::string tag;
@@ -565,6 +555,5 @@ double YFS_Base::Eikonal(const Vec4D &k, const Vec4D &p1, const Vec4D &p2) {
 }
 
 double YFS_Base::EikonalMassless(const Vec4D &k, const Vec4D &p1, const Vec4D &p2) {
-  // return -m_alpha / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
   return m_alpha/(4*M_PI*M_PI)*(2*p1*p2/((p1*k)*(p2*k)));
 }

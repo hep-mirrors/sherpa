@@ -61,6 +61,7 @@ namespace YFS {
     double IsrVertexShift(double spt) const;
     double AcraicBeta02Rho(double d2, double v, double r0x, double r0v) const;
     void BuildNamedWeights(double w_lo, double w_full);
+    void RefuseStreamsWithoutBreakdown() const;
     //! the YFS.* column names this configuration emits, and wyfs/m_wnames defaults
     void RegisterColumnNames(std::vector<std::string> &names,
                              std::vector<std::string> &tnpnames,

@@ -246,11 +246,10 @@ public:
   // m_no_born is the effective flag: the override OR'd with the per-process
   // request from SetNoBorn(), since one handler is shared by all processes.
   bool m_no_born_setting;
-  // The YFS.* named weights carry a full per-order breakdown (Real, Virtual,
-  // RealReal, the *_1g/_2g multiplicity truncations, the VV band, ...), which
-  // is a lot of columns to write for every event. Off by default: only the
-  // headline YFS.LO / YFS.NLO / YFS.NNLO are emitted. Set the card option
-  // YFS: NLO_Weight_Breakdown: true to get the individual contributions back.
+  // YFS: NLO_Weight_Breakdown: the YFS.* named weights (YFS.LO, YFS.ACRAIC, the
+  // per-order breakdown, the *_NO_VP/_NO_B02 columns, the ACRAIC and TNP
+  // streams, ...). Off by default: the events carry the nominal weight only,
+  // and a stream switched on by name without it is a fatal error.
   bool m_nlo_weight_breakdown;
   // YFS: NLO_Columns: the YFS.NLO and YFS.NLO_EW named weights, off by default
   bool m_nlo_columns;

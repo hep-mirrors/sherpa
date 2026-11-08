@@ -105,35 +105,35 @@ void Acraic_Base::CheckUVDiagonality(const Vec4D &k)
 void Acraic_Base::ReportBornShape()
 {
   if (m_uvn > 0)
-    msg_Out()<<"ACRAIC U/V vs eq.(diagonality): worst off-diagonal "<<m_uvoff
+    msg_Debugging()<<"ACRAIC U/V vs eq.(diagonality): worst off-diagonal "<<m_uvoff
              <<", worst |diag - b_sigma| "<<m_uvdiag
              <<", worst |b_-s + conj(b_s)| "<<m_bsig
              <<"  over "<<m_uvn<<" evaluations"<<std::endl;
   if (m_maxnphot > 0)
-    msg_Out()<<"ACRAIC partition sum: highest photon multiplicity seen "
+    msg_Debugging()<<"ACRAIC partition sum: highest photon multiplicity seen "
              <<m_maxnphot<<" over "<<m_nstages<<" stages (soft photons "
              <<"collapsed, not enumerated); partition count wrong on "
              <<m_partbad<<" of "<<m_partn<<" events"<<std::endl;
   if (m_uvflipn > 0)
-    msg_Out()<<"ACRAIC U/V helicity-flip vs eq.(222) at DISTINCT legs: worst "
+    msg_Debugging()<<"ACRAIC U/V helicity-flip vs eq.(222) at DISTINCT legs: worst "
              <<"relative deviation "<<m_uvflip<<" over "<<m_uvflipn
              <<" evaluations"<<std::endl;
   if (m_sfacn > 0)
-    msg_Out()<<"ACRAIC soft factor vs hep-ph/0006359 eq.(soft-fac-isr): worst "
+    msg_Debugging()<<"ACRAIC soft factor vs hep-ph/0006359 eq.(soft-fac-isr): worst "
              <<"relative deviation "<<m_sfacworst<<" over "<<m_sfacn
              <<" evaluations"<<std::endl;
   if (m_rho0sum != 0.) {
-    msg_Out()<<"ACRAIC O(alpha) correction <rho1/rho0 - 1> = "
+    msg_Debugging()<<"ACRAIC O(alpha) correction <rho1/rho0 - 1> = "
              <<(m_rho1sum/m_rho0sum - 1.)
              <<"  (vertex + boxes; expect a few percent, not 0)"<<std::endl;
     // virtual and real collinear logs must come with opposite signs
-    msg_Out()<<"  split:  virtual-only <rhoBV/rho0 - 1> = "
+    msg_Debugging()<<"  split:  virtual-only <rhoBV/rho0 - 1> = "
              <<(m_rhobvsum/m_rho0sum - 1.)
              <<" ,  real-only <rhoBR/rho0 - 1> = "
              <<(m_rhobrsum/m_rho0sum - 1.)<<std::endl;
     // the weight divides by RhoCrud (incoherent), not rho0 (coherent)
     if (m_rhocrudsum > 0.)
-      msg_Out()<<"  ACRAIC weight denominator: <rho0>/<RhoCrud> = "
+      msg_Debugging()<<"  ACRAIC weight denominator: <rho0>/<RhoCrud> = "
                <<(m_rho0sum/m_rhocrudsum)
                <<"   (1 => the two denominators agree)"<<std::endl;
   }
