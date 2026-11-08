@@ -49,7 +49,7 @@ CS_Dipole::CS_Dipole(NLO_subevt *const sub,
   Reset();
 }
 
-CS_Dipole::~CS_Dipole() 
+CS_Dipole::~CS_Dipole()
 {
   if (p_vegas) delete p_vegas;
 }
@@ -80,6 +80,11 @@ void CS_Dipole::AddPoint(const double &value,
 {
   if (value==0.0 || m_weight==0.0) return;
   double wgt(sqr(value)*ewgt/m_weight);
+  if (IsBad(wgt)) {
+    msg_Debugging()<<METHOD<<"(): "<<m_id<<": skip non-finite input "
+		   <<wgt<<"."<<std::endl;
+    return;
+  }
 #ifdef USING__MPI
   ++m_mnp;
   m_msum+=wgt;

@@ -32,7 +32,7 @@ BBar_Emission_Generator::BBar_Emission_Generator():
   m_amin  = s["DIPOLES"]["AMIN"].Get<double>();
 }
 
-BBar_Emission_Generator::~BBar_Emission_Generator() 
+BBar_Emission_Generator::~BBar_Emission_Generator()
 {
   for (size_t i(0);i<m_dipoles.size();++i) delete m_dipoles[i];
 }
@@ -113,7 +113,7 @@ bool BBar_Emission_Generator::InitDipoles
 	   iterator pit(m_pmap.begin());pit!=m_pmap.end();++pit)
       if (pit->second.find((*bviproc)[i])==pit->second.end()) {
 	msg_Debugging()<<"Add process "<<(*bviproc)[i]->Name()
-		       <<" in dipole "<<pit->first->Id()<<"\n"; 
+		       <<" in dipole "<<pit->first->Id()<<"\n";
 	pit->second[(*bviproc)[i]]=Process_Vector();
       }
   return true;
@@ -204,12 +204,12 @@ bool BBar_Emission_Generator::GenerateWeight
   double asum(0.0);
   for (size_t i(0);i<m_dipoles.size();++i)
     if (m_dipoles[i]->On()) asum+=m_dipoles[i]->Alpha(1);
-  m_weight=wgt*asum/p_active->Alpha(1);
+  m_weight=wgt?wgt*asum/p_active->Alpha(1):0.0;
   return true;
 }
 
 void BBar_Emission_Generator::AddPoint(const double &value)
-{ 
+{
   double rssum(0.0);
   const std::map<Process_Base*,Process_Vector> &procs(m_pmap[p_active]);
   for (std::map<Process_Base*,Process_Vector>::const_iterator
@@ -222,7 +222,7 @@ void BBar_Emission_Generator::AddPoint(const double &value)
       m_dipoles[i]->AddPoint(0.0,m_weight,0);
 }
 
-void BBar_Emission_Generator::Optimize()  
+void BBar_Emission_Generator::Optimize()
 {
   msg_Tracking()<<"Optimize EEG ("<<m_opt<<") {\n";
   size_t off(0);
@@ -284,14 +284,14 @@ void BBar_Emission_Generator::Optimize()
   if (off) msg_Tracking()<<" "<<off<<" channels off";
   msg_Tracking()<<"\n";
   if (m_opt>1) --m_opt;
-} 
+}
 
-void BBar_Emission_Generator::EndOptimize()  
+void BBar_Emission_Generator::EndOptimize()
 {
   for (size_t i(0);i<m_dipoles.size();++i)
     m_dipoles[i]->EndOptimize();
   m_opt=0;
-} 
+}
 
 void BBar_Emission_Generator::MPISync()
 {
@@ -306,10 +306,10 @@ void BBar_Emission_Generator::MPISync()
 #endif
   for (size_t i(0);i<m_dipoles.size();++i)
     m_dipoles[i]->MPISync();
-} 
+}
 
 void BBar_Emission_Generator::WriteOut(std::string pid)
-{ 
+{
   MakeDir(pid,false);
   pid+="_CS";
   std::vector<std::vector<std::string> > pvds(m_dipoles.size());
@@ -340,7 +340,7 @@ bool BBar_Emission_Generator::ReadIn(std::string pid)
   return true;
 }
 
-void BBar_Emission_Generator::Print()  
+void BBar_Emission_Generator::Print()
 {
   msg_Tracking()<<"EEG with "<<m_dipoles.size()<<" dipoles\n";
   for (size_t i(0);i<m_dipoles.size();++i) {
