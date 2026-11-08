@@ -17,7 +17,7 @@ PARTICLE_DATA:
   13: {Massive: true}
 
 # YFS soft-photon resummation, amplitude-level (ACRAIC) nominal weight;
-# YFS.LO comes along as a named weight (YFS.NLO, YFS.NLO_EW: YFS: NLO_Columns true)
+# nominal weight only; YFS: NLO_Weight_Breakdown true adds the YFS.* named weights
 YFS:
   MODE: ISRFSR
   BETA: 1

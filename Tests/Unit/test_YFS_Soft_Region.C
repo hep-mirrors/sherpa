@@ -1,12 +1,4 @@
-// Frame covariance of YFS::SoftRegion (YFS/Main/Soft_Region.H, 2026-10-10).
-//
-// A soft region {k : k.n < Emin} is defined by a frame vector, so the leg
-// energies it hands to the B-tilde formula must not depend on the frame the
-// momenta happen to be given in: boosting the legs AND the region's vector
-// together leaves (p1.p2, E1, E2) unchanged, and a rest_of region evaluated in
-// any frame equals the lab region evaluated in that vector's rest frame. These
-// are the properties whose violation produced the frame bugs of 2026 (FF rest
-// frame, IF omega, CalculateGamma).
+// Frame covariance of YFS::SoftRegion (YFS/Main/Soft_Region.H).
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 
