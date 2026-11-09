@@ -157,6 +157,8 @@ ATOOLS::Vec4D Polarized_CrossSections_Handler::Beta(const ATOOLS::Blob* signalbl
         // select hard decaying particles from all outcoming particles of hard process blob
         if (signalblob->ConstOutParticle(i)->DecayBlob()){
           particles.push_back(signalblob->ConstOutParticle(i)->Number());
+          //debugging print
+           std::cout << "calculating beta for COM" << std::endl;
           beta += (*(signalblob->ConstOutParticle(i)->DecayBlob()))["p_onshell"]->Get<ATOOLS::Vec4D>();
         }
       }
@@ -362,7 +364,6 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
         coeff_in.push_back(std::vector<Complex>(1,1));
         coeff_out.push_back(std::vector<Complex>(1,1));
       }
-      // hier weitermachen
       else if (spin==0.5){
         
         const double M2 = mom.Abs2();            // vor dem Boost, M2 ist invariant
@@ -371,7 +372,8 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
         //METOOLS::Polarization_Spinor new_spinor(mom,M2,+1,new_ref_mom);
         METOOLS::Polarization_Spinor_Basis new_spinor_pair(mom,M2,new_ref_mom, anti, out);
        // std::cout << "E: nach BasisTrafo" << std::endl;
-       std::cout << "beta = " << beta << "  refsystem = " << refsystem << std::endl;
+       //std::cout << "beta = " << beta << "  refsystem = " << refsystem << std::endl;
+       // boost back in LabFrame
         if (beta != ATOOLS::Vec4D(0.0, 0.0, 0.0, 0.0)) {
           //std::cout << "B0: beta=" << beta << " beta^2=" << beta.Abs2() << std::endl;
           new_spinor_pair.BoostBack(beta);
@@ -382,8 +384,16 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
         auto it = default_spinors.find(tmp_amps->CurrentParticle().Number());
         if (it == default_spinors.end()) THROW(fatal_error, "no default spinors for this particle")
         coeff_in = new_spinor_pair.BasisTrafo(it->second, m_pol_checks);
+      //std::cout << "coeff_in = " << coeff_in << "  refsystem = " << refsystem << std::endl;
+      /*std::cout << "refsystem = " << refsystem << "  coeff_in:\n";
+for (size_t i(0); i<coeff_in.size(); ++i) {
+  std::cout << "  ";
+  for (size_t j(0); j<coeff_in[i].size(); ++j) std::cout << coeff_in[i][j] << "  ";
+  std::cout << "\n";
+}
+std::cout << std::flush;
 // ---------- Debug-Print (danach entfernen) ----------
-/*{
+//{
   std::cout << std::setprecision(10);
 
   // 1. Matrix C
@@ -392,8 +402,8 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
     std::cout << "  ";
     for (size_t j(0); j<coeff_in[i].size(); ++j) std::cout << coeff_in[i][j] << "  ";
     std::cout << "\n";
-  }
-
+  }*/
+/*
   // 2. Unitaritaet
   std::cout << "C C^dagger (erwartet Einheitsmatrix):\n";
   for (size_t i(0); i<coeff_in.size(); ++i) {
@@ -462,6 +472,7 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
         //m_pol_checks=true;
         coeff_in = new_polarization.BasisTrafo(
             default_polarization_vectors.find(tmp_amps->CurrentParticle().Number())->second, m_pol_checks);
+
         coeff_out = std::vector<std::vector<Complex>>(coeff_in);
         // determine complex conjugate coefficients
         for (size_t i(0); i < coeff_in.size(); ++i) {
@@ -481,11 +492,10 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
       for (const auto & current_decay_matrix : decay_matrices){
         if (current_decay_matrix.Particle()->Number() == tmp_amps->CurrentParticle().Number()){
           METOOLS::Decay_Matrix decay_matrix(current_decay_matrix);
-          if (spin==1) {
+          if (spin==1 || spin==0.5) {
             if (anti) decay_matrix.PolBasisTrafo(coeff_out, coeff_in);
             else decay_matrix.PolBasisTrafo(coeff_in, coeff_out);
           }
-          // TODO: include spin=0.5
           trafo_decay_matrices.push_back(decay_matrix);
           break;
         }

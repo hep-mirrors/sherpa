@@ -4,7 +4,7 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
 #include "METOOLS/Currents/C_Spinor.H"
-#include "METOOLS/Main/Polarization_Tools.H"   // dein tatsächlicher Pfad
+#include "METOOLS/Main/Polarization_Tools.H"   
 
 using namespace ATOOLS;
 

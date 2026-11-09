@@ -54,15 +54,6 @@ void Polarization_Spinor::Init(Vec4D p, Vec4D ref_mom)
   m_kp = SpinorType(1,  m_k);
   m_km = SpinorType(-1, m_k);
 }
-/*Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, double M2,
-    const ATOOLS::Vec4D& ref_mom, bool anti, bool out) {
-  m_s.push_back(Polarization_Spinor(p, M2, +1, ref_mom, anti, out));
-  m_s.push_back(Polarization_Spinor(p, M2, -1, ref_mom, anti, out));
-  }
-  //nicht konst, weil sie ja spinoren verändert, methode soll jeden spinor boosten
-  void Polarization_Spinor_Basis::BoostBack(const ATOOLS::Vec4D& beta) {
-    for (size_t i(0); i<m_s.size(); ++i) METOOLS::BoostBack_Spinor(m_s[i], beta);
-}*/
 
 Polarization_Spinor::Polarization_Spinor(const METOOLS::CSpinor<double>& s, int h)
   : METOOLS::CSpinor<double>(s), m_hel(h), m_M2(0.0), m_anti(false), m_out(false) {}
@@ -150,6 +141,7 @@ void METOOLS::Polarization_Spinor_Basis::BoostBack(const ATOOLS::Vec4D& beta) {
   if (beta== ATOOLS::Vec4D(0.,0.,0.,0.)) return;
   ATOOLS::Spinor_Boost boost(beta);
   //std::cout << "B3: Spinor " << i << " geboostet" << std::endl;
+  // each component of spinor vector gets a boost
   for (size_t i(0); i<m_s.size(); ++i) boost.BoostBack(m_s[i]);
   
 }
@@ -403,10 +395,10 @@ Polarization_Spinor_Basis::BasisTrafo(const Polarization_Spinor_Basis& old_basis
   std::array<std::array<Complex,2>, 2> array_new_basis;
 
   // for debugging
-  for (size_t i(0); i<2; i++)
-  std::cout << "old[" << i << "] = ( "
-            << old_basis[i][0] << ", " << old_basis[i][1] << ", "
-            << old_basis[i][2] << ", " << old_basis[i][3] << " )\n";
+ // for (size_t i(0); i<2; i++)
+  //std::cout << "old[" << i << "] = ( "
+    //        << old_basis[i][0] << ", " << old_basis[i][1] << ", "
+     //       << old_basis[i][2] << ", " << old_basis[i][3] << " )\n";
   //determinante
   Complex det = old_basis[0][0] * old_basis[1][1] - old_basis[1][0] * old_basis[0][1];
   //if (abs(det.real()) < 1e-8 && abs(det.imag()) < 1e-8){

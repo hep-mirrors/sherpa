@@ -213,7 +213,7 @@ std::set<std::string> PolWeights_Map::TransverseKeys(std::set<std::string> keys,
     auto parts = ATOOLS::ToVector<std::string>(label_parts[level]);
     std::string new_string(prefix);
 
-    if ((parts[0]=="W+" || parts[0]=="W-" || parts[0]=="Z" || parts[0]=="t" || parts[0]=="tb") && (parts[1]=="++" || parts[1]=="--")){
+    if ((parts[0]=="W+" || parts[0]=="W-" || parts[0]=="Z") && (parts[1]=="++" || parts[1]=="--")){
       // generate the spin label for the new transverse weight
       // string of particles at smaller levels
       for (size_t j(0); j<level; ++j) {
@@ -267,7 +267,7 @@ std::vector<std::string> PolWeights_Map::ExpandLabels(const std::vector<std::str
     // replace by ++, -- and for the coherent transverse signal definition also: +-,-+
     // next call of the method than runs on the intermediate spin labels to add obtained in the call before such that
     // each +, - combination is covered
-    if ((parts[0] == "W+" || parts[0] == "W-" || parts[0] == "Z" || parts[0]=="t" || parts[0]=="tb") && (parts[1] == "T" || parts[1] == "t")) {
+    if ((parts[0] == "W+" || parts[0] == "W-" || parts[0] == "Z") && (parts[1] == "T" || parts[1] == "t")) {
       std::vector<std::string> expanded_labels;
       int number_contributing_weights;
       if (parts[1] == "T") number_contributing_weights = 4;
