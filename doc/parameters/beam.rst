@@ -245,7 +245,7 @@ EPA is enabled through :option:`BEAMSPECTRA: EPA`. Parameters are set in an
     PDF_SET: None
 
     EPA:
-      FormFactor: Woods-Saxon
+      Form_Factor: WoodsSaxon
       WoodsSaxon_R: 6.49
       WoodsSaxon_d: 0.54
 
@@ -492,7 +492,7 @@ EPA Parameters
 
         F(q = \sqrt{Q^2}) = \frac{3}{ (qR)^3 } \left[ \sin(qR) - qR \cos(qR) \right]
 
-  ``Woods-Saxon``
+  ``WoodsSaxon``
     Woods-Saxon form factor, derived from the nuclear density:
 
     .. math::
@@ -509,7 +509,7 @@ EPA Parameters
     and tabulate it, for a faster computation of the Fourier transfrom into
     impact-parameter space.
 
-  ``Approx_Woods-Saxon``
+  ``Approx_WoodsSaxon``
     Approximation of the Woods-Saxon form factor as hard sphere, with radius :math:`R`,
     convoluted with a Yukawa potential with range :math:`a`, giving :cite:`Klein:1999qj`
 
@@ -534,7 +534,7 @@ EPA Parameters
     the result is analytic. It diverges for :math:`b \to 0`; use :option:`bMin`
     to impose the required lower impact-parameter cutoff.
 
-  Defaults are ``Lepton`` for leptons, ``Dipole`` for protons and ``Woods-Saxon`` for nuclei.
+  Defaults are ``Lepton`` for leptons, ``Dipole`` for protons and ``WoodsSaxon`` for nuclei.
 
 :option:`ThetaMax`
   Maximum lepton scattering angle in radians, sets
@@ -596,7 +596,7 @@ EPA Parameters
   :math:`r_\mathrm{max} = R + \mathrm{rMaxFactor}\cdot d`. Defaults to ``16``.
 
 :option:`WoodsSaxonApprox_a`
-  Yukawa range :math:`a` in fm in the ``Approx_Woods-Saxon`` form factor. Defaults to ``0.7``.
+  Yukawa range :math:`a` in fm in the ``Approx_WoodsSaxon`` form factor. Defaults to ``0.7``.
 
 :option:`CacheTables`
   If ``true``, the precomputed form-factor and :math:`N(x,b)` tables are written to

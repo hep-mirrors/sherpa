@@ -25,8 +25,8 @@ namespace BEAM {
     hcs = 11,
     dipole = 12,
     dipoleApprox = 13,
-    WoodSaxon = 14,
-    WoodSaxonApprox = 15,
+    WoodsSaxon = 14,
+    WoodsSaxonApprox = 15,
     ionApprox = 16,
     protonSachs = 17,
     Test = 99,
@@ -53,10 +53,10 @@ namespace BEAM {
       return os << "Dipole";
     case EPA_ff_type::dipoleApprox:
       return os << "Approx_Dipole";
-    case EPA_ff_type::WoodSaxon:
-      return os << "Woods-Saxon";
-    case EPA_ff_type::WoodSaxonApprox:
-      return os << "Approx_Woods-Saxon";
+    case EPA_ff_type::WoodsSaxon:
+      return os << "WoodsSaxon";
+    case EPA_ff_type::WoodsSaxonApprox:
+      return os << "Approx_WoodsSaxon";
     case EPA_ff_type::ionApprox:
       return os << "Point-like";
     case EPA_ff_type::protonSachs:
@@ -95,10 +95,13 @@ namespace BEAM {
       type = EPA_ff_type::dipole;
     else if (token == "Approx_Dipole" || token == "13")
       type = EPA_ff_type::dipoleApprox;
-    else if (token == "Woods-Saxon" || token == "14")
-      type = EPA_ff_type::WoodSaxon;
-    else if (token == "Approx_Woods-Saxon" || token == "15")
-      type = EPA_ff_type::WoodSaxonApprox;
+    // The hyphenated spellings are deprecated aliases, kept so that run cards
+    // written before the rename to "WoodsSaxon" still parse.
+    else if (token == "WoodsSaxon" || token == "Woods-Saxon" || token == "14")
+      type = EPA_ff_type::WoodsSaxon;
+    else if (token == "Approx_WoodsSaxon" || token == "Approx_Woods-Saxon" ||
+             token == "15")
+      type = EPA_ff_type::WoodsSaxonApprox;
     else if (token == "Point-like" || token == "16")
       type = EPA_ff_type::ionApprox;
     else if (token == "Proton_Sachs" || token == "17")
@@ -159,7 +162,7 @@ namespace BEAM {
     // whenever the table-construction logic changes in a way no other key
     // parameter captures, to invalidate previously written caches.
     // v2: fixed the EPA_HCS form factor argument (q*R instead of Q^2).
-    // v3: fixed the EPA_WoodSaxonApprox small-qR form factor and filled the
+    // v3: fixed the EPA_WoodsSaxonApprox small-qR form factor and filled the
     //     N(x,b) table boundary nodes (last x/b node was previously left zero).
     // v4: guarded the N(x,b) kernel against x -> 1, where Q^2 diverged and the
     //     x = xMax boundary node (filled since v3) became NaN for sqrt-based
@@ -498,7 +501,7 @@ namespace BEAM {
     }
   };
 
-  class EPA_WoodSaxon final: public EPA_FF_Base {
+  class EPA_WoodsSaxon final: public EPA_FF_Base {
   private:
 
     double m_d, m_R_WS;
@@ -518,7 +521,7 @@ namespace BEAM {
 
   public:
 
-    EPA_WoodSaxon(const ATOOLS::Flavour& beam, int dir, double energy);
+    EPA_WoodsSaxon(const ATOOLS::Flavour& beam, int dir, double energy);
     double FF(const double& Q2) override
     {
       const double Q = sqrt(Q2);
@@ -534,7 +537,7 @@ namespace BEAM {
     }
   };
 
-  class EPA_WoodSaxonApprox final: public EPA_FF_Base {
+  class EPA_WoodsSaxonApprox final: public EPA_FF_Base {
   private:
 
     double m_R_WS, m_a;
@@ -542,7 +545,7 @@ namespace BEAM {
 
   public:
 
-    explicit EPA_WoodSaxonApprox(const ATOOLS::Flavour& beam, int dir, double energy);
+    explicit EPA_WoodsSaxonApprox(const ATOOLS::Flavour& beam, int dir, double energy);
     double FF(const double& Q2) override
     {
       // from eq. 14 in hep-ph/9902259

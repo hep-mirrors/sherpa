@@ -533,7 +533,7 @@ std::string EPA_ProtonSachs::CacheId() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Form factor for ions in a Wood-Saxon potential.  A few comments:
+// Form factor for ions in a Woods-Saxon potential.  A few comments:
 //
 // - Output for the density modifed to recover the atomic number A on
 //   integration, and in units of fm^-3 or GeV^3. Internally we normalise it to
@@ -542,8 +542,8 @@ std::string EPA_ProtonSachs::CacheId() const
 // - Radius in 1/GeV, therefore "nucelar skin" m_d also in 1/GeV
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir,
-                             const double energy)
+EPA_WoodsSaxon::EPA_WoodsSaxon(const ATOOLS::Flavour& beam, const int dir,
+                               const double energy)
     : EPA_FF_Base(beam, dir, energy), m_d(0.55 / rpa->hBar_c()),
       m_R_WS(6.49 / rpa->hBar_c()), m_rnodes(1024), m_rmaxfactor(16.)
 {
@@ -571,7 +571,7 @@ EPA_WoodSaxon::EPA_WoodSaxon(const ATOOLS::Flavour& beam, const int dir,
   BuildNxbTable();
 }
 
-std::string EPA_WoodSaxon::WSParamString() const
+std::string EPA_WoodsSaxon::WSParamString() const
 {
   std::ostringstream s;
   s.precision(17);
@@ -580,12 +580,12 @@ std::string EPA_WoodSaxon::WSParamString() const
   return s.str();
 }
 
-std::string EPA_WoodSaxon::CacheId() const
+std::string EPA_WoodsSaxon::CacheId() const
 {
-  return BaseCacheId("WoodSaxon") + WSParamString();
+  return BaseCacheId("WoodsSaxon") + WSParamString();
 }
 
-void EPA_WoodSaxon::BuildFFQTable()
+void EPA_WoodsSaxon::BuildFFQTable()
 {
   if (p_FF_Q) return; // already built
   const std::string key =
@@ -593,7 +593,7 @@ void EPA_WoodSaxon::BuildFFQTable()
   LoadOrBuild<OneDim_Table>("wsff", key, p_FF_Q, [this] { InitFFTable(); });
 }
 
-void EPA_WoodSaxon::InitFFTable()
+void EPA_WoodsSaxon::InitFFTable()
 {
   // Filon sine transform of the Woods-Saxon density:
   //   F(q)  = rho0/q * \int_0^rmax sin(q r) r rho(r) dr,
@@ -635,13 +635,12 @@ void EPA_WoodSaxon::InitFFTable()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Approximation of the Woods-Saxon the Woods-Saxon distribution as a hard
-// sphere, with radius RA, convoluted with a Yukawa potential with
-// range a = 0.7 fm
+// Approximation of the Woods-Saxon distribution as a hard sphere, with radius
+// RA, convoluted with a Yukawa potential with range a = 0.7 fm
 ////////////////////////////////////////////////////////////////////////////////
 
-EPA_WoodSaxonApprox::EPA_WoodSaxonApprox(const ATOOLS::Flavour& beam,
-                                         const int dir, const double energy)
+EPA_WoodsSaxonApprox::EPA_WoodsSaxonApprox(const ATOOLS::Flavour& beam,
+                                           const int dir, const double energy)
     : EPA_FF_Base(beam, dir, energy)
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
@@ -652,12 +651,12 @@ EPA_WoodSaxonApprox::EPA_WoodSaxonApprox(const ATOOLS::Flavour& beam,
   BuildNxbTable();
 }
 
-std::string EPA_WoodSaxonApprox::CacheId() const
+std::string EPA_WoodsSaxonApprox::CacheId() const
 {
   std::ostringstream s;
   s.precision(17);
   s << "|RWS" << m_R_WS << "|a" << m_a;
-  return BaseCacheId("WoodSaxonApprox") + s.str();
+  return BaseCacheId("WoodsSaxonApprox") + s.str();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

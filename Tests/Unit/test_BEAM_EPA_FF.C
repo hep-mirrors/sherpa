@@ -106,8 +106,8 @@ TEST_CASE("EPA_ff_type round-trips through operator<< / operator>>",
       EPA_ff_type::proton,       EPA_ff_type::protonApprox,
       EPA_ff_type::ionApproxInt, EPA_ff_type::Gauss,
       EPA_ff_type::hcs,          EPA_ff_type::dipole,
-      EPA_ff_type::dipoleApprox, EPA_ff_type::WoodSaxon,
-      EPA_ff_type::WoodSaxonApprox, EPA_ff_type::ionApprox,
+      EPA_ff_type::dipoleApprox, EPA_ff_type::WoodsSaxon,
+      EPA_ff_type::WoodsSaxonApprox, EPA_ff_type::ionApprox,
       EPA_ff_type::protonSachs,  EPA_ff_type::Test,
       EPA_ff_type::Undefined};
 
@@ -135,9 +135,16 @@ TEST_CASE("EPA_ff_type round-trips through operator<< / operator>>",
     std::istringstream("11") >> t;
     CHECK(t == EPA_ff_type::hcs);
     std::istringstream("14") >> t;
-    CHECK(t == EPA_ff_type::WoodSaxon);
+    CHECK(t == EPA_ff_type::WoodsSaxon);
     std::istringstream("17") >> t;
     CHECK(t == EPA_ff_type::protonSachs);
+  }
+
+  SECTION("operator>> maps unrecognised tokens to Undefined")
+  {
+    EPA_ff_type t = EPA_ff_type::point;
+    std::istringstream("WoodSaxon") >> t;
+    CHECK(t == EPA_ff_type::Undefined);
   }
 
   SECTION("operator<< on an out-of-range value is bounded (no infinite recursion)")

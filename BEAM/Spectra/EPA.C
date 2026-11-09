@@ -89,6 +89,14 @@ void EPA::Initialise()
   }
 
   m_fftype = s["Form_Factor"].GetTwoVector<EPA_ff_type>()[b];
+  if (m_fftype == EPA_ff_type::Undefined) {
+    // operator>> maps unrecognised input to Undefined; re-read the raw value
+    // so the error names what the user wrote.
+    THROW(invalid_input,
+          "Unknown EPA:Form_Factor '" +
+              s["Form_Factor"].GetTwoVector<std::string>()[b] +
+              "' for beam " + ToString(b) + ".");
+  }
   switch (m_fftype) {
   case EPA_ff_type::point:
     p_ff = std::make_unique<EPA_Point>(m_beam, m_dir, m_energy);
@@ -123,14 +131,15 @@ void EPA::Initialise()
   case EPA_ff_type::ionApproxInt:
     p_ff = std::make_unique<EPA_IonApproxIntegrated>(m_beam, m_dir, m_energy);
     break;
-  case EPA_ff_type::WoodSaxon:
-    p_ff = std::make_unique<EPA_WoodSaxon>(m_beam, m_dir, m_energy);
+  case EPA_ff_type::WoodsSaxon:
+    p_ff = std::make_unique<EPA_WoodsSaxon>(m_beam, m_dir, m_energy);
     break;
-  case EPA_ff_type::WoodSaxonApprox:
-    p_ff = std::make_unique<EPA_WoodSaxonApprox>(m_beam, m_dir, m_energy);
+  case EPA_ff_type::WoodsSaxonApprox:
+    p_ff = std::make_unique<EPA_WoodsSaxonApprox>(m_beam, m_dir, m_energy);
     break;
   default:
-    THROW(not_implemented, "unknown EPA form factor. ");
+    THROW(not_implemented,
+          "EPA form factor " + ToString(m_fftype) + " is not implemented.");
   }
   SetXRange();
 
@@ -180,7 +189,7 @@ void EPA::RegisterDefaults() const
   s["bMax"].SetDefault(1.e3);
   s["chiMax"].SetDefault(100.);
   s["bBins"].SetDefault(100);
-  s["Form_Factor"].SetDefault(size_t(m_beam.IsIon() ? EPA_ff_type::WoodSaxon
+  s["Form_Factor"].SetDefault(size_t(m_beam.IsIon() ? EPA_ff_type::WoodsSaxon
                                      : m_beam.IsNucleon() ? EPA_ff_type::dipole
                                      : m_beam.IsMeson()   ? EPA_ff_type::dipole
                                                         : EPA_ff_type::point));
@@ -265,11 +274,11 @@ void EPA::Tests(const double energy)
   std::vector<kf_code> ions({kf_lead208});
   for (kf_code ion : ions) {
     // Woods-Saxon
-    auto* ff_ion_ws = new EPA_WoodSaxon(Flavour(ion), 0, energy);
+    auto* ff_ion_ws = new EPA_WoodsSaxon(Flavour(ion), 0, energy);
     ff_ion_ws->OutputToCSV("ws");
     delete ff_ion_ws;
     // Woods-Saxon approximation
-    auto* ff_ion_wsApprox = new EPA_WoodSaxonApprox(Flavour(ion), 0, energy);
+    auto* ff_ion_wsApprox = new EPA_WoodsSaxonApprox(Flavour(ion), 0, energy);
     ff_ion_wsApprox->OutputToCSV("wsApprox");
     delete ff_ion_wsApprox;
     // Ion Approx

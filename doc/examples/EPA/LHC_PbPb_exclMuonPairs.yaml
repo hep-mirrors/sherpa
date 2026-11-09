@@ -12,7 +12,7 @@ PDF_SET: None
 EW_SCHEME: alpha0
 
 EPA:
-  Form_Factor: Approx_Woods-Saxon
+  Form_Factor: Approx_WoodsSaxon
 
 SCALES: METS{Abs2(p[2]+p[3])}
 
