@@ -101,6 +101,8 @@ Examples/update_decay_currents/*/MIN*/*
 Examples/update_decay_currents/*/*MIN*/*
 Examples/update_decay_currents/*/JEFF*/*
 Examples/update_decay_currents/*/*JEFF*/*
+Examples/update_decay_currents/*/SLAC*/*
+
 
 # (local) make install targets
 

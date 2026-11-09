@@ -1,0 +1,72 @@
+# e N -> e N pi: VA_N_NPi, Indices [N_out, N_in, pion]. For a pi0 only the
+# two nucleon-pole diagrams contribute; a charged pion (e.g. 2212 -> 2112 211)
+# adds pion-in-flight and contact. The first photon event prints a Ward check.
+#   AFF is ignored at the photon vertex (no axial coupling); it acts on Z and W,
+#   and sets g_piNN for PIFF 2, so it is passed to the photon current too.
+#   PIFF (VA_N_NPi g_piNN, FF_N_NPi): 0 off, 1 Goldberger-Treiman (default),
+#                        2 PCAC with the AFF model, 10 pion dipole
+#   PPFF (VA_N_NPi pion-pole part of the contact term, Z and W only):
+#                        0 off, 1 point, 11 rho dominance (default), 12 F1V (VFF model)
+
+TAGS: {VFF: 11, AFF: 21, PIFF: 10, PPFF: 11, nucleon: 2212}
+
+EVENTS: 10k
+
+BEAMS: [11, $(nucleon)]
+BEAM_ENERGIES: [3.6, 0.0] # sherpa will set any energy below rest mass to the rest mass.
+PDF_SET: [None, Intact] 
+
+PARTICLE_DATA:
+  11: {Massive: true}
+  211: {Massive: true}
+  111: {Massive: true}
+  2212: {Massive: true}
+  2112: {Massive: true}
+
+ME_GENERATORS: [Internal]
+
+SELECTORS:
+# - [PT, 11, 10.0, E_CMS]
+# - [PT, 13, 10.0, E_CMS]
+- [Q2, 11, 11, 0.001, 1e12] #[observable, flavor1, flavor2, min, max]
+# note that for proton  expected XS should not be linear in min Q2 due to FF
+# minQ2=0.001 => XS ~ 2.5e8 pb
+# minQ2=0.01 => XS ~ 2.5e7 pb
+# minQ2=1 => XS ~ 5e3 pb
+
+PROCESSES:
+- 11 $(nucleon) -> 11 $(nucleon) 111:        
+    Sort_Flavors: 0
+    Order: {QCD: 0, EW: 2}
+    Currents:
+      Exchange:
+      - Boson: 22
+        J1: {Type: VA_F_F, Indices: [2, 0]}    # electron [out in]
+        J2: {Type: VA_N_NPi, Indices: [3, 1, 4],    # nucleon [out in], pion last
+              BOSON: 22, VECTOR_FF: $(VFF), AXIAL_FF: $(AFF), PION_NN_FF: $(PIFF)}
+      - Boson: 23
+        J1: {Type: VA_F_F, Indices: [2, 0]}
+        J2: {Type: VA_N_NPi, Indices: [3, 1, 4], 
+              BOSON: 23, VECTOR_FF: $(VFF), AXIAL_FF: $(AFF), PION_NN_FF: $(PIFF),
+              PIPOLE_FF: $(PPFF)}
+
+# settings for now for low energies
+
+SHOWER_GENERATOR: None
+SCALES: VAR{-Abs2(p[0]-p[2])}  # need if turning off shower
+
+FRAGMENTATION: None
+BEAM_REMNANTS: false
+MI_HANDLER: None
+HADRON_DECAYS:
+  Model: None
+YFS: {MODE: None}
+
+ANALYSIS: Rivet
+ANALYSIS_OUTPUT: Analysis_PIFF10
+
+RIVET:
+  --analyses: [MC_FSPARTICLES, my_MC_FSPARTICLES, MC_XS]
+  --pwd: /Users/tvcr49@durham.ac.uk/code_analysis/MyRivetAnalyses
+  --ignore_beams: 1
+

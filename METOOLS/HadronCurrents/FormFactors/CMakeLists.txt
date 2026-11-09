@@ -19,6 +19,7 @@ set(FormFactors_SOURCES Line_Shapes.C
                         FF_Dirac_Dirac_1.C
 			FF_P_X.C
 			FF_N_N.C
+                        FF_N_NPi.C
                         FF_N_Nprime.C
 			FF_PP_Wave.C
 			RChL_Functions.C
@@ -47,6 +48,7 @@ set(FormFactors_HEADERS Line_Shapes.H
                         FF_Dirac_Dirac_1.H
 			FF_P_X.H
 			FF_N_N.H
+                        FF_N_NPi.H
                         FF_N_Nprime.H
 			FF_PP_Wave.H
 			RChL_Functions.H

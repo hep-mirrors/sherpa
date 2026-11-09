@@ -4,6 +4,8 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/Shell_Tools.H"
+#include <set>
 #include <fstream>
 #include <string>
 
@@ -356,6 +358,14 @@ double FF_N_N::Axial(const double & Q2) const
 
 void FF_N_N::CreateF1F2Histogram() const
 {
+  // write each (vector | FA | FP, model) once per run, and make Results/ if needed
+  static std::set<std::string> written;
+  const bool vec(m_fftype==FFtype::F1 || m_fftype==FFtype::F2);
+  if (GetModel()==Model::None ||
+      !written.insert((vec ? std::string("V") : m_name)+std::to_string(m_ffmodel)).second)
+    return;
+  if (!ATOOLS::DirectoryExists("Results")) ATOOLS::MakeDir("Results");
+
   const int nBins = 1000;
   const double Q2Max = 2.0;
 
@@ -487,8 +497,8 @@ void FF_N_N::CreateF1F2Histogram() const
     }
   }
 
-  msg_Info() << "FF_N_N: Form-factor output written for model "
-             << modelName << std::endl;
+  msg_Info() << "FF_N_N: Form-factor output written for "
+             << (vec ? "F1/F2" : m_name) << " model " << modelName << std::endl;
 }
 
 
