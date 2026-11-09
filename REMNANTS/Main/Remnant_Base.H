@@ -53,6 +53,7 @@ namespace REMNANTS {
     virtual ATOOLS::Particle* MakeParticle(const ATOOLS::Flavour& flav);
     virtual void              CompensateColours(Colour_Generator* colours);
 
+  public:
     // Light-cone component along the own beam direction: beam 0 points in
     // the +z direction, beam 1 in the -z direction.  Ratios of these are
     // invariant under longitudinal boosts.
@@ -60,7 +61,6 @@ namespace REMNANTS {
       return m_beam==0 ? mom.PPlus() : mom.PMinus();
     }
 
-  public:
     Remnant_Base(const ATOOLS::Flavour & flav,const size_t & beam,
 		 const size_t & tag=0);
     virtual ~Remnant_Base();

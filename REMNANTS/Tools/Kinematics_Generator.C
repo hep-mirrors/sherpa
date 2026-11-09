@@ -433,7 +433,9 @@ bool Kinematics_Generator::CheckScatter(Particle *part[2]) {
     m_shuffledmap[part[beam]] = labmom[beam] =
         Vec4D(E, 0., 0., PZ) + kperp[beam];
     m_checkmom[beam] -= Vec4D(E, 0., 0., PZ);
-    if (m_checkmom[beam][0] < 0.) {
+    // A beam can only give away its own light-cone momentum; unlike the
+    // energy, its sign does not depend on the longitudinal frame.
+    if (p_remnants[beam]->LightCone(m_checkmom[beam]) < 0.) {
       msg_Debugging() << METHOD << " throws error: no momentum left in beam "
                       << beam << ", " << m_checkmom[beam] << " for M = " << M
                       << " and Y = " << Y << ".\n";
@@ -480,8 +482,8 @@ bool Kinematics_Generator::CheckRemnants() {
       totmass += masses.back();
       m_checkmom[beam] -= part->Momentum();
     }
-    // Check if energies still positive - otherwise we are in deep trouble
-    if (m_checkmom[beam][0] < 0.) {
+    // Check if the beam still has light-cone momentum left for the recoiler
+    if (p_remnants[beam]->LightCone(m_checkmom[beam]) < 0.) {
       msg_Debugging() << METHOD << " throws error: no momentum left in beam "
                       << beam << ", " << m_checkmom[beam] << "\n";
       return false;
