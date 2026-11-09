@@ -579,3 +579,28 @@ Vec4C XYZFunc::L13(const int t1, const int l1,
   CLEBSCH_GORDAN_SUM3(L(t1,l1, t2,l2-m, cR, cL),t2,l2,p*eps)
   return result;
 }
+
+
+Vec4C XYZFunc::W(const int t1, const int l1,
+                 const Vec4D & a,
+                 const int t2, const int l2,
+                 const Complex cR, const Complex cL )
+{
+  // needs real momentum input !
+  // ubar(t1) gamma^mu aslash (cR P_R + cL P_L) u(t2), massive momentum a
+  // Split a = k + c r into light-like (massless) k, r, and insert kslash = sum_l u_l(k) ubar_l(k) and rslash = sum_l u_l(r) ubar_l(r)
+  // W = sum_l L(t1 -> k_l) Y(k_l -> t2) + c (k -> r).
+  if (m_anti) THROW(not_implemented,"XYZFunc::W is not implemented yet for anti.");
+  Vec4D r(1.,0.,0.,0.);
+  r[Spinor<double>::R3()] = 1.;
+  const double c(a.Abs2()/(2.*(a*r)));
+  const Vec4D    mom[4] = { p_mom[t1], p_mom[t2], a-c*r, r };
+  const Flavour  fl[4]  = { p_flav[t1], p_flav[t2], Flavour(kf_d), Flavour(kf_d) };
+  XYZFunc F(4,mom,fl,false);
+  Vec4C w(Complex(0.,0.),Complex(0.,0.),Complex(0.,0.),Complex(0.,0.));
+  for (int l(0);l<2;++l) {
+    w += F.Y(2,l,1,l2,cR,cL)*F.L(0,l1,2,l,1.,1.);
+    w += c*F.Y(3,l,1,l2,cR,cL)*F.L(0,l1,3,l,1.,1.);
+  }
+  return w;
+}

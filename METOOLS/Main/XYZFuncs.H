@@ -100,6 +100,11 @@ namespace METOOLS {
                        const ATOOLS::Vec4C p,
                        const int t2, const int l2,
                        Complex cR, Complex cL );
+
+    ATOOLS::Vec4C W(const int t1, const int l1,
+                     const ATOOLS::Vec4D & a,
+                     const int t2, const int l2,
+                     const Complex cR, const Complex cL );
   };
 
 
@@ -162,6 +167,20 @@ namespace METOOLS {
     \f$k_0=(1,\frac{1}{\sqrt{2}},0,\frac{1}{\sqrt{2}})\f$,
     \f$k_0=(1,0,\frac{1}{\sqrt{2}},\frac{1}{\sqrt{2}})\f$ or
     \f$k_0=(1,\frac{1}{\sqrt{2}},\frac{1}{\sqrt{2}},0)\f$, respectively.
+  */
+  /*!
+    \fn XYZFunc::W(const int t1, const int l1, const ATOOLS::Vec4D & a, const int t2, const int l2, const Complex cR, const Complex cL)
+    \brief Tensor bilinear \f$\bar u_1\gamma^\mu \slashed{a}(c_RP_R+c_LP_L)u_2\f$
+
+    For an arbitrary vector \f$a\f$, which cannot be absorbed into either
+    spinor by the Dirac equation (e.g. the pion momentum in
+    \f$N\to N'\pi\f$). \f$a\f$ is split into two light-like vectors,
+    \f$a=k+c\,r\f$ with \f$r=(1,\hat e_3)\f$, \f$c=a^2/(2a\cdot r)\f$, and
+    for massless spinors \f$\slashed{k}=\sum_\lambda u_\lambda(k)\bar
+    u_\lambda(k)\f$, so that
+    \f$W=\sum_\lambda L(1\to k_\lambda)\,Y(k_\lambda\to 2)+c\,(k\to r)\f$,
+    built from the existing L and Y. For timelike \f$a\f$ with \f$a_0>0\f$,
+    \f$k\f$ has positive energy. Not implemented for anti = true.
   */
 }
 
