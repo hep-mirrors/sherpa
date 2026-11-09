@@ -136,7 +136,7 @@ Kin_Args PHASIC::ClusterFIDipole
     return Kin_Args();
   }
   Kin_Args res(1.0-xija,zi,0.0,(mode&4)?1:0,1);
-  res.m_pk=sqrt(po/pn)*(pa-(Q*pa)/(Q2+kt2)*Ql)
+  res.m_pk=sqrt(po/pn)*(pa-(Q2+ma2-sij)/(2.0*(Q2+kt2))*Ql)
     +(Q2+ma2-mij2)/(2.0*(Q2+kt2))*Ql;
   res.m_pi=res.m_pk-Q;
   if (res.m_pi[0]<0.0 || res.m_pk[0]<0.0) {
@@ -164,7 +164,7 @@ int PHASIC::ConstructFIDipole
   }
   pn=sqrt(pn);
   po=sqrt(po);
-  fip.m_pk=pn/po*(pa-(Q*pa)/(Q2+kt2)*Ql)
+  fip.m_pk=pn/po*(pa-(Q2+ma2-mij2)/(2.0*(Q2+kt2))*Ql)
     +(Q2+ma2-sij)/(2.0*(Q2+kt2))*Ql;
   fip.m_pi=fip.m_pj=fip.m_pk-Q;
   Vec4D x(fip.m_pi), y(fip.m_pk);
