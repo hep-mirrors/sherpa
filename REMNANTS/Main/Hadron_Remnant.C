@@ -395,7 +395,9 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom,
   // sqrt(spair)/2.
   const double Eequiv =
     (lcresidual-lcmom)/LightCone(IncomingMomentum()) * sqrt(spair)/2.;
-  if (Eequiv<m_minE) return false;
+  // The leftover must also carry the remnant FillBlob will put on its mass
+  // shell, which outgrows m_minE once enough sea quarks have been extracted.
+  if (Eequiv<Max(m_minE, RemnantMassAfter(flav))) return false;
   // And in range?
   double x = lcmom/lcresidual;
   if (x<p_pdf->XMin() || x>p_pdf->XMax()) {
@@ -405,6 +407,33 @@ bool Hadron_Remnant::TestExtract(const Flavour &flav,const Vec4D &mom,
   }
   msg_Debugging()<<flav<<" with mom = "<<mom<<" can be extracted.\n";
   return true;
+}
+
+double Hadron_Remnant::RemnantMassAfter(const Flavour &flav) {
+  // Sum of the masses MakeLongitudinalMomenta has to put on shell once flav
+  // has been extracted: the spectators so far, the spectator MakeSpectator
+  // creates if flav is a sea quark, and the valence quark and remnant
+  // MakeRemnants adds.  Where the random valence decision of IsValence is
+  // still open, the heavier outcome counts.
+  auto mass = [this](const Flavour &f) {
+    return Max(f.HadMass(), m_GluonMinEnergy);
+  };
+  double spectators = 0.;
+  for (const Particle* spectator : m_spectators)
+    spectators += mass(spectator->Flav());
+  const double seaspectator = flav.IsQuark() ? mass(flav.Bar()) : 0.;
+  if (m_valence)
+    return spectators + seaspectator + mass(RemnantFlavour(p_valence->Flav()));
+  double valenceremnant = 0.;
+  for (const auto& constituent : m_constituents)
+    valenceremnant = Max(valenceremnant,
+                         mass(constituent) + mass(RemnantFlavour(constituent)));
+  double result = spectators + seaspectator + valenceremnant;
+  // flav may become the valence quark, leaving only its remnant
+  if (std::find(m_constituents.begin(), m_constituents.end(), flav)
+      != m_constituents.end())
+    result = Max(result, spectators + mass(RemnantFlavour(flav)));
+  return result;
 }
 
 void Hadron_Remnant::Output()
