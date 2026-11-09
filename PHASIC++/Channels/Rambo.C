@@ -5,6 +5,7 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Math/Poincare.H"
 #include <algorithm>
 
 using namespace PHASIC;
@@ -74,7 +75,7 @@ void Rambo::GenerateWeight(Vec4D * p,Cut_Data * cuts)
   for (short int i=0;i<m_nin;i++) sump += p[i];
   double ET = sqrt(sump.Abs2());
   m_weight    = 1.;
-  if (massflag) MassiveWeight(p,ET);
+  if (massflag) MassiveWeight(p,sump);
   m_weight   *= exp((2.*m_nout-4.)*log(ET)+Z_N)/pow(2.*M_PI,m_nout*3.-4.);
 }
 
@@ -125,14 +126,28 @@ void Rambo::GeneratePoint(Vec4D * p,Cut_Data * cuts)
   m_weight = 1.;
   //if (massflag)
   MassivePoint(p,ET); // The boost is numerically not very precise, MassivePoint is always called for momentum conservation
+  // Rambo builds the final state in the c.m. frame (rest frame of sump);
+  // boost it back to the frame of the incoming momenta. The incoming momenta
+  // are not changed, and for a collider with sump at rest the boost is the
+  // identity.
+  Poincare cms(sump);
+  for(i=m_nin;i<m_nin+m_nout;i++) cms.BoostBack(p[i]);
 }
 
 void Rambo::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran) {
   GeneratePoint(p,cuts);
 }
 
-void Rambo::MassiveWeight(Vec4D* p,double ET)
+void Rambo::MassiveWeight(const Vec4D* p,const Vec4D & sump)
 {
+  // The Rambo weight is defined in the c.m. frame (sum E_i = sqrt(s),
+  // sum p_i = 0). p may be in the lab frame, so boost a local copy into
+  // the rest frame of sump; the caller's momenta are not changed.
+  const double ET(sqrt(sump.Abs2()));
+  Vec4D_Vector q(p,p+m_nin+m_nout);
+  Poincare cms(sump);
+  for (short int i=m_nin;i<m_nin+m_nout;i++) cms.Boost(q[i]);
+
   itmax = 6;
   accu  = ET * pow(10.,-14.);
 
@@ -140,7 +155,7 @@ void Rambo::MassiveWeight(Vec4D* p,double ET)
   for (short int i=m_nin;i<m_nin+m_nout;i++) {
     xm2[i]   = 0.;
     xmt     += sqrt(p_ms[i]);
-    p2[i]    = sqr(Vec3D(p[i]).Abs());
+    p2[i]    = sqr(Vec3D(q[i]).Abs());
   }
   double x   = 1./sqrt(1.-sqr(xmt/ET));
 
@@ -168,9 +183,9 @@ void Rambo::MassiveWeight(Vec4D* p,double ET)
   
   // Calculate Momenta + Weight 
   for (short int i=m_nin;i<m_nin+m_nout;i++) {
-    v    = Vec3D(p[i]).Abs();
-    wt2 *= v/p[i][0];
-    wt3 += v*v/p[i][0];
+    v    = Vec3D(q[i]).Abs();
+    wt2 *= v/q[i][0];
+    wt3 += v*v/q[i][0];
   }  
   x      = 1./x;
   m_weight = exp((2.*m_nout-3.)*log(x)+log(wt2/wt3*ET));

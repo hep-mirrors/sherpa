@@ -21,7 +21,7 @@ namespace PHASIC {
     void GenerateWeight(ATOOLS::Vec4D * p) { GenerateWeight(p,NULL); }  
     void GeneratePoint(ATOOLS::Vec4D * p)  { GeneratePoint(p,NULL); }
     void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *,double *);
-    void MassiveWeight(ATOOLS::Vec4D *,double);
+    void MassiveWeight(const ATOOLS::Vec4D *,const ATOOLS::Vec4D &);
     void MassivePoint(ATOOLS::Vec4D *,double);
     std::string Name() { return std::string("Rambo"); }
     int CountResonances(ATOOLS::Flavour *&) { return 0; }
