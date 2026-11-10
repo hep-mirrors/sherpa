@@ -364,6 +364,9 @@ const double FixedBreitWigner::Normalised2(const double & s) {
   return norm((*this)(s));
 }
 
+Constant_Propagator::Constant_Propagator() :
+  Propagator_Base(NULL,resonance_type::bespoke) {}
+
 ///////////////////////////////////////////////////////////////////////////
 //
 // Gauge_Propagator. See Propagator.H for why this does not follow the
@@ -699,6 +702,12 @@ static void DumpPropagatorEntry(Propagator_Base * p, const Complex & weight,
 	 sit!=sub.end();sit++) {
       DumpPropagatorEntry(sit->first, sit->second, indent+"  ", true);
     }
+    return;
+  }
+  if (dynamic_cast<Constant_Propagator *>(p)!=NULL) {
+    msg_Out()<<"###   "<<indent<<"constant (non-resonant)";
+    if (haveWeight) msg_Out()<<",  weight = "<<weight;
+    msg_Out()<<"\n";
     return;
   }
   msg_Out()<<"###   "<<indent<<p->Flav()<<":  M = "<<p->Mass()<<" GeV,  "

@@ -45,7 +45,22 @@ namespace METOOLS {
   // Flatte line shape for the K1(1270), for form-factor model 106.  Standalone:
   // it takes no Total_Width_Base and reads only stable-hadron masses, so it is
   // independent of the K1 width registry above.  See K1_Decays.C.
-  Propagator_Base * MakeK1_1270_Flatte();
+  //
+  // The defaults are the validated BaBar 2007 working point.  A form factor
+  // may pass its own values (per channel, from its model keys); they are
+  // effective parameters of THIS line shape, never registry masses/widths.
+  // mass is the BARE pole in GeV, the g_i are in GeV^2, gamma_residual in GeV.
+  namespace K1_1270_Flatte_Defaults {
+    const double mass           = 1.254;
+    const double g_KstarPi      = 0.114114;
+    const double g_Krho         = 0.136937;
+    const double gamma_residual = 0.1092;
+  }
+  Propagator_Base * MakeK1_1270_Flatte(
+      const double mass           = K1_1270_Flatte_Defaults::mass,
+      const double g_KstarPi      = K1_1270_Flatte_Defaults::g_KstarPi,
+      const double g_Krho         = K1_1270_Flatte_Defaults::g_Krho,
+      const double gamma_residual = K1_1270_Flatte_Defaults::gamma_residual);
 }
 
 #endif

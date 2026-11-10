@@ -2,6 +2,7 @@
 #include "METOOLS/HadronCurrents/FormFactors/RChL_Functions.H"
 #include "METOOLS/HadronCurrents/FormFactors/K1_Decays.H"
 #include "METOOLS/HadronCurrents/FormFactors/Kstar_Decays.H"
+#include "METOOLS/HadronCurrents/FormFactors/KpiSWave_Tables.H"
 #include "METOOLS/HadronCurrents/Tools.H"
 #include <algorithm>
 
@@ -1713,6 +1714,15 @@ class F1_0_KPiPi : public FF_0_PPP_Base {
   Complex m_xiK1;
   Summed_Propagator * p_TK1a, * p_Trho1, * p_TKstar1;
   Propagator_Base    * p_TK1b;
+  //! K1 -> (K pi)_S pi- (KM_piM_piP only). Coupling m_kappa (0 = off) and
+  //! the S-wave line shape: m_kappaShape 0 = Breit-Wigner of the registry's
+  //! kappa (p_Tkappa), 1-4 = von Detten et al. Fit 1-4 (KpiSWave_FBar0).
+  Complex           m_kappa;
+  int               m_kappaShape;
+  Propagator_Base * p_Tkappa;
+  Complex KpiSWave(const double & s) {
+    return (m_kappaShape>0 ? KpiSWave_FBar0(m_kappaShape,s) : (*p_Tkappa)(s));
+  }
 
   // --- CLEO K1 data-driven alternative (KS_CLEO=102) ---
   // tau_two_meson_currents_KS_RChiT.tex Sec."CLEO K1 data-driven
@@ -1744,6 +1754,7 @@ public:
   F1_0_KPiPi(const FF_Parameters & params) :
     FF_0_PPP_Base(params), m_isF2(false), m_xiK1(0.33,0.),
     p_TK1a(NULL), p_Trho1(NULL), p_TKstar1(NULL), p_TK1b(NULL),
+    m_kappa(0.,0.), m_kappaShape(0), p_Tkappa(NULL),
     p_KstCLEO(NULL), m_mileo_local(false), p_K1Flatte(NULL)
   {
     if (params.m_name=="F2_0_KPiPi") m_isF2 = true;
@@ -1754,6 +1765,7 @@ public:
     if (p_Trho1)   { delete p_Trho1;   p_Trho1   = NULL; }
     if (p_TKstar1) { delete p_TKstar1; p_TKstar1 = NULL; }
     if (p_TK1b)    { delete p_TK1b;    p_TK1b    = NULL; }
+    if (p_Tkappa)  { delete p_Tkappa;  p_Tkappa  = NULL; }
     if (p_KstCLEO) { delete p_KstCLEO; p_KstCLEO = NULL; }
     if (p_K1Flatte) { delete p_K1Flatte; p_K1Flatte = NULL; }
   }
@@ -1833,6 +1845,26 @@ static Propagator_Base * MileoKstar(const GeneralModel * md) {
 
 static bool HasFM95Local(const GeneralModel * md) {
   return md!=NULL && md->find("FM95_local")!=md->end();
+}
+
+//! The K1(1270) Flatte of models 15 and 16, with its four parameters
+//! overridable per channel: MK1_1270_Flatte (bare pole, GeV),
+//! gKstarPi_K1_1270 and gKrho_K1_1270 (GeV^2), GresK1_1270 (GeV).  Unset
+//! keys keep the K1_Decays.H defaults, so cards without them are unchanged.
+//! These are effective parameters of this line shape for this channel, not
+//! the registry's K1(1270): see MakeK1_1270_Flatte for why the bare pole is
+//! not the PDG mass.
+static Propagator_Base * K1_1270_Flatte(const GeneralModel * md) {
+  namespace D = K1_1270_Flatte_Defaults;
+  auto get = [md](const std::string & key, const double def) {
+    if (md==NULL) return def;
+    auto it = md->find(key);
+    return (it==md->end() ? def : it->second);
+  };
+  return MakeK1_1270_Flatte(get("MK1_1270_Flatte",  D::mass),
+                            get("gKstarPi_K1_1270", D::g_KstarPi),
+                            get("gKrho_K1_1270",    D::g_Krho),
+                            get("GresK1_1270",      D::gamma_residual));
 }
 
 static double FM95Get(const GeneralModel * md, const std::string & key) {
@@ -1971,9 +2003,9 @@ void F1_0_KPiPi::Construct(const FF_Parameters & params) {
     p_TK1a->Add(flatte ? (Propagator_Base*)new FM95_Fixed_BW(mK1400,GK1400)
                        : (Propagator_Base*)new BreitWigner(wK11400),
                 Complex(1.,0.));
-    p_TK1a->Add(flatte ? MakeK1_1270_Flatte()
+    p_TK1a->Add(flatte ? K1_1270_Flatte(params.p_model)
                        : (Propagator_Base*)new BreitWigner(wK11270), m_xiK1);
-    p_TK1b = flatte ? MakeK1_1270_Flatte()
+    p_TK1b = flatte ? K1_1270_Flatte(params.p_model)
                     : (Propagator_Base*)new BreitWigner(wK11270);
   }
   // Same unified KS parameter names as pipi_plus/Kpi_plus (FF_0_PP.C)
@@ -2038,12 +2070,98 @@ void F1_0_KPiPi::Construct(const FF_Parameters & params) {
     m_xiK1    = Complex(FM95Get(params.p_model,"FM95_xi"),0.);
   }
 
+  // Direct W* -> K* pi (T_K1^a, F1) and W* -> K rho (T_K1^b, F2) couplings,
+  // i.e. the single-resonance terms of the chiral resonance description,
+  // which FM95 leaves out: every FM95 term goes through a K1 in Q^2.  Near
+  // threshold, m(K pi pi) ~ 1.0-1.1 GeV, the K* and rho cannot be on shell
+  // and the K1 tail is all there is, so the low side of the K pi pi and
+  // K- pi+ spectra is underpopulated (BaBar 2007 d03/d04 at 0.45-0.8 of the
+  // data).  A constant beside each envelope,
+  //     T_K1 -> (T_K1 + c) / (1 + c),
+  // adds Q^2 strength the K1 does not suppress and leaves the chiral limit
+  // at Q^2 = 0 unchanged, since both terms are 1 there.  A constant c is
+  // the lowest-order form of the direct vertex.  Default 0: the model is
+  // FM95 as before.
+  const Complex cdirA = ReadComplexParam(params.p_model,"directMag_K1a",0.,
+                                         "directPhase_K1a");
+  const Complex cdirB = ReadComplexParam(params.p_model,"directMag_K1b",0.,
+                                         "directPhase_K1b");
+  if (p_TK1a!=NULL && cdirA!=Complex(0.,0.)) {
+    Summed_Propagator * wrap = new Summed_Propagator();
+    wrap->Add(p_TK1a, Complex(1.,0.));
+    wrap->Add(new Constant_Propagator(), cdirA);
+    p_TK1a = wrap;
+  }
+  if (p_TK1b!=NULL && cdirB!=Complex(0.,0.)) {
+    Summed_Propagator * wrap = new Summed_Propagator();
+    wrap->Add(p_TK1b, Complex(1.,0.));
+    wrap->Add(new Constant_Propagator(), cdirB);
+    p_TK1b = wrap;
+  }
+
+  // K1(1270) -> kappa pi-, kappa = K0*(700) -> K- pi+: the K pi S wave under
+  // the K*(892), which FM95 leaves out.  Without it m(K- pi+) is short below
+  // the K* at any m(K pi pi) (BaBar 2007 d04 at 0.4-0.8 of the data over
+  // 0.62-0.80 GeV), which no change to the Q^2 envelopes moves.
+  //
+  // A P wave between two spin-0 states gives a current along
+  // (p_kappa - p_pi-)_perp = (p1 + p3 - p2)_perp, which in this current's
+  // basis v1 = (p1-p3)_perp, v2 = (p2-p3)_perp is proportional to v1 - 2 v2.
+  // So the term enters F1 and F2 in the fixed ratio 1 : -2, with one complex
+  // coupling.  Its Q^2 envelope is T_K1^b, the K1(1270) (plus any direct
+  // K rho coupling set above): K1(1270) has the large scalar-pion decay,
+  // K1(1400) barely any.
+  //
+  // The line shape of the K pi S wave, kappaLineShape_Kpipi:
+  //   0    a Breit-Wigner with the registry's kappa mass and width.  Kept for
+  //        comparison only: the kappa is a pole deep in the complex plane
+  //        next to the K pi threshold, and a Breit-Wigner has neither its
+  //        Adler zero nor elastic unitarity, so it is wrong exactly in the
+  //        region this term is there for.
+  //   1-4  the dispersive scalar K pi form factor of von Detten et al.,
+  //        arXiv:2103.01966, Fit 1-4 (KpiSWave_Tables.H).  It is the whole
+  //        I = 1/2 S wave -- kappa, K0*(1430), K eta' inelasticity -- so with
+  //        it this term also carries K1(1270) -> K0*(1430) pi.  Fit 3 is the
+  //        reference (its source term is compatible with zero, i.e. it is the
+  //        closest to pure K pi final-state interaction); 1, 2, 4 are its
+  //        systematic spread, which is large above m(K pi) = 1.45 GeV.
+  // Both are 1 at s = 0, so the coupling means the same thing in either.
+  //
+  // KM_piM_piP only.  The K0 mode has two K pi pairs with their own isospin
+  // factors, not yet derived.  Default 0, i.e. no S-wave term.
+  m_kappa = ReadComplexParam(params.p_model,"kappaMag_Kpipi",0.,"kappaPhase_Kpipi");
+  m_kappaShape = int((*params.p_model)("kappaLineShape_Kpipi",0.));
+  if (m_kappaShape<0 || m_kappaShape>4)
+    THROW(fatal_error,"kappaLineShape_Kpipi = "+ToString(m_kappaShape)+
+          " does not exist: 0 = Breit-Wigner, 1-4 = von Detten et al. Fit 1-4.");
+  if (m_kappa!=Complex(0.,0.) && m_mode==FF_0_PPP_mode::KM_piM_piP && m_kappaShape==0) {
+    Total_Width_Base * wkappa = LineShapes->Get(Flavour(kf_K_0_800_plus));
+    // Braces matter: msg_Error() expands to an if, which would take the else.
+    if (wkappa==NULL) {
+      msg_Error()<<"Error in "<<METHOD<<": no K0*(700) line shape registered - "
+                 <<"the kappa term is switched off.\n";
+      m_kappa = Complex(0.,0.);
+    }
+    else {
+      p_Tkappa = new BreitWigner(wkappa);
+    }
+  }
+  if (m_mode!=FF_0_PPP_mode::KM_piM_piP) m_kappa = Complex(0.,0.);
+
   std::string label = std::string("F1_0_KPiPi, mode=")+std::to_string(int(m_mode))+
                        (m_isF2 ? " (F2)" : " (F1)");
   DumpPropagatorStructure(label+" [T_K1^a]",  int(GetModel()), p_TK1a);
   DumpPropagatorStructure(label+" [T_K1^b]",  int(GetModel()), p_TK1b);
   DumpPropagatorStructure(label+" [T_rho^1]", int(GetModel()), p_Trho1);
   DumpPropagatorStructure(label+" [T_K*^1]",  int(GetModel()), p_TKstar1);
+  if (m_kappa!=Complex(0.,0.)) {
+    if (m_kappaShape==0)
+      DumpPropagatorStructure(label+" [T_kappa]", int(GetModel()), p_Tkappa);
+    else
+      msg_Out()<<"### "<<label<<" [K pi S wave]: dispersive scalar K pi form factor, "
+               <<"von Detten et al. arXiv:2103.01966, Fit "<<m_kappaShape<<"\n";
+    msg_Out()<<"###   S-wave coupling = "<<m_kappa<<" (F1), "<<-2.*m_kappa<<" (F2)\n";
+  }
   }
   else if ((GetModel()==FF_0_PPP_Base::Model::KS_CLEO || GetModel()==FF_0_PPP_Base::Model::CLEO_f0 ||
 	    GetModel()==FF_0_PPP_Base::Model::CLEO_flatte) &&
@@ -2106,7 +2224,7 @@ void F1_0_KPiPi::Construct(const FF_Parameters & params) {
       delete p_Trho1; delete p_KstCLEO;
       p_Trho1    = MileoTRho(params.p_model);
       p_KstCLEO  = MileoKstar(params.p_model);
-      p_K1Flatte = MakeK1_1270_Flatte();
+      p_K1Flatte = K1_1270_Flatte(params.p_model);
       msg_Out()<<"###   K1(1270): two-channel Flatte (K* pi, K rho); "
 	       <<"A/C/N seeded from Mileo et al. and NOT re-tuned\n";
     }
@@ -2167,9 +2285,12 @@ FF_KS(const double & s123,const double & s12,const double & s13) {
   Complex TK1a = (p_TK1a!=NULL ? (*p_TK1a)(s123) : Complex(0.,0.));
   Complex TK1b = (p_TK1b!=NULL ? (*p_TK1b)(s123) : Complex(0.,0.));
   switch (m_mode) {
-  case FF_0_PPP_mode::KM_piM_piP:
-    // G1=T_K1a*T_K*1(s2=s13); G2=T_K1b*T_rho1(s1)
-    return (m_isF2 ? TK1b*(*p_Trho1)(s1) : TK1a*(*p_TKstar1)(s13));
+  case FF_0_PPP_mode::KM_piM_piP: {
+    // G1=T_K1a*T_K*1(s2=s13); G2=T_K1b*T_rho1(s1); S wave adds A, -2A (Construct).
+    const Complex kappa = (m_kappa!=Complex(0.,0.) ? m_kappa*TK1b*KpiSWave(s13)
+                                                   : Complex(0.,0.));
+    return (m_isF2 ? TK1b*(*p_Trho1)(s1) - 2.*kappa : TK1a*(*p_TKstar1)(s13) + kappa);
+  }
   case FF_0_PPP_mode::piM_K0bar_pi0:
     // G1=2/3 T_K1b*T_rho1(s2=s13) + 1/3 T_K1a*T_K*1(s3=s12)
     // G2=1/3 T_K1a*[T_K*1(s1) - T_K*1(s3=s12)]

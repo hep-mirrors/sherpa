@@ -176,6 +176,31 @@ namespace METOOLS {
 
   ///////////////////////////////////////////////////////////////////////////
   //
+  // A non-resonant term: 1 at every s. It exists to sit in a
+  // Summed_Propagator next to a resonance, so that
+  //
+  //     (BW(s) + c) / (1 + c)
+  //
+  // keeps the D(0) = 1 convention of this file while adding a part with no
+  // s dependence. The tau -> K pi pi current uses it for the direct
+  // W* -> K* pi / K rho coupling: the K1 envelope in Q^2 gains a piece the
+  // K1 does not suppress, and the chiral limit at Q^2 = 0 is untouched.
+  //
+  // No flavour, mass or width (p_width == NULL); the diagnostic dump
+  // reports it as a constant rather than as an unregistered particle.
+  //
+  ///////////////////////////////////////////////////////////////////////////
+
+  class Constant_Propagator : public Propagator_Base {
+  public:
+    Constant_Propagator();
+    const Complex operator()(const double & s)  { return Complex(1.,0.); }
+    const Complex Normalised(const double & s)  { return Complex(1.,0.); }
+    const double  Normalised2(const double & s) { return 1.; }
+  };
+
+  ///////////////////////////////////////////////////////////////////////////
+  //
   // Gounaris-Sakurai with the imaginary part M*Gamma(s).
   //
   // DELIBERATELY SEPARATE from BreitWigner's resonance_type::GS, which builds

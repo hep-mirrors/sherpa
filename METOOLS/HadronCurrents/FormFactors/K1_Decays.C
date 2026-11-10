@@ -118,15 +118,15 @@ K1_1400_plus_Lineshape::K1_1400_plus_Lineshape() :
   m_channels.insert(K1_2piKstar);
 }
 
-Propagator_Base * METOOLS::MakeK1_1270_Flatte() {
-  // Validated BaBar 2007 working point, carried over from the ff-ppp-work
-  // branch where it took d03 chi2/ndf from 22.7 (fixed-width FM95) to 4.7.
-  // g_i have dimensions of GeV^2.
-  const double mass           = 1.254;
-  const double g_KstarPi      = 0.114114;
-  const double g_Krho         = 0.136937;
-  const double gamma_residual = 0.1092;  // modes outside the two explicit channels
-
+Propagator_Base * METOOLS::MakeK1_1270_Flatte(const double mass,
+                                              const double g_KstarPi,
+                                              const double g_Krho,
+                                              const double gamma_residual) {
+  // Defaults (K1_Decays.H): the validated BaBar 2007 working point, carried
+  // over from the ff-ppp-work branch where it took d03 chi2/ndf from 22.7
+  // (fixed-width FM95) to 4.7.  g_i have dimensions of GeV^2;
+  // gamma_residual covers the modes outside the two explicit channels.
+  //
   // The BARE POLE 1.254 is NOT PDG's Breit-Wigner mass 1.272, and must not be
   // replaced by the registry value: 1.272 sits ABOVE the K rho threshold
   // (~1.264), which inverts the sign of the dispersive term that makes the

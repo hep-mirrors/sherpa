@@ -25,6 +25,7 @@ set(FormFactors_SOURCES Line_Shapes.C
 			RChL_Functions.C
                      Novosibirsk4pi_GTables.C
                      KT3Pi_Tables.C
+                     KpiSWave_Tables.C
                      Parameter_Sets.C
 		      )
 set(FormFactors_HEADERS Line_Shapes.H
@@ -54,6 +55,7 @@ set(FormFactors_HEADERS Line_Shapes.H
 			RChL_Functions.H
 			Novosibirsk4pi_GTables.H
 			KT3Pi_Tables.H
+			KpiSWave_Tables.H
 			Parameter_Sets.H
 		      )
 
