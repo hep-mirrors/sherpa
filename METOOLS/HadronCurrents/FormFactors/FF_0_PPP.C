@@ -2013,8 +2013,18 @@ void F1_0_KPiPi::Construct(const FF_Parameters & params) {
 				       "deltaMag_pipi_f0",-0.2,"deltaPhase_pipi_f0");
     p_Trho1->Add(new BreitWigner(LineShapes->Get(Flavour(kf_f_0_600))), deltaF0);
   }
-  Propagator_Base * Kstar892  = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
-  Propagator_Base * Kstar1410 = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_1410_plus)));
+  // The K pi pair under this tower is K- pi+ in the K- pi- pi+ mode, i.e. the
+  // NEUTRAL Kbar*0, which is 4.4 MeV heavier than the K*(892)+ (0.8961 vs
+  // 0.89166 GeV).  Taking the charged one puts the m(K- pi+) peak low by that
+  // much, which the 20 MeV bins of BaBar 2007 (d04) resolve as +15% below and
+  // -15% above the peak.  The piM_K0bar_pi0 mode evaluates this same tower on
+  // a charged (pi- K0bar) and a neutral (K0bar pi0) pair, so it keeps the
+  // charged K* for both until the tower is split per pair.
+  const bool neutralKst = (m_mode==FF_0_PPP_mode::KM_piM_piP);
+  Propagator_Base * Kstar892  = new BreitWigner(LineShapes->Get(Flavour(
+      neutralKst ? kf_K_star_892  : kf_K_star_892_plus)));
+  Propagator_Base * Kstar1410 = new BreitWigner(LineShapes->Get(Flavour(
+      neutralKst ? kf_K_star_1410 : kf_K_star_1410_plus)));
   p_TKstar1 = new Summed_Propagator();
   p_TKstar1->Add(Kstar892,  Complex(1., 0.));
   p_TKstar1->Add(Kstar1410, gammaKst);
@@ -2085,7 +2095,8 @@ void F1_0_KPiPi::Construct(const FF_Parameters & params) {
 					 "deltaMag_pipi_f0",-0.2,"deltaPhase_pipi_f0");
       p_Trho1->Add(new BreitWigner(LineShapes->Get(Flavour(kf_f_0_600))), deltaF0);
     }
-    p_KstCLEO = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
+    // K- pi+ is the neutral Kbar*0: see the same choice in the KS branch above.
+    p_KstCLEO = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892)));
 
     if (GetModel()==FF_0_PPP_Base::Model::CLEO_flatte) {
       // Mileo's own rho/rho'/K* poles as defaults, and the Flatte for the
@@ -2311,8 +2322,15 @@ void FS_0_KPiPi::Construct(const FF_Parameters & params) {
 
   Complex gammaKst = ReadComplexParam(params.p_model,
 				      "gammaMag_Kpi_100",-0.135,"gammaPhase_Kpi_100");
-  Propagator_Base * Kstar892_1  = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_892_plus)));
-  Propagator_Base * Kstar1410_1 = new BreitWigner(LineShapes->Get(Flavour(kf_K_star_1410_plus)));
+  // T_K*^(1) sits on the K pi pair, which is the neutral Kbar*0 (K- pi+) in
+  // the K- pi- pi+ mode; see F1_0_KPiPi::Construct.  T_K*^(2) above is the
+  // W* -> K*- in Q^2 and stays charged.  piM_K0bar_pi0 mixes a charged and a
+  // neutral pair on this tower and keeps the charged K* for now.
+  const bool neutralKst = (m_mode==FF_0_PPP_mode::KM_piM_piP);
+  Propagator_Base * Kstar892_1  = new BreitWigner(LineShapes->Get(Flavour(
+      neutralKst ? kf_K_star_892  : kf_K_star_892_plus)));
+  Propagator_Base * Kstar1410_1 = new BreitWigner(LineShapes->Get(Flavour(
+      neutralKst ? kf_K_star_1410 : kf_K_star_1410_plus)));
   p_TKstar1 = new Summed_Propagator();
   p_TKstar1->Add(Kstar892_1,  Complex(1., 0.));
   p_TKstar1->Add(Kstar1410_1, gammaKst);
