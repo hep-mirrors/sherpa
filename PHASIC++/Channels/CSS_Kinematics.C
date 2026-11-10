@@ -190,7 +190,7 @@ int PHASIC::ConstructFIDipole
   fip.m_pi+=ktt*cos(fip.m_phi)*n_perp+zt/pnn*(gam*fip.m_pj+sij*fip.m_pk)-
     (mi2+ktt*ktt)/zt/pnn*(fip.m_pk+ma2/gam*fip.m_pj);
   fip.m_pj=fip.m_pk-Q-fip.m_pi;
-  return 1;
+  return 1; 
 }
 
 Kin_Args PHASIC::ClusterIFDipole

@@ -241,6 +241,7 @@ void Initialization_Handler::RegisterDefaults()
   pss["PT2MIN_GSPLIT_FACTOR"].SetDefault(1.0);
   pss["FS_AS_FAC"].SetDefault(1.0);
   pss["FIXED_ALPHAS"].SetDefault(-1.0);
+  pss["DISABLE_PDF_RESCALING"].SetDefault(false);
   pss["IS_AS_FAC"].SetDefault(0.5);
   pss["PDF_FAC"].SetDefault(1.0);
   pss["SCALE_FACTOR"].SetDefault(1.);

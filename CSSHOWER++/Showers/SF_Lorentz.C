@@ -74,8 +74,7 @@ double SF_Lorentz::JIF(const double &z,const double &y,const double &eta,
   if (scale < 0.0) {
     m_lastJ = 1.0 / z;
   } else if (m_disablepdfrescaling) {
-    // Removing f(eta/z)/f(eta) leaves the XPDF momentum factor.
-    m_lastJ = 1.0 / z;
+    m_lastJ = 1.0 / z; // sets PDF weight to 1
   } else {
     const double scalea(scale), scaleb(scale);
     const double fresh = p_sf->GetXPDF(scalea,eta/z,m_flavs[0],m_beam);
