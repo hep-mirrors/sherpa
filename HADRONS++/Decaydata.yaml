@@ -810,6 +810,34 @@ HADRON_DECAYS:
     #         active choice, alongside KS_f0 (13) on the K_S/K_L
     #         entries further down, so the current setup exercises both
     #         new f0 variants.
+    #   15 = KS_flatte: FM95 (10) with a two-channel Flatte K1(1270) in
+    #         both envelopes, a Gounaris-Sakurai rho(770), xiK1Mag 0.70
+    #         and CLEO's K1(1400) (MK1_1400_106/GK1_1400_106 = 1.463/
+    #         0.300). The Flatte's own parameters are MK1_1270_Flatte
+    #         (bare pole, 1.254 GeV - NOT the PDG mass), gKstarPi_K1_1270
+    #         (0.114114 GeV^2), gKrho_K1_1270 (0.136937 GeV^2) and
+    #         GresK1_1270 (0.1092 GeV); also read by 16. All of these are
+    #         effective line-shape parameters of this channel, not the
+    #         particle database's. Optional direct W* -> K* pi / K rho couplings,
+    #         directMag_K1a/directPhase_K1a (F1, the K* pi envelope) and
+    #         directMag_K1b/directPhase_K1b (F2, the K rho envelope):
+    #         each envelope becomes (T_K1 + c)/(1 + c), a part with no K1
+    #         in Q^2 that keeps the chiral limit. Default 0, i.e. pure
+    #         FM95 structure. Also read by 10 and 13.
+    #         Optional K1(1270) -> (K pi)_S pi-, the K pi S wave under the
+    #         K* (kappa = K0*(700), K0*(1430)), kappaMag_Kpipi/
+    #         kappaPhase_Kpipi: adds A T_K1^b S(s_K-pi+) to F1 and -2A
+    #         times the same to F2 (P wave between two spin-0 states).
+    #         kappaLineShape_Kpipi picks S: 0 = Breit-Wigner of the
+    #         particle database's kappa (comparison only), 1-4 = the
+    #         dispersive scalar K pi form factor of von Detten et al.,
+    #         arXiv:2103.01966, Fit 1-4 (3 is the reference). Default 0.
+    #         K- pi- pi+ mode only so far. Default A = 0, i.e. no S wave.
+    #   16 = CLEO_flatte: CLEO K1 (12) with the Flatte K1(1270), seeded
+    #         from Mileo et al. and not re-tuned.
+    # The entry below runs 15 with its 2026-11 tune (see the J2 block);
+    # the values quoted above are the code defaults, used only when a key
+    # is absent.
     # Reference: FM95 (hep-ph/9503474) for 10; CLEO/TAUOLA for 12/14.
     ######################################################
         IntResults: [3.6442e-15, 2.9146e-18, 1.2738e-13]
@@ -827,6 +855,27 @@ HADRON_DECAYS:
               Indices: [1, 3, 2]
               RUNNING_WIDTH: 1
               FORM_FACTOR: 15
+              # Tuned parameters (2026-11), fitted to Belle 2010 m(K- pi- pi+)
+              # (0.95-1.75 GeV), BaBar 2007 m(K- pi+) and m(pi- pi+), and the
+              # PDG B(tau- -> K- pi- pi+ nu), with the neutral K*(892)0 on the
+              # K- pi+ pair.  The K1(1400) mass and width were fitted under a
+              # PDG prior and settle at 1.365/0.202 GeV: they are effective
+              # parameters of this current, not the PDG resonance.  Without
+              # these keys the code defaults listed above apply.
+              kappaLineShape_Kpipi: 3
+              xiK1Mag: 2.01526
+              xiK1Phase: 2.72508
+              directMag_K1a: 0.227579
+              directPhase_K1a: -3.01507
+              directMag_K1b: 1.02574
+              directPhase_K1b: -2.47613
+              kappaMag_Kpipi: 0.549187
+              kappaPhase_Kpipi: -1.3771
+              MK1_1400_106: 1.36516
+              GK1_1400_106: 0.201513
+              MK1_1270_Flatte: 1.29377
+              gKstarPi_K1_1270: 0.674663
+              gKrho_K1_1270: 0.284576
         # 2 K* combinations (K1(1270)/K1(1400) x bare K*(892), spectator
         # =2) + 3 pi-pi combinations (K1(1270) x rho(770)/rho(1450)/
         # f0(600), spectator=1) - 50/50 split between the two chains,

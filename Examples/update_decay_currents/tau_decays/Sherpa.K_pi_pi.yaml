@@ -18,6 +18,27 @@
 # Form factor:  FF_0_PPP, mode KM_piM_piP
 # Selected:     FORM_FACTOR: 15 (KS_flatte), the model the decay table uses:
 #               genuine: Flatte K1(1270), Gounaris-Sakurai rho.
+#               The J2 block below carries the 2026-11 tune, identical to the
+#               one in this channel's Decaydata.yaml entry: fitted to Belle
+#               2010 m(K- pi- pi+) (0.95-1.75 GeV), BaBar 2007 m(K- pi+) and
+#               m(pi- pi+), and the PDG branching ratio.  The K1(1400) values
+#               (MK1_1400_106/GK1_1400_106) are effective parameters of this
+#               current, fitted under a PDG prior.  A card that restates
+#               Currents replaces the table's, so keep these keys with it;
+#               removing them gives the code defaults (xiK1Mag 0.70, no
+#               direct couplings, no S wave, K1(1400) 1.463/0.300, Flatte
+#               1.254/0.114114/0.136937).
+#               Optional direct W* -> K* pi / K rho couplings with no K1 in
+#               Q^2: add directMag_K1a (F1, K* pi) and directMag_K1b (F2,
+#               K rho), with directPhase_K1a/_K1b in rad, to the J2 block.
+#               Each K1 envelope becomes (T_K1 + c)/(1 + c), so the chiral
+#               limit is kept. Default 0 (pure FM95 structure).
+#               Optional K1(1270) -> (K pi)_S pi (the K pi S wave:
+#               kappa = K0*(700), K0*(1430)): kappaMag_Kpipi /
+#               kappaPhase_Kpipi, default 0. kappaLineShape_Kpipi picks
+#               its line shape: 0 = Breit-Wigner kappa (comparison only),
+#               1-4 = von Detten et al. (arXiv:2103.01966) Fit 1-4, the
+#               dispersive scalar K pi form factor; 3 is the reference.
 #
 # Other FORM_FACTOR models for this channel:
 #   0  None        identically zero (also what an omitted FORM_FACTOR gives)
@@ -61,7 +82,24 @@ HADRON_DECAYS:
         Currents:
           Exchange:
           - J1: {Type: VA_F_F, Indices: [4, 0], v: 1.0, a: -1.0}
-            J2: {Type: VA_0_KPiPi, Indices: [1, 3, 2], FORM_FACTOR: 15}
+            J2:
+              Type: VA_0_KPiPi
+              Indices: [1, 3, 2]
+              FORM_FACTOR: 15
+              kappaLineShape_Kpipi: 3
+              xiK1Mag: 2.01526
+              xiK1Phase: 2.72508
+              directMag_K1a: 0.227579
+              directPhase_K1a: -3.01507
+              directMag_K1b: 1.02574
+              directPhase_K1b: -2.47613
+              kappaMag_Kpipi: 0.549187
+              kappaPhase_Kpipi: -1.3771
+              MK1_1400_106: 1.36516
+              GK1_1400_106: 0.201513
+              MK1_1270_Flatte: 1.29377
+              gKstarPi_K1_1270: 0.674663
+              gKrho_K1_1270: 0.284576
 
 # Rivet comparison. --ignore-beams: the analyses look for tau decays and
 # do not care that there is no collider event around them.
