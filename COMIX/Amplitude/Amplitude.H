@@ -122,6 +122,9 @@ namespace COMIX {
     double m_sf, m_fsf;
     bool   m_trig;
 
+    // selector decision per subevent in the last call to RSTrigger
+    std::vector<int> m_seltrig;
+
     ATOOLS::NLO_subevtlist    m_subs;
     PHASIC::Virtual_ME2_Base *p_loop;  
 
@@ -220,7 +223,10 @@ namespace COMIX {
     void SetColors(const Int_Vector &rc,
 		   const Int_Vector &ac,const int set=0);
 
-    bool RSTrigger(PHASIC::Combined_Selector *const sel,const int mode);
+    bool RSTrigger(PHASIC::Combined_Selector *const sel,const int mode,
+		   ATOOLS::NLO_subevtlist *const subs=NULL);
+    inline const std::vector<int> &SelectorTriggers() const
+    { return m_seltrig; }
 
     void FillCombinations(Combination_Set &combs,CFlavVector_Map &flavs,
 			  SizeT_Map *brs=NULL,const NLO_subevt *sub=NULL) const;

@@ -1253,10 +1253,18 @@ bool Amplitude::SetMomenta(const Vec4D_Vector &moms)
 }
 
 bool Amplitude::RSTrigger
-(PHASIC::Combined_Selector *const sel,const int mode)
+(PHASIC::Combined_Selector *const sel,const int mode,
+ NLO_subevtlist *const subs)
 {
   if (m_subs.empty() || sel==NULL) return true;
-  sel->RSTrigger(&m_subs);
+  // A process mapped onto this amplitude passes its own subevents: they
+  // share the momenta of m_subs but carry the flavours of that process,
+  // which its cuts must be evaluated with.
+  NLO_subevtlist *const tsubs(subs?subs:&m_subs);
+  sel->RSTrigger(tsubs);
+  m_seltrig.resize(m_subs.size());
+  for (size_t i(0);i<m_subs.size();++i)
+    m_seltrig[i]=m_subs[i]->m_trig=(*tsubs)[i]->m_trig;
   int trig=m_trig=m_subs.back()->m_trig;
   for (size_t i(0);i<m_scur.size();++i) {
     Dipole_Kinematics *kin(m_scur[i]->Sub()->In().front()->Kin());

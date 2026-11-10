@@ -22,6 +22,8 @@ namespace COMIX {
     Amplitude      *p_bg;
     Hard_Matrix    *p_hc;
     Single_Process *p_map;
+    // process whose real-subtraction terms p_bg holds, see Partonic
+    Single_Process *p_lastcalc;
 
     PHASIC::Virtual_ME2_Base *p_loop;
     PHASIC::KP_Terms         *p_kpterms;

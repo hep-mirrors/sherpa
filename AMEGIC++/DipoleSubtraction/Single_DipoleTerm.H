@@ -23,6 +23,13 @@ namespace AMEGIC {
     Single_DipoleTerm     * p_partner;
 
     Single_LOProcess      * p_LO_process;
+    // cuts the next evaluation applies instead of those of p_LO_process,
+    // for a process mapped onto the real-emission process, and its
+    // Born flavours (see Single_Real_Correction::Partonic)
+    PHASIC::Combined_Selector    * p_cutsel;
+    const ATOOLS::Flavour        * p_cutfl;
+    // selector decision of the last evaluation
+    int                     m_seltrig;
     ATOOLS::Vec4D         * p_LO_mom;
     ATOOLS::Vec4D_Vector    p_LO_labmom;
 
@@ -145,6 +152,15 @@ namespace AMEGIC {
                     ATOOLS::Variations_Mode varmode,
                     int mode);
     double         operator()(const ATOOLS::Vec4D *,const ATOOLS::Poincare &cms,const int);
+
+    // cuts of sel for the Born flavours fl (default: those of the LO
+    // process), evaluated on the Born momenta of the last evaluation
+    int  CutTrigger(PHASIC::Combined_Selector *const sel=NULL,
+		    const ATOOLS::Flavour *const fl=NULL);
+    inline void SetCuts(PHASIC::Combined_Selector *const sel,
+			const ATOOLS::Flavour *const fl)
+    { p_cutsel=sel; p_cutfl=fl; }
+    inline int  SelectorTrigger() const { return m_seltrig; }
 
     int            Type() { return 15; }
     void PrintLOmom();

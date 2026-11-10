@@ -26,7 +26,7 @@ using namespace ATOOLS;
 
 COMIX::Single_Process::Single_Process():
   COMIX::Process_Base(this),
-  p_bg(NULL), p_hc(NULL), p_map(NULL),
+  p_bg(NULL), p_hc(NULL), p_map(NULL), p_lastcalc(NULL),
   p_loop(NULL), p_kpterms(NULL),
   m_user_stype(sbt::none), m_user_imode(cs_itype::none)
 {
@@ -432,10 +432,25 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
                                        p_int->ISR()->PDF(1));
   }
   if (m_zero || !Selector()->Result()) return m_lastxs;
-  if (p_map!=NULL && m_lookup && p_map->m_lookup && p_map->Selector()->Result()) {
-    m_dxs=p_map->m_dxs;
-    m_w=p_map->m_w;
-    if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) {
+  const bool rsub(m_pinfo.m_fi.NLOType()&nlo_type::rsub);
+  bool lookup(p_map!=NULL && m_lookup && p_map->m_lookup &&
+	      p_map->Selector()->Result());
+  if (lookup && rsub) {
+    // The real and dipole terms in the partner's amplitude were computed
+    // for the cuts of the process that evaluated it last. They can be
+    // reused only if the cuts of this process, evaluated with its own
+    // flavours, accept the same subevents.
+    Selector()->RSTrigger(&m_subs);
+    const std::vector<int> &trig(p_map->p_bg->SelectorTriggers());
+    if (p_map->p_lastcalc==NULL || trig.size()!=m_subs.size()) lookup=false;
+    for (size_t i(0);lookup && i<m_subs.size();++i)
+      if (m_subs[i]->m_trig!=trig[i]) lookup=false;
+  }
+  if (lookup) {
+    const Single_Process *src(rsub?p_map->p_lastcalc:p_map);
+    m_dxs=src->m_dxs;
+    m_w=src->m_w;
+    if (rsub) {
       const NLO_subevtlist &rsubs(p_map->p_bg->SubEvts());
       for (size_t i(0);i<rsubs.size();++i) {
 	m_subs[i]->CopyXSData(rsubs[i]);
@@ -447,9 +462,15 @@ double COMIX::Single_Process::Partonic(const Vec4D_Vector &p,
     }
   }
   else {
-    if (m_pinfo.m_fi.NLOType()&nlo_type::rsub &&
-        !sp->p_bg->RSTrigger(Selector(),m_mcmode))
-      return m_lastxs=m_dxs=0.0;
+    if (rsub) {
+      sp->p_lastcalc=this;
+      // The dipole triggers in the partner's amplitude can still exclude
+      // dipoles rejected by the cuts of the process that evaluated it
+      // before; evaluating the kinematics again resets them.
+      if (p_map) sp->p_bg->SetMomenta(p);
+      if (!sp->p_bg->RSTrigger(Selector(),m_mcmode,p_map?&m_subs:NULL))
+	return m_lastxs=m_dxs=0.0;
+    }
     sp->p_scale->CalculateScale(p);
     if (m_pinfo.m_cls==cls::sample) {
       m_dxs=sp->p_bg->Differential();
@@ -597,7 +618,8 @@ void COMIX::Single_Process::UpdateKPTerms(const int mode)
 	      p1.PPlus()/rpa->gen.PBunch(0).PPlus());
   Single_Process *sp(p_map!=NULL?p_map:this);
   double w(1.0);
-  bool map(p_map!=NULL && m_lookup && p_map->m_lookup);
+  bool map(p_map!=NULL && m_lookup && p_map->m_lookup &&
+	   p_map->Selector()->Result());
   if (p_int->ISR()->PDF(0) && p_int->ISR()->PDF(0)->Contains(m_flavs[0])) {
     m_x[0]=map?p_map->m_x[0]:eta0+p_ismc->ERan("z_1")*(1.0-eta0);
     w*=(1.0-eta0);

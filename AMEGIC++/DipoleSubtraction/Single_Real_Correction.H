@@ -34,6 +34,13 @@ namespace AMEGIC {
     size_t                  m_pspisrecscheme,m_pspfsrecscheme;
 
     Single_Real_Correction     * p_partner;
+    // process whose cuts the next evaluation applies, see Partonic
+    Single_Real_Correction     * p_cutproc;
+    // selector decision for the real event in the last evaluation
+    int                          m_realseltrig;
+    // for a mapped process: its Born flavours for each dipole term of
+    // the partner, in the partner's order
+    std::vector<ATOOLS::Flavour_Vector> m_cutfls;
 
     Process_Base          * p_tree_process;
     ATOOLS::Vec4D_Vector    m_real_momenta;
@@ -47,6 +54,7 @@ namespace AMEGIC {
 
     void FillProcessMap(PHASIC::NLOTypeStringProcessMap_Map *apmap);
     void ReMapFlavs(ATOOLS::NLO_subevt *const sub,const int mode=0);
+    bool SameCuts(const ATOOLS::Vec4D_Vector &moms);
     void SmearCounterEvents(ATOOLS::NLO_subevtlist& subevtlist);
     bool AllowAsSpecInISPFF(const size_t &k);
     bool AllowAsSpecInFSPFF(const size_t &k);

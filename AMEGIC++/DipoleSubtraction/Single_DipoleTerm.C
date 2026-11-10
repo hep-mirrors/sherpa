@@ -40,7 +40,8 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,
                                      Process_Integrator* pint) :
   m_iresult(0.), m_valid(true), m_noISclustertolepton(true), m_dalpha(1.),
   m_dkt2max(std::numeric_limits<double>::max()),
-  m_maxgsmass(0.), p_partner(this), p_LO_process(NULL), p_LO_mom(NULL),
+  m_maxgsmass(0.), p_partner(this), p_LO_process(NULL),
+  p_cutsel(NULL), p_cutfl(NULL), m_seltrig(0), p_LO_mom(NULL),
   m_stype(stype), m_dtype(dpt::none), m_ftype(spt::none),
   m_pi(pi), m_pj(pj), m_pk(pk), m_LOpij(0), m_LOpk(0),
   p_dipole(NULL), m_smth(0.), m_nphotonsplits(0),
@@ -630,6 +631,17 @@ double Single_DipoleTerm::Partonic(const Vec4D_Vector& _moms,
   return m_mewgtinfo.m_B=operator()(&pp.front(),cms,mode);
 }
 
+int Single_DipoleTerm::CutTrigger(Combined_Selector *const sel,
+                                  const Flavour *const fl)
+{
+  if (sel==NULL) {
+    if (!p_LO_process->Selector()->On()) return true;
+    return p_dipole->KinCheck()?p_LO_process->Trigger(p_LO_labmom):0;
+  }
+  if (!sel->On()) return true;
+  return p_dipole->KinCheck()?sel->Trigger(p_LO_labmom,fl,m_subevt.m_n):0;
+}
+
 double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
                                      const ATOOLS::Poincare &cms,
                                      const int _mode)
@@ -647,9 +659,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,
 
   ((_mode&2)?p_LO_process->Partner():p_LO_process)->SetSubevtList(p_subevtlist);
 
-  if (p_LO_process->Selector()->On())
-    m_subevt.m_trig=p_dipole->KinCheck()?p_LO_process->Trigger(p_LO_labmom):0;
-  else m_subevt.m_trig=true;
+  m_subevt.m_trig=m_seltrig=CutTrigger(p_cutsel,p_cutfl);
   msg_Debugging()<<"Trigger: "<<m_subevt.m_trig
                  <<", kinematics check: "<<p_dipole->KinCheck()<<std::endl;
   p_LO_process->Integrator()->SetMomenta(p_LO_labmom);

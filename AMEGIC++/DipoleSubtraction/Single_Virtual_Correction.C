@@ -536,7 +536,10 @@ double Single_Virtual_Correction::Partonic(const Vec4D_Vector &moms,
 {
   if (mode==1) THROW(fatal_error,"Invalid call");
   if (!Selector()->Result()) return m_lastxs = m_lastdxs = m_lastbxs = 0.0;
-  return DSigma(moms,m_lookup,varmode,mode);
+  // The partner's last results belong to this phase-space point only if
+  // the partner passed its own cuts here.
+  return DSigma(moms,m_lookup && p_partner->Selector()->Result(),
+		varmode,mode);
 }
 
 double Single_Virtual_Correction::DSigma(const Vec4D_Vector &_moms,

@@ -34,7 +34,7 @@ Single_Real_Correction::Single_Real_Correction() :
   m_iresult(0.), m_smear_threshold(0.), m_smear_power(0.),
   m_libnumb(0), m_ossubon(0), m_user_stype(sbt::none),
   m_pspisrecscheme(0), m_pspfsrecscheme(0),
-  p_partner(this), p_tree_process(NULL)
+  p_partner(this), p_cutproc(this), m_realseltrig(0), p_tree_process(NULL)
 {
   DEBUG_FUNC("");
   m_Norm = 1.;
@@ -399,6 +399,14 @@ void Single_Real_Correction::Minimize()
   for (size_t i=0;i<m_subostermlist.size();i++)
     m_subostermlist[i]->Minimize();
   m_subevtlist.clear();
+  m_cutfls.clear();
+  for (size_t i=0;i<p_partner->m_subtermlist.size();i++) {
+    const NLO_subevt *const sub(p_partner->m_subtermlist[i]->GetSubevt());
+    m_cutfls.push_back(Flavour_Vector(sub->m_n));
+    for (size_t j(0);j<sub->m_n;++j)
+      m_cutfls.back()[j]=p_tree_process->ReMap
+	(sub->p_fl[j],ToString(sub->p_id[j]));
+  }
   for (size_t i=0;i<p_partner->m_subtermlist.size();i++)
     if (p_partner->m_subtermlist[i]->IsValid()) {
       m_subevtlist.push_back(new NLO_subevt(*p_partner->m_subtermlist[i]->GetSubevt()));
@@ -442,6 +450,25 @@ void Single_Real_Correction::ReMapFlavs(NLO_subevt *const sub,const int mode)
   ReMapFlavs(sub,0);
 }
 
+bool Single_Real_Correction::SameCuts(const Vec4D_Vector &moms)
+{
+  // The partner's last results can be reused only if the cuts of this
+  // process, evaluated with its own flavours, accept the same real event
+  // and the same dipoles.
+  if (!m_no_tree &&
+      p_tree_process->Trigger(moms)!=(p_partner->m_realseltrig!=0))
+    return false;
+  if (m_cutfls.size()!=p_partner->m_subtermlist.size())
+    THROW(fatal_error,"Internal error");
+  for (size_t i=0;i<p_partner->m_subtermlist.size();++i) {
+    Single_DipoleTerm *const dt(p_partner->m_subtermlist[i]);
+    if (dt->IsValid() &&
+	dt->CutTrigger(Selector(),&m_cutfls[i].front())!=dt->SelectorTrigger())
+      return false;
+  }
+  return true;
+}
+
 double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,
                                         Variations_Mode varmode,
                                         int mode)
@@ -453,8 +480,15 @@ double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,
   // fill m_subevtlist
   if (p_partner == this) m_lastdxs = operator()(moms,mode);
   else {
-    if (m_lookup) m_lastdxs = p_partner->LastDXS()*m_sfactor;
-    else m_lastdxs = p_partner->operator()(moms,mode)*m_sfactor;
+    if (m_lookup && SameCuts(moms))
+      m_lastdxs = p_partner->LastDXS()*m_sfactor;
+    else {
+      // compute the partner's real and dipole terms with the cuts of
+      // this process, evaluated with its own flavours
+      p_partner->p_cutproc=this;
+      m_lastdxs = p_partner->operator()(moms,mode)*m_sfactor;
+      p_partner->p_cutproc=p_partner;
+    }
     std::vector<NLO_subevt*>* partnerlist=p_partner->GetSubevtList();
     if (partnerlist->size()!=m_subevtlist.size()) THROW(fatal_error,"Internal error");
     for (size_t i=0;i<partnerlist->size();++i) {
@@ -490,7 +524,12 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   }
 
   bool res(true);
+  if (p_cutproc!=this && p_cutproc->m_cutfls.size()!=m_subtermlist.size())
+    THROW(fatal_error,"Internal error");
   for (size_t i=0;i<m_subtermlist.size();i++) if (m_subtermlist[i]->IsValid()) {
+    if (p_cutproc==this) m_subtermlist[i]->SetCuts(NULL,NULL);
+    else m_subtermlist[i]->SetCuts(p_cutproc->Selector(),
+				   &p_cutproc->m_cutfls[i].front());
     m_subtermlist[i]->Integrator()->SetMomenta(_mom);
     double test = (*m_subtermlist[i])(&mom.front(),cms,mode|2);
     if (IsBad(test)) res=false;
@@ -520,7 +559,7 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   bool realtrg(true);
 
   if (!m_no_tree) {
-    realtrg=p_tree_process->Trigger(_mom);
+    realtrg=p_cutproc->p_tree_process->Trigger(_mom);
     bool alltrg(realtrg);
     for (size_t i(0);i<m_subevtlist.size();++i) {
       alltrg|=m_subevtlist[i]->m_trig;
@@ -544,7 +583,7 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
       m_realevt.m_K = p_tree_process->LastK();
     }
   }
-  m_realevt.m_trig=realtrg;
+  m_realevt.m_trig=m_realseltrig=realtrg;
   for (size_t i(0);i<m_subevtlist.size();++i) {
     if (!m_subevtlist[i]->m_trig || !res)
       m_subevtlist[i]->m_me=m_subevtlist[i]->m_mewgt=0.0;
