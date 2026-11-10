@@ -1188,31 +1188,33 @@ HADRON_DECAYS:
     # tau- -> nu_tau K+ K- K- - NOT recognised by any FixMode() branch
     # (no 3-kaon mode exists at all); the cross-check note is explicit
     # that no implementation-ready KKK current exists in the literature
-    # surveyed there ("do not imply a precision model"). This entry is
-    # a status marker, producing EXACTLY ZERO rate (relies on the
-    # NULL-pointer-crash fix applied to VA_0_PPP's Calc() - the getter
-    # returns NULL for this flavour combination, which used to segfault
-    # before that fix, now cleanly falls back to zero). Not a gap to
+    # surveyed there ("do not imply a precision model"). Not a gap to
     # quietly fill.
+    #
+    # The entry is commented out. VA_0_PPP has no form factor for these
+    # flavours, so its current vanishes identically, and Exchange_ME
+    # stops the run on a channel whose every exchange vanishes. All tau
+    # channels are built at start-up whatever their BR, so the entry
+    # would stop every tau run.
     #
     # Available FORM_FACTOR options: none - no dedicated current exists.
     ######################################################
         IntResults: [8.8602e-16, 8.8123e-19, 2.6146e-14]
-      321,-321,-321,16:
-        BR: [0.0, 0.0] # [3.7e-05, 3.7e-05]
-        Currents:
-          Exchange:
-          - J1:
-              Type: VA_F_F
-              Indices: [4, 0]
-              v: 1.
-              a: -1.
-            J2:
-              Type: VA_0_PPP
-              Indices: [1, 2, 3]
-              RUNNING_WIDTH: 1
-              FORM_FACTOR: 10
-        AlwaysIntegrate: 0
+    # 321,-321,-321,16:
+    #   BR: [0.0, 0.0] # [3.7e-05, 3.7e-05]
+    #   Currents:
+    #     Exchange:
+    #     - J1:
+    #         Type: VA_F_F
+    #         Indices: [4, 0]
+    #         v: 1.
+    #         a: -1.
+    #       J2:
+    #         Type: VA_0_PPP
+    #         Indices: [1, 2, 3]
+    #         RUNNING_WIDTH: 1
+    #         FORM_FACTOR: 10
+    #   AlwaysIntegrate: 0
 
     ##### eta pi pi #####
     #
