@@ -176,78 +176,84 @@ double LF_VV1S0_Quarkonia_FI::Z() {
   return m_zmin + (m_zmax - m_zmin) * ran->Get();
 }
 
-double LF_VV1S0_Quarkonia_IF::operator()(const double z, const double y, const double eta, const double scale, const double Q2) {
-  const double mj  =  m_flavs[2].Mass(true);
-  const double mk  =  m_flspec.Mass(true);
-  const double muj2 = sqr(m_flavs[2].Mass(true))/Q2;
-  const double muk2 = sqr(m_flspec.Mass(true))/Q2;
-  const double sai = sqr(mj) * (1.0 - y / z) + (Q2 - sqr(mk)) * (y / z);
-  const double M = 2*Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  double value = 0;
-  value  = sqr(sai) + sqr(sqr(M)) - 2 * (1 - z) * (sai + sqr(M))*sai + 2*sqr(sai*(1-z));
-  value /= sai*sqr(sai-sqr(M));
-
-  value *= 1. / ( 1. + muj2 / (1 - muk2 - muj2) * z / y ) * ( 1 - y ) / ( 1 - 2*y);
-
-  return sqr(p_cf->Coupling(scale, 0)) * value; //* JIF(z, y, eta, scale);
+double LF_VV1S0_Quarkonia_IF::operator()(
+  const double z, const double y, const double eta, const double scale,
+  const double Q2) {
+  const double M2 = sqr(m_flavs[2].Mass(true));
+  const double mk2 = p_ms->Mass2(m_flspec);
+  // Spacelike invariant, reconstructed without selecting an evolution scheme.
+  const double V = (Q2 + M2 + mk2)*y/z - M2;
+  // Physical support of the collinear crossed expression.
+  if (IsBad(V) || !(V >= z*M2/(1-z))) return 0.;
+  const double r = (1-z) - z*M2/V;
+  // Cross s*F_T with -z, then convert dV to dt/t; dV/dt=1/(1-z)
+  // for the supported IF gluon evolution schemes. JIF supplies flux/PDF once.
+  const double value = scale*(1+sqr(r))/(z*(1-z)*sqr(V+M2));
+  return sqr(p_cf->Coupling(scale, 0))*value*JIF(z, y, eta, scale);
 }
 
-double LF_VV1S0_Quarkonia_IF::OverIntegrated(const double zmin, const double zmax, const double scale, const double xbj) {
+double LF_VV1S0_Quarkonia_IF::OverIntegrated(
+  const double zmin, const double zmax, const double scale, const double xbj) {
   m_zmin = std::max(zmin,ZMIN);
   m_zmax = std::min(zmax,1.);
-  m_Jmax = m_flavs[0].Kfcode() < 3 ? 5. : 1.;
-  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  const double prefactor = 4./27*GetLDME(m_flavs[2].Kfcode())/m;
-  return prefactor * sqr(p_cf->MaxCoupling(0)) / sqr(2*m) * (zmax - zmin) * m_Jmax;
+  m_Jmax = m_disablepdfrescaling ? 1. : 5.;
+  const double M = m_flavs[2].Mass(true);
+  // Same colour, polarization and dt/(2*pi*t) convention as FF/FI 1S0;
+  const double prefactor = 64.*M_PI/27*GetLDME(m_flavs[2].Kfcode())/M;
+  return prefactor * 0.25 * OverEstimated(0.5, 0.) * (m_zmax-m_zmin)/(m_zmin*m_zmax);
 }
 
 double LF_VV1S0_Quarkonia_IF::OverEstimated(const double z, const double y) {
-  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  return sqr(p_cf->MaxCoupling(0)) /sqr(2*m) * m_Jmax;
+  // Including PDF-free JIF=1/z, one envelope covers all supported gluon
+  //  schemes: t <= (1-z)*(V+M^2)+M^2 and V >= z*M^2/(1-z).
+  return 4.*sqr(p_cf->MaxCoupling(0)/m_flavs[2].Mass(true))*m_Jmax/sqr(z);
 }
 
 double LF_VV1S0_Quarkonia_IF::Z() {
-  return m_zmin + (m_zmax - m_zmin) * ran->Get();
+  const double r = ran->Get();
+  return 1./((1-r)/m_zmin+r/m_zmax);
 }
 
-double LF_VV1S0_Quarkonia_II::operator()(const double z, const double y, const double eta, const double scale, const double Q2) {
-  const double mj  =  m_flavs[2].Mass(true);
-  const double mb  =  m_flspec.Mass(true);
-  const double muj2 = sqr(m_flavs[2].Mass(true))/Q2;
-  const double mub2 = sqr(m_flspec.Mass(true))/Q2;
-  const double sab = Q2*((1 - muj2)/z - mub2*(1-z)/z);
-  const double saj = sqr(mj) - y * (sab - sqr(mb));
-  const double M = mj; //2*Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  double value = 0;
-  value  = sqr(saj) + sqr(sqr(M)) - 2 * (1 - z) * (saj + sqr(M))*saj + 2*sqr(saj*(1-z));
-  value /= (-saj)*sqr(saj-sqr(M));
-  value = (1 - 3*z + 4 * sqr(z) - 2 * cube(z))/(scale);
-  // saj is negative, so we need to flip the sign of the denominator to get a positive value.
-  // This is because another 1/saj is factored out as part of the Sudakov
-  // msg_Out() << "z = " << z << ",  y = " << y << ",  scale = " << scale << ",  saj = " << saj << ", M = " << mj << ", v = " << value << std::endl;
-  // value *=  fabs(1. / ( sqr(mj) / (sab - sqr(mb)) / y - 1)); // / ( 1. + sqr(M)/scale); //(1 - z - y) / (1 - z - 2*y); 
-  // PRINT_VAR(value);
-  return sqr(p_cf->Coupling(scale, 0)) * value; // * JII(z, y, eta, scale);
+double LF_VV1S0_Quarkonia_II::operator()(
+  const double z, const double y, const double eta, const double scale, const double Q2) {
+  if (!(z > 0. && z < 1. && y > 0. && y < 1-z && scale > 0.)) return 0.;
+  const double M2 = sqr(m_flavs[2].Mass(true));
+  const double mb2 = p_ms->Mass2(m_flspec);
+  if (!(Q2 > M2+mb2)) return 0.;
+  // ConstructIIDipole: V=-(pa-pH)^2=y*(sab-mb^2)-M^2.
+  // Reconstruct the invariant without selecting an evolution scheme.
+  const double V = (Q2-M2-mb2)*y/z-M2;
+  if (IsBad(V) || !(V >= z*M2/(1-z))) return 0.;
+  const double r = (1-z)-z*M2/V;
+  // Same collinear -z crossing as IF. Convert dV to dt/t and call JII
+  // once, following FFV_II's sampled-z flux/PDF convention.
+  const double value = scale*(1+sqr(r))/(z*(1-z)*sqr(V+M2));
+  return sqr(p_cf->Coupling(scale, 0))*value*JII(z, y, eta, scale);
 }
 
-double LF_VV1S0_Quarkonia_II::OverIntegrated(const double zmin, const double zmax, const double scale, const double xbj) {
+double LF_VV1S0_Quarkonia_II::OverIntegrated(
+  const double zmin, const double zmax,  const double scale, const double xbj) {
   m_zmin = std::max(zmin,ZMIN);
-  m_zmax = std::min(zmax,ZMAX);
-  // II needs a larger safety envelope in the small-z/small-y corner.
-  m_Jmax = 10 * (m_flavs[0].Kfcode() < 3 ? 5. : 1.);
-  const double m = m_flavs[2].Mass(true);
-  //Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  const double prefactor = 4./27*GetLDME(m_flavs[2].Kfcode())/m;
-  return prefactor * sqr(p_cf->MaxCoupling(0)) / sqr(m) * (m_zmax - m_zmin) * m_Jmax;
+  m_zmax = std::min(zmax,1.);
+  m_Jmax = m_disablepdfrescaling ? 1. : 5.;
+  const double M = m_flavs[2].Mass(true);
+  // Same per-colour-connection normalization as IF; do not count the
+  // second incoming leg here. L, spin and evolution constants enter once.
+  const double prefactor = 64.*M_PI/27*GetLDME(m_flavs[2].Kfcode())/M;
+  return prefactor * 0.25 * OverEstimated(0.5, 0.)
+    * (m_zmax-m_zmin)/(m_zmin*m_zmax);
 }
 
 double LF_VV1S0_Quarkonia_II::OverEstimated(const double z, const double y) {
-  const double m = m_flavs[2].Mass(true); //Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  return sqr(p_cf->MaxCoupling(0)) * ( 5. ) / sqr(m)  * m_Jmax;
+  if (!(z > 0. && z < 1.)) return 0.;
+  // All current gluon schemes obey t <= (1-z)*(V+M^2)+M^2.
+  // Together with V >= z*M^2/(1-z), this bounds PDF-free JII=1/z.
+  return 4.*sqr(p_cf->MaxCoupling(0)/m_flavs[2].Mass(true))*m_Jmax/sqr(z);
 }
 
 double LF_VV1S0_Quarkonia_II::Z() {
-  return (m_zmax - m_zmin) * ran->Get() + m_zmin;
+  const double r = ran->Get();
+  return 1./((1-r)/m_zmin+r/m_zmax);
 }
 
 double LF_V1S0V_Quarkonia_FF::operator()(const double z, const double y, const double eta, const double scale, const double Q2) { 
