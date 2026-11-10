@@ -103,8 +103,9 @@ double CCFM_KFactor_Setter::KFactor(const int mode)
   if (!m_on || p_meps->Amplitudes().empty()) return m_weight=1.0;
   Cluster_Amplitude *ampl(p_meps->Amplitudes().back());
   if (p_proc->Info().Has(nlo_type::real)) {
-    if (p_proc->GetSubevtList()->back()->p_ampl &&
-	p_proc->GetSubevtList()->back()->p_ampl->Next())
+    if (p_proc->GetSubevtList() &&
+      p_proc->GetSubevtList()->back()->p_ampl &&
+      p_proc->GetSubevtList()->back()->p_ampl->Next())
       ampl=p_proc->GetSubevtList()->back()->p_ampl->Next();
     else {
       msg_Debugging()<<"Real emission amplitude not found\n";
