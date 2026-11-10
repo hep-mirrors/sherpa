@@ -754,12 +754,11 @@ void Amplitude::WriteOutAmpFile(const std::string &name)
       if (ckfcs.find(kfc)==ckfcs.end()) caffm.push_back(kfc);
       ckfcs.insert(kfc);
     }
-    for (size_t j(0);j<m_affm[i].size();++j)
-      for (std::map<size_t,std::vector<long int> >::const_iterator
-	     it(m_affm[i].begin());it!=m_affm[i].end();++it) {
-	*amp<<it->first<<" "<<it->second.size()<<" ";
-	for (size_t k(0);k<it->second.size();++k) *amp<<it->second[k]<<" ";
-      }
+    for (std::map<size_t,std::vector<long int> >::const_iterator
+	   it(m_affm[i].begin());it!=m_affm[i].end();++it) {
+      *amp<<it->first<<" "<<it->second.size()<<" ";
+      for (size_t k(0);k<it->second.size();++k) *amp<<it->second[k]<<" ";
+    }
     *amp<<"0\n";
   }
   *amp<<"eof\n";
