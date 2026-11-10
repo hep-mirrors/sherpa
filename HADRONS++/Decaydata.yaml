@@ -145,6 +145,43 @@ HADRON_DECAYS:
         IntResults: [3.9395e-13, 3.9328e-16, 3.7839e-12]
 
     ######################################################
+    # One pseudoscalar
+    #
+    # <P(p)| qbar gamma^mu (1-gamma_5) q' |0> = -i f_P V p^mu, the
+    # created-meson direction of the decay-constant current (VA_0_P;
+    # VA_P_0 is the same class for a decaying meson, D -> l nu). No form
+    # factor: the rate is fixed by f_P and V alone,
+    #   Gamma = G_F^2 V^2 f_P^2 m_tau^3 (1 - m_P^2/m_tau^2)^2 / (16 pi).
+    # f_pi = 0.1304, f_K = 0.1561 GeV and V from METOOLS Tools are the
+    # defaults; override with fP / Vxx.
+    ######################################################
+      -211,16:
+        BR: [0.0, 0.0] # [0.1082, 0.1082]
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [2, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_P
+              Indices: [1]
+
+      -321,16:
+        BR: [0.0, 0.0] # [0.00696, 0.00696]
+        Currents:
+          Exchange:
+          - J1:
+              Type: VA_F_F
+              Indices: [2, 0]
+              v: 1.
+              a: -1.
+            J2:
+              Type: VA_0_P
+              Indices: [1]
+
+    ######################################################
     # Two pseudoscalars
     #
     # BR scheme (this and the Three pseudoscalars section below): every
@@ -3953,7 +3990,8 @@ HADRON_DECAYS:
   #
   # pi^+/-, K^+/-, K_S and K_L are NOT given decay blocks: they are
   # quasi-stable on detector scales, their blocks in the full table
-  # need the VA_0_P current (absent from METOOLS/HadronCurrents), and
+  # use the old HADRONS++ tag VA_0_P for the decaying meson (VA_P_0
+  # in METOOLS, where VA_0_P is tau -> P nu), and
   # their K -> pi l nu entries reuse the tag VA_P_P with legacy
   # HADRONS++ form-factor numbering that the new VA_P_P would silently
   # misread. See the NAME CLASH warning at the end of this preamble.
