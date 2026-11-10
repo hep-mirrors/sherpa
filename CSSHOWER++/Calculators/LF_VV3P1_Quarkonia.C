@@ -177,75 +177,93 @@ double LF_VV3P1_Quarkonia_FI::Z() {
   return m_zmin * pow(m_zmax/m_zmin, ran->Get());
 }
 
-double LF_VV3P1_Quarkonia_IF::operator()(const double z, const double y, const double eta, const double scale, const double Q2) {
-  const double mj  =  m_flavs[2].Mass(true);
-  const double mk  =  m_flspec.Mass(true);
-  const double muj2 = sqr(m_flavs[2].Mass(true))/Q2;
-  const double muk2 = sqr(m_flspec.Mass(true))/Q2;
-  const double sai = sqr(mj) * (1.0 - y / z) + (Q2 - sqr(mk)) * (y / z);
-  const double M = 2*Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  double value = 0;
-  value = 6*sqr(sai);
-  value *= ( sqr(sai - sqr(M)) - 2*z*((1-z)*sai - sqr(M))*(sai - 2*sqr(M)) );
-  value /= sqr(sqr(( sai - sqr(M))));
-  value *= sqr(M/2)/sai;
-
-  value *= 1. / ( 1. + muj2 / (1 - muk2 - muj2) * z / y ) * ( 1 - y ) / ( 1 - 2*y);
-
-  return sqr(p_cf->Coupling(scale, 0)) * value; // * JIF(z, y, eta, scale);
+double LF_VV3P1_Quarkonia_IF::operator()(
+  const double z, const double y, const double eta, const double scale, const double Q2) {
+  const double M = m_flavs[2].Mass(true), M2 = sqr(M);
+  const double V = (Q2+M2+p_ms->Mass2(m_flspec))*y/z-M2;
+  if (IsBad(V) || !(V >= z*M2/(1-z))) return 0.;
+  const double u = M2/(V+M2), v = V/(V+M2);
+  // Cross the time-like density at s=-V, x=1-1/z. This positive form
+  // retains the physical quarkonium mass and avoids polynomial cancellation.
+  const double density = 6*sqr(M/2/(V+M2))
+    * (1+2*(1-z)*(v+z*u)*(v+2*u)/sqr(z));
+  // -z crossing of s*F_T, followed by dV -> dt/t. JIF supplies flux/PDF once.
+  const double value = scale*z/(1-z)*density;
+  return sqr(p_cf->Coupling(scale, 0))*value*JIF(z, y, eta, scale);
 }
 
-double LF_VV3P1_Quarkonia_IF::OverIntegrated(const double zmin, const double zmax, const double scale, const double xbj) {
+double LF_VV3P1_Quarkonia_IF::OverIntegrated(
+  const double zmin, const double zmax, const double scale, const double xbj) {
   m_zmin = std::max(zmin,ZMIN);
   m_zmax = std::min(zmax,1.);
-  m_Jmax = m_flavs[0].Kfcode() < 3 ? 5. : 1.;
-  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  const double prefactor = 4./27*GetLDME(m_flavs[2].Kfcode())/m;
-  return prefactor * sqr(p_cf->MaxCoupling(0)) / sqr(2*m) * (zmax - zmin) * m_Jmax;
+  m_Jmax = m_disablepdfrescaling ? 1. : 5.;
+  const double M = m_flavs[2].Mass(true);
+  // Same paper normalization as FI: L includes the 2J+1 spin multiplicity.
+  // Include alpha_s/4, dt/(2*pi*t), polarization /2 and both neighbours.
+  const double prefactor = 32.*M_PI/(27.*3.)
+    *GetLDME(m_flavs[2].Kfcode())/pow(M/2,5);
+  return prefactor * 0.25 * OverEstimated(0.5, 0.)
+    * (m_zmax-m_zmin)/(m_zmin*m_zmax);
 }
 
 double LF_VV3P1_Quarkonia_IF::OverEstimated(const double z, const double y) {
-  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  return sqr(p_cf->MaxCoupling(0)) /sqr(2*m) * m_Jmax;
+  if (!(z > 0. && z < 1.)) return 0.;
+  // PDF-free bound uses V >= z*M^2/(1-z) and
+  // t <= (1-z)*(V+M^2)+M^2 for all supported IF gluon schemes.
+  return 15.*sqr(p_cf->MaxCoupling(0))*m_Jmax/sqr(z);
 }
 
 double LF_VV3P1_Quarkonia_IF::Z() {
-  return m_zmin + (m_zmax - m_zmin) * ran->Get();
+  const double r = ran->Get();
+  return 1./((1-r)/m_zmin+r/m_zmax);
 }
 
-double LF_VV3P1_Quarkonia_II::operator()(const double z, const double y, const double eta, const double scale, const double Q2) {
-  const double mj  =  m_flavs[2].Mass(true);
-  const double mb  =  m_flspec.Mass(true);
-  const double muj2 = sqr(m_flavs[2].Mass(true))/Q2;
-  const double muk2 = sqr(m_flspec.Mass(true))/Q2;
-  const double sab = Q2*((1 - muj2)/z - muj2*(1-z)/z);
-  const double saj = sqr(mj) - y * (sab - sqr(mb));
-  const double M = 2*Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  double value = 0;
-  value = 6*sqr(saj);
-  value *= ( sqr(saj - sqr(M)) - 2*z*((1-z)*saj - sqr(M))*(saj - 2*sqr(M)) );
-  value /= sqr(sqr(( saj - sqr(M))));
-  value *= sqr(M/2)/saj;
-  value *= 1. / ( sqr(mj) / (sab - sqr(mb)) / y - 1) * (1 - z - y) / (1 - z - 2*y);
-  return sqr(p_cf->Coupling(scale, 0)) * value; // * JII(z, y, eta, scale);
+double LF_VV3P1_Quarkonia_II::operator()(
+  const double z, const double y, const double eta,
+  const double scale, const double Q2) {
+  const double M = m_flavs[2].Mass(true), M2 = sqr(M);
+  const double mb2 = p_ms->Mass2(m_flspec);
+  if (!(Q2 > M2+mb2)) return 0.;
+  // ConstructIIDipole invariant; independent of the evolution scheme.
+  const double V = (Q2-M2-mb2)*y/z-M2;
+  if (IsBad(V) || !(V >= z*M2/(1-z))) return 0.;
+  const double u = M2/(V+M2), v = V/(V+M2);
+  // Cross the time-like density at s=-V, x=1-1/z. This positive form
+  // retains the physical quarkonium mass and avoids polynomial cancellation.
+  const double density = 6*sqr(M/2/(V+M2))
+    * (1+2*(1-z)*(v+z*u)*(v+2*u)/sqr(z));
+  // -z crossing of s*F_T, followed by dV -> dt/t. JII supplies flux/PDF once.
+  const double value = scale*z/(1-z)*density;
+  return sqr(p_cf->Coupling(scale, 0))*value*JII(z, y, eta, scale);
 }
 
-double LF_VV3P1_Quarkonia_II::OverIntegrated(const double zmin, const double zmax, const double scale, const double xbj) {
+double LF_VV3P1_Quarkonia_II::OverIntegrated(
+  const double zmin, const double zmax,
+  const double scale, const double xbj) {
   m_zmin = std::max(zmin,ZMIN);
   m_zmax = std::min(zmax,1.);
-  m_Jmax = m_flavs[0].Kfcode() < 3 ? 5. : 1.;
-  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  const double prefactor = 4./27*GetLDME(m_flavs[2].Kfcode())/m;
-  return prefactor * sqr(p_cf->MaxCoupling(0)) / sqr(2*m) * (zmax - zmin) * m_Jmax;
+  m_Jmax = m_disablepdfrescaling ? 1. : 5.;
+  const double M = m_flavs[2].Mass(true);
+  // Same paper normalization as FI: L includes the 2J+1 spin multiplicity.
+  // Include alpha_s/4, dt/(2*pi*t), polarization /2 and both neighbours.
+  // This is per colour connection; the other incoming leg is counted by
+  // shower competition, not by another factor in this coefficient.
+  const double prefactor = 32.*M_PI/(27.*3.)
+    *GetLDME(m_flavs[2].Kfcode())/pow(M/2,5);
+  return prefactor * 0.25 * OverEstimated(0.5, 0.)
+    * (m_zmax-m_zmin)/(m_zmin*m_zmax);
 }
 
 double LF_VV3P1_Quarkonia_II::OverEstimated(const double z, const double y) {
-  const double m = Flavour((m_flavs[2].Kfcode() / 10) % 10).Mass(true);
-  return sqr(p_cf->MaxCoupling(0)) /sqr(2*m) * m_Jmax;
+  if (!(z > 0. && z < 1.)) return 0.;
+  // PDF-free bound uses V >= z*M^2/(1-z) and
+  // t <= (1-z)*(V+M^2)+M^2 for all supported II gluon schemes.
+  return 15.*sqr(p_cf->MaxCoupling(0))*m_Jmax/sqr(z);
 }
 
 double LF_VV3P1_Quarkonia_II::Z() {
-  return m_zmin + (m_zmax - m_zmin) * ran->Get();
+  const double r = ran->Get();
+  return 1./((1-r)/m_zmin+r/m_zmax);
 }
 
 double LF_V3P1V_Quarkonia_FF::operator()(const double z, const double y, const double eta, const double scale, const double Q2) { 
