@@ -2,6 +2,10 @@
 
 #include "ATOOLS/Phys/Weights.H"
 
+#include <cmath>
+#include <limits>
+#include <string>
+
 using ATOOLS::Weights;
 using ATOOLS::Weights_Map;
 
@@ -62,5 +66,46 @@ TEST_CASE("ME-only and ME & PS variation sums agree without shower "
     for (size_t i {1}; i < 3; ++i)
       CHECK_FALSE(main[i] * all[0] / main[0] ==
                   Catch::Approx(all[i]).epsilon(1e-3));
+  }
+}
+
+// An MC@NLO H-event in which R and DS cancel exactly in the nominal and in all
+// variations but one, which keeps the smallest subnormal as round-off (as
+// found in a photoproduction NLO+PS run, about one event in 5e5). With all
+// nominals zero, MakeRelative normalises by that subnormal, and must not turn
+// the exact zeros into NaN (0 * (1/denorm_min) = 0 * inf).
+TEST_CASE("MakeRelative stays finite when the only non-zero entry is "
+          "subnormal",
+          "[ATOOLS::Weights_Map]") {
+  const double tiny {-std::numeric_limits<double>::denorm_min()};
+
+  Weights me(1.0);
+  me["v1"] = 1.0;
+  me["v2"] = 1.0;
+  me["v3"] = 1.0;
+  Weights_Map ev(1.0);
+  ev["Main"] = me;
+  ev["All"] = me;
+  ev.MakeAbsolute();
+  for (const std::string key : {"Main", "All"}) {
+    Weights& w = ev[key];
+    for (size_t i {0}; i < w.Size(); ++i)
+      w[i] = 0.0;
+    w[3] = tiny;
+  }
+  ev.MakeRelative();
+
+  CHECK(std::isfinite(ev.BaseWeight()));
+  CHECK(ev.Nominal() == 0.0);
+  // nothing but round-off: a zero weight, which the event generation discards
+  CHECK(ev.IsZero());
+  ev.MakeAbsolute();
+  for (const std::string key : {"Main", "All"}) {
+    const Weights& w = ev.at(key);
+    for (size_t i {0}; i < w.Size(); ++i) {
+      INFO(key << "[" << i << "] = " << w[i]);
+      CHECK(std::isfinite(w[i]));
+      CHECK(std::abs(w[i]) <= std::abs(tiny));
+    }
   }
 }

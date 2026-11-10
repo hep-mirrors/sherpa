@@ -1,6 +1,9 @@
 #include "ATOOLS/Phys/Weights.H"
 #include "ATOOLS/Phys/Blob.H"
 
+#include <cmath>
+#include <limits>
+
 using namespace ATOOLS;
 
 Weights::Weights(Variations_Type t, double w):
@@ -461,26 +464,30 @@ void Weights_Map::MakeRelative()
 {
   assert(is_absolute);
 
+  // entries below the smallest normal double count as zero here,
+  // this avoids nans when dividing by this number
+  const auto usable = [](double w) {
+    return std::abs(w) >= std::numeric_limits<double>::min();
+  };
+
   // find any non-zero entry for normalisation, first check nominal entries
   double norm = 0.0;
   for (const auto& kv : *this) {
-    norm = kv.second.Nominal();
-    if (norm != 0.0) {
+    if (usable(kv.second.Nominal())) {
+      norm = kv.second.Nominal();
       break;
     }
   }
   if (norm == 0.0) {
     // all nominals are zero, we will reset them to 1.0 below and instead
-    // account for the zero in the overall nominals prefactor
+    // account for the zero in the overall nominals prefactor; the variation
+    // of largest magnitude becomes the overall normalisation factor, which
+    // keeps all relative entries within [-1, 1]
     nominals_prefactor = 0.0;
     for (const auto& kv : *this) {
-      size_t num_vars = kv.second.Size() - 1;
-      for (size_t i {0}; i < num_vars; ++i) {
-        if (kv.second[i + 1] != 0.0) {
-          // found a variation that is non-zero, we can use this as our new
-          // overall normalisation factor
-          norm = kv.second[i + 1];
-          break;
+      for (size_t i {1}; i < kv.second.Size(); ++i) {
+        if (usable(kv.second[i]) && std::abs(kv.second[i]) > std::abs(norm)) {
+          norm = kv.second[i];
         }
       }
     }
