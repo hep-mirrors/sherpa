@@ -330,7 +330,7 @@ bool BBar_Emission_Generator::ReadIn(std::string pid)
   reader.SetInputPath(pid);
   reader.SetInputFile("_EEG_PV");
   std::vector<std::vector<std::string> > pvds;
-  reader.MatrixFromFile(pvds);
+  if (!reader.MatrixFromFile(pvds)) return false;
   if (m_dipoles.size()>pvds.size()-1)
     THROW(fatal_error,"Corrupted input file");
   for (size_t i(0);i<m_dipoles.size();++i)

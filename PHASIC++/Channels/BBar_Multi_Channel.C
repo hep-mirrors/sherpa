@@ -112,7 +112,7 @@ void BBar_Multi_Channel::WriteOut(std::string pid)
     
 bool BBar_Multi_Channel::ReadIn(std::string pid)
 {
-  Multi_Channel::ReadIn(pid+"_BBMC");
+  if (!Multi_Channel::ReadIn(pid+"_BBMC")) return false;
   if (!p_fsmc->ReadIn(pid)) return false;
   if (!m_eeg.ReadIn(pid)) return false;
   return true;
