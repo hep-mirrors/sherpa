@@ -169,6 +169,8 @@ namespace COMIX {
     bool ConstructChirs();
 
     void SetGauge(const size_t &n);
+    bool NextColours(std::vector<int> &cols,
+		     Int_Vector &ci,Int_Vector &cj) const;
 
     void CalcJL();
 

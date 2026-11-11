@@ -1875,24 +1875,69 @@ void Amplitude::SetGauge(const size_t &n)
   for (size_t i(0);i<m_scur.size();++i) m_scur[i]->SetGauge(k);
 }
 
+bool Amplitude::NextColours(std::vector<int> &cols,
+			    Int_Vector &ci,Int_Vector &cj) const
+{
+  // Steps through all assignments of the colours 1..3 to the colour and
+  // anticolour indices of the external legs in which every colour occurs
+  // equally often among both, as in the Python interface
+  // (MEProcess::CSMatrixElement). Start with cols empty.
+  std::vector<size_t> iids, jids;
+  for (size_t i(0);i<m_n;++i) {
+    int sc(m_fl[i].StrongCharge());
+    if (sc==8 || sc==-8) {
+      iids.push_back(i);
+      jids.push_back(i);
+    }
+    else if (sc) {
+      // colour index: outgoing quark or incoming antiquark
+      if ((sc<0)==(m_dirs[i]>0)) iids.push_back(i);
+      else jids.push_back(i);
+    }
+  }
+  const size_t nc(iids.size()+jids.size());
+  bool first(cols.empty());
+  if (first) cols.resize(nc,1);
+  while (true) {
+    if (!first) {
+      size_t k(0);
+      for (;k<nc && cols[k]==3;++k) cols[k]=1;
+      if (k==nc) return false;
+      ++cols[k];
+    }
+    first=false;
+    ci.assign(m_n,0);
+    cj.assign(m_n,0);
+    int bal[3]={0,0,0};
+    for (size_t k(0);k<iids.size();++k) ++bal[(ci[iids[k]]=cols[k])-1];
+    for (size_t k(0);k<jids.size();++k)
+      --bal[(cj[jids[k]]=cols[iids.size()+k])-1];
+    if (bal[0]==0 && bal[1]==0 && bal[2]==0) return true;
+  }
+}
+
 bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
 {
   if (mode==0) {
-    size_t nt(0);
-    bool cnt(true);
-    while (cnt) {
-      while (!p_colint->GeneratePoint());
-      SetColors(p_colint->I(),p_colint->J());
+    while (!p_colint->GeneratePoint());
+    SetColors(p_colint->I(),p_colint->J());
+    if (!GaugeTest(moms,1)) return false;
+    if ((m_born?m_born:m_res)!=0.0) return true;
+    // The sampled colour configuration may vanish by colour conservation
+    // alone. Test the first non-vanishing colour configuration instead.
+    std::vector<int> cols;
+    Int_Vector ci, cj;
+    while (NextColours(cols,ci,cj)) {
+      SetColors(ci,cj);
       if (!GaugeTest(moms,1)) return false;
-      double res(m_born?m_born:m_res);
-      if (res!=0.0) cnt=false;
-      if (cnt) {
-	if (++nt>100) 
-	  msg_Error()<<METHOD<<"(): Zero result. Redo gauge test."<<std::endl;
-	while (!p_colint->GeneratePoint());
-      }
+      if ((m_born?m_born:m_res)!=0.0) return true;
     }
-    return true;
+    msg_Error()<<METHOD<<"(): The matrix element for "<<m_fl
+	       <<" vanishes for all colour configurations at the test point."
+	       <<"\n  The requested coupling orders do not contribute to this "
+	       <<"process, e.g. an interference\n  forbidden by helicity "
+	       <<"selection. Remove the process from the run card."<<std::endl;
+    THROW(fatal_error,"Vanishing matrix element");
   }
   msg_Tracking()<<METHOD<<"(): Performing gauge test ..."<<std::flush;
   msg_Indent();
