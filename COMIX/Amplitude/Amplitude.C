@@ -1916,6 +1916,22 @@ bool Amplitude::NextColours(std::vector<int> &cols,
   }
 }
 
+bool Amplitude::Vanishes(const Vec4D_Vector &moms)
+{
+  // Matrix element at moms, summed over all colour configurations and
+  // helicities. It is zero only if the requested coupling orders do not
+  // contribute, e.g. an interference forbidden by helicity selection.
+  SetGauge(0);
+  if (!SetMomenta(moms)) return false;
+  std::vector<int> cols;
+  Int_Vector ci, cj;
+  while (NextColours(cols,ci,cj)) {
+    SetColors(ci,cj);
+    if (!EvaluateAll() || m_born!=0.0) return false;
+  }
+  return true;
+}
+
 bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
 {
   if (mode==0) {

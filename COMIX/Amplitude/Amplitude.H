@@ -217,6 +217,7 @@ namespace COMIX {
 
     bool Map(const Amplitude &ampl,ATOOLS::Flavour_Map &flmap);
     bool GaugeTest(const ATOOLS::Vec4D_Vector &moms,const int mode=0);
+    bool Vanishes(const ATOOLS::Vec4D_Vector &moms);
 
     bool SetMomenta(const ATOOLS::Vec4D_Vector &moms);
     void SetColors(const Int_Vector &rc,

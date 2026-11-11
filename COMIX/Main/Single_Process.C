@@ -163,6 +163,9 @@ bool COMIX::Single_Process::Initialize
            &*p_model,&m_cpls,stype,smode,m_user_imode,
 		       maxcpl,mincpl,maxacpl,minacpl,
 		       m_pinfo.m_ntchan,m_pinfo.m_mtchan,m_name)) {
+    // Not recorded in the map file, as whether the process vanishes
+    // depends on parameter values that may change between runs.
+    if (CheckVanishing()) return false;
     m_mincpl.resize(p_bg->MinCpl().size());
     m_maxcpl.resize(p_bg->MaxCpl().size());
     for (size_t i(0);i<m_maxcpl.size();++i) {
@@ -636,6 +639,24 @@ void COMIX::Single_Process::FillMEWeights(ME_Weight_Info &wgtinfo) const
 int COMIX::Single_Process::PerformTests()
 {
   return Tests();
+}
+
+bool COMIX::Single_Process::CheckVanishing()
+{
+  // A leading-order process whose matrix element vanishes identically is
+  // not set up, as in AMEGIC. NLO processes are not checked here.
+  if (m_pinfo.m_fi.NLOType()!=nlo_type::lo ||
+      m_pinfo.m_nlomode!=nlo_mode::none) return false;
+  // The test point must not change the random-number sequence.
+  const size_t rngstatus(2); // 0: crash status, 1: pilot run
+  const bool restore(ran->CanRestoreMultipleStatus());
+  if (restore) ran->SaveStatus(rngstatus);
+  Phase_Space_Handler::TestPoint(&m_p.front(),&Info(),Generator(),1);
+  if (restore) ran->RestoreStatus(rngstatus);
+  if (!p_bg->Vanishes(m_p)) return false;
+  msg_Info()<<METHOD<<"(): '"<<m_name<<"' vanishes for the requested "
+	    <<"coupling orders. Not set up."<<std::endl;
+  return true;
 }
 
 bool COMIX::Single_Process::Tests()

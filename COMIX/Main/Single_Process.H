@@ -54,6 +54,8 @@ namespace COMIX {
 
     void ComputeHardMatrix(const int mode);
 
+    bool CheckVanishing();
+
   public:
 
     // constructors
