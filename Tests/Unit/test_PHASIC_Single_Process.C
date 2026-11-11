@@ -1,6 +1,6 @@
 #include <catch2/catch_all.hpp>
 
-#include "Tests/Unit/PHASIC_Selector_Test_Utils.H"
+#include "Tests/Unit/PHASIC_Test_Utils.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "MODEL/Main/Running_AlphaS.H"
@@ -8,6 +8,8 @@
 #include "PDF/Main/ISR_Base.H"
 #include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
+
+#include <deque>
 
 namespace {
 class Process : public PHASIC::Single_Process {
@@ -20,46 +22,30 @@ public:
 };
 
 // Six strong quarks, the gluon and the group of the first nlight quarks.
+// Other unit fixtures use simplified quarks with zero strong charge.
 class Quarks {
-  ATOOLS::Particle_Info m_info, m_particles[7];
-  ATOOLS::Particle_Info* p_previous;
-  ATOOLS::Particle_Info* p_particles[7];
+  std::deque<PHASIC_Test::ScopedParticle> m_particles;
+  void AddParton(kf_code kf, int strong, double mass)
+  {
+    auto& info = m_particles.emplace_back(kf).Info();
+    info.m_strong = strong;
+    info.m_mass = info.m_hmass = mass;
+    info.m_content.push_back(new ATOOLS::Flavour(info));
+  }
 public:
   explicit Quarks(int nlight = 6)
   {
-    // Other unit fixtures use simplified quarks with zero strong charge.
-    // Temporarily replace, rather than mutate or re-register, those entries.
-    const double masses[] = {0., 0., .1, 1.5, 4.8, 173., 0.};
-    for (int i = 0; i < 7; ++i) {
-      const auto code = static_cast<kf_code>(i < 6 ? i + 1 : 21);
-      auto old = ATOOLS::s_kftable.find(code);
-      p_particles[i] = old == ATOOLS::s_kftable.end() ? nullptr : old->second;
-      m_particles[i].m_kfc = code;
-      m_particles[i].m_strong = i < 6 ? 3 : 8;
-      m_particles[i].m_mass = m_particles[i].m_hmass = masses[i];
-      m_particles[i].m_content.push_back(new ATOOLS::Flavour(m_particles[i]));
-      ATOOLS::s_kftable[code] = &m_particles[i];
-    }
-    auto old = ATOOLS::s_kftable.find(kf_quark);
-    p_previous = old == ATOOLS::s_kftable.end() ? nullptr : old->second;
-    m_info.m_kfc = kf_quark;
-    m_info.m_mass = -1.;
-    m_info.SetIsGroup(true);
+    const double masses[] = {0., 0., .1, 1.5, 4.8, 173.};
+    for (int code = 1; code <= 6; ++code)
+      AddParton(static_cast<kf_code>(code), 3, masses[code - 1]);
+    AddParton(kf_gluon, 8, 0.);
+    auto& group = m_particles.emplace_back(kf_quark).Info();
+    group.m_mass = -1.;
+    group.SetIsGroup(true);
     for (int code = 1; code <= nlight; ++code) {
       ATOOLS::Flavour quark(static_cast<kf_code>(code));
-      m_info.Add(quark);
-      m_info.Add(quark.Bar());
-    }
-    ATOOLS::s_kftable[kf_quark] = &m_info;
-  }
-  ~Quarks()
-  {
-    if (p_previous) ATOOLS::s_kftable[kf_quark] = p_previous;
-    else ATOOLS::s_kftable.erase(kf_quark);
-    for (int i = 0; i < 7; ++i) {
-      const auto code = static_cast<kf_code>(i < 6 ? i + 1 : 21);
-      if (p_particles[i]) ATOOLS::s_kftable[code] = p_particles[i];
-      else ATOOLS::s_kftable.erase(code);
+      group.Add(quark);
+      group.Add(quark.Bar());
     }
   }
 };

@@ -1,11 +1,9 @@
 #include <catch2/catch_all.hpp>
 
-#include "Tests/Unit/PHASIC_Selector_Test_Utils.H"
+#include "Tests/Unit/PHASIC_Test_Utils.H"
 #include "PHASIC++/Channels/BBar_Emission_Generator.H"
-#include "ATOOLS/Org/My_MPI.H"
 
 #include <array>
-#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <memory>
@@ -20,37 +18,17 @@ void SeedSettings()
 }
 
 class CacheEnvironment {
-  std::unique_ptr<ATOOLS::My_MPI> m_mpi;
+  PHASIC_Test::ScopedMPI m_mpi;
   std::string m_directory;
 public:
   CacheEnvironment()
   {
-#ifdef USING__MPI
-    int initialized = 0;
-    MPI_Initialized(&initialized);
-    if (!initialized) {
-      REQUIRE(MPI_Init(nullptr, nullptr) == MPI_SUCCESS);
-      std::atexit([] {
-        int finalized = 0;
-        MPI_Finalized(&finalized);
-        if (!finalized) MPI_Finalize();
-      });
-    }
-#endif
-    if (!ATOOLS::mpi) {
-      m_mpi.reset(new ATOOLS::My_MPI());
-      ATOOLS::mpi = m_mpi.get();
-    }
     char directory[] = "/tmp/phasic-eeg-cache-XXXXXX";
     const auto path = mkdtemp(directory);
     REQUIRE(path != nullptr);
     m_directory = path;
   }
-  ~CacheEnvironment()
-  {
-    std::filesystem::remove_all(m_directory);
-    if (m_mpi) ATOOLS::mpi = nullptr;
-  }
+  ~CacheEnvironment() { std::filesystem::remove_all(m_directory); }
   std::string Prefix() const { return m_directory + "/cache"; }
   void Write(const std::string& contents) const
   {

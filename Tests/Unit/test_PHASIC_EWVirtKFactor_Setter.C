@@ -1,34 +1,12 @@
 #include <catch2/catch_all.hpp>
-#include "Tests/Unit/PHASIC_Selector_Test_Utils.H"
+#include "Tests/Unit/PHASIC_Test_Utils.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
-#include "ATOOLS/Math/Function_Base.H"
 #include <memory>
 
 namespace {
 ATOOLS::Vec4D_Vector recorded_momenta;
-
-class AlphaQED : public ATOOLS::Function_Base {
-public:
-  AlphaQED() { m_name = "Alpha_QED"; m_defval = 1. / 137.; }
-};
-
-class Model : public MODEL::Model_Base {
-  MODEL::Model_Base* p_previous;
-public:
-  Model() : Model_Base(false), p_previous(MODEL::s_model)
-  {
-    Constants()->emplace("alpha_QED", 1. / 137.);
-    p_functions->emplace("alpha_QED", new AlphaQED());
-    MODEL::s_model = this;
-  }
-  ~Model() override { MODEL::s_model = p_previous; }
-private:
-  void InitVertices() override {}
-  void ParticleInit() override {}
-  bool ModelInit() override { return true; }
-};
 
 class RecordingLoop : public PHASIC::Virtual_ME2_Base {
 public:
@@ -83,7 +61,7 @@ TEST_CASE("EWVirt forwards current subevent momenta to its loop provider",
           "[PHASIC::EWVirtKFactor_Setter]")
 {
   PHASIC_Test::SeedGlobals();
-  Model model;
+  PHASIC_Test::QEDModel model(1. / 137.);
   Process process;
   std::unique_ptr<PHASIC::KFactor_Setter_Base> setter(
     PHASIC::KFactor_Setter_Base::KFactor_Getter_Function::GetObject(

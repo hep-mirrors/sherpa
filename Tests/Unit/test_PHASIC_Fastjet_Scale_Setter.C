@@ -1,56 +1,15 @@
 #include <catch2/catch_all.hpp>
 
-#include "Tests/Unit/PHASIC_Coupling_Test_Utils.H"
+#include "Tests/Unit/PHASIC_Scale_Test_Utils.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
-#include "MODEL/Main/Running_AlphaS.H"
-#include "ATOOLS/Org/My_MPI.H"
 
-#include <cstdlib>
 #include <memory>
-
-namespace {
-class Environment {
-  PHASIC_Test::MasslessQCDParticles m_particles;
-  MODEL::Running_AlphaS* p_previous_as;
-  std::unique_ptr<MODEL::Running_AlphaS> m_as;
-  std::unique_ptr<ATOOLS::My_MPI> m_mpi;
-public:
-  Environment()
-  {
-    PHASIC_Test::SeedGlobals();
-#ifdef USING__MPI
-    int initialized = 0;
-    MPI_Initialized(&initialized);
-    if (!initialized) {
-      REQUIRE(MPI_Init(nullptr, nullptr) == MPI_SUCCESS);
-      std::atexit([] {
-        int finalized = 0;
-        MPI_Finalized(&finalized);
-        if (!finalized) MPI_Finalize();
-      });
-    }
-#endif
-    if (!ATOOLS::mpi) {
-      m_mpi.reset(new ATOOLS::My_MPI());
-      ATOOLS::mpi = m_mpi.get();
-    }
-    p_previous_as = MODEL::as;
-    m_as.reset(new MODEL::Running_AlphaS(.118, 91.1876 * 91.1876, 0, 1));
-    MODEL::as = m_as.get();
-  }
-  ~Environment()
-  {
-    MODEL::as = p_previous_as;
-    m_as.reset();
-    if (m_mpi) ATOOLS::mpi = nullptr;
-  }
-};
-}
 
 TEST_CASE("Fastjet scale evaluation accommodates more clustering nodes than expressions",
           "[PHASIC::Fastjet_Scale_Setter]")
 {
-  Environment environment;
+  PHASIC_Test::MasslessAlphaS coupling;
+  PHASIC_Test::ScopedMPI mpi;
   const ATOOLS::Flavour gluon(kf_gluon);
   PHASIC_Test::Process process(ATOOLS::Flavour_Vector(7, gluon), 2);
   PHASIC::Scale_Setter_Arguments args(nullptr, "FASTJET[M=0,R=0.1]{H_T2}");

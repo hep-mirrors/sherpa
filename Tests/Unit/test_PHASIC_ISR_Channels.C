@@ -1,49 +1,12 @@
 #include <catch2/catch_all.hpp>
 
-#include "Tests/Unit/PHASIC_Selector_Test_Utils.H"
+#include "Tests/Unit/PHASIC_Test_Utils.H"
 #include "PHASIC++/Channels/ISR_Channels.H"
 #include "PHASIC++/Channels/Threshold_Channels.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PDF/Main/Intact.H"
-#include "MODEL/Main/Model_Base.H"
 
 namespace {
-// Only the alpha_QED constant is consumed while constructing an off-mode YFS
-// handler. Do not initialize a physical model or alter a shared model's table.
-class Model : public MODEL::Model_Base {
-  MODEL::Model_Base* p_previous;
-public:
-  Model() : Model_Base(false), p_previous(MODEL::s_model)
-  {
-    Constants()->emplace("alpha_QED", 1. / 137.03599976);
-    MODEL::s_model = this;
-  }
-  ~Model() override { MODEL::s_model = p_previous; }
-private:
-  void InitVertices() override {}
-  void ParticleInit() override {}
-  bool ModelInit() override { return true; }
-};
-
-// Coulomb reads W metadata even when YFS is off; restore the shared KF slot.
-class WMetadata {
-  ATOOLS::Particle_Info m_w;
-  ATOOLS::Particle_Info* p_previous;
-public:
-  WMetadata()
-  {
-    const auto it = ATOOLS::s_kftable.find(kf_Wplus);
-    p_previous = it == ATOOLS::s_kftable.end() ? nullptr : it->second;
-    m_w.m_kfc = kf_Wplus;
-    ATOOLS::s_kftable[kf_Wplus] = &m_w;
-  }
-  ~WMetadata()
-  {
-    if (p_previous) ATOOLS::s_kftable[kf_Wplus] = p_previous;
-    else ATOOLS::s_kftable.erase(kf_Wplus);
-  }
-};
-
 class Hadron : public PDF::ISR_Base {
 public:
   Hadron() : ISR_Base(nullptr)
@@ -62,8 +25,10 @@ TEST_CASE("ISR_Channels constructs threshold samplers for threshold metadata",
           "[PHASIC::ISR_Channels]")
 {
   PHASIC_Test::SeedGlobals();
-  Model model;
-  WMetadata w;
+  // An off-mode YFS handler still constructs Coulomb, which reads alpha_QED
+  // and W metadata.
+  PHASIC_Test::QEDModel model;
+  PHASIC_Test::ScopedParticle w(kf_Wplus);
   YFS::YFS_Handler yfs;
   REQUIRE_FALSE(yfs.HasISR());
   const ATOOLS::Flavour none(kf_none);

@@ -1,8 +1,7 @@
 #include <catch2/catch_all.hpp>
 
-#include "Tests/Unit/PHASIC_Coupling_Test_Utils.H"
+#include "Tests/Unit/PHASIC_Scale_Test_Utils.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
-#include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 
 #include <cmath>
@@ -10,27 +9,12 @@
 
 namespace {
 class Couplings {
-  PHASIC_Test::MasslessQCDParticles m_particles;
-  MODEL::Running_AlphaS* p_previous_as;
+  PHASIC_Test::MasslessAlphaS m_as;
   MODEL::Running_AlphaQED* p_previous_aqed;
-  std::unique_ptr<MODEL::Running_AlphaS> m_as;
   MODEL::Running_AlphaQED m_aqed{1. / 137.};
 public:
-  Couplings()
-  {
-    PHASIC_Test::SeedGlobals();
-    p_previous_as = MODEL::as;
-    p_previous_aqed = MODEL::aqed;
-    m_as.reset(new MODEL::Running_AlphaS(.118, 91.1876 * 91.1876, 0, 1));
-    MODEL::as = m_as.get();
-    MODEL::aqed = &m_aqed;
-  }
-  ~Couplings()
-  {
-    MODEL::as = p_previous_as;
-    MODEL::aqed = p_previous_aqed;
-    m_as.reset();
-  }
+  Couplings() : p_previous_aqed(MODEL::aqed) { MODEL::aqed = &m_aqed; }
+  ~Couplings() { MODEL::aqed = p_previous_aqed; }
 };
 
 PHASIC::Scale_Setter_Arguments ScaleArguments(PHASIC::Process_Base* process)
@@ -61,12 +45,14 @@ TEST_CASE("Variable K-factor indexed and alias scales follow the current event o
   Couplings couplings;
   Process process;
   std::string expression;
-  SECTION("indexed scale tags are initialized before parsing")
+  SECTION("indexed scale tags are initialized before parsing") {
     expression = "VAR{MU_12+10*MU_02}";
-  SECTION("scale aliases agree with indexed tags on each subevent")
+  }
+  SECTION("scale aliases agree with indexed tags on each subevent") {
     // Differences test alias consistency; the remaining terms distinguish
     // the selected scale vector rather than checking equality alone.
     expression = "VAR{MU_R2-MU_12+MU_F2-MU_02+MU_R2+10*MU_F2}";
+  }
   std::unique_ptr<PHASIC::KFactor_Setter_Base> setter(
     PHASIC::KFactor_Setter_Base::KFactor_Getter_Function::GetObject(
       "VAR", PHASIC::KFactor_Setter_Arguments(expression, &process)));
@@ -95,6 +81,7 @@ TEST_CASE("Variable K-factors stay finite on subevents that fail the cuts",
           "[PHASIC::Variable_KFactor_Setter]")
 {
   Couplings couplings;
+  PHASIC_Test::ScopedMPI mpi;
   Process process;
   std::string expression;
   SECTION("ratio of the couplings at the scale aliases") {

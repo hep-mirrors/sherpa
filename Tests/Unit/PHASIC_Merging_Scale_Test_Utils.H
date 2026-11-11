@@ -3,51 +3,15 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "Tests/Unit/PHASIC_Coupling_Test_Utils.H"
+#include "Tests/Unit/PHASIC_Scale_Test_Utils.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Scales/Core_Scale_Setter.H"
-#include "MODEL/Main/Running_AlphaS.H"
 #include "PDF/Main/Shower_Base.H"
 
 #include <memory>
 #include <stdexcept>
 
 namespace PHASIC_Test {
-
-class MergingScaleEnvironment {
-  MasslessQCDParticles m_particles;
-  MODEL::Running_AlphaS* p_previous_as;
-  std::unique_ptr<MODEL::Running_AlphaS> m_as;
-  double m_ecms;
-  std::string m_factors[3];
-  inline static const std::string factor_names[3] = {
-    "RENORMALIZATION_SCALE_FACTOR", "FACTORIZATION_SCALE_FACTOR", "RESUMMATION_SCALE_FACTOR"};
-public:
-  MergingScaleEnvironment()
-  {
-    auto& settings = ATOOLS::Settings::GetMainSettings();
-    settings["DIPOLES"]["NF_GSPLIT"].SetDefault(0);
-    settings["SHOWER"]["KFACTOR_SCHEME"].SetDefault(1);
-    p_previous_as = MODEL::as;
-    m_as.reset(new MODEL::Running_AlphaS(.118, 91.1876 * 91.1876, 0, 1));
-    MODEL::as = m_as.get();
-    m_ecms = ATOOLS::rpa->gen.Ecms();
-    ATOOLS::rpa->gen.SetEcms(1000.);
-    for (int i = 0; i < 3; ++i) {
-      try { m_factors[i] = ATOOLS::rpa->gen.Variable(factor_names[i]); }
-      catch (const ATOOLS::fatal_error&) { m_factors[i] = "1"; }
-      ATOOLS::rpa->gen.SetVariable(factor_names[i], "1");
-    }
-  }
-  ~MergingScaleEnvironment()
-  {
-    for (int i = 0; i < 3; ++i)
-      ATOOLS::rpa->gen.SetVariable(factor_names[i], m_factors[i]);
-    ATOOLS::rpa->gen.SetEcms(m_ecms);
-    MODEL::as = p_previous_as;
-    m_as.reset();
-  }
-};
 
 // Constructor-only tests need a shower handle, not physical clustering or an
 // initialized generator. Never call Calculate/Initialize with this stub.
@@ -73,7 +37,7 @@ inline std::unique_ptr<PHASIC::Scale_Setter_Base> ConstructMergingScale(
 
 inline void CheckMalformedScaleHeader(const std::string& name)
 {
-  MergingScaleEnvironment environment;
+  ScaleEnvironment environment;
   ConstructorShower shower;
   Process process(ATOOLS::Flavour_Vector(4, ATOOLS::Flavour(kf_none)), 2);
   process.SetShower(&shower);
@@ -105,7 +69,7 @@ public:
 
 inline void CheckInlineUnorderedScale(const std::string& name)
 {
-  MergingScaleEnvironment environment;
+  ScaleEnvironment environment;
   ConstructorShower shower;
   Process process(ATOOLS::Flavour_Vector(4, ATOOLS::Flavour(kf_none)), 2);
   process.SetShower(&shower);

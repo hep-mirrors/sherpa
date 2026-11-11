@@ -1,6 +1,6 @@
 #include <catch2/catch_all.hpp>
 
-#include "Tests/Unit/PHASIC_Selector_Test_Utils.H"
+#include "Tests/Unit/PHASIC_Test_Utils.H"
 #include "PHASIC++/Channels/LBS_Compton_Peak_Channels.H"
 #include "ATOOLS/Org/MyStrStream.H"
 

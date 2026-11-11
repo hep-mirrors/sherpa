@@ -1,9 +1,8 @@
 #include <catch2/catch_all.hpp>
 
-#include "Tests/Unit/PHASIC_Selector_Test_Utils.H"
+#include "Tests/Unit/PHASIC_Test_Utils.H"
 #include "PHASIC++/Process/Process_Group.H"
 #include "PHASIC++/Main/Phase_Space_Point.H"
-#include "ATOOLS/Math/Random.H"
 
 namespace {
 
@@ -75,9 +74,8 @@ TEST_CASE("Process_Group forwards all event-generation modes to its child",
           "[PHASIC::Process_Group]")
 {
   PHASIC_Test::SeedGlobals();
-  // Random registers itself with the shutdown handler even in a bare test.
-  if (!ATOOLS::exh) ATOOLS::exh = new ATOOLS::Terminator_Object_Handler();
-  if (!ATOOLS::ran) ATOOLS::ran = new ATOOLS::Random(1234);
+  // The uniform fallback selection draws from ATOOLS::ran.
+  PHASIC_Test::ScopedRandom random;
   size_t destroyed = 0;
   Group group;
   auto* child = new Child("only", destroyed);

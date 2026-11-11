@@ -1,30 +1,14 @@
 #include <catch2/catch_all.hpp>
 
+#include "Tests/Unit/PHASIC_Test_Utils.H"
 #include "PHASIC++/Channels/Vegas.H"
-#include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Settings.H"
 
 #include <vector>
-
-namespace {
-
-void SeedVegasGlobals()
-{
-  if (!ATOOLS::msg) ATOOLS::msg = new ATOOLS::Message();
-  if (!ATOOLS::rpa) ATOOLS::rpa = new ATOOLS::Run_Parameter();
-  static bool settings_seeded = false;
-  if (!settings_seeded) {
-    ATOOLS::Settings::InitializeMainSettings(std::string{"VEGAS_MODE: 2"});
-    settings_seeded = true;
-  }
-}
-
-} // namespace
 
 TEST_CASE("Vegas refinement preserves the map and its Jacobian",
           "[PHASIC::Vegas]")
 {
-  SeedVegasGlobals();
+  PHASIC_Test::SeedGlobals();
   int dimension = 1;
   bool preset = false;
   SECTION("splitting a nonuniform one-dimensional grid preserves sampling") {

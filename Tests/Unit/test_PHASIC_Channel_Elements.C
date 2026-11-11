@@ -1,6 +1,6 @@
 #include <catch2/catch_all.hpp>
 
-#include "Tests/Unit/PHASIC_Selector_Test_Utils.H"
+#include "Tests/Unit/PHASIC_Test_Utils.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
 
 TEST_CASE("Channel_Elements exponential inversion returns the density and random coordinate",

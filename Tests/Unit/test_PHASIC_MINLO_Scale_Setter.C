@@ -1,57 +1,15 @@
 #include <catch2/catch_all.hpp>
 
-#include "Tests/Unit/PHASIC_Coupling_Test_Utils.H"
+#include "Tests/Unit/PHASIC_Scale_Test_Utils.H"
 #include "PHASIC++/Scales/MINLO_Scale_Setter.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
-#include "MODEL/Main/Running_AlphaS.H"
 #include "PDF/Main/ISR_Base.H"
 
 #include <algorithm>
 #include <memory>
 
 namespace {
-std::string ScaleFactor(const std::string& name)
-{
-  try { return ATOOLS::rpa->gen.Variable(name); }
-  catch (const ATOOLS::fatal_error&) { return "1"; }
-}
-
-class Environment {
-  PHASIC_Test::MasslessQCDParticles m_particles;
-  MODEL::Running_AlphaS* p_previous_as;
-  std::unique_ptr<MODEL::Running_AlphaS> m_as;
-  double m_ecms;
-  std::string m_rsf, m_fsf;
-public:
-  Environment()
-  {
-    PHASIC_Test::SeedGlobals();
-    auto& settings = ATOOLS::Settings::GetMainSettings();
-    settings["ASSOCIATED_CONTRIBUTIONS_VARIATIONS"].SetDefault(
-      std::vector<std::vector<std::string>>{});
-    settings["DIPOLES"]["NF_GSPLIT"].SetDefault(0);
-    p_previous_as = MODEL::as;
-    m_as.reset(new MODEL::Running_AlphaS(.118, 91.1876 * 91.1876, 0, 1));
-    MODEL::as = m_as.get();
-    m_ecms = ATOOLS::rpa->gen.Ecms();
-    // Seed missing nominal factors; preserve previously registered values.
-    m_rsf = ScaleFactor("RENORMALIZATION_SCALE_FACTOR");
-    m_fsf = ScaleFactor("FACTORIZATION_SCALE_FACTOR");
-    ATOOLS::rpa->gen.SetEcms(1000.);
-    ATOOLS::rpa->gen.SetVariable("RENORMALIZATION_SCALE_FACTOR", "1");
-    ATOOLS::rpa->gen.SetVariable("FACTORIZATION_SCALE_FACTOR", "1");
-  }
-  ~Environment()
-  {
-    ATOOLS::rpa->gen.SetEcms(m_ecms);
-    ATOOLS::rpa->gen.SetVariable("RENORMALIZATION_SCALE_FACTOR", m_rsf);
-    ATOOLS::rpa->gen.SetVariable("FACTORIZATION_SCALE_FACTOR", m_fsf);
-    MODEL::as = p_previous_as;
-    m_as.reset();
-  }
-};
-
 // Only PDF bounds/membership are needed, not a physical convolution.
 class BoundsPDF : public PDF::PDF_Base {
   void CalculateSpec(const double&, const double&) override {}
@@ -105,7 +63,7 @@ const ATOOLS::Vec4D_Vector momenta = {
 TEST_CASE("MINLO stops clustering at the configured minimum final multiplicity",
           "[PHASIC::MINLO_Scale_Setter]")
 {
-  Environment environment;
+  PHASIC_Test::ScaleEnvironment environment;
   PHASIC_Test::Jet_Group jets{ATOOLS::Flavour(kf_gluon)};
   PDF::ISR_Handler isr({new ISR(), new ISR()});
   Process process;
@@ -123,7 +81,7 @@ TEST_CASE("MINLO stops clustering at the configured minimum final multiplicity",
 TEST_CASE("MINLO's default factorization floor follows each PDF context",
           "[PHASIC::MINLO_Scale_Setter]")
 {
-  Environment environment;
+  PHASIC_Test::ScaleEnvironment environment;
   PHASIC_Test::Jet_Group jets{ATOOLS::Flavour(kf_gluon)};
   for (const double q2min : {1., 200., 1.}) {
     CAPTURE(q2min);
@@ -142,7 +100,7 @@ TEST_CASE("MINLO's default factorization floor follows each PDF context",
 TEST_CASE("MINLO's geometric renormalization scale includes the QCD core powers",
           "[PHASIC::MINLO_Scale_Setter]")
 {
-  Environment environment;
+  PHASIC_Test::ScaleEnvironment environment;
   PHASIC_Test::Jet_Group jets{ATOOLS::Flavour(kf_gluon)};
   PDF::ISR_Handler isr({new ISR(), new ISR()});
   for (const double factor : {1., 4.}) {

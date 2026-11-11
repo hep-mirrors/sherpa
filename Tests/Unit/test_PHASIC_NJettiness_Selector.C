@@ -1,6 +1,6 @@
 #include <catch2/catch_all.hpp>
 
-#include "Tests/Unit/PHASIC_Selector_Test_Utils.H"
+#include "Tests/Unit/PHASIC_Test_Utils.H"
 
 #include <memory>
 
@@ -116,12 +116,12 @@ TEST_CASE("NJettiness uses the Durham algorithm for kt in lepton collisions",
           "[PHASIC::NJettiness_Selector]")
 {
   PHASIC_Test::SeedGlobals();
-  ATOOLS::Particle_Info electron, gluon;
-  electron.m_kfc = kf_e;
+  PHASIC_Test::ScopedParticle electron(kf_e);
+  ATOOLS::Particle_Info gluon;
   gluon.m_kfc = kf_gluon;
   gluon.m_strong = 8;
   ATOOLS::Flavour flavour(gluon);
-  const ATOOLS::Flavour e(electron);
+  const ATOOLS::Flavour e(kf_e);
   PHASIC_Test::Jet_Group jet_group(flavour);
   PHASIC_Test::Bunches bunches(e, e);
   PHASIC_Test::Process process({e, e, flavour, flavour, flavour}, 2);

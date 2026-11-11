@@ -1,6 +1,6 @@
 #include <catch2/catch_all.hpp>
 
-#include "Tests/Unit/PHASIC_Selector_Test_Utils.H"
+#include "Tests/Unit/PHASIC_Test_Utils.H"
 #include "PHASIC++/Scales/Tag_Setter.H"
 
 namespace {
@@ -14,33 +14,14 @@ private:
     return m_scale[0];
   }
 };
-
-class MassiveParticle {
-  ATOOLS::Particle_Info m_particle;
-  ATOOLS::Particle_Info* p_previous;
-public:
-  MassiveParticle()
-  {
-    auto it = ATOOLS::s_kftable.find(kf_h0);
-    p_previous = it == ATOOLS::s_kftable.end() ? nullptr : it->second;
-    m_particle.m_kfc = kf_h0;
-    m_particle.m_mass = 4.;
-    m_particle.m_massive = true;
-    ATOOLS::s_kftable[kf_h0] = &m_particle;
-  }
-  ~MassiveParticle()
-  {
-    if (p_previous) ATOOLS::s_kftable[kf_h0] = p_previous;
-    else ATOOLS::s_kftable.erase(kf_h0);
-  }
-};
 }
 
 TEST_CASE("Scale tags distinguish the massive transverse product from indexed scales",
           "[PHASIC::Tag_Setter]")
 {
   PHASIC_Test::SeedGlobals();
-  MassiveParticle metadata;
+  PHASIC_Test::ScopedParticle higgs(kf_h0);
+  higgs.SetMass(4.);
   PHASIC_Test::Process process({ATOOLS::Flavour(kf_none), ATOOLS::Flavour(kf_none),
                                 ATOOLS::Flavour(kf_h0), ATOOLS::Flavour(kf_h0),
                                 ATOOLS::Flavour(kf_none)}, 2);

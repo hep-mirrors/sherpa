@@ -1,6 +1,7 @@
 #include <catch2/catch_all.hpp>
 
 #include "Test_Setup.H"
+#include "Tests/Unit/PHASIC_Test_Utils.H"
 #include "PHASIC++/Process/Massive_Kernels.H"
 #include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Phys/NLO_Types.H"
@@ -310,35 +311,12 @@ TEST_CASE("Massive_Kernels scalar t4 includes the integrated alpha restriction",
   }
 }
 
-namespace {
-
-  // gives kf_code 1 the mass m for the lifetime of the object, so that a
-  // Massive_Kernels with one massive flavour picks it up
-  class MassiveQuark {
-    Particle_Info m_info;
-    Particle_Info *p_previous;
-  public:
-    explicit MassiveQuark(double mass) {
-      m_info.m_kfc = static_cast<kf_code>(1);
-      m_info.m_mass = m_info.m_hmass = mass;
-      m_info.m_massive = true;
-      auto old = s_kftable.find(m_info.m_kfc);
-      p_previous = old == s_kftable.end() ? nullptr : old->second;
-      s_kftable[m_info.m_kfc] = &m_info;
-    }
-    ~MassiveQuark() {
-      if (p_previous) s_kftable[m_info.m_kfc] = p_previous;
-      else s_kftable.erase(m_info.m_kfc);
-    }
-  };
-
-}
-
 TEST_CASE("Massive_Kernels Dire closed heavy-pair channels have no finite contribution",
           "[PHASIC::Massive_Kernels]") {
   Boot();
   const double mass = 2.;
-  MassiveQuark heavy(mass);
+  PHASIC_Test::ScopedParticle heavy(kf_d);
+  heavy.SetMass(mass);
   Massive_Kernels massive(sbt::qcd, 0, 1);
   Massive_Kernels massless(sbt::qcd, 0, 0);
   REQUIRE(massive.Nmf() == 1);
@@ -362,7 +340,8 @@ TEST_CASE("Massive_Kernels Dire closed heavy-pair channels with a massive specta
           "[PHASIC::Massive_Kernels]") {
   Boot();
   const double mass = 2., spectator = .25;
-  MassiveQuark heavy(mass);
+  PHASIC_Test::ScopedParticle heavy(kf_d);
+  heavy.SetMass(mass);
   Massive_Kernels massive(sbt::qcd, 0, 1);
   Massive_Kernels massless(sbt::qcd, 0, 0);
   REQUIRE(massive.Nmf() == 1);

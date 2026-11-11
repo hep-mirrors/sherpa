@@ -1,41 +1,23 @@
 #include <catch2/catch_all.hpp>
 
-#include "Tests/Unit/PHASIC_Selector_Test_Utils.H"
+#include "Tests/Unit/PHASIC_Test_Utils.H"
 #include "PHASIC++/Process/ME_Generators.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/YFS_Process.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
-#include "ATOOLS/Org/My_MPI.H"
 
-#include <cstdlib>
 #include <memory>
 #include <unistd.h>
 
 namespace {
 class GeneratorSettings {
+  PHASIC_Test::ScopedMPI m_mpi;
   std::string m_old_path, m_path;
-  std::unique_ptr<ATOOLS::My_MPI> m_mpi;
 
 public:
   GeneratorSettings()
   {
     PHASIC_Test::SeedGlobals();
-#ifdef USING__MPI
-    int initialized = 0;
-    MPI_Initialized(&initialized);
-    if (!initialized) {
-      REQUIRE(MPI_Init(nullptr, nullptr) == MPI_SUCCESS);
-      std::atexit([] {
-        int finalized = 0;
-        MPI_Finalized(&finalized);
-        if (!finalized) MPI_Finalize();
-      });
-    }
-#endif
-    if (!ATOOLS::mpi) {
-      m_mpi.reset(new ATOOLS::My_MPI());
-      ATOOLS::mpi = m_mpi.get();
-    }
     // Seed only the generator setting this standalone lifecycle test needs.
     // Settings overrides are immutable; tests needing real ME backends must
     // initialize their own main settings, as other configuration tests do.
@@ -54,7 +36,6 @@ public:
     ATOOLS::rpa->gen.SetVariable("SHERPA_CPP_PATH", m_old_path);
     rmdir((m_path + "/Process").c_str());
     rmdir(m_path.c_str());
-    if (m_mpi) ATOOLS::mpi = nullptr;
   }
 };
 
