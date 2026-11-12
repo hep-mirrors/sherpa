@@ -195,9 +195,8 @@ void Acraic_Base::InfraredSubtractedME_0_0() {
            && ComixBornAmplitude(pb, C, NULL, -1., -1.);
       realpoint = ok;
     }
-    // The pinned Born by momentum shift: initial-state photons added to the
-    // initial-side lines, final-state ones to the final side, so both give
-    // X_wp^2. Same as the scalar pin (checked below) and what M_1 reduces to.
+    // the pinned Born by momentum shift: ISR photons on the initial-side lines,
+    // FSR ones on the final side, so both give X_wp^2 (as the scalar pin)
     if (!ok) {
       PropShifts sh(StageShifts(-1));
       AddExchangeLineShifts(-1, sh);     // space-like exchange lines
@@ -323,9 +322,8 @@ void Acraic_Base::BuildComixBornAlignment()
   // one Comix Born per event at the reference scale, for the alignment
   // (COMIX_BORN) and/or the real's per-event normalisation
 
-  // m_cxbalign[f] = e^2 H[f]/C[f] at the reference scale m_svarQ carries only
-  // the convention difference; Comix supplies the partition dependence, so H
-  // need only be right up to a partition-independent factor per helicity.
+  // m_cxbalign[f] = e^2 H[f]/C[f] at m_svarQ carries only the convention
+  // difference: Comix supplies the partition dependence
   const double sp_save(m_sp);
   m_sp = m_svarQ;
   MakeProp(false);   // like the unshifted Comix Born it is compared with
@@ -347,9 +345,7 @@ void Acraic_Base::BuildComixBornAlignment()
   // per-event normalisation of the Comix real (0.5 identically at 2 -> 2,
   // where the exact constant is used instead)
   if (nhd > 0.) m_cxrnorm = nhd/nc;
-  // Meaningful only while e^2 H/C is a pure convention factor; where H lacks
-  // structure Comix has (e.g. a decay Breit-Wigner) this forces Comix's Born
-  // back onto H.
+  // meaningful only while e^2 H/C is a pure convention factor
   for (int f = 0; f < nh; ++f) {
     const Complex Cf(C.m_A[FlipLegs(f, ComixLegFlips(Amplitude::s_nlegs))]);
     const Complex Hf(m_e*m_e*H.m_A[f]);

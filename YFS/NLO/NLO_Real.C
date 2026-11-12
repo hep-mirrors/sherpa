@@ -47,11 +47,9 @@ double NLO_Base::PhotonEminNLO() const
 }
 
 /*
-  Does the Born have a space-like exchange line (a current with one initial
-  leg and part of the final state)? A leg-only propagator shift, which
-  COMIX::Amplitude::SetPropShifts applies to such lines and to nothing else,
-  either changes |M_0|^2 or leaves it bit for bit. Cached per Born process.
-  For YFS: REAL_COMBINE -1.
+  Whether the Born has a space-like exchange line (a current with one initial
+  leg and part of the final state), the only lines COMIX::Amplitude::
+  SetPropShifts moves. Cached per Born process. For YFS: REAL_COMBINE -1.
 */
 static bool BornHasExchangeLine(PHASIC::Process_Base *proc, const Vec4D_Vector &p)
 {
@@ -147,13 +145,10 @@ double NLO_Base::CalculateReal() {
   if (m_ifireal && !IsBad(m_ifi_prod)) m_real_ifi_soft = m_born*(m_ifi_prod - 1.);
   real += m_real_ifi_soft;
   /*
-    YFS: REAL_COMBINE (name or old integer).
-      sum (0): the O(alpha) sum 1 + sum_j delta_j over the event's photons,
-        delta_j = beta_1(k_j)/(S~_j B) plus that photon's IF ratio - 1.
-      product (1, default): prod_j (1 + delta_j), which agrees with the sum
-        at O(alpha) (identical with one photon) and adds the factorised
-        beta_2 ~ beta_1 beta_1/beta_0 at O(alpha^2).
-      auto (-1): product when the Born has an exchange line, sum otherwise.
+    YFS: REAL_COMBINE: sum (0) is 1 + sum_j delta_j, product (1, default)
+    prod_j (1 + delta_j), delta_j = beta_1(k_j)/(S~_j B) plus that photon's IF
+    ratio - 1. The two agree at O(alpha), the product adds the factorised
+    beta_2 ~ beta_1 beta_1/beta_0. auto (-1): product with an exchange line.
   */
   const bool useprod(RealCombineMode() == realcombine::product
                      || (RealCombineMode() == realcombine::automatic
@@ -215,16 +210,11 @@ static bool GeneratorFSRDensity(const Vec4D &k, YFS::Define_Dipoles &dips,
 }
 
 /*
-  YFS: SUB8_FSR_LEGS 3 - the same density, but for the emission the
-  (n+1)-body point describes rather than the event. REAL_FSR_MAP 2 evaluates
-  |M_1(k_j)|^2 with the radiating pair rebuilt at Q_D - k_j (the other photons
-  of the pair re-absorbed, the legs along the event's decay axis); the
-  single-emission density of that point is S~(point legs; k_j) times the
-  point's own flux Q_D^2/(Q_D - k_j)^2. For one photon the point is the event
-  and this is GeneratorFSRDensity. With companions the two differ where the
-  companions' recoil moves the lepton by a fraction of its dead cone: there
-  only the point's eikonal has the collinear structure of the point's
-  |M_1(k_j)|^2. kpt is the photon at the point, pt the point's momenta.
+  YFS: SUB8_FSR_LEGS 3: the density of the emission the (n+1)-body point
+  describes. REAL_FSR_MAP 2 rebuilds the radiating pair at Q_D - k_j, so the
+  density is S~(point legs; k_j) times the point's flux Q_D^2/(Q_D - k_j)^2,
+  equal to GeneratorFSRDensity for one photon. kpt is the photon at the
+  point, pt the point's momenta.
 */
 static bool PointFSRDensity(const Vec4D &kpt, YFS::Define_Dipoles &dips,
                             const Vec4D_Vector &pt, double &sff)
@@ -335,20 +325,11 @@ double NLO_Base::CalculateReal(Vec4D k, bool raw) {
   AssembleBeta1(rt);
 
   /*
-    YFS: REAL_ALPHA0 (default true since 2026-09-27). The real above is Comix's, with
-    the model's alpha on every photon (1/131.9 under G_mu), and the
-    subtraction is raised to match it (/m_rescale_alpha), while beta_0 and
-    the eikonals carry alpha(0) (USE_MODEL_ALPHA 0). beta_1 is then the hard
-    remainder at alpha_model: where the generated channel's S~ B exceeds
-    the exact real by far (a Born near its t-channel pole), the one-photon
-    factor tends to 1 - alpha_model/alpha(0) = -0.0387, not to 0. ACRAIC
-    rescales its Comix reals to alpha(0) (Acraic_Base::ComixPhotonCoupling).
-    true does the same here: beta_1 -> m_rescale_alpha beta_1, the whole real
-    correction at alpha(0), as in ACRAIC. Measured with the same seed, 100k
-    events, 0 -> 1: Z-pole mu mu fiducial ACRAIC/YFS.NLO 1.0056 -> 1.0044,
-    m_ff at 60 GeV 1.111 -> 1.079; Bhabha 1.0071 -> 1.0046 and 1.035 ->
-    1.007; YFS.NLO rises (its real correction is negative there). false
-    restores the alpha_model remainder. No change with USE_MODEL_ALPHA true.
+    YFS: REAL_ALPHA0 (default true): the real is Comix's at the model's alpha
+    and the subtraction is raised to match (/m_rescale_alpha), while beta_0
+    and the eikonals carry alpha(0). true rescales beta_1 by m_rescale_alpha,
+    the whole real correction at alpha(0) as in ACRAIC
+    (Acraic_Base::ComixPhotonCoupling). false keeps the alpha_model remainder.
   */
   if (RealAlpha0()) rt.tot *= m_rescale_alpha;
 
@@ -440,31 +421,16 @@ void NLO_Base::RealME(RealTerms &rt)
 
   double r = p_real->Calc_R(p) / norm;
   /*
-    Identical photons in the Born final state (YFS: REAL_BORN_PHOTON_SYM).
-
-    The real carries the final-state symmetry factor of the (n+1)-photon
-    process, 1/(N_g + 1)!, the Born m_born that of the n-photon one, 1/N_g!,
-    so r/m_born is 1/(N_g + 1) of |M_1|^2/|M_0|^2. Define_Dipoles::
-    CalculateRealSub divides the coherent eikonal by the same N_g + 1
-    (m_N_born_Gamma) so that the SUBTRACTION matches r, but the crude
-    eikonal subb that beta_1 is divided by is not divided, so the whole
-    beta_1/(S~ B) came out 1/(N_g + 1) of its value: for e+e- -> gamma gamma
-    (N_g + 1 = 3) the one-photon Born+real factor was 1 + (w - 1)/3, w the
-    exact |M_1|^2 (s'/s)/(e^2 S~ |M_0|^2) at the event, to four digits at
-    every photon energy (2026-09-26; w checked against the analytic
-    e+e- -> 3 gamma matrix element). Here r and the coherent eikonal taken
-    from CalculateRealSub are both multiplied back by N_g + 1, so every
-    REAL_SUB_EIK / subtraction mode sees |M_1|^2 and eikonals in one
-    normalisation. N_g + 1 = 1 without Born photons: nothing changes there.
-    0 restores the old (inconsistent) normalisation.
+    YFS: REAL_BORN_PHOTON_SYM. The real carries 1/(N_g+1)! for the (n+1)-photon
+    final state, the Born 1/N_g!, so r/m_born is 1/(N_g+1) of |M_1|^2/|M_0|^2,
+    while the crude subb is not divided. Multiplying r back by N_g+1 puts
+    every subtraction mode in one normalisation (1 without Born photons).
   */
   r *= BornPhotonSym(1);
   /*
-    YFS: REAL_BORN_PHOTON_MULTICHANNEL on: the share of the exact real that
-    belongs to the generated assignment of this photon, h_gen/sum_b h_b
-    (BornPhotonChannelWeight). Only r is partitioned: each channel keeps its
-    own beta_0 and its own subtraction, so the soft bracket (where no other
-    channel is open and the factor is exactly 1) is unchanged.
+    YFS: REAL_BORN_PHOTON_MULTICHANNEL: r is reduced to the share of this
+    photon's generated assignment, h_gen/sum_b h_b (BornPhotonChannelWeight).
+    Each channel keeps its own beta_0 and subtraction.
   */
   rt.r_nomc = r;
   r *= BornPhotonChannelWeight(kk);
@@ -489,43 +455,21 @@ void NLO_Base::RealFlux(RealTerms &rt)
     flux = p_dipoles->CalculateFlux(kk);
 
   /*
-    Define_Dipoles::CalculateFlux forces fluxtype = initial whenever both ISR
-    and FSR are on (the WhichResonant() result in MapRealPoint is never used), so a
-    FINAL-state photon received the initial-state flux (Q_X - k)^2/Q_X^2 =
-    1 - x, as if it had reduced the beam energy. It has not: the Born scale
-    s' is untouched by final-state emission, and the two-body phase space at
-    the reduced pair mass differs from the crude one only by the muon
-    velocity ratio. e+e- -> mu mu at 0.7 GeV (CMD): the real ME of every FSR
-    photon was scaled by 0.70-0.78 before the subtraction, the single-FSR-
-    photon events had Born+real/ACRAIC with median 0.75 and a 90th percentile
-    of 6.4 where the two must agree event by event, and the photon spectrum
-    grew a 2x bump against KKMC at E_gamma/sqrt(s) = 0.12-0.22.
-    Setting flux = 1 (YFS: REAL_FSR_FLUX: no_flux) made the single-FSR-photon
-    Born+real/ACRAIC WORSE (median 0.75 -> 1.67) with the old subtraction.
-    With REAL_SUB_EIK multichannel_prefsr (the multichannel crude from the
-    pre-FSR system) it is the consistent choice, and the default since
-    2026-09-26.
-
-    YFS: REAL_FSR_FLUX: see RealFSRFlux() in NLO_Base_Internal.H.
+    Define_Dipoles::CalculateFlux gives every photon the initial-state flux
+    (Q_X - k)^2/Q_X^2 when ISR and FSR are both on, which a final-state photon
+    must not have: the Born scale s' is untouched by FSR. REAL_FSR_FLUX
+    selects the replacement (RealFSRFlux() in NLO_Base_Internal.H).
   */
   const realfsrflux::code fsrflux(RealFSRFlux());
   if (fsrflux != realfsrflux::event_flux && PhotonIsFSR(kk)) {
     if (fsrflux == realfsrflux::no_flux) flux = 1.;
     else if (fsrflux == realfsrflux::flux_squared) flux *= flux;  // (m_ff^2/s')^2
     /*
-      own_dipole: the flux of the photon's OWN pair, (Q_D - k)^2/Q_D^2 with Q_D the
-      pre-emission momentum of the dipole that radiated k. CalculateFlux
-      above takes (Q - k)^2/Q^2 with Q the WHOLE ISR-reduced final state,
-      which is the same number for a single resonant pair (Q_D = Q) but
-      not with two: the recoil Jacobian the FSR generator produced
-      (FSR::RescalePhotons, m_yy) is that of the pair in its own frame,
-      and a photon of x = 2E/sqrt(s) = 0.05 at 250 GeV has 1 - x = 0.95
-      against a pair-mass ratio of 0.69-0.94 depending on its direction
-      relative to the Z boost. See the numbers in the report for
-      e+e- -> mu mu tau tau (with REAL_FSR_MAP 2 the fixed-order/ACRAIC ratio
-      on single-FSR-photon events grows with x: 1.00, 1.07, 1.10, 1.10,
-      1.28, 1.47 for x in <0.01, 0.01-0.03, 0.03-0.06, 0.06-0.12,
-      0.12-0.3, >0.3).
+      own_dipole: the flux (Q_D - k)^2/Q_D^2 of the photon's OWN pair, Q_D
+      its pre-emission momentum. CalculateFlux uses the whole ISR-reduced
+      final state, the same for one resonant pair but not for two, while the
+      recoil Jacobian of the FSR generator (FSR::RescalePhotons, m_yy) is
+      that of the pair in its own frame.
     */
     else if (fsrflux == realfsrflux::own_dipole && m_plab.size() == m_flavs.size()) {
       const YFS::Photon *g(FindPhoton(kk));
@@ -553,34 +497,23 @@ void NLO_Base::RealSubtraction(RealTerms &rt)
   rt.subb   = p_dipoles->CalculateRealSubEEX(rt.kk);
   rt.flux0 = rt.flux; rt.subloc0 = rt.subloc; rt.subb0 = rt.subb;
   /*
-    Which eikonal beta_1 subtracts (YFS: REAL_SUB_EIK, name or old integer;
-    default multichannel_prefsr (8) since 2026-09-26, see below). Each name
-    is followed by its old integer:
-      coherent_point (0): the coherent one at the mapped, post-emission
-        point (the old default).
-      crude (1): the event's crude, S~_II + S~_FF on the pre-emission legs -
-        the density the photon was generated with, so the weight is
-        r flux/(S~ B) exactly.
-      coherent_born (2): the coherent eikonal on the pre-emission (Born) legs
-        of the event, the legs the form factor exponent is built on.
-      crude_fsr (3), post_emission_fsr (4), coherent_born_fsr (5),
-      assignment_born_fsr (6), multichannel (7), multichannel_prefsr (8):
-        described at their branches below and at the SubEik* helpers.
+    Which eikonal beta_1 subtracts (YFS: REAL_SUB_EIK, default
+    multichannel_prefsr (8)):
+      coherent_point (0): the coherent one at the mapped post-emission point.
+      crude (1): the event's crude S~_II + S~_FF on the pre-emission legs, the
+        generation density, so the weight is r flux/(S~ B).
+      coherent_born (2): the coherent eikonal on the pre-emission legs, those
+        of the form factor exponent.
+      3 to 8: see the branches below and the SubEik* helpers.
   */
   static const realsubeik::code subeik(RealSubEik());
   if (subeik == realsubeik::crude) rt.subloc = rt.subb;
   else if (subeik == realsubeik::coherent_born) rt.subloc = p_dipoles->CalculateRealSub(rt.kk);
   /*
-    crude_fsr (3): the event's crude for FINAL-state photons only. With the
-    post-emission map (REAL_FSR_MAP >= 1) the coherent eikonal at the
-    (n+1)-body point is 0.2-0.6 of the event's crude for a hard FSR photon,
-    so 1 + (r flux - S_pt B)/S~_ev carries an extra (1 - S_pt/S~_ev) that
-    the exact one-photon weight r flux/(S~_ev B) does not have. Subtracting
-    the crude the photon was generated with removes it; ISR photons keep
-    their reduced-point subtraction and denominator (m_map_reduced).
-    Measured 2026-09-25, MODE: FSR, Z-pole mu mu, one photon, 3 < theta/(m/E)
-    < 30: FO/ACRAIC 1.00/1.00/1.00/1.00/0.97 for x < 0.01 .. > 0.4 with this
-    and REAL_FSR_FLUX 1, against 1.00/1.00/1.01/1.09/1.34 before.
+    crude_fsr (3): the event's crude for FINAL-state photons only. For a hard
+    FSR photon the coherent eikonal at the (n+1)-body point is smaller than the
+    event's crude, which adds a spurious (1 - S_pt/S~_ev) to the bracket.
+    ISR photons keep their reduced-point subtraction (m_map_reduced).
   */
   else if (subeik == realsubeik::crude_fsr && PhotonIsFSR(rt.kk)) rt.subloc = rt.subb;
   else if (subeik == realsubeik::coherent_born_fsr && PhotonIsFSR(rt.kk))
@@ -609,22 +542,12 @@ void NLO_Base::RealSubtraction(RealTerms &rt)
 }
 
 /*
-  REAL_SUB_EIK post_emission_fsr (4): for FINAL-state photons, subtraction AND
-  denominator on the
-  POST-emission legs. The FSR generator's crude weight (FSR::Weight,
-  m_wt2/m_yy, KKMC's KarFin) already carries the Jacobian from the
-  generation variables to the physical momenta, so the density to divide
-  by is the eikonal on the physical legs - which is what ACRAIC's rho_crude
-  uses (m_Sprod on m_pacraic). Dividing by the eikonal on the PRE-emission
-  Born momenta instead gives, for a soft photon whose parent lepton was
-  kicked by a hard companion, a bracket (r_j - S~_pre B)/S~_pre of O(1)
-  inside the collinear cone (the lepton moved by >> m/E): measured with
-  mode 3, Z-pole mu mu at the peak, nfsr >= 3 all soft, 10th percentile
-  of the fixed-order factor -5 while ACRAIC has 0.97. With the
-  post-emission legs the point built by MapMomentaFSR (post legs, other
-  photons re-absorbed by rescaling, directions kept) has the same
-  collinear structure as the crude, and the bracket vanishes as it must.
-  The one-photon identity r/(S~_post B) = ACRAIC is exact by construction.
+  REAL_SUB_EIK post_emission_fsr (4): for FINAL-state photons, subtraction and
+  denominator on the POST-emission legs. FSR::Weight (m_wt2/m_yy) already
+  carries the Jacobian to the physical momenta, so the generation density is
+  the eikonal on the physical legs, as in ACRAIC's rho_crude. On the
+  pre-emission legs a soft photon next to a kicked lepton gets an O(1)
+  bracket inside the collinear cone. One photon: r/(S~_post B) = ACRAIC.
 */
 void NLO_Base::SubEikPostEmissionFSR(RealTerms &rt)
 {
@@ -639,44 +562,26 @@ void NLO_Base::SubEikPostEmissionFSR(RealTerms &rt)
 
 /*
   REAL_SUB_EIK coherent_born_fsr (5): for FINAL-state photons, the COHERENT
-  eikonal on the pre-emission
-  legs of the event, |J_II + J_FF|^2 on the Born momenta. Mode 3 (the
-  incoherent crude) leaves each photon's soft initial-final interference
-  2 Re(J_II J_FF^*) in its bracket, additively and with either sign,
-  while m_ifi_prod supplies the same interference multiplicatively:
-  traced at the Z pole, events with three soft wide-angle FSR photons
-  had brackets -0.6, -0.9, -0.99 each (r/(S~_crude B) = 0.35, 0.06,
-  0.007, i.e. destructive interference) and a factor of -3, 10th
-  percentile -5. With the coherent eikonal the soft brackets vanish and
-  the one-photon weight is still exact: 1 + (r - S_coh B)/S~_cr plus the
-  product's (S_coh/S~_cr - 1) is r/(S~_cr B). Mode 0 subtracts the
-  coherent eikonal too, but at the MAPPED point, which for a hard photon
-  is 0.2-0.6 of the event's - the (1 - S_pt/S~_ev) excess. ISR photons
-  keep their reduced-point pair (m_map_reduced).
+  eikonal |J_II + J_FF|^2 on the pre-emission legs. The incoherent crude (3)
+  leaves the soft interference 2 Re(J_II J_FF^*) in the bracket while
+  m_ifi_prod supplies it multiplicatively. With the coherent eikonal the soft
+  brackets vanish and the one-photon weight stays r/(S~_cr B).
 */
 void NLO_Base::SubEikCoherentBornFSR(RealTerms &rt)
 {
-  // The same two pieces m_ifi_prod is built from (IFIRealRatio): the incoherent
-  // crude on the generation legs plus the initial-final interference on
-  // those legs. CalculateRealSub(kk) is NOT this - it sits on the
-  // post-emission dipole momenta and reproduced mode 4 exactly.
+  // The pieces m_ifi_prod is built from (IFIRealRatio): crude plus IF
+  // interference on the generation legs. Not CalculateRealSub(kk), which
+  // sits on the post-emission dipole momenta.
   const double ifg(p_dipoles->CalculateRealSubIF(rt.kk));
   if (!IsBad(ifg) && !IsZero(rt.subb)) rt.subloc = rt.subb + ifg;
 }
 
 /*
   REAL_SUB_EIK assignment_born_fsr (6): mode 3 with the crude carrying the
-  Born of each ASSIGNMENT. A hard
-  photon labelled FSR at wide angle to its pair has a tiny FF crude, but
-  the exact ME does not know the label: at 250 GeV such a photon is really
-  the initial-state one that brings an off-peak pair onto the Z peak, so
-  r is on-peak-large while m_born (pre-emission pair, off peak) is tiny
-  and the weight r/(S~ B) reached 1e4 (clean probe: FO 12919, ACRAIC 0.30,
-  x_fsr 0.39, S~_crude 1e-5). ACRAIC divides by sum_assignments |s|^2 B at
-  that assignment's reduced s', so it gives O(1). Here: subtraction and
-  denominator become S~_II B_I/B + S~_FF, B_I the Born at the scaled
-  ISR-reduced point of this photon, S~_FF and S~_II on the generation
-  legs. At the Z pole B_I/B ~ 1 and this reduces to mode 3.
+  Born of each ASSIGNMENT. A hard FSR-labelled photon at wide angle may really
+  be the ISR photon bringing an off-peak pair onto the Z peak, so r is large
+  while m_born is tiny. Subtraction and denominator become S~_II B_I/B +
+  S~_FF, B_I the Born at the scaled ISR-reduced point of this photon.
 */
 void NLO_Base::SubEikAssignmentBornFSR(RealTerms &rt)
 {
@@ -691,19 +596,12 @@ void NLO_Base::SubEikAssignmentBornFSR(RealTerms &rt)
 }
 
 /*
-  REAL_SUB_EIK multichannel (7), FSR-labelled photon: the MULTICHANNEL
-  crude. The generator reaches a given final state
-  with a photon labelled ISR or FSR, each channel with its own Born and
-  Jacobian: g_I = S~_II B_I / flux_I, g_F = S~_FF B_F, the two one-photon
-  identities measured separately (ISR: r flux/(S~_II B) exact; FSR:
-  r/(S~_FF B_pre) exact). The unbiased weight divides r by g_I + g_F
-  WHATEVER the label - mode 6 did so only for FSR-labelled photons and
-  counted the ISR region twice (Z pole, 66-76 GeV: 1.20 of KKMC) and
-  dropped flux_I. For an FSR-labelled photon B = B_F (the event's Born),
-  so subb = S~_FF + S~_II (B_I/B)/flux_I, B_I the Born at (P - k)^2 and
-  flux_I = (P - k)^2/P^2; subloc adds the IF interference on the same
-  legs (as mode 5) so soft brackets vanish, the product m_ifi_prod
-  supplying it multiplicatively. No flux on r (REAL_FSR_FLUX 1). The
+  REAL_SUB_EIK multichannel (7), FSR-labelled photon: the generator reaches a
+  final state with the photon labelled ISR or FSR, g_I = S~_II B_I/flux_I,
+  g_F = S~_FF B_F, and the unbiased weight divides r by g_I + g_F whatever
+  the label. For an FSR-labelled photon B = B_F, so subb = S~_FF + S~_II
+  (B_I/B)/flux_I, B_I the Born at (P - k)^2, flux_I = (P - k)^2/P^2. subloc
+  adds the IF interference on the same legs (as mode 5). No flux on r. The
   ISR-labelled half is MultichannelISRPhoton.
 */
 void NLO_Base::SubEikMultichannelFSR(RealTerms &rt)
@@ -722,22 +620,15 @@ void NLO_Base::SubEikMultichannelFSR(RealTerms &rt)
 }
 
 /*
-  REAL_SUB_EIK multichannel_prefsr (8), FSR-labelled photon: mode 7 with
-  the alternative channel built from the right system.
-  Mode 7 took the invariant of the other label from the FULL beams,
-  (P -+ k)^2, and normalised to the Born at m_bornMomenta (the Born
-  kinematics at the full s), neither of which is the system the event's
-  Born m_born sits at once ISR photons are present. Here both come from
-  the event's PRE-FSR final state Q_pre (NLO m_plab): an FSR-labelled
-  photon's ISR alternative has its Born at (Q_pre - k)^2 with the ISR
-  flux (Q_pre - k)^2/Q_pre^2, an ISR-labelled photon's FSR alternative
-  at (Q_pre + k)^2; the Born ratios are taken between two points of the
-  same construction (PreFSRBornRatio). The subtraction is scaled with the
-  denominator, subloc -> subloc*(new subb)/(old subb), so that together
-  with m_ifi_prod the one-photon weight is exactly r/(g_I + g_F) and the
-  soft bracket is unchanged (the scale -> 1 as k -> 0). The FSR-labelled
-  base is mode 5 (subloc = S~ + S_IF on the generation legs), flux 1.
-  The ISR-labelled half is PreFSRMultichannelISRPhoton.
+  REAL_SUB_EIK multichannel_prefsr (8), FSR-labelled photon: mode 7 with the
+  alternative channel built from the event's PRE-FSR final state Q_pre (NLO
+  m_plab). An FSR-labelled photon's ISR alternative has its Born at
+  (Q_pre - k)^2 with flux (Q_pre - k)^2/Q_pre^2, an ISR-labelled photon's FSR
+  alternative at (Q_pre + k)^2, Born ratios taken between points of the same
+  construction (PreFSRBornRatio). subloc is scaled with the denominator, so
+  with m_ifi_prod the one-photon weight is r/(g_I + g_F) and the soft bracket
+  is unchanged. The base is mode 5, flux 1. The ISR-labelled half is
+  PreFSRMultichannelISRPhoton.
 */
 void NLO_Base::SubEikPreFSRMultichannelFSR(RealTerms &rt)
 {
@@ -745,46 +636,25 @@ void NLO_Base::SubEikPreFSRMultichannelFSR(RealTerms &rt)
   double &subloc(rt.subloc), &subb(rt.subb);
   const double sII(GenerationEikonalII(*p_dipoles, kk));
   /*
-    YFS: SUB8_FSR_LEGS (2026-09-27; name or old integer; default
-    generation (0), the pre-emission eikonal below).
-    post_emission (1): the FSR channel density on the POST-emission legs
-    times the pair
-    flux, S~_FF(q_1', q_2'; k) (q_D + k)^2/q_D^2, q_D the post-emission
-    pair of the radiating dipole - what the FSR generator produces
-    (FSR::F's mass weight is the eikonal of the post-emission legs) and
-    what ACRAIC's rho_crude uses (m_Sprod on the physical legs times
-    m_pflux). The pre-emission eikonal below has the same size outside
-    the dead cone but a narrower dead cone (m/E_pre instead of m/E_post):
-    Z-pole mu mu, one hard FSR photon at theta < 2 m/E, it is up to 5x
-    the generator density, and YFS.NLO fell to 0.2-0.8 of the exact
-    |M_1|^2 there while ACRAIC stayed at 1.00. See
-    NOTES-collinear-fsr-referee-2026-09-27.md.
+    YFS: SUB8_FSR_LEGS (default point_density (3)). generation (0): the
+    pre-emission eikonal. post_emission (1): the FSR density on the
+    POST-emission legs times the pair flux, S~_FF(q_1', q_2'; k)
+    (q_D + k)^2/q_D^2, as the FSR generator produces and ACRAIC's rho_crude
+    uses. The pre-emission eikonal has a narrower dead cone (m/E_pre).
   */
   static const sub8fsrlegs::code fsrlegs(ATOOLS::Settings::GetMainSettings()["YFS"]
       ["SUB8_FSR_LEGS"].SetDefault(sub8fsrlegs::point_density).Get<sub8fsrlegs::code>());
   /*
-    event_density (2) and point_density (3)
-    (NOTES-deadcone-crude-2026-09-28.md): the FSR channel density
-    the generator really has, post-emission eikonal times pair flux,
-    so that the one-photon weight is r/(g B), the density ACRAIC divides by
-    (hard half of SUB8_FSRSUB 4: g (1 + S_IF/crude), on the new g).
-    Unlike 1, the SOFT half keeps the generation-leg scale (gsoft below):
-    it is the point's coherent current, the soft limit of r, and must not
-    be rescaled by a post/pre eikonal ratio, which leaves soft photons
-    next to a lepton kicked by a companion with O(1) brackets
-    (post_emission doubled YFS.NLO's error at the Z pole).
-    event_density (2): the EVENT's density, GeneratorFSRDensity - S~ on the event's
-       post-emission legs times the dipole's flux F_D shared among its
-       photons. Right at one photon; with companions it describes a
-       different emission from the one |M_1|^2 is evaluated for (the
-       REAL_FSR_MAP 2 point re-absorbs the companions, which moves the
-       lepton by more than its dead cone for electrons): Z-pole e e,
-       YFS.NLO fiducial error x4, ACRAIC/NLO 1.034 at s'/s 0.85-0.93.
-    point_density (3, recommended): the POINT's density,
-       PointFSRDensity - S~ on the legs of the (n+1)-body point times its
-       own single-emission flux. Identical to event_density at one photon; with companions it is the density
-       of the emission the point describes, and it reduces to the old
-       generation-leg crude where the companions dominate the recoil.
+    event_density (2) and point_density (3): the FSR density the generator
+    really has, post-emission eikonal times pair flux, so the one-photon
+    weight is r/(g B). Unlike 1, the SOFT half keeps the generation-leg scale
+    (gsoft below), the point's coherent current, which a post/pre eikonal
+    ratio would spoil for a lepton kicked by a companion.
+    event_density: GeneratorFSRDensity, S~ on the event's post-emission legs
+       times the dipole's flux F_D shared among its photons. With companions
+       it describes a different emission from the one |M_1|^2 is evaluated for.
+    point_density: PointFSRDensity, S~ on the legs of the (n+1)-body point
+       times its own single-emission flux. Equal to event_density at one photon.
   */
   const double sFFgen(GenerationEikonalFF(*p_dipoles, kk));
   const bool densityscale(fsrlegs == sub8fsrlegs::event_density
@@ -801,11 +671,10 @@ void NLO_Base::SubEikPreFSRMultichannelFSR(RealTerms &rt)
   // event_density, point_density
   double gsoft(densityscale ? sFFgen + isrchannel : g);
   /*
-    YFS: SUB8_SOFT_PAIR_FLUX (default true since 2026-10-06; false = before). g carries each
-    dipole's pair flux (q_D + k)^2/q_D^2 = 1 + O(x), gsoft does not, so the
-    soft bracket subloc/g - r_IF is -x r_IF instead of 0 and every soft FSR
-    photon gets +x. true gives gsoft the same flux, dipole by dipole, on the
-    generation-leg eikonals (the legs are kept, only the scalar flux added).
+    YFS: SUB8_SOFT_PAIR_FLUX (default true): g carries each dipole's pair flux
+    (q_D + k)^2/q_D^2 = 1 + O(x), gsoft does not, leaving soft brackets at
+    -x r_IF. true gives gsoft the same flux, dipole by dipole, on the
+    generation-leg eikonals.
   */
   static const bool softflux(ATOOLS::Settings::GetMainSettings()["YFS"]
                              ["SUB8_SOFT_PAIR_FLUX"].SetDefault(true).Get<bool>());
@@ -823,25 +692,15 @@ void NLO_Base::SubEikPreFSRMultichannelFSR(RealTerms &rt)
     if (sgf > 0. && !IsBad(sgf)) gsoft = sgf + isrchannel;
   }
   /*
-    Which subtraction (YFS: SUB8_FSRSUB, name or old integer):
-    generation (0): mode 5's, on the generation (pre-FSR) legs, scaled
-       with g. The
-       one-photon weight is then exactly r/(g_I + g_F) (MODE: FSR cone
-       identity 1.00), but r's soft limit sits on the legs of the point
-       it is evaluated at, not on the generation legs: with a hard ISR
-       photon (250 GeV radiative return) the FSR point's beams are the
-       generator's reduced beams, tilted by the ISR transverse momentum,
-       and next to a hard FSR companion its leptons are the kicked ones.
-       Soft FSR photons there kept O(1) brackets (mean +0.18 per photon
-       below x = 1e-3, single photons up to 250), YFS.NLO +6% at 250 GeV
-       from this half alone.
-    point (1): the coherent current at that point (the default's subloc),
-       scaled with g: soft brackets vanish, the identity for hard photons
-       does not hold (Z pole +4.4% on Born+real).
-    blend (4, default): point for soft photons, generation for hard ones,
-       w = 1/(1 + (y/y0)^2), y = 2 k.Q_pre/Q_pre^2, y0 = YFS: SUB8_Y0
-       (0.01). 250 GeV FSR half 1.062 -> 0.992 of ACRAIC, Z pole and the
-       cone identity unchanged.
+    Which subtraction (YFS: SUB8_FSRSUB, default blend (4)):
+    generation (0): mode 5's on the generation legs, scaled with g. Gives the
+       one-photon weight r/(g_I + g_F), but r's soft limit sits on the point's
+       legs, so soft FSR photons next to a hard ISR or FSR companion keep
+       O(1) brackets.
+    point (1): the coherent current at the point, scaled with g. Soft brackets
+       vanish, the hard-photon identity does not hold.
+    blend (4): point for soft photons, generation for hard, with
+       w = 1/(1 + (y/y0)^2), y = 2 k.Q_pre/Q_pre^2, y0 = YFS: SUB8_Y0.
   */
   static const sub8fsrsub::code fsub(ATOOLS::Settings::GetMainSettings()["YFS"]
       ["SUB8_FSRSUB"].SetDefault(sub8fsrsub::blend).Get<sub8fsrsub::code>());
@@ -850,10 +709,6 @@ void NLO_Base::SubEikPreFSRMultichannelFSR(RealTerms &rt)
     const double sgen(g*(1. + (IsBad(ifg) ? 0. : ifg/cru)));
     if (fsub == sub8fsrsub::point) subloc *= gsoft/cru;
     else if (fsub == sub8fsrsub::blend) {
-      /*
-        blend: the point's coherent subtraction for soft photons, mode 5's
-        for hard ones, w = 1/(1 + (y/y0)^2), y = 2 k.Q_pre/Q_pre^2.
-      */
       static const double y0(ATOOLS::Settings::GetMainSettings()["YFS"]
                              ["SUB8_Y0"].SetDefault(0.01).Get<double>());
       const double q2(Q.Abs2()), y(q2 > 0. ? 2.*(kk*Q)/q2 : 1.);
@@ -899,11 +754,9 @@ double NLO_Base::Sub8FSRChannelDensity(const RealTerms &rt,
 }
 
 /*
-  REAL_FSR_FLUX: on_crude (3) - the crude a FINAL-state photon is divided by carries
-  F = (q + k)^2/q^2 on its final-state part, q the post-emission pair, and
-  r carries no flux. This is the crude ACRAIC divides by (validated against
-  KKMC): on single-FSR-photon events K rho_crude(ACRAIC)/((S~_II + F S~_FF) B)
-  has median 0.96 where K rho_crude/(S~ B) has 1.15 and a tail to 2.1.
+  REAL_FSR_FLUX on_crude (3): the crude a FINAL-state photon is divided by
+  carries F = (q + k)^2/q^2 on its final-state part, q the post-emission pair,
+  and r carries no flux. This is the crude ACRAIC divides by.
 */
 void NLO_Base::FluxOnFSRCrude(RealTerms &rt)
 {
@@ -938,28 +791,17 @@ bool NLO_Base::RealMEUsable(const RealTerms &rt)
 
 /*
   The CRUDE eikonal of the mapped point: S~_II + S~_FF, each dipole on the
-  momenta of the point, incoherently, like CalculateRealSubEEX does for the
-  event. Only used when the mapped point is not the event (m_map_reduced).
+  momenta of the point, incoherently, like CalculateRealSubEEX for the event.
+  Only used when the mapped point is not the event (m_map_reduced).
 
-  beta_1 at the reduced point carries the photon's collinear structure at
-  a different overall scale from the event (the 1/x^2 of the scaled photon,
-  electron-mass terms), so the bounded object is the residual
-  r flux - S~coh B divided by an eikonal OF THE POINT, and the crude sum is
-  the one to divide by: it is positive, and |J_II + J_FF|^2 <= 2 (|J_II|^2
-  + |J_FF|^2) so wherever residual/S~coh is bounded so is residual/crude.
-  Dividing by the coherent S~coh instead (the first version of this
-  branch) put the coherent ZEROS of the II-FF interference pattern into the
-  denominator: the full |M_1|^2 does not vanish there, its hard remainder
-  does not, and the ratio did not stay bounded. Measured on e+e- -> u ubar
-  at the Z pole, 100k events: YFS.BR 4904 +- 6.9% against 4481 +- 0.16%
-  with the legacy map, the heavy events all having S~coh(point) 20-60x
-  below the event's crude (a 5.8 GeV photon: 3.3e-6 against 1.2e-4, x =
-  0.93). nu nu has no FF current and was not affected (S~coh = crude).
-
-  Crude(point) ~ crude(event)/x^2 up to the bounded Doppler change of the
-  final-state angles, so residual/crude(point) is the event-normalised
-  beta_1/S~crude - and the n = 1 formula (r flux - subloc B)/subb, with
-  subb the event's crude, is the same object with x = 1.
+  beta_1 at the reduced point has the photon's collinear structure at a
+  different scale from the event, so the residual r flux - S~coh B is divided
+  by the crude of the point: positive, and |J_II + J_FF|^2 <= 2 (|J_II|^2 +
+  |J_FF|^2), so it stays bounded where residual/S~coh does. The coherent
+  S~coh would put the zeros of the II-FF interference into the denominator.
+  Crude(point) ~ crude(event)/x^2, so residual/crude(point) is the
+  event-normalised beta_1/S~crude, and the n = 1 formula with subb the
+  event's crude is the same object at x = 1.
 */
 void NLO_Base::PointDenominator(RealTerms &rt)
 {
@@ -1008,16 +850,10 @@ void NLO_Base::PreFSRMultichannelISRPhoton(RealTerms &rt)
   double &subb_loc(rt.subb_loc), &subloc(rt.subloc), &subb(rt.subb);
   /*
     The FSR channel's invariant is taken at the POINT r is evaluated at,
-    (final legs of the point + its photon)^2: the ratio this bracket
-    forms is r/(S~ B) there, and at n >= 2 the scaled point
-    (MapMomentaScaled) boosts the pair rigidly, which moves both the
-    photon-lepton angles (S~_FF of the point) and (Q' + k')^2. With the
-    event's (Q_pre + k)^2 but the point's S~_FF the correction removed a
-    spurious final-state collinear enhancement of the point from the
-    denominator while r kept its share of it (250 GeV, radiative return,
-    S~_FF(point) up to 60% of the crude at the point against 4% in the
-    event; YFS.NLO +8% in 86-96 GeV). At one photon the point is the
-    event and nothing changes.
+    (final legs of the point + its photon)^2: at n >= 2 the scaled point
+    (MapMomentaScaled) boosts the pair rigidly, moving both S~_FF of the point
+    and (Q' + k')^2, and r keeps its share of that collinear structure. At one
+    photon the point is the event.
   */
   const Vec4D Q(PreFSRSystem());
   Vec4D R(Q + kk);
@@ -1031,13 +867,11 @@ void NLO_Base::PreFSRMultichannelISRPhoton(RealTerms &rt)
   if (!PreFSRBornRatio(R, bF)) bF = 0.;
   f = rt.flux*bF;
   /*
-    YFS: SUB8_ISR_FSR_CHANNEL_FLUX (default true since 2026-10-06; false = before): the FSR
-    generator produces a photon with the post-emission eikonal times the
-    pair flux (q + k)^2/q^2 (see acraic-vs-nlo-collinear-fsr-excess), which
-    ACRAIC's rho_crude carries in its FSR partition. Here the FSR channel term
-    gets the ISR photon's own flux instead. true multiplies it by R^2/Q^2,
+    YFS: SUB8_ISR_FSR_CHANNEL_FLUX (default true): the FSR generator produces
+    a photon with the post-emission eikonal times the pair flux (q + k)^2/q^2,
+    as ACRAIC's rho_crude. true multiplies the FSR channel term by R^2/Q^2,
     the pair flux of the FSR interpretation (pre-FSR system R = Q + k, pair
-    Q), to test whether that is the hard-ISR difference between the columns.
+    Q), on top of the ISR photon's own flux.
   */
   static const bool fsrchflux(ATOOLS::Settings::GetMainSettings()["YFS"]
                               ["SUB8_ISR_FSR_CHANNEL_FLUX"].SetDefault(true).Get<bool>());
@@ -1290,22 +1124,11 @@ double NLO_Base::CalculateRealN(unsigned mask)
   const size_t n(LegCount(mask));
 
   /*
-    Cut against photons that the resummation has ALREADY accounted for.
-
-    A photon below the YFS infrared cutoff is unresolved by construction: it
-    belongs to the exponentiated form factor, not to a fixed-order residual.
-    Computing beta_n for it is a cancellation with no physical content, carried
-    out exactly where the numerics are worst - measured on the zpole card, the
-    points where the double real disagreed with OpenLoops by factors of 10^7
-    are precisely these, with median photon energy 7e-07 GeV against 1.3e-03
-    for the points that agree.
-
-    The guard is per photon, so it needs nothing to generalise: a set is
-    dropped if ANY of its photons is unresolved, which is what the pair loop
-    already did with ||. It is applied HERE as well as in the subset loop so
-    that no caller of CalculateRealN can bypass it - the loop only avoids
-    doing the work.
-
+    Cut against photons the resummation has ALREADY accounted for: a photon
+    below the YFS infrared cutoff belongs to the exponentiated form factor,
+    and beta_n for it is a numerically unstable cancellation with no physical
+    content. A set is dropped if ANY of its photons is unresolved. Applied
+    here as well as in the subset loop so that no caller bypasses it.
     Controlled by NLO_PHOTON_EMIN (multiples of the cutoff energy, 0 = off).
   */
   const double phemin(PhotonEminNLO());
@@ -1351,20 +1174,12 @@ double NLO_Base::CalculateRealN(unsigned mask)
 }
 
 /*!
-  Sum beta_n over every n-photon subset of this event's photons.
-
-  This is the generalisation of the nested i<j loop in CalculateRealReal():
-  n=2 reproduces its pair enumeration, n=3 gives triples with no new loop. The
-  infrared guard is applied per photon, so it generalises for free - a subset
-  is dropped if ANY of its photons is below threshold, which is what the pair
-  loop already did with ||.
-
-  Cost is C(m,n) subsets - with 20 photons, 190 pairs but 1140 triples - but
-  the residuals themselves are shared: m_rawbeta is keyed on a mask over
-  m_photons and lives for the event, so each beta_1 is computed once and each
-  beta_2 is reused by every triple built on it. What is still missing is a
-  TRUNCATION policy: every subset is enumerated however soft its photons are,
-  beyond the resummed-photon cut. HardestBetas is the seed for that.
+  Sum beta_n over every n-photon subset of this event's photons (n=2 is the
+  pair loop of CalculateRealReal()). A subset is dropped if ANY of its
+  photons is below the resummed threshold. Cost is C(m,n) subsets, but
+  m_rawbeta is keyed on a mask over m_photons and lives for the event, so
+  each residual is computed once. HardestBetas is the seed for a truncation
+  policy beyond the resummed-photon cut.
 */
 double NLO_Base::CalculateRealMultiplicity(size_t n)
 {
@@ -1430,12 +1245,11 @@ bool NLO_Base::ReducedBornISR(const Vec4D &k, double &bratio) {
   if (m_me2born < 0.) m_me2born = BornME2At(m_bornMomenta);
   if (!(m_me2born > 0.)) return fail(1, "Born |M|^2 at the event momenta unavailable");
   /*
-    The Born point of the ISR assignment: invariant s'' = (P - k)^2 with P
-    the event's (ISR-reduced) beam sum, the same scattering angles. Built in
-    the rest frame of R = P - k: beams back to back along the event's beam
-    axis, final legs with their event directions rescaled by one xi to the
-    total energy sqrt(s''); then boosted onto R. MapMomentaScaled is not
-    usable here, its balance check assumes an ISR-labelled photon.
+    The Born point of the ISR assignment: invariant s'' = (P - k)^2, P the
+    event's beam sum, same scattering angles. Built in the rest frame of
+    R = P - k with beams back to back along the event's beam axis and the
+    final legs rescaled by one xi to energy sqrt(s''), then boosted onto R.
+    (MapMomentaScaled's balance check assumes an ISR-labelled photon.)
   */
   Vec4D_Vector b(m_bornMomenta);
   if (b.size() < 4 || m_flavs.size() != b.size()) return fail(2, "no Born momenta");
@@ -1492,12 +1306,11 @@ bool NLO_Base::ReducedBornAlt(const Vec4D &k, int sign, double &bratio,
   if (m_me2born < 0.) m_me2born = BornME2At(m_bornMomenta);
   if (!(m_me2born > 0.)) return fail(1, "Born |M|^2 at the event momenta unavailable");
   /*
-    The Born point of the ISR assignment: invariant s'' = (P - k)^2 with P
-    the event's (ISR-reduced) beam sum, the same scattering angles. Built in
-    the rest frame of R = P - k: beams back to back along the event's beam
-    axis, final legs with their event directions rescaled by one xi to the
-    total energy sqrt(s''); then boosted onto R. MapMomentaScaled is not
-    usable here, its balance check assumes an ISR-labelled photon.
+    The Born point of the alternative assignment: invariant s'' = R^2,
+    R = P - k (sign < 0) or P + k, P the event's beam sum, same scattering
+    angles. Built in the rest frame of R with beams back to back along the
+    event's beam axis and the final legs rescaled by one xi to energy
+    sqrt(s''), then boosted onto R.
   */
   Vec4D_Vector b(m_bornMomenta);
   if (b.size() < 4 || m_flavs.size() != b.size()) return fail(2, "no Born momenta");
@@ -1611,11 +1424,8 @@ bool NLO_Base::PreFSRBornRatio(const Vec4D &R, double &bratio) {
   Whether the generator can produce an event through the Born point p: its
   ISR v within the generated range (m_bpmc_vmax, from the selector's smallest
   invariant mass) and p inside the Born selectors. A channel the generator
-  never runs has no density, so it must not enter the multichannel sum g of
-  the real. Without this, a hard FSR photon whose ISR reading lies below the
-  Mass selector (161 GeV mu mu: x_gamma,sum > 0.9) kept the ISR channel in g
-  and YFS.NLO fell 5-15% short of ACRAIC and KKMC there - a cut-shaped step.
-  YFS: SUB8_REACHABLE_CHANNELS false restores the old sum.
+  never runs has no density and must not enter the multichannel sum g.
+  YFS: SUB8_REACHABLE_CHANNELS false keeps every channel.
 */
 bool NLO_Base::GeneratorReaches(const Vec4D_Vector &p) {
   static const bool reachable(ATOOLS::Settings::GetMainSettings()["YFS"]
@@ -1638,13 +1448,9 @@ double NLO_Base::BornPhotonSym(size_t nextra) const {
   size_t nb(0);
   for (const Flavour &f : m_flavs) if (f.IsPhoton()) ++nb;
   /*
-    C(nb + nextra, nextra), not (nb + nextra)!/nb!. YFS sums its photons as
-    an unordered set (pairs i < j), so only the mixing of the extra photons
-    with the Born's photons needs a factor. The one-photon value is nb + 1
-    either way (gamma gamma: 3, validated); the double real of an s-channel
-    Born was 2, and the soft limit of beta_2/(S~_1 S~_2) then tended to +B
-    per photon pair instead of 0 (Z-pole mu mu, median 1.65 for x < 1e-4;
-    YFS.NLO+RR 3192 pb against YFS.NLO 1185 pb). Measured 2026-09-26.
+    C(nb + nextra, nextra), not (nb + nextra)!/nb!: YFS sums its photons as an
+    unordered set, so only the mixing of the extra photons with the Born's
+    photons needs a factor. The one-photon value is nb + 1.
   */
   double sym(1.);
   for (size_t j(1); j <= nextra; ++j) sym *= double(nb + j)/double(j);
@@ -1652,39 +1458,21 @@ double NLO_Base::BornPhotonSym(size_t nextra) const {
 }
 
 /*
-  Born-photon multichannel (YFS: REAL_BORN_PHOTON_MULTICHANNEL, name or old
-  integer: off (0); on (1, default), the weight below applied; report (2),
-  G computed and reported for WEIGHT_PROBE but not applied).
+  Born-photon multichannel (YFS: REAL_BORN_PHOTON_MULTICHANNEL: off (0), on
+  (1, default), report (2) computes G for WEIGHT_PROBE without applying it).
 
-  e+e- -> gamma gamma (and any Born with final-state photons): the generator
+  For a Born with final-state photons (e+e- -> gamma gamma) the generator
   picks the Born pair, then adds ISR photons. Once an ISR photon passes the
-  generation cuts itself, the same gamma gamma gamma final state is also
-  reached with THAT photon in the Born pair and one of the Born photons as
-  the ISR photon, each assignment with its own crude density
-      h = prod_{ISR} S~_II(k) * B(pair at its reduced point) * s/s'
-  (the density the one-photon weight r flux/(S~ B) divides by, flux = s'/s).
-  Each channel on its own already integrates the exact real to
-  |M_{n+1}|^2 (BornPhotonSym), so with several channels open the real is
-  counted once per channel. The standard multichannel weight divides the
-  exact real by the SUM of the densities of all open channels, i.e. the
-  generated channel's real is multiplied by h_gen/sum_b h_b = 1/G. Any
-  partition of unity is unbiased; this one is the generator's density up to
-  the Born integrator's own importance sampling, which cancels channel by
-  channel. G = 1 exactly when no other assignment passes the cuts (soft
-  photons can never be Born photons), so the soft limit, and every process
-  without Born photons, is untouched.
-
-  Measured on the Z-pole gamma gamma card (BR, Comix real, 1.6M weighted
-  events per run), 2026-09-27, NOTES-gammagamma-multichannel-2026-09-27.md:
-  the diphoton mass m_gg in 63.8-71.1 GeV - Born-eligible third photon with
-  the generation cut E > 0.20 sqrt(s), not with 0.25 - had EFRAC 0.20/0.25
-  = 1.078 +- 0.008 (YFS.NLO), 1.170 +- 0.010 (YFS.ACRAIC); with this switch
-  ACRAIC 1.010 +- 0.010 and sigma_fid 26.561 in both runs. YFS.NLO then
-  shows 0.910 +- 0.007: the beta_0 of every open channel stays, and its
-  alpha-scheme floor (YFS: REAL_ALPHA0) scales with the channel count; with
-  REAL_ALPHA0 1 as well, 0.986 +- 0.008. One-photon events: the ACRAIC
-  factor times G equals YFS.NLO's exact/crude times alpha(0)/alpha_model
-  (0.962747) to 1e-6 in 99.8% of events, G > 2 included.
+  generation cuts, the same final state is also reached with that photon in
+  the Born pair and a Born photon as the ISR one, each assignment with its
+  own crude density
+      h = prod_{ISR} S~_II(k) * B(pair at its reduced point) * s/s'.
+  Each channel alone integrates the exact real to |M_{n+1}|^2 (BornPhotonSym),
+  so with several open the real is counted once per channel. The multichannel
+  weight divides the real by the sum of the densities of all open channels,
+  i.e. multiplies the generated channel's real by h_gen/sum_b h_b = 1/G.
+  G = 1 when no other assignment passes the cuts, so soft photons and
+  processes without Born photons are untouched.
 */
 namespace {
   // The generator's reduced Born point of a final state: beams back to back

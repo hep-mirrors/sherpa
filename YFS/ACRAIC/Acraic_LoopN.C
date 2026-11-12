@@ -1,9 +1,8 @@
 /*!
   \file Acraic_LoopN.C
 
-  ACRAIC: LOOP_BETA_MAX 2 - the one-loop two-photon residual (step 3 of
-  NOTES-acraic-oneloop-nphoton.md). For a photon pair S = {j, l} the one-loop
-  subset recursion
+  ACRAIC: LOOP_BETA_MAX 2 - the one-loop two-photon residual. For a photon pair S = {j, l} the
+  one-loop subset recursion
     beta_S^[1] = delta_S M_S - s_l beta_j^[1] - s_j beta_l^[1] - s_j s_l beta_{}^[1],
     beta_j^[1] = delta_j M_1j - s_j delta_0 B,   beta_{}^[1] = delta_0 B,
   minus what the factorisable virtual (delta_0 on every beta) and REAL_VIRTUAL

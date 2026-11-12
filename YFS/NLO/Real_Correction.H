@@ -28,12 +28,7 @@ class Dipole_Wrapper_Process;
 
 namespace YFS {
 
-/*!
-  The runcard keys and output labels that distinguish one photon multiplicity
-  from another. Everything else about a fixed-order real correction is
-  independent of how many photons it carries, which is why Real and RealReal
-  were byte-identical copies of each other.
-*/
+//! Runcard keys and output labels that distinguish one photon multiplicity from another.
 struct Real_Config {
   std::string m_generator;   //!< e.g. "Real_Generator", "RR_Generator"
   std::string m_generator2;  //!< optional second EXTERNAL generator to compare against
@@ -48,27 +43,15 @@ struct Real_Config {
 
 /*!
   One fixed-order real correction of any photon multiplicity.
-
-  This is the single copy of what used to be YFS::Real and YFS::RealReal.
-  Those two classes had byte-identical CreateAmplitude() bodies (verified by
-  diff after renaming the process pointer) and Calc_External()/Calc_R() bodies
-  that differed only in which settings they read and which diagnostics had
-  been added to one and not the other. That duplication is how the
-  incoming-leg crossing bug came to exist twice and need fixing twice, and how
-  the uninitialised external_real read came to exist twice.
-
-  Multiplicity enters ONLY through m_nphotons, which selects a Real_Config -
-  and that config is GENERATED from the multiplicity, so no n is special and
-  none needs a new class, a new row or a new translation unit.
+  The multiplicity enters only through m_nphotons, which selects a
+  Real_Config generated from it, so no n is special.
 */
 class Real_Correction : public YFS_Base {
 public:
 
   /*!
     \param pi        process info, already carrying the extra photon legs
-    \param nphotons  photons this correction carries (1 = real, 2 = double
-                     real, 3 = triple real, ... - no upper bound here; what
-                     bounds it is whether an ME provider can be built)
+    \param nphotons  photons this correction carries (1 = real, 2 = double real, ...)
   */
   Real_Correction(const PHASIC::Process_Info &pi, size_t nphotons);
   virtual ~Real_Correction();
@@ -78,8 +61,7 @@ public:
   //! The external generator's matrix element, with the symmetry factor applied.
   double Calc_External(const ATOOLS::Vec4D_Vector &p);
   void SoftScan(const ATOOLS::Vec4D_Vector &p);
-  //! YFS: IFI false: sum over photon placements of |M|^2 (no initial-final
-  //! interference) over the coherent |M|^2, from Comix at p
+  //! YFS: IFI false: sum over photon placements of |M|^2 over the coherent |M|^2, from Comix at p
   double NoIFIRatio(const ATOOLS::Vec4D_Vector &p);
 
   ATOOLS::Cluster_Amplitude *CreateAmplitude(const ATOOLS::Vec4D_Vector &p) const;
@@ -93,12 +75,8 @@ public:
   { p_proc = proc; m_flavs = flavs; p_permproc = NULL; }
   inline size_t NPhotons() const { return m_nphotons; }
 
-  //! Name of whichever generator actually supplies Calc_R's value: the
-  //! external one (p_real_me, e.g. "OpenLoops") when set, otherwise the
-  //! internal ME_Generator that built p_proc (Comix/Amegic). Use this for
-  //! diagnostic labels -- p_proc->Generator()->Name() alone is wrong whenever
-  //! an external <n>_Generator is configured, which is the common case with
-  //! Compare_Real/Compare_RR/... off.
+  //! Name of the generator that supplies Calc_R's value: the external one
+  //! (p_real_me) when set, otherwise the internal one that built p_proc.
   std::string ActiveGenName() const;
 
   //! Owned: Tree_ME2_Base::GetME2 builds a fresh object for the caller.
@@ -106,19 +84,12 @@ public:
   std::unique_ptr<PHASIC::Tree_ME2_Base> p_real_me2;  //!< optional second external generator
   MODEL::Coupling_Map m_cpls;
 
-  //! Not owned: the Sherpa process supplying the internal (Comix/Amegic)
-  //! matrix element, set by SetProc.
+  //! Not owned: the process supplying the internal matrix element, set by SetProc.
   PHASIC::Process_Base *p_proc;
-  /*!
-    Deliberately a raw pointer: Cluster_Amplitude comes from a free list and is
-    returned to it with its own Delete(), never with operator delete, so no
-    standard smart pointer owns it correctly.
-  */
+  //! Raw pointer: Cluster_Amplitude is returned to its free list with Delete().
   ATOOLS::Cluster_Amplitude *p_ampl;
 
-  //! <n>_Generator as configured (may be "Comix"/"Amegic", meaning "no
-  //! external reference, use whatever internal ME_Generator built p_proc").
-  //! Stored so ActiveGenName() can tell the two apart.
+  //! <n>_Generator as configured ("Comix"/"Amegic" means no external reference).
   std::string m_gen;
 
   double m_sym, m_factor;
@@ -128,36 +99,19 @@ public:
 
   std::unique_ptr<ME_Compare> p_cmp;
 
-  /*!
-    Comix's per-helicity amplitudes for the LAST point evaluated, cached when
-    m_keepamps is set. Filled in Calc_R right after the Differential() that
-    computes them, which is the only safe place: re-entering Differential()
-    from elsewhere in the event (e.g. from ACRAIC) segfaults.
-
-    Measured to reproduce the matrix element exactly -
-    Differential/SumSquare = 1/(4 n!) to the last bit over 5864 points - so
-    these are a drop-in source for the ACRAIC spin structure.
-  */
+  //! Comix's per-helicity amplitudes for the last point evaluated, cached
+  //! when m_keepamps is set; filled in Calc_R (re-entering Differential() elsewhere is unsafe).
   std::vector<METOOLS::Spin_Amplitudes> m_spinamps;
   bool m_keepamps = false;
 
   /*!
-    Comix's per-helicity amplitudes at ONE arbitrary phase-space point,
-    evaluated on demand and cached in m_spinamps.
-
-    This is the evaluate-then-FillAmplitudes pair of Calc_R, factored out so
-    that ACRAIC can obtain the spin amplitudes of the real process WITHOUT
-    calling Process_Base::Differential() itself. That distinction is not
-    cosmetic: ACRAIC already runs inside the BORN process's Differential()
-    (Single_Process::AddISR calls p_int->YFS()->GenerateWeight()), so a
-    Differential() on the Born from there recurses without bound. The REAL
-    process is safe because Single_Process::Differential short-circuits to
-    YFSDifferential for any registered real provider (Single_Process.C:566),
-    i.e. it runs Partonic() only and never reaches AddISR.
+    Comix's per-helicity amplitudes at one arbitrary phase-space point,
+    evaluated on demand and cached in m_spinamps. Safe to call from ACRAIC,
+    which already runs inside the Born Differential().
 
     Returns NULL when there is no process, the leg count does not match, or
-    Comix produced no amplitudes. The returned pointer is m_spinamps and is
-    valid until the next call to this or to Calc_R.
+    Comix produced no amplitudes. The pointer is m_spinamps, valid until the
+    next call to this or to Calc_R.
   */
   const std::vector<METOOLS::Spin_Amplitudes> *
   ComixAmplitudes(const ATOOLS::Vec4D_Vector &p,
@@ -167,17 +121,14 @@ public:
   ComixAmplitudesShifts(const ATOOLS::Vec4D_Vector &p,
                         const PHASIC::Process_Base::Prop_Shifts &shifts);
 
-  //! Nominal weight of the last ComixAmplitudes() evaluation. Its ratio to
-  //! SumSquare() is the constant spin-average/flux/symmetry factor, so a
-  //! drift in it means the amplitudes and the ME are not the same object.
+  //! Nominal weight of the last ComixAmplitudes() evaluation.
   double m_lastcomix = 0.;
 
   /*!
-    YFS hands momenta (and ACRAIC leg masks) in YFS order, m_flavs: the Born
-    legs, then the photons. The process's own legs are in Sherpa's canonical
-    order, which puts a photon before massless quarks (e- e+ P d db for the
-    real of e- e+ -> d db). m_perm[j] is the process leg of YFS leg j;
-    momenta, masks and spin amplitudes go through it on the way in and out.
+    YFS order is m_flavs: the Born legs, then the photons. The process's legs
+    are in Sherpa's canonical order (a photon before massless quarks).
+    m_perm[j] is the process leg of YFS leg j; momenta, masks and spin
+    amplitudes go through it.
   */
   ATOOLS::Vec4D_Vector ToProcessOrder(const ATOOLS::Vec4D_Vector &p) const;
   size_t ToProcessMask(size_t mask) const;
@@ -196,18 +147,15 @@ protected:
   size_t m_nphotons;
   //! Not owned: points into the static per-multiplicity config table.
   const Real_Config *p_cfg;
-  //! Whether to dump momenta/ME values for the external cross-check, from
-  //! Check_Real / Check_RR according to multiplicity.
+  //! Dump momenta/ME values for the external cross-check (Check_Real / Check_RR).
   int m_dump;
-  //! Per-instance diagnostic streams. These were file-scope globals in each
-  //! of the two former translation units, which is safe only while there is
-  //! exactly one instance of each multiplicity.
+  //! Per-instance diagnostic streams.
   std::ofstream m_me_out, m_ps_out;
 
   static const Real_Config &ConfigFor(size_t nphotons);
 };
 
-//! One photon. Thin alias so existing call sites and member names are unchanged.
+//! One photon.
 class Real : public Real_Correction {
 public:
   Real(const PHASIC::Process_Info &pi) : Real_Correction(pi, 1) {}

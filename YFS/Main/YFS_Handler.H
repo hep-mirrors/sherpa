@@ -108,11 +108,9 @@ namespace YFS {
           double m_corr_acraic_fo3 = 0.;
           //! ... and with (1+v/2) on the whole of A_1 (ACRAIC_O1V1)
           double m_corr_acraic_o1v1 = 0.;
-          //! ORDER 2, both external-virtual compositions: (v/2) on A_0
-          //! (ACRAIC_O2V0), the closest to KKMC CEEX2
+          //! ORDER 2 external-virtual compositions: (v/2) on A_0 (ACRAIC_O2V0)
           double m_corr_acraic_v0 = 0., m_corr_acraic_v1 = 0.;
-          //! ... and with (1+v/2) on the whole of A_2 (ACRAIC_O2V2): the
-          //! nominal plus the (v/2) beta_2 terms, an O(alpha^3) estimate
+          //! ... and (1+v/2) on the whole of A_2 (ACRAIC_O2V2)
           double m_corr_acraic_v2 = 0.;
           //! ACRAIC: BETA0_2: the ACRAIC correction without beta_0^(2) (ACRAIC_NO_B02)
           double m_corr_acraic_nob02 = 0.;
@@ -209,12 +207,9 @@ namespace YFS {
         void SetLimits(const double &smin, const double &s);
         void SetFlavours(const Flavour_Vector &fl);
         /*!
-         * The flavours of the channel of a process group whose weight is
-         * being evaluated (e.g. one of the 93 93 children). The group's phase
-         * point was made with the container flavours, so only the final-state
-         * flavours, masses and the ACRAIC object change: no particle store
-         * rebuild, which would discard the momenta. ISR mode only, as the
-         * final-state masses enter the photon kinematics otherwise.
+         * The flavours of the channel of a process group being evaluated
+         * (e.g. one of the 93 93 children). Only the final-state flavours,
+         * masses and the ACRAIC object change; the momenta are kept. ISR mode only.
          */
         void SetChannelFlavours(const Flavour_Vector &fl);
         void SetMomenta(const ATOOLS::Vec4D_Vector &plab);
@@ -226,10 +221,8 @@ namespace YFS {
         //! its spin amplitudes from Comix rather than hand-coded spinors.
         void SetAcraicProcs(PHASIC::Process_Base *born, PHASIC::Process_Base *real);
         void GenerateWeight();
-        //! The YFS.* column names this configuration emits. Fixed once per
-        //! event from configuration alone, and the only names emit() will
-        //! write -- a per-event code path must not be able to conjure a column
-        //! that other events lack, since HepMC binds the set from event one.
+        //! The YFS.* column names this configuration emits, fixed from the
+        //! configuration alone (HepMC binds the set from the first event).
         std::set<std::string> m_wnames;
 
         void CreatMomentumMap();
@@ -238,12 +231,8 @@ namespace YFS {
         inline double GetWeight() const      { return m_ev.m_yfsweight;  }
         inline const ATOOLS::Weights_Map& GetNLOWeightsMap() const { return m_ev.m_nlo_weightsmap; }
         inline ATOOLS::Vec4D GetPhotonSum() const      { return m_ev.m_photonSumISR;  }
-        // The event momenta/photons are stored in the boosted incoming-pair
-        // rest frame (see SetBornMomenta). These getters feed the event blob,
-        // which must be in the original lab frame, so boost the returned copy
-        // back. Boosting the copy (not the member) leaves the internal COM
-        // state intact for the weight/ME machinery and is independent of when
-        // the blob is filled relative to the weight calculation.
+        // Event momenta are stored in the incoming-pair rest frame; these
+        // getters return lab-frame copies for the event blob.
         inline ATOOLS::Vec4D_Vector GetISRPhotons() const {
           Vec4D_Vector k(m_ev.m_ISRPhotons); ToLab(k); return k;
         }
@@ -257,11 +246,7 @@ namespace YFS {
         //! YFS: Integrate_NLO - whether CalculateBeta() also runs while integrating
         inline bool IntegrateNLO() const { return m_int_nlo != 0; }
 
-        // Undo the incoming-pair-rest-frame boost that SetBornMomenta applied
-        // (m_ev.m_cmsboost: lab->COM), returning the blob-facing momenta to the
-        // original lab frame. m_ev.m_cmsboost is the identity when no boost was
-        // applied (already-at-rest incoming, or pure-FSR mode), so this is a
-        // safe no-op in those cases - a standard at-rest COM collider included.
+        // Undo the rest-frame boost of SetBornMomenta (identity if none applied).
         inline void ToLab(Vec4D &q) const { m_ev.m_cmsboost.BoostBack(q); }
         inline void ToLab(Vec4D_Vector &v) const { for (auto &q : v) ToLab(q); }
         inline Vec4D_Vector GetMomenta() { Vec4D_Vector p(m_ev.m_plab); ToLab(p); return p; }
@@ -282,19 +267,14 @@ namespace YFS {
         inline YFS::Photon_Vector       &Photons()       { return m_ev.m_photons; }
         inline const YFS::Photon_Vector &Photons() const { return m_ev.m_photons; }
         inline void SetNLOType(ATOOLS::nlo_type::code nlo_type) {m_nlotype = nlo_type;}
-        // Per-process request to drop the Born from the YFS weight, used when a
-        // process is declared without 'B' in NLO_Part (e.g. an extra explicit
-        // one-photon process supplying RR/RV, whose Born is already the real
-        // correction of the Born-level process). The card setting No_Born stays
-        // a global override. The handler is shared, so YFS_Process re-applies
-        // this in MakeActive().
+        // Per-process request to drop the Born from the YFS weight (process
+        // declared without 'B' in NLO_Part). The card setting No_Born is a
+        // global override. YFS_Process re-applies this in MakeActive().
         inline void SetNoBorn(bool nb) {m_no_born = nb || m_no_born_setting;}
         //! Raw observer: the handler keeps ownership.
         inline NLO_Base *NLO() {return p_nlo.get(); }
-        //! The three members reached from outside YFS. Accessors rather than
-        //! public data so the storage can change without touching SHERPA and
-        //! PHASIC++; Dipoles() is non-const because YFS_Process configures the
-        //! resonance map through it.
+        //! Accessors for the members reached from outside YFS. Dipoles() is
+        //! non-const as YFS_Process configures the resonance map through it.
         inline Define_Dipoles *Dipoles() { return p_dipoles.get(); }
         inline const ATOOLS::Particle_Vector &Particles() const { return m_particles; }
         NLO_Base *EnsureNLO();

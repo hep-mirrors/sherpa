@@ -18,20 +18,16 @@ using namespace ATOOLS;
 using namespace YFS;
 using namespace std;
 
-// Diagnostic output streams and the residual accumulator, used only by the
-// checks below.
+// Diagnostic streams and residual accumulator for the checks below.
 std::ofstream out_sub, out_real, out_finite;
 std::ofstream out_virtual;
 
 struct SubCheckAccumulator {
   size_t n = 0;
   double e_first = 0, e_last = 0, r_first = 0, r_last = 0, r_min = 0, r_max = 0;
-  // Optional RV cancellation tracking. For each candidate relative threshold,
-  // e_below[t] is the largest photon energy at which the cancellation ratio
-  // C = |d1|/max(|rv|,|rvsub|) has already fallen below thr[t]. Since C shrinks
-  // as the photon softens, a cut placed at e_below[t] removes exactly the
-  // region where fewer than ~-log10(thr[t]) digits survive - the safe home for
-  // RV_CANCEL_EPS (=thr[t]) or an equivalent RV_SOFT_CUT.
+  // Optional RV cancellation tracking: e_below[t] is the largest photon energy at
+  // which C = |d1|/max(|rv|,|rvsub|) has fallen below thr[t]. A cut there is a safe
+  // RV_CANCEL_EPS (=thr[t]) or RV_SOFT_CUT.
   bool track_cancel = false;
   static const int NTHR = 4;
   double thr[NTHR] = {1e-8, 1e-10, 1e-12, 1e-14};
@@ -176,8 +172,7 @@ void NLO_Base::CheckRealCollinearSub(Vec4D k, int mode) {
   out_sub.open(filename1,    std::ios_base::app);
   out_real.open(filename2,   std::ios_base::app);
 
-  // p1, p2: the two incoming beams, m_plab[0]/[1]. The eikonal S needs the
-  // electron mass and beam energy; both come from the SAME leg.
+  // p1, p2: the two beams. The eikonal S needs mass and energy from the same leg.
   const Vec4D p1(m_plab[0]), p2(m_plab[1]);
   const double me(m_flavs[0].Mass()), Eb(p1[0]), Eg(k.E());
   const double mth(me>0.0 && Eb>0.0 ? me/Eb : 1e-5);
@@ -187,8 +182,7 @@ void NLO_Base::CheckRealCollinearSub(Vec4D k, int mode) {
     exit(0);
   }
 
-  // Scan window: 7 decades of theta centred on the mass angle m_e/E, from
-  // 0.1x to 1e6x it.
+  // Scan window: 7 decades of theta from 0.1x to 1e6x the mass angle m_e/E.
   static constexpr int SCAN_POINTS = 25;
   static constexpr double SCAN_DECADES = 7.0;
   static constexpr double SCAN_MIN_DECADE_OFFSET = -1.0;  // starts at 10^-1 x mth
@@ -211,8 +205,7 @@ void NLO_Base::CheckRealCollinearSub(Vec4D k, int mode) {
     out_sub    << th << "," << fabs(real)/m_born << std::endl;
     acc.Add(th, ratio);
   }
-  // Not SubCheckAccumulator's soft-limit "converges to zero" verdict -- flat
-  // is the correct answer here. Report the spread of the ratio directly.
+  // Flat is the correct answer here, so report the spread of the ratio directly.
   if (firstratio!=0.0)
     msg_Info()<<om::bold<<"=== Real collinear-limit check ("<<filename<<") ===\n"
               <<om::reset<<"  eikonal ratio range over the scan : ["
@@ -257,12 +250,9 @@ void NLO_Base::CheckRealVirtualSub(Vec4D k) {
     k = k / i;
     if (k.E() <= m_isrcut*sqrt(m_s))
       break;
-    // Run this tuning scan with RV_CANCEL_EPS/RV_SOFT_CUT disabled so soft
-    // points are not skipped - CalculateRealVirtual still fills m_rv/m_rvsub
-    // before any guard, but a guard would zero the returned residual here.
+    // Run with RV_CANCEL_EPS/RV_SOFT_CUT off: a guard would zero the returned residual.
     real = CalculateRealVirtual(k);
     if( IsBad(real) || IsBad(m_rv) || IsBad(m_rvsub) ) continue;
-    // Relative cancellation of the two diverging RV pieces at this energy.
     const double rvmax = ATOOLS::Max(fabs(m_rv), fabs(m_rvsub));
     const double C = (rvmax > 0.) ? fabs(m_rv - m_rvsub) / rvmax : 0.;
     out_finite << std::setprecision(16) << k.E() << "," << fabs(real) / m_born
@@ -304,11 +294,8 @@ void NLO_Base::CheckRealRealSub(Vec4D k1, Vec4D k2) {
   if (ATOOLS::FileExists(filename3))
     ATOOLS::Remove(filename3);
   out_sub.open(filename1, std::ios_base::app);
-  // Run these soft-limit scans with RR_SOFT_CUT disabled, as for
-  // RV_CANCEL_EPS/RV_SOFT_CUT in CheckRealVirtualSub: the whole point here is
-  // to walk the photons into the soft region, which is exactly what the guard
-  // skips. With it on, CalculateRealReal returns 0 for the soft points, and the
-  // third loop below (which breaks on real==0) would terminate immediately.
+  // Run with RR_SOFT_CUT off: the guard returns 0 for soft points, and the third
+  // loop (breaks on real==0) would stop immediately.
   SubCheckAccumulator acc1, acc2, acc12;
   for (double i = 1; i < 20; i += 0.02) {
     k1 = k1 / i;
@@ -387,14 +374,12 @@ void NLO_Base::CheckMassReg() {
 void NLO_Base::RecordSubScatter(const Vec4D &k, double residual,
                                 const std::string &tag, double eik) {
   if (!m_subscatter.is_open()) {
-    // per-rank filename: every MPI rank accumulates its own file (concatenate
-    // for plotting) so ranks do not clobber a shared file.
+    // per-rank filename so MPI ranks do not clobber a shared file.
     int rank = 0;
 #ifdef USING__MPI
     if (mpi->Size() > 1) rank = mpi->Rank();
 #endif
-    // tag == "rr" for a double-real record, otherwise a single-real one; use
-    // whichever generator actually produced the residual being logged.
+    // tag == "rr": double-real record, otherwise single-real.
     const std::string gen(tag=="rr"
       ? (p_realreal?p_realreal->ActiveGenName():"none")
       : (p_real?p_real->ActiveGenName():"none"));
@@ -472,25 +457,10 @@ void NLO_Base::ACRAICComparePoint() {
             << Max(Max(dabs(bal[0]),dabs(bal[1])),Max(dabs(bal[2]),dabs(bal[3])))
             << "\n";
   /*
-    Export EVERY input KKMC needs, in KKMC's own ReaData format, so that
-    nothing has to be matched by hand and the two generators cannot silently
-    disagree on a parameter.
-
-    KKee2f::Initialize reads KKMCee_defaults, then ./pro.input with a NEGATIVE
-    imax, which means "overwrite, do not zero". A third file read the same way
-    therefore overrides both, and this is that file: the KKMC driver applies it
-    last. No transcription, no remembering which knob is which index.
-
-    This exists because chasing a disagreement down to the matrix element cost
-    a day of comparing things that were never comparable: Sherpa ran ISR+FSR
-    against KeyFSR=0, Sherpa's Gamma_Z was the PDG 2.4952 against KKMC's Dizet
-    2.5007203 (26% of the residual soft-limit difference), and SIN2THETAW
-    differs by 3.9% (0.23155 vs 0.22276773). Sherpa now states all of it.
-
-    Note the sqrt(s) written here is the sqrt(s) of THIS POINT, not the beam
-    energy: FixedTestPhoton() is synthetic and not in m_plab, so the mapped
-    configuration sits above the nominal collider energy. It is a physical
-    point, just at a different sqrt(s) - and KKMC has to be told which.
+    Export every input KKMC needs in its ReaData format. KKee2f::Initialize
+    reads files with a negative imax as overrides, and the driver reads this
+    one last. sqrt(s) is that of this point (FixedTestPhoton() is synthetic,
+    so it can sit above the beam energy).
   */
   const double sqrtsPoint((pmap[0] + pmap[1]).Mass());
   double sin2tw(0.23155);
@@ -522,17 +492,14 @@ void NLO_Base::ACRAICComparePoint() {
             << ", GamZ=" << Flavour(kf_Z).Width() << ", swsq=" << sin2tw
             << ", 1/alpha=" << 1./m_alpha << ", KFfin=" << kffin << "\n";
 
-  // Machine-readable copy so the KKMC driver can consume the point directly
-  // instead of it being transcribed by hand.
+  // Machine-readable copy for the KKMC driver.
   std::ofstream pt("acraic_point.dat");
   pt << std::setprecision(17);
   for (size_t i(0); i < pmap.size(); ++i)
     pt << pmap[i][0] << " " << pmap[i][1] << " "
        << pmap[i][2] << " " << pmap[i][3] << "\n";
 
-  // beta_0 is the Born; beta_1 the O(alpha) real + virtual on top of it. These
-  // are the same calls the nominal weight uses, so nothing here is a
-  // re-derivation of the physics.
+  // beta_0 is the Born; beta_1 the O(alpha) real + virtual, as in the nominal weight.
   const double b0    = m_born;
   const double real  = CalculateReal(k);
   const double virt  = CalculateVirtual();

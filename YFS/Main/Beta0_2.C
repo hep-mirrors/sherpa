@@ -118,7 +118,7 @@ double YFS::Beta02NLLCoefficient()
 
 double YFS::Beta02TwoLoopConstant()
 {
-  // Penin hep-ph/0508127 eq. (21), the constant of the massive form factor
+  // hep-ph/0508127 eq. (21), the constant of the massive form factor
   const double pi2(M_PI*M_PI);
   const double K(11./8. + 17./32.*pi2 - 2.25*s_zeta3 - 2./45.*pi2*pi2
                  - 0.5*pi2*log(2.));
@@ -171,7 +171,7 @@ Photonic_Factors YFS::PhotonicFactors(const Flavour_Vector &fl,
       const Complex nll(api*cnll*((Qi*Qi + Qj*Qj)*K
                                   + a2pi*eta*(Qi*Qi - Qj*Qj)*log(mj/mi)));
       // a vertex: one current, a same-side f fbar pair or, across, one line
-      // in and out with Q^2 = -s_ij (Penin's Euclidean case, no continuation)
+      // in and out with Q^2 = -s_ij (Euclidean case, no continuation)
       const bool vertex(same ? SameSideVertex(fl[i], fl[j], mi, mj)
                         : crossedlines && fl[i] == fl[j]
                           && -sij > s_crossed_min_q2m2*mi*mi);

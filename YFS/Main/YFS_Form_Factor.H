@@ -20,11 +20,8 @@ public:
                     double Mas1, double Mas2, double Kmax, double MasPhot, int mode);
     double BVR_full(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2,  double Kmax, double MasPhot, int mode);
     double BVR_full(YFS::Dipole &d, double omega);
-    /*!
-      The region-explicit forms (Soft_Region.H): the leg energies are taken in
-      the region's frame by the region, not by the caller. The energy-based
-      overloads above stay public for the standalone YFS/Tools checks.
-    */
+    //! The region-explicit forms (Soft_Region.H): leg energies are taken in the
+    //! region's frame. The energy-based overloads above serve YFS/Tools checks.
     double BVR_full(const SoftRegion &R, const ATOOLS::Vec4D &p1, const ATOOLS::Vec4D &p2,
                     double Mas1, double Mas2, double MasPhot, int mode);
     double BVR_cru(const SoftRegion &R, const ATOOLS::Vec4D &p1, const ATOOLS::Vec4D &p2,
@@ -62,41 +59,25 @@ public:
     //! BVirtT in dim. reg., with BVV_full_eps's map of ln(lambda^2): the virtual B of an
     //! initial-final (t-channel) dipole, the one the exponent's IFForFac carries
     DivArrD BVirtT_eps(YFS::Dipole &d);
-    // YFS exponent for an INITIAL-FINAL (t-channel-like) dipole: Btilda plus the
-    // T-CHANNEL virtual. This is KKMC's TForFac (SRCee/KKceex.cxx), which builds
-    // its interference form factor Yint out of exactly exp(Btilda + TBvirt).
+    // YFS exponent for an initial-final dipole: Btilda plus the t-channel
+    // virtual (KKMC's TForFac).
     double IFForFac(YFS::Dipole &d, double omega);
     double IFForFac(YFS::Dipole &d, const SoftRegion &R);
     double  BVirtGeneral(YFS::Dipole &d, double kmax=0);
     DivArrD BVirtGeneralEps(YFS::Dipole &d, double kmax=0);
-    // Virtual YFS B factor built from the dim-reg master integrals
-    // (METOOLS/Loops: Master_Bubble B0 + Master_Triangle C0) instead of the
-    // analytic A1/A2 dilog forms. Returns the DivArr (carrying the 1/eps_IR
-    // pole) so it cancels against the real BVR_full_eps in the FULL_FORM==3
-    // form-factor mode.
+    // Virtual YFS B from the dim-reg master integrals (B0, C0) rather than the
+    // analytic A1/A2 forms; carries the 1/eps_IR pole (FULL_FORM==3).
     DivArrD BVirtMaster(YFS::Dipole &d, double kmax=0);
     double  m_ww_s, m_ww_u, m_ww_t;
     double m_t1, m_t2, m_u1, m_u2;
     int m_useCoulomb;
     ATOOLS::Vec4D m_wp, m_wm, m_p1, m_p2;
-    /*!
-      Not owned: the loop provider, wired up by NLO_Base and read only for its
-      IR scale and epsilon scheme. Default-null because several callers guard
-      on it -- left uninitialised it held garbage, the (p_virt?...) guards
-      passed and IRscale() segfaulted.
-    */
+    //! Not owned: the loop provider (set by NLO_Base), read for its IR scale
+    //! and epsilon scheme. Null when unset.
     PHASIC::Virtual_ME2_Base *p_virt = nullptr;
     double m_m1, m_m2;
-    // m_use_model_alpha removed: shadowed YFS_Base's and was never read here.
-    /*!
-      The couplings for a pair of charge product ch (FSR::Initialize, once per
-      dipole and event). SETS them relative to the unit-charge values. They
-      used to be multiplied in place, so any ch != 1 compounded every event: a
-      like-charge pair (ch = -1) flipped the sign of every FSR form-factor
-      piece from one event to the next, and a quark pair (ch = 1/9, 4/9)
-      drove alpha to zero within a few events (the Piatek DelYFS and the
-      crude DelVol of FSR::YFS_FORM then vanished for every quark event).
-    */
+    //! The couplings for a pair of charge product ch (FSR::Initialize, once
+    //! per dipole and event), set relative to the unit-charge values.
     inline void SetCharge(double ch) {
         if (!m_unitcharge) { m_alpha_unit = m_alpha; m_alpi_unit = m_alpi; m_unitcharge = true; }
         m_alpha = m_alpha_unit * ch;

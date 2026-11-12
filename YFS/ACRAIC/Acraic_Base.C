@@ -18,8 +18,7 @@ using namespace YFS;
 
 Acraic_Base::Acraic_Base(const Flavour_Vector &flavs)
 {
-  // The amplitude container's extent. 2 -> 2 gives 4 legs and 16 helicity
-  // entries, which is what the fixed m_A[2][2][2][2] used to hold.
+  // The amplitude container's extent: 2 -> 2 gives 4 legs, 16 helicity entries.
   Amplitude::SetLegs(flavs);
 
   RegisterDefaults();
@@ -107,20 +106,13 @@ Acraic_Base::Acraic_Base(const Flavour_Vector &flavs)
   m_flavs = flavs;
 
   static const bool devmultileg(s["DEV_MULTILEG"].SetDefault(false).Get<bool>());
-  /*
-    The 2 -> 2 special path (hand-coded Born, its Comix alignment and map,
-    ACRAIC's own virtual, the fermion-pair m_if1/m_if2) is a description of
-    e+e- -> f fbar.
-  */
+  /* The 2 -> 2 special path (hand-coded Born, own virtual, m_if1/m_if2) describes
+     e+e- -> f fbar. */
   m_ffbar = (flavs.size() == 4 && flavs[2].IsFermion()
              && flavs[3] == flavs[2].Bar());
   if (!m_ffbar) {
-    /*
-      The throw is about the BORN, so it applies only when the hand-coded Born
-      is the one selected..
-
-      DEV_MULTILEG remains the override for the hand-coded case.
-    */
+    /* The throw concerns the Born: it applies only to the hand-coded one.
+       DEV_MULTILEG overrides it. */
     if (!m_comixborn && !devmultileg)
       THROW(fatal_error, "ACRAIC past 2 -> 2 needs the Comix Born. Either leave"
             " ACRAIC: COMIX_BORN at its default, or set ACRAIC: DEV_MULTILEG to"
@@ -191,286 +183,165 @@ void Acraic_Base::RegisterDefaults()
   s["CHECK_XS"].SetDefault(0);
   s["WEAK"].SetDefault(false);
   /*
-      COMIX_REAL_FLIP  < 0  derive the fermion bits from the Born and take
-                            set the photon bit
-      COMIX_REAL_NORM <= 0  derive from sum|A_comix|^2 / sum|e^2 A_hand|^2
-
+    COMIX_REAL_FLIP < 0: derive the fermion bits from the Born, set the photon bit.
+    COMIX_REAL_NORM <= 0: derive from sum|A_comix|^2 / sum|e^2 A_hand|^2.
   */
   s["COMIX_REAL_FLIP"].SetDefault(-1);
   s["COMIX_REAL_NORM"].SetDefault(-1.);
-  /*
-    ACRAIC: TNP_STREAMS (default false): per-event theory-nuisance-parameter
-  */
+  /* TNP_STREAMS: per-event theory-nuisance-parameter weights. */
   s["TNP_STREAMS"].SetDefault(false);
   // ACRAIC: TNP_IFI: IF template T_IFI = Odd[w_k] - Odd[w_0], 2 -> 2 only
   s["TNP_IFI"].SetDefault(true);
   s["TNP_IFI_CHECK"].SetDefault(0);
   s["BETA1_XCUT"].SetDefault(1e-3);          // beta_1 soft threshold
-  /*
-    x_gamma = 2E/sqrt(s) below which a photon is not enumerated in the
-    partition sum but fixed to the stage with the largest eikonal 
-  */
+  /* Photons with x_gamma = 2E/sqrt(s) below this are fixed to the stage with the
+     largest eikonal instead of being enumerated. */
   s["SOFT_PARTITION_CUT"].SetDefault(0.);
   /*
-    Legs for beta_1's M_1 (name or old integer):
-      physical (0, default): the physical legs with the s-channel propagator
-        momenta shifted by the other photons per side
+    Legs for beta_1's M_1 (ComixInfraredSubtracted_1_0):
+      physical (0, default): physical legs, s-channel propagator momenta shifted
+        by the other photons per side.
       balanced (1): a rebuilt balanced point (PartitionLegs).
-    See ComixInfraredSubtracted_1_0.
   */
   s["BETA1_LEGS"].SetDefault(beta1legs::physical);
   /*
-    Space-like exchange lines (Bhabha's t-channel boson, the t/u-channel
-    electrons of e+e- -> gamma gamma, a t-channel neutrino: any current with
-    one initial leg and part of the final state, detected by leg content in
-    COMIX::Amplitude::SetPropShifts) of the partition Born and of M_1 at the
-    partition's REDUCED invariant rather than at the unreduced one
-    on (1), off (0), auto (-1, default): on
-    for 2 -> 2 only (ExchangeLineShiftsOn). See
-    Acraic_Base::AddExchangeLineShifts.
+    Evaluate space-like exchange lines (t-channel bosons or fermions) of the
+    partition Born and M_1 at the partition's reduced invariant (see
+    AddExchangeLineShifts). on (1), off (0), auto (-1, default): on for 2 -> 2.
   */
   s["TCHANNEL_SHIFT"].SetDefault(tristate::automatic);
   /*
-    W stages for e+e- -> W+W- -> 4f. The charged final legs of a 
-    WW-type final state are split into two decay
-    stages, one per W, each with the W as an incoming leg and its charged
-    daughter as the outgoing one, and the W's join the beams as outgoing legs
-    of the production stage. Each stage is charge neutral; a photon on a
-    decay stage shifts only that W's propagator (COMIX::Amplitude::
-    SetPropShifts with the W's daughter mask), a photon on the production
-    stage the s-channel line. Without it the two charged leptons of such a
-    state form one flat stage whose photons shift BOTH W lines at once
-
-      off (0): every process as before, bit for bit.
-      on (1): whenever DipoleSet::FindWW recognises
-        the final state; a process without W's is unchanged bit for bit.
-       
-      auto (-1): on when in addition both W's are within YFS:
-        CLUSTERING_THRESHOLD widths of the pole (the pole scheme's own
-        window).
-    Needs the handler to hand over the W groups (YFS_Handler::ACRAICStageGroups).
+    W stages for e+e- -> W+W- -> 4f: each W decay is its own charge-neutral stage
+    (W incoming, charged daughter outgoing) and the W's are outgoing legs of the
+    production stage, so a decay-stage photon shifts only its W propagator.
+      off (0): no W stages.  on (1): when DipoleSet::FindWW recognises the state.
+      auto (-1): on when both W's are within CLUSTERING_THRESHOLD widths of the pole.
   */
   s["W_STAGES"].SetDefault(tristate::on);
   /*
-    The W momentum a decay- or production-stage eikonal uses. 
-    daughters (0, default): the W at
-    its daughters, a per-event quantity, so
-    the soft-factor table is computed once; the soft limit of Comix's M_1
-    is then missed by O(K_decay/M_W) on the W term when other hard photons
-    sit on that decay stage. partition (1): the pole momentum follows the
-    partition
-    (daughters + that partition's other decay photons), which is what
-    Comix's shifted propagator carries; the resonance stages' soft factors
-    are recomputed per partition. Cost negligible against the Comix calls.
+    W momentum in a decay- or production-stage eikonal:
+      daughters (0, default): W at its daughters (per event, soft-factor table
+        computed once; misses Comix's soft limit by O(K_decay/M_W)).
+      partition (1): the pole follows the partition's decay photons, as Comix's
+        shifted propagator does; soft factors recomputed per partition.
   */
   s["W_EIKONAL"].SetDefault(weikonal::daughters);
   /*
-    The crude the ACRAIC weight divides by, built on the GENERATOR's stages
-    rather than on ACRAIC's own; see
-    Acraic_Base::CrudeFromGenerator.
-    off (0); on (1), use it; compare (2), compare only; auto (-1, default),
-    use it exactly when W stages are active - the case where ACRAIC's stages
-    and the generator's dipoles differ - and leave every other process
-    untouched.
+    Crude built on the generator's stages instead of ACRAIC's (see
+    CrudeFromGenerator): off (0), on (1), compare only (2), auto (-1, default):
+    on exactly when W stages are active.
   */
   s["CRUDE_FROM_GENERATOR"].SetDefault(crudegen::automatic);
-  /*
-    beta_0(X_wp) on the REAL phase-space point whose invariant is X_wp^2 -
-    beams at X_wp, radiating pair at X_wp minus the spectators, per partition
-  */
+  /* beta_0(X_wp) on the real phase-space point of invariant X_wp^2 (beams at
+     X_wp, radiating pair at X_wp minus the spectators), per partition. */
   s["BORN_AT_SPRIME"].SetDefault(false);
   /*
-    Born processes with a space-like exchange line.
-    For those the physical-spinor partition Born with only its poles moved
-    is not the reduced-point Born times a flux, as it is for an s-channel
-    Born: the numerators do not scale with the poles. Tristate, name or old
-    integer:
-      on (1): beta_0 is the Born at the partition's real reduced point
-         (the BORN_AT_SPRIME form, BornLegsAt(X_wp)), the crude that Born
-         times s/X_wp^2 (the generator's density), and every photon's M_1
-         in beta_1 is evaluated on the balanced point with the other
-         photons taken out of the beams (the BETA1_LEGS: 1 form,
-         PartitionLegs) - genuine amplitudes throughout, so the soft
-         cancellations between beta_0 and beta_1 hold between like objects.
+    Born with a space-like exchange line: the physical-spinor partition Born with
+    only its poles moved is not the reduced-point Born times a flux, since the
+    numerators do not scale with the poles.
+      on (1): beta_0 is the Born at the real reduced point (BornLegsAt(X_wp)),
+        the crude is that Born times s/X_wp^2, and M_1 is evaluated on the
+        balanced point (BETA1_LEGS 1), so soft cancellations hold between like
+        objects.
       off (0): the physical-spinor forms, as for s-channel Borns.
-      auto (-1, default): on exactly when the Born has such a line, detected once
-         per Born process (Acraic_Base::BornHasExchangeLine), and there is a
-         single radiating stage (no charged final state, e.g. gamma gamma).
-         Every s-channel process keeps the old numbers bit for bit. With a
-         final-state stage
+      auto (-1, default): on when the Born has such a line (BornHasExchangeLine)
+        and there is a single radiating stage.
   */
   s["TCHANNEL_REDUCED_BORN"].SetDefault(tristate::automatic);
   /*
-    ACRAIC: TCHANNEL_MULTIPHOTON - beta_1 beyond one photon when beta_0 is the
-    reduced t-channel Born (TCHANNEL_REDUCED_BORN active: gamma gamma).
-    Nothing changes at one photon, nor for any process without the reduced
-    Born (every s-channel Born, Bhabha). Name or old integer:
-      partition_legs (0, default): M_1 on PartitionLegs, subtraction with
-        the eikonal on those legs.
-      one_photon_point (1): M_1 at the photon's one-photon point (OnePhotonScaledLegs, YFS.NLO's
-        REAL_MAP 2 point carried into the generator's frame), as the ratio
-        M_1/s(point) times the physical eikonal, so the subtraction is
-        exactly the Born term's s_phys B_0.
-      factorised (2): one_photon_point, and the partition's beta_1 terms
-        combined in factorised form
-        along the Born helicity vector (AddFactorisedRemainder): identical
-        at O(alpha^1), with the factorised beta_2 and higher added.
+    TCHANNEL_MULTIPHOTON: beta_1 beyond one photon with the reduced t-channel
+    Born (TCHANNEL_REDUCED_BORN active).
+      partition_legs (0, default): M_1 on PartitionLegs, eikonal on those legs.
+      one_photon_point (1): M_1 at the one-photon point (OnePhotonScaledLegs) as
+        M_1/s(point) times the physical eikonal.
+      factorised (2): one_photon_point with the beta_1 terms combined along the
+        Born helicity vector (AddFactorisedRemainder).
   */
   s["TCHANNEL_MULTIPHOTON"].SetDefault(tchmultiphoton::partition_legs);
-  /*
-    ACRAIC: BETA1_DRESSED_FSR (2026-10-11, default false while validated):
-    beta_1 of a photon on a two-leg final stage that has companions on the
-    same stage at the pair dressed with those companions, with its own Born
-    subtraction there (Acraic_Comix.C, ComixInfraredSubtracted_1_0). Cures
-    the deep-radiative-return Bhabha weights (BES-III, B e e). One photon per
-    stage: unchanged.
-  */
+  /* BETA1_DRESSED_FSR: beta_1 of a photon on a two-leg final stage with
+     companions is taken at the pair dressed with them, with its own Born
+     subtraction (ComixInfraredSubtracted_1_0). */
   s["BETA1_DRESSED_FSR"].SetDefault(false);
 
   s["NO_PSEUDOFLUX"].SetDefault(pseudoflux::rho0_only);
   /*
-    PSEUDOFLUX_MASSIVE (default false): the crude's pseudo-flux of a final stage
-    is (q+K)^2/q^2 = s_pre/s_Q, the ratio of the two-body fluxes lambda^1/2 for
-    massless legs. For massive legs (pi+ pi-) the flux is lambda^1/2(s_pre)/
-    lambda^1/2(s_Q) = (s_pre/s_Q) beta(s_pre)/beta(s_Q). Together with
-    FSR_SHELL_JACOBIAN, which puts beta(s_Q)/beta(s_pre) on the generator's
-    weight, the crude then carries the full massive flux. Measured, with only
-    the shell factor, the FSR-only O(alpha) of pi pi gamma is high against the
-    exact scalar-QED tree by beta(s_pre)/beta(s_Q) (1.4% at 650 MeV, 4% at 560
-    MeV, CMD); this switch takes it out of the denominator of rho/rho_crude.
+    PSEUDOFLUX_MASSIVE: the final stage's pseudo-flux is s_pre/s_Q for massless
+    legs; for massive legs it is (s_pre/s_Q) beta(s_pre)/beta(s_Q). Pairs with
+    FSR_SHELL_JACOBIAN.
   */
   s["PSEUDOFLUX_MASSIVE"].SetDefault(false);
   /*
-    CRUDE_BORN_LEGS (default generator): the Born point of the crude. The FSR
-    generator keeps the pair's direction in the PAIR rest frame (the Born
-    direction it was sampled with), so that is the direction the crude's Born
-    must be evaluated at (GeneratorBornAt). `reduced` rebuilds the pair along
-    its direction in the reduced system's frame (BornLegsAt), which differs
-    from the generator's by the recoil against a hard final-state photon: a
-    density mismatch, up to 5x for pi+ pi- gamma, where the Born is sin^2
-    theta. Beyond 2 -> 2 the generator's point was already used.
+    CRUDE_BORN_LEGS: Born point of the crude. generator (default) keeps the
+    pair direction in the pair rest frame (GeneratorBornAt); reduced uses the
+    reduced system's frame (BornLegsAt), which differs by the recoil against a
+    hard final-state photon.
   */
   s["CRUDE_BORN_LEGS"].SetDefault(crudebornlegs::generator);
-  /*
-    Take the partition Born from Comix instead of the hand-coded spinor
-    algebra. That algebra is the 2 -> 2 specific part of ACRAIC, so this is the
-    step that makes the partition sum process independent. Requires
-    COMIX: MOMENTUM_PROJECTION: 0 - see the check in the constructor.
-  */
-  /*
-    ON by default: the Comix Born is the DERIVED object and the hand-coded
-    2 -> 2 spinor algebra is the fallback. At 2 -> 2 it reproduces the
-    hand-coded ACRAIC weight to round-off; past 2 -> 2 the hand-coded Born is not
-    the right amplitude at all. COMIX_BORN: false selects the hand-coded one.
-  */
+  /* Partition Born from Comix instead of the hand-coded 2 -> 2 spinors.
+     Requires COMIX: MOMENTUM_PROJECTION: 0 (checked in the constructor). */
+  /* Default on: the hand-coded 2 -> 2 spinor Born is the fallback
+     (COMIX_BORN false). */
   s["COMIX_BORN"].SetDefault(true);
   /*
-    ACRAIC: ISR_VERTEX_AT_S (default true, 2026-10-11). The external virtual
-    (one loop-provider call per event) is evaluated at the post-ISR Born point
-    s', so its initial-state vertex sits at s'. KKMC's CEEX, and ACRAIC's own
-    virtual, take the initial vertex at the full s in every partition (and the
-    final one at the partition's s_Q). With it on, the external v gets
-    2 Re[delta_I(s) - delta_I(s')]: about (alpha/pi) ln(s/s'), -2.6e-3 per
-    Z-return event at 161 GeV before (point harness against KKMC).
+    ISR_VERTEX_AT_S: put the external virtual's initial-state vertex at s as
+    ACRAIC's own virtual and KKMC's CEEX do, adding 2 Re[delta_I(s) - delta_I(s')]
+    to the virtual evaluated at the post-ISR s'.
   */
   s["ISR_VERTEX_AT_S"].SetDefault(true);
-  /*
-    Diagnostics. All off by default,
-  */
+  /* Diagnostics, all off by default. */
   s["DUMP_XMIN"].SetDefault(0.0);      // min x_gamma for the point dump
   s["DUMP_NPHOT"].SetDefault(1);       // photon multiplicity to dump at
-  /*
-    The perturbative order of the ACRAIC amplitude. 1 (default): beta_0 +
-    beta_1
-  */
+  /* Perturbative order of the amplitude: 1 (default) beta_0 + beta_1, 2 adds beta_2. */
   s["ORDER"].SetDefault(1);
 
   s["BETA2_XCUT"].SetDefault(0.05);
-  /*
-    ACRAIC: TREE_BETA_MAX (integer; -1, the default, = ORDER):
-  */
+  /* TREE_BETA_MAX (-1 = ORDER): highest tree residual beta_m. */
   s["TREE_BETA_MAX"].SetDefault(-1);
   /*
-    ACRAIC: TREE_BETA_PROBE N: for the first N events (ORDER 2) print the
-    truncation ladder |A_N|^2, N = 0..TREE_BETA_MAX, against the exact tree
-    |M_n|^2 from Comix at the event's point (@@@ BNCLOS). Closure at
-    N = n needs every photon in every set: BETA1_XCUT, BETA2_XCUT and
-    SOFT_PARTITION_CUT 0, TREE_BETA_MAX >= n.
+    TREE_BETA_PROBE N: for the first N events (ORDER 2) print the truncation
+    ladder |A_N|^2 against the exact Comix tree |M_n|^2 (@@@ BNCLOS). Closure
+    needs BETA1_XCUT, BETA2_XCUT, SOFT_PARTITION_CUT 0 and TREE_BETA_MAX >= n.
   */
   s["TREE_BETA_PROBE"].SetDefault(0);
   /*
-    One-loop N-photon matching (NOTES-acraic-oneloop-nphoton.md).
-    ACRAIC: LOOP_BETA_MAX (integer, default 1): the highest photon multiplicity
-    whose one-loop amplitude enters. 1 = the present real-virtual (REAL_VIRTUAL);
-    2 builds the two-photon one-loop provider (RV_Generator, Recola in practice),
-    needs ORDER 2 and <= TREE_BETA_MAX. The residual beta_2^[1] enters A_2
-    (Acraic_LoopN.C).
-    ACRAIC: LOOP_BETA_XCUT (-1 = BETA2_XCUT, never below it): photons of a set
-    below it give the set no one-loop residual.
+    LOOP_BETA_MAX (default 1): highest photon multiplicity with a one-loop
+    amplitude. 2 builds the two-photon provider (needs ORDER 2, <= TREE_BETA_MAX)
+    and enters A_2 as beta_2^[1] (Acraic_LoopN.C).
+    LOOP_BETA_XCUT (-1 = BETA2_XCUT, never below it): softer photons get no
+    one-loop residual.
   */
   s["LOOP_BETA_MAX"].SetDefault(1);
   s["LOOP_BETA_XCUT"].SetDefault(-1.);
-  /*
-    ACRAIC: LOOP_LADDER_PROBE N: the first N events with one or two photons,
-    every one with its one-loop record, print @@@ LLCLOS: the one-loop
-    truncation ladder on the physical legs (Acraic_LoopN.C, LoopLadderProbe).
-  */
+  /* LOOP_LADDER_PROBE N: print the one-loop truncation ladder (@@@ LLCLOS)
+     for the first N events (LoopLadderProbe). */
   s["LOOP_LADDER_PROBE"].SetDefault(0);
   /*
-    External virtual at ORDER 2: false (default) keeps the O(alpha^1)
-    composition sum_h |A_2 + (v/2) A_0|^2; true puts (1+v/2) on beta_0 AND
-    beta_1,
-    sum_h |A_2 + (v/2) A_1|^2, 
+    External virtual at ORDER 2: false (default) sum_h |A_2 + (v/2) A_0|^2;
+    true sum_h |A_2 + (v/2) A_1|^2.
   */
   s["ORDER2_VIRTUAL_ON_BETA1"].SetDefault(false);
   /*
-    ACRAIC: REAL_VIRTUAL (default off; name or old integer) - the O(alpha^2)
-    real-virtual on the
-    one-photon residuals, so that ACRAIC carries what YFS.NLO carries with
-    YFS: VIRTUAL_COMBINE product and YFS: RV_MODE remainder
-    off (0): unchanged, sum_h |A_1 + (v/2) A_0|^2 (at ORDER 2 as
-       ORDER2_VIRTUAL_ON_BETA1 says).
-    factorisable (1): the factorisable part, sum_h |(1 + v/2) A_1|^2 (A_2 at ORDER 2): v/2
-       on every beta_1 as well as on beta_0 - ORDER2_VIRTUAL_ON_BETA1 true, now
-       also at ORDER 1. KKMC CEEX2's (1+d_I)(1+d_F) on beta_1, and YFS.NLO's
-       (1 + v) x real.
-    averaged (2): factorisable plus the non-factorisable, helicity-averaged
-       remainder: photon j's M_1 (in every
-       partition that carries it) gets (v_{n+1,j} - v_B)/2 on top, the
-       helicity-averaged loop over tree of the (n+1)-body point minus the
-       Born's, both IR subtracted on their own legs. The numbers are YFS.NLO's
-       (NLO_Base, YFS: RV_MODE remainder: same loop call, photons matched by
-       lab momentum), so ACRAIC needs no loop call of its own; it needs
-       NLO_Part with E and YFS: RV_MODE remainder. In |A|^2 this adds sum_j dv_j Re<A_1, M_1j>
-       (RealVirtualRemainderRho), at one photon dv |M_1|^2 = YFS.NLO's
-       rho dv on the same event.
-    isr_nll (5): factorisable plus, on each initial-state photon's M_1, the
-       non-soft part of the one-loop correction to single initial-state
-       emission at LL + NLL in the small-mass limit, the V_2 of KKMC's MakeVini
-       (Jadach, Ward, Was, Phys. Rev. D65 (2002) 073030, eq. 2.18): dv_j =
-       2 Re V_2(r_1, r_2), r_i = p_i.k/p_1.p_2 with the beams p_1, p_2. V_2 -> 0
-       for a soft photon and carries the collinear logarithms of a hard one.
-       Final-state photons keep the factorisable factor (KKMC's soft-limit pion
-       vertex). No loop call; what a beam-collinear photon needs, where the
-       exact remainder (averaged) is numerically unusable.
-    hybrid (6): isr_nll on the initial-state photons and averaged on the
-       final-state photons: the exact one-loop remainder v_{n+1,j} - v_B of the
-       loop provider (for pions the point-like e+e- -> pi+pi-gamma loop) on
-       each final-state photon's M_1, the analytic V_2 on each initial-state
-       photon's. YFS.NLO calls the (n+1)-point loop only for final-state
-       photons, so the beam-collinear points where it fails never occur.
-       Needs what averaged needs (NLO_Part with E, the RV provider).
-       ACRAIC: HYBRID_ISR_RMIN r_c (default -1): r_c >= 0: V_2 only for
-       initial-state photons with min(p_i.k)/p_1.p_2 < r_c.
+    REAL_VIRTUAL: the O(alpha^2) real-virtual on the one-photon residuals.
+      off (0): sum_h |A_1 + (v/2) A_0|^2 (at ORDER 2 per ORDER2_VIRTUAL_ON_BETA1).
+      factorisable (1): sum_h |(1 + v/2) A_1|^2, v/2 on every beta_1 as on beta_0
+        (as CEEX2's (1+d_I)(1+d_F)).
+      averaged (2): factorisable plus the helicity-averaged non-factorisable
+        remainder (v_{n+1,j} - v_B)/2 on photon j's M_1, taken from YFS.NLO
+        (needs NLO_Part with E and YFS: RV_MODE remainder); adds
+        sum_j dv_j Re<A_1, M_1j> (RealVirtualRemainderRho).
+      isr_nll (5): factorisable plus, on initial-state photons, the LL+NLL
+        single-emission one-loop term V_2 of KKMC's MakeVini (Phys. Rev. D65 (2002) 073030),
+        dv_j = 2 Re V_2(r_1, r_2), r_i = p_i.k/p_1.p_2. No loop call. Final-state
+        photons keep the factorisable factor.
+      hybrid (6): isr_nll on initial-state photons, averaged on final-state ones
+        (needs what averaged needs). HYBRID_ISR_RMIN r_c >= 0: V_2 only where
+        min(p_i.k)/p_1.p_2 < r_c.
   */
   s["REAL_VIRTUAL"].SetDefault(acraicrv::automatic);
   s["HYBRID_ISR_RMIN"].SetDefault(-1.);
-  /*
-    ACRAIC: RESONANCE_EXPONENTIATION (none | greco | auto; default auto) - the
-    resonant initial-final log of every final stage's resonance taken out
-    of the provider's virtual and exponentiated into that resonance's
-    propagator in every amplitude of the partition sum (Acraic_Resonance.C).
-  */
+  /* RESONANCE_EXPONENTIATION (none | greco | auto): exponentiate each final
+     resonance's initial-final log into its propagator in every amplitude, and
+     remove it from the virtual (Acraic_Resonance.C). */
   s["RESONANCE_EXPONENTIATION"].SetDefault(acraicresexp::automatic);
   s["TNP_IFI_VIRTUAL"].SetDefault(tnpifivirtual::automatic);
   s["KKMC_FLUX_EMULATION"].SetDefault(0); // diagnostic, see Acraic_Base.H
@@ -570,13 +441,8 @@ Complex Acraic_Base::CouplingZ(double  j, int mode) {
   }
   else msg_Error() << METHOD << "\n wrong mode\n";
 
-  /*
-    A zero here is physics, not an error: for a neutrino pair v_f = a_f, so
-    the coupling (v_e + a_e)(v_f - a_f) of one helicity vanishes identically.
-    This layer is the hand-coded 2 -> 2 Born; with the Comix Born it only
-    feeds the 2 -> 2 alignment and diagnostics, and nothing at all beyond
-    2 -> 2 (unit alignment), so it is reported at debugging level only.
-  */
+  /* A zero is physics (neutrino pair: v_f = a_f); this hand-coded layer is
+     diagnostic only with the Comix Born. */
   if (zcpl == 0.) msg_Debugging() << METHOD << ": Z coupling is zero (j=" << j
                                   << ", mode=" << mode << ")\n";
   return zcpl;
@@ -591,27 +457,13 @@ Complex Acraic_Base::CouplingG() {
 
 
 /*
-  The four momenta the ACRAIC spin amplitudes are built from:
-  {p_a, p_b, p_c, p_d} with p_c,p_d the PHYSICAL outgoing fermions.
-
-  m_momenta is {beam, beam, Born pair, lab pair} - MakeACRAIC appends the
-  lab final state after the four Born momenta - and only the lab pair
-  satisfies p_a + p_b = p_c + p_d + sum(k). The Born pair sits at full
-  beam energy, so using it puts the final-state spinors at a different
-  kinematic point from the propagator, which eq.(one-photon) evaluates at
-  X = P - sum(k).
+  The momenta the ACRAIC spin amplitudes are built from: the beams and the
+  physical (lab) outgoing legs, the only set with p_a + p_b = sum p_f + sum(k).
 */
 void Acraic_Base::BuildAcraicMomenta()
 {
-  /*
-    m_momenta is {beam, beam, Born final state, lab final state}, MakeACRAIC
-    appending the lab set. ACRAIC wants the beams and the LAB legs, those being
-    the ones that balance against the photons; the Born set is the fallback
-    when MakeACRAIC has not appended yet.
-
-    Generalised from the fixed pair to nf = m_flavs.size() - 2 final legs. At
-    nf = 2 the offset is 4 or 2 exactly as before.
-  */
+  /* m_momenta is {beam, beam, Born final state, lab final state}; use the lab
+     set, falling back to the Born set if it has not been appended. */
   const size_t nf(m_flavs.size() >= 2 ? m_flavs.size() - 2 : 0);
   m_pacraic.clear();
   m_pacraic.push_back(m_momenta[0]);

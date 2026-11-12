@@ -23,10 +23,7 @@ namespace YFS {
     void SetS(const double s) override;
       int m_N;
       std::map<ATOOLS::Flavour, int> m_flav_label;
-      //! Flavours m_flav_label was last built from. m_flav_label is invariant
-      //! per process, so MakeDipolesII/MakeDipoles skip rebuilding it (a
-      //! std::map, so tree-node allocations) when the flavours have not
-      //! changed since last event -- same guard YFS_Handler::SetFlavours uses.
+      //! Flavours m_flav_label was last built from (rebuilt only on change).
       ATOOLS::Flavour_Vector m_flav_label_fl;
       // std::map<ATOOLS::Vec4D, int> m_mom_label;
       ATOOLS::Vec4D_Vector m_softphotons, m_bornmomenta;
@@ -35,8 +32,6 @@ namespace YFS {
       std::unique_ptr<YFS::YFS_Form_Factor> p_yfsFormFact;
       DivArrD m_virtSub;
 
-      // m_type removed: shadowed YFS_Base's std::string m_type with a
-      // different type entirely, and was never read.
       Define_Dipoles();
       ~Define_Dipoles();
 
@@ -79,18 +74,13 @@ namespace YFS {
       double CalculateFlux(const Vec4D &k, const int &fsrmode);
       double Propagator(const double &s, int width=0);
       double FormFactor();
-      //! FormFactor built from an already-computed FormFactorSum(), so a caller
-      //! that needs both gets them from one evaluation instead of two.
+      //! FormFactor from an already-computed FormFactorSum()
       double FormFactor(double form);
       double FormFactorSum();
-      //! FormFactorSum() without its initial-state (II) term: the final-
-      //! state, Coulomb, initial-final and decay pieces, on the legs the
+      //! FormFactorSum() without its initial-state (II) term, on the legs the
       //! dipoles were built with (RV_MODE remainder_own_legs)
       double FormFactorSumFinalLegs();
-      //! Just the initial-final term of FormFactorSum(), i.e. the piece
-      //! IFI_Sub=1 adds and IFI_Sub=0 leaves out. Zero when IFI_Sub is off.
-      //! Lets the IFI rung be undone exactly as exp(-FormFactorSumIF())
-      //! instead of costing a separate production run.
+      //! The initial-final term of FormFactorSum() alone (zero when IFI_Sub is off)
       double FormFactorSumIF();
       //! The same sum with the soft cutoff at omega instead of IFIOmega().
       double FormFactorSumIF(double omega);
@@ -100,17 +90,13 @@ namespace YFS {
       double FormFactorShiftToRegion(double emin);
       //! the final-state dipoles' part of FormFactorShiftToRegion (ACRAIC: FIXED_ORDER_EVENT_EXPONENT)
       double FormFactorShiftToRegionFinal(double emin);
-      //! The decay-stage term of the WW pole expansion. Zero in the flat
-      //! scheme.
+      //! The decay-stage term of the WW pole expansion (zero in the flat scheme)
       double FormFactorSumDecay();
-      //! The Coulomb singularity removed from a massive-vector-pair dipole's
-      //! form factor, eq (9) of hep-ph/9606429. Zero unless the pole
-      //! expansion is active and the pair is slow.
+      //! Coulomb singularity removed from a massive-vector-pair dipole's form
+      //! factor, eq (9) of hep-ph/9606429. Zero unless the pole expansion is
+      //! active and the pair is slow.
       double CoulombSubtraction(YFS::Dipole &D);
-      //! Replace the final-state and interference dipoles with the WW pole
-      //! expansion. Returns whether it applied.
-      //! How often the pole expansion was attempted and how often the event
-      //! was inside the leading-pole window. Reported at the end of the run.
+      //! Pole-expansion attempts and events inside the leading-pole window
       long m_pole_tried = 0, m_pole_built = 0;
       bool m_pole_active = false;
       long m_recoil_tried = 0, m_recoil_massfail = 0;
@@ -119,29 +105,21 @@ namespace YFS {
       //! The W's and their daughters' positions, as BuildPole found them.
       inline const DipoleSet::WWLegs &WW() const { return m_set.WW(); }
       /*!
-        Once per run: the closed-form decay exponent (YFS_Form_Factor::
-        BVR_decay, what FormFactorSumDecay exponentiates) against the same
-        dipole's virtual plus real B from the dim-reg machinery in the W rest
-        frame - the pieces the O(alpha) subtraction uses. They must agree, or
-        the expansion of exp(Y) and the subtracted V and R are not the same
-        object at O(alpha).
+        Once per run: compare the closed-form decay exponent (BVR_decay)
+        with the dipole's dim-reg virtual plus real B in the W rest frame.
       */
       void CheckDecayFormFactor(YFS::Dipole &D);
       bool m_decaycheckdone = false;
       //! YFS: WW_DECAY_VIRTUAL_SUB, see the definition
       bool DecayVirtualSubtraction() const;
       //! Carry the production-stage recoil from the W's down to the four
-      //! fermions. Must be called after the W-pair dipole has radiated and
-      //! instead of writing its new momenta straight into the event, since the
-      //! W's are not entries in the event record.
+      //! fermions. Call after the W-pair dipole has radiated.
       bool ApplyPoleRecoil(ATOOLS::Vec4D_Vector &plab);
       bool MakeDipolesPole(ATOOLS::Flavour_Vector const &fl,
                            ATOOLS::Vec4D_Vector const &mom,
                            ATOOLS::Vec4D_Vector const &born);
-      //! One-shot dump of the dipole set as it was actually constructed:
-      //! flavours, charges, which pairs radiate, and the soft cutoff each
-      //! form factor uses. Prints on the first call and never again. Gated by
-      //! the caller on YFS: Dump_Dipoles.
+      //! One-shot dump (first call only) of the constructed dipole set:
+      //! flavours, charges, radiating pairs, soft cutoffs. YFS: Dump_Dipoles.
       void DumpDipoles();
       double IFIOmega() const;
       double RealIFWeight(const ATOOLS::Vec4D_Vector &photons);

@@ -22,11 +22,10 @@ using namespace YFS;
 
 
 /*
-  Derive the emission stages: one group per YFS radiating-dipole group in
-  the final state, leftover charged final legs as one more, and the initial
-  state last. Each stage must be charge-neutral, sum_{i in g} Q_i theta_i = 0,
-  or the decomposition is refused. Stage legs index m_stagemom: the external
-  legs, then any reconstructed resonance (ACRAIC: W_STAGES).
+  Derive the emission stages: one per YFS final-state dipole group, leftover
+  charged final legs as one more, the initial state last. Each must be
+  charge-neutral, sum_{i in g} Q_i theta_i = 0, or the decomposition is refused.
+  Stage legs index m_stagemom (external legs, then W_STAGES resonances).
 */
 bool Acraic_Base::BuildStages() {
   // theta = -1 incoming, +1 outgoing: w = Q*theta are Sfactor's weights
@@ -75,9 +74,8 @@ bool Acraic_Base::BuildStages() {
     if (!used[l] && m_flavs[l].Charge() != 0.) rest.legs.push_back((int)l);
   if (!rest.legs.empty()) groups.push_back(rest);
   if (groups.empty()) groups.push_back(FinalGroup());   // neutral final state
-  // A charged group (e.g. a same-charge pair from the dipole selector's
-  // fallback) folds everything into one flat final stage. A decay stage
-  // counts its resonance as incoming: {mu+, W+ in} is neutral.
+  // A charged group folds everything into one flat final stage; a decay
+  // stage counts its resonance as incoming.
   auto charge = [&](const FinalGroup &g) {
     double q(0.);
     for (size_t k(0); k < g.legs.size(); ++k) q += m_flavs[g.legs[k]].Charge();
@@ -110,8 +108,8 @@ bool Acraic_Base::BuildStages() {
     }
     m_stagelegs.push_back(st);
   }
-  // The production stage: the beams and every resonance as an outgoing leg.
-  // The W terms cancel against the decay stages in the total eikonal.
+  // Production stage: beams plus every resonance as an outgoing leg (the
+  // resonance terms cancel against the decay stages in the total eikonal).
   std::vector<StageLeg> ini;
   for (int i(0); i < 2; ++i) ini.push_back({i, -m_flavs[i].Charge()});
   for (size_t r(0); r < m_resonances.size(); ++r)
@@ -143,9 +141,7 @@ bool Acraic_Base::BuildStages() {
     for (int g(0); g < m_nstages; ++g)
       if (g != m_initstage && !m_stagelegs[g].empty()) m_isronly = true;
   if (m_isronly) {
-    // the final current does not radiate: its eikonal weights vanish, so the
-    // crude, the partition sum and collapsed soft photons carry the initial
-    // current alone; the legs stay for propagator shifts and vetoes
+    // final-state eikonal weights vanish; legs stay for shifts and vetoes
     for (int g(0); g < m_nstages; ++g)
       if (g != m_initstage)
         for (size_t l(0); l < m_stagelegs[g].size(); ++l) m_stagelegs[g][l].w = 0.;
@@ -155,8 +151,7 @@ bool Acraic_Base::BuildStages() {
                 <<"final-state emission vetoed in M_1/M_2, no initial-final "
                 <<"boxes or resonance exponentiation."<<std::endl; }
   }
-  // YFS: MODE FSR with a charged initial state: FSR only (see m_fsronly), the
-  // mirror of the above: the initial current does not radiate
+  // YFS: MODE FSR with a charged initial state: FSR only (see m_fsronly)
   m_fsronly = false;
   if (!HasISR())
     for (size_t l(0); l < m_stagelegs[m_initstage].size(); ++l)
@@ -557,9 +552,7 @@ void Acraic_Base::PartitionStart(int &last) {
   size_t nfree(0);
   for (size_t i(0); i < n; ++i) {
     const double x(m_s > 0. ? 2.*m_allphotons[i][0]/sqrt(m_s) : 1.);
-    // FSR only (m_fsronly): nothing to enumerate either - every photon is
-    // fixed below to its best final stage (the initial stage's eikonal is 0),
-    // as ISR only fixes every photon to the production stage
+    // FSR only (m_fsronly): nothing to enumerate, as for ISR only
     if (fsr && !m_fsronly && x >= cut && (int)m_Sfac.size() == m_nstages) { ++nfree; continue; }
     // fixed: the stage with the largest eikonal is its natural emitter
     m_fixedstage[i] = 1;
@@ -634,9 +627,8 @@ bool Acraic_Base::Beta1NeverEvaluated(size_t j) const
 }
 
 /*
-  The next-to-soft flux of photon j on its stage in this partition, for a
-  photon without beta_1: X^2/(X + k)^2 on the initial stage (X the beams
-  less its photons), (q + K)^2/(q + K - k)^2 on a final stage.
+  Next-to-soft flux of photon j without beta_1: X^2/(X + k)^2 on the initial
+  stage, (q + K)^2/(q + K - k)^2 on a final stage.
 */
 double Acraic_Base::NextToSoftFlux(size_t j) const
 {
@@ -657,10 +649,9 @@ double Acraic_Base::NextToSoftFlux(size_t j) const
 }
 
 /*
-  ACRAIC: CRUDE_FROM_GENERATOR. The crude on the generator's flat dipole
-  groups rather than ACRAIC's stages (they differ with W stages), since
-  rho_crude must be the generator's density. Same expression as
-  InfraredSubtractedME_0_0. Returns < 0 if it cannot be built.
+  CRUDE_FROM_GENERATOR: the crude on the generator's flat dipole groups, so
+  rho_crude is the generator's density (as InfraredSubtractedME_0_0). Returns
+  < 0 if it cannot be built.
 */
 double Acraic_Base::CrudeFromGenerator()
 {
@@ -782,10 +773,8 @@ double Acraic_Base::CrudeOfPhotonAssignment(const std::vector<size_t> &slot,
 
 /*
   Photons below SOFT_PARTITION_CUT, and the softest beyond
-  MAX_PARTITION_PHOTONS, are not enumerated: they keep a fixed stage
-  (largest eikonal) and carry the total eikonal s_tot(k) (m_sactu). Such a
-  photon can still be above BETA1_XCUT and gets its beta_1 against
-  s_tot(k) beta_0(X_fixed).
+  MAX_PARTITION_PHOTONS, are not enumerated: they keep a fixed stage and
+  carry the total eikonal s_tot(k) (m_sactu).
 */
 void Acraic_Base::PartitionStartCollapsed(int &last) {
   static const size_t maxphot(Settings::GetMainSettings()["ACRAIC"]["MAX_PARTITION_PHOTONS"]
@@ -880,11 +869,8 @@ void Acraic_Base::Calculate() {
 
   
   BuildComixBornAlignment();
-  /*
-    YFS: IFI false: refused once per Born process, here where its stages and
-    momenta exist. The exchange-line probe may not resolve on the first event
-    (BornHasExchangeLine), and then the check runs again on the next one.
-  */
+  // YFS: IFI false: refused once per Born process (retried if the
+  // exchange-line probe has not resolved yet).
   if (!m_ifi && !m_noifiok.count(p_bornproc)) {
     const std::string why(NoIFIRefusal());
     if (!why.empty()) THROW(fatal_error, "YFS: IFI false is not available: "+why);
@@ -1218,8 +1204,7 @@ void Acraic_Base::Calculate() {
               << "  photon x = 2E/sqrt(s) = " << xgam
               << ",  E_gamma = " << m_allphotons[0][0] << " GeV\n";
     if (m_order == 2) {
-      // tree-level partner of the KKMC harness's KKTREE2 line; run with
-      // YFS: ACRAIC_Virtual: external
+      // partner of the KKMC harness's KKTREE2 line
       std::cerr<<std::setprecision(12)<<"@@@ SHTREE2 nphot="<<m_allphotons.size()
                <<" rho1/rho0="<<m_result1/m_result0
                <<" rho2/rho0="<<m_result2/m_result0

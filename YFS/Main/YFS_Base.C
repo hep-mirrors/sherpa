@@ -33,9 +33,7 @@ double YFS_Base::ExternalFormFactor(const Vec4D_Vector &p,
                                     const Flavour_Vector &fl,
                                     const size_t &nin)
 {
-  // Stub. The pion form factor lands in its own merge request; until then this
-  // is the identity, which is what the real implementation returns whenever the
-  // form factor is switched off.
+  // Stub: identity, as returned when the form factor is off.
   return 1.;
 }
 
@@ -44,27 +42,21 @@ void YFS_Base::RegisterDefaults(){
   m_s = sqr(rpa->gen.Ecms());
   Scoped_Settings s{ Settings::GetMainSettings()["YFS"] };
   s["MODE"].ResetDefault().SetDefault(yfsmode::off);
-  // 2026-09-27: the validated paper settings are the defaults, so that a
-  // card needs only ACRAIC: 1 (see RegisterSettings for MODE)
+  // The paper settings are the defaults, so a card needs only ACRAIC: 1.
   s["BETA"].SetDefault(1);
   s["VMAX"].SetDefault(0);
   // lower bound on |t| of the exchange lines, GeV^2 (0: off);
   // see YFS_Handler::ExchangeLinesPassTMin
   s["EXCHANGE_T_MIN"].SetDefault(0.);
-  // lower bound on |t| of the exchange lines of the PHYSICAL event, GeV^2 (0:
-  // off): the full beams against the outgoing legs after all radiation, the
-  // momenta the analysis sees. EXCHANGE_T_MIN acts on the reduced Born (the
-  // frame of s'), whose |t| ~ s'(1 - cos)/2 is far below the physical one in
-  // radiative return: 0.1 GeV^2 there removed 17-21% of BES-III e e sigma_fid
-  // (2026-10-11). This one is a pure phase-space veto, safe below the
-  // fiducial |t|.
+  // lower bound on |t| of the exchange lines of the physical event (full beams
+  // against outgoing legs after all radiation), GeV^2 (0: off). Pure phase-space veto.
   s["EXCHANGE_T_MIN_FINAL"].SetDefault(0.);
   // degrees between Born photons and the reduced beams (0: off)
   s["BORN_PHOTON_REDUCED_ANGLE"].SetDefault(0.);
   // lab-frame photon resolution for n-photon samples (0: off)
   s["RESOLVED_PHOTON_E"].SetDefault(0.);
   s["RESOLVED_PHOTON_ANGLE"].SetDefault(0.);
-  // the paper value (2026-10-06); results are cutoff independent
+  // paper value; results are cutoff independent
   s["IR_CUTOFF"].ResetDefault().SetDefault(1e-5);
   s["DELTA"].SetDefault(1e-2);
   s["PHOTON_MAX"].SetDefault(100);
@@ -76,29 +68,20 @@ void YFS_Base::RegisterDefaults(){
   s["DEBUG_DIR_NLO"].SetDefault("YFS_NLO_Hist");
   s["COULOMB"].SetDefault(false);
   s["COULOMB_HIGHER_ORDER"].SetDefault(coulombho::none);
-  // YFS: LOOP_SOFT_FLOOR (x = 2E/sqrt s): below it a photon set gets no
-  // multi-photon one-loop evaluation (the massive (n+2)-point loop loses
-  // precision there; NOTES-acraic-oneloop-nphoton.md section 3.3)
+  // LOOP_SOFT_FLOOR (x = 2E/sqrt s): below it a photon set gets no multi-photon
+  // one-loop evaluation (the massive (n+2)-point loop loses precision there)
   s["LOOP_SOFT_FLOOR"].SetDefault(1e-4);
   s["HIDE_PHOTONS"].SetDefault(true);
   s["FULL_FORM"].SetDefault(1);
   s["WW_FORM"].SetDefault(false);
-  // Which YFS scheme to use for a W+W- -> 4f final state.
-  //   flat : exponentiate the four external fermions. Correct for photons
-  //          softer than Gamma_W, where the W lives too briefly to be resolved.
-  //   pole : exponentiate the pole expansion -- a production stage with the
-  //          W's as charged emitters and a decay stage per W. Correct for
-  //          photons harder than Gamma_W. This is the YFSWW3 picture.
+  // W+W- -> 4f scheme: flat exponentiates the four external fermions (photons
+  // softer than Gamma_W), pole exponentiates the pole expansion (production
+  // stage plus a decay stage per W, photons harder than Gamma_W).
   s["WW_Scheme"].SetDefault(wwscheme::flat);
-  // Put the W's exactly on M_W before building the pole-expansion dipoles,
-  // rather than letting them carry the invariant mass of their own decay
-  // products. The leading-pole approximation strictly wants on shell; the
-  // difference is an LPA ambiguity worth measuring rather than choosing.
+  // Put the W's exactly on M_W before building the pole-expansion dipoles.
   s["WW_OnShell"].SetDefault(false);
-  // Whether the pole expansion also drives photon emission, or only the form
-  // factor. With it off the production-stage W pair does not radiate, so the
-  // pole scheme changes the exponent alone and the two halves of the scheme
-  // can be measured separately. Only read when WW_Scheme is pole.
+  // Pole expansion also drives photon emission (off: exponent only).
+  // Only read when WW_Scheme is pole.
   s["WW_Pole_Emission"].SetDefault(true);
   s["WW_BETAT"].SetDefault(0.382);
   s["CHECK_MASS_REG"].SetDefault(0);
@@ -162,27 +145,13 @@ void YFS_Base::RegisterDefaults(){
   // (Define_Dipoles::DecayVirtualSubtraction). false (default), unvalidated.
   s["WW_DECAY_VIRTUAL_SUB"].SetDefault(false);
   /*
-    The photonic two-loop beta_0^(2) at LL+NLL (YFS/Main/Beta0_2.H,
-    YFS/NLO/NLO_Beta02.C). YFS: BETA0_2 switches it on in YFS.NLO, ACRAIC:
-    BETA0_2 in ACRAIC; none|ll|llnll|exp, default none (off). The other
-    keys are shared by both columns:
-      BETA0_2_PAIRS        all|same_side - the pairs whose K_ij form delta_f
-      BETA0_2_CROSS        the products between pairs in (1/2) delta_f^2
-                           (false: KKMC's CEEX2/CEEX1 step, diagnostic only)
-      BETA0_2_WEAK_PRODUCT the delta_f w product (false: like-for-like KKMC)
-      BETA0_2_ALPHA        alpha0|loop - the coupling of delta_f and the NLL
-      BETA0_2_BOXES        with two_loop: the non-factorisable photonic two-loop
-                           boxes (Beta0_2_Boxes.H); false keeps only the exact
-                           vertex constant, to measure the boxes on their own
-      BETA0_2_DIPHOTON     with two_loop, e+e- -> gamma gamma Borns: the exact
-                           photonic two-loop hard function of hep-ph/0201274
-                           (EXTRA_XS/NNLO/ee_aa_QED_TwoLoop.H) on top of the
-                           vertex skeleton; false: the vertex constant alone
-                           (no other process is affected either way)
-      BETA0_2_DIPHOTON_POWER_CUT (1e-3): no hard function where
-                           m_e^2/min(|t|,|u|) of the Born point exceeds it
-                           (beyond its leading power; counted at the end)
-    With YFS: BETA0_2 on, the EEX estimate VV_EEX/NNLO_VV* is retired.
+    beta_0^(2) (Beta0_2.H, NLO_Beta02.C): YFS: BETA0_2 for YFS.NLO, ACRAIC:
+    BETA0_2 for ACRAIC. Shared keys: BETA0_2_PAIRS (all|same_side),
+    BETA0_2_CROSS (pair products in delta_f^2/2), BETA0_2_WEAK_PRODUCT
+    (delta_f w), BETA0_2_ALPHA (alpha0|loop), BETA0_2_BOXES (two_loop boxes,
+    Beta0_2_Boxes.H), BETA0_2_DIPHOTON (two_loop gamma gamma hard function,
+    hep-ph/0201274) and BETA0_2_DIPHOTON_POWER_CUT (m_e^2/min(|t|,|u|) above
+    which it is skipped). BETA0_2 on retires the VV_EEX estimate.
   */
   s["BETA0_2"].SetDefault(beta02::none);
   s["BETA0_2_PAIRS"].SetDefault(beta02pairs::all);
@@ -200,10 +169,9 @@ void YFS_Base::RegisterDefaults(){
   */
   s["DYSON_VP"].SetDefault(dysonvp::none);
   /*
-    Target 3 of the two-loop review (NOTES-beta0-2-2026-10-01.md):
     YFS: M1_SQUARE averaged|helicity - the |m_1|^2 of YFS.NLO's beta_0^(2);
     ACRAIC: EW_HIGHER_ORDER_HELICITY none|averaged|helicity - EW_HIGHER_ORDER
-    (GRIFFIN NNLO - NLO) in ACRAIC's helicity virtual. Defaults: the old code.
+    (GRIFFIN NNLO - NLO) in ACRAIC's helicity virtual.
   */
   s["M1_SQUARE"].SetDefault(m1square::averaged);
   Settings::GetMainSettings()["ACRAIC"]["EW_HIGHER_ORDER_HELICITY"].SetDefault(ewhohel::none);
@@ -217,20 +185,13 @@ void YFS_Base::RegisterDefaults(){
     reproducible from its card alone.
   */
   /*
-    REAL_FSR_MAP, the (n+1)-body point of a final-state photon at n >= 2
-    (n = 1 is the event on every setting but rest_frame); name or old integer:
-      dipole (2, default since 2026-09-25): the photon's own dipole recoils,
-        the other resonant pairs keep their pre-emission momenta (see
-        NLO_Base::MapMomentaFSRDipole for the four-fermion numbers); falls
-        back to rescale_all where the per-dipole construction does not apply;
-      rescale_all (1): Q fixed, ALL final legs rescaled together in their
-        rest frame from the post-emission legs (identical to dipole for a
-        single resonant pair). The old value 4 is read as this: the code has
-        not distinguished the two since dipole became the default;
-      pre_emission (3): rescale_all from the PRE-emission legs, the
-        single-emission point (NLO_Base::MapMomentaFSR);
-      rest_frame (0): the rest-frame map (legacy, puts sqrt(s_j) above
-        sqrt(s)).
+    REAL_FSR_MAP, the (n+1)-body point of a final-state photon at n >= 2:
+      dipole (2, default): the photon's own dipole recoils, other resonant
+        pairs keep their momenta (NLO_Base::MapMomentaFSRDipole); else
+        rescale_all
+      rescale_all (1, also 4): all final legs rescaled together, Q fixed
+      pre_emission (3): rescale_all from the pre-emission legs
+      rest_frame (0): the rest-frame map (puts sqrt(s_j) above sqrt(s))
   */
   s["REAL_FSR_MAP"].SetDefault(realfsrmap::dipole);
   /*
@@ -343,8 +304,6 @@ void YFS_Base::RegisterSettings(){
   m_check_rv = s["CHECK_RV"].Get<int>();
   m_rv_hard_photon = s["RV_Hard_Photon"].Get<int>();
   m_acraic_compare = s["ACRAIC_Compare"].Get<int>();
-  // Parse once. 16 tags is comfortably above any YFS multiplicity (2 -> n + a
-  // few photons); unused ones cost nothing.
   m_vv_approx_unc = s["VV_Approx_Uncertainty"].Get<double>();
   m_rv_test_x = s["RV_TEST_PHOTON_X"].Get<double>();
   m_rv_test_theta = s["RV_TEST_PHOTON_THETA"].Get<double>();
@@ -389,11 +348,8 @@ void YFS_Base::RegisterSettings(){
   m_ifisub = m_ifi && s["IFI_Sub"].Get<bool>();
   m_ifireal = m_ifi && s["IFI_Real"].Get<bool>();
   m_ifiomega = s["IFI_Omega"].Get<double>();
-  // Default to FSR::Initialize()'s m_Emin, the scale the Piatek term m_DelYFS
-  // translates the FSR bookkeeping onto. Kept as the same expression, not a
-  // rederived one, so the two cannot drift apart.
-  // Only defaulted when IFI_Real is on; an explicit IFI_Omega is honoured
-  // either way so the exponent and the restoration can be varied separately.
+  // Defaults to FSR::Initialize()'s m_Emin (same expression) when IFI_Real is
+  // on; an explicit IFI_Omega is honoured either way.
   m_ifiomega_is_emin = (m_ifireal && m_ifiomega <= 0.);
   if (m_ifiomega_is_emin) m_ifiomega = 0.5*sqrt(m_s)*m_isrcut;
   m_ifi_rclip = s["IFI_RClip"].Get<double>();

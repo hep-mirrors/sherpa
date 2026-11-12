@@ -1,47 +1,22 @@
 /*!
   \file Acraic_Tnp.C
 
-  ACRAIC: TNP_STREAMS - templates for theory nuisance parameters
-  (Tackmann, arXiv:2411.18606) in the YFS beta-hat expansion.
+  ACRAIC: TNP_STREAMS - theory-nuisance templates (arXiv:2411.18606) in the
+  YFS beta-hat expansion, B_c -> B_c (1 + theta_c N_c). Each term added to
+  A_1 or the beta_2 sum carries its class (TnpAdd), so sum_c B_c^F = F and
+  sum_c T_c = 2|F|^2/4; ReportTnp checks this per event. The external virtual
+  enters as real v/2 on every helicity (an O(alpha) relative effect on T_c).
 
-      B_c -> B_c (1 + theta_c N_c) ,
+  Classes: a photon's whole beta_1 is "isr" when its production-stage
+  eikonal is the larger, else "fsr"; beta_2 (and beta_m under TREE_BETA_MAX)
+  split into all-initial, all-final and mixed.
 
-
-  where F is the amplitude the nominal squares and B_c^F the part of F that
-  B_c contributes. Every term the partition loop adds to A_1 or to the
-  beta_2 sum carries its class (TnpAdd at the write sites), so sum_c B_c^F = F
-  and sum_c T_c = 2|F|^2/4 exactly; ReportTnp checks the first per event.
-
-  Approximations: the templates use the external virtual as real vhalf = v/2
-  on every helicity (the helicity-resolved delta^h, beta_0^(2), Dyson VP and
-  the REAL_VIRTUAL remainder are left out). They change T_c at relative
-  O(alpha), which is beyond the accuracy a nuisance template needs.
-
-  Classes: the emission stages are charge neutral, so each stage's beta_1 is
-  gauge invariant on its own, but a photon's per-partition terms are not
-  separately small. Each photon (all its partitions together, i.e. its whole
-  beta_1) is "isr" when its production-stage eikonal is the larger, else
-  "fsr". beta_2 sets (and beta_m, m > 2, under TREE_BETA_MAX) split into
-  all-initial, all-final and mixed.
-
-  ACRAIC: TNP_IFI adds one template that is not a class: the initial-final
-  interference (IFI). Its derivation, norm and validation are in the pion
-  project's results/afb/IFI-TNP-NOTE.md. Rescaling the IFI part of the
-  weight is rescaling the part odd in the charge of the final-state
-  emissions, so the template is that odd part of the correction beyond
-  beta_0 (TnpIfiTemplate),
+  ACRAIC: TNP_IFI adds the initial-final interference template, the part
+  odd in the final-state charge beyond beta_0 (TnpIfiTemplate):
       T_IFI = Odd[w_k] - Odd[w_0] ,   Odd[w] = (w - w^flip)/2 ,
-  w^flip the weight of the same event with every emission off the final
-  stage flipped in sign: s_F -> -s_F in each partition (m_tnppartflip),
-  M_1 = M_1^I + M_1^F -> M_1^I - M_1^F (TnpIfiInitialM1), the virtual's IF
-  part (the boxes) v_IF -> -v_IF and the IF exponent Y_IF -> -Y_IF. To
-  leading order in the interference this is KKMC's KeyINT on minus off of
-  the same correction. Subtracting Odd[w_0] removes the soft interference
-  at beta_0, which the YFS exponent and the eikonal cross terms carry to
-  all orders; what remains is the IFI of the beta-hat residues (boxes,
-  hard one-photon interference) and its products with the even O(alpha)
-  terms. beta_2 (ORDER 2) and ACRAIC's own boxes are taken as charge even:
-  their odd parts are O(alpha) relative to T_IFI.
+  w^flip with s_F -> -s_F per partition, M_1^F -> -M_1^F, v_IF -> -v_IF and
+  Y_IF -> -Y_IF (KKMC's KeyINT on minus off at leading order). beta_2 and
+  ACRAIC's own boxes are taken as charge even.
 */
 
 #include "YFS/ACRAIC/Acraic_Base.H"
@@ -64,13 +39,10 @@ const char *Acraic_Base::TnpClassName(int c)
 int Acraic_Base::TnpPhotonClass(size_t iphot, bool) const
 {
   /*
-    By the photon, not by its stage in the current partition: a photon on the
-    production stage carries M_1 - s_I B there and only -s_F B on a final
-    stage, so a per-partition tag splits "M_1" from "eikonal subtraction" (two
-    O(1) templates that cancel, measured +0.66/-0.63 of sigma at the Z), not
-    initial from final radiation. Summed over the partitions, a photon's terms
-    are its whole IR-finite beta_1; it goes to the class of its larger stage
-    eikonal (beam- or final-collinear), the same in every partition.
+    By the photon, not by its stage in the current partition: a per-partition
+    tag would split M_1 from the eikonal subtraction, not initial from final
+    radiation. A photon goes to the class of its larger stage eikonal, the same
+    in every partition.
   */
   double si(0.), sf(0.);
   for (int g(0); g < m_nstages; ++g) {
@@ -118,11 +90,8 @@ bool Acraic_Base::TnpTemplates(int order, double vhalf, std::vector<double> &t) 
   if (!(n1 > 0.)) return false;
   const double err(sqrt((d1 + d2)/n1));
   /*
-    The same residual against sum |term| over every term added (TnpAdd).
-    Summing one set of terms by class rather than all at once can differ by
-    rounding times the cancellation sum|term| / |A_1|, large on rare events
-    (gamma gamma multi-photon: |A_0|^2/|A_1|^2 up to ~1e7); a tagging bug
-    would show here at O(1), rounding at ~1e-15.
+    The same residual against sum |term| over every term added (TnpAdd): a
+    tagging bug shows at O(1), rounding at ~1e-15.
   */
   const double errterm(nterm > 0. ? sqrt((d1 + d2)/nterm) : 0.);
   ++m_tnpn;

@@ -35,11 +35,9 @@ using namespace std;
 
 /*
   RR_MODE exact / singles_product: the final-state pair (l, r) of ev rebuilt
-  the way the single real's point rebuilds it (MapMomentaFSRDipole): at
-  Q_D - K, Q_D the pair before it radiated (the generation legs m_plab) and
-  K the momentum of the photons kept at the point, back to back along the
-  event's decay axis (the post-emission legs in their own rest frame) in the
-  rest frame of Q_D - K. The dipole's other photons are absorbed by this.
+  as the single real's point does (MapMomentaFSRDipole): at Q_D - K, Q_D the
+  pair before it radiated (m_plab), K the kept photons, back to back along the
+  event's decay axis. The dipole's other photons are absorbed by this.
 */
 static bool RebuildPairAlongDecayAxis(int l, int r, const Vec4D &K,
                                       const Vec4D_Vector &plab, const Vec4D_Vector &postlab,
@@ -73,11 +71,9 @@ static bool RebuildPairAlongDecayAxis(int l, int r, const Vec4D &K,
 }
 
 /*
-  RR_MODE 1: the beams of pt rebuilt (on shell, back to back along their own
-  axis in the rest frame of the outgoing momenta) so that pt balances
-  exactly. The event's momenta balance to ~1e-9 GeV, which is the energy
-  scale of its softest photons (x ~ 1e-7); an imbalance of that size moved
-  R_2 of such a pair by factors of 2 against S S B.
+  RR_MODE 1: the beams of pt rebuilt on shell, back to back along their own
+  axis in the rest frame of the outgoing momenta, so that pt balances exactly
+  (the event balances only to ~1e-9 GeV, the scale of its softest photons).
 */
 static bool BalanceOnBeams(Vec4D_Vector &pt, const ATOOLS::Flavour_Vector &fl)
 {
@@ -103,19 +99,11 @@ static bool BalanceOnBeams(Vec4D_Vector &pt, const ATOOLS::Flavour_Vector &fl)
 
 /*
   RR_MODE 1: the point pt with the initial-state photons in `drop` (indices
-  into pt) taken out the way the single real's scaled point does it
-  (REAL_MAP 2, MapMomentaScaled): the final system F (final legs and the
-  final-state photons, isfsr[slot] for pt[nlegs + slot]) keeps its mass s',
-  the kept initial-state photons K and the beams P are scaled by
-  x = sqrt(s'/(P - K)^2) and F is boosted rigidly onto x (P - K). Angles to
-  the beams and energy fractions of the kept photons, and every invariant
-  inside F, are unchanged; with two photons left it is the single real's
-  point of the other. Used for the photons other than the pair
-  (EventPairPoint): taking a hard one out of its beam instead left that beam
-  at a fraction of its energy, and a hard collinear companion inside the
-  widened dead cone (4.8e-6 rad, m/E from 1.1e-5 to 5.5e-5) had 400 times
-  less crude than in its single real: one pair +171 B in 50k Z-pole nu nu
-  events.
+  into pt) taken out as the single real's scaled point does (MapMomentaScaled):
+  the final system F (isfsr[slot] for pt[nlegs + slot]) keeps its mass s', the
+  kept ISR photons K and beams P are scaled by x = sqrt(s'/(P - K)^2) and F
+  is boosted onto x (P - K). Angles, energy fractions and invariants inside F
+  are unchanged. Used for the photons other than the pair (EventPairPoint).
 */
 static bool ScaleOutISR(const Vec4D_Vector &pt, size_t nlegs, const std::vector<bool> &isfsr,
                         const std::vector<size_t> &drop, const ATOOLS::Flavour_Vector &fl,
@@ -163,26 +151,15 @@ static bool ScaleOutISR(const Vec4D_Vector &pt, size_t nlegs, const std::vector<
 }
 
 /*
-  RR_MODE exact / singles_product: the (n+2)-body point of the pair (i, j)
-  on the single reals' chain: the photons other than i and j are taken out
-  the way each single real's point takes out its companions - a final-state
-  companion by rebuilding its dipole's pair at Q_D minus the pair's own
-  photons of that dipole along the event's decay axis
-  (RebuildPairAlongDecayAxis = MapMomentaFSRDipole), an initial-state one
-  by scaling it out together with the others (ScaleOutISR =
-  MapMomentaScaled, REAL_MAP 2). So as one photon of the pair goes soft the
-  point tends to the other photon's single-real point and rho_ij -> rho_i
-  rho_j. For a two-photon event it is the event itself (the pair rebuilt at
-  Q_D - k_i - k_j along the decay axis is the post-emission pair).
-  Until 2026-09-30 a final-state companion was recombined with its emitter
-  (the pair rebuilt along emitter + photon): that rotates the pair's axis
-  by the companion's recoil, and the Born at the rotated axis exceeds the
-  generation Born on average (1 + cos^2 theta is convex), so every soft pair
-  next to a hard final-state photon carried B(P)/B - 1 ~ +1% whatever the
-  soft photons' energies: Z-pole mu mu, +0.38% of sigma_fid from pairs with
-  x < 2e-4 in three-photon events, +9% at m_mumu 60-70 GeV
-  (NOTES-yfsnlo-rr-cutdep-2026-09-30.md). False when a pair photon has no
-  dipole or the reduction fails.
+  RR_MODE exact / singles_product: the (n+2)-body point of the pair (i, j) on
+  the single reals' chain. Other final-state photons are taken out by
+  rebuilding their dipole's pair at Q_D minus the pair's own photons of that
+  dipole along the event's decay axis (RebuildPairAlongDecayAxis), initial-
+  state ones by scaling out (ScaleOutISR). As one photon goes soft the point
+  tends to the other's single-real point, so rho_ij -> rho_i rho_j. For a
+  two-photon event it is the event itself. Recombining the companion with its
+  emitter instead would rotate the pair's axis and bias B(P)/B. False when a
+  pair photon has no dipole or the reduction fails.
 */
 bool NLO_Base::EventPairPoint(size_t i, size_t j, Vec4D_Vector &P)
 {
@@ -268,15 +245,12 @@ double NLO_Base::RealRealRemainder(size_t i, size_t j)
   if (p_realreal->FailCut()) { m_failcut = true; return 0.; }
   if (IsBad(r2)) { m_zeroRR++; return 0.; }
   /*
-    Each photon's density c is that of its own single-real point: for an
-    initial-state photon of a multi-photon event the scaled point (REAL_MAP
-    2) carries the photon scaled up, the density ~ 1/x^2 with it. At P it is
-    carried by the ratio of the incoherent crude eikonals, photon and legs of
-    P over photon and legs of the point (1 when P is the point). Carrying it
-    on the generation legs (full beams, m_plab) instead made the double real
-    +350% of sigma_fid (a collinear FSR photon against legs it was not
-    emitted from); the density on the physical legs is the one the one-photon
-    identity uses (SUB8_FSR_LEGS).
+    Each photon's density c is that of its own single-real point (for an ISR
+    photon of a multi-photon event the scaled point carries the 1/x^2). At P
+    it is carried by the ratio of the incoherent crude eikonals, photon and
+    legs of P over those of the point. Using the generation legs instead would
+    put a collinear FSR photon against legs it was not emitted from
+    (SUB8_FSR_LEGS).
   */
   auto carried = [&](const RRPhotonInfo &g, const Vec4D &kP) {
     if (g.pt.size() != m_flavs.size() + 1) return g.denom;
@@ -484,44 +458,19 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2) {
   const double rd1(ratio(SB1, SB01)), rd2(ratio(SB2, SB02));
   m_recola_evts += 1;
   /*
-    YFS: RR_CONVENTIONS (single_flux). beta_2 = R_2 F_1 F_2 - S_2 beta_1(k_1)
-    - S_1 beta_1(k_2) - S_1 S_2 B over the crude of each photon, with the flux,
-    subtraction eikonal and crude of each photon taken from the single real's
-    own calculation of that photon (m_last*). The old assembly (legacy) built its
-    own: the plain eikonal at the double-mapped point, an initial-state flux
-    product for every photon and the EEX crude, while beta_1 inside it came
-    from the single real. With REAL_SUB_EIK 8 and REAL_FSR_FLUX 1 the two no
-    longer cancelled for hard photons: Z-pole mu mu YFS.NLO+RR -187 +- 175%
-    and 404 +- 57% pb against 1045 +- 5.7% with the old single-real defaults
-    (2026-09-26). The coupling powers are also per term: an eikonal is
-    alpha(0), the reals the model's, so S beta_1 carries one m_rescale_alpha
-    and S S B two (the old code divided all of it by one).
-  */
-  /*
-    Status 2026-09-26 (Z-pole mu mu, 20k events, Check_RR_Sub 1 for the soft
-    limits): 0 is the old assembly. It is small (+0.5%) and passes both
-    single-soft limits only with the old single-real settings AND
-    REAL_FSR_MAP 0; with REAL_FSR_MAP 2 or 4 (the two-photon FSR map does not
-    reduce to the one-photon one) |beta_2|/B stalls at 0.7 as one photon goes
-    soft, and the correction is -11%. 3 (default) passes every soft limit with
-    REAL_FSR_MAP 0 under REAL_SUB_EIK 8 / REAL_FSR_FLUX 1, but is still -2.8%;
-    7 adds the denominator factor (+3.6 +- 3.5%); 8 (eikonals on the other
-    photon's legs) made it worse. Open: the FSR maps, and REAL_SUB_EIK 8's
-    multichannel crude inside beta_2.
-  */
-  /*
-    YFS: RR_CONVENTIONS, a list of names (or the old integer mask, the value
-    in brackets), each taking one piece from the single real while the right
-    combination is established; a piece not named keeps the old double-real
-    one (flux product, eikonal at the double-mapped point, EEX crude):
+    YFS: RR_CONVENTIONS (default single_flux, single_subtraction), a list of
+    names (or an integer mask, the value in brackets), each taking one piece
+    from the single real's own calculation of each photon (m_last*). beta_2 =
+    R_2 F_1 F_2 - S_2 beta_1(k_1) - S_1 beta_1(k_2) - S_1 S_2 B over the crude
+    of each photon. A piece not named is the double real's own (flux product,
+    eikonal at the double-mapped point, EEX crude).
       single_flux (1): the single real's flux;
-      single_subtraction (2): the double real's own eikonal (at its
-        double-mapped point) times the single real's modification factor;
-      single_denominator (4): the same for the denominator (the EEX crude of
-        the event);
+      single_subtraction (2): the double real's eikonal times the single real's
+        modification factor;
+      single_denominator (4): the same for the denominator;
       soft_limit_legs (8): the soft-limit eikonals, below.
-    Default [single_flux, single_subtraction] (the old 3); legacy (0), or an
-    empty list, is the old assembly.
+    The coupling powers are per term: an eikonal is alpha(0), the reals the
+    model's, so S beta_1 carries one m_rescale_alpha and S S B two.
   */
   static const rrconventions rrconv(ReadRRConventions(
       ATOOLS::Settings::GetMainSettings()["YFS"]["RR_CONVENTIONS"]
@@ -541,13 +490,10 @@ double NLO_Base::CalculateRealReal(Vec4D k1, Vec4D k2) {
     double num(r * fF - (s2 * real1 + s1 * real2) / ra
                - s1 * s2 * m_born / (ra * ra));
     /*
-      soft_limit_legs (8): the soft limits. As k2 -> soft, R_2 -> S(k2; legs of photon 1's
+      soft_limit_legs (8): as k2 -> soft, R_2 -> S(k2; legs of photon 1's
       point) R_1(k1), so the eikonal multiplying beta_1(k1) must be k2's on
-      THOSE legs (a2), not at the double-mapped point where k1 is removed;
-      for FSR the final legs recoil against a hard k1 and the two differ at
-      O(1), leaving a finite residual for every soft photon (Z-pole mu mu
-      YFS.NLO+RR -11%, nu nu with initial-state radiation only +0.005%).
-      beta_2 vanishes in both single-soft limits with
+      THOSE legs (a2); for FSR the legs recoil against a hard k1 and the two
+      differ at O(1). beta_2 then vanishes in both single-soft limits with
       c = a2 S_1 + a1 S_2 - S_1 S_2, S_i the single real's subtraction.
     */
     if (rrconv.soft_limit_legs) {

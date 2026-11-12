@@ -1,18 +1,12 @@
 #ifndef YFS_Main_YFS_Options_H
 #define YFS_Main_YFS_Options_H
 
-/*
-  Named values for the multi-valued YFS: and ACRAIC: run-card switches.
+/*!
+  \file YFS_Options.H
 
-  Every option here used to be a bare integer (REAL_SUB_EIK: 8,
-  SUB8_FSR_LEGS: 3, ...). Each value now has a name, and a card may write
-  either the name (case-insensitive) or the old integer, so old cards and the
-  Ares scripts keep working unchanged. What each value does is documented
-  where the option's default is set; the enum below only lists the names.
-
-  Pattern: struct <option> { enum code {...}; }, as for acraicvirt, wwscheme
-  and yfsmode in YFS_Base.H, with operator>> and operator<< so that the
-  Settings can read and print the value.
+  Named values for the multi-valued YFS: and ACRAIC: run-card switches. A card
+  may write the name (case-insensitive) or the integer. Pattern: struct
+  <option> { enum code {...}; } with operator>> and operator<< for Settings.
 */
 
 #include <iosfwd>
@@ -21,15 +15,13 @@
 
 namespace YFS {
 
-  //! One spelling of a named option value. A name that is an integer
-  //! ("4") is an alias for an old integer whose behaviour another value has.
+  //! One spelling of a named option value (a name that is an integer is an alias).
   struct Option_Name {
     const char *name;
     int         value;
   };
 
-  //! The value named `tag` - a name, case-insensitive, or the old integer -
-  //! in `names`; throws a fatal error naming `option` otherwise.
+  //! The value of `tag` (name or integer) in `names`; fatal error naming `option` otherwise.
   int ParseOptionName(const std::string &tag,
                       const std::vector<Option_Name> &names,
                       const std::string &option);
@@ -40,8 +32,6 @@ namespace YFS {
   struct tristate {
     enum code { automatic = -1, off = 0, on = 1 };
   };
-
-  // ------------------------------------------------------------ YFS: (NLO)
 
   //! YFS: REAL_MAP - the (n+1)-body point for initial-state photons.
   struct realmap {
@@ -95,68 +85,57 @@ namespace YFS {
   struct bornphotonchannels {
     enum code { isr = 0, stage = 1 };
   };
-  //! YFS: RV_MODE - how the squared-level real-virtual is built
-  //! (documented in YFS/NLO/NLO_Base_Internal.H).
+  //! YFS: RV_MODE - how the squared-level real-virtual is built (NLO_Base_Internal.H).
   struct rvmode {
     enum code { legacy = 0, remainder = 1, remainder_own_legs = 2 };
   };
-  //! YFS: EW_HIGHER_ORDER - electroweak corrections beyond the loop
-  //! provider's NLO, added to the Born-level virtual of both columns.
-  //! none: nothing; griffin: GRIFFIN's NNLO - NLO (2->2 s-channel only).
+  //! YFS: EW_HIGHER_ORDER - EW corrections beyond the provider's NLO, added to
+  //! the Born-level virtual. none: nothing; griffin: GRIFFIN NNLO - NLO (2->2 s-channel).
   struct ewhigherorder {
     enum code { none = 0, griffin = 1 };
   };
-  //! YFS: BETA0_2 (YFS.NLO) and ACRAIC: BETA0_2 (ACRAIC) - the photonic
-  //! two-loop beta_0^(2) (YFS/Main/Beta0_2.H). none: not included;
-  //! ll: (1/2) delta_f^2 [+ delta_f w]; llnll: plus the per-leg NLL;
-  //! exp: exp(delta_f) (1 + NLL) - 1 - delta_f [+ w (exp(delta_f)(1+NLL) - 1)].
-  //! YFS: COULOMB_HIGHER_ORDER - the W-pair Coulomb correction beyond one
-  //! loop, for the flat (four-fermion) scheme whose one-loop virtual already
-  //! has the O(alpha) Coulomb term: none, second (O(alpha^2), eq. (7) of
-  //! hep-ph/9507422) or all (the non-relativistic all-orders factor, eq. (2)),
-  //! each minus its O(alpha) term.
+  //! YFS: COULOMB_HIGHER_ORDER - W-pair Coulomb correction beyond one loop
+  //! (flat scheme), minus its O(alpha) term: none, second (O(alpha^2), eq. (7)
+  //! of hep-ph/9507422) or all (non-relativistic all orders, eq. (2)).
   struct coulombho {
     enum code { none = 0, second = 1, all = 2 };
   };
+  //! YFS: BETA0_2 and ACRAIC: BETA0_2 - the photonic two-loop beta_0^(2)
+  //! (Beta0_2.H). none: off; ll: (1/2) delta_f^2 [+ delta_f w]; llnll: plus the
+  //! per-leg NLL; exp: exp(delta_f)(1 + NLL) - 1 - delta_f [+ w(...)]; two_loop:
+  //! llnll plus the constant and boxes.
   struct beta02 {
     enum code { none = 0, ll = 1, llnll = 2, exp = 3, two_loop = 4 };
   };
-  //! YFS: BETA0_2_PAIRS - the charged pairs whose K_ij make up delta_f.
-  //! all: every pair; same_side: both incoming or both outgoing (KKMC's
-  //! F1ini x F1fin for a 2 -> 2 s-channel process).
+  //! YFS: BETA0_2_PAIRS - the charged pairs making up delta_f: all, or
+  //! same_side (both incoming or both outgoing).
   struct beta02pairs {
     enum code { all = 0, same_side = 1 };
   };
-  //! YFS: BETA0_2_ALPHA - the coupling of delta_f in beta_0^(2).
-  //! alpha0: alpha(0), as KKMC; loop: the loop provider's (model) alpha.
+  //! YFS: BETA0_2_ALPHA - coupling of delta_f: alpha0 = alpha(0), loop = the provider's alpha.
   struct beta02alpha {
     enum code { alpha0 = 0, loop = 1 };
   };
-  //! YFS: DYSON_VP - the Dyson-resummed photon vacuum polarisation
-  //! (YFS/Main/Dyson_VP.H). none: off; resummed: beyond the provider's first
-  //! order (a full-EW one-loop provider, which has Pi - Delta r); complete:
-  //! the whole (1 - Delta r)/(1 - Pi) - 1 (a provider without the photon
-  //! self-energy, e.g. OpenLoops photon_selfenergy: 0, or QED-only).
+  //! YFS: DYSON_VP - Dyson-resummed photon vacuum polarisation (Dyson_VP.H).
+  //! none: off; resummed: beyond the provider's first order (full-EW provider);
+  //! complete: the whole (1 - Delta r)/(1 - Pi) - 1 (provider without the photon
+  //! self-energy).
   struct dysonvp {
     enum code { none = 0, resummed = 1, complete = 2 };
   };
-  //! YFS: M1_SQUARE - the |m_1|^2 of YFS.NLO's beta_0^(2) (with YFS: BETA0_2):
-  //! averaged: (v/2)^2 from the helicity-summed v; helicity: the Born-weighted
-  //! sum_h |delta(h)|^2 of the provider's helicity factors (ACRAIC_Virtual:
-  //! helicity, Recola), averaged where those are missing.
+  //! YFS: M1_SQUARE - |m_1|^2 of YFS.NLO's beta_0^(2). averaged: (v/2)^2 from
+  //! the helicity-summed v; helicity: Born-weighted sum_h |delta(h)|^2 (averaged
+  //! where helicity factors are missing).
   struct m1square {
     enum code { averaged = 0, helicity = 1 };
   };
-  //! ACRAIC: EW_HIGHER_ORDER_HELICITY - YFS: EW_HIGHER_ORDER in the helicity
-  //! virtual of ACRAIC (ACRAIC_Virtual: helicity). none: not in delta(h) (the
-  //! code before 2026-10-01: the term was lost from the helicity column);
-  //! averaged: v_HO/2 on every helicity; helicity: GRIFFIN's NNLO - NLO per
-  //! helicity, scaled so that its Born-weighted 2 Re is v_HO.
+  //! ACRAIC: EW_HIGHER_ORDER_HELICITY - EW_HIGHER_ORDER in the helicity virtual.
+  //! none: not in delta(h); averaged: v_HO/2 on every helicity; helicity:
+  //! GRIFFIN NNLO - NLO per helicity, scaled so its Born-weighted 2 Re is v_HO.
   struct ewhohel {
     enum code { none = 0, averaged = 1, helicity = 2 };
   };
-  //! YFS: RR_MODE - how the squared-level double real is built
-  //! (documented in YFS/NLO/NLO_Base_Internal.H).
+  //! YFS: RR_MODE - how the squared-level double real is built (NLO_Base_Internal.H).
   struct rrmode {
     enum code { legacy = 0, exact = 1, singles_product = 2 };
   };
@@ -164,20 +143,15 @@ namespace YFS {
   struct rvloopframe {
     enum code { lab = 0, canonical = 1, tilted = 2, beam_axis = 3 };
   };
-  //! YFS: VIRTUAL_SUB_LEGS - the dipoles the Born virtual's IR subtraction is
-  //! built on: own = the loop's own point (post-ISR beams, poles cancel), event
-  //! = the event's dipoles (full-beam initial legs; pre-2026-10-06).
+  //! YFS: VIRTUAL_SUB_LEGS - the dipoles of the Born virtual's IR subtraction:
+  //! own = the loop's own point (post-ISR beams), event = the event's dipoles.
   struct virtsublegs {
     enum code { event = 0, own = 1 };
   };
-  //! YFS: VIRTUAL_MASSIFICATION - the external leptons the loop provider sees
-  //! massless (true = leptons, false = off).
+  //! YFS: VIRTUAL_MASSIFICATION - the external fermions the loop provider sees massless.
   struct virtmassif {
-    //! light_fermions: e, mu and the light quarks u, d, s (c and b stay
-    //! massive: 4 m^2/s is above Massification's threshold at the Z pole)
-    //! light_fermions_charm: light_fermions and c, for W-pair energies and
-    //! above (OpenLoops has no library with a massive c in closed loops;
-    //! Massification's 4 m^2/s guard still applies)
+    //! light_fermions: e, mu, u, d, s. light_fermions_charm: plus c (W-pair
+    //! energies and above). Massification's 4 m^2/s guard applies.
     enum code { off = 0, electrons = 1, leptons = 2, light_fermions = 3,
                 light_fermions_charm = 4 };
   };
@@ -191,10 +165,9 @@ namespace YFS {
   };
 
   /*!
-    YFS: RR_CONVENTIONS - the pieces of the legacy double real (RR_MODE
-    legacy) taken from the single real's own calculation of each photon.
-    Read from a list of names, or from the old integer mask (1, 2, 4, 8 in
-    the order below); `legacy` (0) takes none of them.
+    YFS: RR_CONVENTIONS - the pieces of the legacy double real (RR_MODE legacy)
+    taken from the single real of each photon. A list of names, or an integer
+    mask (1, 2, 4, 8 in the order below); `legacy` (0) takes none.
   */
   struct rrconventions {
     bool single_flux        = false;  //!< 1: the single real's flux
@@ -207,8 +180,6 @@ namespace YFS {
              && !soft_limit_legs; }
   };
   rrconventions ReadRRConventions(const std::vector<std::string> &tags);
-
-  // ------------------------------------------------------------ ACRAIC:
 
   //! ACRAIC: CRUDE_FROM_GENERATOR - the crude on the generator's own stages.
   struct crudegen {
@@ -223,18 +194,17 @@ namespace YFS {
   struct pseudoflux {
     enum code { rho0_and_rho1 = 0, neither = 1, rho0_only = 2 };
   };
-  //! ACRAIC: REAL_VIRTUAL - the O(alpha^2) real-virtual in ACRAIC: off,
-  //! factorisable, averaged (helicity-averaged remainder), helicity (the
-  //! remainder resolved by helicity from Recola's (n+1)-point amplitudes),
-  //! isr_nll (factorisable plus the analytic LL+NLL initial-state remainder),
-  //! hybrid (isr_nll on initial-state photons, averaged on final-state photons).
+  //! ACRAIC: REAL_VIRTUAL - the O(alpha^2) real-virtual: off, factorisable,
+  //! averaged (helicity-averaged remainder), helicity (remainder per helicity
+  //! from Recola), isr_nll (factorisable plus analytic LL+NLL initial-state
+  //! remainder), hybrid (isr_nll for ISR photons, averaged for FSR photons).
   struct acraicrv {
     enum code { off = 0, factorisable = 1, averaged = 2, automatic = 3,
                 helicity = 4, isr_nll = 5, hybrid = 6 };
   };
-  //! ACRAIC: CRUDE_BORN_LEGS - the Born point of the crude: the generator's
-  //! (pre-emission pair direction in its own rest frame) or the pair
-  //! rebuilt along its physical direction in the reduced system's frame.
+  //! ACRAIC: CRUDE_BORN_LEGS - the Born point of the crude: reduced, generator
+  //! (pre-emission pair direction in its rest frame) or stage (pair rebuilt
+  //! along its physical direction in the reduced system's frame).
   struct crudebornlegs {
     enum code { reduced = 0, generator = 1, stage = 2 };
   };
@@ -247,17 +217,16 @@ namespace YFS {
     enum code { daughters = 0, partition = 1 };
   };
   //! ACRAIC: RESONANCE_EXPONENTIATION - the resonant initial-final log of a
-  //! stage's s-channel resonance: in the provider's virtual (none), or taken
-  //! out of it and exponentiated into that resonance's propagator in every
-  //! amplitude of the partition sum (greco, Greco-Pancheri-Srivastava; KKMC
-  //! KeyINT 2). See Acraic_Base::ResonanceExponents.
+  //! stage's s-channel resonance: left in the provider's virtual (none), or
+  //! exponentiated into the resonance propagator in every partition amplitude
+  //! (greco). See Acraic_Base::ResonanceExponents.
   struct acraicresexp {
     enum code { none = 0, greco = 1, automatic = 2 };
   };
 
   //! ACRAIC: TNP_IFI_VIRTUAL - the initial-final virtual of the flipped weight:
   //! ACRAIC's own boxes (e+e- -> f fbar), the mirrored loop, both by process
-  //! (auto), or none (virtual even, as KKMC with KeyELW 0, which has no boxes)
+  //! (auto), or none (virtual even, no boxes)
   struct tnpifivirtual {
     enum code { automatic = 0, own_boxes = 1, mirrored = 2, none = 3 };
   };

@@ -59,22 +59,16 @@ namespace YFS {
     // Move the survivors, so every kept Dipole keeps its address.
     std::vector<std::unique_ptr<Dipole> > keep;
     std::vector<dipoletype::code> kind;
-    // Upper bound: at most every current dipole survives. Called 2-3x/event
-    // (BuildFinal, BuildIF, and BuildPole when it runs), so worth avoiding
-    // the reallocation-as-you-grow churn even though it's a cheap guess.
+    // Upper bound: every current dipole may survive (called 2-3x per event).
     keep.reserve(m_dipoles.size());
     kind.reserve(m_dipoles.size());
     auto take=[&](const std::vector<std::size_t> &idx, bool drop, dipoletype::code t){
       if (drop) return;
       for (std::size_t i : idx) { keep.push_back(std::move(m_dipoles[i])); kind.push_back(t); }
     };
-    // The decay dipoles have their own index list, so they are tracked
-    // separately here and re-registered below. They are part of the pole
-    // expansion's final-state structure, so they die with the final-final
-    // dipoles: BuildFinal runs at the top of every event, and a decay dipole
-    // that outlived its event would contribute a form-factor term built from
-    // the previous event's momenta to an event that fell back to the flat
-    // scheme.
+    // The decay dipoles have their own index list, so track and re-register them
+    // below. They die with the final-final dipoles so a previous event's momenta
+    // never enter an event that fell back to the flat scheme.
     std::vector<std::unique_ptr<Dipole> > keepdec;
     keepdec.reserve(m_idxDec.size());
     if (!dropFF)
@@ -150,8 +144,8 @@ namespace YFS {
     const std::vector<Leg> in (ChargedLegs(flavs, momenta, born, 0, 2));
     const std::vector<Leg> out(ChargedLegs(flavs, momenta, born, 2, flavs.size()));
 
-    // Every unique charged pair: the virtual and form-factor sums need all of
-    // them. Which ones radiate is decided by SelectRadiating.
+    // Every unique charged pair, since the virtual and form-factor sums need all of
+    // them. SelectRadiating decides which ones radiate.
     for (std::size_t i(0); i < out.size(); ++i)
       for (std::size_t j(i + 1); j < out.size(); ++j)
         Add(out[i], out[j], dipoletype::final, alpha);
@@ -180,24 +174,12 @@ namespace YFS {
     m_idxRad.clear();
     for (std::size_t i : m_idxFF) m_dipoles[i]->SetResonance(false);
 
-    // Passes 0 and 1 take opposite-charge pairs (same flavour first), pass 2
-    // falls back to same-charge pairs.
-    //
-    // Pass 2 exists because a final state that is not overall neutral cannot be
-    // partitioned into opposite-charge dipoles at all. Moller scattering,
-    // e-e- -> e-e-, is the case in point: its only FF pair has QiQj = +1, so
-    // with an opposite-charge VETO no dipole radiated, both legs fell through to
-    // the "unpaired" branch below, and the run produced a charge-non-conserving
-    // final-state eikonal current plus four-momentum violations.
-    //
-    // Letting a same-charge pair radiate is safe because the crude photon
-    // multiplicity is built from |ChargeNorm()| (Dipole::CalculateGamma uses
-    // std::abs on both m_gamma and m_gammap), so nbar stays positive; the true
-    // sign of QiQj re-enters through the signed ChargeNorm() in the form factor
-    // and eikonal weights. That is the ordinary YFS crude/weight split.
-    //
-    // Neutral final states are unaffected: passes 0 and 1 already consume every
-    // leg, so pass 2 finds nothing and the selection is bit-identical.
+    // Passes 0 and 1 take opposite-charge pairs (same flavour first), pass 2 falls
+    // back to same-charge pairs. A final state that is not overall neutral (e.g.
+    // e-e- -> e-e-) cannot be partitioned into opposite-charge dipoles at all.
+    // Safe because the crude multiplicity uses |ChargeNorm()|; the true sign of QiQj
+    // re-enters through the signed ChargeNorm() in the weights. Neutral final states
+    // are unaffected: pass 2 finds nothing.
     std::set<int> used;
     for (int pass(0); pass < 3; ++pass) {
       std::vector<std::pair<double, std::size_t> > cand;
@@ -265,9 +247,8 @@ namespace YFS {
         break;
       }
     }
-    // Both W's must have been found, and between them they must account for
-    // the whole final state -- otherwise this is not W+W- -> 4f and the pole
-    // expansion does not apply.
+    // Both W's must be found and account for the whole final state, else this is
+    // not W+W- -> 4f and the pole expansion does not apply.
     w.ok = (w.lm != w.lp) && !IsZero(w.wm.E()) && !IsZero(w.wp.E()) &&
            flavs.size() == 6;
     return w;
@@ -286,11 +267,9 @@ namespace YFS {
     const WWLegs wb(FindWW(flavs, born));
     if (!wb.ok) return false;
 
-    // Leading-pole validity. With no generation cuts the integrator visits
-    // configurations where the "W" reconstructs to a few GeV; calling that a
-    // narrow resonance and exponentiating radiation off it is meaningless, and
-    // it is where the decay-stage log(M/m_l) goes wild. Both W's must be near
-    // the pole or the whole event goes back to the flat scheme.
+    // Leading-pole validity: without generation cuts the "W" can reconstruct to a
+    // few GeV, where exponentiating off a narrow resonance is meaningless. Both W's
+    // must be near the pole or the event goes back to the flat scheme.
     const double MW0(Flavour(kf_Wplus).Mass()), GW(Flavour(kf_Wplus).Width());
     if (GW > 0.) {
       const double dm(fabs(w.wm.Mass() - MW0)/GW), dp(fabs(w.wp.Mass() - MW0)/GW);
@@ -305,18 +284,16 @@ namespace YFS {
     const Flavour Wm(Flavour(kf_Wplus).Bar()), Wp(kf_Wplus);
     const double MW(Flavour(kf_Wplus).Mass());
 
-    // On-shell variation: rescale the spatial momentum in the W-pair rest
-    // frame so each W sits exactly at M_W. The nominal leaves them off shell,
-    // carrying the invariant mass of their own decay products.
+    // On-shell variation: rescale the spatial momentum in the W-pair rest frame so
+    // each W sits at M_W (the nominal leaves them off shell).
     Vec4D wmm(w.wm), wpm(w.wp), wmb(wb.wm), wpb(wb.wp);
     if (onshell) {
       ProjectOnShell(wmm, wpm, MW);
       ProjectOnShell(wmb, wpb, MW);
     }
 
-    // Leg indices are reported as the positions of the charged leptons the W's
-    // decayed to: the W is not itself an entry in the event's flavour vector,
-    // and this is what makes the dump readable.
+    // Leg indices are the positions of the charged leptons the W's decayed to (the
+    // W is not an entry in the event's flavour vector).
     m_ww = w;
 
     const Leg lwm{Wm, wmm, wmb, w.lm};
@@ -324,28 +301,22 @@ namespace YFS {
 
     const std::vector<Leg> in(ChargedLegs(flavs, momenta, born, 0, 2));
 
-    // -- production stage --------------------------------------------------
+    // production stage
     AddW(lwm, lwp, dipoletype::final, alpha, onshell, MW);
     for (std::size_t i(0); i < in.size(); ++i) {
       AddW(in[i], lwm, dipoletype::ifi, alpha, onshell, MW);
       AddW(in[i], lwp, dipoletype::ifi, alpha, onshell, MW);
     }
-    // The W pair is the only thing that radiates at the production stage.
-    // With emission off nothing in the final state radiates and the pole
-    // scheme changes the exponent alone.
+    // Only the W pair radiates at production. With emission off the pole scheme
+    // changes the exponent alone.
     for (std::size_t i : m_idxFF) m_dipoles[i]->SetResonance(emission);
     m_idxRad.clear();
     if (emission) m_idxRad = m_idxFF;
 
-    // -- decay stage -------------------------------------------------------
-    // One dipole per W: (W, charged lepton). The neutrino is neutral, so each
-    // leptonic decay is a two-leg dipole and nothing else. Built as ifi so the
-    // parent W carries the opposite theta to its daughter, which is what makes
-    // the pair charge conserving (Q_W = Q_l for a leptonic decay, with the W
-    // incoming) and reproduces eq (12) of hep-ph/0302065.
-    // The lepton legs keep their own event positions; the W legs above reuse
-    // them, so a decay dipole prints as legs=(l,l). Offset the W's label by the
-    // event size so the dump distinguishes parent from daughter.
+    // decay stage: one (W, charged lepton) dipole per W, built as ifi so the parent W
+    // carries the opposite theta to its daughter (charge conserving, eq (12) of
+    // hep-ph/0302065). The W label is offset by the event size so the dump
+    // distinguishes parent from daughter.
     const Leg dlm{flavs[w.lm], momenta[w.lm], born[w.lm], w.lm};
     const Leg dlp{flavs[w.lp], momenta[w.lp], born[w.lp], w.lp};
     const Leg pwm{Wm, wmm, wmb, w.lm + flavs.size()};
@@ -353,9 +324,8 @@ namespace YFS {
     const std::size_t first(m_dipoles.size());
     AddW(pwm, dlm, dipoletype::ifi, alpha, onshell, MW);
     AddW(pwp, dlp, dipoletype::ifi, alpha, onshell, MW);
-    // Move the two just-added dipoles out of the interference bucket: they are
-    // a separate stage, not production-stage IF pairs, and summing them
-    // together would double count.
+    // Move the two new dipoles out of the interference bucket: they are a separate
+    // stage and summing them with production IF pairs would double count.
     for (std::size_t i(first); i < m_dipoles.size(); ++i) {
       m_idxIF.erase(std::remove(m_idxIF.begin(), m_idxIF.end(), i),
                     m_idxIF.end());
@@ -364,10 +334,9 @@ namespace YFS {
     return true;
   }
 
-  // Add(), then fix up any W leg's mass to the invariant mass of the momentum
-  // it was actually built from. The Dipole constructor takes masses from the
-  // Flavour, i.e. on shell; off shell that would leave GetMass() and
-  // p.Mass() disagreeing for the same leg, and the form factors use both.
+  // Add(), then set any W leg's mass to the invariant mass of its actual momentum
+  // (the constructor uses the on-shell Flavour mass, but form factors use both
+  // GetMass() and p.Mass()).
   void DipoleSet::AddW(const Leg &a, const Leg &b, dipoletype::code t,
                        double alpha, bool onshell, double MW) {
     Add(a, b, t, alpha);
@@ -380,9 +349,8 @@ namespace YFS {
     }
   }
 
-  // Rescale both W momenta in their pair rest frame so each sits at M_W,
-  // keeping the pair total and the directions. Used only for the on-shell
-  // variation.
+  // Rescale both W momenta in their pair rest frame so each sits at M_W, keeping
+  // the pair total and directions (on-shell variation only).
   void DipoleSet::ProjectOnShell(Vec4D &wm, Vec4D &wp, double MW) {
     const Vec4D Q(wm + wp);
     const double s(Q.Abs2());

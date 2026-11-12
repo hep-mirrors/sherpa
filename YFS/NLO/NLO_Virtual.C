@@ -121,18 +121,15 @@ double NLO_Base::CalculateVirtual() {
   vsub->p_yfsFormFact->p_virt = p_virt->p_loop_me.get();
   CheckMassReg();
   /*
-    YFS: VIRTUAL_CANONICAL_FRAME (default true since 2026-10-06): evaluate the Born's one-loop
-    in the rest frame of the beams with the beams exactly on the z axis
-    (CanonicalBeamFrame, which documents why). The event's Born point after
-    ISR has two beams with the same tiny p_T, and there OpenLoops' 2 -> 2
-    virtual is off by up to 8% of itself (Z-pole mu mu, full EW, alpha(0):
-    0.085 against 0.091 in every rotated frame). Not for ACRAIC_Virtual:
-    helicity, whose helicity labels are the lab's.
+    YFS: VIRTUAL_CANONICAL_FRAME (default true): evaluate the Born's one-loop
+    in the beam rest frame with the beams on the z axis (CanonicalBeamFrame).
+    OpenLoops' 2 -> 2 virtual is unstable when both beams carry the same tiny
+    p_T. Not for ACRAIC_Virtual: helicity, whose labels are the lab's.
   */
   static const bool vcanon(ATOOLS::Settings::GetMainSettings()["YFS"]
                            ["VIRTUAL_CANONICAL_FRAME"].SetDefault(true).Get<bool>());
-  // ACRAIC: TNP_IFI: the loop at the mirrored Born point first, so that the
-  // provider is left as the call below leaves it (MirroredOneLoop)
+  // ACRAIC: TNP_IFI: the loop at the mirrored Born point first, so the provider
+  // is left as the call below leaves it (MirroredOneLoop)
   static const bool tnpifi(m_useacraic &&
     ATOOLS::Settings::GetMainSettings()["ACRAIC"]["TNP_STREAMS"].SetDefault(false).Get<bool>() &&
     ATOOLS::Settings::GetMainSettings()["ACRAIC"]["TNP_IFI"].SetDefault(true).Get<bool>());
@@ -171,12 +168,8 @@ double NLO_Base::CalculateVirtual() {
     virt = p_virt->CalcInFrame(m_plab, CanonicalBeamFrame(m_plab), m_born);
   else
     virt = p_virt->Calc(m_plab, m_born);
-  // (not with YFS: VIRTUAL_MASSIFICATION: the provider's Born is then the
-  // massless one at the massless image of the point)
-  // (nor for a provider without a Born of its own: the internal analytic
-  // virtuals (Loop_Generator Internal) return delta_V only, which YFS
-  // multiplies by Sherpa's Born, so ME_Born() stays 0 and there is nothing to
-  // compare)
+  // (not with VIRTUAL_MASSIFICATION, and not for a provider without a Born of its
+  // own, e.g. Loop_Generator Internal, where ME_Born() stays 0)
   if (m_check_virt_born && !p_virt->p_massif && p_virt->p_loop_me->ME_Born() != 0.) {
     // the provider's Born is pointlike, m_born is dressed with the pion form
     // factor, so compare against the dressed provider Born

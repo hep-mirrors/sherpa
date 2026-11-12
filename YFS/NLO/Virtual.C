@@ -42,8 +42,7 @@ Virtual::Virtual(const PHASIC::Process_Info& pi)
       YFS: EW_HIGHER_ORDER griffin: GRIFFIN's NNLO - NLO on top of the loop
       provider's full NLO. Not GRIFFIN as the provider: its IR-subtracted
       matrix elements carry no photonic QED virtual, so Loop_Generator Griffin
-      loses the O(alpha) photonic virtual (Z-pole mu mu: -5.5% on sigma_fid,
-      A_FB changes sign; 2026-09-30).
+      loses the O(alpha) photonic virtual.
     */
     const ewhigherorder::code ewho(ATOOLS::Settings::GetMainSettings()["YFS"]
         ["EW_HIGHER_ORDER"].SetDefault(ewhigherorder::none).Get<ewhigherorder::code>());
@@ -89,16 +88,8 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
            const double mur,
            const ATOOLS::Vec4D_Vector *peval)
   {
-    // Renormalisation scale as specified by SCALES in the runcard, for an
-    // arbitrary (momentum-dependent) expression. The Born process's scale setter
-    // has already evaluated it for THIS event: Single_Process::Differential runs
-    // Partonic() - which calls ScaleSetter()->CalculateScale(p) - before the YFS
-    // weight is built, so the value is simply read here. Do NOT call
-    // CalculateScale again: it would overwrite the Born's cached scales while
-    // Differential is still using them, and the virtual multiplies that same
-    // Born so it must use the same mu. Already squared; SetRenScale takes mu^2.
-    // ScaleSetter(1) is the mapped-process setter, which is the one
-    // Single_Process actually evaluates.
+    // mu^2 from the Born's scale setter (mapped-process setter 1), already
+    // evaluated for this event: read it, never call CalculateScale again.
     p_loop_me->SetRenScale(p_vproc ? p_vproc->ScaleSetter(1)->Scale(ATOOLS::stp::ren)
                                    : mur);
     m_failcut = false;
@@ -108,13 +99,8 @@ double Virtual::Calc_V(const ATOOLS::Vec4D_Vector& p,
     }
     double V(0.0);
   /*
-    No running-coupling subtraction. The old run_corr = 4 (alpha(s) - alpha(0)) B
-    (Alpha_QED: VPMODE != off) removed a term the virtual never double counted:
-    the Born does NOT run with VPMODE (YFS.LO and YFS.BR are bit-identical with
-    VPMODE off and Full, 2026-09-30), and the loop provider's virtual already
-    contains the full photon vacuum polarisation. It also used the absolute
-    alpha difference, ~70x below a relative 2 Delta alpha. Removed; see
-    NOTES-hvp-design-2026-09-30.md.
+    No running-coupling subtraction: the Born does not run with VPMODE and the
+    loop provider's virtual already contains the full photon vacuum polarisation.
   */
     const ATOOLS::Vec4D_Vector &pe(peval ? *peval : p);
     if (p_massif) {

@@ -1,28 +1,12 @@
 // The EEX (exclusive exponentiation) beta expansion for a single dipole.
 //
-// Split out of Dipole.C, which was 968 lines. This block - EEX, Beta1/2/3,
-// VirtualEEX, the three Hard overloads and the two xi helpers - is a
-// self-contained unit: it reads the dipole's eikonal momenta, gamma and photon
-// list and returns a number. It touches no frame/boost state and no photon
-// bookkeeping, which is what the rest of Dipole.C is. Same class, second
-// translation unit, so the physics path is unchanged - only where it is
-// written down. Eikonal() and CalculateGamma() stay in Dipole.C.
-//
-// The expansion. beta_n is the n-photon term with all its lower-order
-// subtractions removed, so that summing beta_1..beta_n over the generated
-// photons and dividing by the crude eikonal weight gives the correction to the
-// Born. Each beta_n therefore evaluates beta_(n-1), beta_(n-2), ... as part of
-// building itself, and it evaluates them at LOWER orders - a subtraction term
-// must not carry the virtual dressing of the term it is subtracted from.
-//
-// That "order to evaluate at" is a parameter here. It used to be the member
-// m_betaorder, which the callees wrote: Beta2 decremented it and restored it,
-// Beta3 set it to -1 and then -2 and never restored it, and EEX had to
-// reassign it after every pair and every triple to repair the damage before
-// the next iteration. Two consequences, both now gone: the reassignments in
-// EEX's loops were load-bearing rather than defensive, and any caller reaching
-// Beta1() without going through EEX() first read whatever order the last
-// unrelated call had left behind.
+// beta_n is the n-photon term with all its lower-order subtractions removed, so
+// summing beta_1..beta_n over the generated photons and dividing by the crude
+// eikonal weight gives the correction to the Born. Each beta_n evaluates
+// beta_(n-1), ... at LOWER order: a subtraction term must not carry the virtual
+// dressing of the term it is subtracted from. The order to evaluate at is passed
+// as a parameter, never stored in a member. Eikonal() and CalculateGamma() are
+// in Dipole.C.
 
 #include "YFS/Main/Dipole.H"
 
@@ -32,20 +16,16 @@
 using namespace ATOOLS;
 using namespace YFS;
 
-// Defined in Dipole.C, written there by CalculateGamma(). NOT per-dipole: deli
-// is the initial-state 0.5*gamma and delf the final-state one, and Beta1/Beta2
-// below read BOTH whatever this dipole's own type is - an ISR dipole's beta_1
-// carries the FSR dressing and vice versa. See the comment at their
-// definition before considering making them members; doing so zeroes the cross
-// term.
+// Defined in Dipole.C, written by CalculateGamma(). NOT per-dipole: deli is the
+// initial-state 0.5*gamma and delf the final-state one, and Beta1/Beta2 read BOTH
+// whatever this dipole's type is, so an ISR beta_1 carries the FSR dressing and
+// vice versa. Making them members zeroes the cross term.
 extern double delf;
 extern double deli;
 
 namespace {
-  // Orders used for the subtraction terms inside Beta3. Any value below 2
-  // disables the virtual dressing in Hard() and the delta factors in Beta1/
-  // Beta2, which is the point; the specific negatives are the ones the
-  // member-mutating version left behind, kept so the arithmetic is unchanged.
+  // Orders for the subtraction terms inside Beta3. Any value below 2 disables the
+  // virtual dressing in Hard() and the delta factors in Beta1/Beta2.
   constexpr int SUBTRACTION_ORDER_BETA2 = -1;
   constexpr int SUBTRACTION_ORDER_BETA1 = -2;
 }
@@ -54,13 +34,10 @@ double Dipole::EEX(const int betaorder){
   double real=0;
   if(m_dipolePhotonsEEX.size()==0) return real;
   CalculateGamma();
-  // NB the single-photon term runs over m_dipolePhotons while the pair and
-  // triple terms run over m_dipolePhotonsEEX. For an ISR dipole the two hold
-  // the same vectors (Boost() assigns one to the other). For an FSR dipole
-  // they do NOT: Boost() pushes each photon into m_dipolePhotonsEEX and then
-  // boosts it in m_dipolePhotons, so beta_1 sees boosted photons and
-  // beta_2/beta_3 see the pre-boost ones. Preserved as found - correcting it
-  // would move numbers - but it is not obviously intended.
+  // NB beta_1 runs over m_dipolePhotons while beta_2/beta_3 run over
+  // m_dipolePhotonsEEX. For ISR the two hold the same vectors. For FSR, Boost()
+  // pushes each photon into m_dipolePhotonsEEX and then boosts it in
+  // m_dipolePhotons, so beta_1 sees boosted photons and beta_2/beta_3 pre-boost ones.
   if(betaorder >= 1) {
     for(auto k: m_dipolePhotons){
       real += Beta1(k, betaorder)/Eikonal(k);
@@ -119,12 +96,9 @@ double Dipole::Beta2(const Vec4D &k1, const Vec4D &k2, int order){
   const double eik1 = Eikonal(k1);
   const double eik2 = Eikonal(k2);
   const double delta = (order==3) ? (1+delf)*(1+deli) : 1.;
-  // The two single-photon subtractions go in one order lower: they remove
-  // what beta_1 already accounted for, without its dressing.
-  //
-  // Summed as `hard += (-a-b-c)` rather than `Hard()-a-b-c` to keep the
-  // floating-point association the member-mutating version had: the two
-  // group the additions differently and would disagree in the last bits.
+  // The two single-photon subtractions go in one order lower: they remove what
+  // beta_1 already accounted for, without its dressing. Summed as
+  // `hard += (-a-b-c)` to fix the floating-point association.
   double hard = Hard(k1,k2);
   hard += -eik1*Beta1(k2, order-1)
           -eik2*Beta1(k1, order-1)
@@ -137,8 +111,7 @@ double Dipole::Beta3(const Vec4D &k1, const Vec4D &k2, const Vec4D &k3, int orde
   const double eik1 = Eikonal(k1);
   const double eik2 = Eikonal(k2);
   const double eik3 = Eikonal(k3);
-  // Two separate `+=` groups, as before: see the note in Beta2 on keeping the
-  // floating-point association.
+  // Two separate `+=` groups: same floating-point association note as in Beta2.
   double hard = Hard(k1,k2,k3);
   hard += -eik1*Beta2(k3,k2,SUBTRACTION_ORDER_BETA2)
           -eik2*Beta2(k3,k1,SUBTRACTION_ORDER_BETA2)
@@ -237,9 +210,7 @@ double Dipole::Hard(const Vec4D &k1, const Vec4D &k2){
     else        hard = xi(eta2,etap1,zetap1) + xi(zeta2,etap1,zetap1);
     return Eikonal(k1)*Eikonal(k2)*hard;
   }
-  // No two-photon ifi term. The third branch here used to test
-  // dipoletype::initial a second time, so it was unreachable, and it fell
-  // through to the return below without using what it computed.
+  // No two-photon ifi term.
   return 0;
 }
 

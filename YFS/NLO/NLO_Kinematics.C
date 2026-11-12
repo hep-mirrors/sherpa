@@ -34,50 +34,27 @@ using namespace ATOOLS;
 using namespace std;
 
 /*
-  The (n+1)-body point for beta_1(k_j) of FINAL-state photons (REAL_FSR_MAP: rescale_all).
-
-  p[2..] are the final legs BEFORE final-state emission (m_reallab), so their
-  sum is the ISR-reduced total momentum Q, of mass sqrt(s'). The rest-frame
-  map below adds k on top and rebuilds the beams at sqrt((Q+k)^2), i.e. ABOVE
-  sqrt(s'): e+e- -> mu mu at 0.7 GeV gave sqrt(s_j) = 0.83-0.89 GeV for hard
-  wide-angle FSR photons, the real ME and flux were taken at that unphysical
-  point while the subtraction used S~ B at s', and the fixed-order photon
-  spectrum grew a heavy-weight bump above E_gamma ~ 0.12 GeV (independent of
-  the ME provider and of REAL_MAP, which touches ISR photons only).
-
-  Here Q is kept: in the Q rest frame the final legs keep their directions and
-  are rescaled by one factor xi so that they carry the mass sqrt((Q-K)^2),
-  then boosted to move with Q-K; the beams are rebuilt at sqrt(Q^2) = sqrt(s').
-  With a single FSR photon this is the YFS final-state recoil of the event.
+  The (n+1)-body point for beta_1(k_j) of final-state photons (REAL_FSR_MAP
+  rescale_all). The final legs p[2..] before emission sum to Q, mass sqrt(s').
+  Q is kept: in its rest frame the legs keep their directions and are scaled
+  by one factor xi to mass sqrt((Q-K)^2), then boosted to Q-K, and the beams
+  are rebuilt at sqrt(s'), so the real ME and flux are not taken above s'.
 */
 bool NLO_Base::MapMomentaFSR(Vec4D_Vector &p, Vec4D_Vector &k) {
   if (k.empty() || p.size() < 4) return false;
   for (const Vec4D &kj : k) if (!PhotonIsFSR(kj)) return false;
   m_map_reduced = false;
   /*
-    Start from the legs AFTER final-state emission, not before. With the
-    pre-emission legs the photon-lepton angle of the point is not the event's,
-    and the collinear structure of |M_1|^2 is off by large factors: on e+e- ->
-    mu mu at 0.7 GeV, single-FSR-photon events had r/rho_1(ACRAIC) spread over
-    0.003-0.5 where single-ISR-photon events give 0.01613 on every event. The
-    other FSR photons are absorbed into the pair below (their sum is added to
-    the target mass); with one FSR photon the point IS the event, as for ACRAIC.
+    Start from the post-emission legs so that the photon-lepton angle (and
+    hence the collinear structure of |M_1|^2) is the event's. The other FSR
+    photons are absorbed into the pair below.
   */
   Vec4D Kall;
   for (const Vec4D &kj : m_FSRPhotons) Kall += kj;
   /*
-    REAL_FSR_MAP: pre_emission (3) - the SINGLE-EMISSION point: the pre-emission legs with
-    photon j's own recoil applied by the rescaling below and nothing else.
-    The post-emission construction above re-absorbs the other photons by
-    rescaling, which keeps the post-emission DIRECTIONS; a soft photon whose
-    parent lepton was kicked by a hard companion then sits at a point whose
-    collinear structure is that of the post-emission legs while the crude it
-    is subtracted against (REAL_SUB_EIK 3, the generation density) is the
-    pre-emission one, and its bracket (r_j - S~ B)/S~ is O(1) instead of
-    vanishing: Z-pole mu mu, nfsr >= 3 all soft, 10th percentile of the
-    fixed-order factor -5. Starting from the pre-emission legs the point
-    tends to the crude configuration as k_j -> 0, and with one photon it is
-    the generator's own post-emission point (same rescaling recipe).
+    REAL_FSR_MAP pre_emission: the single-emission point, i.e. the
+    pre-emission legs with only photon j's recoil applied. It tends to the
+    crude configuration as k_j -> 0, so the bracket (r_j - S~ B)/S~ vanishes.
   */
   if (RealFSRMap() == realfsrmap::pre_emission && m_plab.size() == p.size()) {
     for (size_t i = 2; i < p.size(); ++i) p[i] = m_plab[i];
@@ -101,10 +78,8 @@ bool NLO_Base::MapMomentaFSR(Vec4D_Vector &p, Vec4D_Vector &k) {
   const double Mp2(Qp.Abs2());
   if (!(Mp2 > 0.)) return false;
   const double Mp(sqrt(Mp2));
-  // Into the rest frame of the legs' own sum L, where their 3-momenta cancel
-  // and a common rescaling keeps them cancelling; the rescaled legs are then
-  // boosted onto Q - K. (Boosting into the Q - K frame instead left the
-  // absorbed photons' 3-momentum unbalanced whenever K != all FSR photons.)
+  // Work in the rest frame of the legs' own sum L, where their 3-momenta
+  // cancel and a common rescaling keeps them cancelling, then boost onto Q - K.
   Vec4D L;
   for (size_t i = 2; i < p.size(); ++i) L += p[i];
   if (!(L.Abs2() > 0.)) return false;
@@ -146,52 +121,21 @@ bool NLO_Base::MapMomentaFSR(Vec4D_Vector &p, Vec4D_Vector &k) {
 }
 
 /*
-  The (n+1)-body point for beta_1(k_j) of FINAL-state photons when the final
-  state has MORE THAN ONE radiating dipole (REAL_FSR_MAP: dipole, the default).
+  The (n+1)-body point for beta_1(k_j) of final-state photons when more than
+  one dipole radiates (REAL_FSR_MAP dipole, the default).
 
-  Each final-state photon is radiated by one resonant pair (its dipole,
-  YFS::Photon::Dip()): Dipole::GenerateEmissions samples it in that pair's
-  rest frame and YFS_Handler::CalculateFSR lets only that pair recoil, so in
-  the event every pair separately satisfies  Q_D(pre) = q_1' + q_2' + K_D.
-  MapMomentaFSR above absorbs the OTHER photons by rescaling ALL final legs
-  together: with two pairs the pair that did not radiate k_j is moved off its
-  pre-emission momentum and k_j's pair does not land on Q_D - k_j, so both
-  resonance propagators of |M_1|^2 are evaluated off the event's invariants
-  while the subtraction S~ B sits on the event's ones. On the Z pole a shift
-  of a fraction of Gamma_Z is a large factor, which is what the numbers show.
-  e+e- -> mu mu tau tau at 250 GeV (doc/examples/YFS/zpole/br_table/
-  250_eemumu, 8k events, mu-pair mass within 2 GeV of M_Z):
-      nfsr = 1: <BR>/<ACRAIC> = 0.987, median BR/ACRAIC = 1.06   (the event)
-      nfsr = 2: <BR>/<ACRAIC> = 0.21,  median 1.03 - the mean is a tail;
-      nfsr = 3: 0.17;   nfsr >= 4: 0.12;
-      a hard FSR photon (x > 0.05) with other FSR photons: median BR = -0.66,
-      <BR> = -3.5 against <ACRAIC> = 0.75.
-  In the Rivet Z1_mass overlay the Born+real dipped 25% at the mu-pair peak
-  where LO, EEX and ACRAIC agree in shape.
-
-  Here every pair other than k_j's is put back at its pre-emission momentum
-  (m_plab, its photons re-absorbed), and k_j's pair is rebuilt at
-  Q_D(pre) - k_j: its two legs keep the direction they have in the event in
-  their own rest frame (the post-emission legs of m_postlab boosted to rest,
-  which is the direction the generator drew), are given the momentum of a
-  two-body decay of mass sqrt((Q_D - k_j)^2), and are boosted onto Q_D - k_j.
-  Several selected photons (CalculateRealReal) are grouped by dipole and
-  absorbed by their own pair each. Legs in no radiating dipole are untouched.
-  When k_j is the only photon of its pair the pair is the event's, and with
-  one radiating pair in the process the whole construction is MapMomentaFSR.
-  The beams are rebuilt at sqrt(Q^2) = sqrt(s') exactly as there.
+  Each FSR photon is radiated by one resonant pair (Photon::Dip()) and only
+  that pair recoils, Q_D(pre) = q_1' + q_2' + K_D. Every other pair is put
+  back at its pre-emission momentum (m_plab), and k_j's pair is rebuilt at
+  Q_D - k_j with its post-emission direction in its own rest frame. Several
+  selected photons are grouped by dipole. With one radiating pair this is
+  MapMomentaFSR. The beams are rebuilt at sqrt(s') as there.
 */
 /*
-  The pole scheme's (n+1)-body point for photons the W-PAIR dipole radiated.
-  Such a photon's dipole names the two charged leptons (Left/Right are the
-  lepton positions, DipoleSet::BuildPole), but the pair that recoiled is the
-  W's, so the flat map above this would rebuild the lepton pair, the wrong
-  pre-emission point by the W recoil. Here: the W pair before the selected
-  photons, Qp = W- + W+ + K, the two W's back to back in Qp's frame along
-  their post-emission direction with their (preserved) masses, and each W's
-  daughters carried from the post-emission W to the rebuilt one - the
-  inverse of Define_Dipoles::ApplyPoleRecoil. Photons from any other dipole
-  (none exist in the pole scheme) fall back to the flat map.
+  The pole scheme's point for photons radiated by the W-pair dipole. The
+  dipole names the charged leptons but the W's recoil: the W's are rebuilt
+  back to back in the frame of W- + W+ + K and their daughters carried over
+  (inverse of Define_Dipoles::ApplyPoleRecoil).
 */
 bool NLO_Base::MapMomentaFSRPole(Vec4D_Vector &p, Vec4D_Vector &k) {
   if (p_dipoles == nullptr || !p_dipoles->PoleActive()) return false;
@@ -315,44 +259,20 @@ bool NLO_Base::RebuildBeamsAtPreFSR(Vec4D_Vector &p, Vec4D_Vector &k,
 }
 
 /*
-  The (n+1)-body point at which beta_1(k_j) is evaluated when the event has
-  OTHER photons, for a photon radiated from the initial state (REAL_MAP: 1).
+  The (n+1)-body point for beta_1(k_j) of an initial-state photon when the
+  event has other photons (REAL_MAP beam_axis).
 
-  What the point has to reproduce is the soft-photon radiation pattern of
-  the event: the weight is beta_1(k_j)/S~(k_j) with S~ the eikonal of the
-  EVENT, so |M_1|^2 at X_j must carry the same collinear structure for k_j
-  or the ratio is unbounded. The massless eikonal sum_i Q_i p_i/(p_i.k) is
-  invariant under a rescaling p_i -> x_i p_i of every leg and, for the beams,
-  under boosts along the beam axis (it is 4/k_perp^2), but NOT under a
-  rotation or a transverse boost of k relative to the axis.
+  The weight is beta_1(k_j)/S~(k_j) with S~ the eikonal of the event, so
+  |M_1|^2 at X_j needs the same collinear structure. The massless eikonal is
+  invariant under rescaling of the legs and beam-axis boosts but not under a
+  rotation of k relative to the axis, so the rest-frame map can misplace a
+  photon relative to the rebuilt beams when a hard spectator is present.
 
-  The rest-frame construction below (REAL_MAP: 0) boosts final state + k_j
-  into their common rest frame and rebuilds the beams along the lab axis
-  THERE. With a hard spectator photon that frame moves at beta ~ 0.7 and the
-  aberrated k_j can land on the rebuilt beam axis: measured on a 250 GeV
-  radiative-return event, a 7.4 GeV photon at 34 degrees to the beams (lab
-  eikonal 4.3e-5) came out at 20 mrad (eikonal 1.1e-2), and a -21% real
-  correction became -52 times the Born. The tail of that ratio is 1/f, so
-  the cross-section error never shrank with statistics (2.5-3.5% at 100k for
-  250 GeV nu nu, mu mu, tau tau; per-event factors down to -2600).
-
-  Here instead:
-    - k_j and the beam DIRECTIONS stay as in the lab;
-    - the other photons are taken out of the beams through their
-      longitudinal projection, P~ = P - (E_K, (K.n) n), which is the
-      light-cone removal that leaves x_a P_a + x_b P_b on the axis;
-    - one common factor lambda fixes (lambda P~ - k_j)^2 = s', so the pair
-      invariant - the Z propagator - is exactly the event's and matches the
-      Born of the subtraction;
-    - the final state is boosted rigidly from Q_lab to Q' = P' - k_j, so its
-      internal invariants and masses are untouched.
-  The II eikonal is then preserved up to the electron-mass terms (whose
-  ratio lies in [x^4, 1]: the dead cone only shrinks the term), and at n = 1
-  there is nothing to remove, lambda = 1, and the point is the event itself,
-  so the one-photon stream is unchanged. What is given up is the angle of
-  k_j to the final-state fermions, which changes by the bounded Doppler
-  factor of the Q_lab -> Q' boost; for a photon radiated from the FINAL
-  state that is the singular structure, so those keep the rest-frame path.
+  Here k_j and the beam directions stay as in the lab, the other photons are
+  removed from the beams by their longitudinal projection, one factor lambda
+  fixes (lambda P~ - k_j)^2 = s', and the final state is boosted rigidly
+  from Q_lab to Q' = P' - k_j. At n = 1 the point is the event itself.
+  Final-state photons keep the rest-frame path.
 */
 bool NLO_Base::MapMomentaBeamAxis(Vec4D_Vector &p, const Vec4D_Vector &k) {
   if (k.empty() || m_bornMomenta.size() < 2 || p.size() < 3) return false;
@@ -414,39 +334,17 @@ bool NLO_Base::MapMomentaBeamAxis(Vec4D_Vector &p, const Vec4D_Vector &k) {
 }
 
 /*
-  The KKMC convention for beta_1(k_j) in an n-photon event (REAL_MAP: 2).
+  The KKMC convention for beta_1(k_j) in an n-photon event (REAL_MAP scaled).
 
-  KKMC's EEX beta_1 for an initial-state photon is S~(k) B(s') times
-  [(1-a)^2 + (1-b)^2]/2 - 1 with a = k.p_a/(p_a.p_b), b = k.p_b/(p_a.p_b)
-  taken with the FULL beams and B at the event's s': the other photons enter
-  only through s'. The beam-axis reduction above judges the photon against
-  beams already reduced by the others, a' = a/x_b, which for two hard photons
-  counts the energy loss twice. Leading-log check, two collinear ISR photons
-  with fractions x_1, x_2 of the beam, exact factor
-  (1+(1-x_1)^2)/2 * (1+(1-x_2/(1-x_1))^2)/2 symmetrised:
-      x_1 = x_2 = 0.44 : exact 0.34, KKMC 0.32, reduced beams 0.04
-      x_1 = 0.8, x_2 = 0.05 : exact 0.45, KKMC 0.47, reduced beams 0.29
-  so the KKMC convention is the better O(alpha) truncation (the remainder is
-  the genuine beta_2), and it is what YFS.EEX and ACRAIC effectively carry.
-  Measured, 250 GeV nu nu, 50k events, same sample: the beam-axis reduction
-  gives YFS.BR 2.838 +- 0.3%, this construction 3.166 +- 0.2%, ACRAIC (no
-  virtual) 3.272 +- 0.4%, EEX 3.513 (with its +7% virtual); the rest-frame
-  map gave 2.925 +- 10%. The remaining 3% to ACRAIC sits in the events where
-  two hard photons share the radiative return, where ACRAIC's coherent
-  amplitude-level sum carries an effective beta_2 that O(alpha) cannot.
-
-  A momentum-conserving point with the full-beam a, b and the pair at s' is
-  the n = 1 configuration {P_a, P_b, k_j, Q} scaled by one factor x:
-      x^2 (P - k_j)^2 = s'   ->   x = sqrt(s'/(P - K_sel)^2) <= 1,
-  a and b are scale invariant, the pair sits at s' by construction, and the
-  final state is boosted rigidly from Q_lab to Q' = x(P - k_j). The photon in
-  the point is x k_j, so the eikonal of the point is the event's over x^2 and
-  the SAME 1/x^2 sits in |M_1|^2: CalculateReal therefore takes the ratio
-  |M_1|^2 flux/(S~ B) at the point and multiplies the event's own eikonal
-  (m_map_reduced). At n = 1, x = 1 and nothing changes. What is not preserved
-  is (Q + k_j)^2, the invariant of the final-state emission diagrams of the
-  full real ME; for photons radiated from the final state that IS the
-  resonance, so those keep the rest-frame construction.
+  KKMC takes a = k.p_a/(p_a.p_b), b = k.p_b/(p_a.p_b) with the full beams and
+  B at the event's s'. This is the n = 1 configuration {P_a, P_b, k_j, Q}
+  scaled by x = sqrt(s'/(P - K_sel)^2) <= 1: a and b are scale invariant, the
+  pair sits at s', and the final state is boosted rigidly from Q_lab to
+  Q' = x(P - k_j). The photon in the point is x k_j, so the eikonal and
+  |M_1|^2 both carry 1/x^2: CalculateReal takes the ratio |M_1|^2 flux/(S~ B)
+  at the point and multiplies the event's own eikonal (m_map_reduced).
+  (Q + k_j)^2 is not preserved, so final-state photons keep the rest-frame
+  construction.
 */
 bool NLO_Base::MapMomentaScaled(Vec4D_Vector &p, Vec4D_Vector &k, bool anylabel) {
   if (k.empty() || m_bornMomenta.size() < 2 || p.size() < 3) return false;
@@ -499,45 +397,16 @@ bool NLO_Base::MapMomentaScaled(Vec4D_Vector &p, Vec4D_Vector &k, bool anylabel)
 }
 
 /*
-  REAL_MAP: 3. The scaled construction keeps the photon's fractions a, b
-  relative to the full beams but moves (Q + k_j)^2, the invariant mass of
-  final state plus photon. For a charged final state the full real ME also
-  has the diagrams with the photon radiated from the final state, whose Z
-  propagator sits at exactly that invariant: with the Z-pole Born, moving it
-  by a few GeV changes |M_1|^2 by orders of magnitude. Measured: 250 GeV
-  mu mu with REAL_MAP: 2 kept the central value (BR 3.21, ACRAIC 3.22) but a
-  5% error from 466 events with |BR| > 10, and the Z-pole mu mu Born+real
-  moved by 0.5%.
-
-  Here both are kept - and the measurement is the reason this is NOT the
-  default: 250 GeV mu mu, 100k, REAL_MAP: 3 gives BR 4.98 +- 26% against
-  3.21 +- 4.8% and 2.82 +- 5.4% (two versions of the denominator, same
-  seeds) for REAL_MAP: 2 (ACRAIC 3.22) - the 5% is a heavy tail, not a
-  Gaussian error, and the central value moves with it. Keeping the invariant exactly
-  puts more ISR-labelled events onto the Z pole of their final-state
-  emission diagrams, where the full |M_1|^2 is shared between the I and F
-  labels in the ratio S~_II/S~_tot but divided by the ISR label's own
-  S~_tot B((mu mu)^2), which is orders of magnitude below the physics. The
-  label sum is exact (both labels together give the exact real once), so
-  this is variance, not bias; the cure is a multi-channel denominator
-  S~_II B_I + S~_FF B_F, which needs the Born at the other label's
-  kinematics and is not attempted here. At the Z pole modes 2 and 3 agree
-  per event to four digits. Unknowns: the beam energies x_a, x_b (directions fixed)
-  and one scale kappa for the photon. Conditions:
-      P'^2 = (Q + k_j)^2            (final-state-emission invariant),
-      (P' - kappa k_j)^2 = s'       (the pair at the event's s'),
-      log kappa = w log x_a + (1-w) log x_b,  w = (1 + cos theta_k)/2,
-  the last being the scaled convention for the beam the photon is collinear
-  with (kappa = x_a exactly along beam a: its fraction of that beam is the
-  event's) and a smooth interpolation in between. The photon's energy in the
-  (Q + k_j) rest frame is then the event's too, so the final-state emission
-  is as hard as it really was; only the angle between photon and fermions
-  changes, by the bounded Doppler factor of the Q_lab -> Q' boost. Solved by
-  iteration on kappa; the 2x2 system for P' along the axis is quadratic,
-  the root with the smaller longitudinal momentum is the one continuous
-  with P' = P at n = 1. When it has no real solution (a photon with more
-  transverse momentum than energy in the (Q + k_j) frame) the scaled
-  construction is used instead.
+  REAL_MAP invariant. Keeps the photon's fractions relative to the full
+  beams as in the scaled map and also (Q + k_j)^2, the invariant of the
+  final-state emission diagrams. Unknowns: x_a, x_b (directions fixed) and a
+  photon scale kappa. Conditions:
+      P'^2 = (Q + k_j)^2,   (P' - kappa k_j)^2 = s',
+      log kappa = w log x_a + (1-w) log x_b,  w = (1 + cos theta_k)/2.
+  Solved by iteration on kappa; of the two roots for P' along the axis the
+  one with smaller longitudinal momentum is continuous with P' = P at n = 1.
+  With no real solution the scaled construction is used. Not the default
+  because it carries a heavy tail for ISR-labelled events near the Z pole.
 */
 bool NLO_Base::MapMomentaInvariant(Vec4D_Vector &p, Vec4D_Vector &k) {
   if (k.empty() || m_bornMomenta.size() < 2 || p.size() < 3) return false;

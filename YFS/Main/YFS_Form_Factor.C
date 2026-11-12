@@ -21,8 +21,7 @@ using namespace ATOOLS;
 using namespace MODEL;
 using namespace METOOLS;
 
-// Lambda (Kaellen function) now lives once in YFS/Tools/Dipole.H.
-// NB: this file's old copy dropped the abs(); the canonical one keeps it.
+// Lambda (Kaellen function) lives in YFS/Tools/Dipole.H.
 
 
 
@@ -150,19 +149,13 @@ double YFS_Form_Factor::BVR_full(Vec4D p1, Vec4D p2,  double Kmax, double MasPho
 
 
 double YFS_Form_Factor::BVR_full(YFS::Dipole &d, double omega) {
-  // FULL_FORM==3: dimensionally-regularised YFS form factor built from the
-  // METOOLS/Loops master integrals. Virtual B (BVirtMaster, from B0+C0) and
-  // real B-tilde (BVR_full_eps) are summed as DivArr so their 1/eps_IR poles
-  // cancel; the finite remainder is the scheme-independent YFS Y. The pole
-  // cancellation is enforced as a correctness gate.
+  // FULL_FORM==3: dim-reg virtual + real B-tilde summed as DivArr so the 1/eps_IR
+  // poles cancel; the finite remainder is the YFS Y.
   if (m_fullform == 3) {
     DivArrD Yv = BVirtMaster(d, omega);          // master-integral virtual B
     DivArrD Yr = BVR_full_eps(d, omega, 0);       // dim-reg real B-tilde
     DivArrD Yvref = BVirtGeneralEps(d, omega);    // known-good analytic virtual B
-    // One-time calibration print: compare the master-integral virtual against
-    // the validated analytic dim-reg virtual so we can read off the exact
-    // normalisation / sign correction empirically (kinematics of the II dipole
-    // are fixed, so a single print is representative).
+    // One-time print comparing the master-integral and analytic virtuals.
     static bool once = true;
     if (once) {
       once = false;
@@ -179,8 +172,7 @@ double YFS_Form_Factor::BVR_full(YFS::Dipole &d, double omega) {
                 << "  analytic V+R finite (ref) = " << (Yvref.Finite()+Yr.Finite())
                 << std::endl;
     }
-    // Use the validated analytic virtual for the physical result for now; the
-    // master-integral virtual (Yv) is being calibrated against it above.
+    // Physical result uses the analytic virtual.
     DivArrD Y = Yvref + Yr;
     return Y.Finite();
   }
@@ -188,18 +180,10 @@ double YFS_Form_Factor::BVR_full(YFS::Dipole &d, double omega) {
 }
 
 /*
-  The exponent region of a dipole at cutoff omega. The real B-tilde is the
-  eikonal integrated over photon energies below omega in the region's frame. A
-  final pair's omega is sqrt(s')/2, its own rest-frame limit, and the FSR weight
-  (FSR::YFS_FORM, YFS_IR + DelYFS = B~_P(Emin) - B~_Q(EQQ)) is built to sit on
-  top of B~ in that rest frame. The legs come from m_plab, i.e. the P frame
-  after ISR, so for a pair recoiling against hard ISR the P-frame energies were
-  combined with a rest-frame omega: at the 250 GeV Z return (gamma 1.55)
-  exp(B~_P - B~_rest) = 0.976 at cos theta* = 0 and 0.990 at |cos| = 0.9, the
-  cutoff-independent O(alpha^0) ISR x FSR deficit against KKMC (2026-10-07,
-  ACRAIC_O0/CEEX0 and YFS.LO/EEX0 0.979 at the return, zero with FSR alone).
-  The virtual is Lorentz invariant. YFS: FF_FORMFACTOR_REST_FRAME: false
-  restores the P-frame evaluation.
+  The exponent region of a dipole at cutoff omega. A final pair's omega is
+  sqrt(s')/2 in its own rest frame, where the FSR weight (FSR::YFS_FORM)
+  sits on top of B~, so B~ is evaluated there too, not in the post-ISR P
+  frame. YFS: FF_FORMFACTOR_REST_FRAME: false keeps the P frame.
 */
 SoftRegion YFS_Form_Factor::ExponentRegion(const YFS::Dipole &d, double omega) const
 {
@@ -356,9 +340,7 @@ double YFS_Form_Factor::Zij(double eta, double yi, double yj) {
 
 
 double YFS_Form_Factor::A4(double p1p2, Leg l1, Leg l2) {
-  // Order by |p|^2, which Leg guarantees is non-negative. Swapping whole Legs
-  // keeps each energy with its own mass; the old code swapped four loose
-  // doubles by hand.
+  // Order by |p|^2; swapping whole Legs keeps each energy with its mass.
   if (l1.P2() < l2.P2()) std::swap(l1, l2);
   const double En1 = l1.E, mass1 = l1.m;
   const double En2 = l2.E, mass2 = l2.m;
@@ -410,13 +392,9 @@ double YFS_Form_Factor::A4_eq(double E, double M) {
 }
 
 
-// Shared implementation of the s-channel virtual B. The two public overloads
-// differ ONLY in where the masses come from - the Vec4D one takes them off the
-// momenta, the Dipole one off d.GetMass(), which need not agree if the stored
-// momenta are slightly off shell - so the mass is passed in rather than
-// recomputed here.
-// NB Kmax is not needed: this is the purely virtual piece, the soft cutoff
-// enters through the real Btilda (BVR_full) that gets added to it.
+// Shared implementation of the s-channel virtual B. The overloads differ only in
+// where the masses come from (momenta vs d.GetMass()), so they are passed in.
+// The soft cutoff enters only through the real Btilda (BVR_full).
 double YFS_Form_Factor::BVV_full_impl(const ATOOLS::Vec4D &p1, const ATOOLS::Vec4D &p2,
                                       double Mas1, double Mas2,
                                       double MasPhot, int mode) {
@@ -685,8 +663,7 @@ double YFS_Form_Factor::BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Ve
 
 
 double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax){
-  // kmax is unused: this is the purely virtual t-channel B, the cutoff enters
-  // only through the real Btilda that IFForFac() adds to it.
+  // kmax is unused: the cutoff enters only through the real Btilda added in IFForFac().
   const double m1 = p1.Mass();
   const double m2 = p2.Mass();
   const double M = m1>=m2 ? m1 : m2;
@@ -697,16 +674,8 @@ double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax){
        (log(ta/m/M) +log(zeta) - 1) *log(sqr(m_photonMass)/(m*M))
       +0.5*zeta*log(ta*zeta/(m1*m2))
       -0.5*log(ta/m1/m1)*log(ta/m2/m2)
-      // log(m/M), NOT log(m1/m2): this term is antisymmetric under exchanging
-      // the two legs, and KKMC's TBvirt (SRCee/KKbvir.cxx:296) documents its
-      // m1 as "assumed to be very small", i.e. the LIGHT leg first. IFForFac()
-      // calls this with GetBornMomenta(1) then (0),
-      // which for an initial-final dipole puts the heavy (final-state) leg
-      // first - so log(m1/m2) came out with the wrong sign. Using min/max
-      // makes the term independent of the caller's ordering and reproduces
-      // KKMC. Verified against KKbvir::TBvirt on a fixed e+e- -> mu+mu- point
-      // (YFS/Tools/IFI_KKMC_CrossCheck.C vs Test/SherpaCompare/
-      // kkmc_ifi_crosscheck.cxx): the whole disagreement was 2x this term.
+      // log(m/M) is antisymmetric in the legs: KKMC's TBvirt takes the light leg
+      // first, so min/max makes this independent of caller ordering.
       +0.5*(zeta -1.0)*log(m/M)
       -log(zeta)*(log(ta/(m1*m2)) +0.5*log(zeta))
       +DiLog(1./zeta) -1.0
@@ -746,26 +715,10 @@ DivArrD YFS_Form_Factor::BVirtT_eps(YFS::Dipole &d){
 
 
 double YFS_Form_Factor::IFForFac(YFS::Dipole &d, double omega){
-  // KKMC's TForFac, for one initial-final dipole. KKceex.cxx assembles the
-  // interference form factor as
-  //     Yint = prod over the four IF pairs of TForFac(+/-a, pi, pj, Emin)
-  //     TForFac = exp( Btilda(...,Emin) + TBvirt(...) )
-  // and the sign pattern (+ for like-charge pairs, - for unlike) is what
-  // Dipole::ChargeNorm() already supplies, so the caller multiplies by that and
-  // this returns the exponent for a single pair.
-  //
-  // The point of having this separate from the II/FF term is the VIRTUAL: an
-  // initial-final pair is t-channel-like, so it needs BVirtT (spacelike p1.p2),
-  // not the s-channel virtual. FormFactorSum() previously gave the IF dipoles
-  // Btilda with NO virtual at all, which is why no rescaling of that term could
-  // reproduce KKMC -- half the object was missing.
-  //
-  // For dipoletype::ifi the momenta are GetBornMomenta(1) then (0).
-  //
-  // NB BVirtT(Vec4D,Vec4D,double) ignores its kmax argument -- it is read only by
-  // an IsZero() default that is never used afterwards -- so the omega passed here
-  // affects the Btilda part alone. That is deliberate: it is the soft-real piece
-  // that carries the cutoff, exactly as in KKMC's Btilda(...,Emin).
+  // KKMC's TForFac for one initial-final dipole: exponent Btilda(Emin) + TBvirt.
+  // The charge sign is applied by the caller via Dipole::ChargeNorm(). The IF pair
+  // is t-channel-like, so the virtual is BVirtT (spacelike p1.p2). Momenta are
+  // GetBornMomenta(1) then (0); omega only affects the Btilda part.
   return IFForFac(d, SoftRegion::Lab(omega, "P"));
 }
 
@@ -880,31 +833,14 @@ DivArrD YFS_Form_Factor::BVirtGeneralEps(YFS::Dipole &d, double Kmax){
 }
 
 
-// Virtual YFS IR factor Y assembled from the master integrals (METOOLS/Loops),
-//
-//   off-diagonal (i!=j):  Y_ij = (a/pi) Qi Qj th_i th_j
-//        [ p_i.p_j C0(m_i^2, s_ij, m_j^2; lam^2, m_i^2, m_j^2)
-//          + 1/4 B0(s_ij, m_i^2, m_j^2) ],           s_ij = (th_i p_i + th_j p_j)^2
-//   diagonal (i=j):       Y_ii = 1/8 (a/pi) Qi^2
-//        [ B0(0, m_i^2, m_i^2) - 4 m_i^2 C0(m_i^2, 0, m_i^2; lam^2, m_i^2, m_i^2) ]
-//
-//   th_i = -1 (+1) for incoming (outgoing); Qi in positron units.
-//
-// The per-dipole factor returned here is Y_ij(off-diagonal) + Y_ii + Y_jj (the
-// exchange plus both leg self-energies, i.e. the paper's Y_a for the line pair).
-// The Qi Qj th_i th_j charge/flow factor is applied by the caller
-// (Define_Dipoles::FormFactorSum via ChargeNorm), so it is omitted here.
-//
-// Regularisation: the paper uses a photon mass lambda. Here the master integrals
-// are dimensionally regularised (massless photon internal line -> 1/eps_IR), so
-// Y is returned as a DivArr whose 1/eps_IR pole cancels against the dim-reg real
-// emission BVR_full_eps (enforced in BVR_full(Dipole&), FULL_FORM==3).
-//
-// TODO(validate): (i) the C0 photon-line is taken massless (dim-reg) rather than
-// with the paper's lambda^2 - equivalent up to the standard IR dictionary
-// (4 pi mu^2)^eps Gamma(1+eps)/eps -> ln lambda^2, checked via the 3-vs-0 XS;
-// (ii) the diagonal Y_ii/Y_jj are added in full for an isolated dipole - if a
-// leg is shared between dipoles this double counts and must be shared out.
+// Virtual YFS IR factor Y from the master integrals (METOOLS/Loops), dim-reg:
+//   Y_ij = (a/pi) [ p_i.p_j C0(m_i^2, s_ij, m_j^2) + 1/4 B0(s_ij, m_i^2, m_j^2) ],
+//   s_ij = (th_i p_i + th_j p_j)^2,  th = -1 (+1) incoming (outgoing)
+//   Y_ii = 1/8 (a/pi) [ B0(0, m_i^2, m_i^2) - 4 m_i^2 C0(m_i^2, 0, m_i^2) ]
+// Returns Y_ij + Y_ii + Y_jj as a DivArr whose 1/eps_IR pole cancels against
+// BVR_full_eps. The charge/flow factor is applied by the caller (ChargeNorm).
+// The diagonal terms are added in full per dipole, so a leg shared between
+// dipoles is double counted.
 DivArrD YFS_Form_Factor::BVirtMaster(YFS::Dipole &d, double Kmax) {
   Vec4D p1, p2;
   double th1, th2;
@@ -924,12 +860,12 @@ DivArrD YFS_Form_Factor::BVirtMaster(YFS::Dipole &d, double Kmax) {
   const double mu2 = (p_virt?sqr(p_virt->IRscale()):GLOBAL_RENORMALISATION_SCALE);
   const Complex z(0.,0.);
 
-  // --- off-diagonal exchange term, Eq.(3.3) i!=j ---
+  // off-diagonal exchange term
   DivArrC C0ij = Master_Triangle(m12, sij, m22, z, Complex(m12,0.), Complex(m22,0.), mu2);
   DivArrC B0ij = Master_Bubble(sij, Complex(m12,0.), Complex(m22,0.), mu2);
   DivArrC Yij  = C0ij*(p1*p2) + B0ij*0.25;
 
-  // --- diagonal self-energy terms, Eq.(3.3) i=j (one per leg) ---
+  // diagonal self-energy terms, one per leg
   DivArrC C0ii = Master_Triangle(m12, 0., m12, z, Complex(m12,0.), Complex(m12,0.), mu2);
   DivArrC C0jj = Master_Triangle(m22, 0., m22, z, Complex(m22,0.), Complex(m22,0.), mu2);
   DivArrC B0ii = Master_Bubble(0., Complex(m12,0.), Complex(m12,0.), mu2);
@@ -939,7 +875,7 @@ DivArrD YFS_Form_Factor::BVirtMaster(YFS::Dipole &d, double Kmax) {
 
   DivArrC combo = Yij + Yii + Yjj;
 
-  // real part (YFS Y uses Re B) -> DivArrD, normalised to alpha/pi (Eq.3.3)
+  // YFS Y uses Re B
   DivArrD form(combo[0].real(), combo[1].real(), combo[2].real(),
                combo[3].real(), combo[4].real(), combo[5].real());
   return form * m_alpi;

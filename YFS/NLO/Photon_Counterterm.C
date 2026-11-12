@@ -7,22 +7,15 @@
 #include <vector>
 
 /*
-  The external on-shell photon's charge counterterm, as OpenLoops
-  computes it (lib_src/openloops/src/renormalisation_ew.F90, line numbers
-  in brackets). In units of the tree, 2 x loopfactor goes on V_fin/T, with
-
-    loopfactor = [dZe0QEDEWnreg - dZeQEDEW] alpha_in/(4 pi)          (2750)
-    dZe0QEDEWnreg = -dZAAEWnreg/2 - (sw/cw) SiAZ0/MZ2                 (1496)
-    dZAAEWnreg    = -(dSiAAheavy0 + PiAAlightZ/Re MZ2 + dAlpha)       (1283)
-    dAlpha        = (4 pi/alpha_in)(1 - alpha(0)/alpha(MZ)),
-                    alpha(MZ) = alpha_in in ew_scheme 2                (1280)
+  The external on-shell photon's charge counterterm as OpenLoops computes it
+  (renormalisation_ew.F90); 2 x loopfactor goes on V_fin/T, with
+    loopfactor    = [dZe0QEDEWnreg - dZeQEDEW] alpha_in/(4 pi)
+    dZe0QEDEWnreg = -dZAAEWnreg/2 - (sw/cw) SiAZ0/MZ2
+    dZAAEWnreg    = -(dSiAAheavy0 + PiAAlightZ/Re MZ2 + dAlpha)
+    dAlpha        = (4 pi/alpha_in)(1 - alpha(0)/alpha(MZ))
     dZeGmuQEDEW   = dsw/sw - SiAZ0/(sw cw MZ2)
-                    - (6 + (7 - 4 sw2)/(2 sw2) ln cw2)/(2 sw2)
-                    + (dZMW2 - SiW0)/(2 MW2)                           (1500-1502)
-    dZeZQEDEW     = -(dZAAEWnreg + dAlpha)/2 - (sw/cw) SiAZ0/MZ2       (1505)
-    dsw/sw = -(cw2/sw2) dcw/cw,  dcw = (cw/2)(dZMW2/MW2 - dZMZ2/MZ2)  (1487-1488)
-    CMS: dZMW2 = SiW + (MW2 - Re MW2) dSiW + 4 (Re MW2 - MW2),
-         dZMZ2 = SiZZ - (Re MZ2 - MZ2) dSiZZ                           (1297-1320)
+                    - (6 + (7 - 4 sw2)/(2 sw2) ln cw2)/(2 sw2) + (dZMW2 - SiW0)/(2 MW2)
+    dZeZQEDEW     = -(dZAAEWnreg + dAlpha)/2 - (sw/cw) SiAZ0/MZ2
 */
 
 using namespace YFS;

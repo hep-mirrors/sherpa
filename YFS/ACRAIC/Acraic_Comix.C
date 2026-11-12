@@ -77,9 +77,8 @@ bool Acraic_Base::CalibrateComixMap(ComixCalib &c)
     else if (nextmet < 0. || met < nextmet) nextmet = met;
   }
 
-  // |C/H| must be the same in every live slot. The threshold is coarse on
-  // purpose: Comix fills the helicity-flip entries at O(m_e/E), the hand Born
-  // sets them to zero.
+  // |C/H| must be the same in every live slot (coarse threshold: Comix fills
+  // helicity-flip entries at O(m_e/E), the hand Born zeroes them).
   double rmin(0.), rmax(0.);
   int nlive(0);
   for (int f = 0; f < nh; ++f) {
@@ -124,9 +123,8 @@ void Acraic_Base::DeriveComixMap()
   // (they differ when a leg is a scalar, e.g. H l+ l-).
   if (needflip) m_comixflip = c.mask | (m_comixphoflip ? Amplitude::NHel() : 0);
 
-  // N = sqrt(initial spin states) exactly: the hand-coded amplitude is
-  // spin-averaged (KKMC convention), Comix's sum_hel is not. The measured N
-  // only has to agree.
+  // N = sqrt(initial spin states): the hand amplitude is spin-averaged
+  // (KKMC convention), Comix's sum_hel is not.
   double nspin(1.);
   for (size_t i(0); i < 2 && i < nl; ++i) nspin *= m_flavs[i].IntSpin() + 1.;
   // YFS: USE_MODEL_ALPHA 0: hand Born at alpha(0), Comix at alpha_model, so
@@ -231,12 +229,9 @@ bool Acraic_Base::ExchangeLineShiftsOn() const
 }
 
 /*
-  The partition's reduced legs as leg entries theta_i (p~_i - p_i) (theta = -1
-  incoming, +1 outgoing), from which COMIX::Amplitude::SetPropShifts places
-  every space-like exchange line at the partition's reduced invariant; only
-  the pole moves, the spinors stay physical. iphot < 0: the Born
-  (BornLegsAt(m_PXvec)); iphot >= 0: M_1 of that photon (PartitionLegs, all
-  zero at n = 1).
+  Reduced legs as leg entries theta_i (p~_i - p_i) for SetPropShifts, placing
+  space-like exchange lines at the reduced invariant (spinors stay physical).
+  iphot < 0: the Born (BornLegsAt(m_PXvec)); else M_1 of that photon.
 */
 void Acraic_Base::AddExchangeLineShifts(int iphot, PropShifts &sh,
                                        const Vec4D_Vector *base) const
@@ -263,11 +258,9 @@ bool Acraic_Base::Beta1DressedFsr() const
 }
 
 /*
-  ACRAIC: BETA1_DRESSED_FSR. The two legs of final stage `stage` as they were
-  before the stage's other photons (all but iphot; iphot < 0: all) were
-  emitted: the pair is moved from Q to Q + K, the lepton directions kept in
-  the pair's rest frame, the momenta rescaled to (Q + K)^2. Beams and every
-  other leg unchanged. Two-leg final stages only.
+  BETA1_DRESSED_FSR: the two legs of a final stage before its other photons
+  (all but iphot; iphot < 0: all) were emitted: pair moved from Q to Q + K,
+  directions kept in the pair rest frame, rescaled to (Q + K)^2.
 */
 bool Acraic_Base::DressedStageLegs(int stage, int iphot, Vec4D_Vector &legs) const
 {
@@ -321,8 +314,7 @@ bool Acraic_Base::BornHasExchangeLine()
   if (it != m_exchline.end()) return it->second != 0;
   if (p_bornproc == NULL || m_pacraic.size() < 4
       || m_flavs.size() != m_pacraic.size()) return false;
-  // Probe: without an exchange line a leg shift leaves the amplitude bit for
-  // bit unchanged.
+  // Probe: without an exchange line a leg shift leaves the amplitude unchanged.
   Amplitude A0, A1;
   PropShifts none, leg;
   const double e(1e-3*m_pacraic[0][0]);
@@ -519,13 +511,10 @@ tchmultiphoton::code Acraic_Base::TchannelMultiphotonMode() const
 }
 
 /*
-  ACRAIC: TCHANNEL_MULTIPHOTON >= 1. The one-photon point for photon iphot,
-  as YFS.NLO's REAL_MAP 2 (NLO_Base::MapMomentaScaled): the event with only
-  this photon, scaled by x = sqrt(Q^2/(P - k_j)^2) so the final state keeps
-  Q^2, built in the P rest frame and carried back by the generator's boost
-  Poincare(Q), so that its soft limit is exactly BornLegsAt(Q). Used instead
-  of PartitionLegs, whose beams are tilted by a hard companion's pT.
-  legs gets the Born legs, kpt the photon.
+  TCHANNEL_MULTIPHOTON >= 1: the one-photon point of photon iphot as YFS.NLO's
+  REAL_MAP 2 (MapMomentaScaled), built in the P rest frame and carried back by
+  Poincare(Q), so its soft limit is BornLegsAt(Q). legs gets the Born legs,
+  kpt the photon.
 */
 bool Acraic_Base::OnePhotonScaledLegs(int iphot, Vec4D_Vector &legs,
                                     Vec4D &kpt) const
@@ -577,13 +566,9 @@ bool Acraic_Base::OnePhotonScaledLegs(int iphot, Vec4D_Vector &legs,
 }
 
 /*
-  ACRAIC: TCHANNEL_MULTIPHOTON 2. Factorised form of the partition's beta_1
-  sum a + sum_j v_j (a = m_Sprod beta_0), the amplitude-level analogue of
-  YFS.NLO's REAL_COMBINE product, for Borns near a pole of the reduced frame:
-      c_j = <a|a + v_j>/<a|a>,   r_j = v_j - (c_j - 1) a,
-      T   = a prod_j c_j + sum_j r_j prod_{l != j} c_l .
-  T = a + sum_j v_j to first order (exactly for one photon); the difference
-  T - a - sum_j v_j is added.
+  TCHANNEL_MULTIPHOTON 2: factorised beta_1 sum a + sum_j v_j (a = m_Sprod
+  beta_0), c_j = <a|a + v_j>/<a|a>, r_j = v_j - (c_j - 1) a,
+  T = a prod_j c_j + sum_j r_j prod_{l != j} c_l. T - a - sum_j v_j is added.
 */
 void Acraic_Base::AddFactorisedRemainder()
 {
@@ -652,18 +637,11 @@ Complex Acraic_Base::StageEikonal(int stage, const Vec4D_Vector &p,
 }
 
 /*
-  beta_1 for one photon from Comix, partition independent:
-
-      beta_1(k) = M_1(k) - s_tot(k) B ,
-
-  s_tot the eikonal of every leg, B the Born on the same legs; no stage
-  split, pseudo-flux or (1 - CKine) needed, since
-
-      M_n  ~  sum_wp prod s^wp beta_0(X_wp)  +  sum_j prod_{i!=j} s_tot(k_i)
-                                                * beta_1(k_j).
-
-  Adding it on one designated stage of photon j visits each assignment of
-  the others once: sum_{wp: wp_j = 0} prod_{i!=j} s^{wp_i} = prod_{i!=j} s_tot(k_i).
+  beta_1(k) = M_1(k) - s_tot(k) B for one photon, partition independent
+  (s_tot the eikonal of every leg, B the Born on the same legs), since
+  M_n ~ sum_wp prod s^wp beta_0 + sum_j prod_{i!=j} s_tot(k_i) beta_1(k_j).
+  Added on one designated stage of photon j it visits each assignment of the
+  others once.
 */
 bool Acraic_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
                                             int iphot)
@@ -672,12 +650,10 @@ bool Acraic_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
   if (iphot >= (int)m_stage.size() || (int)m_Sfac.size() != m_nstages
       || iphot >= (int)m_Sfac[m_stage[iphot]].size()) return false;
   /*
-    M_1 goes on one partition per assignment of the others (photon on the
-    reducing stage, never "index 0", which is the non-radiating stage for
-    nu nu); the beta_0 subtraction goes in every partition. A collapsed
-    (fixed-stage) photon is never enumerated, so it gets M_1 in every
-    partition against the total eikonal.
-  */
+      M_1 goes on one partition per assignment of the others (the reducing
+      stage); the beta_0 subtraction goes in every partition. A collapsed photon
+      gets M_1 in every partition against the total eikonal.
+    */
   const bool fixed(m_fixedstage.size() == m_stage.size()
                    && m_fixedstage[iphot] != 0);
   // YFS: IFI false: partitions summed incoherently, each carries its own
@@ -686,18 +662,13 @@ bool Acraic_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
   const double rn(RealNorm());
   if (!(rn > 0.)) return false;
   /*
-    Per assignment of the others, the two partitions differing only in this
-    photon's placement give (hep-ph/0006359)
-
-      prod_{i!=j} s_i^{wp_i} [ M_1^I(k_j; X_{j in I}) + M_1^F(k_j; X_{j in F})
-                              - s_I(k_j) beta_0(X_{j in I})
-                              - s_F(k_j) beta_0(X_{j in F}) ],
-
-    M_1^{I,F} at the physical spinors with propagators at the partition's X.
-    ACRAIC: BETA1_LEGS: 0 (default): physical legs + k_j with per-stage
-    propagator shifts (ComixRealShifted). 1: balanced point from
-    PartitionLegs (right propagators, wrong spinors), kept for comparison.
-  */
+      Per assignment of the others, the two partitions differing in this photon's
+      placement give (hep-ph/0006359)
+        prod_{i!=j} s_i [ M_1^I(X_{j in I}) + M_1^F(X_{j in F})
+                          - s_I beta_0(X_{j in I}) - s_F beta_0(X_{j in F}) ].
+      BETA1_LEGS 0: physical legs + k_j with per-stage propagator shifts
+      (ComixRealShifted); 1: balanced point from PartitionLegs.
+    */
   static const beta1legs::code legsmode(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
                             ["BETA1_LEGS"].Get<beta1legs::code>());
   const bool rebuild(legsmode == beta1legs::balanced || m_redborn);
@@ -733,14 +704,10 @@ bool Acraic_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
                            ["BETA1_XCUT"].Get<double>());
   if (!(y > xcut)) return true;     // m_b2on[iphot] stays 0: beta_1 = 0 here
   /*
-    The subtraction is m_partborn0 (the Born InfraredSubtractedME_0_0 added,
-    so the (1 - n) cancellation is exact) times the other photons' eikonals
-    and this photon's stage eikonal on the legs Comix was handed.
-
-    ACRAIC: TCHANNEL_MULTIPHOTON >= 1: M_1 at OnePhotonScaledLegs, used as
-    R_j = M_1/s_j(point) times the physical m_sactu[j] (rescale), so the
-    subtraction is exactly s_phys B_0.
-  */
+      Subtraction: m_partborn0 times the other photons' eikonals and this
+      photon's stage eikonal. TCHANNEL_MULTIPHOTON >= 1: M_1 at
+      OnePhotonScaledLegs as R_j = M_1/s_j(point) times the physical m_sactu[j].
+    */
   Vec4D km(k);
   bool onept(false);
   if (addm1 && rebuild && TchannelMultiphotonActive()
@@ -759,27 +726,15 @@ bool Acraic_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
     }
   }
   /*
-    ACRAIC: BETA1_DRESSED_FSR (2026-10-11). M_1(k_j) is computed once, in the
-    partition with photon j on the initial stage, and carries the emission
-    from the final pair too; the final pair it is handed is the physical one,
-    which has already given its energy to the photons this partition puts on
-    the final stage ("companions"). In deep radiative return Bhabha a lepton
-    that lost 95% of its energy to collinear companions puts the other photons
-    of the bunch inside its widened dead cone, where the helicity-flip part of
-    M_1 is large: beta_1/(s beta_0) up to 1.5e3, event weights to 1e5.
-    With companions, M_1 is taken at the final pair dressed with them
-    (DressedStageLegs: the pair before they were emitted), with its own
-    subtraction there, and the standard subtractions put back:
-        M_1,eff = M_1(pd) - s_I(pd) B^I(pd) - s_F(pd) B^F(pd)
-                  + s_I B_0^I + s_F B_0^F ,
-    B^{I,F} the Born with photon j's momentum on the initial / final side
-    lines (as m_partborn0 in the two partitions of j), s_{I,F} the stage
-    eikonals, unadorned = physical legs. The code subtracts s_I B_0^I here and
-    s_F B_0^F in the partner partition, so the net beta_1 is the dressed
-    point's own, M_1(pd) - s_I(pd) B^I(pd) - s_F(pd) B^F(pd): zero as k_j
-    goes soft, and the old one as the companions go soft (pd -> physical).
-    Two stages (initial + one two-leg final) only; no companions: unchanged.
-  */
+      BETA1_DRESSED_FSR: M_1(k_j) is computed once, with j on the initial stage,
+      but the final pair it sees has already lost energy to this partition's
+      final-stage companions, which pushes the other photons into its widened
+      dead cone. With companions, M_1 is taken at the dressed pair
+      (DressedStageLegs) with its own subtraction and the standard ones put back:
+        M_1,eff = M_1(pd) - s_I(pd) B^I(pd) - s_F(pd) B^F(pd) + s_I B_0^I + s_F B_0^F,
+      B^{I,F} the Born with k_j on the initial / final side lines. The partner
+      partition subtracts s_F B_0^F. Two stages only; no companions: unchanged.
+    */
   bool dressed(false);
   Amplitude M1fix;     // - s_I(pd) B^I(pd) - s_F(pd) B^F(pd) + s_F B_0^F (+ s_I B_0^I below)
   int gF(-1);
@@ -911,8 +866,7 @@ bool Acraic_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
     const Complex sub(w * sj * m_partborn0.m_A[f]);
     Complex v(-sub);
     if (addm1) {
-      // BETA1_DRESSED_FSR: + the dressed point's subtractions and the standard
-      // ones put back (sj = s_I on the physical legs here, B_0^I = m_partborn0)
+      // BETA1_DRESSED_FSR: dressed point's subtractions, standard ones put back
       const Complex m1(rescale * w * m_cxbalign.m_A[f] * M1.m_A[f]/rn
                        + (dressed ? w*(M1fix.m_A[f] + sj*m_partborn0.m_A[f]) : Complex(0., 0.)));
       v += m1;

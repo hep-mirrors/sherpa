@@ -103,25 +103,20 @@ Real_Correction::Real_Correction(const PHASIC::Process_Info &pi, size_t nphotons
   const std::string gen
     (s[p_cfg->m_generator].SetDefault("Comix").Get<std::string>());
   m_gen = gen;
-  // optional second EXTERNAL generator - if set, the comparison checks this
-  // against the first directly (bypassing p_proc/Comix entirely) instead of
-  // comparing the first against the internal ME.
+  // optional second external generator: compared directly with the first,
+  // bypassing p_proc/Comix
   const std::string gen2
     (s[p_cfg->m_generator2].SetDefault("").Get<std::string>());
   m_check    = s[p_cfg->m_compare].SetDefault(0).Get<bool>();
   m_writemom = s[p_cfg->m_writemom].SetDefault(0).Get<bool>();
   m_nmom     = s[p_cfg->m_nmom].SetDefault(100).Get<int>();
-  // Check_Real / Check_RR only exist for the two multiplicities that predate
-  // this class; higher ones have no dump flag of their own, and the momenta
-  // dumps they drive are a cross-generator debugging aid that has no external
-  // generator to compare against up there anyway.
+  // Check_Real / Check_RR exist only for the first two multiplicities, and there is
+  // no external generator to compare against for higher ones.
   m_dump     = (m_nphotons == 1 ? m_check_real
                                 : (m_nphotons == 2 ? m_check_rr : 0));
 
-  // Flavours come from the process info for EVERY multiplicity. RealReal used
-  // to fill m_flavs from the external generator's argument list, inside the
-  // branch that builds it - so with an internal generator its m_flavs stayed
-  // empty and every m_flavs lookup in the diagnostics was out of bounds.
+  // Flavours come from the process info for every multiplicity (m_flavs is
+  // read by the diagnostics).
   for (const auto &f : pi.ExtractFlavours()) m_flavs.push_back(f);
 
   if (m_check && gen == "")
@@ -184,8 +179,7 @@ std::string Real_Correction::ActiveGenName() const {
 
 double Real_Correction::Calc_R(const ATOOLS::Vec4D_Vector& p)
   {
-    // Zero-initialised: with no external generator configured (p_real_me
-    // null) nothing below assigns it, yet the m_check comparisons read it.
+    // Zero-initialised: read by the m_check comparisons even with no external generator.
     double external_real(0.);
     m_failcut = false;
     if(m_nlocuts && !p_proc->Trigger(ToProcessOrder(p))) {
@@ -207,25 +201,19 @@ double Real_Correction::Calc_R(const ATOOLS::Vec4D_Vector& p)
     }
     METOOLS::Cancel_Probe::Reset();
     p_ampl=CreateAmplitude(p);
-    // rmode bits: 128=GeneratePoint(), 2=SetFixedScale(ampl scales), 1=disable
-    // the selector before Trigger() so it can't reject the point - the
-    // m_nlocuts check above already applies cuts explicitly, so Differential()
-    // doesn't need to (and shouldn't) re-run the selector itself.
+    // rmode bits: 128=GeneratePoint(), 2=SetFixedScale(ampl scales), 1=disable the
+    // selector before Trigger() (cuts are applied via m_nlocuts).
     int rmode = 128 +  2 + 1;
     Weights_Map iR = p_proc->Differential(*p_ampl, Variations_Mode::nominal_only,rmode);
-    // Comix's per-helicity amplitudes for this point (after Differential(),
-    // which evaluates the amplitude)
+    // Comix per-helicity amplitudes for this point
     if (m_keepamps) {
       std::vector<std::vector<Complex> > cols;
       m_spinamps.clear();
       p_proc->FillAmplitudes(m_spinamps, cols);
       ToYFSOrder(m_spinamps);
     }
-    // gauge-flip error estimator: re-evaluate the same point with the spinor
-    // reference axis rotated. The result is gauge invariant analytically, so
-    // the difference between the two evaluations is a direct probe of the
-    // rounding error of THIS point - unlike the cancellation heuristic it
-    // needs no calibration against a reference amplitude.
+    // Gauge-flip error estimator: re-evaluate with the spinor reference axis rotated.
+    // The difference probes the rounding error of this point.
     double gaugedev(-1.0);
     if (m_check && iR.Nominal()!=0.0) {
       int sd(ATOOLS::Spinor<double>::DefaultGauge());
@@ -270,8 +258,7 @@ double Real_Correction::Calc_R(const ATOOLS::Vec4D_Vector& p)
     static const double softscan(ATOOLS::Settings::GetMainSettings()["YFS"]["SOFT_SCAN"].Get<double>());
     if (softscan>0.0) {
       static bool done(false);
-      // only bother with a point that actually disagrees, so the scan starts
-      // inside the region under investigation
+      // only scan points that disagree
       if (!done && external_real!=0.0 &&
           std::abs(iR.Nominal()/external_real-1.0)>softscan) {
         done=true;
@@ -432,9 +419,8 @@ void Real_Correction::UpdatePermutation() const
   m_permid = true;
   for (size_t j(0); j < n; ++j) m_perm[j] = j;
   if (pf.size() != n) return;
-  // each YFS leg to the first unused process leg of its flavour, on the same
-  // side; equal flavours keep their relative order, so a process already in
-  // YFS order gets the identity
+  // each YFS leg to the first unused process leg of its flavour on the same side;
+  // a process already in YFS order gets the identity
   std::vector<size_t> perm(n);
   std::vector<bool> used(n, false);
   for (size_t j(0); j < n; ++j) {
@@ -505,11 +491,8 @@ void Real_Correction::ToYFSOrder(std::vector<METOOLS::Spin_Amplitudes> &amps) co
 Cluster_Amplitude *Real_Correction::CreateAmplitude(const ATOOLS::Vec4D_Vector &p) const
 {
   Cluster_Amplitude *ampl = Cluster_Amplitude::New();
-  // NIn is the number of INCOMING legs, not the leg count. Comix crosses
-  // in exactly the first NIn momenta (Single_Process.C: p[i] = i<NIn ?
-  // -Leg(i)->Mom() : Leg(i)->Mom()), so passing p.size() here negates the
-  // final state as well - which is equivalent to flipping the sign of every
-  // mass relative to the momenta, and shows up wherever a mass term matters.
+  // NIn is the number of INCOMING legs: Comix crosses exactly the first NIn
+  // momenta, so p.size() would negate the final state too (mass sign flip).
   ampl->SetNIn(p_proc->NIn());
   ampl->SetMS(p_proc->Generator());
   ampl->SetOrderQCD(p_proc->MaxOrder(0));
@@ -520,13 +503,8 @@ Cluster_Amplitude *Real_Correction::CreateAmplitude(const ATOOLS::Vec4D_Vector &
   for (size_t i(1);i<p_proc->MaxOrders().size();++i)
     ampl->SetOrderEW(ampl->OrderEW()+p_proc->MaxOrder(i));
   Int_Vector ci(p.size(), 0), cj(p.size(), 0);
-  // Incoming legs are STORED negated - Comix undoes that when it crosses them
-  // in. Storing them positive and setting NIn to the leg count (as this did)
-  // flips every momentum instead: momentum is still conserved, so the result
-  // stays finite and looks right away from any singularity, but p -> -p at
-  // fixed m reverses each momentum relative to its mass. The error is then
-  // invisible except where a mass term matters - i.e. inside the dead cone
-  // theta <~ m/E, which is exactly where the real ME disagreed with OpenLoops.
+  // Incoming legs are STORED negated, Comix undoes that when crossing them in.
+  // A wrong sign flips p at fixed m, visible only inside the dead cone theta <~ m/E.
   const size_t nin(p_proc->NIn());
   // the legs in the process's order (see m_perm)
   const Vec4D_Vector pp(ToProcessOrder(p));
@@ -560,8 +538,8 @@ void Real_Correction::SoftScan(const ATOOLS::Vec4D_Vector &p)
   const double me(m_flavs[0].Mass()), Eb(p1[0]), Eg(k0[0]);
   if (me<=0.0 || Eg<=0.0) { msg_Error()<<"SoftScan: bad point\n"; return; }
 
-  // hard system: everything outgoing except the photon. Its configuration is
-  // held fixed in its own rest frame, so only the photon direction varies.
+  // hard system: everything outgoing except the photon, held fixed in its own
+  // rest frame so only the photon direction varies.
   std::vector<Vec4D> hrest;
   std::vector<size_t> hidx;
   for (size_t i(2);i<n;++i) if (i!=ig) { hrest.push_back(p[i]); hidx.push_back(i); }
@@ -600,10 +578,8 @@ void Real_Correction::SoftScan(const ATOOLS::Vec4D_Vector &p)
     if (dmax>0.0)
       std::cerr<<"@@@ MOMCHANGE thr="<<th/mth<<" max|dp|="<<dmax<<std::endl;
     a->Delete();
-    // Same event, rigidly rotated off the beam axis. The physics is invariant,
-    // but the light-cone decomposition p[0] +- p[3] is no longer a
-    // cancellation for the beams, so any failure that is an artefact of the
-    // axis-aligned numerics has to move. A failure that survives is structural.
+    // Same event rigidly rotated off the beam axis: the physics is invariant, so a
+    // failure that survives is structural, not an axis-aligned numerics artefact.
     const double ca(cos(0.6)), sa(sin(0.6));
     Vec4D_Vector pr(pn);
     for (size_t j(0);j<pr.size();++j)

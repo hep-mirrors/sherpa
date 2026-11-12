@@ -47,10 +47,7 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   m_Qj = fl[1].Charge();
   // if(fl[0].IsBoson() || fl[1].IsBoson()) m_irfinite = true;// Case for on shell ww
   m_QiQj = m_Qi*m_Qj;
-  // Direct 2-element init, not push_back in a loop: fl/mom/born are already
-  // validated to size()==2 above, so the loop form only bought empty->push->
-  // push reallocations on every one of these vectors, for every dipole built
-  // every event.
+  // Direct 2-element init avoids push_back reallocations (built every event).
   m_flavs = {fl[0], fl[1]};
   m_masses = {fl[0].Mass(), fl[1].Mass()};
   m_charges = {fl[0].Charge(), fl[1].Charge()};
@@ -58,9 +55,7 @@ Dipole::Dipole(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_Vector const &mom
   m_momenta = {mom[0], mom[1]};
   m_oldmomenta = m_momenta;
   m_newmomenta = m_momenta;
-  // Final-type dipoles (the common case from BuildFinal) never read m_ghost,
-  // which used to be filled here and cleared again a few lines down -- skip
-  // the fill instead of filling then discarding it.
+  // Final-type dipoles never read m_ghost, so skip filling it.
   if (ty != dipoletype::code::final) m_ghost = m_momenta;
   m_bornmomenta = {born[0], born[1]};
   m_eikmomentum = m_bornmomenta;
@@ -155,12 +150,9 @@ void Dipole::Boost() {
   }
   else if (Type() == dipoletype::final) {
     if (m_dipolePhotons.size() == 0) {
-      // The legs keep their lab momenta (m_newmomenta), but the ghosts were
-      // made in the pair rest frame and FSR::YFS_FORM reads them as lab
-      // vectors for the crude B~ at the lab Emin. Left there, the exact
-      // (lab) and crude (rest) Piatek terms no longer cancel and every
-      // zero-photon event of a boosted pair carries exp(B~_lab - B~_rest),
-      // ~0.98 at the 250 GeV Z return.
+      // Legs keep lab momenta (m_newmomenta) but the ghosts were made in the pair rest
+      // frame and FSR::YFS_FORM reads them as lab vectors, so the lab and rest Piatek
+      // terms would stop cancelling for a boosted pair.
       if (m_ghost.size() != 0) {
         p_Pboost.emplace(m_momenta[0] + m_momenta[1]);
         for (auto &r : m_ghost) Boost(r);
@@ -397,11 +389,9 @@ void Dipole::BoostToQFM(bool boostback) {
 }
 
 
-// 1 - beta of a leg from its energy and on-shell mass, m^2/(E(E+P)): no
-// cancellation, and never <= 0. 1 - |p|/E is ~1e-11 for an electron at LEP2
-// energies, so rounding in the momentum can give |p| >= E, a NaN or infinite
-// form factor, and an endless Poisson loop in FSR::NPhotons (seen in
-// e+e- -> e- veb mu+ vmu at 161 GeV, 2026-09-27).
+// 1 - beta of a leg as m^2/(E(E+P)): no cancellation and never <= 0.
+// 1 - |p|/E is ~1e-11 for an electron at LEP2 energies, so rounding can give
+// |p| >= E, a NaN form factor and an endless Poisson loop in FSR::NPhotons.
 static double OneMinusBeta(const Vec4D &p, double m)
 {
   const double E(p.E()), m2(m*m);
@@ -508,20 +498,10 @@ bool Dipole::IsDecayAllowed(){
 
 
 double Dipole::Eikonal(const Vec4D &k,const Vec4D &p1,const Vec4D &p2) {
-  // No extra sign for like-charge pairs. The dipole decomposition of the YFS
-  // radiation function -alpha/(4pi^2) (sum_i theta_i Q_i p_i/(p_i.k))^2 gives
-  // every unordered pair the coefficient Q_iQ_j theta_i theta_j and nothing
-  // else - the mass terms then resum correctly by charge conservation. An
-  // extra -1 whenever m_Qi == m_Qj double-counts the charge sign.
-  //
-  // It only ever fired on IF dipoles: II is (e-,e+) and FF is (f,fbar), both
-  // opposite-charge, whereas an initial-final pair is like-charge half the
-  // time. The effect was to give all four IF pairs the same sign, turning the
-  // interference into a coherent sum: integrating CalculateRealSubIF() over
-  // photon phase space came out 8.1x the Btilda difference it has to match,
-  // instead of matching it to 4+ digits. See YFS/Tools/IFI_Budget.C.
-  //
-  // The Eikonal(k) overload below never had the flag, so the two disagreed.
+  // No extra sign for like-charge pairs: the dipole decomposition of the YFS
+  // radiation function gives every unordered pair the coefficient
+  // Q_iQ_j theta_i theta_j, and the mass terms resum by charge conservation.
+  // Same convention as the Eikonal(k) overload. See YFS/Tools/IFI_Budget.C.
   return m_QiQj*m_thetaij*m_alp / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();
 }
 

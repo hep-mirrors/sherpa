@@ -19,9 +19,7 @@ ME_Compare::ME_Compare(bool check, const std::string &histdir,
 {
   if(m_check){
     if (!ATOOLS::DirectoryExists("./"+m_histdir)) ATOOLS::MakeDir("./"+m_histdir);
-    // per-photon scatter: one row per photon per checked point, so energy can
-    // be plotted against the opening angle to the nearest charged particle.
-    // Per-rank filename so MPI ranks do not clobber a shared file.
+    // per-photon scatter, one row per photon per point; per-rank file name
     int rank = 0;
 #ifdef USING__MPI
     if (mpi->Size() > 1) rank = mpi->Rank();
@@ -30,10 +28,8 @@ ME_Compare::ME_Compare(bool check, const std::string &histdir,
                     +std::to_string(rank)+".dat").c_str());
     m_scatter<<"# E_gamma  pT_gamma  theta_charged[rad]  nearest_kf  isIS  "
              <<"ratio  dev  bad\n";
-    // log10 of photon energy/pT [GeV], of the opening angle [rad] to the
-    // nearest charged leg, and of the angle [rad] to the nearest beam
-    // direction, filled separately for points that agreed vs. disagreed
-    // with the reference ME.
+    // log10 of E, pT [GeV], angle to the nearest charged leg and to the beam
+    // [rad], for points that agree (ok) or not (bad) with the reference ME
     m_histograms1d["photon_logE_ok"]       = std::make_unique<Histogram>(0,-10.,3.,130);
     m_histograms1d["photon_logE_bad"]      = std::make_unique<Histogram>(0,-10.,3.,130);
     m_histograms1d["photon_logPT_ok"]      = std::make_unique<Histogram>(0,-10.,3.,130);
@@ -42,9 +38,7 @@ ME_Compare::ME_Compare(bool check, const std::string &histdir,
     m_histograms1d["photon_logTheta_bad"]  = std::make_unique<Histogram>(0,-14.,1.,150);
     m_histograms1d["photon_logThetaZ_ok"]  = std::make_unique<Histogram>(0,-14.,1.,150);
     m_histograms1d["photon_logThetaZ_bad"] = std::make_unique<Histogram>(0,-14.,1.,150);
-    // log10 of the minimum photon-photon opening angle [rad], when there
-    // are 2+ photons (e.g. RealReal) - the photon-photon collinear/soft
-    // region has no analogue in a single-photon (Real) process.
+    // log10 of the minimum photon-photon angle [rad], for 2+ photons
     m_histograms1d["photon_logThetaGG_ok"]  = std::make_unique<Histogram>(0,-14.,1.,150);
     m_histograms1d["photon_logThetaGG_bad"] = std::make_unique<Histogram>(0,-14.,1.,150);
   }
@@ -153,10 +147,8 @@ void ME_Compare::CheckAgreement(const ATOOLS::Vec4D_Vector &p, double test,
       m_histograms1d["photon_logThetaGG"+suffix]->Insert(log10(Max(ggtheta,1e-30)));
   }
 
-  // per-photon scatter file: for EVERY photon (not just the softest) record its
-  // energy and the angle to its nearest charged particle, so energetic photons
-  // that are collinear-enhanced show up as high-E / small-angle points. Always
-  // write points that disagree (bad); cap the agreeing ones.
+  // scatter file: every photon's energy and angle to the nearest charged
+  // particle; all bad points, a capped number of good ones
   if (m_scatter.is_open() && (bad || m_scatter_ok < m_scatter_max)) {
     if (!bad) ++m_scatter_ok;
     for(size_t i(0);i<flavs.size() && i<p.size();++i){

@@ -72,12 +72,8 @@ namespace {
     return on;
   }
   /*
-    ACRAIC: TNP_BAND_STREAMS. One theory nuisance parameter: its norm N and
-    the template classes it scales (the ACRAIC_TNP1_/ACRAIC_TNP2_ columns of
-    TNP_STREAMS), for the initial state. The named weights
-    ACRAIC_TNPB_<name>_UP/_DN are nominal +- N x the summed templates, so
-    rivet-mkhtml's BandComponentEnv (one component per parameter, added in
-    quadrature) draws sigma +- sqrt(sum (N T)^2).
+    ACRAIC: TNP_BAND_STREAMS. One nuisance parameter: norm N and the template
+    classes it scales. ACRAIC_TNPB_<name>_UP/_DN = nominal +- N x summed templates.
   */
   struct TnpBandParam {
     std::string name;
@@ -165,13 +161,7 @@ void YFS_Weight_Builder::CalculateBeta() {
         m_h.p_acraic->ScaleRhoCrude(m_h.m_bpmc_evtG);
     }
     if (m_h.p_acraic) {
-      /*
-        Denominator = the INCOHERENT partition sum.
-
-        rho0 is the coherent sum, so the partitions can cancel and it can come
-        arbitrarily close to zero, while the crude weight this factor
-        multiplies is a factorised eikonal times Born and does not.
-      */
+      // Denominator is the crude (incoherent) weight: the coherent rho can cancel to ~0.
       const double r0(m_h.p_acraic->GetRhoCrude()), r1(m_h.p_acraic->GetResult());
       if (r0 > 0. && !IsBad(r1/r0)) { acraicfac = r1/r0; haveacraic = true; }
       else ++m_h.m_acraicstats.m_bad;
@@ -192,17 +182,10 @@ void YFS_Weight_Builder::CalculateBeta() {
   }
 }
 /*!
-  ACRAIC against the EXTERNAL providers, event by event.
-
-  Both sides are O(alpha) corrections relative to the Born, so they are
-  directly comparable without any normalisation being matched by hand.
-
+  ACRAIC against the external providers, event by event (diagnostic):
       external virtual / Born   <->   rho(Born+virtual)/rho(Born) - 1
       external real    / Born   <->   rho(Born+real)   /rho(Born) - 1
-
-  The total row is the meaningful one: both sides are the O(alpha) correction
-  factor to the same resummed Born, and it is what drives the weight.
-
+  The total row is the meaningful one.
 */
 void YFS_Weight_Builder::AcraicCompare() {
   if (!m_h.p_acraic || !m_h.p_nlo || m_h.m_born == 0.) return;
@@ -232,10 +215,8 @@ void YFS_Weight_Builder::AcraicCompare() {
              <<"  raw-sub="<<(m_h.m_born!=0.?(m_h.p_nlo->m_virt_raw-m_h.p_nlo->m_virt_subval)/m_h.m_born:0.)
              <<"\n      formfactor="<<m_h.m_ev.m_formfactor<<"  log(FF)="<<(m_h.m_ev.m_formfactor>0.?log(m_h.m_ev.m_formfactor):0.)
              <<"\n";
-    // The Born point of the virtual: cos theta of the first final-state leg
-    // in the beam CM frame, and the virtual subtraction split by dipole type
-    // (taken in NLO_Base::CalculateVirtual; the default, non-eps, s-channel
-    // branch only).
+    // Born point of the virtual: cos theta of the first final-state leg in the
+    // beam CM, and the virtual subtraction split by dipole type.
     if (m_h.p_nlo->m_plab.size() > 2) {
       const Vec4D P(m_h.p_nlo->m_plab[0] + m_h.p_nlo->m_plab[1]);
       Poincare cms(P);
@@ -306,30 +287,14 @@ void YFS_Weight_Builder::AcraicCompare() {
         msg_Out()<<std::setprecision(8)<<"\n";
       }
     }
-    /*
-      Photon by photon. The external stores its own per-photon real in
-      YFS::Photon::m_beta10 (NLO_Base::CalculateReal), ACRAIC in m_realphot;
-      matched by MOMENTUM rather than by index, because the two lists are
-      built independently and an ordering assumption would silently pair the
-      wrong emissions.
-
-      Neither column sums to the total: rho is |B + sum_j R_j|^2, so the cross
-      terms between photons belong to no single photon.
-    */
+    // Photon by photon, matched by momentum (the two lists are built independently).
+    // The columns do not sum to the total: cross terms belong to no single photon.
     const Vec4D_Vector &cph(m_h.p_acraic->AllPhotonsLab());
     const std::vector<std::pair<Vec4D,double> > &eph(m_h.m_ev.m_extrealphot);
-    /*
-      The two sides are NOT handed the same photons. ACRAIC gets m_h.m_ev.m_ISRPhotons +
-      m_h.m_ev.m_FSRPhotons; m_h.p_nlo->m_photons is m_h.m_ev.m_ISRPhotons + m_h.m_ev.m_me_photons, and the
-      final-state halves come from different places - Dipole::GetPhotons() for
-      one, GetMEPhotons() for the other. Report both counts, because if they
-      differ there is no per-photon comparison to be made and the real
-      correction is not even over the same emissions.
-    */
+    // The sides can get different photons: ACRAIC takes ISR + FSR photons, the
+    // external ISR + ME photons (final-state halves from different dipole getters).
     msg_Out()<<"      photons: acraic="<<cph.size()<<"  ext="<<eph.size()
              <<(cph.size()!=eph.size() ? "   <-- DIFFERENT LISTS" : "")<<"\n";
-    // Both lists in full, so a photon present on one side and absent on the
-    // other is visible directly rather than inferred from a failed match.
     msg_Out()<<"        acraic list:";
     for (size_t a(0); a < cph.size(); ++a) msg_Out()<<" "<<cph[a].E();
     msg_Out()<<"\n        ext  list:";
@@ -337,12 +302,7 @@ void YFS_Weight_Builder::AcraicCompare() {
     msg_Out()<<"\n        nISR="<<m_h.m_ev.m_ISRPhotons.size()
              <<" nFSR="<<m_h.m_ev.m_FSRPhotons.size()
              <<" nFSRforME="<<m_h.m_ev.m_fsrphotonsforME.size()<<"\n";
-    /*
-      Which list belongs to THIS event? Momentum conservation decides it with
-      no reference to either matrix element:  p_a + p_b - q_c - q_d - sum k
-      must vanish. A list captured in the wrong frame, or at the wrong stage
-      of the dipole's boost, cannot balance.
-    */
+    // Momentum balance p_a + p_b - q_c - q_d - sum k must vanish for the right list.
     auto bal = [&](const Vec4D &sum) {
       Vec4D b(m_h.m_ev.m_plab[0] + m_h.m_ev.m_plab[1] - sum);
       for (size_t i(2); i < m_h.m_ev.m_plab.size(); ++i) b -= m_h.m_ev.m_plab[i];
@@ -385,14 +345,12 @@ void YFS_Weight_Builder::InitNLO(){
     m_h.p_nlo->m_FSRPhotons = m_h.m_nlo_fsr_from_event ? m_h.m_ev.m_FSRPhotons : m_h.m_ev.m_fsrphotonsforME;
   else
     m_h.p_nlo->m_FSRPhotons.clear();
-  // Mirror the two lines above: same photons, now carrying their dipole.
   m_h.p_nlo->m_photons.clear();
   if (m_h.p_dipoles->HasDipoleII())
     for (const Vec4D &k : m_h.m_ev.m_ISRPhotons)
       m_h.p_nlo->m_photons.push_back(YFS::Photon(k, &m_h.p_dipoles->GetDipoleII()));
   if (m_h.m_nlo_fsr_photons) {
-    // m_ev.m_photons holds the event-record photons WITH their dipoles: ISR first,
-    // then the FF ones, so skip the ISR head to take only the final-state tail.
+    // m_ev.m_photons: ISR first, then FF; skip the ISR head.
     if (m_h.m_nlo_fsr_from_event) {
       const size_t skip(m_h.p_dipoles->HasDipoleII() ? m_h.m_ev.m_ISRPhotons.size() : 0);
       for (size_t i(skip); i < m_h.m_ev.m_photons.size(); ++i)
@@ -403,11 +361,10 @@ void YFS_Weight_Builder::InitNLO(){
   }
 }
 /*
-  ACRAIC: REAL_VIRTUAL isr_nll. The non-soft part V_2 of the one-loop correction
-  to the emission of one initial-state photon, LL + NLL, small-mass limit, as
-  KKMC's MakeVini (Phys. Rev. D65 (2002) 073030, eq. 2.18), with r_i = p_i.k/p_1.p_2
-  on the beams. Its real part, as dv = 2 Re V_2 on the photon's M_1, on top of the
-  factorisable (1 + v/2) every photon already carries.
+  ACRAIC: REAL_VIRTUAL isr_nll. Non-soft part V_2 of the one-loop ISR photon
+  emission, LL + NLL, small-mass limit (KKMC MakeVini, Phys. Rev. D65 (2002)
+  073030 eq. 2.18), r_i = p_i.k/p_1.p_2.
+  Returns dv = 2 Re V_2 on the photon's M_1, on top of the factorisable (1 + v/2).
 */
 static double IsrNllV2(const Vec4D &p1, const Vec4D &p2, const Vec4D &k, double alpha)
 {
@@ -546,13 +503,9 @@ double YFS_Weight_Builder::AcraicHybridRemainder()
 }
 
 /*
-  ACRAIC: REAL_VIRTUAL 2. The ACRAIC photon list (m_h.m_ev.m_ISRPhotons +
-  m_h.m_ev.m_FSRPhotons, AllPhotonsLab) and YFS.NLO's (m_ISRPhotons +
-  m_me_photons) are built independently, so each ACRAIC photon takes the dv of
-  the NLO photon with the same lab momentum (to 1e-6 of its energy); photons
-  without a match or below RV_SOFT_CUT keep dv = 0 (their remainder -> 0 in
-  the soft limit anyway), and are counted. YFS: RV_PROBE 1 prints per event
-  "@@@ ACRV": ACRAIC's addition over rho_crude next to YFS.NLO's rv/B.
+  ACRAIC: REAL_VIRTUAL 2. Each ACRAIC photon takes the dv of the NLO photon with
+  the same lab momentum (1e-6 of its energy); unmatched or sub-RV_SOFT_CUT photons
+  keep dv = 0 and are counted. YFS: RV_PROBE 1 prints "@@@ ACRV" per event.
 */
 double YFS_Weight_Builder::AcraicRealVirtualRemainder()
 {
@@ -565,12 +518,8 @@ double YFS_Weight_Builder::AcraicRealVirtualRemainder()
   const double r(m_h.p_acraic->RealVirtualRemainderRho(dv));
   static const bool probe(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_PROBE"]
                           .SetDefault(0).Get<int>() != 0);
-  /*
-    YFS: RV_PROBE_MIN (default 0): print only events with |acrv| above it, and
-    then per photon its energy fraction, its smallest lab angle to a beam and
-    to an outgoing charged leg, and its dv (heavy real-virtual weights, Bhabha
-    O(alpha^2), parsed by yfs-helpers/pion-virtual/isr-rv-vs-v2/compare.py)
-  */
+  // YFS: RV_PROBE_MIN: print only events with |acrv| above it, per photon x, angles, dv
+  // (parsed by yfs-helpers/pion-virtual/isr-rv-vs-v2/compare.py)
   static const double probemin(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_PROBE_MIN"]
                                .SetDefault(0.).Get<double>());
   const double rcr0(m_h.p_acraic->GetRhoCrude());
@@ -610,11 +559,9 @@ double YFS_Weight_Builder::AcraicRealVirtualRemainder()
   return r;
 }
 /*
-  ACRAIC: REAL_VIRTUAL helicity. As AcraicRealVirtualRemainder, with photon
-  j's remainder resolved by helicity: r_j^h from NLO_Base::m_rvhel (filled
-  next to m_rvdv, same index), mapped to ACRAIC's index at the photon's drawn
-  helicity. A photon without per-helicity factors keeps dv_j/2 on every h,
-  i.e. the averaged remainder.
+  ACRAIC: REAL_VIRTUAL helicity. As AcraicRealVirtualRemainder with photon j's
+  remainder resolved by helicity (NLO_Base::m_rvhel); photons without per-helicity
+  factors keep dv_j/2 on every h.
 */
 double YFS_Weight_Builder::AcraicRealVirtualHelicityRemainder()
 {
@@ -632,8 +579,7 @@ double YFS_Weight_Builder::AcraicRealVirtualHelicityRemainder()
   for (size_t a(0); a < cph.size(); ++a) {
     if (entry[a] < 0) continue;
     const size_t b(entry[a]);
-    // the ISR vertex shift MatchRealVirtualDV took off dv is helicity-blind:
-    // half of it off every amplitude-level remainder
+    // the ISR vertex shift taken off dv is helicity-blind
     const Complex shift(0.5*(nd[b].second - dv[a]), 0.);
     const Complex half(0.5*dv[a], 0.);
     if (b >= nh.size() ||
@@ -695,15 +641,10 @@ double YFS_Weight_Builder::CalculateNLO(){
   InitNLO();
   m_h.m_ev.m_nlo_rr = m_h.p_nlo->CalculateRealReal();
   m_h.m_ev.m_nlo_rr_2hardest = m_h.p_nlo->m_rr_hard2;
-  // Everything above the double real. This has to live HERE, not in
-  // NLO_Base::CalculateNLO(): that function is never called - this is the
-  // driver - so anything added to it silently does nothing.
-  // CalculateRealMultiplicity returns 0 for any n without a provider, so a run
-  // that leaves YFS: NLO_MAX_PHOTONS at its default of 2 pays nothing.
+  // Everything above the double real lives here: NLO_Base::CalculateNLO() is not called.
   m_h.m_ev.m_nlo_rn = 0.;
   m_h.m_ev.m_nlo_vxr = 0.;
-  // NLO_MAX_PHOTONS bounds it: providers above it exist only for ACRAIC's
-  // tree residuals (ACRAIC: TREE_BETA_MAX)
+  // providers above NLO_MAX_PHOTONS exist only for ACRAIC: TREE_BETA_MAX
   const size_t nrmax(Min(m_h.p_nlo->MaxRealPhotons(),
                          YFS::NLO_Base::RequestedMaxRealPhotons()));
   for (size_t n(3); n <= nrmax; ++n) {
@@ -711,28 +652,12 @@ double YFS_Weight_Builder::CalculateNLO(){
     m_h.m_ev.m_nlo_rn += m_h.p_nlo->CalculateRealMultiplicity(n);
   }
   /*
-    YFS: VIRTUAL_COMBINE. Where the virtual v = V/B enters the squared-level
-    weight (name or old integer). sum (0): 1 + v + sum_j delta_j, v times the
-    sampled Born on every event. product (1, default): the product
-    (1 + v)(1 + sum_j delta_j), v times
-    the event's own real correction - the placement ACRAIC has, where the
-    virtual sits inside sum_h |A_1 + (v/2) A_0|^2. The two agree at O(alpha);
-    the product adds v * sum_j delta_j, nothing ACRAIC lacks.
-
-    Why (e+e- -> gamma gamma, Z pole, BVR, 2026-09-26): with the sum,
-    YFS.NLO/ACRAIC is 1.22 at hardest-ISR x 0.6-0.8 and 1.33 at x 0.8-1.
-    70-76% of that excess comes from events with rho_1/rho_crude < 0.01
-    (0.3-0.5% of ACRAIC): Borns on the generator's reduced-frame t-channel
-    pole, which the exact real empties but the sum still pays v * B.
-    Stands aside when a real-virtual is requested: the legacy RV (YFS:
-    RV_MODE 0) supplies the v x real term itself. The RV_MODE 1 remainder
-    does not - it is defined as the real-virtual beyond (1 + v) x real - so
-    there the term is kept, whatever VIRTUAL_COMBINE says.
-    v x RR and v x R_n are O(alpha^3). With RR_MODE singles_product they are
-    left out: they put the double real, and its soft cut, into the O(alpha)
-    columns YFS.NLO and YFS.Virtual (Z-pole mu mu: 0.4% per decade of
-    RR_SOFT_CUT, NOTES-yfsnlo-rr-cutdep-2026-09-30.md). The other modes keep
-    them, unchanged.
+    YFS: VIRTUAL_COMBINE. Where v = V/B enters the squared-level weight.
+    sum: 1 + v + sum_j delta_j. product (default): (1 + v)(1 + sum_j delta_j),
+    the placement ACRAIC has (virtual inside sum_h |A_1 + (v/2) A_0|^2).
+    Stands aside when a real-virtual is requested (legacy RV supplies v x real),
+    except the RV_MODE 1 remainder, which is defined beyond (1 + v) x real.
+    v x RR and v x R_n are O(alpha^3), left out with RR_MODE singles_product.
   */
   static const virtualcombine::code vcomb(ATOOLS::Settings::GetMainSettings()["YFS"]
       ["VIRTUAL_COMBINE"].SetDefault(virtualcombine::product).Get<virtualcombine::code>());
@@ -745,11 +670,9 @@ double YFS_Weight_Builder::CalculateNLO(){
     if (!IsBad(vxr)) m_h.m_ev.m_nlo_vxr = vxr;
   }
   /*
-    YFS: BETA0_2 - the squared-level beta_0^(2), v2 = |1 + delta + d2|^2
-    - 1 - v with delta = v1/2 (NLO_Base::Beta02SquaredLevel): it carries
-    the |m_1|^2 = (v1/2)^2 YFS.NLO lacks and 2 Re delta^(2). It goes where
-    v goes: on the Born, and on the real where v multiplies the real, so
-    that 1 + v + v2 is the Born-level virtual factor of the product.
+    YFS: BETA0_2 - squared-level v2 = |1 + delta + d2|^2 - 1 - v, delta = v1/2
+    (NLO_Base::Beta02SquaredLevel). Placed where v is: on the Born, and on the
+    real where v multiplies it.
   */
   m_h.m_ev.m_nlo_beta02 = 0.;
   if (m_h.p_nlo->Beta02Nlo().On() && m_h.p_nlo->Beta02Ok() && m_h.m_born != 0.) {
@@ -772,10 +695,8 @@ double YFS_Weight_Builder::CalculateNLO(){
   return m_h.p_nlo->DysonVPOn() ? with02 + m_h.m_ev.m_nlo_vp : with02;
 }
 /*
-  delta^(2) of the ACRAIC column's external virtual (beta_0^(2), ACRAIC: BETA0_2),
-  of v' = v - dIB with ACRAIC: RESONANCE_EXPONENTIATION greco (its delta_f w
-  must not see the resonant log, which the propagators carry). With dIB = 0
-  this is NLO_Base::Beta02External() bit for bit.
+  delta^(2) (ACRAIC: BETA0_2) of the external virtual v' = v - dIB; the resonant
+  log under RESONANCE_EXPONENTIATION greco is in the propagators.
 */
 static double AcraicBeta02External(const YFS::NLO_Base &nlo, double dIB)
 {
@@ -842,22 +763,12 @@ void YFS_Weight_Builder::GenerateWeight() {
     } else
       wif = m_h.p_dipoles->RealIFWeight(allphotons);
   }
-  // The Born-level YFS weight: ISR x FSR crude (plus Coulomb/WW if on) times
-  // the form factor, with NO NLO correction applied. This is what YFS.LO has
-  // to reproduce -- built here directly rather than recovered downstream as
-  // 1/m_ev.m_real, so the LO column cannot inherit anything m_ev.m_real does.
+  // Born-level YFS weight (crude x form factor, no NLO correction), what YFS.LO reproduces.
   double w_lo = m_h.m_ev.m_yfsweight * m_h.m_ev.m_formfactor * (1.-m_h.m_v);
   /*
-    YFS.LO without IFI_Real. With IFI_Real on, the IF exponent stops at
-    IFIOmega() (the generation cutoff) and the interference above it is
-    restored only by wif, which the LO column does not carry. The LO weight is
-    then the "exponent lowered, nothing restoring it" configuration of
-    Define_Dipoles::IFIOmega(), whose A_FB runs with log(IR_CUTOFF): at the Z
-    pole it made dsigma/dcos(theta) of YFS.LO strongly forward-peaked. So LO
-    takes the IF form factor at sqrt(s)/2, the whole soft integral, which is
-    exactly the LO of an IFI_Real 0 run (the event generation does not depend
-    on IFI_Real). Same conditions as the ACRAIC IF cut below.
-    YFS: LO_WITHOUT_IFI: false restores the old column.
+    YFS.LO without IFI_Real: with IFI_Real on the IF exponent stops at IFIOmega()
+    and wif (absent from LO) restores the rest, so LO takes the IF form factor at
+    sqrt(s)/2, the LO of an IFI_Real 0 run. Same conditions as the ACRAIC IF cut.
   */
   static const bool lonoifi(ATOOLS::Settings::GetMainSettings()["YFS"]
                             ["LO_WITHOUT_IFI"].SetDefault(true).Get<bool>());
@@ -868,44 +779,29 @@ void YFS_Weight_Builder::GenerateWeight() {
     if (!IsBad(dy)) w_lo *= exp(dy);
   }
   /*
-    IFI_Real is an EEX-only correction and must NOT reach the ACRAIC weight.
-
-    RealIFWeight() supplies the real initial-final interference that the EEX
-    beta expansion does not have. ACRAIC's partition sum IS that interference:
-    the 2^n assignments of each photon to the initial or the final line are
-    summed COHERENTLY, and the cross terms between them are real IFI by
-    construction. Adding wif on top counts it twice.
-
-    So the two corrections are built separately - the nominal one with wif, the
-    ACRAIC one without - and whichever drives the weight is chosen after.
+    IFI_Real (wif) is EEX-only and must not reach the ACRAIC weight: ACRAIC's
+    coherent partition sum already is the real IFI, so wif would double count.
   */
   const double corr_eex (m_h.m_ev.m_real + (wif - 1.));
 
   AcraicColumns c;
   c.corr_acraic = m_h.m_ev.m_acraicfactor;            // 0 if ACRAIC produced nothing
-  /*
-    ACRAIC: ORDER 2 keeps the O(alpha^1) column of the same event alongside
-    (named weight ACRAIC_O1), composed with the external virtual exactly as an
-    ORDER 1 run composes it, so ORDER2/ORDER1 is a same-event ratio.
-    GetResultVV() is |A_v|^2 with A_v the amplitude (v/2) multiplies: A_0
-    (= GetResult0(), bit for bit) unless ORDER2_VIRTUAL_ON_BETA1.
-  */
+  // ORDER 2 also keeps the O(alpha) column of the same event (ACRAIC_O1).
+  // GetResultVV() is |A_v|^2, A_v the amplitude (v/2) multiplies (A_0 unless
+  // ORDER2_VIRTUAL_ON_BETA1).
   c.acraico2 = (m_h.p_acraic && m_h.p_acraic->Order() == 2);
   c.corr_acraic_o0 = AcraicO0Stream() && m_h.p_acraic && c.corr_acraic != 0.
                      && m_h.p_acraic->GetRhoCrude() > 0.
                      ? m_h.p_acraic->GetResult0()/m_h.p_acraic->GetRhoCrude() : 0.;
   c.corr_acraic_o0_ifcut = c.corr_acraic_o0;
   /*
-    ACRAIC: BETA0_2 - delta^(2) on A_0 (YFS/Main/Beta0_2.H), the increments of
-    the nominal and the two ORDER 2 compositions, added after the virtual and
-    before the IF cut; corr_acraic_nob02 keeps the column without it
-    (ACRAIC_NO_B02). The O(alpha^1) column ACRAIC_O1 never carries it.
+    ACRAIC: BETA0_2 - delta^(2) on A_0 (Beta0_2.H), added after the virtual and
+    before the IF cut; ACRAIC_NO_B02 keeps the column without it. ACRAIC_O1 never has it.
   */
   c.acraicb02 = (m_h.p_acraic && m_h.p_nlo && m_h.p_nlo->Beta02Acraic().On());
   /*
-    YFS: DYSON_VP in ACRAIC: r(h) on A_0 alone, with delta^(2) when that is
-    on too (one amplitude-level insertion e(h) = d2 + r(h)); vp_* are the
-    parts beyond beta_0^(2) (ACRAIC_NO_VP keeps the column without them).
+    YFS: DYSON_VP in ACRAIC: r(h) on A_0, one insertion e(h) = d2 + r(h) with
+    delta^(2); vp_* are the parts beyond beta_0^(2) (ACRAIC_NO_VP omits them).
   */
   c.acraicvp = (m_h.p_acraic && m_h.p_nlo && m_h.p_nlo->DysonVPOn() &&
                m_h.p_nlo->DysonVPFactors().ok);
@@ -915,46 +811,27 @@ void YFS_Weight_Builder::GenerateWeight() {
     c.corr_acraic_o1v1 = c.corr_acraic_o1;
     c.corr_acraic_v0 = c.corr_acraic_v1 = c.corr_acraic;
   }
-  /*
-    ACRAIC_Virtual: external - the provider's virtual in the ACRAIC column.
-    See ApplyExternalVirtual for the derivation.
-  */
+  // ACRAIC_Virtual external: see ApplyExternalVirtual.
   if (c.corr_acraic != 0. && (m_h.m_acraicvirtsrc == acraicvirt::external ||
                           m_h.m_acraicvirtsrc == acraicvirt::automatic) && m_h.p_acraic &&
       m_h.p_nlo && m_h.p_nlo->HasVirtual() && m_h.m_ev.m_nlo_current && m_h.m_born != 0.)
     ApplyExternalVirtual(c);
-  // With ACRAIC: ORDER 2 the helicity virtual goes into A_2, on the amplitude
-  // the external one multiplies (Acraic_Base::HelicityVirtualRho).
   if (m_h.p_acraic) for (double &x : m_h.p_acraic->m_lhcol) x = 0.;
-  /*
-    ACRAIC_Virtual: helicity (ACRAIC) - the same insertion with a complex,
-    helicity-resolved factor from the loop provider's helicity amplitudes.
-    See ApplyHelicityVirtual for the derivation.
-  */
+  // ACRAIC_Virtual helicity: see ApplyHelicityVirtual.
   if (c.corr_acraic != 0. && m_h.m_acraicvirtsrc == acraicvirt::helicity && m_h.p_acraic &&
       m_h.p_nlo && m_h.p_nlo->HasVirtual() && m_h.m_ev.m_nlo_current && m_h.m_born != 0.)
     ApplyHelicityVirtual(c);
   /*
-    The IF part of the form factor, cut where ACRAIC needs it.
-
-    With IFI_Real off, IFIOmega() is sqrt(s)/2: the exponent holds the WHOLE
-    soft initial-final integral, because no explicit photon of the EEX/NLO
-    weights carries interference. ACRAIC's coherent partition sum does carry it,
-    for every generated photon above the generation cutoff, so for the ACRAIC
-    weight the region between that cutoff and sqrt(s)/2 was counted twice -
-    once in exp(Y_IF) and once in |sum_g s_g|^2. The symptom is an A_FB that
-    runs with log(IR_CUTOFF): e+e- -> mu mu at 0.7 GeV (CMD cuts) gave -3.4,
-    -4.9, -6.1, -7.0% at IR_CUTOFF 1e-4..1e-7 against KKMC's -0.08 +- 0.14%;
-    with the exponent cut at the generation cutoff it is +1.03/+1.06% at 1e-5
-    and 1e-7. So the ACRAIC column swaps exp(Y_IF(IFIOmega)) for
-    exp(Y_IF(omega_gen)); with IFI_Real on the two coincide and this is 1.
+    IF form factor cut where ACRAIC needs it: with IFI_Real off the exponent holds
+    the whole soft IF integral, but ACRAIC's coherent sum carries it above the
+    generation cutoff, so the ACRAIC column swaps exp(Y_IF(IFIOmega)) for
+    exp(Y_IF(omega_gen)) (1 with IFI_Real on).
   */
   FinalizeAcraicBeta02VP(c);
   ApplyIFFormFactorCut(c);
   /*
-    ACRAIC: FIXED_ORDER_STREAM (2026-10-11) - ACRAIC truncated to O(alpha), on
-    the resummed events, as the named weight ACRAIC_FixedOrder. See
-    ComputeFixedOrderColumn for the derivation.
+    ACRAIC: FIXED_ORDER_STREAM - ACRAIC truncated to O(alpha), as ACRAIC_FixedOrder.
+    See ComputeFixedOrderColumn.
   */
   c.corr_eex = corr_eex;
   ComputeFixedOrderColumn(c);
@@ -1048,12 +925,9 @@ void YFS_Weight_Builder::ApplyExternalVirtual(AcraicColumns &c)
   // (m_plab, where the provider's virtual was taken) to the full s
   const double dvisr(IsrVertexShift());
   /*
-    ACRAIC: RESONANCE_EXPONENTIATION greco: the resonant initial-final log is
-    in the resonance propagators of the ACRAIC amplitudes now, so it leaves
-    the provider's virtual: v' = v - dI_B, dI_B its exact Born-weighted
-    share at the Born point (Acraic_Base::BuildResonanceBornDelta; 0, and v
-    bit for bit, with none). Everything below - beta_0^(2), Dyson VP, the
-    ORDER 2 streams - takes v'.
+    ACRAIC: RESONANCE_EXPONENTIATION greco: the resonant IF log is in the
+    propagators, so v' = v - dI_B (Acraic_Base::BuildResonanceBornDelta; 0 with
+    none). Everything below takes v'.
   */
   const double v(m_h.m_ev.m_nlo_virtual/m_h.m_born - m_h.p_acraic->ResonanceBornDeltaV() + dvisr);
   c.tnp_vhalf = 0.5*v;
@@ -1169,9 +1043,8 @@ void YFS_Weight_Builder::ApplyHelicityVirtual(AcraicColumns &c)
                                      Complex(0.5*vfull, 0.), d));
   if (!ok) d.assign(Amplitude::NHel(), Complex(0.5*vfull, 0.));
   /*
-    ACRAIC: RESONANCE_EXPONENTIATION greco: the resonant log leaves delta^h
-    helicity by helicity, exactly (Acraic_Base::BuildResonanceBornDelta),
-    and v' = v - dI_B is its Born-weighted 2 Re; with none both are zero.
+    RESONANCE_EXPONENTIATION greco: the resonant log leaves delta^h per helicity
+    (Acraic_Base::BuildResonanceBornDelta); v' = v - dI_B is its Born-weighted 2 Re.
   */
   const double v(vfull - m_h.p_acraic->ResonanceBornDeltaV());
   c.tnp_vhalf = 0.5*v;
@@ -1186,10 +1059,9 @@ void YFS_Weight_Builder::ApplyHelicityVirtual(AcraicColumns &c)
   const double ext(v*m_h.p_acraic->GetResult01() + 0.25*v*v*m_h.p_acraic->GetResultVV());
   const std::vector<Complex> dh(Amplitude::NHel(), Complex(0.5*v, 0.));
   /*
-    ACRAIC: BETA0_2 per helicity: delta^h -> delta^h + delta^(2)(delta^h),
-    complex, with delta_f in the same phase convention (Beta0_2.H), so that
-    the O(alpha^2) sum does not depend on VIRT_HEL_IM_C. Events without
-    helicity factors use the external, real form on v/2.
+    ACRAIC: BETA0_2 per helicity: delta^h -> delta^h + delta^(2)(delta^h), complex,
+    same phase convention as delta_f (Beta0_2.H). Events without helicity
+    factors use the external, real form on v/2.
   */
   std::vector<Complex> db(d), dhb(dh);
   const bool hb02(c.acraicb02 && m_h.p_nlo->Beta02Ok() && rcr > 0.);
@@ -1198,8 +1070,7 @@ void YFS_Weight_Builder::ApplyHelicityVirtual(AcraicColumns &c)
     for (size_t f(0); f < db.size(); ++f)
       db[f] += ok ? Beta02Delta(m_h.p_nlo->Beta02Factors(), d[f], m_h.p_nlo->Beta02Acraic())
                   : Complex(d2ext, 0.);
-    // BETA0_2 two_loop: the photon-exchange two-loop boxes per helicity
-    // (the external fallback above has them Born-weighted already)
+    // BETA0_2 two_loop: photon-exchange two-loop boxes per helicity
     if (ok && m_h.p_nlo->Beta02Acraic().mode == beta02::two_loop &&
         !m_h.p_nlo->Beta02Factors().boxhel.empty()) {
       const std::vector<Complex> bx(m_h.p_acraic->PhysicalLabelsToAcraic
@@ -1210,10 +1081,9 @@ void YFS_Weight_Builder::ApplyHelicityVirtual(AcraicColumns &c)
     c.b02_acraic = (m_h.p_acraic->HelicityVirtualRho(db) - m_h.p_acraic->HelicityVirtualRho(d))/rcr;
   }
   /*
-    ACRAIC: EW_HIGHER_ORDER_HELICITY - EW_HIGHER_ORDER (in v, so in the v/2
-    fallback) is otherwise missing from delta^h: averaged puts v_HO/2 on
-    every helicity, helicity GRIFFIN's own per-helicity factor. After
-    delta^(2), whose delta_f w must not see this O(alpha^2) term.
+    ACRAIC: EW_HIGHER_ORDER_HELICITY - EW_HIGHER_ORDER is otherwise missing from
+    delta^h: averaged puts v_HO/2 on every helicity, helicity uses the provider's
+    per-helicity factor. Applied after delta^(2).
   */
   double gho_acraic(0.);
   if (ok && rcr > 0. && m_h.p_nlo->EWHOHelicityMode() != ewhohel::none &&
@@ -1248,10 +1118,8 @@ void YFS_Weight_Builder::ApplyHelicityVirtual(AcraicColumns &c)
   }
   m_h.p_acraic->AccumulateLoopHelicity(ok, add, rcr > 0. ? ext/rcr : 0., reg, split);
   /*
-    The same event for the extra named weights: ACRAIC_EXTV (external
-    virtual), ACRAIC_L/R and ACRAIC_EXTV_L/R (beam 1 fully left/right
-    polarised, beam 2 unpolarised; the unpolarised column is their mean).
-    Stored as absolute factors before the IF cut, which multiplies all.
+    Columns ACRAIC_EXTV, ACRAIC_L/R and ACRAIC_EXTV_L/R (beam 1 fully left/right
+    polarised, beam 2 unpolarised); absolute factors before the IF cut.
   */
   const bool hextra(hb02 || hvp || gho_acraic != 0.);
   if (rcr > 0. && !IsBad(add) && !hextra) {
@@ -1276,10 +1144,9 @@ void YFS_Weight_Builder::ApplyHelicityVirtual(AcraicColumns &c)
   else ++m_h.m_acraicstats.m_bad;
   if (!IsBad(gho_acraic)) c.corr_acraic += gho_acraic;
   /*
-    ORDER 2: the helicity analogues of the external compositions of the same
-    event, delta^h in place of v/2. ACRAIC_O1 |A_1 + d A_0|^2, ACRAIC_O1V1
-    |A_1 + d A_1|^2, ACRAIC_O2V0/V1 |A_2 + d A_0|^2 and |A_2 + d A_1|^2, and
-    ACRAIC_O2V2 the nominal with |A_2 + d A_2|^2 in place of |A_2 + d A_v|^2.
+    ORDER 2: helicity analogues of the external compositions, delta^h for v/2:
+    ACRAIC_O1 |A_1 + d A_0|^2, O1V1 |A_1 + d A_1|^2, O2V0/V1 |A_2 + d A_0|^2 and
+    |A_2 + d A_1|^2, O2V2 |A_2 + d A_2|^2.
   */
   if (c.acraico2 && rcr > 0.) {
     YFS::Acraic_Base &a(*m_h.p_acraic);
@@ -1381,12 +1248,11 @@ void YFS_Weight_Builder::ComputeFixedOrderColumn(AcraicColumns &c)
     const size_t nphot(m_h.p_acraic->NPhot());
     double yfo(m_h.m_ev.m_formfactor_sum + c.dyif_fo
                + m_h.p_dipoles->FormFactorShiftToRegion(0.5*sqrt(m_h.m_s)*m_h.m_isrcut));
-    // ACRAIC: FIXED_ORDER_EVENT_EXPONENT: one-photon events divided by their own exponent
+    // ACRAIC: FIXED_ORDER_EVENT_EXPONENT: one-photon events divided by their own exponent,
     static const bool foevtexp(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
                                ["FIXED_ORDER_EVENT_EXPONENT"].SetDefault(false).Get<bool>());
     const double yfo_born(yfo);
-    // only when the one visible photon is the FSR photon: its exponent replaces the FINAL-state part of the Born-point
-    // shift (the initial-state dipoles' part stays, the ISR legs are at fixed s)
+    // only for a single FSR photon: its exponent replaces the final-state part of the Born-point shift
     if (foevtexp && nphot == 1 && m_h.p_fsr && m_h.p_fsr->YFSIR() > 0. && m_h.m_ev.m_FSRPhotons.size() == 1)
       yfo = yfo_born - m_h.p_dipoles->FormFactorShiftToRegionFinal(0.5*sqrt(m_h.m_s)*m_h.m_isrcut)
             + log(m_h.p_fsr->YFSIR());
@@ -1431,12 +1297,10 @@ void YFS_Weight_Builder::ProbeN1(const AcraicColumns &c, size_t nphot, double yf
             << " corrnom=" << c.corr_acraic << " mcorrnom=" << (acraic_nom_probe ? c.corr_acraic : c.corr_eex)
             << " fsrW=" << m_h.m_fsrWeight << std::endl;
 }
-// The YFS.* named weights: each is a ratio that turns the nominal weight into
-// one of the truncated or reordered matchings. Split out of GenerateWeight,
-// which was 216 lines with more than half of them here.
-//
-// w_lo   : the Born-level YFS weight, before any NLO correction
-// w_full : the weight the event actually carries, before the clamps below
+// The YFS.* named weights: ratios turning the nominal weight into truncated or
+// reordered matchings.
+// w_lo   : Born-level YFS weight, before any NLO correction
+// w_full : weight the event carries, before the clamps below
 void YFS_Weight_Builder::BuildNamedWeights(double w_lo, double w_full) {
   m_h.m_ev.m_nlo_weightsmap = Weights_Map{1.0};
   // YFS: NLO_Weight_Breakdown false: the nominal weight only, no YFS.* columns
@@ -1510,10 +1374,7 @@ void YFS_Weight_Builder::RegisterColumnNames(std::vector<std::string> &names,
       for (const char *n : {"Real","Virtual","BR","BV","NLO_1g",
                             "NLO_2g"})
         names.push_back(n);
-    // EEX only when the beta expansion ran: m_ev.m_eex is assigned solely inside
-    // CalculateBeta's `if (m_betaorder > 0)`, so at BETA:0 the column would
-    // be a no-op 1.0 masquerading as a measurement. m_betaorder is
-    // configuration, so gating the name on it keeps the set constant.
+    // EEX only when the beta expansion ran (m_eex is set only for m_betaorder > 0)
     if (hasnlo && m_h.m_betaorder > 0) names.push_back("EEX");
     if (hasnnlo)
       for (const char *n : {"RealVirtual","RealReal","NLO+RR","NLO+RV",
@@ -1723,29 +1584,12 @@ void YFS_Weight_Builder::FillTnpColumns(ATOOLS::Weights &wyfs,
 }
 
 /*
-  YFS: DIFF_BUDGET_STREAMS (diagnostic, default false). The ingredients of
-  the two O(alpha) correction factors of this event,
-      ACRAIC      C = a1 (1 + v'/2)^2   (ACRAIC: REAL_VIRTUAL factorisable, ORDER 1)
-      YFS.NLO_EW  N = (1 + v)(1 + r)    (YFS: VIRTUAL_COMBINE product)
-  with v' = v - x (x = dI_B, 0 without RESONANCE_EXPONENTIATION greco), as
-  columns DB_<q> = w_crude q, i.e. the ratio q/corr_nominal. A per-event
-  dump (paper/rivet CRAIC_DUMP) divides by DB_CRUDE and splits C - N into
-  named pieces offline. a1 = rho_1/rho_crude and a0 = rho_0/rho_crude carry
-  the IF form-factor cut that multiplies the ACRAIC column (1 with IFI_Real
-  true). r is m_nlo_real/B (with the IF restoration), RIF = 1 + that
-  restoration (prod_j r_IF,j). X1, X2 (hardest and second-hardest visible
-  photon, x = 2E/sqrt(s), + ISR / - FSR), NPH (their number) and SXI, SXF
-  (the sum of x over the ISR and over the FSR photons) are payloads, not
-  weights. A column is 0 when its event has no ACRAIC factor.
-  Histogram-ready budget columns (2026-10-05, agree1005; true weights, in
-  the same w_crude units, so a CRAIC_EE histogram of each is the piece per
-  bin with its own error). With N = corr_eex (YFS.NLO_EW):
-      VSQ  = a1 v^2/4          the amplitude-square piece V
-      REST = a1 (1 + v) - N    C - N - VSQ - (greco part)
-      NPV  = N + a1 v^2/4      YFS.NLO_EW + V, the "N + V" prediction
-  In a RESONANCE_EXPONENTIATION none run a1 = a1n, so these are exactly V,
-  the remainder R = C - N - V and N + V. In a greco run they use a1g; there
-  G = C_g - C_n comes from the none twin on the same events.
+  YFS: DIFF_BUDGET_STREAMS (diagnostic): the pieces of the two O(alpha)
+  factors, ACRAIC C = a1 (1 + v'/2)^2 and YFS.NLO_EW N = (1 + v)(1 + r),
+  v' = v - x (x = dI_B under RESONANCE_EXPONENTIATION greco, else 0), as
+  columns DB_<q> = w_crude q. VSQ = a1 v^2/4, REST = a1 (1 + v) - N and
+  NPV = N + VSQ are true weights. X1, X2, NPH, SXI, SXF are photon payloads
+  (x = 2E/sqrt(s), + ISR / - FSR), not weights. 0 without an ACRAIC factor.
 */
 void YFS_Weight_Builder::FillDiffBudgetColumns(ATOOLS::Weights &wyfs)
 {
@@ -1829,22 +1673,14 @@ bool YFS_Weight_Builder::FillNLOBreakdownColumns(ATOOLS::Weights &wyfs, double w
     return term / denom;
   };
   /*
-    The YFS.NLO breakdown columns are factors x against m_real, the
-    squared-level correction. They were written as x/m_real because the
-    nominal WAS that correction; with ACRAIC as the nominal the event carries
-    corr_acraic instead, so the denominator is rescaled by corr_nominal/corr_eex
-    and every column keeps exactly the absolute weight it had (identical to
-    m_real when YFS.NLO is the nominal).
+    The breakdown columns are x/m_real; with ACRAIC as nominal the denominator is
+    rescaled by corr_nominal/corr_eex so each column keeps its absolute weight.
   */
   const double nomden(IsZero(m_h.m_ev.m_corr_eex) ? m_h.m_ev.m_real
                       : m_h.m_ev.m_real*(m_h.m_ev.m_corr_nominal/m_h.m_ev.m_corr_eex));
 
-  // Values only. Writing through operator[] CREATES a column, which is how
-  // YFS.EEX kept appearing at BETA:0 after it was dropped from the
-  // registration list -- and a column that is zero on every event comes back
-  // as NaN once Rivet divides by its own sumOfWeights. So refuse any name the
-  // configuration did not register, and leave a non-finite value at the
-  // registered 1.0 rather than poisoning the column.
+  // operator[] would create a column: refuse unregistered names, and leave
+  // non-finite values at the registered 1.0.
   auto emit = [this, &wyfs](const std::string &name, double value) {
     if (!m_h.m_wnames.count(name)) return;
     if (!IsBad(value)) wyfs[name] = value;
@@ -1875,17 +1711,11 @@ bool YFS_Weight_Builder::FillNLOBreakdownColumns(ATOOLS::Weights &wyfs, double w
       emit("NLO", ratio(nlo_sum, nomden));
       emit("BR", ratio(real_sum, nomden));
       emit("BV", ratio(virt_sum, nomden));
-      // LO = (Born-level YFS weight) / (full weight), so that
-      // nominal * YFS.LO == w_lo identically. Algebraically 1/m_ev.m_real, but
-      // built from the two weights themselves.
+      // LO = w_lo/w_full, so nominal * YFS.LO == w_lo.
       if (!IsZero(w_full)) emit("LO", w_lo/w_full);
       emit("EEX", ratio(m_h.m_ev.m_eex + ifisoft/m_h.m_born, nomden));
-      // Matching truncated to a fixed real-photon multiplicity, to see the
-      // result "as if" only the 1 or 2 hardest photons were used in the
-      // matching (full "NLO" above keeps all generated photons). Real is
-      // summed over the 1 / 2 hardest photons; Virtual is always full, and so
-      // is the IF restoration, which belongs to the exponent, not to beta_1.
-      // With one photon NLO_1g is NLO without m_nlo_vxr (either REAL_COMBINE).
+      // Matching truncated to the 1 or 2 hardest photons; Virtual and the IF
+      // restoration (part of the exponent) stay full. NLO_1g is NLO without m_nlo_vxr.
       const double nlo_1g = (m_h.m_born + ifisoft + m_h.m_ev.m_nlo_real_hardest
                              + m_h.m_ev.m_nlo_virtual)/m_h.m_born;
       const double nlo_2g = (m_h.m_born + ifisoft + m_h.m_ev.m_nlo_real_2hardest
@@ -1903,31 +1733,19 @@ bool YFS_Weight_Builder::FillNLOBreakdownColumns(ATOOLS::Weights &wyfs, double w
     const double RR_total = (m_h.m_born + m_h.m_ev.m_nlo_real + m_h.m_ev.m_nlo_virtual + m_h.m_ev.m_nlo_rr
                              + m_h.m_ev.m_nlo_vxr)/m_h.m_born;
     /*
-      NLO+RV is YFS.NLO plus the real-virtual, so it carries m_nlo_vxr like
-      YFS.NLO and NLO+RR. Without it the column was YFS.NLO + rv - v x real
-      whenever vxr is set (YFS: RV_MODE remainder, or VIRTUAL_COMBINE product
-      without an RV): Z-pole mu mu NLO+RV/NLO 1.003 with IFI_Real false and
-      0.991 with a 2% cos theta tilt with true, where the real carries the IF
-      restoration B (prod r_IF - 1) (2026-10-04). With the legacy RV vxr is 0,
-      so nothing changes there.
+      NLO+RV carries m_nlo_vxr like YFS.NLO and NLO+RR (0 with the legacy RV).
     */
     const double RV_total = (m_h.m_born + m_h.m_ev.m_nlo_real + m_h.m_ev.m_nlo_virtual + m_h.m_ev.m_nlo_rv
                              + m_h.m_ev.m_nlo_vxr)/m_h.m_born;
-    // No separate denominator: every column here is x/m_ev.m_real. NNLO used to be
-    // make_ratio(nnlo_total, m_born + nnlo_total), which is
-    // (m_born + nnlo_total)/(m_born + nnlo_total) -- identically 1, whatever
-    // the physics did. It also added a dimensionful m_born to a ratio.
+    // Every column here is x/m_ev.m_real.
     if (!IsZero(m_h.m_ev.m_real)) {
       emit("RealVirtual", ratio((m_h.m_ev.m_nlo_rv)/m_h.m_born, nomden));
       emit("RealReal", ratio((m_h.m_ev.m_nlo_rr)/m_h.m_born, nomden));
       emit("NLO+RR", ratio(RR_total, nomden));
       emit("NLO+RV", ratio(RV_total, nomden));
       emit("NNLO", ratio(nnlo_total, nomden));
-      // Matching truncated to a fixed real-photon multiplicity, the NNLO
-      // analogue of NLO_1g/NLO_2g. 1 photon: Real + RealVirtual on the
-      // single hardest, RealReal = 0 (a pair needs two photons). 2 photons:
-      // Real + RealVirtual summed over the two hardest, plus the RealReal
-      // pair formed by them. Virtual is always full.
+      // NNLO analogue of NLO_1g/NLO_2g: Real + RealVirtual on the 1 or 2 hardest
+      // photons, RealReal only for the pair; Virtual full.
       const double nnlo_1g =
           (m_h.m_born + ifisoft + m_h.m_ev.m_nlo_real_hardest + m_h.m_ev.m_nlo_virtual
            + m_h.m_ev.m_nlo_rv_hardest)/m_h.m_born;
@@ -1937,51 +1755,18 @@ bool YFS_Weight_Builder::FillNLOBreakdownColumns(ATOOLS::Weights &wyfs, double w
       emit("NNLO_1g", ratio(nnlo_1g, nomden));
       emit("NNLO_2g", ratio(nnlo_2g, nomden));
 
-      // ---- approximate double-virtual (VV) ----
-      // The NNLO weights above are RV + RR only: there is no exact
-      // double-virtual provider, so at O(alpha^2) the VV is simply MISSING and
-      // "NNLO" is incomplete. Estimate it from the EEX virtual series, whose
-      // O(alpha^2) term is the 0.125*gamma^2 in Dipole::VirtualEEX. Taking the
-      // difference of the EEX virtual evaluated at order 2 and order 1 isolates
-      // exactly that term:
-      //     VV_EEX = prod(1 + 0.5g + 0.125g^2) - prod(1 + 0.5g)
-      // (products over the II and FF dipoles, so the cross terms between
-      // dipoles are kept). It is a leading-log/eikonal estimate of a term
-      // whose exact form is unknown here, NOT a calculation of it.
-      //
-      // Because it is an estimate, it is shipped with an explicit envelope
-      // rather than silently folded into the nominal: VV_up/VV_down scale it
-      // by 1 +/- VV_Approx_Uncertainty (default 1, i.e. the band runs from
-      // "twice the estimate" down to "no VV at all"). That is the honest
-      // statement of ignorance - the term is known to be of this size, but its
-      // coefficient is not - and it lets the VV uncertainty be propagated as a
-      // normal variation weight instead of quoted by hand.
-      //
-      // The nominal "NNLO" weight is deliberately left VV-free so it keeps
-      // meaning what it meant before; NNLO_VV is the one including the estimate.
+      // Approximate double virtual: the O(alpha^2) term of the EEX virtual series,
+      //     VV_EEX = prod(1 + 0.5g + 0.125g^2) - prod(1 + 0.5g)  (II and FF dipoles),
+      // a leading-log estimate, not a calculation. Shipped as an envelope
+      // 1 +/- VV_Approx_Uncertainty; the nominal NNLO stays VV-free, NNLO_VV includes it.
       // p_nlo's flag: the handler's own m_vvtool is a YFS_Base member that
       // nothing on the handler side ever sets (see YFS_Base.H)
       if (!m_h.p_nlo->HasVV()) {
         const double vv = m_h.p_dipoles->CalculateEEXVirtual(2)
                         - m_h.p_dipoles->CalculateEEXVirtual(1);
         if (!IsBad(vv)) {
-          // Flat envelope: the band is (1 +/- d) times the estimate, with
-          // d = VV_Approx_Uncertainty. At the default d = 1 it runs from "the
-          // term is absent" to "twice the estimate", which is the conventional
-          // missing-higher-order convention and the most ignorance an envelope
-          // can honestly express - d > 1 would push the down variation to a
-          // NEGATIVE VV, i.e. assert the opposite sign rather than absence.
-          //
-          // A calibrated alternative was tried (scaling d by EEX's measured
-          // error on the O(alpha) virtual, where the exact result is known)
-          // and dropped: on this process that ratio came out ~2.3, i.e. EEX
-          // does not predict the exact virtual at all, so it carries no
-          // information about the order above and only degenerated to the flat
-          // band once capped.
-          //
-          // Keep the size of this band in perspective: VV_EEX is ~0.3% of the
-          // cross section while RR alone is ~5% and the NLO->NNLO shift ~7.8%,
-          // so this is NOT the dominant NNLO uncertainty.
+          // Flat envelope (1 +/- d) x estimate: d > 1 would flip the sign of VV.
+          // Not the dominant NNLO uncertainty (VV_EEX is far below RR).
           const double d = m_h.m_vv_approx_unc;
           emit("VV_EEX", ratio(vv, nomden));
           emit("NNLO_VV", ratio(nnlo_total + vv, nomden));

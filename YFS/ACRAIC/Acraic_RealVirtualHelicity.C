@@ -1,30 +1,16 @@
 /*!
   \file Acraic_RealVirtualHelicity.C
 
-  ACRAIC: REAL_VIRTUAL helicity. The non-factorisable O(alpha^2)
-  real-virtual resolved by helicity: the loop provider's per-helicity
-  one-loop amplitudes of the (n+1)-point process (Recola, read after the
-  RV_MODE remainder loop call, NLO_Base::BuildRealVirtualHelicityFactors)
-  put on photon j's M_1 terms of ACRAIC's coherent amplitude,
+  ACRAIC: REAL_VIRTUAL helicity. The non-factorisable O(alpha^2) real-virtual
+  per helicity, from the loop provider's (n+1)-point one-loop amplitudes
+  (NLO_Base::BuildRealVirtualHelicityFactors), on photon j's M_1:
 
       rho += 1/4 sum_h sum_j 2 Re[ conj(A^h) r_j^h M_1j^h ] ,
-
       r_j^h = delta_{n+1,j}^h - delta_B^h ,
 
-  A = A_1 (A_2 at ORDER 2), so that M_1j carries the (n+1)-point's own loop
-  over tree per helicity and its eikonal x Born subtraction the Born's. This
-  is the helicity-resolved form of REAL_VIRTUAL averaged, which is the case
-  r_j^h = dv_j/2 on every h (RealVirtualRemainderRho); like it, linear in
-  the remainder (O(alpha^2)), with the factorisable v/2 placed elsewhere.
-
-  In the one-loop N-photon language (NOTES-acraic-oneloop-nphoton.md) this
-  is the n = 1 member: beta_1^[1](k) = [delta_1 - delta_0] M_1 + delta_0
-  beta_1^[0], the second term being REAL_VIRTUAL factorisable.
-
-  Partitions: photon j's M_1 is summed over the partitions that carry it
-  (m_realphotM1[j], per-partition propagator shifts), while r_j^h comes from
-  ONE (n+1)-point per photon, as the Born's delta^h comes from one Born
-  point (the "ratio" placement of the notes, sec. 5.2).
+  A = A_1 (A_2 at ORDER 2). REAL_VIRTUAL averaged is the case r_j^h = dv_j/2.
+  M_1j is summed over the partitions that carry photon j, r_j^h comes from
+  one (n+1)-point per photon.
 */
 
 #include "YFS/ACRAIC/Acraic_Base.H"

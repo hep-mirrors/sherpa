@@ -21,15 +21,9 @@ namespace YFS {
       ~FSR();
       void SetS(const double s) override;
       double m_u, m_fsrcut, m_Kmin, m_Kmax, m_sQ, m_sprim, m_dip_sp, m_sX, m_Emin, m_QF2, m_Q1, m_Q2;
-      // m_mass2 removed: shadowed YFS_Base's double[2] with a scalar, unused;
-      // that base member has since gone too. m_nbar below is FSR's own mean
-      // photon multiplicity and no longer shadows anything.
       double m_phi, m_theta, m_c, m_eta1, m_eta2, m_EminQ, m_q1q2, m_st, m_p1p2;
-      // m_gammaFF / m_gammapFF are THIS dipole's gamma and gamma-prime, taken
-      // from the final-state dipole in Initialize(). They used to be called
-      // m_g / m_gp, shadowing YFS_Base's members of the same name, which hold
-      // the INITIAL-initial dipole's values. Three gammas existed under two
-      // names; the names now say which is which.
+      // m_gammaFF / m_gammapFF: this final-state dipole's gamma and gamma-prime
+      // (taken in Initialize()), as opposed to YFS_Base's initial-initial ones.
       double m_beta, m_beta1, m_beta2, m_mu1, m_mu2, m_gammaFF, m_gammapFF, m_EQ, m_betaf, m_volmc, m_gpBar, m_gBar;
       double m_massW, m_hideW, m_expf, m_wt2, m_amc2, m_f, m_fbar, m_bvrA, m_yy, m_xfact;
       //! YFS: FSR_SHELL_JACOBIAN and its value, dPhi_2(s_Q)/dPhi_2(s_pre), folded into m_wt2
@@ -43,7 +37,7 @@ namespace YFS {
                           m_del1, m_del2, m_yini, m_zini, m_phi_vec, m_k0,
                           m_fbarvec;
       int m_n, m_N, m_NRemoved, m_fixed_ngamma;
-      bool m_eikonal_mode, m_use_crude, m_use_massive_nbar, m_failed;   // m_use_model_alpha shadowed YFS_Base's, unused here
+      bool m_eikonal_mode, m_use_crude, m_use_massive_nbar, m_failed;
     Vec4D_Vector m_photons, m_dipole, m_photonspreboost;
       Flavour_Vector m_dipoleFl;
       Vec4D m_photonSum, m_photonSumPreBoost, m_r1, m_r2, m_QFrame, m_Q, m_px;

@@ -669,11 +669,8 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
     for (const YFS::Photon &k : res.photons) m_ev.m_FSRPhotons.push_back(k.K());
     m_fsrWeight *= res.weight;
     if (p_dipoles->PoleActive()) {
-      // The radiating dipole is the W pair, and the W's are not entries in the
-      // event record -- Left()/Right() point at the charged leptons they
-      // decayed to. Writing the new W momenta there would put an 80 GeV
-      // momentum in the muon's slot. Carry the recoil down to the four
-      // fermions instead.
+      // the radiating dipole is the W pair, which is not in the event record
+      // (Left()/Right() are the decay leptons): carry the recoil to the four fermions
       if (!p_dipoles->ApplyPoleRecoil(m_ev.m_plab)) {
         CountFSRFailure("pole recoil");
         Reset();

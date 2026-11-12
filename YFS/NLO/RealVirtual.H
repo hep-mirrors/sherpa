@@ -24,21 +24,19 @@ namespace YFS{
         std::unique_ptr<PHASIC::Virtual_ME2_Base> p_loop_me;
         //! YFS: VIRTUAL_MASSIFICATION (null when off); LoopOverTree only
         std::unique_ptr<Massification> p_massif;
-        //! the provider's 1/eps coefficient (ME_E1 units) of the last call,
-        //! the massive one under massification
+        //! the provider's 1/eps coefficient (ME_E1 units) of the last call
         double E1() const;
         double Calc_V(const ATOOLS::Vec4D_Vector& p,
                     const double B,
                     const double mur);
         /*!
           YFS: RV_MODE 1. The provider's IR-finite one-loop over its own tree,
-          lt = (alpha/2pi) V_fin/T, at the (n+1)-body point p with the loop's
-          renormalisation scale set to mur2 (the Born virtual's). False when
-          the point fails the NLO cuts, the tree vanishes, or the provider does
-          not return a tree-normalised finite part (Mode() != 0).
+          lt = (alpha/2pi) V_fin/T, at the (n+1)-body point with renormalisation
+          scale mur2. False when the point fails the NLO cuts, the tree
+          vanishes, or the provider's finite part is not tree-normalised.
+          p: the point in the lab (NLO cuts), peval: the same point in the
+          frame the loop is evaluated in.
         */
-        //! p: the point in the lab (NLO cuts), peval: the same point in the
-        //! frame the loop is evaluated in.
         bool LoopOverTree(const ATOOLS::Vec4D_Vector &p,
                           const ATOOLS::Vec4D_Vector &peval, const double mur2,
                           double &lt);
@@ -47,11 +45,7 @@ namespace YFS{
         PHASIC::Process_Base *p_rvproc = nullptr;
         ATOOLS::Flavour_Vector m_flavs;
         double m_factor;
-        //! RV_Generator as configured. Unlike Real/RealReal there is no
-        //! internal-vs-external choice here: p_loop_me (the value this class
-        //! actually returns) is always built from RV_Generator directly, and
-        //! p_rvproc is used only for Trigger()/cuts, not for the value -- so
-        //! it must NOT be used as a generator label.
+        //! RV_Generator as configured (p_rvproc is used only for cuts, not the value)
         std::string m_gen;
         inline std::string ActiveGenName() const { return m_gen.empty()?"none":m_gen; }
         inline void SetProc(PHASIC::Process_Base *realproc) {p_rvproc=realproc;}

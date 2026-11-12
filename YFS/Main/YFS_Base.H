@@ -28,8 +28,7 @@ struct yfsmode {
   };
 };
 
-// How a W+W- -> 4f final state is exponentiated. See the WW_Scheme comment in
-// YFS_Base::RegisterDefaults.
+//! How a W+W- -> 4f final state is exponentiated (YFS: WW_Scheme).
 struct wwscheme {
   enum code {
     flat = 0,   // the four external fermions are the emitters
@@ -38,37 +37,15 @@ struct wwscheme {
 };
 
 /*!
-  Where ACRAIC's O(alpha) VIRTUAL comes from. It used to be decided implicitly -
-  ACRAIC supplied its own if and only if no loop provider happened to exist -
-  which is how e+e- -> H l+ l- silently took ACRAIC's 2 -> 2 vertex and boxes and
-  reported a +2200% correction with nothing to say so.
-
-  The three are genuinely different physics, not implementations:
-
-    acraic      ACRAIC's own hand-coded vertex and boxes, per helicity. Amplitude
-              level, which is what ACRAIC is for - and 2 -> 2 ONLY, because the
-              expressions are.
-    external  the loop provider's helicity-SUMMED virtual through
-              Virtual_ME2_Base, applied to |A|^2. Works for any process today.
-              The helicity dependence of the boxes is then averaged over, which
-              is exactly the coherence ACRAIC exists to keep, so this is a
-              deliberate trade and not a free one.
-    helicity  the provider's virtual resolved BY HELICITY, so amplitude-level
-              matching survives at any multiplicity (ACRAIC). Needs
-              Loop_Generator: Recola (get_amplitude_r1_rcl, no extra loop
-              call); delta^h = A1^h/A0^h - alpha B_4 per helicity at the Born
-              point, sum_h |A_1 + delta^h A_0|^2 in the ACRAIC weight. Falls
-              back to v/2 (= external) where the provider cannot resolve a
-              helicity. YFS/NLO/NLO_LoopHelicity.C, Acraic_LoopHelicity.C.
-    none      no virtual in the ACRAIC column at all: Born + real only, whatever
-              NLO_Part says. This is what `external` silently was until
-              2026-09-25 (the value was read and never consumed), kept as a
-              named choice so Born+real comparisons stay reproducible.
-*/
-/*
-    auto      (default) external when a loop provider supplies the virtual
-              (NLO_Part with V and a Loop_Generator), no virtual otherwise;
-              ACRAIC's own 2 -> 2 virtual only when asked for with acraic.
+  Where ACRAIC's O(alpha) virtual comes from.
+    acraic    ACRAIC's own vertex and boxes, per helicity (2 -> 2 only)
+    external  the provider's helicity-summed virtual applied to |A|^2 (any
+              process; box helicity dependence is averaged)
+    helicity  the provider's virtual per helicity (Loop_Generator: Recola),
+              delta^h = A1^h/A0^h - alpha B_4; v/2 where unresolved
+              (NLO_LoopHelicity.C, Acraic_LoopHelicity.C)
+    none      no virtual in the ACRAIC column: Born + real only
+    auto      (default) external if a loop provider supplies the virtual, else none
 */
 struct acraicvirt {
   enum code {
@@ -109,35 +86,21 @@ protected:
   double m_exponent, m_xmax;
   bool   m_on;
 
-  // Matrix elements from external providers (OpenLoops, Recola, ...) are
-  // pointlike sQED: they know nothing about the pion form factor, while the
-  // Born YFS subtracts against is dressed - by the Comix vertex in Vertex mode,
-  // by Single_Process in Factored mode. Subtracting a dressed S~*B from an
-  // undressed R leaves a residual (1-|F|^2)*S~*B that diverges as k->0 and
-  // drives beta_1 negative wherever |F|^2>1. So dress the external ME here,
-  // at the same Q^2 the Born is dressed at. Created on first use, since most
-  // YFS_Base instances never need it.
-
 public:
   YFS_Base();
   virtual ~YFS_Base();
 
   bool On() const   { return m_on;   }
 
-  // |F((sum p_pi)^2)|^2, or 1 if no form factor is configured.
+  //! |F((sum p_pi)^2)|^2 dressing an external (pointlike) ME so it matches the
+  //! dressed Born; 1 if no form factor is configured.
   double ExternalFormFactor(const ATOOLS::Vec4D_Vector &p,
                             const ATOOLS::Flavour_Vector &fl,
                             const size_t &nin=2);
 
-  /*
-    m_s is this event's s = (p_beam1 + p_beam2)^2. Every YFS object keeps its
-    own copy, sqr(Ecms) from construction. With a beam spectrum
-    (BEAM_SPECTRA: Gaussian) s moves event by event, and Ecms is not even its
-    mean (the Gaussian builds its beams at the maximum energy), so
-    YFS_Handler::SetEventS hands every object the event's value through
-    SetS. The dimensionless cuts derived from m_s at construction (m_isrcut,
-    m_vmax) stay fixed. Owners of further YFS objects forward.
-  */
+  //! Set this event's s = (p_beam1 + p_beam2)^2 (YFS_Handler::SetEventS, for
+  //! beam spectra). Cuts fixed at construction (m_isrcut, m_vmax) stay; owners
+  //! of further YFS objects forward.
   virtual void SetS(const double s) {
     m_s = s;
     if (m_ifiomega_is_emin) m_ifiomega = 0.5*sqrt(m_s)*m_isrcut;
@@ -158,93 +121,53 @@ public:
   //! YFS: COULOMB_HIGHER_ORDER (flat four-fermion W pairs, see YFS_Options.H)
   coulombho::code m_coulombho;
   double m_photonMass, m_oneloop, m_born, m_isrWeight, m_fsrWeight, m_rescale_alpha;
-  // m_nbar is deliberately NOT here. ISR and FSR each have their own photon
-  // multiplicity and each declares it; a shared base copy meant ISR silently
-  // used the base member while FSR shadowed it, which is the arrangement that
-  // produced the m_betatWW/m_nbar class of bug. Likewise m_setparticles, which
-  // is YFS_Handler's flavour latch and was never touched here, and m_mass2[2],
-  // which nothing ever read or wrote.
   double m_deltacut, m_betatWW, m_eps, m_fixed_weight, m_resonace_max;
   double m_rv_test_x, m_rv_test_theta, m_rv_test_phi;
   double m_rv_soft_cut; // soft-photon energy fraction below which RV is skipped
   //! YFS: RV_COLLINEAR_CUT, min_i (p_i.k)/s below which RV is skipped
   double m_rv_collinear_cut = 0.;
-  // Same coarse soft-photon gate for the double-real beta_2^2, applied to each
-  // of the two photons: the RR residual vanishes when either photon goes soft,
-  // while the ME and its subtraction both diverge like S~(k1)*S~(k2), so the
-  // pair is roundoff-dominated long before it is physically relevant. Energy
-  // fraction E/sqrt(s); <=0 disables.
+  // Soft-photon gate (E/sqrt(s)) for the double-real beta_2^2, per photon; <=0 disables.
   double m_rr_soft_cut;
-  // Relative-cancellation threshold for the RV beta_1^1. The RV matrix element
-  // m_rv and its subtraction m_rvsub each diverge like S(k)~1/k^2 and cancel to
-  // form d1; when |d1| drops below m_rv_cancel_eps*max(|m_rv|,|m_rvsub|) the
-  // result is roundoff-dominated (and, being that small, physically
-  // negligible), so the photon is skipped. <=0 disables. This is the
-  // process-independent replacement for the flat RV_SOFT_CUT energy gate.
+  // Skip an RV photon when |d1| < m_rv_cancel_eps*max(|m_rv|,|m_rvsub|)
+  // (roundoff-dominated cancellation); <=0 disables.
   double m_rv_cancel_eps;
-  // Matrix-element stability guard for the RV. The one-loop provider is
-  // numerically unstable for soft, beam-collinear (ISR) photons, returning a
-  // real-virtual ME rv up to ~1e30x larger than the scale its own subtraction
-  // predicts (max(|rvsub|,|aB|)); the failures are confined to soft/collinear
-  // (verified: hard wide-angle photons are always stable), so skipping them
-  // loses negligible physics. Skip when |rv| > m_rv_me_max_ratio*subscale.
-  // Recommended O(1e6) - the healthy/unstable ratio gap spans 1e4..1e25.
-  // <=0 disables.
+  // Skip an RV photon when |rv| > m_rv_me_max_ratio*max(|rvsub|,|aB|), a guard
+  // against unstable soft/collinear provider MEs; O(1e6) recommended, <=0 disables.
   double m_rv_me_max_ratio;
 
   int  m_order, m_betaorder, m_fullform;
   bool m_formWW, m_ifisub;
-  //! YFS: IFI - initial-final interference in both columns (false: none,
-  //! see YFS_Base.C; IFI_Sub and IFI_Real are then false as well)
+  //! YFS: IFI - initial-final interference (false: none, IFI_Sub and IFI_Real too)
   bool m_ifi = true;
   wwscheme::code m_wwscheme;
   bool m_wwonshell, m_wwpoleemission;
-  // Emission-side IFI: reweight generated photons by the IF radiation function
-  // and drop the IF form factor's cutoff to m_ifiomega. Both or neither.
+  // Emission-side IFI: reweight photons by the IF radiation function and set
+  // the IF form factor's cutoff to m_ifiomega. Both or neither.
   bool   m_ifireal;
   double m_ifiomega;
-  //! IFI_Omega left to its default, FSR's m_Emin = sqrt(s)/2 * m_isrcut:
-  //! then it follows s (SetS), as m_Emin does.
+  //! IFI_Omega at its default, FSR's m_Emin = sqrt(s)/2 * m_isrcut (follows s via SetS)
   bool   m_ifiomega_is_emin = false;
   // Per-photon IF reweight factors outside [m_ifi_rclip, 1/m_ifi_rclip] are
-  // dropped, and counted here so the rate is reportable rather than silent.
+  // dropped and counted in m_ifi_clipped.
   double m_ifi_rclip;
   long   m_ifi_clipped;
-  // One-shot beta_0/beta_1 dump at a fixed phase-space point, for the
-  // number-for-number comparison against KKMC's CEEX. See
-  // NLO_Base::ACRAICComparePoint().
+  // One-shot beta_0/beta_1 dump at a fixed point (NLO_Base::ACRAICComparePoint()).
   int  m_acraic_compare;
-  // Scale at which Delta_alpha is evaluated for the vacuum-polarisation
-  // double-counting subtraction in Virtual/RealVirtual/VirtualVirtual.
-  // 0 = photon virtuality (s' or t) - the scale the loop ME itself uses for the
-  //     photon self-energy, and therefore the only choice that actually cancels
-  //     it. 1 = the runcard mu_R (SCALES), correct only if SCALES is set to that
-  //     same virtuality.
   // Fractional envelope on the EEX estimate of the missing double-virtual
-  // (YFS_Handler::GenerateWeight): the band is (1 +/- this) * VV_EEX. Default 1
-  // = from "no VV at all" to "twice the estimate". Values > 1 make the down
-  // variation flip the sign of the term rather than remove it, which is a claim
-  // rather than an envelope.
+  // (YFS_Handler::GenerateWeight): the band is (1 +/- this) * VV_EEX.
   double m_vv_approx_unc;
-  // When set, fill the in-run RV plateau-scan histograms (RV contribution
-  // binned by log10 cancellation ratio and by photon energy fraction) so a
-  // single production run yields RV_total(cut) and the cut can be validated.
+  // Fill the in-run RV plateau-scan histograms (RV vs cancellation ratio and photon energy).
   int  m_rv_cancel_hist;
   int  m_check_mass_reg, m_check_poles, m_check_real, m_check_rv, m_rv_hard_photon;
   //! YFS: CHECK_REAL_REAL - dump the double real's momenta and ME
-  //! (Real_Correction with two photons). Read in RegisterSettings; it was
-  //! registered but never read, so the dump ran on uninitialised memory.
   int  m_check_rr = 0;
   int m_rmode, m_qedmode, m_kkmcAngles;
   bool m_virt_sub;
-  // m_no_born_setting is the card value (YFS: No_Born), a global override.
-  // m_no_born is the effective flag: the override OR'd with the per-process
-  // request from SetNoBorn(), since one handler is shared by all processes.
+  // m_no_born_setting: card value (YFS: No_Born), a global override.
+  // m_no_born: effective flag, the override OR'd with the per-process SetNoBorn().
   bool m_no_born_setting;
-  // YFS: NLO_Weight_Breakdown: the YFS.* named weights (YFS.LO, YFS.ACRAIC, the
-  // per-order breakdown, the *_NO_VP/_NO_B02 columns, the ACRAIC and TNP
-  // streams, ...). Off by default: the events carry the nominal weight only,
-  // and a stream switched on by name without it is a fatal error.
+  // YFS: NLO_Weight_Breakdown: the named YFS.* weights; off by default (nominal
+  // weight only), and a stream switched on without it is a fatal error.
   bool m_nlo_weight_breakdown;
   // YFS: NLO_Columns: the YFS.NLO and YFS.NLO_EW named weights, off by default
   bool m_nlo_columns;
@@ -252,8 +175,7 @@ public:
   int m_dump_dipoles;
   int m_check_real_sub, m_check_rr_sub, m_check_virt_born;
   bool m_no_born, m_no_subtraction, m_noflux, m_massless_sub;
-  //! Meaning of the YFS: Check_Real_Sub runcard integer (m_check_real_sub).
-  //! See NLO_Checks.C for what each check actually does.
+  //! Values of YFS: Check_Real_Sub (m_check_real_sub); see NLO_Checks.C.
   enum CheckRealSubMode {
     CHECK_REAL_SUB_OFF       = 0,
     CHECK_REAL_SUB_SOFT      = 1, //!< CheckRealSub:          E_gamma -> 0 at fixed angle
@@ -262,37 +184,17 @@ public:
   };
   
   bool m_looptool, m_virtual_only, m_real_only, m_use_model_alpha,m_failcut,m_nlocuts;
-  /*!
-    ACRAIC_WEIGHT, resolved: take the O(alpha) correction factor from ACRAIC
-    rather than from the EEX beta expansion (the card's auto follows ACRAIC).
-  */
+  //! ACRAIC_WEIGHT, resolved: take the O(alpha) factor from ACRAIC rather than
+  //! the EEX beta expansion.
   bool m_acraic_weight = false;
-  /*!
-    NLO_FSR_FROM_EVENT: take the final-state photons for the fixed-order real
-    correction from the EVENT RECORD (Dipole::GetPhotons(), what ACRAIC is
-    given) rather than from Dipole::GetMEPhotons().
-
-    The two are not the same photons. GetMEPhotons() is captured in
-    Dipole::MakeFSR before Dipole::Boost(), GetPhotons() after it, so they sit
-    in different frames - measured on one event, the same three FSR photons
-    came out as 0.0313/0.00255/11.48 GeV against 0.0151/0.00029/1.166.
-    GetMEPhotons() additionally keeps the photons HidePhotons() drops, which
-    is its stated purpose (see the note in Dipole.C), so switching source also
-    changes which photons are corrected at all - the two effects are not
-    separable from here.
-
-    Card default true (YFS_Base::RegisterDefaults).
-  */
+  //! NLO_FSR_FROM_EVENT: take the fixed-order real's final-state photons from the
+  //! event record (Dipole::GetPhotons()) rather than Dipole::GetMEPhotons(),
+  //! which is captured before Dipole::Boost() and keeps hidden photons.
   bool m_nlo_fsr_from_event = false;
   bool m_isrinital, m_realtool, m_useacraic, m_coll_real, m_dim_reg;
   /*
-    Which NNLO tools exist. Only NLO_Base assigns these (from its p_realvirt,
-    p_realreal and p_vv); every other YFS_Base - YFS_Handler, Real_Correction,
-    RealVirtual, ... - is a separate object that never does, and used to read
-    whatever the heap held. YFS_Handler's m_vvtool gated the VV_EEX/NNLO_VV*
-    columns on that garbage (a bool whose low bit was set turned them off:
-    NNLO_VV 767 pb in one run, the nominal 1413 pb in the next). Ask p_nlo
-    (NLO_Base::HasVV and friends) instead of reading these outside NLO_Base.
+    Which NNLO tools exist. Only NLO_Base assigns these; other YFS_Base objects
+    should ask p_nlo (NLO_Base::HasVV and friends).
   */
   bool m_realvirt = false, m_rrtool = false, m_vvtool = false;
   bool m_skipNegWeights;
@@ -304,8 +206,7 @@ public:
   Vec4D m_beam1, m_beam2;
 
   acraicvirt::code m_acraicvirtsrc = acraicvirt::acraic;
-  //! MODE was not set and ACRAIC: 1 implied it; YFS_Handler::SetFlavours
-  //! then picks ISRFSR or, without charged final-state particles, ISR
+  //! MODE unset and implied by ACRAIC: 1 (YFS_Handler::SetFlavours picks ISRFSR, or ISR)
   bool m_mode_from_acraic = false;
   submode::code m_submode;
   yfsmode::code m_mode;

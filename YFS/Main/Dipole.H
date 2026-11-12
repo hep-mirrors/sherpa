@@ -20,13 +20,8 @@ namespace YFS{
     struct EmissionResult;
 
 
-    // Kaellen (triangle) function lambda(x,y,z) = x^2+y^2+z^2-2(xy+xz+yz),
-    // returned as |lambda| so callers evaluating sqrt(Lambda(...)/s) stay real
-    // below threshold / against rounding. Single canonical definition: the
-    // per-file copies in Dipole.C, NLO_Base.C and YFS_Form_Factor.C used to
-    // disagree (two dropped the abs) and, with external linkage, collided
-    // across the YFS shared libraries - which copy won depended on load order
-    // (ELF symbol interposition), giving platform-dependent NaN.
+    // Kaellen function lambda(x,y,z) = x^2+y^2+z^2-2(xy+xz+yz), returned as
+    // |lambda| so sqrt(Lambda(...)/s) stays real below threshold.
     inline double Lambda(double x, double y, double z) {
       return std::abs(x * x + y * y + z * z - 2. * x * y - 2. * x * z - 2. * y * z);
     }
@@ -57,36 +52,21 @@ namespace YFS{
         bool m_hasgenregion = false, m_hasexpregion = false;
         bool m_irfinite;
 
-        // m_real_only and m_resonance are read by CalculateGamma() and
-        // IsResonance(), both reachable before any setter runs - the
-        // constructor itself calls CalculateGamma(). Initialised here because
-        // an uninitialised read is undefined, not merely arbitrary.
+        // m_real_only and m_resonance are initialised as the constructor reads them.
         int m_Nphotons = 0, m_resonance = 0, m_leftfl, m_rightfl, m_real_only = 0;
         double m_ranPhi, m_ranTheta, m_born, m_photonscale, m_u,m_irscale;
         dipoletype::code m_type;
-        // m_oldmomenta is the momenta as constructed, never written again.
-        // m_beams was a second, identical frozen copy under another name.
+        // m_oldmomenta is the momenta as constructed, never rewritten.
         Vec4D_Vector m_momenta, m_bornmomenta, m_oldmomenta, m_newmomenta, m_ghost, m_eikmomentum,m_mephotons;
         Flavour_Vector m_flavs;
         Vec4D m_photonSum, m_QFrame;
-        /*!
-          The boost into the dipole rest frame, rebuilt per emission and
-          cleared again at the end of the same function. Optional rather than a
-          bare Poincare because Boost()/BoostNLO() read it from the member and
-          the clear is what marks the frame as gone: a stale call then trips an
-          empty optional instead of reading a freed object. Not a unique_ptr --
-          Dipole is held by value in DipoleSet and has to stay copyable.
-        */
+        //! The boost into the dipole rest frame, rebuilt per emission and
+        //! cleared at its end (optional so Dipole stays copyable).
         std::optional<Poincare> p_Pboost;
         Poincare p_rotate, p_boost;
-        // Radiate. Dispatches on m_type: the initial-initial dipole samples ISR,
-        // final-final dipoles sample FSR, and initial-final dipoles carry the
-        // interference but do not radiate. The samplers stay in ISR/FSR; this
-        // only decides which one applies and drives it.
-        //
+        // Radiate, dispatching on m_type: initial-initial samples ISR, final-final
+        // samples FSR, initial-final carries the interference and does not radiate.
         // me_acc is the caller's running list of ME photons across dipoles.
-        // SetMEPhotons is handed that accumulated list, not just this dipole's
-        // photons, so it has to be threaded through to preserve behaviour.
         EmissionResult GenerateEmissions(ISR *isr, FSR *fsr,
                                          double born, double v,
                                          Vec4D_Vector &me_acc);
@@ -103,14 +83,8 @@ namespace YFS{
         double EikonalMassless(const Vec4D &k,const Vec4D &p1,const Vec4D &p2);
         double Eikonal(const Vec4D &k);
         double EikonalInterferance(const Vec4D &k);
-        // The EEX beta expansion. `order` is the truncation order, passed
-        // explicitly rather than read from a member: the recursion evaluates
-        // its subtractions at LOWER orders than the term it is building, and
-        // the member it used to borrow for that (m_betaorder) was written,
-        // decremented and only sometimes restored by the callees. EEX() had to
-        // reassign it after every pair and triple to undo the damage, and a
-        // caller reaching Beta1() without going through EEX() first read
-        // whatever the last call had left.
+        // The EEX beta expansion, truncated at `betaorder` (passed explicitly as
+        // the recursion evaluates subtractions at lower orders).
         double EEX(const int betaorder);
         double VirtualEEX(const int betaorder);
         double Hard(const Vec4D & k, int order);
@@ -135,16 +109,9 @@ namespace YFS{
         Vec4D Sum();
         inline int size() {return m_momenta.size();}
         //! The legs as they were BEFORE this dipole radiated, which is what
-        //! enters the form factor. DipoleSet maintains that invariant: the
-        //! initial-initial dipole is built with the process born momenta, the
-        //! final-state dipoles after ISR and before FSR, the initial-final
-        //! ones with born initial legs and post-ISR final legs.
-        //!
-        //! Use this rather than choosing between born / current / new at the
-        //! call site. Doing that by hand gave five different conventions
-        //! across the form factors, including counterparts like BVV_full and
-        //! BVV_full_eps - the same quantity in massive- and dim-reg -
-        //! disagreeing about which momenta they were evaluated on.
+        //! enters the form factor. DipoleSet maintains that invariant: II is
+        //! built with the born momenta, FF after ISR and before FSR, IF with
+        //! born initial legs and post-ISR final legs.
         inline void LegsBeforeRadiation(Vec4D &p1, Vec4D &p2) const {
           p1 = m_bornmomenta[0];
           p2 = m_bornmomenta[1];
@@ -168,11 +135,9 @@ namespace YFS{
         inline dipoletype::code Type() const {return m_type;}
         inline double Sprime() const {return m_sp;}
         /*!
-          The region ledger (Soft_Region.H): the soft region this dipole's
-          photons were generated outside of (ISR: the beam-CMS sphere of
-          IR_CUTOFF/2; FSR: the Q-frame sphere of EminQ) and the region of its
-          exponent (FormFactorSum, plus FSR's Piatek term when photons are
-          hidden). Filled where they are evaluated; printed by DumpDipoles.
+          The region ledger (Soft_Region.H): the soft region the dipole's
+          photons were generated outside of (ISR: beam-CMS sphere of
+          IR_CUTOFF/2; FSR: Q-frame sphere of EminQ) and that of its exponent.
         */
         inline void SetGenRegion(const SoftRegion &r) { m_genregion = r; m_hasgenregion = true; }
         inline void SetExpRegion(const SoftRegion &r) { m_expregion = r; m_hasexpregion = true; }

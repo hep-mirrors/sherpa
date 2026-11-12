@@ -67,14 +67,8 @@ FSR::FSR()
     excess over the exact O(alpha) tree. false: the old weight.
   */
   s["FSR_SHELL_JACOBIAN"].SetDefault(true);
-  // FSR_CUT is in GeV, like IR_CUTOFF; m_fsrcut is it over the nominal
-  // sqrt(s), like m_isrcut. NB the default, 1e-2*m_isrcut read as GeV, is in
-  // effect 1e-2*IR_CUTOFF/sqrt(s) GeV, not the 1e-2*IR_CUTOFF GeV the comment
-  // below assumes. Kept as is (2026-10-11): the corrected default (applied
-  // and tested that day) left the cutoff-independent columns unchanged
-  // (YFS.LO 1332.22(43) vs 1332.24(42) pb, Z-pole mu mu) and gave no speed-up,
-  // but three of three ACRAIC runs with it had a heavy event in the nominal
-  // against none in one run with this one; unresolved, so not switched.
+  // FSR_CUT is in GeV, like IR_CUTOFF; m_fsrcut is it over the nominal sqrt(s).
+  // The default 1e-2*m_isrcut, read as GeV, is 1e-2*IR_CUTOFF/sqrt(s) GeV.
   const double fsrcutdefault(1e-2*m_isrcut);
   s["FSR_CUT"].SetDefault(fsrcutdefault);
   m_fsrcut = s["FSR_CUT"].Get<double>()/sqrt(m_s);
@@ -125,13 +119,8 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
   BoostToXFM();
   /*
     The leg velocities in the pair rest frame, where GenerateAngles() draws
-    the photons. They were taken before BoostToXFM(), i.e. in the lab: for a
-    pair boosted by hard ISR the crude density m_fbarvec then used the lab
-    beta1 != beta2 while the angle was drawn from the symmetric pair-frame
-    density, so the mass weight f/fbar divided by the wrong density. Zero at
-    rest (FSR alone agreed with KKMC); -2% at the 250 GeV Z return with ISR
-    (ACRAIC_O0/KKMC CEEX0, IFI off, 2026-10-07; FSR_KKMC_CrossCheck.C's
-    "rigorous check" read 0.988 for the recoiling dipole).
+    the photons, so that the crude density m_fbarvec matches the angular
+    density for a pair boosted by hard ISR.
   */
   m_beta1 = CalculateBeta(m_dipole[0]);
   m_beta2 = CalculateBeta(m_dipole[1]);
@@ -148,20 +137,10 @@ bool FSR::Initialize(YFS::Dipole &dipole) {
   m_dip_sp = (m_dipole[0]+m_dipole[1]).Abs2();
   if(IsBad(m_dip_sp)) return false;
   m_EQ = sqrt(m_dip_sp) / 2.;
-  // KKMC: m_Emin = CMSene/2 * vvmin (KKarFin.cxx:56). m_isrcut is Sherpa's
-  // vvmin - a dimensionless energy fraction, IR_CUTOFF already divided by
-  // sqrt(s) in YFS_Base::RegisterSettings() - so the nominal-CMS soft cutoff is
-  // sqrt(s)/2 * m_isrcut, which is just IR_CUTOFF/2, i.e. the same photon
-  // energy the ISR generation cuts on. It was 0.5*m_s*m_isrcut, a factor
-  // sqrt(s) larger, so the two agreed only at sqrt(s) = 1 GeV.
-  //
-  // This is the single nominal scale the Piatek term m_DelYFS translates the
-  // Q-frame bookkeeping onto, and KKMC uses that same Emin for Yisr, Yfsr and
-  // Yint alike - so it also sets where Define_Dipoles::IFIOmega() has to sit.
-  // FSR_KKMC_CrossCheck.C prints both forms side by side; note the discrepancy
-  // shows with the dipole at rest just as much as with ISR on, so a KKMC
-  // comparison only catches it if the KKMC side derives Emin from vvmin itself
-  // rather than being handed Sherpa's value.
+  // KKMC: m_Emin = CMSene/2 * vvmin (KKarFin.cxx:56). m_isrcut is vvmin, so
+  // Emin = sqrt(s)/2 * m_isrcut = IR_CUTOFF/2, the photon energy the ISR cuts on.
+  // This is the nominal scale m_DelYFS translates the Q-frame bookkeeping onto,
+  // and the same Emin KKMC uses for Yisr, Yfsr and Yint (see Define_Dipoles::IFIOmega()).
   m_Emin = 0.5 * sqrt(m_s) * m_isrcut;
   m_Kmax = sqrt(m_dip_sp) / 2.;
   m_hideW = 1.;
@@ -276,13 +255,8 @@ void FSR::GenerateAngles() {
   m_phi   = 2.*M_PI * ran->Get();
   m_cos.push_back(m_c);
   m_sin.push_back(m_st);
-  // Must match the density that actually generated costhg/sinthg above (the
-  // crude, am2/beta-based del1,del2 - algebraically del1==1-beta1*m_c and
-  // del2==1+beta2*m_c here since del2-del1==2*beta*costhg by construction).
-  // The extra /(m_beta1+m_beta2) instead of /2 multiplied every FSR photon's
-  // mass-weight by an extra factor of beta (KKMC's crude density is
-  // (1-am2/2) == (1+beta1*beta2)/2 for beta1==beta2), confirmed against
-  // KKarFin::AngBre()/YFSfin() via a fixed-kinematics cross-check harness.
+  // Must match the crude density that generated costhg/sinthg above, which is
+  // KKMC's (1+beta1*beta2)/2 (KKarFin::AngBre, YFSfin).
   m_fbarvec.push_back(1. / (del1 * del2) * (1. + m_beta1*m_beta2)/2.);
   if(std::abs(m_c)>1){
       msg_Error()<<"Photon angel out of bounds with cos(theta) = "<<m_c<<std::endl;
@@ -539,8 +513,7 @@ bool FSR::F() {
 }
 
 bool FSR::YFS_FORM(){
-  // r1, r2 are the corresponding q* vectors defined pg 46 arxiv  9912214
-  // they are created such that sqr(r_i) = sqr(m_i)sQ/sX
+  // r1, r2 are the q* vectors of arXiv:hep-ph/9912214, sqr(r_i) = sqr(m_i)sQ/sX
   m_photonSum*=0;
   m_photons = p_dipole->GetPhotons();
   for(auto k: m_photons) m_photonSum+=k;
@@ -550,15 +523,9 @@ bool FSR::YFS_FORM(){
   m_r2 = p_dipole->GetGhost(1);
   m_sQ = m_Q*m_Q;
 
-  // Rest-frame energies of the GHOSTS, built from the ghost masses that are
-  // passed alongside them below. Using energies derived from m_mass[] (the
-  // flavour masses) with m_r1/m_r2's own masses mixes two sources, and then
-  // E^2 - m^2 can go negative -- which is impossible for a single four-vector,
-  // and is what A4()'s sqrt(En2^2 - mass2^2) turns into a NaN.
-  //
-  // Falls back to the symmetric sqrt(sQ)/2 below threshold, where the pair
-  // rest frame does not exist. That is the pre-existing behaviour and is at
-  // least finite; a dipole with sQ < (m1+m2)^2 is a separate problem.
+  // Rest-frame energies of the ghosts use the ghost masses (mixing in the flavour
+  // masses can give E^2 < m^2 and a NaN in A4()). Below threshold the energies
+  // fall back to the symmetric sqrt(sQ)/2.
   const double mr1(m_r1.Mass()), mr2(m_r2.Mass());
   CalculateBetaBar();
   m_q1q2 = m_dipole[0]*m_dipole[1];
@@ -586,24 +553,17 @@ bool FSR::YFS_FORM(){
 
   if (m_use_crude) {
     m_BtiXcru = p_fsrFormFact->BVR_cru(regX, m_r1, m_r2, m_r1.Mass(), m_r2.Mass());
-    // Jadach always uses the symmetric EQQ=0.5*sqrt(svarQ) for
-    // BOTH particles' energy in the Q-scale crude evaluation, not the
-    // ghosts' own (recoil-asymmetric) energies 
+    // KKMC uses the symmetric EQQ=0.5*sqrt(svarQ) for both energies in the Q-scale crude.
     m_BtiQcru = p_fsrFormFact->BVR_cru(regQghost, m_r1, m_r2, mr1, mr2);
   }
   else {
     m_BtiXcru = p_fsrFormFact->BVR_full(regX, m_r1, m_r2, m_r1.Mass(), m_r2.Mass(), m_photonMass, 0);
-    // Same EQQ,EQQ convention fix as the BVR_cru branch above - see its comment.
-    // Same Eq1/Eq2 reasoning as the BVR_cru branch above.
+    // Same EQQ convention as the BVR_cru branch.
     m_BtiQcru = p_fsrFormFact->BVR_full(regQghost, m_r1, m_r2, mr1, mr2, m_photonMass, 0);
   }
   m_volmc = m_gammapFF*log(1./m_fsrcut);
-  // Reset before the branch. m_DelYFS and m_delvol are only assigned inside
-  // the m_hidephotons arm, but m_YFS_IR below reads m_DelYFS
-  // unconditionally, so with HIDE_PHOTONS != 1 it used to pick up whatever the
-  // previous event left behind (or uninitialised memory on the first one).
-  // Zero is the right value there: it reproduces KKMC's KeyPia == 0 branch,
-  // which applies exp(YFS_IRfin) with no DelYFS at all (KKceex.cxx:294-298).
+  // Zero without hidden photons: KKMC's KeyPia == 0 applies exp(YFS_IRfin) with no
+  // DelYFS (KKceex.cxx:294-298).
   m_DelYFS = 0.;
   m_delvol = 0.;
   if (m_hidephotons) {

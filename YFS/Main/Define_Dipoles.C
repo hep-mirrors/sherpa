@@ -110,8 +110,7 @@ bool Define_Dipoles::ApplyPoleRecoil(ATOOLS::Vec4D_Vector &plab) {
   Dipole &D(ff[0]);
   const DipoleSet::WWLegs &w(m_set.WW());
 
-  // BuildPole adds the pair as (W-, W+), so leg 0 carries w.lm/w.nm and leg 1
-  // carries w.lp/w.np.
+  // BuildPole adds the pair as (W-, W+): leg 0 carries w.lm/w.nm, leg 1 w.lp/w.np.
 
   const Vec4D oldw[2] = {D.GetOldMomenta(0), D.GetOldMomenta(1)};
   const Vec4D neww[2] = {D.GetNewMomenta(0), D.GetNewMomenta(1)};
@@ -207,9 +206,8 @@ double Define_Dipoles::CalculateVirtualSub() {
   for (auto &D : m_set.IF()){
     sub += D.ChargeNorm()*p_yfsFormFact->BVirtGeneral(D, sqrt(m_s) / 2.);
   }
-  // The pole expansion's decay stage: its exponent (FormFactorSumDecay) is
-  // in the YFS weight, so its virtual B has to be subtracted from the loop
-  // like every other dipole's. Empty outside the pole scheme.
+  // Pole-scheme decay stage: its exponent is in the YFS weight, so its virtual B
+  // is subtracted like every other dipole's.
   if (DecayVirtualSubtraction())
     for (auto &D : m_set.Decay())
       sub += D.ChargeNorm()*p_yfsFormFact->BVirtGeneral(D, sqrt(m_s) / 2.);
@@ -336,11 +334,8 @@ double Define_Dipoles::CalculateVirtualSubEps() {
 }
 
 double Define_Dipoles::CalculateRealVirtualSubEps(const Vec4D &k) {
-  // Virtual YFS B-hat in dim-reg at the reduced (photon-removed) kinematics.
-  // Must use the same BVV function as CalculateVirtualSubEps: the RV finite
-  // remainder is defined by subtracting 2*alpha*B_fin off the one-loop real
-  // emission ME, with the identical finite convention as the Born virtual —
-  // otherwise beta_1^1 does not vanish in the soft limit.
+  // Virtual YFS B-hat in dim-reg at the reduced kinematics. Uses the same BVV
+  // function as CalculateVirtualSubEps so beta_1^1 vanishes in the soft limit.
   DivArrD sub(0);
   for (auto &D : m_set.ByType(dipoletype::initial)) {
     sub += D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
@@ -352,9 +347,7 @@ double Define_Dipoles::CalculateRealVirtualSubEps(const Vec4D &k) {
   }
 
   for (auto &D : m_set.IF()){
-    // change to + for IFI terms
-    // Note Born momenta are redifined
-    // for IFI terms.
+    // Born momenta are redefined for IFI terms.
     if(D.IsFinite()) continue;
     sub += D.ChargeNorm()*IFVirtualBEps(D);
   }
@@ -392,38 +385,16 @@ double Define_Dipoles::FormFactorSum(){
   return form;
 }
 
-// The decay-stage term of the pole expansion: one (W, charged lepton) dipole
-// per W, each evaluated at half that W's own invariant mass. Empty in the flat
-// scheme, where there is no decay stage.
-//
-// The cutoff is sqrt(D.Sprime())/2 -- the maximum photon energy in the decaying
-// W's rest frame -- which is what makes this reproduce eq (12) of
-// hep-ph/0302065 rather than an arbitrary fraction of it. The production stage
-// above uses sqrt(s)/2 for the same reason: each stage's soft integral runs to
-// its own kinematic limit, and the two stages are separately charge conserving,
-// so each is separately free of the photon mass.
+// Decay-stage term of the pole expansion (one (W, lepton) dipole per W, empty in
+// the flat scheme). The cutoff is the maximum photon energy in the decaying W's
+// rest frame, sqrt(D.Sprime())/2, reproducing eq (12) of hep-ph/0302065.
 double Define_Dipoles::CoulombSubtraction(YFS::Dipole &D){
-  // eq (9) of hep-ph/9606429. The YFS virtual B for a pair of massive charged
-  // particles contains the Coulomb singularity: as their relative velocity
-  // beta -> 0 it diverges like pi/(4 beta), so exp(2a ReB) is unbounded near
-  // threshold. That regime is not something the exponentiation can describe --
-  // it is resummed separately, here by YFS::Coulomb using the width-regulated
-  // Fadin-Khoze-Martin-Stirling form -- so the singular piece is removed from
-  // the exponent to avoid both the divergence and the double counting:
-  //
-  //   B'(beta) = B(beta) - (pi/4beta) theta(beta_t - beta)
-  //
-  // The exponent this sum builds is 2a ReB + 2a Btilde, so the amount to
-  // remove is 2a * pi/(4 beta) = a pi / (2 beta).
-  //
-  // beta_t = 0.382 (YFS: WW_BETAT) is the paper's transition velocity, fixed by
-  // requiring the O(a^2) Coulomb term (pi a/beta)^2/12 to stay below 0.03%
-  // above it. Above beta_t the Coulomb series is an ordinary part of the
-  // perturbative expansion and needs no special treatment.
-  //
-  // Only for a pair of massive charged vector bosons, i.e. only in the pole
-  // expansion: in the flat scheme the final-state pair is light fermions, this
-  // regime never arises, and subtracting would remove something real.
+  // eq (9) of hep-ph/9606429. The virtual B diverges as pi/(4 beta) at threshold;
+  // that Coulomb piece is resummed separately (YFS::Coulomb), so it is removed
+  // from the exponent: B'(beta) = B(beta) - (pi/4beta) theta(beta_t - beta).
+  // The exponent is 2a ReB + 2a Btilde, so the amount removed is a pi/(2 beta).
+  // beta_t = 0.382 (YFS: WW_BETAT). Only for massive charged vector pairs, i.e.
+  // the pole expansion.
   if (m_wwscheme != wwscheme::pole) return 0.;
   if (!D.GetFlav(0).IsVector() || !D.GetFlav(1).IsVector()) return 0.;
   const double sp(D.Sprime());
@@ -440,8 +411,7 @@ double Define_Dipoles::CoulombSubtraction(YFS::Dipole &D){
 void Define_Dipoles::CheckDecayFormFactor(YFS::Dipole &D) {
   if (m_decaycheckdone || m_dim_reg != 1) return;
   m_decaycheckdone = true;
-  // the dipole's legs in the W rest frame, where Kmax = (M^2 - m_l^2)/2M is
-  // defined; the virtual is frame independent, the real B-tilde is not
+  // Legs in the W rest frame, where Kmax = (M^2 - m_l^2)/2M is defined.
   const double M(D.GetMass(0)), ml(D.GetMass(1));
   if (M <= ml) return;
   const double ks((M*M - ml*ml)/(2.*M));
@@ -465,12 +435,9 @@ void Define_Dipoles::CheckDecayFormFactor(YFS::Dipole &D) {
 double Define_Dipoles::FormFactorSumDecay(){
   double form = 0;
   for(auto &D: m_set.Decay()){
-    // Leg 0 is the resonance, leg 1 its charged daughter -- BuildPole adds
-    // them in that order.
+    // Leg 0 is the resonance, leg 1 its charged daughter.
     const double M(D.GetMass(0)), ml(D.GetMass(1));
-    // Soft cutoff: the largest photon energy this decay can produce in the
-    // resonance rest frame, (M^2 - ml^2)/2M. The whole soft integral then sits
-    // in the exponent, matching what the production stage does with sqrt(s)/2.
+    // Soft cutoff: largest photon energy in the resonance rest frame, (M^2 - ml^2)/2M.
     if (M <= ml) continue;
     const double ks((M*M - ml*ml)/(2.*M));
     form += fabs(D.m_QiQj)*p_yfsFormFact->BVR_decay(M, ml, ks);
@@ -505,7 +472,7 @@ void Define_Dipoles::DumpDipoles(){
                << "  omega=" << omega << " GeV"
                << "  Y=" << y
                << std::endl;
-    // the region ledger: exponent region (FormFactorSum) and generated region
+    // exponent region and generated region
     msg_Info() << "        exponent: "
                << (D.HasExpRegion() ? D.ExpRegion().Describe() : std::string("-"))
                << "   generated: "
@@ -530,8 +497,7 @@ void Define_Dipoles::DumpDipoles(){
     msg_Info() << "        (M=" << M << " GeV, m_l=" << ml << " GeV)"
                << std::endl;
   }
-  // IF dipoles only contribute to the form factor when IFI_Sub is on, so say
-  // so rather than printing a cutoff that is not being used.
+  // IF dipoles contribute to the form factor only when IFI_Sub is on.
   for (auto &D : m_set.IF())
     line(D, "IF", m_ifisub ? IFIOmega() : 0.);
   if (m_set.FF().empty())
@@ -607,27 +573,23 @@ double Define_Dipoles::FormFactorSumIF(double omega){
 
 
 double Define_Dipoles::IFIOmega() const {
-  // Soft cutoff for the IF form factor. It must be one scale for all four
-  // pairs, and it must be the boundary above which the interference is carried
-  // by explicit photons instead.
+  // Soft cutoff for the IF form factor: one scale for all four pairs, above which
+  // the interference is carried by explicit photons.
   if (m_ifiomega > 0.) return m_ifiomega;
   return sqrt(m_s)/2.;
 }
 
 
 double Define_Dipoles::RealIFWeight(const ATOOLS::Vec4D_Vector &photons) {
-  // The interference the IF form factor no longer carries once IFIOmega() has
-  // been lowered to the generation cutoff, supplied per generated photon as the
-  // ratio of the COHERENT radiation function to the crude one it was generated
-  // from:
+  // Interference not carried by the IF form factor once IFIOmega() is lowered to
+  // the generation cutoff: per generated photon, coherent over crude radiation function.
   
   if (!m_ifireal || m_set.IF().empty()) return 1.;
   const double omega = IFIOmega();
   double w(1.);
   for (const auto &k : photons) {
     if (IsZero(k.E())) continue;
-    // Only photons ABOVE the cutoff. Everything below omega is already held by
-    // the IF form factor, so reweighting it here counts that region twice.
+    // Only photons above omega; below it the IF form factor already holds them.
     if (k.E() <= omega) continue;
     const double crude = CalculateRealSubEEX(k);
     const double coh   = CalculateRealSub(k);
@@ -872,9 +834,8 @@ double Define_Dipoles::Propagator(const double &s, int width){
 }
 
 double Define_Dipoles::ResonanceWidthDistance(YFS::Dipole &D) {
-  // |m_ij - M| / Gamma, minimised over the resonances of the process. Returns a
-  // large sentinel if the process has no usable resonance, so that a pair stays
-  // selectable and the ordering simply falls back to the order of the pairs.
+  // |m_ij - M| / Gamma, minimised over the process resonances; a large sentinel
+  // if there is none, so the pair order is used.
   const double mass_d((D.GetBornMomenta(0) + D.GetBornMomenta(1)).Mass());
   double mdist(std::numeric_limits<double>::max());
   for (auto it = m_proc_restab_map.begin(); it != m_proc_restab_map.end(); ++it) {

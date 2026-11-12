@@ -110,10 +110,8 @@ bool RealVirtual::LoopOverTree(const ATOOLS::Vec4D_Vector &p,
   if (p_loop_me->Mode() != 0 || p_loop_me->ME_Born() == 0.) return false;
   /*
     A loop of exactly zero over a nonzero tree is a provider failure, not
-    physics. Systematic (every call): OpenLoops with qed 1 returns it for
-    l+l- gamma at any nonzero Higgs width, which made RV = -B rho v_B
-    (kkmc1005 gate, 2026-10-06) - fatal above 5% of the calls. Occasional
-    (e+e- -> 3 gamma, 2026-10-13): the point is dropped like an unstable one.
+    physics. Systematic zeros are fatal above 5% of the calls, occasional ones
+    drop the point like an unstable one.
   */
   ++m_ltcalls;
   if (p_loop_me->ME_Finite() == 0. && p_loop_me->ME_E1() == 0.) {

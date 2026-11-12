@@ -120,10 +120,8 @@ void Massification::Attach(const PHASIC::Virtual_ME2_Base *me)
 {
   if (m_legs.empty()) return;
   if (me && !me->MasslessLegConstant(m_c)) {
-    // a provider with its own small-mass limit (Recola's light fermions): the
-    // same at one loop. Its light fermions are massless KINEMATICALLY (Recola
-    // rescales massive momenta onto them and breaks momentum conservation:
-    // wwpilot2, 2026-10-10), so the massless image is still passed, but the
+    // a provider with its own small-mass limit (Recola's light fermions): it is
+    // massless only kinematically, so the massless image is passed, but the
     // mass logarithms are the provider's: no Z factor
     bool native(true);
     for (const size_t i : m_legs) native = native && me->SmallMassLimit(m_flavs[i]);

@@ -49,11 +49,9 @@ namespace YFS {
 
     typedef std::function<double(const Dipole &)> ResonanceScore;
 
-    // A dipole's born momenta are the momenta BEFORE that dipole radiates.
-    // For the initial-initial dipole that is the born momenta of the process;
-    // for the final-state dipoles it is the momenta after ISR but before FSR.
-    // The two are therefore built at different points in the event, which is
-    // why there are two entry points and not one.
+    // A dipole's born momenta are the momenta BEFORE it radiates: the process
+    // born momenta for II, the post-ISR pre-FSR momenta for the final-state
+    // dipoles. Hence two entry points.
 
     // Before ISR. Builds the initial-initial dipole.
     void BuildInitial(const ATOOLS::Flavour_Vector &flavs,
@@ -61,13 +59,9 @@ namespace YFS {
                       const ATOOLS::Vec4D_Vector   &born,
                       double alpha);
 
-    // After ISR, before FSR. Builds the final-final and initial-final dipoles
-    // with born = momenta, and selects the radiating FF subset. Leaves any
-    // initial-initial dipole from BuildInitial untouched.
-    // born is the momenta before FSR. Callers normally pass the same vector as
-    // momenta; it is explicit rather than assumed because not every caller does.
-    // After ISR, before FSR. Final-final dipoles only, plus the radiating
-    // selection.
+    // After ISR, before FSR. Builds the final-final dipoles and selects the
+    // radiating subset; leaves the II dipole untouched. born is the momenta
+    // before FSR (usually the same vector as momenta).
     void BuildFinal(const ATOOLS::Flavour_Vector &flavs,
                     const ATOOLS::Vec4D_Vector   &momenta,
                     const ATOOLS::Vec4D_Vector   &born,
@@ -75,13 +69,9 @@ namespace YFS {
                     const ResonanceScore &score = ResonanceScore());
 
     // -- pole expansion (WW) ------------------------------------------------
-    // The four-fermion final state of e+e- -> W+W- -> 4f, resolved into the two
-    // W's and the charged lepton each one decayed to. Reconstructed by pairing
-    // each charged lepton with its own partner neutrino (|kf| differing by one,
-    // opposite sign), not by summing charges: the charge heuristic cannot tell
-    // which neutrino belongs to which W once both W's decay to the same
-    // generation, and it says nothing about the lepton/W pairing the decay
-    // dipoles need.
+    // The 4f final state of e+e- -> W+W- -> 4f resolved into the two W's and
+    // their charged leptons, pairing each lepton with its partner neutrino
+    // (|kf| differing by one, opposite sign).
     struct WWLegs {
       bool ok = false;                  //!< false => not a W+W- -> 4f state
       ATOOLS::Vec4D wm, wp;             //!< W-, W+ four-momenta (off-shell)
@@ -102,12 +92,8 @@ namespace YFS {
 
     const WWLegs &WW() const { return m_ww; }
 
-    // Initial-final dipoles. Separate from BuildFinal because their initial
-    // legs are the BORN beams while their final legs are at m_plab: the
-    // interference is between radiation off the incoming particles and off the
-    // outgoing ones, so the initial leg is the physical beam, not the
-    // ISR-reduced one. Passing one vector for both also mixes frames once the
-    // beams are asymmetric. The caller supplies the combined vector.
+    // Initial-final dipoles: initial legs are the BORN beams, final legs are
+    // at m_plab. The caller supplies the combined vector.
     void BuildIF(const ATOOLS::Flavour_Vector &flavs,
                  const ATOOLS::Vec4D_Vector   &momenta,
                  const ATOOLS::Vec4D_Vector   &born,
@@ -129,10 +115,7 @@ namespace YFS {
     DipoleView FF() { return DipoleView(m_dipoles, m_idxFF); }
     DipoleView IF() { return DipoleView(m_dipoles, m_idxIF); }
 
-    // There is at most one initial-initial dipole, so this is a reference and
-    // not a range. Its absence whenever ISR is on is a setup error, not a case
-    // to handle, so II() throws rather than handing back a pointer that ten
-    // call sites would have to check and none did.
+    // At most one initial-initial dipole; II() throws if absent.
     bool HasII() const { return !m_idxII.empty(); }
     Dipole       &II();
     const Dipole &II() const;
@@ -149,8 +132,7 @@ namespace YFS {
                                         const ATOOLS::Vec4D_Vector &momenta,
                                         const ATOOLS::Vec4D_Vector &born,
                                         std::size_t first, std::size_t last);
-    // Drop the named subsets, keeping the others. Lets BuildInitial and
-    // BuildFinal be called in either order without clobbering each other.
+    // Drop the named subsets, keeping the others.
     void DropTypes(bool dropII, bool dropFF, bool dropIF);
     void Add(const Leg &a, const Leg &b, dipoletype::code t, double alpha);
     // Add() for a pair that may contain a W leg; see the definition.
@@ -159,9 +141,7 @@ namespace YFS {
     static void ProjectOnShell(ATOOLS::Vec4D &wm, ATOOLS::Vec4D &wp, double MW);
     void SelectRadiating(const ResonanceScore &score);
 
-    // unique_ptr so that a Dipole keeps its address for the whole run.
-    // ISR::SetIncoming caches a Dipole* on the first event and holds it
-    // thereafter, so rebuilding this vector must not move the objects.
+    // unique_ptr: a Dipole keeps its address (ISR caches a Dipole*).
     std::vector<std::unique_ptr<Dipole> > m_dipoles;
     std::vector<std::size_t> m_idxII, m_idxFF, m_idxIF, m_idxRad, m_idxDec;
     WWLegs m_ww;

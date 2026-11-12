@@ -249,9 +249,7 @@ void Debug::FillHist(const Vec4D_Vector &plab, YFS::ISR *p_isr, YFS::FSR *p_fsr,
 		std::vector<double> cos   = p_isr->m_cos;
 
 		for (auto c : cos)   m_histograms_ISR["cos(theta)"]->Insert(c,W);
-		// Per-event scalars now, not vectors. The four below are only set on
-		// the m_n != 1 branch of MapPhotonMomentun; previously their vectors
-		// were simply left empty, so the loop inserted nothing.
+		// per-event scalars, set only on the m_n != 1 branch of MapPhotonMomentun
 		m_histograms_ISR["jacobian"]->Insert(p_isr->m_jacvec,W);
 		if (p_isr->GetN() != 1) {
 			m_histograms_ISR["lam"]->Insert(p_isr->m_scale,W);
@@ -314,7 +312,5 @@ void Debug::WriteHistograms() {
 			hit.second->Output(name);
 		}
 	}
-	// The maps own their histograms, so nothing is deleted here. The old loops
-	// deleted only under the same flags that guard the writing, which leaked
-	// every histogram whenever HasISR()/HasFSR() changed after booking.
+	// the maps own their histograms: nothing is deleted here
 }

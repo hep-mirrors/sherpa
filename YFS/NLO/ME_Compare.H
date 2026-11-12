@@ -17,26 +17,18 @@ namespace YFS {
 
 typedef std::map<std::string, std::unique_ptr<ATOOLS::Histogram> > histograms1d;
 
-// Point-by-point comparison of two matrix-element evaluations (either
-// internal-vs-external or external-vs-external) for a real-emission process.
-// Tracks mismatch statistics and histograms photon kinematics (energy, pT,
-// angle to the nearest charged leg, angle to the beam axis, and - when
-// there are 2+ photons, e.g. for RealReal - the minimum photon-photon
-// opening angle) split by whether each point agreed with tolerance or not,
-// to help correlate mismatches with the soft/collinear region, including
-// the photon-photon collinear/soft region that only RealReal can reach.
-// Shared between Real and RealReal so the diagnostic code isn't duplicated
-// per class.
+//! Point-by-point comparison of two matrix-element evaluations of a
+//! real-emission process. Tracks mismatch statistics and histograms photon
+//! kinematics (energy, pT, angles, photon-photon opening angle) split by
+//! agreement within tolerance.
 class ME_Compare {
 public:
   ME_Compare(bool check, const std::string &histdir,
              const std::string &label, double tol = 1e-4);
   ~ME_Compare();
 
-  // test: the value under test (e.g. internal ME, or a second external ME)
-  // reference: the value it's being checked against (e.g. an external ME)
-  // flavs: flavours of ALL legs (initial+final), same order as p
-  // nin: number of initial-state legs in flavs/p
+  //! test: value under test, reference: value it is checked against,
+  //! flavs: flavours of all legs in the order of p, nin: number of initial legs
   void CheckAgreement(const ATOOLS::Vec4D_Vector &p, double test,
                       double reference, const ATOOLS::Flavour_Vector &flavs,
                       size_t nin);
@@ -48,10 +40,8 @@ private:
   long int m_npoints, m_nbad, m_nbad_is, m_nbad_fs;
   double m_maxdev;
   histograms1d m_histograms1d;
-  // per-photon scatter data (energy vs angle to nearest charged particle) for
-  // spotting collinear enhancement of energetic photons in the large
-  // corrections. All "bad" points are written; "ok" points capped to
-  // m_scatter_max rows to bound the file size.
+  //! per-photon scatter data (energy vs angle to nearest charged particle);
+  //! all bad points are written, ok points capped at m_scatter_max rows
   std::ofstream m_scatter;
   long int m_scatter_ok, m_scatter_max;
 };
