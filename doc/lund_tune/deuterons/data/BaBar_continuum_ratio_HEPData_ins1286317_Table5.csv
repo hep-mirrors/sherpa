@@ -1,0 +1,13 @@
+#: table_doi: 10.17182/hepdata.64605.v1/t5
+#: name: Table 5
+#: description: The ratio of the cross sections of the processes E+ E- --> DEUTBAR X and E+ E- --> HADRONS.
+
+#: data_file: Table5.yaml
+#: keyword reactions: E+ E- --> DEUTBAR X | E+ E- --> HADRONS
+#: keyword observables: SIG/SIG
+#: keyword phrases: Inclusive | Exclusive | Upsilon | Integrated Cross Section | Cross Section | E+ E- Scattering
+#: keyword cmenergies: 10.58
+#: RE,E+ E- --> DEUTBAR X,,,,
+SQRT(S) [GEV],SIG( E+ E- --> DEUTBAR X ) / SIG( E+ E- --> HADRONS ),stat +,stat -,sys +,sys -
+10.58,3.01e-06,1.3e-07,-1.3e-07,3.7e-07,-3.1e-07
+

@@ -1,0 +1,18 @@
+#: table_doi: 10.17182/hepdata.68096.v1/t1
+#: name: Table 1
+#: description: Production ratios of SD with $M_{X} < 200 GeV/c^2$ to INEL.
+
+#: data_file: Table1.yaml
+#: keyword reactions: P P --> P X
+#: keyword observables: SIG/SIG
+#: keyword phrases: Inclusive | Integrated Cross Section | Cross Section | Proton-Proton Scattering
+#: keyword cmenergies: 7000.0
+#: M(X) [GEV],,,< 200
+#: RE,,,P P --> P X
+#: SQRT(S) [GeV],,,7000.0
+#: ,,,Single Diffraction
+$\sqrt{s}$ [GeV],$\sqrt{s}$ [GeV] LOW,$\sqrt{s}$ [GeV] HIGH,$\sigma_\text{SD} / \sigma_\text{inel}$,error +,error -
+900.0,899.5,900.5,0.21,0.03,-0.03
+2760.0,2759.5,2760.5,0.2,0.07,-0.08
+7000.0,6999.5,7000.5,0.2,0.04,-0.07
+

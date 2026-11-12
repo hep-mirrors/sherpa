@@ -1,0 +1,22 @@
+#: table_doi: 10.17182/hepdata.77011.v1/t6
+#: name: Table 6
+#: description: Measured pseudorapidity dependence of $dN/d\eta$ for  INEL>0 collisions at a centre-of-mass energy of 2760 GeV.
+
+#: data_file: Table6.yaml
+#: keyword reactions: P P --> CHARGED X
+#: keyword observables: DN/DETARAP
+#: keyword cmenergies: 2760
+#: $\sqrt{s}$ (GeV),,,2760.0
+#: RE,,,P P --> CHARGED X
+$\eta$,$\eta$ LOW,$\eta$ HIGH,$dN/d\eta$,error +,error -
+-0.9,-1.0,-0.8,5.01,0.09,-0.08
+-0.7,-0.8,-0.6,4.91,0.09,-0.08
+-0.5,-0.6,-0.4,4.83,0.09,-0.07
+-0.30000000000000004,-0.4,-0.2,4.72,0.08,-0.07
+-0.1,-0.2,0.0,4.71,0.08,-0.07
+0.1,0.0,0.2,4.71,0.08,-0.07
+0.30000000000000004,0.2,0.4,4.74,0.08,-0.07
+0.5,0.4,0.6,4.84,0.08,-0.07
+0.7,0.6,0.8,4.92,0.09,-0.08
+0.9,0.8,1.0,5.02,0.09,-0.08
+

@@ -1,0 +1,22 @@
+#: table_doi: 10.17182/hepdata.81951.v1/t11
+#: name: Table 11
+#: description: Integrated deuteron-to-proton (d/p) and antideuteron-to-antiproton ($\overline{\text{d}}/\overline{\text{p}}$) ratios in inelastic pp collisions as a function of the average charged particle multiplicity for different center-of-mass energies.
+#: data_file: data11.yaml
+#: keyword reactions: P P --> DEUT X | P P --> ANTIDEUT X
+#: keyword observables: RATIO
+#: keyword cmenergies: 900 | 2760 | 7000
+#: keyword phrases: d/p | dbar/pbar
+#: SQRT(S) [GEV],900 TO 7000
+#: RE,P P --> DEUT X
+DMULT/DETARAP,DEUT/P,stat +,stat -,sys +,sys -
+3.81,0.00138,0.00011,-0.00011,0.00015,-0.00015
+4.88,0.001482,4.7e-05,-4.7e-05,0.00016,-0.00016
+6.01,0.001626,1.3e-05,-1.3e-05,0.00017,-0.00017
+
+#: SQRT(S) [GEV],900 TO 7000
+#: RE,P P --> ANTIDEUT X
+DMULT/DETARAP,ANTIDEUT/PBAR,stat +,stat -,sys +,sys -
+3.81,0.00139,0.00014,-0.00014,0.00015,-0.00015
+4.88,0.001309,3.6e-05,-3.6e-05,0.00014,-0.00014
+6.01,0.001563,1.3e-05,-1.3e-05,0.00017,-0.00017
+

@@ -1,0 +1,44 @@
+#: table_doi: 10.17182/hepdata.77011.v1/t46
+#: name: Table 46
+#: description: Mean CQ moments of the multiplicity distributions for the  pseudorapidity range -1.0 to 1.0 in P P NSD collisions at  centre-of-mass energies from 900 to 8000 GeV.
+
+#: data_file: Table46.yaml
+#: keyword reactions: P P --> CHARGED X
+#: keyword observables: MOMENT
+#: keyword cmenergies: 900.0-8000.0
+#: ETARAP(P=3),-1.0-1.0
+#: RE,P P --> CHARGED X
+#: SQRT(S) [GeV],900.0
+YN,,error +,error -
+MOMENT(NAME=C2),1.8,0.1,-0.1
+MOMENT(NAME=C3),4.3,0.3,-0.3
+MOMENT(NAME=C4),13.0,1.0,-1.0
+MOMENT(NAME=C5),48.0,7.0,-7.0
+
+#: ETARAP(P=3),-1.0-1.0
+#: RE,P P --> CHARGED X
+#: SQRT(S) [GeV],2760.0
+YN,,error +,error -
+MOMENT(NAME=C2),1.9,0.1,-0.1
+MOMENT(NAME=C3),4.9,0.6,-0.6
+MOMENT(NAME=C4),16.0,3.0,-3.0
+MOMENT(NAME=C5),62.0,16.0,-16.0
+
+#: ETARAP(P=3),-1.0-1.0
+#: RE,P P --> CHARGED X
+#: SQRT(S) [GeV],7000.0
+YN,,error +,error -
+MOMENT(NAME=C2),1.9,0.1,-0.1
+MOMENT(NAME=C3),5.3,0.4,-0.4
+MOMENT(NAME=C4),18.0,2.0,-2.0
+MOMENT(NAME=C5),73.0,12.0,-12.0
+
+#: ETARAP(P=3),-1.0-1.0
+#: RE,P P --> CHARGED X
+#: SQRT(S) [GeV],8000.0
+YN,,error +,error -
+MOMENT(NAME=C2),2.0,0.1,-0.1
+MOMENT(NAME=C3),5.6,0.8,-0.8
+MOMENT(NAME=C4),20.0,4.0,-4.0
+MOMENT(NAME=C5),81.0,24.0,-24.0
+

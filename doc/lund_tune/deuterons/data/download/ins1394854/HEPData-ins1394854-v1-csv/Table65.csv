@@ -1,0 +1,222 @@
+#: table_doi: 10.17182/hepdata.77011.v1/t65
+#: name: Table 65
+#: description: Individual sets of fit parameters for the multiplicity distribution in pseudorapidity range-1 to 1 in P P NSD collisions at center-of-mass energy 7000 GeV.
+
+#: data_file: Table65.yaml
+#: keyword reactions: P P --> CHARGED X
+#: CLASS,NSD
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,1.0
+#: SQRT(S) [GEV 7000],
+PARNAME,SET
+alpha,0.657
+n1,6.895
+k1,2.076
+n2,22.583
+k2,4.139
+lambda,0.943
+
+#: CLASS,NSD
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,2.0
+#: SQRT(S) [GEV 7000],
+PARNAME,SET
+alpha,0.665
+n1,7.029
+k1,2.049
+n2,22.966
+k2,4.207
+lambda,0.942
+
+#: CLASS,NSD
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,3.0
+#: SQRT(S) [GEV 7000],
+PARNAME,SET
+alpha,0.651
+n1,6.794
+k1,2.092
+n2,22.323
+k2,4.086
+lambda,0.943
+
+#: CLASS,NSD
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,4.0
+#: SQRT(S) [GEV 7000],
+PARNAME,SET
+alpha,0.663
+n1,7.028
+k1,2.113
+n2,22.893
+k2,4.269
+lambda,0.936
+
+#: CLASS,NSD
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,5.0
+#: SQRT(S) [GEV 7000],
+PARNAME,SET
+alpha,0.669
+n1,7.133
+k1,2.094
+n2,23.201
+k2,4.325
+lambda,0.936
+
+#: CLASS,NSD
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,6.0
+#: SQRT(S) [GEV 7000],
+PARNAME,SET
+alpha,0.656
+n1,6.918
+k1,2.136
+n2,22.621
+k2,4.206
+lambda,0.937
+
+#: CLASS,NSD
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,7.0
+#: SQRT(S) [GEV 7000],
+PARNAME,SET
+alpha,0.685
+n1,7.219
+k1,1.936
+n2,23.456
+k2,4.41
+lambda,0.945
+
+#: CLASS,NSD
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,8.0
+#: SQRT(S) [GEV 7000],
+PARNAME,SET
+alpha,0.691
+n1,7.34
+k1,1.908
+n2,23.801
+k2,4.456
+lambda,0.944
+
+#: CLASS,NSD
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,9.0
+#: SQRT(S) [GEV 7000],
+PARNAME,SET
+alpha,0.686
+n1,7.188
+k1,1.929
+n2,23.369
+k2,4.418
+lambda,0.946
+
+#: CLASS,NSD
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,10.0
+#: SQRT(S) [GEV 7000],
+PARNAME,SET
+alpha,0.669
+n1,6.982
+k1,2.039
+n2,22.933
+k2,4.305
+lambda,0.947
+
+#: CLASS,NSD
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,11.0
+#: SQRT(S) [GEV 7000],
+PARNAME,SET
+alpha,0.671
+n1,7.045
+k1,2.021
+n2,23.144
+k2,4.323
+lambda,0.946
+
+#: CLASS,NSD
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,12.0
+#: SQRT(S) [GEV 7000],
+PARNAME,SET
+alpha,0.669
+n1,6.934
+k1,2.042
+n2,22.82
+k2,4.299
+lambda,0.948
+
+#: CLASS,NSD
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,13.0
+#: SQRT(S) [GEV 7000],
+PARNAME,SET
+alpha,0.673
+n1,7.128
+k1,1.985
+n2,23.124
+k2,4.282
+lambda,0.944
+
+#: CLASS,NSD
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,14.0
+#: SQRT(S) [GEV 7000],
+PARNAME,SET
+alpha,0.679
+n1,7.254
+k1,1.955
+n2,23.493
+k2,4.338
+lambda,0.943
+
+#: CLASS,NSD
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,15.0
+#: SQRT(S) [GEV 7000],
+PARNAME,SET
+alpha,0.675
+n1,7.105
+k1,1.976
+n2,23.05
+k2,4.293
+lambda,0.944
+
+#: CLASS,NSD
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,16.0
+#: SQRT(S) [GEV 7000],
+PARNAME,SET
+alpha,0.668
+n1,6.981
+k1,2.038
+n2,22.74
+k2,4.253
+lambda,0.947
+
+#: CLASS,NSD
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,17.0
+#: SQRT(S) [GEV 7000],
+PARNAME,SET
+alpha,0.666
+n1,7.003
+k1,2.031
+n2,22.861
+k2,4.246
+lambda,0.945
+
+#: CLASS,NSD
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,18.0
+#: SQRT(S) [GEV 7000],
+PARNAME,SET
+alpha,0.673
+n1,6.996
+k1,2.024
+n2,22.768
+k2,4.291
+lambda,0.948
+

@@ -1,0 +1,27 @@
+#: table_doi: 10.17182/hepdata.68129.v1/t4
+#: name: Table 4
+#: description: dN/dy and MEAN(PT) extracted from Levy-Tsallis fits to the measured PI, K, P spectra at mid-rapidity in inelastic pp collisions at SQRT(S) = 7 TeV. Combined statistical and systematic uncertainties (statistical uncertainties are negligible) are reported. The systematic uncertainty on dN/dy due to normalization to inelastic collisions (+7-4%) is not included.  Integrated yields of Kaon/Pion and Proton/Pion ratios are also reported with combined statistical and systematic uncertainties (statistical uncertainties are negligible).
+
+#: data_file: Table4.yaml
+#: keyword reactions: P P --> PI+ X | P P --> PI- X | P P --> K+ X | P P --> K- X | P P --> P X | P P --> PBAR X
+#: keyword observables: DN/DYRAP | PT
+#: keyword phrases: Inclusive | Differential Distribution | Rapidity Dependence | Proton-Proton Scattering | Strange Production
+#: keyword cmenergies: 7000.0
+#: ABS(YRAP),< 0.5
+#: SQRT(S) [GeV],7000.0
+Particle,dN/dy,error +,error -
+PI+ + PI-,4.49,0.2,-0.2
+K+ + K-,0.572,0.032,-0.032
+P + PBAR,0.247,0.018,-0.018
+(K+ + K-)/(PI+ + PI-),0.127,0.01,-0.01
+(P + PBAR)/(PI+ + PI-),0.055,0.005,-0.005
+
+#: ABS(YRAP),< 0.5
+#: SQRT(S) [GeV],7000.0
+Particle,MEAN(PT),error +,error -
+PI+ + PI-,0.466,0.01,-0.01
+K+ + K-,0.773,0.016,-0.016
+P + PBAR,0.9,0.029,-0.029
+(K+ + K-)/(PI+ + PI-),-,0,0
+(P + PBAR)/(PI+ + PI-),-,0,0
+

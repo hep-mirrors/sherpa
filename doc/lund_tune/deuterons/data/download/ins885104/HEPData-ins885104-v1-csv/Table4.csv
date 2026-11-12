@@ -1,0 +1,16 @@
+#: table_doi: 10.17182/hepdata.57568.v1/t4
+#: name: Table 4
+#: description: Mean transverse momentum as a function of the mass of the emitted particle.
+
+#: data_file: Table4.yaml
+#: keyword reactions: P P --> CHARGED X
+#: keyword observables: PT
+#: keyword phrases: Inclusive | Proton-Proton Scattering
+#: keyword cmenergies: 900.0
+#: RE,P P --> CHARGED X
+#: SQRT(S) [GeV],900.0
+M(C=CHARGED) [GEV],"MEAN(NAME=PT,C= CHARGED) [GEV]",error +,error -
+0.13957,0.4038,0.02,-0.02
+0.493677,0.6487,0.0502,-0.0502
+0.938272,0.7605,0.0602,-0.0602
+

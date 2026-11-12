@@ -1,0 +1,222 @@
+#: table_doi: 10.17182/hepdata.77011.v1/t57
+#: name: Table 57
+#: description: Individual sets of fit parameters for the multiplicity distribution in pseudorapidity range-1 to 1 in P P INEL collisions at center-of-mass energy 2760 GeV.
+
+#: data_file: Table57.yaml
+#: keyword reactions: P P --> CHARGED X
+#: CLASS,INEL
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,1.0
+#: SQRT(S) [GEV 2760],
+PARNAME,SET
+alpha,0.578
+n1,5.045
+k1,2.134
+n2,15.774
+k2,3.448
+lambda,0.811
+
+#: CLASS,INEL
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,2.0
+#: SQRT(S) [GEV 2760],
+PARNAME,SET
+alpha,0.591
+n1,5.151
+k1,2.081
+n2,16.067
+k2,3.518
+lambda,0.811
+
+#: CLASS,INEL
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,3.0
+#: SQRT(S) [GEV 2760],
+PARNAME,SET
+alpha,0.576
+n1,4.999
+k1,2.146
+n2,15.673
+k2,3.438
+lambda,0.811
+
+#: CLASS,INEL
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,4.0
+#: SQRT(S) [GEV 2760],
+PARNAME,SET
+alpha,0.568
+n1,5.043
+k1,2.358
+n2,15.713
+k2,3.469
+lambda,0.802
+
+#: CLASS,INEL
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,5.0
+#: SQRT(S) [GEV 2760],
+PARNAME,SET
+alpha,0.58
+n1,5.146
+k1,2.298
+n2,15.991
+k2,3.54
+lambda,0.802
+
+#: CLASS,INEL
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,6.0
+#: SQRT(S) [GEV 2760],
+PARNAME,SET
+alpha,0.566
+n1,4.998
+k1,2.368
+n2,15.617
+k2,3.455
+lambda,0.802
+
+#: CLASS,INEL
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,7.0
+#: SQRT(S) [GEV 2760],
+PARNAME,SET
+alpha,0.604
+n1,5.292
+k1,2.277
+n2,16.448
+k2,3.735
+lambda,0.804
+
+#: CLASS,INEL
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,8.0
+#: SQRT(S) [GEV 2760],
+PARNAME,SET
+alpha,0.616
+n1,5.404
+k1,2.224
+n2,16.791
+k2,3.819
+lambda,0.804
+
+#: CLASS,INEL
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,9.0
+#: SQRT(S) [GEV 2760],
+PARNAME,SET
+alpha,0.602
+n1,5.244
+k1,2.283
+n2,16.339
+k2,3.726
+lambda,0.805
+
+#: CLASS,INEL
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,10.0
+#: SQRT(S) [GEV 2760],
+PARNAME,SET
+alpha,0.587
+n1,5.181
+k1,2.405
+n2,16.083
+k2,3.653
+lambda,0.8
+
+#: CLASS,INEL
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,11.0
+#: SQRT(S) [GEV 2760],
+PARNAME,SET
+alpha,0.596
+n1,5.269
+k1,2.375
+n2,16.355
+k2,3.718
+lambda,0.799
+
+#: CLASS,INEL
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,12.0
+#: SQRT(S) [GEV 2760],
+PARNAME,SET
+alpha,0.586
+n1,5.14
+k1,2.407
+n2,15.994
+k2,3.645
+lambda,0.801
+
+#: CLASS,INEL
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,13.0
+#: SQRT(S) [GEV 2760],
+PARNAME,SET
+alpha,0.577
+n1,5.14
+k1,2.348
+n2,15.878
+k2,3.544
+lambda,0.802
+
+#: CLASS,INEL
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,14.0
+#: SQRT(S) [GEV 2760],
+PARNAME,SET
+alpha,0.579
+n1,5.185
+k1,2.337
+n2,16.05
+k2,3.558
+lambda,0.8
+
+#: CLASS,INEL
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,15.0
+#: SQRT(S) [GEV 2760],
+PARNAME,SET
+alpha,0.577
+n1,5.096
+k1,2.346
+n2,15.784
+k2,3.538
+lambda,0.803
+
+#: CLASS,INEL
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,16.0
+#: SQRT(S) [GEV 2760],
+PARNAME,SET
+alpha,0.576
+n1,5.101
+k1,2.392
+n2,15.64
+k2,3.547
+lambda,0.801
+
+#: CLASS,INEL
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,17.0
+#: SQRT(S) [GEV 2760],
+PARNAME,SET
+alpha,0.57
+n1,5.097
+k1,2.442
+n2,15.701
+k2,3.534
+lambda,0.798
+
+#: CLASS,INEL
+#: ETARAP(P=2),-1.0-1.0
+#: NUM,18.0
+#: SQRT(S) [GEV 2760],
+PARNAME,SET
+alpha,0.574
+n1,5.053
+k1,2.403
+n2,15.537
+k2,3.534
+lambda,0.802
+

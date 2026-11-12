@@ -1,0 +1,18 @@
+#: table_doi: 10.17182/hepdata.68096.v1/t2
+#: name: Table 2
+#: description: Production ratios of DD with $\Delta\eta >3$ to INEL.
+
+#: data_file: Table2.yaml
+#: keyword reactions: P P --> X X
+#: keyword observables: SIG/SIG
+#: keyword phrases: Inclusive | Integrated Cross Section | Cross Section | Proton-Proton Scattering
+#: keyword cmenergies: 7000.0
+#: ABS(ETARAP(X1)-ETARAP(X2)),,,> 3
+#: RE,,,P P --> X X
+#: SQRT(S) [GeV],,,7000.0
+#: ,,,Double Diffraction
+$\sqrt{s}$ [GeV],$\sqrt{s}$ [GeV] LOW,$\sqrt{s}$ [GeV] HIGH,$\sigma_\text{DD} / \sigma_\text{inel}$,error +,error -
+900.0,899.5,900.5,0.11,0.03,-0.03
+2760.0,2759.5,2760.5,0.12,0.05,-0.05
+7000.0,6999.5,7000.5,0.12,0.05,-0.04
+

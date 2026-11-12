@@ -1,0 +1,18 @@
+#: table_doi: 10.17182/hepdata.93741.v1/t11
+#: name: Table 11
+#: description: Mean transverse momentum ($\langle p_T \rangle$) of (anti-)deuterons as a function of charged-particle multiplicity at mid-rapidity ($\langle dN_{ch}/d\eta \rangle_{|\eta|<0.5}$)
+#: data_file: meanpt.yaml
+#: keyword reactions: P + P --> (ANTI)DEUT + X
+#: keyword observables: mean pT
+#: keyword energies: 7000
+#: keyword phrases: (anti)deuteron
+#: RE,,,P + P --> (ANTI)DEUT + X
+#: SQRT(S),,,7000.0 GEV
+#: YRAP(CM),,,$-0.5 < y < 0.5$
+$\langle dN_{ch}/d\eta \rangle_{|\eta|<0.5}$,$\langle dN_{ch}/d\eta \rangle_{|\eta|<0.5}$ LOW,$\langle dN_{ch}/d\eta \rangle_{|\eta|<0.5}$ HIGH,$\langle p_T \rangle$ (GeV/c),stat +,stat -,sys +,sys -
+3.295,3.16,3.43,0.8367155,0.005166643,-0.005166643,0.04877185,-0.04877185
+7.539999999999999,7.31,7.77,1.049464,0.006878937,-0.006878937,0.05313032,-0.05313032
+10.760000000000002,10.46,11.06,1.121896,0.009194361,-0.009194361,0.06465344,-0.06465344
+13.5,13.1,13.9,1.169017,0.01119548,-0.01119548,0.06153689,-0.06153689
+17.47,16.95,17.99,1.302741,0.01175745,-0.01175745,0.07380479,-0.07380479
+

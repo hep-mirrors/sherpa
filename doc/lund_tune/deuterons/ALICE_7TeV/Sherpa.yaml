@@ -1,0 +1,74 @@
+# Lund_mbtune: Lund_tune1 with the minimum-bias tune validate6 p018 (make_mbtune_cards.py)
+# pp at sqrt(s) = 7 TeV, ALICE (paper Figs. 7 and 8)
+# Lund_tune1: Lund_s6_008 with the multiple-scattering activity re-tuned for Lund strings
+# (TuneScan/scan_config_lund.yaml + apprentice): SIGMA_ND_NORM 0.754 -> 0.614, PT_0(ref) 1.612 -> 1.21
+# Run from this folder:  Sherpa -f <this card>
+
+BEAMS:          2212
+BEAM_ENERGIES:  3500
+EVENTS:         100k
+EVENT_TYPE:     MinimumBias
+ME_GENERATORS:  None
+SOFT_COLLISIONS: Amisic
+YFS:
+  MODE: None
+
+# ---------------------------------------------------------------------------
+# ScanTune s6_008: Sherpa setting for (anti)deuteron production, found by the
+# parameter scan in ../../TuneScan (round 6 (scan_config_kicks.yaml), point s6_008; scored against ALICE
+# pi/K/p and (anti)deuteron spectra at 7 TeV).  Every physics value is written
+# out, so that the card does not depend on Sherpa's defaults or TuneSets/.
+# The same setting is used for all experiments, as in Dal & Raklev.
+# ---------------------------------------------------------------------------
+
+# multiple parton scatterings (Amisic)
+AMISIC:
+  EVENT_TYPE:     Perturbative   # non-diffractive events only (paper, Sec. IV A)
+  SIGMA_ND_NORM:  0.8524         # minimum-bias tune (Lund_tune1: 0.614)
+  "PT_0(ref)":    1.5174         # minimum-bias tune (Lund_tune1: 1.21)
+  "PT_Min(ref)":  0.4983         # minimum-bias tune (Lund_tune1: 1.1)
+  Eta:            0.0530         # minimum-bias tune (Lund_tune1: default 0.026)
+  MU_R_FACTOR:    0.7185         # minimum-bias tune (Lund_tune1: default 0.5)
+  "PT_Min(IR)":   0.3            # fixed in the minimum-bias tune
+  nB_bins:        400            # b table: integrates to 1.001 (default 20: 1.255)
+
+# proton matter profile (Sherpa default = TuneSets/MPI-CRon)
+REMNANTS:
+  2212:
+    MATTER_FORM:       Double_Gaussian
+    MATTER_RADIUS_1:   0.9604    # minimum-bias tune (Lund_tune1: 0.85)
+    MATTER_RADIUS_2:   1.0
+    MATTER_FRACTION_1: 0.6824    # minimum-bias tune (Lund_tune1: 0.65)
+
+# colour reconnections
+COLOUR_RECONNECTIONS:
+  MODE:      On
+  PMODE:     Log
+  Q_0:       1.0
+  KAPPA:     1.0
+  ETA_Q:     0.6250              # minimum-bias tune (Lund_tune1: 0.568)
+  RESHUFFLE: 0.3299              # minimum-bias tune (Lund_tune1: 0.333)
+
+# cluster hadronisation (AHADIC)
+
+# hadron rescattering: no measurable effect on nucleons and deuterons (checked), off
+HADRON_RESCATTERING:
+  MODE: false
+
+DEUTERON_FORMATION:
+  MODE:       true
+  MODEL:      CrossSection   # Dal & Raklev, arXiv:1504.07242
+  INV_SIGMA0: 1.8            # 1/sigma_0 [1/b]; yields scale with it, it is fitted per data set
+  NSAMP:      10
+  OUTPUT:     sherpa_seeds/card_seed
+  TEST:       false
+# Lund string fragmentation (Pythia 8.318, default parameters) instead of AHADIC;
+# Sherpa's HADRONS++ decays the hadrons (make_lund_cards.py)
+FRAGMENTATION: Pythia8
+PYTHIA8:
+  DECAYS: false
+# fixed in the minimum-bias tune: Pythia's LO PDF (and alpha_s) for the scatterings,
+# and the CMW K-factor in the shower of the scatterings, as in the signal shower
+MPI_PDF_SET: NNPDF23_lo_as_0130_qed
+SHOWER:
+  MI_KFACTOR_SCHEME: 1

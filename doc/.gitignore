@@ -1,0 +1,12 @@
+# our index of the deuteron-study reports (not part of Sherpa's documentation)
+REPORTS.md
+# our report and tuning folders (LaTeX, PDFs, notes, runs): hidden as a whole.
+# lund_tune/ is not: its .gitignore hides everything there but the final run cards and outputs.
+deuteron_report/
+deuteron_review/
+deuteron_tune_report/
+final_report/
+lund_tuning_report/
+presentation/
+tuning_report/
+minimum_bias_tuning/

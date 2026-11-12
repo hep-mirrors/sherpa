@@ -1,0 +1,27 @@
+# LaTeX files, their PDFs and the LaTeX build files
+*.tex
+*.pdf
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+# python and macOS
+__pycache__/
+*.pyc
+.DS_Store
+# our notes and summaries
+*.md
+# figures
+figures/
+# every folder in here is hidden, except the three with the run cards, their outputs, the
+# Pythia runs and the data of the final setting (made by scripts/collect_lund_tune.py)
+/*/
+!/atlas_tune/
+!/lep_tune/
+!/deuterons/
+# the LEP outputs keep every x_p value (66 MB); rerunning lep_tune/Sherpa.yaml makes them again
+/lep_tune/sherpa/lep.json
+/lep_tune/pythia/lep.json

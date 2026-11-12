@@ -1,0 +1,47 @@
+# Base card of the minimum-bias tune: Lund_tune1 (../examples/RemnantTests/SimpleLEP/RunCards/Lund_tune1)
+# without deuteron formation.  run_mb.py copies it per run and sets BEAM_ENERGIES, EVENTS,
+# the AMISIC EVENT_TYPE and the scanned parameters; the events go to mb_analysis.py
+# through a pipe (EVENT_OUTPUT is added on the command line).
+
+BEAMS:          2212
+BEAM_ENERGIES:  3500
+EVENTS:         100k
+EVENT_TYPE:     MinimumBias
+ME_GENERATORS:  None
+SOFT_COLLISIONS: Amisic
+YFS:
+  MODE: None
+
+# multiple parton scatterings (Amisic): the parameters of the tune
+AMISIC:
+  EVENT_TYPE:     Perturbative   # non-diffractive events; the diffractive ones are separate runs
+  SIGMA_ND_NORM:  0.614          # normalisation of sigma_ND: higher = fewer scatterings (default 0.44)
+  "PT_0(ref)":    1.21           # damping scale of soft scatterings at E(ref) = 7 TeV [GeV] (default 2.05)
+  "PT_Min(ref)":  1.1            # lowest scattering pT at 7 TeV [GeV] (default 1.1)
+  Eta:            0.026          # energy dependence: PT_0, PT_Min ~ (E/7 TeV)^(2 Eta) (default 0.026)
+
+# proton matter profile: Gaussian of radius 1 with a fraction in a Gaussian of radius 2
+REMNANTS:
+  2212:
+    MATTER_FORM:       Double_Gaussian
+    MATTER_RADIUS_1:   0.85
+    MATTER_RADIUS_2:   1.0
+    MATTER_FRACTION_1: 0.65
+
+# colour reconnections: fixed (they also act in e+e- events, where Lund_tune1 was tuned)
+COLOUR_RECONNECTIONS:
+  MODE:      On
+  PMODE:     Log
+  Q_0:       1.0
+  KAPPA:     1.0
+  ETA_Q:     0.568
+  RESHUFFLE: 0.333
+
+HADRON_RESCATTERING:
+  MODE: false
+
+# Lund string fragmentation (Pythia 8.318, LEP-tuned values of Lund_tune1 = Pythia defaults);
+# Sherpa's HADRONS++ decays the hadrons
+FRAGMENTATION: Pythia8
+PYTHIA8:
+  DECAYS: false

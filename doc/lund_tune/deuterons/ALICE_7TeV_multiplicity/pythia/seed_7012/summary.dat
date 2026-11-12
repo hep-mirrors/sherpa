@@ -1,0 +1,27 @@
+# Pythia 8.318 non-diffractive pp at 7000 GeV, DeuteronProduction 1/sigma_0 = 18 1/b, events = 1000000
+# key  per-event-mean  error
+formed_d_ALEPH_window  0.000891  2.98363e-05
+formed_d_OPAL_window  0.001577  3.97557e-05
+formed_d_total  0.026654  0.000166095
+formed_dbar_ALEPH_window  0.000892  2.98865e-05
+formed_dbar_OPAL_window  0.001528  3.91365e-05
+formed_dbar_total  0.021831  0.000149761
+nucleon_p_ALEPH_halfwindow  0.039664  0.000200012
+nucleon_p_total  2.98549  0.00192463
+nucleon_pbar_ALEPH_halfwindow  0.038523  0.000196736
+nucleon_pbar_total  1.95296  0.00180509
+pairs_nn  6.72901  0.01104
+pairs_pn  14.0798  0.0193871
+pairs_pp  7.37566  0.0113836
+proton_midy_from_Delta  0.127418  0.000390265
+proton_midy_from_direct  0.266126  0.000587863
+proton_midy_from_other  5.6e-05  8.71762e-06
+proton_midy_parent_   2.4e-05  4.89892e-06
+proton_midy_parent_Delta+  0.042866  0.000213814
+proton_midy_parent_Delta++  0.063581  0.000270696
+proton_midy_parent_Delta0  0.020971  0.000147218
+proton_midy_parent_J/psi  7e-06  2.64574e-06
+proton_midy_parent_chi_0c  1e-05  3.16226e-06
+proton_midy_parent_chi_1c  5e-06  2.23606e-06
+proton_midy_parent_chi_2c  8e-06  2.82842e-06
+proton_midy_parent_eta_c  2e-06  1.41421e-06

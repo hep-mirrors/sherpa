@@ -1,0 +1,15 @@
+#: table_doi: 10.17182/hepdata.77011.v1/t14
+#: name: Table 14
+#: description: Charged particle pseudorapidiy densities in the pseudorapidity region -0.5 to 0.5 for NSD collisions.
+
+#: data_file: Table14.yaml
+#: keyword reactions: P P --> CHARGED X
+#: keyword observables: DN/DETARAP PLAB
+#: ETARAP(P=3),-0.5-0.5
+#: RE,P P --> CHARGED X
+$\sqrt{s}$ (TeV),$dN/d\eta at \eta = 0$,error +,error -
+0.9,3.61,0.17,-0.16
+2.76,4.63,0.3,-0.19
+7,5.74,0.15,-0.15
+8,5.9,0.15,-0.13
+

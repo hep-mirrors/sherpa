@@ -1,0 +1,18 @@
+#: table_doi: 10.17182/hepdata.93741.v1/t12
+#: name: Table 12
+#: description: Ratio between the $p_T$-integrated yield of deuterons and protons (d/p) as a function of charged-particle multiplicity at mid-rapidity ($\langle dN_{ch}/d\eta \rangle_{|\eta|<0.5}$)
+#: data_file: doverp.yaml
+#: keyword reactions: P + P --> (ANTI)DEUT + X
+#: keyword observables: d/p
+#: keyword energies: 7000
+#: keyword phrases: deuteron/proton
+#: RE,,,P + P --> DEUT + X,,,,
+#: SQRT(S),,,7000.0 GEV
+#: YRAP(CM),,,$-0.5 < y < 0.5$
+$\langle dN_{ch}/d\eta \rangle_{|\eta|<0.5}$,$\langle dN_{ch}/d\eta \rangle_{|\eta|<0.5}$ LOW,$\langle dN_{ch}/d\eta \rangle_{|\eta|<0.5}$ HIGH,$2d/(p+\bar{p})$,stat +,stat -,sys +,sys -
+3.295,3.16,3.43,0.001283449,1.515455e-05,-1.515455e-05,0.000215048,-0.000215048
+7.539999999999999,7.31,7.77,0.001701064,2.026621e-05,-2.026621e-05,0.0002194244,-0.0002194244
+10.760000000000002,10.46,11.06,0.001970563,2.621776e-05,-2.621776e-05,0.0002575069,-0.0002575069
+13.5,13.1,13.9,0.001947286,3.531506e-05,-3.531506e-05,0.0002606413,-0.0002606413
+17.47,16.95,17.99,0.002206761,3.161472e-05,-3.161472e-05,0.0002978742,-0.0002978742
+

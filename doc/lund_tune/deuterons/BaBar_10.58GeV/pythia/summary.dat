@@ -1,0 +1,24 @@
+# Pythia 8.318 e+e- -> gamma*/Z -> q qbar at 10.58 GeV, DeuteronProduction 1/sigma_0 = 60 1/b, events = 10000000
+# key  per-event-mean  error
+formed_d_ALEPH_window  4.18e-05  2.04446e-06
+formed_d_OPAL_window  7.32e-05  2.70545e-06
+formed_d_total  0.0001608  4.00967e-06
+formed_dbar_ALEPH_window  4.21e-05  2.05179e-06
+formed_dbar_OPAL_window  7.1e-05  2.66449e-06
+formed_dbar_total  0.0001526  3.90611e-06
+nucleon_p_ALEPH_halfwindow  0.0100833  3.16342e-05
+nucleon_p_total  0.0938778  9.46408e-05
+nucleon_pbar_ALEPH_halfwindow  0.0101139  3.16768e-05
+nucleon_pbar_total  0.0939598  9.46794e-05
+pairs_nn  0.0029156  1.95015e-05
+pairs_pn  0.0072752  3.26412e-05
+pairs_pp  0.0045073  2.52685e-05
+proton_midy_from_Delta  0.0314811  6.27247e-05
+proton_midy_from_direct  0.0892644  0.0001056
+proton_midy_from_other  2.2e-06  5.83095e-07
+proton_midy_parent_   1.2e-06  3.4641e-07
+proton_midy_parent_Delta+  0.0108096  3.4372e-05
+proton_midy_parent_Delta++  0.0156361  4.38726e-05
+proton_midy_parent_Delta0  0.0050354  2.29313e-05
+proton_midy_parent_J/psi  4e-07  2e-07
+proton_midy_parent_eta_c  6e-07  2.44949e-07

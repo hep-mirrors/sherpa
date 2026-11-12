@@ -1,0 +1,24 @@
+#: table_doi: 10.17182/hepdata.81951.v1/t1
+#: name: Table 1
+#: description: Invariant differential yield of deuterons and antideuterons in inelastic pp collisions at $\sqrt{s}$ = 0.9 TeV. The uncertainties of $_{-0.8}^{+2.2}$% due to the extrapolation to inelastic pp collisions are not included in the systematic uncertainties.
+#: data_file: data01.yaml
+#: keyword reactions: P P --> DEUT X | P P --> ANTIDEUT X
+#: keyword observables: E*D3N/DP**3
+#: keyword cmenergies: 900
+#: keyword phrases: deuteron | antideuteron
+#: SQRT(S) [GEV],,,900
+#: YRAP,,,-0.5 TO 0.5
+#: RE,,,P P --> DEUT X
+PT [GEV],PT [GEV] LOW,PT [GEV] HIGH,E*D3N/DP**3 [GEV**-2],stat +,stat -,sys +,sys -
+0.9,0.8,1.0,1.48e-05,2.8e-06,-2.8e-06,1.2e-06,-1.2e-06
+1.2,1.0,1.4,7.98e-06,9.5e-07,-9.5e-07,6.7e-07,-6.7e-07
+1.7,1.4,2.0,2.59e-06,3.6e-07,-3.6e-07,2.4e-07,-2.4e-07
+
+#: SQRT(S) [GEV],,,900
+#: YRAP,,,-0.5 TO 0.5
+#: RE,,,P P --> ANTIDEUT X
+PT [GEV],PT [GEV] LOW,PT [GEV] HIGH,E*D3N/DP**3 [GEV**-2],stat +,stat -,sys +,sys -
+0.9,0.8,1.0,1.49e-05,2.1e-06,-2.1e-06,1.2e-06,-1.2e-06
+1.2,1.0,1.4,6.98e-06,1e-06,-1e-06,5.3e-07,-5.3e-07
+1.7,1.4,2.0,2.39e-06,3.7e-07,-3.7e-07,2e-07,-2e-07
+

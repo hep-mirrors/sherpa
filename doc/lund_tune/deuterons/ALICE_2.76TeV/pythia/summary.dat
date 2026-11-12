@@ -1,0 +1,9 @@
+# Pythia 8.318 non-diffractive pp at 2760 GeV, DeuteronProduction 1/sigma_0 = 18 1/b, events = 1000000
+# key  per-event-mean  error
+formed_d_total  0.016746  0.000130283
+formed_dbar_total  0.01228  0.000111567
+nucleon_p_total  2.43171  0.00153852
+nucleon_pbar_total  1.39361  0.0013716
+pairs_nn  3.61909  0.00607025
+pairs_pn  7.73947  0.0103242
+pairs_pp  4.13919  0.00642172

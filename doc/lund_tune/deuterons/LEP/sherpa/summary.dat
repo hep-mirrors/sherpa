@@ -1,0 +1,47 @@
+# Deuteron_Formation: Deuteron_Formation: CrossSection, 1/sigma_0 = 1.8 1/b, NSAMP = 10, events = 200000
+# ALEPH_window: 0.62 < p < 1.03 GeV, |cos(theta)| < 0.95; ALEPH: dbar = (5.9 +- 1.8 +- 0.5)e-6 per hadronic Z event
+# key  per-event-mean  error
+expected_d_ALEPH_window  3.65342e-06  1.68882e-07
+expected_d_OPAL_window  5.88338e-06  2.45353e-07
+expected_d_nn_dpiminus  1.51742e-05  5.13751e-07
+expected_d_nn_dpiminuspi0  2.18623e-06  8.3195e-08
+expected_d_pn_dgamma  3.48793e-07  6.94326e-09
+expected_d_pn_dpi0  1.47895e-05  3.54642e-07
+expected_d_pn_dpi0pi0  1.60343e-06  4.51045e-08
+expected_d_pn_dpipluspiminus  5.44101e-06  1.23176e-07
+expected_d_pp_dpiplus  1.39062e-05  4.81742e-07
+expected_d_pp_dpipluspi0  2.20932e-06  8.31884e-08
+expected_d_total  5.56587e-05  8.67851e-07
+expected_dbar_ALEPH_window  3.21956e-06  1.542e-07
+expected_dbar_OPAL_window  5.20997e-06  2.22681e-07
+expected_dbar_nn_dpiminus  1.47895e-05  5.06687e-07
+expected_dbar_nn_dpiminuspi0  2.4034e-06  8.82722e-08
+expected_dbar_pn_dgamma  3.28767e-07  6.68732e-09
+expected_dbar_pn_dpi0  1.38604e-05  3.39785e-07
+expected_dbar_pn_dpi0pi0  1.60045e-06  4.46349e-08
+expected_dbar_pn_dpipluspiminus  5.33176e-06  1.2158e-07
+expected_dbar_pp_dpiplus  1.4376e-05  4.95212e-07
+expected_dbar_pp_dpipluspi0  2.13558e-06  8.14185e-08
+expected_dbar_total  5.48258e-05  8.62327e-07
+formed_d_nn_dpiminus  1.5e-05  8.66019e-06
+formed_d_pn_dpi0  1.5e-05  8.66019e-06
+formed_d_pn_dpipluspiminus  5e-06  4.99999e-06
+formed_d_pp_dpiplus  1.5e-05  8.66019e-06
+formed_d_total  5e-05  1.5811e-05
+formed_dbar_nn_dpiminus  2e-05  9.9999e-06
+formed_dbar_pn_dpi0  2e-05  9.9999e-06
+formed_dbar_pn_dpipluspiminus  5e-06  4.99999e-06
+formed_dbar_pp_dpiplus  1e-05  7.07103e-06
+formed_dbar_total  5.5e-05  1.65827e-05
+nucleon_p_ALEPH_halfwindow  0.00964  0.000218827
+nucleon_p_total  0.335085  0.00126026
+nucleon_pbar_ALEPH_halfwindow  0.00997  0.000222268
+nucleon_pbar_total  0.33534  0.00126081
+pairs_nn  0.09833  0.000990937
+pairs_pn  0.192895  0.00147577
+pairs_pp  0.094945  0.000965791
+proton_midy_from_Delta  0.101475  0.000803019
+proton_midy_from_direct  0.228625  0.00122537
+proton_midy_parent_Delta(1232)  0.017  0.000298923
+proton_midy_parent_Delta(1232)+  0.034165  0.000433
+proton_midy_parent_Delta(1232)++  0.05031  0.000557355

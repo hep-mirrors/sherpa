@@ -1,0 +1,36 @@
+#: table_doi: 10.17182/hepdata.77011.v1/t44
+#: name: Table 44
+#: description: Mean charged particle multiplicities in 3 pseudorapidity intervals in P P NSD collisions from 900 to 8000 GeV.
+
+#: data_file: Table44.yaml
+#: keyword reactions: P P --> CHARGED X
+#: keyword observables: MULT
+#: keyword cmenergies: 900.0-8000.0
+#: RE,,,P P --> CHARGED X
+#: SQRT(S) [GeV],,,900.0
+$\Delta\eta$,$\Delta\eta$ LOW,$\Delta\eta$ HIGH,$\left<N_{ch}\right>$,error +,error -
+0.0,-0.5,0.5,3.8,0.1,-0.1
+0.0,-1,1,7.8,0.3,-0.3
+0.0,-1.5,1.5,11.8,0.4,-0.4
+
+#: RE,,,P P --> CHARGED X
+#: SQRT(S) [GeV],,,2760.0
+$\Delta\eta$,$\Delta\eta$ LOW,$\Delta\eta$ HIGH,$\left<N_{ch}\right>$,error +,error -
+0.0,-0.5,0.5,4.6,0.2,-0.2
+0.0,-1,1,9.4,0.4,-0.4
+0.0,-1.5,1.5,14.2,0.7,-0.7
+
+#: RE,,,P P --> CHARGED X
+#: SQRT(S) [GeV],,,7000.0
+$\Delta\eta$,$\Delta\eta$ LOW,$\Delta\eta$ HIGH,$\left<N_{ch}\right>$,error +,error -
+0.0,-0.5,0.5,5.7,0.2,-0.2
+0.0,-1,1,11.6,0.4,-0.4
+0.0,-1.5,1.5,17.5,0.6,-0.6
+
+#: RE,,,P P --> CHARGED X
+#: SQRT(S) [GeV],,,8000.0
+$\Delta\eta$,$\Delta\eta$ LOW,$\Delta\eta$ HIGH,$\left<N_{ch}\right>$,error +,error -
+0.0,-0.5,0.5,5.8,0.4,-0.4
+0.0,-1,1,11.9,0.7,-0.7
+0.0,-1.5,1.5,17.8,1.1,-1.1
+

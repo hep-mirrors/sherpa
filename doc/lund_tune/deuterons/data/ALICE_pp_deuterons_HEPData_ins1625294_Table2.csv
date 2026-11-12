@@ -1,0 +1,32 @@
+#: table_doi: 10.17182/hepdata.81951.v1/t2
+#: name: Table 2
+#: description: Invariant differential yield of deuterons and antideuterons in inelastic pp collisions at $\sqrt{s}$ = 2.76 TeV. The uncertainties of $_{-2.8}^{+5.2}$% due to the extrapolation to inelastic pp collisions are not included in the systematic uncertainties.
+#: data_file: data02.yaml
+#: keyword reactions: P P --> DEUT X | P P --> ANTIDEUT X
+#: keyword observables: E*D3N/DP**3
+#: keyword cmenergies: 2760
+#: keyword phrases: deuteron | antideuteron
+#: SQRT(S) [GEV],,,2760
+#: YRAP,,,-0.5 TO 0.5
+#: RE,,,P P --> DEUT X
+PT [GEV],PT [GEV] LOW,PT [GEV] HIGH,E*D3N/DP**3 [GEV**-2],stat +,stat -,sys +,sys -
+0.9,0.8,1.0,2.16e-05,1.4e-06,-1.4e-06,1.8e-06,-1.8e-06
+1.1,1.0,1.2,1.237e-05,6.7e-07,-6.7e-07,1e-06,-1e-06
+1.2999999999999998,1.2,1.4,7.68e-06,4.5e-07,-4.5e-07,6.4e-07,-6.4e-07
+1.5,1.4,1.6,5.42e-06,3.5e-07,-3.5e-07,5e-07,-5e-07
+1.7000000000000002,1.6,1.8,3.49e-06,2.7e-07,-2.7e-07,3.2e-07,-3.2e-07
+1.9,1.8,2.0,1.93e-06,2.1e-07,-2.1e-07,1.8e-07,-1.8e-07
+2.2,2.0,2.4,1.34e-06,1.5e-07,-1.5e-07,1.3e-07,-1.3e-07
+
+#: SQRT(S) [GEV],,,2760
+#: YRAP,,,-0.5 TO 0.5
+#: RE,,,P P --> ANTIDEUT X
+PT [GEV],PT [GEV] LOW,PT [GEV] HIGH,E*D3N/DP**3 [GEV**-2],stat +,stat -,sys +,sys -
+0.9,0.8,1.0,1.801e-05,9.3e-07,-9.3e-07,1.4e-06,-1.4e-06
+1.1,1.0,1.2,1.143e-05,7.7e-07,-7.7e-07,8.7e-07,-8.7e-07
+1.2999999999999998,1.2,1.4,7.66e-06,5.2e-07,-5.2e-07,5.8e-07,-5.8e-07
+1.5,1.4,1.6,4.39e-06,3.4e-07,-3.4e-07,3.7e-07,-3.7e-07
+1.7000000000000002,1.6,1.8,3.23e-06,2.8e-07,-2.8e-07,2.7e-07,-2.7e-07
+1.9,1.8,2.0,1.9e-06,2.1e-07,-2.1e-07,1.6e-07,-1.6e-07
+2.2,2.0,2.4,1.112e-06,1.4e-07,-1.4e-07,9.6e-08,-9.6e-08
+
