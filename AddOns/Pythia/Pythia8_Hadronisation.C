@@ -50,6 +50,7 @@ public:
     }
 
     AssignDecays();
+    AssignVertices();   // DEUTERON-STUDY (E. Demiray, 2026-11-04): hadron vertices switch, see AssignVertices
     ApplyPythiaSettings();
     HarmonizeMasses();
 
@@ -259,6 +260,8 @@ private:
           }
           daughter->SetNumber(0);
           daughter->SetFinalMass(pevt[d].mCalc());
+          // DEUTERON-STUDY (E. Demiray, 2026-11-04): own production point per hadron (SET_VERTICES)
+          if (m_setvertices) daughter->SetPosition(position);
           decayblob->SetPosition(position);
           decayblob->AddToOutParticles(daughter);
           // Initialize the particles decay blob if appropriate.
@@ -307,6 +310,23 @@ private:
       m_pythia.readString("HadronLevel:Decay = off");
       PRINT_INFO("Setting particles on-shell to allow sherpa decays.");
       m_pythia.readString("ParticleData:modeBreitWigner = 0");
+    }
+  }
+
+  // DEUTERON-STUDY (E. Demiray, 2026-11-04): new method, added for the coalescence impact parameter b.
+  // Revert: git checkout AddOns/Pythia/Pythia8_Hadronisation.C, or
+  // doc/examples/RemnantTests/SimpleLEP/RunCards/pythia_set_vertices.patch in reverse.
+  void AssignVertices() {
+    /*
+      PYTHIA8: SET_VERTICES: true (default false) switches on Pythia's space-time
+      picture of the string breaks (Fragmentation:setVertices) and gives every hadron
+      its own production point, Pythia's vertex in mm, as Sherpa's positions.
+      Off, all hadrons of a fragmentation blob share the blob position (no own position).
+    */
+    m_setvertices = m_settings["PYTHIA8"]["SET_VERTICES"].SetDefault(false).Get<bool>();
+    if (m_setvertices) {
+      PRINT_INFO("Pythia's hadron production vertices are given to the hadrons.");
+      m_pythia.readString("Fragmentation:setVertices = on");
     }
   }
 
@@ -435,6 +455,7 @@ private:
 
   Pythia8::Pythia m_pythia;
   bool m_pythiadecays;
+  bool m_setvertices;   // DEUTERON-STUDY (E. Demiray, 2026-11-04): PYTHIA8: SET_VERTICES
   Settings& m_settings = Settings::GetMainSettings();
   std::set<int> m_processed;
 };

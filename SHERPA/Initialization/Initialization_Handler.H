@@ -29,6 +29,7 @@ namespace ATOOLS {
 }
 
 namespace SHERPA {
+  class Hadron_Rescattering_Handler;
 
   class Matrix_Element_Handler;
   class Hard_Decay_Handler;
@@ -64,6 +65,7 @@ namespace SHERPA {
     ATOOLS::Fragmentation_Base   * p_fragmentation;
     Soft_Collision_Handler_Map     m_schandlers;
     Decay_Handler_Base           * p_hdhandler;
+    Hadron_Rescattering_Handler  * p_hadronrescattering;
     MI_Handler_Map                 m_mihandlers;
     Soft_Photon_Handler          * p_softphotons;
     Event_Reader_Base            * p_evtreader;
@@ -93,6 +95,7 @@ namespace SHERPA {
     bool InitializeTheFragmentation();
     bool InitializeTheSoftCollisions();
     bool InitializeTheHadronDecays();
+    bool InitializeTheHadronRescattering();
     bool InitializeTheSoftPhotons();
     bool InitializeTheFilter();
     bool InitializeTheAnalyses();
@@ -119,6 +122,7 @@ namespace SHERPA {
     }
     Matrix_Element_Handler           * GetMatrixElementHandler()      const { return p_mehandler; }
     Decay_Handler_Base               * GetHDHandler()                       { return p_hdhandler; }
+    Hadron_Rescattering_Handler      * GetHadronRescatteringHandler() const { return p_hadronrescattering; }
     Analysis_Vector                  * GetAnalyses()                        { return &m_analyses; }
     Output_Vector                    * GetOutputs()                         { return &m_outputs; }
     MODEL::Model_Base                * GetModel()                     const { return p_model; }

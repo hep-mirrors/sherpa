@@ -5,6 +5,7 @@
 #include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
 #include "SHERPA/SoftPhysics/Colour_Reconnection_Handler.H"
 #include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
+#include "SHERPA/SoftPhysics/Hadron_Rescattering_Handler.H"
 #include "SHERPA/SoftPhysics/Hadron_Init.H"
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
@@ -58,7 +59,7 @@ Initialization_Handler::Initialization_Handler() :
   m_savestatus(false), p_model(NULL), p_beamspectra(NULL),
   p_mehandler(NULL), p_harddecays(NULL),
   p_beamremnants(NULL), p_reconnections(NULL),
-  p_fragmentation(NULL), p_hdhandler(NULL),
+  p_fragmentation(NULL), p_hdhandler(NULL), p_hadronrescattering(NULL),
   p_softphotons(NULL), p_evtreader(NULL),
   p_variations(NULL), p_filter(NULL)
 {
@@ -626,6 +627,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     okay = okay && InitializeTheColourReconnections();
     okay = okay && InitializeTheFragmentation();
     okay = okay && InitializeTheHadronDecays();
+    okay = okay && InitializeTheHadronRescattering();
     okay = okay && InitializeTheSoftPhotons();
     okay = okay && InitializeTheIO();
     okay = okay && InitializeTheFilter();
@@ -1237,6 +1239,17 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   msg_Info()<<"Initialized hadron decays (model = "
             <<decmodel<<")\n";
   return true;
+}
+
+bool Initialization_Handler::InitializeTheHadronRescattering()
+{
+  if (p_hadronrescattering) {
+    delete p_hadronrescattering;
+    p_hadronrescattering = NULL;
+  }
+  p_hadronrescattering = new Hadron_Rescattering_Handler();
+  p_hadronrescattering->Output();
+  return 1;
 }
 
 bool Initialization_Handler::InitializeTheSoftPhotons()

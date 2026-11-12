@@ -266,7 +266,10 @@ void Hadron_Init::Init() {
   // - will assume they are all stable and have spin 0.
   // ##################################################################################################
   constexpr double A = 0.93149410372;
-  AddHadron(kf_deuterium,   2.014    *A,2.1   ,0.,  3,0,false,true,1,"deuterium", "H$_2$");
+  // the deuteron as a hadron for the deuteron formation: nuclear (not atomic)
+  // mass, spin 1, and with an antiparticle (the "majorana" flag true means "is
+  // not self-conjugate", as for the nucleons)
+  AddHadron(kf_deuterium,   1.875613,  2.1   ,0.,  3,2,true, true,1,"deuterium", "d");
   AddHadron(kf_helium4,     4.0026033*A,1.9049,0.,  6,0,false,true,1,"helium4",   "He$_4$");
   AddHadron(kf_carbon12,   12.0000000*A,2.7473,0., 18,0,false,true,1,"carbon12",  "C$_{12}$");
   AddHadron(kf_calcium40,  39.9625912*A,4.1039,0., 60,0,false,true,1,"calcium40", "Ca$_{40}$");

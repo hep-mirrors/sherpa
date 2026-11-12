@@ -1,6 +1,7 @@
 set(Phys_SOURCES Fragmentation_Base.C
                  fjcore.cc
                  Flavour.C
+                 Hadron_Collision.C
                  Ordering.C
                  Particle.C
                  Simple_Polarisation_Info.C
@@ -33,6 +34,7 @@ set(Phys_HEADERS fjcore.hh
                  Ordering.H
                  Flavour_Tags.H
                  Flavour.H
+                 Hadron_Collision.H
                  Particle.H
                  Simple_Polarisation_Info.H
                  Particle_List.H

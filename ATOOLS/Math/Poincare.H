@@ -54,6 +54,13 @@ namespace ATOOLS {
 
   };// end of class Poincare_Sequence
 
+  // boost into the c.m. frame of p1 and p2, rotated such that p1 points
+  // along +z (used by the hadron rescattering)
+  class IntoOrientedCoM : public Poincare_Sequence {
+  public:
+    IntoOrientedCoM(const ATOOLS::Vec4D& p1, const ATOOLS::Vec4D& p2);
+  };
+
 }// end of namespace ATOOLS
 
 #endif

@@ -110,3 +110,10 @@ void Poincare_Sequence::Invert()
     *pit=*cit;
   }
 }
+
+IntoOrientedCoM::IntoOrientedCoM(const ATOOLS::Vec4D& p1, const ATOOLS::Vec4D& p2) {
+  push_back(Poincare(p1+p2));
+  Vec4D p1_cms = back()*p1;
+  double pz1_2 = Vec3D(p1_cms).Sqr(), E1 = sqrt(dabs(p1_cms.Abs2()-pz1_2));
+  push_back(Poincare(p1_cms,Vec4D(E1,0.,0.,sqrt(pz1_2))));
+}

@@ -10,6 +10,8 @@ set(Single_Events_SOURCES Event_Handler.C
                           Colour_Reconnections.C
                           Hadronization.C
                           Hadron_Decays.C
+                          Hadron_Rescattering.C
+                          Deuteron_Formation.C
                           Userhook_Phase.C
                           Analysis_Phase.C
                           Output_Phase.C
@@ -28,6 +30,8 @@ set(Single_Events_HEADERS Event_Handler.H
                           Colour_Reconnections.H
                           Hadronization.H
                           Hadron_Decays.H
+                          Hadron_Rescattering.H
+                          Deuteron_Formation.H
                           Userhook_Phase.H
                           Analysis_Phase.H
                           Output_Phase.H

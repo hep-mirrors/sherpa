@@ -1,0 +1,15 @@
+# LaTeX files, their PDFs and the LaTeX build files (Docs/)
+*.tex
+*.pdf
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+# editor backups and macOS
+\#*#
+.DS_Store
+# our notes and summaries
+*.md
