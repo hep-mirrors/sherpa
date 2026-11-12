@@ -53,7 +53,7 @@
 
       SUBROUTINE CJKHOGRID(IOPT,X,Q2,XPDF)
       IMPLICIT DOUBLE PRECISION (a-z)
-      INTEGER IOPT
+      INTEGER I,IOPT
       parameter (Pi=3.1415926535897932d0,alfa=7.29735308D-3,
      %           e1=1.d0/3.d0,e2=2.d0/3.d0)
       logical t

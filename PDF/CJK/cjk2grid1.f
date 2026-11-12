@@ -94,7 +94,7 @@
 
       SUBROUTINE CJK2GRID(ISET,IOPT,X,XC,XB,Q2,XPDF,F2alfa)
       IMPLICIT DOUBLE PRECISION (a-z)
-      INTEGER flav,Nf,step,IOPT,ISET,IST
+      INTEGER I,flav,Nf,step,IOPT,ISET,IST
       parameter (Pi=3.1415926535897932d0,alfa=7.29735308D-3,
      %           e1=1.d0/3.d0,e2=2.d0/3.d0)
       logical t
