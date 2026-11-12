@@ -3,6 +3,7 @@
 #include "HADRON_RESCATTERING/XSecs/HR_Parameters.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
+#include <iomanip>
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/MathTools.H"

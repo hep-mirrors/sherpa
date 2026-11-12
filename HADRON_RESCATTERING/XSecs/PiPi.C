@@ -2,6 +2,7 @@
 #include "HADRON_RESCATTERING/XSecs/HR_Parameters.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
+#include <iomanip>
 
 using namespace HADRON_RESCATTERING;
 using namespace ATOOLS;
