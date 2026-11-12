@@ -105,6 +105,7 @@ void NLO_Base::SetS(const double s) {
 NLO_Base::~NLO_Base() {
   WriteHistograms();
   ReportBeta02();
+  ReportVirtualIFOdd();
   if (p_virt && p_virt->p_massif) p_virt->p_massif->Report();
   if (p_realvirt && p_realvirt->p_massif) p_realvirt->p_massif->Report();
   msg_Debugging()<<"Total zero V: "<<m_zeroV<<std::endl;
@@ -137,7 +138,8 @@ NLO_Base::~NLO_Base() {
     msg_Debugging()<<"RV_MODE 1 (this rank): loop frame "<<RVLoopFrame()
              <<", two-frame checks "<<m_rvLoopChecked<<", dropped as unstable "
              <<m_rvLoopUnstable<<", skipped in the beam cone (RV_BEAM_CONE) "
-             <<m_rvBeamCone<<std::endl;
+             <<m_rvBeamCone<<", initial-state photons skipped (REAL_VIRTUAL hybrid) "
+             <<m_rvIsrSkipped<<", dropped by RV_POLE_VETO "<<m_rvPoleVeto<<std::endl;
   }
   if (m_lnh_n + m_lnh_fail > 0)
     msg_Debugging()<<"ACRAIC: LOOP_BETA_MAX (this rank): photon-pair records "<<m_lnh_n

@@ -56,7 +56,8 @@ YFS_Handler::~YFS_Handler()
     if (m_acrv_n > 0)
       msg_Out()<<"ACRAIC: REAL_VIRTUAL 2 on "<<m_acrv_n<<" events (this rank): NLO RV photons "
                <<"without a ACRAIC match "<<m_acrv_nomatch<<", matched but without M_1 "
-               <<m_acrv_nom1<<std::endl;
+               <<m_acrv_nom1<<", matched to an initial-state photon (hybrid: not used) "
+               <<m_acrv_isr<<std::endl;
     const Acraic_Stats &cs(m_acraicstats);
     if (cs.m_cmp_n > 0)
       msg_Out()<<"YFS ACRAIC_Compare over "<<cs.m_cmp_n<<" points, ACRAIC vs the "
@@ -426,6 +427,14 @@ void YFS_Handler::MakeACRAIC() {
               " Loop_Generator falls back to ACRAIC's own virtual, which is"
               " e+e- -> f fbar only. Name a Loop_Generator (OpenLoops, Recola)"
               " for this process, or drop V from NLO_Part.");
+      // ACRAIC's own virtual has no beta_0^(2) or O2V streams
+      if (p_nlo->AcraicSuppliesVirtual() &&
+          (p_acraic->Order() >= 2 || p_nlo->Beta02Acraic().On()))
+        THROW(fatal_error, "ACRAIC: ORDER 2 (or ACRAIC: BETA0_2) with ACRAIC's own"
+              " virtual (YFS: ACRAIC_Virtual acraic, or auto with Loop_Generator"
+              " Internal or none) has no beta_0^(2) and no external virtual for the"
+              " O2V streams. Use YFS: ACRAIC_Virtual external with an external"
+              " Loop_Generator (OpenLoops, Recola).");
       p_acraic->SetAutoOwnVirtual(autoown);
       p_acraic->SetNLO(p_nlo.get());
       if (m_acraicborn) p_nlo->SetBornProc(m_acraicborn);
@@ -567,12 +576,7 @@ void YFS_Handler::AddFormFactor() {
   else if (m_fullform == -1) {
     m_ev.m_formfactor = 1;
   }
-  else {
-    if(FixedOrder()==fixed_order::nlo){
-      m_ev.m_formfactor = 1 + m_g / 4. + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5);
-    }
-    else m_ev.m_formfactor = exp(m_g / 4. + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
-  }
+  else m_ev.m_formfactor = exp(m_g / 4. + m_alpha / M_PI * (pow(M_PI, 2.) / 3. - 0.5));
 }
 
 bool YFS_Handler::CalculateFSR(){
@@ -602,9 +606,11 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
   m_ev.m_reallab = p;
   m_ev.m_plab=p;
   CreatMomentumMap();
-  if(FixedOrder()==fixed_order::nlo && m_ev.m_ISRPhotons.size()!=0) {
-    for(size_t i = 2; i < m_ev.m_plab.size(); ++i) m_ev.m_outparticles[m_particles[i]] = m_ev.m_plab[i];
-    return true;
+  if (m_mode != yfsmode::fsr && !BornPhotonsPassReducedBeamAngle(p)) {
+    CountFSRFailure("CalculateFSR: Born photon inside BORN_PHOTON_REDUCED_ANGLE");
+    m_ev.m_yfsweight = 0.0;
+    Reset();
+    return false;
   }
   if(m_mode==yfsmode::isr) return true;
   m_fsrWeight=1;
@@ -746,15 +752,11 @@ bool YFS_Handler::CalculateFSR(Vec4D_Vector & p) {
       m_ev.m_me_photons.push_back(YFS::Photon(k, &*Dip));
     }
   }
-  if(FixedOrder()==fixed_order::nlo){
-    int totk = m_ev.m_ISRPhotons.size();
-    if(m_nlo_fsr_photons) totk += m_ev.m_FSRPhotons.size();
-    if(totk != 1) {
-      CountFSRFailure("NLO photon count");
-      if(totk > 1)
-        msg_Error()<<"Wrong photon multiplicity at Fixed Order: "<<totk<<std::endl;
-      return false;
-    }
+  if (!PhotonResolutionPasses()) {
+    CountFSRFailure("CalculateFSR: photon resolution (RESOLVED_PHOTON_E/ANGLE)");
+    m_ev.m_yfsweight = 0.0;
+    Reset();
+    return false;
   }
   CountFSRFailure("CalculateFSR completed");
   return true;
@@ -770,6 +772,50 @@ bool YFS_Handler::ExchangeLinesPassTMin(const Vec4D_Vector &p, double tmin) cons
       if (m_flavs[j] == m_flavs[i] && -(p[i] - p[j]).Abs2() < tmin)
         return false;
   }
+  return true;
+}
+
+// YFS: BORN_PHOTON_REDUCED_ANGLE: veto Born photons close to a reduced beam
+bool YFS_Handler::BornPhotonsPassReducedBeamAngle(const Vec4D_Vector &p) const {
+  if (m_bornphoton_reduced_angle <= 0.) return true;
+  const double cosmax(cos(m_bornphoton_reduced_angle*M_PI/180.));
+  Poincare rest(p[0] + p[1]);
+  Vec4D beam(p[0]);
+  rest.Boost(beam);
+  const size_t n(std::min(p.size(), m_flavs.size()));
+  for (size_t j(2); j < n; ++j) {
+    if (!m_flavs[j].IsPhoton()) continue;
+    Vec4D k(p[j]);
+    rest.Boost(k);
+    // the reduced beams are back to back here, so one cosine covers both
+    if (fabs(k.CosTheta(beam)) > cosmax) return false;
+  }
+  return true;
+}
+
+// YFS: RESOLVED_PHOTON_E/ANGLE: all Born photons resolved, no YFS photon resolved
+bool YFS_Handler::PhotonResolutionPasses() const {
+  if (m_resolved_photon_e <= 0. && m_resolved_photon_angle <= 0.) return true;
+  const Vec4D_Vector p(const_cast<YFS_Handler*>(this)->GetMomenta());
+  const double cmin(cos(m_resolved_photon_angle*M_PI/180.));
+  const Vec3D zaxis(0., 0., 1.);
+  auto resolved = [&](const Vec4D &k) {
+    if (k[0] <= m_resolved_photon_e) return false;
+    const Vec3D kk(k);
+    const double kabs(kk.Abs());
+    if (!(kabs > 0.)) return false;
+    if (fabs(kk*zaxis)/kabs > cmin) return false;          // near either beam
+    for (size_t i(2); i < p.size() && i < m_flavs.size(); ++i) {
+      if (m_flavs[i].Charge() == 0.) continue;
+      const Vec3D q(p[i]);
+      if (kk*q/(kabs*q.Abs()) > cmin) return false;       // near a charged leg
+    }
+    return true;
+  };
+  for (size_t i(2); i < p.size() && i < m_flavs.size(); ++i)
+    if (m_flavs[i].IsPhoton() && !resolved(p[i])) return false;
+  for (const Vec4D &k : GetISRPhotons()) if (resolved(k)) return false;
+  for (const Vec4D &k : GetFSRPhotons()) if (resolved(k)) return false;
   return true;
 }
 
@@ -816,8 +862,6 @@ bool YFS_Handler::WPairMomenta(const Vec4D_Vector &p, Vec4D &wp, Vec4D &wm) cons
 }
 
 void YFS_Handler::CalculateCoulomb() {
-  // flat scheme: the Coulomb factor beyond the one-loop virtual, at the
-  // ISR-reduced, pre-FSR hard point (m_plab[2..], all in one frame)
   if (m_coulombho != coulombho::none) {
     Vec4D wp, wm;
     if (WPairMomenta(m_ev.m_plab, wp, wm))
@@ -842,27 +886,13 @@ void YFS_Handler::CalculateCoulomb() {
   }
 }
 
-
-
-
-
-
-
-
-
-
 void YFS_Handler::GenerateWeight() {
   p_weights->GenerateWeight();
 }
 
-
-
-
-
 void YFS_Handler::YFSDebug(double W){
   p_debug->FillHist(m_ev.m_plab, p_isr.get(), p_fsr.get(), W);
 }
-
 
 void YFS_Handler::Reset() {
   m_fsrWeight = 0;

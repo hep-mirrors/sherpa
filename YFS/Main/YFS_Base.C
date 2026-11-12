@@ -59,6 +59,11 @@ void YFS_Base::RegisterDefaults(){
   // (2026-10-11). This one is a pure phase-space veto, safe below the
   // fiducial |t|.
   s["EXCHANGE_T_MIN_FINAL"].SetDefault(0.);
+  // degrees between Born photons and the reduced beams (0: off)
+  s["BORN_PHOTON_REDUCED_ANGLE"].SetDefault(0.);
+  // lab-frame photon resolution for n-photon samples (0: off)
+  s["RESOLVED_PHOTON_E"].SetDefault(0.);
+  s["RESOLVED_PHOTON_ANGLE"].SetDefault(0.);
   // the paper value (2026-10-06); results are cutoff independent
   s["IR_CUTOFF"].ResetDefault().SetDefault(1e-5);
   s["DELTA"].SetDefault(1e-2);
@@ -110,6 +115,9 @@ void YFS_Base::RegisterDefaults(){
   s["RV_TEST_PHOTON_THETA"].SetDefault(M_PI / 2.);
   s["RV_TEST_PHOTON_PHI"].SetDefault(0.);
   s["RV_SOFT_CUT"].SetDefault(1e-4);
+  // skip the real-virtual of a photon collinear to a charged leg i,
+  // min_i (p_i.k)/s below this (0: off); see NLO_Base::CalculateRealVirtual
+  s["RV_COLLINEAR_CUT"].SetDefault(0.);
   s["RR_SOFT_CUT"].SetDefault(1e-5);
   s["RV_CANCEL_EPS"].SetDefault(0.);
   s["RV_CANCEL_HIST"].SetDefault(0);
@@ -264,7 +272,7 @@ void YFS_Base::RegisterDefaults(){
   s["Dim_Reg"].SetDefault(true);
   s["IR_SCALE"].SetDefault(100);
   s["NLO_CUTS"].SetDefault(false);
-  s["Fixed_Order"].SetDefault(fixed_order::full);
+  s["Fixed_Order"].SetDefault("Full");
   s["SKIP_NEG_WEIGHTS"].SetDefault(false);
   s["NLO_FSR_PHOTONS"].SetDefault(true);
 
@@ -306,6 +314,9 @@ void YFS_Base::RegisterSettings(){
   m_vmax = 1.-sqr(m_vmax)/m_s;
   m_exchange_tmin = s["EXCHANGE_T_MIN"].Get<double>();
   m_exchange_tmin_final = s["EXCHANGE_T_MIN_FINAL"].Get<double>();
+  m_bornphoton_reduced_angle = s["BORN_PHOTON_REDUCED_ANGLE"].Get<double>();
+  m_resolved_photon_e = s["RESOLVED_PHOTON_E"].Get<double>();
+  m_resolved_photon_angle = s["RESOLVED_PHOTON_ANGLE"].Get<double>();
   m_looptool  = s["LOOP_TOOL"].Get<bool>();
   m_debugDIR_ISR = s["DEBUG_DIR_ISR"].Get<std::string>();
   m_debugDIR_FSR = s["DEBUG_DIR_FSR"].Get<std::string>();
@@ -340,6 +351,7 @@ void YFS_Base::RegisterSettings(){
   m_rv_test_phi = s["RV_TEST_PHOTON_PHI"].Get<double>();
   // Dimensionless: photon energy fraction E/sqrt(s). <=0 disables the guard.
   m_rv_soft_cut = s["RV_SOFT_CUT"].Get<double>();
+  m_rv_collinear_cut = s["RV_COLLINEAR_CUT"].Get<double>();
   // Same, applied to each photon of the double-real pair. <=0 disables.
   m_rr_soft_cut = s["RR_SOFT_CUT"].Get<double>();
   // Dimensionless relative-cancellation threshold for the RV beta_1^1. <=0
@@ -398,7 +410,12 @@ void YFS_Base::RegisterSettings(){
   m_dim_reg = s["Dim_Reg"].Get<bool>();
   m_irscale = s["IR_SCALE"].Get<double>();
   m_nlocuts = s["NLO_CUTS"].Get<bool>();
-  m_fixedOrder = s["Fixed_Order"].Get<fixed_order::code>();
+  // Fixed_Order is removed: use ACRAIC: FIXED_ORDER_STREAM
+  if (s["Fixed_Order"].Get<std::string>() != "Full")
+    THROW(not_implemented, "YFS: Fixed_Order is removed. For fixed-order results"
+          " use the named weights YFS.ACRAIC_FixedOrder (O(alpha)) and"
+          " YFS.ACRAIC_FixedOrder2 (O(alpha^2), ACRAIC: ORDER 2) with ACRAIC:"
+          " {FIXED_ORDER_STREAM: true}.");
   m_skipNegWeights = s["SKIP_NEG_WEIGHTS"].Get<bool>();
   m_nlo_fsr_photons = s["NLO_FSR_PHOTONS"].Get<bool>();
   m_nlo_fsr_from_event = s["NLO_FSR_FROM_EVENT"].Get<bool>();
@@ -523,32 +540,6 @@ std::istream &YFS::operator>>(std::istream &str, wgt::code &mode)
   return str;
 }
 
-std::istream &YFS::operator>>(std::istream &str, fixed_order::code &mode)
-{
-  std::string tag;
-  str>>tag;
-  static const std::vector<YFS::Option_Name> names{
-    {"Off", fixed_order::off}, {"Full", fixed_order::full},
-    {"LO", fixed_order::lo}, {"NLO", fixed_order::nlo},
-    {"NNLO", fixed_order::nnlo}};
-  mode=static_cast<fixed_order::code>(ParseOptionName(tag, names, "YFS: Fixed_Order"));
-  if (mode==fixed_order::lo || mode==fixed_order::nnlo || mode==fixed_order::nlo)
-    THROW(not_implemented, "YFS: Fixed_Order "+tag+" is not available: NLO was"
-          " never validated and depends on IR_CUTOFF at O(alpha). For the"
-          " fixed-order O(alpha) result use the named weight"
-          " YFS.ACRAIC_FixedOrder (ACRAIC: {FIXED_ORDER_STREAM: true}).");
-  return str;
-}
-
-std::ostream &YFS::operator<<(std::ostream &str,const fixed_order::code &wm)
-{
-  if      (wm==fixed_order::off)    return str<<"Off";
-  else if (wm==fixed_order::full)   return str<<"Full";
-  else if (wm==fixed_order::lo)   return str<<"LO";
-  else if (wm==fixed_order::nlo)   return str<<"NLO";
-  else if (wm==fixed_order::nnlo)  return str<<"NNLO";
-  return str<<"unknown";
-}
 
 double YFS_Base::Eikonal(const Vec4D &k, const Vec4D &p1, const Vec4D &p2) {
   return -m_alpha / (4 * M_PI * M_PI) * (p1 / (p1 * k) - p2 / (p2 * k)).Abs2();

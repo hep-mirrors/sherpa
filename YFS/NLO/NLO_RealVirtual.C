@@ -161,6 +161,15 @@ bool NLO_Base::RVInBeamCone(const Vec4D_Vector &p) const
   return false;
 }
 
+// ACRAIC: HYBRID_ISR_RMIN r_c: V_2 if min(r_1, r_2) < r_c (always for r_c < 0)
+bool NLO_Base::InHybridIsrCone(const Vec4D &k) const
+{
+  static const double rc(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["HYBRID_ISR_RMIN"]
+                         .SetDefault(-1.).Get<double>());
+  if (rc < 0.) return true;
+  return Min(k[0] - k[3], k[0] + k[3])/sqrt(m_s) < rc;
+}
+
 bool NLO_Base::RealVirtualFactor(const Vec4D_Vector &pin, double &v1) {
   if (pin.size() != m_flavs.size() + 1) return false;
   const Vec4D_Vector p(RVLoopPoint(pin, RVLoopFrame()));
@@ -196,9 +205,25 @@ bool NLO_Base::RealVirtualFactor(const Vec4D_Vector &pin, double &v1) {
   const double e1s(p_nlodipoles->Get_E1()/m_rescale_alpha);
   // massified, the poles agree only up to O(m^2/s_ij) (measured: median
   // 3e-7, max 3e-5 relative on Z-pole mu mu gamma)
-  const double poletol(p_realvirt->p_massif ? 1e-4 : 1e-6);
-  if (m_dim_reg && std::abs(e1l + e1s) > poletol*std::max(std::abs(e1l), 1e-3))
-    ++m_rvPoleFail;
+  // YFS: RV_POLE_TOL: tolerance of the (n+1) loop's 1/eps against the subtraction's
+  static const double poletolset(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_POLE_TOL"]
+                                 .SetDefault(0.).Get<double>());
+  const double poletol(poletolset > 0. ? poletolset : (p_realvirt->p_massif ? 1e-4 : 1e-6));
+  // diagnostic: one line per loop call with the pole mismatch and the photon
+  static const bool polelog(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_POLE_LOG"]
+                            .SetDefault(false).Get<bool>());
+  if (polelog && m_dim_reg && e1l != 0.) {
+    const Vec4D &kp(p.back());
+    std::cerr<<std::setprecision(8)<<"@@@ RVPOLE x "<<2.*kp[0]/sqrt((p[0] + p[1]).Abs2())
+             <<" rel "<<std::abs(e1l + e1s)/std::max(std::abs(e1l), 1e-3)
+             <<" v1 "<<lt - sub/m_rescale_alpha<<"\n";
+  }
+  const bool polefail(m_dim_reg && std::abs(e1l + e1s) > poletol*std::max(std::abs(e1l), 1e-3));
+  if (polefail) ++m_rvPoleFail;
+  // YFS: RV_POLE_VETO: dv = 0 when the provider's 1/eps_IR fails that check
+  static const bool poleveto(ATOOLS::Settings::GetMainSettings()["YFS"]["RV_POLE_VETO"]
+                             .SetDefault(false).Get<bool>());
+  if (poleveto && polefail && e1l != 0.) { ++m_rvPoleVeto; return false; }
   if (RVProbeOn()) {
     std::ostringstream o;
     o<<std::setprecision(10)<<"@@@ RVREM lt="<<lt<<" sub="<<sub/m_rescale_alpha
@@ -441,6 +466,14 @@ double NLO_Base::CalculateRealVirtualRemainder(size_t i, const Vec4D &k) {
     return IsBad(c) ? 0. : c;
   }
   if (!m_vborn_own_ok) { ++m_rvNoVirt; return 0.; }
+  // hybrid: no (n+1)-point loop for an initial-state photon that gets V_2
+  static const bool fsronly(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["REAL_VIRTUAL"]
+                            .SetDefault(acraicrv::automatic).Get<acraicrv::code>()
+                            == acraicrv::hybrid);
+  if (fsronly && i < m_photons.size() && !m_photons[i].IsFSR() && InHybridIsrCone(k)) {
+    ++m_rvIsrSkipped;
+    return 0.;
+  }
   if (RVInBeamCone(info.p)) { ++m_rvBeamCone; return 0.; }
   double v1(0.);
   if (!RealVirtualFactor(info.p, v1)) {
@@ -544,6 +577,19 @@ double NLO_Base::CalculateRealVirtual() {
     m_rvdv_spt.clear();
     m_rvhel.clear();
     m_loopnhel.clear();
+    // ACRAIC: RV_FRACTION f: exact loops on a hashed fraction f of the events
+    const double rvfrac(RealVirtualFraction());
+    m_rvSkipped = false;
+    if (rvfrac < 1.) {
+      ATOOLS::Vec4D_Vector key(m_plab);
+      for (const YFS::Photon &g : m_photons) key.push_back(g.K());
+      if (KinematicsHash(key) >= rvfrac) {
+        m_rvSkipped = true;
+        ++m_rvFracSkipped;
+        return 0.;
+      }
+      ++m_rvFracEvaluated;
+    }
     m_vborn_own_ok = m_vborn_ok && BornVirtualOnOwnLegs(m_vborn_own);
     if (m_vborn_own_ok && !m_rvct_done) CalibratePhotonCounterterm();
     for (size_t i(0); i < m_photons.size(); ++i) {
@@ -609,6 +655,13 @@ double NLO_Base::CalculateRealVirtual(Vec4D k) {
                     << " < RV_SOFT_CUT*sqrt(s)=" << m_rv_soft_cut * sqrt(m_s)
                     << "\n";
     return 0;
+  }
+  // YFS: RV_COLLINEAR_CUT: dv = 0 for a photon collinear to a charged leg
+  if (m_rv_collinear_cut > 0.) {
+    double pkmin(1e300);
+    for (size_t i(0); i < m_plab.size() && i < m_flavs.size(); ++i)
+      if (m_flavs[i].Charge() != 0.) pkmin = Min(pkmin, (m_plab[i]*k)/m_s);
+    if (pkmin < m_rv_collinear_cut) { m_softRV++; return 0; }
   }
   Vec4D_Vector p(m_plab), pi(m_bornMomenta), pf(m_bornMomenta);
   double tot(0), sub(0);

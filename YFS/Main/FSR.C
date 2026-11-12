@@ -1,3 +1,5 @@
+#include <sstream>
+#include <iomanip>
 #include "YFS/Main/FSR.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "MODEL/Main/Running_AlphaQED.H"
@@ -307,8 +309,7 @@ void FSR::NPhotons() {
     sum += log(ran->Get());
     if (sum <= -m_nbar) break;
   }
-  if(FixedOrder()==fixed_order::nlo) m_n = min(N-1, 1);
-  else  m_n = N - 1;
+  m_n = N - 1;
   m_N=m_n;
   p_dipole->SetNPhoton(m_N);
   if (m_n < 0) msg_Error() << METHOD << std::endl << "Nphotons < 0!!" << std::endl;
@@ -614,11 +615,6 @@ bool FSR::YFS_FORM(){
   }
   else m_hideW=exp(YFS_IR  +  m_volmc);
   m_YFS_IR = exp(YFS_IR+m_DelYFS);
-  if(FixedOrder()==fixed_order::nlo){
-    m_YFS_IR = 1;//+YFS_IR+m_DelYFS;
-    m_hideW  = 1;//+YFS_IR + m_DelYFS + m_volmc - m_delvol;
-    return true;
-  }
   return true;
 }
 
@@ -885,4 +881,15 @@ double FSR::EikonalInterferance(const Vec4D &k) {
 double SqLam(double x,double y,double z)
 {
   return abs(x*x+y*y+z*z-2.*x*y-2.*x*z-2.*y*z);
+}
+
+// YFS: N1_PROBE (diagnostic): the pieces of the FSR weight of the last event
+std::string FSR::ProbeLine() const
+{
+  std::ostringstream o; o << std::setprecision(17);
+  o << " massW=" << m_massW << " hideW=" << m_hideW << " wt2=" << m_wt2 << " shellW=" << m_shellW
+    << " yy=" << m_yy << " xfact=" << m_xfact << " sprim=" << m_sprim << " dipsp=" << m_dip_sp
+    << " fsrWeight=" << m_fsrWeight << " nbar=" << m_nbar << " volmc=" << m_volmc
+    << " DelYFS=" << m_DelYFS << " delvol=" << m_delvol << " YFSIR=" << m_YFS_IR;
+  return o.str();
 }

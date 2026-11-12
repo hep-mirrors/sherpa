@@ -120,6 +120,8 @@ namespace YFS {
     ATOOLS::Vec4D_Vector m_prefsr;
     //! the generator's Born point at R^2 from the pre-FSR legs (any final state)
     bool GeneratorBornAt(const ATOOLS::Vec4D &R, ATOOLS::Vec4D_Vector &pb) const;
+    //! ACRAIC: CRUDE_BORN_LEGS stage: the Born point of the partition's own channel
+    bool StageBornAt(const ATOOLS::Vec4D &R, ATOOLS::Vec4D_Vector &pb) const;
     bool RepairMomentumBalance();
     //! final state is one f fbar pair, the case the hand-coded 2 -> 2 Born covers
     bool m_ffbar = false;
@@ -177,7 +179,11 @@ namespace YFS {
       of the initial-state current alone; no IF boxes, no greco. Set per
       process in BuildStages. (A neutral final state is ISR only anyway.)
     */
+    //! whether stage is the only final stage, without W or resonance stages:
+    //! its system is then everything produced (StageShiftMask)
+    bool SingleFinalSystem(int stage) const;
     bool m_isronly = false;
+    inline bool IsrOnly() const { return m_isronly; }
     /*!
       YFS: MODE FSR with charged initial-state particles: FSR only, the mirror
       of m_isronly. Every photon sits on a final stage, the initial-stage
@@ -187,6 +193,7 @@ namespace YFS {
       and MODE FSR is not an FSR-only calculation.
     */
     bool m_fsronly = false;
+    inline bool FsrOnly() const { return m_fsronly; }
     //! one radiating side only (MODE ISR or MODE FSR with both sides charged)
     inline bool SingleSided() const { return m_isronly || m_fsronly; }
     //! ACRAIC: RESONANCE_EXPONENTIATION (greco, Acraic_Resonance.C) is on
@@ -308,6 +315,10 @@ namespace YFS {
     Amplitude  m_partborn0;
     //! this partition's pseudo-flux svarY/svarQ (1 under NO_PSEUDOFLUX)
     double     m_pflux = 1.;
+    //! ACRAIC: PSEUDOFLUX_MASSIVE: massive-pair correction of the crude's pseudo-flux
+    double     m_pfluxmass = 1.;
+    bool       m_pfluxmassive = false;
+    double StagePairFluxMass(int stage) const;
     Amplitude  m_AmpBornVirt;
     //! Born terms weighted as m_AmpBornVirt (not rho_0), for VirtualFactor()
     Amplitude  m_AmpBornOnly;
@@ -332,6 +343,29 @@ namespace YFS {
     mutable long   m_tnpn = 0, m_tnpbad = 0;
     mutable double m_tnpworstterm = 0.;
     mutable long   m_tnpbadterm = 0;
+    // ACRAIC: TNP_IFI: amplitudes with the final-stage emission charges flipped
+    bool       m_tnpifi = false;
+    Amplitude  m_tnpflip0, m_tnpflip1;
+    //! this partition's flip of the soft product, prod_j flip_j
+    Complex    m_tnppartflip = Complex(1., 0.);
+    //! flip_j per photon: +1 initial, -1 final, (s_I - s_F)/(s_I + s_F) collapsed
+    std::vector<Complex> m_tnpflipph;
+    //! ACRAIC: TNP_IFI_CHECK: photons left on which M_1^I + M_1^F = M_1 is checked
+    int        m_tnpifichk = 0;
+    mutable double m_tnpifichkworst = 0.;
+    mutable long   m_tnpifin = 0, m_tnpifiunsplit = 0, m_tnpifichkn = 0,
+                   m_tnpifievenbox = 0, m_tnpifievenres = 0;
+    //! m_partborn0 with every greco exponent a_g -> -a_g (= m_partborn0 without greco)
+    Amplitude  m_partborn0flip;
+    //! this partition's flip factor m_tnppartflip and m_tnpflipph
+    void TnpIfiPartitionFlip();
+    //! the shifts with every greco exponent a_g -> -a_g (a_g is odd in the final charges)
+    PropShifts TnpIfiFlippedResonance(const PropShifts &sh) const;
+    inline void TnpIfiAdd(int f, const Complex &a0, const Complex &a1)
+    { if (m_tnpifi) { m_tnpflip0.m_A[f] += a0; m_tnpflip1.m_A[f] += a1; } }
+    //! M_1^I of photon iphot (final placement vetoed); false if unavailable
+    bool TnpIfiInitialM1(int iphot, const Vec4D_Vector &pp, int hel,
+                         const PropShifts &shifts, const Amplitude &M1, Amplitude &M1I);
 
     std::vector<Amplitude> m_realphot;
     //! ACRAIC: REAL_VIRTUAL 2: photon j's M_1 terms, partition summed
@@ -449,6 +483,10 @@ namespace YFS {
     void PartitionStartCollapsed(int &last);
     //! ACRAIC: CRUDE_FROM_GENERATOR: the crude on the generator's stages (< 0: none)
     double CrudeFromGenerator();
+    //! YFS: BORN_PHOTON_CHANNELS stage: CrudeFromGenerator with the Born photon
+    //! legs slot holding the candidates pick (Acraic_Partitions.C; < 0: none)
+    double CrudeOfPhotonAssignment(const std::vector<size_t> &slot,
+                                   const std::vector<size_t> &pick);
     //! no beta_1 for photon j in any partition (it carries its next-to-soft flux)
     bool Beta1NeverEvaluated(size_t j) const;
     //! photon j's next-to-soft flux: its stage invariant with over without it
@@ -553,6 +591,9 @@ namespace YFS {
     double m_result0v = 0.;    //!< Re<A_0,A_v>/4
     inline int Order() const { return m_order; }
     inline double GetResult1() const { return m_result1; }
+    //! YFS: N1_PROBE - one text line with the physical legs, the photons and the
+    //! pieces of rho_1 / rho_crude of the last event (diagnostic)
+    std::string ProbeN1Line() const;
     inline double GetResult01Order1() const { return m_result01o1; }
     inline double GetResult02() const { return m_result02; }
     inline double GetResult12() const { return m_result12; }
@@ -585,6 +626,13 @@ namespace YFS {
       coherent amplitude (no templates).
     */
     bool TnpTemplates(int order, double vhalf, std::vector<double> &t) const;
+    inline bool TnpIfiOn() const { return m_tnp && m_tnpifi; }
+    //! ACRAIC: TNP_IFI: T_IFI = Odd[w_k] - Odd[w_0]; odd gets Odd[w_k] (TNP_ODD_STREAM)
+    bool TnpIfiTemplate(int order, double vhalf, double vif, double eflip,
+                        double &t, double *odd = nullptr) const;
+    //! ACRAIC: TNP_IFI: the IF virtual from ACRAIC's own boxes at the Born point
+    //! m_prefsr, without greco's log (e+e- -> f fbar only; false otherwise)
+    bool OwnBoxVirtualIF(double &vif);
     //! end-of-run line: the per-event closure sum_c B_c = A_1, A_beta2
     void ReportTnp() const;
     //! ACRAIC: REAL_VIRTUAL (Acraic_Base.C, RealVirtualMode)
@@ -656,6 +704,7 @@ namespace YFS {
     void CalculateSfactors();
     void MakePhotonHel();
     void MakeBoxMandelstams(const ATOOLS::Vec4D &PX);
+    void MakeBoxMandelstams(const ATOOLS::Vec4D &PX, const ATOOLS::Vec4D_Vector &p);
     Complex CnuA(double svar, double m1, double m2) const;
     /*!
       2 Re[delta_I(s1) - delta_I(s2)]: the change of the IR-subtracted

@@ -116,6 +116,9 @@ namespace {
     {"off", bornphotonmc::off}, {"on", bornphotonmc::on},
     {"report", bornphotonmc::report}};
 
+  const std::vector<Option_Name> s_bornphotonchannels{
+    {"isr", bornphotonchannels::isr}, {"stage", bornphotonchannels::stage}};
+
   const std::vector<Option_Name> s_ewhigherorder{
     {"none", ewhigherorder::none}, {"griffin", ewhigherorder::griffin}};
 
@@ -188,12 +191,14 @@ namespace {
     {"neither", pseudoflux::neither}, {"rho0_only", pseudoflux::rho0_only}};
 
   const std::vector<Option_Name> s_crudebornlegs{
-    {"reduced", crudebornlegs::reduced}, {"generator", crudebornlegs::generator}};
+    {"reduced", crudebornlegs::reduced}, {"generator", crudebornlegs::generator},
+    {"stage", crudebornlegs::stage}};
 
   const std::vector<Option_Name> s_acraicrv{
     {"off", acraicrv::off}, {"factorisable", acraicrv::factorisable},
     {"averaged", acraicrv::averaged}, {"auto", acraicrv::automatic},
-    {"helicity", acraicrv::helicity}};
+    {"helicity", acraicrv::helicity}, {"isr_nll", acraicrv::isr_nll},
+    {"hybrid", acraicrv::hybrid}};
 
   const std::vector<Option_Name> s_beta1legs{
     {"physical", beta1legs::physical}, {"balanced", beta1legs::balanced}};
@@ -204,6 +209,10 @@ namespace {
   const std::vector<Option_Name> s_acraicresexp{
     {"none", acraicresexp::none}, {"greco", acraicresexp::greco},
     {"auto", acraicresexp::automatic}};
+
+  const std::vector<Option_Name> s_tnpifivirtual{
+    {"auto", tnpifivirtual::automatic}, {"own_boxes", tnpifivirtual::own_boxes},
+    {"mirrored", tnpifivirtual::mirrored}, {"none", tnpifivirtual::none}};
 
   // RR_CONVENTIONS: the old integer mask's values of the four pieces
   const std::vector<Option_Name> s_rrconventions{
@@ -306,6 +315,10 @@ std::istream &YFS::operator>>(std::istream &s, bornphotonmc::code &c)
 { return ReadOption(s, c, s_bornphotonmc, "YFS: REAL_BORN_PHOTON_MULTICHANNEL"); }
 std::ostream &YFS::operator<<(std::ostream &s, const bornphotonmc::code &c)
 { return WriteOption(s, c, s_bornphotonmc); }
+std::istream &YFS::operator>>(std::istream &s, bornphotonchannels::code &c)
+{ return ReadOption(s, c, s_bornphotonchannels, "YFS: BORN_PHOTON_CHANNELS"); }
+std::ostream &YFS::operator<<(std::ostream &s, const bornphotonchannels::code &c)
+{ return WriteOption(s, c, s_bornphotonchannels); }
 
 std::istream &YFS::operator>>(std::istream &s, ewhigherorder::code &c)
 { return ReadOption(s, c, s_ewhigherorder, "YFS: EW_HIGHER_ORDER"); }
@@ -422,3 +435,8 @@ std::istream &YFS::operator>>(std::istream &s, acraicresexp::code &c)
 { return ReadOption(s, c, s_acraicresexp, "ACRAIC: RESONANCE_EXPONENTIATION"); }
 std::ostream &YFS::operator<<(std::ostream &s, const acraicresexp::code &c)
 { return WriteOption(s, c, s_acraicresexp); }
+
+std::istream &YFS::operator>>(std::istream &s, tnpifivirtual::code &c)
+{ return ReadOption(s, c, s_tnpifivirtual, "ACRAIC: TNP_IFI_VIRTUAL"); }
+std::ostream &YFS::operator<<(std::ostream &s, const tnpifivirtual::code &c)
+{ return WriteOption(s, c, s_tnpifivirtual); }

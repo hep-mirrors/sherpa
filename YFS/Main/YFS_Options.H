@@ -91,6 +91,10 @@ namespace YFS {
   struct bornphotonmc {
     enum code { off = 0, on = 1, report = 2 };
   };
+  //! YFS: BORN_PHOTON_CHANNELS (see NLO_Base::BornPhotonChannelSum)
+  struct bornphotonchannels {
+    enum code { isr = 0, stage = 1 };
+  };
   //! YFS: RV_MODE - how the squared-level real-virtual is built
   //! (documented in YFS/NLO/NLO_Base_Internal.H).
   struct rvmode {
@@ -221,16 +225,18 @@ namespace YFS {
   };
   //! ACRAIC: REAL_VIRTUAL - the O(alpha^2) real-virtual in ACRAIC: off,
   //! factorisable, averaged (helicity-averaged remainder), helicity (the
-  //! remainder resolved by helicity from Recola's (n+1)-point amplitudes).
+  //! remainder resolved by helicity from Recola's (n+1)-point amplitudes),
+  //! isr_nll (factorisable plus the analytic LL+NLL initial-state remainder),
+  //! hybrid (isr_nll on initial-state photons, averaged on final-state photons).
   struct acraicrv {
     enum code { off = 0, factorisable = 1, averaged = 2, automatic = 3,
-                helicity = 4 };
+                helicity = 4, isr_nll = 5, hybrid = 6 };
   };
   //! ACRAIC: CRUDE_BORN_LEGS - the Born point of the crude: the generator's
   //! (pre-emission pair direction in its own rest frame) or the pair
   //! rebuilt along its physical direction in the reduced system's frame.
   struct crudebornlegs {
-    enum code { reduced = 0, generator = 1 };
+    enum code { reduced = 0, generator = 1, stage = 2 };
   };
   //! ACRAIC: BETA1_LEGS - the legs beta_1's M_1 is evaluated on.
   struct beta1legs {
@@ -247,6 +253,13 @@ namespace YFS {
   //! KeyINT 2). See Acraic_Base::ResonanceExponents.
   struct acraicresexp {
     enum code { none = 0, greco = 1, automatic = 2 };
+  };
+
+  //! ACRAIC: TNP_IFI_VIRTUAL - the initial-final virtual of the flipped weight:
+  //! ACRAIC's own boxes (e+e- -> f fbar), the mirrored loop, both by process
+  //! (auto), or none (virtual even, as KKMC with KeyELW 0, which has no boxes)
+  struct tnpifivirtual {
+    enum code { automatic = 0, own_boxes = 1, mirrored = 2, none = 3 };
   };
 
   std::istream &operator>>(std::istream &str, tristate::code &c);
@@ -269,6 +282,8 @@ namespace YFS {
   std::ostream &operator<<(std::ostream &str, const virtualcombine::code &c);
   std::istream &operator>>(std::istream &str, bornphotonmc::code &c);
   std::ostream &operator<<(std::ostream &str, const bornphotonmc::code &c);
+  std::istream &operator>>(std::istream &str, bornphotonchannels::code &c);
+  std::ostream &operator<<(std::ostream &str, const bornphotonchannels::code &c);
   std::istream &operator>>(std::istream &str, ewhigherorder::code &c);
   std::ostream &operator<<(std::ostream &str, const ewhigherorder::code &c);
   std::istream &operator>>(std::istream &str, coulombho::code &c);
@@ -315,6 +330,8 @@ namespace YFS {
   std::ostream &operator<<(std::ostream &str, const weikonal::code &c);
   std::istream &operator>>(std::istream &str, acraicresexp::code &c);
   std::ostream &operator<<(std::ostream &str, const acraicresexp::code &c);
+  std::istream &operator>>(std::istream &str, tnpifivirtual::code &c);
+  std::ostream &operator<<(std::ostream &str, const tnpifivirtual::code &c);
 
 }
 

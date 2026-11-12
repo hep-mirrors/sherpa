@@ -19,6 +19,7 @@ set(YFSMain_SOURCES Beta0_2.C
 set(YFSMain_HEADERS Beta0_2.H
                  Beta0_2_Boxes.H
                  Beta0_2_Boxes_Table.H
+                 Beta0_2_Boxes_Bhabha_Table.H
                  Coulomb.H
                  Dyson_VP.H
                  Dipole.H

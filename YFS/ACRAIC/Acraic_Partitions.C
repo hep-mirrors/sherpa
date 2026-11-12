@@ -1,3 +1,5 @@
+#include <sstream>
+#include <iomanip>
 #include "YFS/ACRAIC/Acraic_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "METOOLS/Main/Spin_Structure.H"
@@ -245,7 +247,19 @@ size_t Acraic_Base::StageShiftMask(int stage) const
   const std::vector<int> legs(StageExternalLegs(stage));
   for (size_t l(0); l < legs.size(); ++l)
     if (legs[l] >= 0 && legs[l] < (int)m_flavs.size()) mask = AddLeg(mask, legs[l]);
+  // the mask names the stage's whole system (neutral hadrons in, Born photons out)
+  if (SingleFinalSystem(stage))
+    for (size_t l(2); l < m_flavs.size(); ++l)
+      if (m_flavs[l].Charge() == 0. && !m_flavs[l].IsPhoton()) mask = AddLeg(mask, l);
   return mask;
+}
+
+bool Acraic_Base::SingleFinalSystem(int stage) const
+{
+  if (stage == m_initstage || WStagesActive() || !m_resonances.empty()) return false;
+  for (int g(0); g < (int)m_stagelegs.size(); ++g)
+    if (g != m_initstage && g != stage && !m_stagelegs[g].empty()) return false;
+  return true;
 }
 
 // YFS: IFI false. Vetoes keeping only the Comix diagrams in which each
@@ -309,6 +323,37 @@ std::string Acraic_Base::NoIFIRefusal()
             <<"partitions, M_1/M_2 split by emitting stage, no IF form factor, "
             <<"no IF boxes in ACRAIC's own virtual."<<std::endl;
   return "";
+}
+
+// ACRAIC: PSEUDOFLUX_MASSIVE: beta(s_pre)/beta(s_Q) of a two-body final stage
+std::string Acraic_Base::ProbeN1Line() const
+{
+  std::ostringstream o; o << std::setprecision(17);
+  for (size_t i(0); i < m_pacraic.size(); ++i)
+    o << " p" << i << "=" << m_pacraic[i][0] << "," << m_pacraic[i][1] << "," << m_pacraic[i][2] << "," << m_pacraic[i][3];
+  for (size_t i(0); i < m_allphotons.size(); ++i)
+    o << " k" << i << "=" << m_allphotons[i][0] << "," << m_allphotons[i][1] << "," << m_allphotons[i][2] << "," << m_allphotons[i][3];
+  o << " rho0=" << m_result0 << " rho1=" << m_result1 << " rhocrude=" << m_rhocrud
+    << " pflux=" << m_pflux << " pfluxmass=" << m_pfluxmass << " svarQ=" << m_svarQ;
+  return o.str();
+}
+
+double Acraic_Base::StagePairFluxMass(int stage) const
+{
+  if (!m_pfluxmassive) return 1.;
+  const std::vector<int> legs(StageExternalLegs(stage));
+  if (legs.size() != 2 || legs[0] < 0 || legs[1] < 0 ||
+      legs[0] >= (int)m_flavs.size() || legs[1] >= (int)m_flavs.size()) return 1.;
+  const double m1(m_flavs[legs[0]].HadMass()), m2(m_flavs[legs[1]].HadMass());
+  if (m1 <= 0. && m2 <= 0.) return 1.;
+  const Vec4D q(StageSystemMomentum(stage)), K(StagePhotonSum(stage, -1));
+  const double sQ(q.Abs2()), sP((q + K).Abs2());
+  if (sQ <= 0. || sP <= 0.) return 1.;
+  auto lam = [](double x, double y, double z)
+    { return x*x + y*y + z*z - 2.*x*y - 2.*x*z - 2.*y*z; };
+  const double lQ(lam(sQ, m1*m1, m2*m2)), lP(lam(sP, m1*m1, m2*m2));
+  if (!(lQ > 0.) || !(lP > 0.)) return 1.;
+  return sqrt(lP/lQ)*sQ/sP;
 }
 
 Vec4D Acraic_Base::StageSystemMomentum(int stage) const
@@ -668,12 +713,17 @@ double Acraic_Base::CrudeFromGenerator()
           const Vec4D q(StageSystemMomentum(g)), K(StagePhotonSum(g, -1));
           const double q2(q.Abs2());
           if (q2 > 0.) pflux *= (q + K).Abs2()/q2;
+          pflux *= StagePairFluxMass(g);
         }
       // the generator's Born at its own point, as InfraredSubtractedME_0_0
       Vec4D_Vector pb;
       Amplitude Cred;
+      // ACRAIC: CRUDE_BORN_LEGS stage beyond 2 -> 2, as InfraredSubtractedME_0_0
+      static const crudebornlegs::code cbl(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
+                                           ["CRUDE_BORN_LEGS"].Get<crudebornlegs::code>());
       const bool legs(m_flavs.size() == 4 ? BornLegsAt(PX, pb)
-                                           : GeneratorBornAt(PX, pb));
+                      : cbl == crudebornlegs::stage ? StageBornAt(PX, pb)
+                                                    : GeneratorBornAt(PX, pb));
       if (!legs || !ComixBornAmplitude(pb, Cred, NULL, -1., -1.)) return -1.;
       const double crudered((pfmode == pseudoflux::neither ? 1. : pflux) * (m_s/X2)
                             * (crudefixed ? crudeprod : std::norm(sProd)));
@@ -687,6 +737,46 @@ double Acraic_Base::CrudeFromGenerator()
     PartitionPlus(last);
     if (last == 2) break;
   }
+  return rho;
+}
+
+// YFS: BORN_PHOTON_CHANNELS stage: the crude of another assignment of the Born photons
+double Acraic_Base::CrudeOfPhotonAssignment(const std::vector<size_t> &slot,
+                                            const std::vector<size_t> &pick)
+{
+  const size_t nb(slot.size()), np(m_allphotons.size());
+  if (pick.size() != nb || m_pacraic.size() != m_flavs.size()
+      || m_allphotons_lab.size() != np || m_prefsr.size() != m_flavs.size())
+    return -1.;
+  for (size_t a(0); a < nb; ++a)
+    if (slot[a] < 2 || slot[a] >= m_pacraic.size() || pick[a] >= nb + np) return -1.;
+  // candidates in the ACRAIC frame and in the lab (GeneratorBornAt reads the
+  // lab pre-FSR legs)
+  Vec4D_Vector cand, candlab;
+  for (size_t a(0); a < nb; ++a) { cand.push_back(m_pacraic[slot[a]]); candlab.push_back(m_prefsr[slot[a]]); }
+  for (size_t j(0); j < np; ++j) { cand.push_back(m_allphotons[j]); candlab.push_back(m_allphotons_lab[j]); }
+  std::vector<char> inborn(nb + np, 0);
+  for (size_t a(0); a < nb; ++a) {
+    if (inborn[pick[a]]) return -1.;
+    inborn[pick[a]] = 1;
+  }
+  // Born photons that leave, in slot order, fill the places of the YFS photons
+  // that enter, in photon order
+  std::vector<size_t> leaving, entering;
+  for (size_t a(0); a < nb; ++a) if (!inborn[a]) leaving.push_back(a);
+  for (size_t j(0); j < np; ++j) if (inborn[nb + j]) entering.push_back(j);
+  if (leaving.size() != entering.size()) return -1.;
+  const Vec4D_Vector pac(m_pacraic), pre(m_prefsr), pho(m_allphotons), pholab(m_allphotons_lab);
+  for (size_t a(0); a < nb; ++a) {
+    m_pacraic[slot[a]] = cand[pick[a]];
+    m_prefsr[slot[a]] = candlab[pick[a]];
+  }
+  for (size_t i(0); i < entering.size(); ++i) {
+    m_allphotons[entering[i]] = cand[leaving[i]];
+    m_allphotons_lab[entering[i]] = candlab[leaving[i]];
+  }
+  const double rho(CrudeFromGenerator());
+  m_pacraic = pac; m_prefsr = pre; m_allphotons = pho; m_allphotons_lab = pholab;
   return rho;
 }
 
@@ -779,7 +869,9 @@ void Acraic_Base::Calculate() {
   m_spinvalid.assign(m_spincache.size(), 0);
   m_realphot.assign(m_allphotons.size(), Amplitude());
   m_realphotM1.assign(RealVirtualMode() == acraicrv::averaged ||
-                     RealVirtualMode() == acraicrv::helicity ? m_allphotons.size() : 0,
+                     RealVirtualMode() == acraicrv::helicity ||
+                     RealVirtualMode() == acraicrv::isr_nll ||
+                     RealVirtualMode() == acraicrv::hybrid ? m_allphotons.size() : 0,
                       Amplitude());
   // the outgoing fermion pair's invariant, not legs 2 and 3 (e.g. H l+ l-)
   m_svarQ = (m_pacraic[m_if1] + m_pacraic[m_if2]).Abs2();
@@ -870,6 +962,8 @@ void Acraic_Base::Calculate() {
       m_sactu = Sactu;
       m_crudeprod = crudeprod;
     }
+    // ACRAIC: TNP_IFI: this partition's flip of the soft product
+    if (m_tnpifi) TnpIfiPartitionFlip();
     const double svarX(PX.Abs2());
     if (svarX <= 0. || m_svarQ <= 0.) {
       if (last) break;
@@ -891,6 +985,7 @@ void Acraic_Base::Calculate() {
                             ["NO_PSEUDOFLUX"].Get<pseudoflux::code>());
    
     m_pflux = 1.;
+    m_pfluxmass = 1.;
     if (pfmode != pseudoflux::neither)
       for (int g(0); g < m_nstages; ++g) {
         if (g == m_initstage || m_stagelegs[g].empty()) continue;
@@ -898,6 +993,7 @@ void Acraic_Base::Calculate() {
         const Vec4D q(StageSystemMomentum(g)), K(StagePhotonSum(g, -1));
         const double q2(q.Abs2());
         if (q2 > 0.) m_pflux *= (q + K).Abs2()/q2;
+        m_pfluxmass *= StagePairFluxMass(g);
       }
     m_cfac = sProd * Complex(pfmode == pseudoflux::rho0_and_rho1 ? m_pflux : 1., 0.);   // rho_1 side
     MakeProp();

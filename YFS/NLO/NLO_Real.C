@@ -1708,9 +1708,20 @@ namespace {
   }
 }
 
+// YFS: BORN_PHOTON_CHANNELS: isr (ISR photons, S~_II) or stage (every photon, the caller's density)
+namespace {
+  YFS::bornphotonchannels::code BornPhotonChannels() {
+    static const YFS::bornphotonchannels::code mode(
+        ATOOLS::Settings::GetMainSettings()["YFS"]["BORN_PHOTON_CHANNELS"]
+        .SetDefault(YFS::bornphotonchannels::isr).Get<YFS::bornphotonchannels::code>());
+    return mode;
+  }
+}
+
 double NLO_Base::BornPhotonChannelSum(const Vec4D_Vector &lab,
                                       const std::vector<Vec4D> &isr,
-                                      YFS::Dipole &dII, int jswap, int *nalt) {
+                                      YFS::Dipole &dII, int jswap, int *nalt,
+                                      const ChannelDensity *density) {
   if (nalt) *nalt = 0;
   if (p_bornproc == nullptr || lab.size() != m_flavs.size() || isr.empty())
     return 1.;
@@ -1723,7 +1734,17 @@ double NLO_Base::BornPhotonChannelSum(const Vec4D_Vector &lab,
                  : (m_bornMomenta.size() > 1 ? (m_bornMomenta[0] + m_bornMomenta[1]).Abs2()
                                              : m_s));
   const Vec4D b0(dII.GetBornMomenta(0)), b1(dII.GetBornMomenta(1));
-  auto eik = [&](const Vec4D &k) { return dII.Eikonal(k, b0, b1); };
+  const bool allchannels(BornPhotonChannels() != bornphotonchannels::isr && p_dipoles);
+  auto eik = [&](const Vec4D &k) {
+    double e(dII.Eikonal(k, b0, b1));
+    if (allchannels)
+      for (auto &D : p_dipoles->GetDipoleFF()) {
+        if (!D.IsResonance()) continue;
+        const size_t l(D.Left()), r(D.Right());
+        if (l < lab.size() && r < lab.size()) e += D.Eikonal(k, lab[l], lab[r]);
+      }
+    return e;
+  };
   PHASIC::Combined_Selector *sel(p_bornproc->Selector());
   const int res0(sel ? sel->Result() : 1);
   Vec4D_Vector fin0(lab.begin() + 2, lab.end());
@@ -1748,6 +1769,11 @@ double NLO_Base::BornPhotonChannelSum(const Vec4D_Vector &lab,
       if (s > 0. && 1. - sp/s > m_bpmc_vmax) return -1.;
       if (sel && !sel->Trigger(p)) return -1.;
     }
+    // the caller's density of this assignment (ACRAIC's crude)
+    if (density) {
+      const double h((*density)(slot, pick));
+      return (IsBad(h) || !(h > 0.)) ? -1. : h;
+    }
     const double me2(BornME2At(p));
     if (!(me2 > 0.)) return -1.;
     double h(me2*s/sp);
@@ -1766,50 +1792,53 @@ double NLO_Base::BornPhotonChannelSum(const Vec4D_Vector &lab,
   };
   std::vector<size_t> gen(nb);
   for (size_t a(0); a < nb; ++a) gen[a] = a;
-  const double hgen(hof(gen, false));
+  // the generated assignment's density, taken only once another assignment
+  // is a channel (with a density it is one more crude per event)
+  double hgen(-1.);
+  bool hgenknown(false);
+  auto gendensity = [&]() {
+    if (!hgenknown) { hgen = hof(gen, false); hgenknown = true; }
+    return hgen;
+  };
   double sum(0.);
   int n(0);
-  if (hgen > 0.) {
-    if (jswap >= 0) {
-      if ((size_t)jswap < isr.size())
-        for (size_t a(0); a < nb; ++a) {
-          std::vector<size_t> pick(gen);
-          pick[a] = nb + jswap;
+  if (jswap >= 0) {
+    if ((size_t)jswap < isr.size() && gendensity() > 0.)
+      for (size_t a(0); a < nb; ++a) {
+        std::vector<size_t> pick(gen);
+        pick[a] = nb + jswap;
+        const double h(hof(pick, true));
+        if (h > 0.) { sum += h; ++n; }
+      }
+  } else {
+    // ISR photons that pass as a Born photon in at least one single swap
+    std::vector<size_t> ok;
+    for (size_t j(0); j < isr.size(); ++j)
+      for (size_t a(0); a < nb; ++a) {
+        std::vector<size_t> pick(gen);
+        pick[a] = nb + j;
+        Vec4D_Vector fin(fin0), p;
+        for (size_t b(0); b < nb; ++b) fin[slot[b] - 2] = cand[pick[b]];
+        if (GeneratorPointOf(m_flavs, fin, zs, p) && (!sel || sel->Trigger(p))) {
+          ok.push_back(nb + j); break; }
+      }
+    if (!ok.empty() && gendensity() > 0.) {
+      // ordered choices of nb distinct photons, one ordering per set
+      std::vector<size_t> pool(gen);
+      pool.insert(pool.end(), ok.begin(), ok.end());
+      std::vector<size_t> idx(nb);
+      std::function<void(size_t, size_t)> rec = [&](size_t d, size_t from) {
+        if (d == nb) {
+          std::vector<size_t> pick(nb);
+          for (size_t a(0); a < nb; ++a) pick[a] = pool[idx[a]];
+          if (pick == gen) return;
           const double h(hof(pick, true));
           if (h > 0.) { sum += h; ++n; }
+          return;
         }
-    } else {
-      // ISR photons that pass as a Born photon in at least one single swap
-      std::vector<size_t> ok;
-      for (size_t j(0); j < isr.size(); ++j)
-        for (size_t a(0); a < nb; ++a) {
-          std::vector<size_t> pick(gen);
-          pick[a] = nb + j;
-          Vec4D_Vector fin(fin0), p;
-          for (size_t b(0); b < nb; ++b) fin[slot[b] - 2] = cand[pick[b]];
-          if (GeneratorPointOf(m_flavs, fin, zs, p) && (!sel || sel->Trigger(p))) {
-            ok.push_back(nb + j); break; }
-        }
-      if (!ok.empty()) {
-        // every ordered choice of nb distinct photons from Born + ok, with
-        // the Born photon legs kept in slot order (identical photons: one
-        // ordering per set, the first in ascending candidate index)
-        std::vector<size_t> pool(gen);
-        pool.insert(pool.end(), ok.begin(), ok.end());
-        std::vector<size_t> idx(nb);
-        std::function<void(size_t, size_t)> rec = [&](size_t d, size_t from) {
-          if (d == nb) {
-            std::vector<size_t> pick(nb);
-            for (size_t a(0); a < nb; ++a) pick[a] = pool[idx[a]];
-            if (pick == gen) return;
-            const double h(hof(pick, true));
-            if (h > 0.) { sum += h; ++n; }
-            return;
-          }
-          for (size_t i(from); i < pool.size(); ++i) { idx[d] = i; rec(d + 1, i + 1); }
-        };
-        rec(0, 0);
-      }
+        for (size_t i(from); i < pool.size(); ++i) { idx[d] = i; rec(d + 1, i + 1); }
+      };
+      rec(0, 0);
     }
   }
   if (sel) sel->SetResult(res0);
@@ -1825,16 +1854,19 @@ double NLO_Base::BornPhotonChannelWeight(const Vec4D &k) {
       ["REAL_BORN_PHOTON_MULTICHANNEL"].SetDefault(bornphotonmc::on)
       .Get<bornphotonmc::code>());
   if (mode == bornphotonmc::off || !p_dipoles || !p_dipoles->HasDipoleII()) return 1.;
+  // YFS: BORN_PHOTON_CHANNELS stage (no ACRAIC crude here): FSR-labelled
+  // photons are alternatives too, on the post-emission legs
+  const bool allchannels(BornPhotonChannels() != bornphotonchannels::isr);
   std::vector<Vec4D> isr;
   int j(-1);
   for (const YFS::Photon &g : m_photons) {
-    if (g.IsFSR()) continue;
+    if (g.IsFSR() && !allchannels) continue;
     if (g.K() == k) j = (int)isr.size();
     isr.push_back(g.K());
   }
   if (j < 0) return 1.;
-  const double G(BornPhotonChannelSum(m_plab, isr, p_dipoles->GetDipoleII(), j,
-                                      &m_bpmc_lastn));
+  const double G(BornPhotonChannelSum(allchannels ? m_postlab : m_plab, isr,
+                                      p_dipoles->GetDipoleII(), j, &m_bpmc_lastn));
   return mode == bornphotonmc::on ? 1./G : 1.;   // report: compute and report only
 }
 

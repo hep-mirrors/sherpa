@@ -102,6 +102,10 @@ namespace YFS {
           double m_corr_acraic_o0 = 0.;   //!< ACRAIC: WEIGHT_O0, rho_0/rho_crude
           //! ACRAIC: FIXED_ORDER_STREAM, the O(alpha) truncation (see GenerateWeight)
           double m_corr_acraic_fo = 0.;
+          //! ACRAIC: FIXED_ORDER_STREAM at ORDER 2, the O(alpha^2) truncation
+          double m_corr_acraic_fo2 = 0.;
+          //! ... and with the column's own O(alpha^3) term (ACRAIC_FixedOrder3)
+          double m_corr_acraic_fo3 = 0.;
           //! ... and with (1+v/2) on the whole of A_1 (ACRAIC_O1V1)
           double m_corr_acraic_o1v1 = 0.;
           //! ORDER 2, both external-virtual compositions: (v/2) on A_0
@@ -114,9 +118,13 @@ namespace YFS {
           double m_corr_acraic_nob02 = 0.;
           //! YFS: DYSON_VP: the ACRAIC correction without the VP resummation (ACRAIC_NO_VP)
           double m_corr_acraic_novp = 0.;
+          //! ACRAIC correction with the isr_nll remainder (ACRAIC_RVNLL)
+          double m_corr_acraic_rvnll = 0.;
           //! ACRAIC: TNP_STREAMS: the class templates T_c/rho_crude (with the IF
           //! cut) at O(alpha) (ACRAIC_TNP1_*) and at ORDER 2 (ACRAIC_TNP2_*)
           std::vector<double> m_tnp1, m_tnp2;
+          //! ACRAIC: TNP_IFI: the IFI template at O(alpha) and at ORDER 2
+          std::vector<double> m_tnpifi;
         };
         YFS_Event m_ev;
 
@@ -175,6 +183,8 @@ namespace YFS {
         bool ExchangeLinesPassTMin(const ATOOLS::Vec4D_Vector &p) const
         { return ExchangeLinesPassTMin(p, m_exchange_tmin); }
         bool ExchangeLinesPassTMin(const ATOOLS::Vec4D_Vector &p, double tmin) const;
+        bool BornPhotonsPassReducedBeamAngle(const ATOOLS::Vec4D_Vector &p) const;
+        bool PhotonResolutionPasses() const;
         //! This event's s, handed to every YFS object the handler owns.
         void SetEventS(const double s);
         //! Whether the kept initial-initial dipole was built on this event's
@@ -295,7 +305,7 @@ namespace YFS {
         inline void SetRunMode(const int &rmode) { m_rmode = rmode; }
 
         double Eikonal(Vec4D k);
-        long m_acrv_n = 0, m_acrv_nomatch = 0, m_acrv_nom1 = 0;
+        long m_acrv_n = 0, m_acrv_nomatch = 0, m_acrv_nom1 = 0, m_acrv_isr = 0;
         bool CalculateFSR();
         bool CalculateISR();
         bool CalculateFSR(Vec4D_Vector &k);

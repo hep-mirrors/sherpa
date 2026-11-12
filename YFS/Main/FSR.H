@@ -63,6 +63,10 @@ namespace YFS {
       double Eikonal(const Vec4D &k);
       double EikonalInterferance(const Vec4D &k);
       inline double GetWeight() {return m_fsrWeight;}
+      //! YFS: N1_PROBE - the FSR weight pieces of the last event as text
+      std::string ProbeLine() const;
+      //! exp(YFS_IR + DelYFS) of the last event: the FSR dipole's soft exponent on the post-emission legs
+      inline double YFSIR() const { return m_YFS_IR; }
       //! MakeFSR rejection code: 1 ok, 2 photon energy > 1, 3 pair below threshold, 4 rescale
       inline double Cut() const { return m_cut; }
       inline Vec4D GetPhotonSum() {return m_photonSum; }

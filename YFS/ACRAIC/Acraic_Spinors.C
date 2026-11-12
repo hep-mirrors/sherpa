@@ -1,11 +1,3 @@
-/*!
-  \file Acraic_Spinors.C
-
-  The GPS spinor algebra of hep-ph/0006359: the T/U structures, the basic
-  spinor products, the photon emission matrices U/V, and the soft factor.
-
-*/
-
 #include "YFS/ACRAIC/Acraic_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "METOOLS/Main/Spin_Structure.H"

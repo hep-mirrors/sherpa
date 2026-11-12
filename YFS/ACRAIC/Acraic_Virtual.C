@@ -20,6 +20,8 @@
 #include "ATOOLS/Math/Random.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "EXTAMP/External_ME_Interface.H"
+
+#include <algorithm>
 #include "PHASIC++/Process/External_ME_Args.H"
 
 using namespace YFS;
@@ -67,10 +69,16 @@ Complex Acraic_Base::BoxSubtract() {
 
 void Acraic_Base::MakeBoxMandelstams(const Vec4D &PX)
 {
-  if (m_pacraic.size() < 4) return;
+  MakeBoxMandelstams(PX, m_pacraic);
+}
+
+
+void Acraic_Base::MakeBoxMandelstams(const Vec4D &PX, const Vec4D_Vector &p)
+{
+  if (p.size() < 4) return;
   const double S(PX.Abs2());
   if (S <= 0.) return;
-  Vec4D pd(m_pacraic[0] - m_pacraic[1]), qd(m_pacraic[2] - m_pacraic[3]);
+  Vec4D pd(p[0] - p[1]), qd(p[2] - p[3]);
   pd = pd - ((PX*pd)/S) * PX;
   qd = qd - ((PX*qd)/S) * PX;
   const double a(pd.Abs2()), b(qd.Abs2());
@@ -117,6 +125,8 @@ void Acraic_Base::InfraredSubtractedME_0_1() {
                                     .SetDefault(true).Get<bool>());
   // the boxes are the virtual IFI: none with YFS: IFI false or one side only
   const bool useboxes(useboxessetting && m_ifi && !SingleSided());
+  // ACRAIC: TNP_IFI cannot flip ACRAIC's own boxes (reported at the end)
+  if (m_tnpifi && useboxes) ++m_tnpifievenbox;
 
   // The ut boxes are the tu ones with t and u swapped.
   const Complex coef(m_alpha * m_qe * m_qf / M_PI);
@@ -210,8 +220,62 @@ void Acraic_Base::InfraredSubtractedME_0_1() {
           const Complex corr(fac * (ms*vert + mt*vertT + boxy));
           m_AmpExpo1.m_A[Idx(j1,j2,j3,j4)] += corr;
           TnpAdd(tnp_b0, Idx(j1,j2,j3,j4), corr);
+          // ACRAIC: TNP_IFI: soft product flipped, the virtual factor (its
+          // initial-final boxes too) taken as charge even (counted)
+          TnpIfiAdd(Idx(j1,j2,j3,j4), Complex(0., 0.), m_tnppartflip*corr);
           m_AmpBornVirt.m_A[Idx(j1,j2,j3,j4)] += corr;
           m_snapVirt.m_A[Idx(j1,j2,j3,j4)] = corr;   // the beta_0^1 increment
         }
 
+}
+
+
+bool Acraic_Base::OwnBoxVirtualIF(double &vif)
+{
+  if (!m_ffbar || m_bhabha || m_nstages != 2 || !HasFSR() || m_prefsr.size() != 4)
+    return false;
+  // the event's Born state, restored below
+  const double sp(m_sp);
+  const Complex sc(m_Sc), tc(m_Tc), uc(m_Uc), pz(m_propZ), pg(m_propG);
+  Complex tamp[2][2][2][2], uamp[2][2][2][2], tcs[2], ucs[2];
+  std::copy(&m_Tamp[0][0][0][0], &m_Tamp[0][0][0][0] + 16, &tamp[0][0][0][0]);
+  std::copy(&m_Uamp[0][0][0][0], &m_Uamp[0][0][0][0] + 16, &uamp[0][0][0][0]);
+  std::copy(m_TC, m_TC + 2, tcs);
+  std::copy(m_UC, m_UC + 2, ucs);
+
+  const Vec4D_Vector &pb(m_prefsr);
+  m_sp = (pb[2] + pb[3]).Abs2();
+  MakeProp(false);
+  Amplitude born;
+  BornAmplitude(pb, born, -1., -1., -1);
+  MakeBoxMandelstams(pb[0] + pb[1], pb);
+  const Complex coef(m_alpha * m_qe * m_qf / M_PI), sub(coef * BoxSubtract());
+  const Complex ggtu(coef * BoxGG() - sub), gztu(coef * BoxGZ() - sub);
+  std::swap(m_Tc, m_Uc);
+  const Complex ggut(-coef * BoxGG() - sub), gzut(-coef * BoxGZ() - sub);
+  double num(0.), den(0.);
+  for (int j1 = 0; j1 <= 1; ++j1)
+    for (int j2 = 0; j2 <= 1; ++j2)
+      for (int j3 = 0; j3 <= 1; ++j3)
+        for (int j4 = 0; j4 <= 1; ++j4) {
+          const double h(1. - 2.*j1);
+          const bool tu((1 - 2*j1)*(1 - 2*j3) == 1);
+          const Complex bgg(tu ? ggtu : ggut), bgz(tu ? gztu : gzut);
+          const Complex box(m_Tamp[j1][j2][j3][j4]*CouplingG()*m_propG*bgg
+                            + m_Tamp[j1][j2][j3][j4]*CouplingZ(h, 1)*m_propZ*bgz
+                            + m_Uamp[j1][j2][j3][j4]*CouplingG()*m_propG*bgg
+                            + m_Uamp[j1][j2][j3][j4]*CouplingZ(h, 0)*m_propZ*bgz);
+          const Complex b(born.m_A[Idx(j1,j2,j3,j4)]);
+          num += 2.*std::real(std::conj(b)*box);
+          den += std::norm(b);
+        }
+
+  m_sp = sp; m_Sc = sc; m_Tc = tc; m_Uc = uc; m_propZ = pz; m_propG = pg;
+  std::copy(&tamp[0][0][0][0], &tamp[0][0][0][0] + 16, &m_Tamp[0][0][0][0]);
+  std::copy(&uamp[0][0][0][0], &uamp[0][0][0][0] + 16, &m_Uamp[0][0][0][0]);
+  std::copy(tcs, tcs + 2, m_TC);
+  std::copy(ucs, ucs + 2, m_UC);
+  if (!(den > 0.) || IsBad(num)) return false;
+  vif = num/den;
+  return true;
 }

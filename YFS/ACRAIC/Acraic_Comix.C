@@ -439,6 +439,52 @@ bool Acraic_Base::GeneratorBornAt(const Vec4D &R, Vec4D_Vector &pb) const
   return true;
 }
 
+// ACRAIC: CRUDE_BORN_LEGS stage: each final pair taken back to before its photons
+bool Acraic_Base::StageBornAt(const Vec4D &R, Vec4D_Vector &pb) const
+{
+  const size_t nl(m_flavs.size());
+  if (nl < 4 || m_pacraic.size() != nl || m_stage.size() != m_allphotons.size())
+    return false;
+  const double s2(R.Abs2());
+  const double m1(m_flavs[0].Mass()), m2(m_flavs[1].Mass());
+  if (!(s2 > sqr(m1 + m2)) || !(R[0] > 0.)) return false;
+  Vec4D_Vector fin(m_pacraic.begin() + 2, m_pacraic.end());
+  for (size_t g(0); g < m_stagelegs.size(); ++g) {
+    if ((int)g == m_initstage) continue;
+    const std::vector<int> legs(StageExternalLegs((int)g));
+    const Vec4D K(StagePhotonSum((int)g, -1));
+    if (legs.size() != 2 || legs[0] < 2 || legs[1] < 2 || legs[0] >= (int)nl
+        || legs[1] >= (int)nl || !(K[0] > 0.)) continue;
+    const Vec4D pa(m_pacraic[legs[0]]), pbm(m_pacraic[legs[1]]);
+    const Vec4D Q(pa + pbm), Qd(Q + K);
+    const double Q2(Q.Abs2()), Qd2(Qd.Abs2());
+    const double ma(m_flavs[legs[0]].Mass()), mb(m_flavs[legs[1]].Mass());
+    if (!(Q2 > 0.) || !(Q[0] > 0.) || !(Qd[0] > 0.) || !(Qd2 > sqr(ma + mb))) return false;
+    Poincare toQ(Q), toQd(Qd);
+    Vec4D a(pa);
+    toQ.Boost(a);
+    const Vec3D va(a);
+    const double na(va.Abs());
+    if (!(na > 0.)) return false;
+    const Vec3D n(va/na);
+    const double lam(0.5*sqrt(Max(0., sqr(Qd2 - ma*ma - mb*mb) - 4.*ma*ma*mb*mb)/Qd2));
+    Vec4D qa(sqrt(lam*lam + ma*ma), lam*n), qb(sqrt(lam*lam + mb*mb), -lam*n);
+    toQd.BoostBack(qa);
+    toQd.BoostBack(qb);
+    fin[legs[0] - 2] = qa;
+    fin[legs[1] - 2] = qb;
+  }
+  // the dressed final state sums to R; into R's rest frame, beams along z
+  Poincare toR(R);
+  pb.assign(nl, Vec4D());
+  const double sgn(m_bornmomenta.size() > 0 && m_bornmomenta[0][3] < 0. ? -1. : 1.);
+  const double lam(0.5*sqrt(Max(0., sqr(s2 - m1*m1 - m2*m2) - 4.*m1*m1*m2*m2)/s2));
+  pb[0] = Vec4D(sqrt(lam*lam + m1*m1), 0., 0.,  sgn*lam);
+  pb[1] = Vec4D(sqrt(lam*lam + m2*m2), 0., 0., -sgn*lam);
+  for (size_t i(2); i < nl; ++i) { Vec4D q(fin[i - 2]); toR.Boost(q); pb[i] = q; }
+  return true;
+}
+
 bool Acraic_Base::BornLegsAt(const Vec4D &X, Vec4D_Vector &pb) const
 {
   Vec4D Y(X);
@@ -574,6 +620,8 @@ void Acraic_Base::AddFactorisedRemainder()
     m_AmpExpo1.m_A[f]    += d;
     m_AmpBornReal.m_A[f] += d;
     TnpAdd(tnp_multi, f, d);
+    // ACRAIC: TNP_IFI: the factorised remainder taken as charge even
+    TnpIfiAdd(f, Complex(0., 0.), m_tnppartflip*d);
   }
 }
 
@@ -801,13 +849,34 @@ bool Acraic_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
     }
   }
   Amplitude M1;
+  // ACRAIC: TNP_IFI: M_1^I, so that the flipped M_1 is M_1^I - M_1^F = 2 M_1^I - M_1
+  Amplitude M1I;
+  // with greco, M_1 and M_1^I of the flipped weight at a_g -> -a_g
+  Amplitude M1b, M1Ib;
+  bool tnpsplit(false);
   if (addm1) {
     Vec4D_Vector pp(pb);
     pp.push_back(km);
     const bool ok(rebuild ? ComixRealAt(pp, hel, M1, -1.)
                           : ComixRealShifted(pp, hel, M1, shifts));
     if (!ok) return false;
+    if (m_tnpifi) {
+      // the physical-leg, enumerated case only; elsewhere M_1 counts as even
+      if (!rebuild && !fixed && !dressed && !onept && m_stage[iphot] == m_initstage) {
+        tnpsplit = TnpIfiInitialM1(iphot, pp, hel, shifts, M1, M1I);
+        M1b = M1; M1Ib = M1I;
+        if (tnpsplit && !m_resexp.empty()) {
+          const PropShifts shb(TnpIfiFlippedResonance(shifts));
+          tnpsplit = ComixRealShifted(pp, hel, M1b, shb)
+                     && TnpIfiInitialM1(iphot, pp, hel, shb, M1b, M1Ib);
+        }
+      }
+      if (!tnpsplit) ++m_tnpifiunsplit;
+    }
   }
+  // ACRAIC: TNP_IFI: this photon's flip (1 on the production stage, where M_1 goes)
+  const Complex tnpfj(m_tnpifi && iphot < (int)m_tnpflipph.size()
+                      && std::abs(m_tnpflipph[iphot]) > 0. ? m_tnpflipph[iphot] : Complex(1., 0.));
   // the other photons' eikonal product; never sProd/s_j (diverges at zeros of s_j)
   Complex w(1., 0.);
   for (size_t i(0); i < m_allphotons.size(); ++i)
@@ -851,6 +920,19 @@ bool Acraic_Base::ComixInfraredSubtracted_1_0(const Vec4D &k, int hel,
     }
     m_AmpExpo1.m_A[f]    += v;
     TnpAdd(tnpclass, f, v);
+    if (m_tnpifi) {
+      // the same term with the final-stage charges flipped
+      Complex vb(-m_tnppartflip * w * sj * m_partborn0flip.m_A[f]);
+      if (addm1) {
+        const Complex m1b(tnpsplit ? rescale * w * m_cxbalign.m_A[f]
+                                     * (2.*M1Ib.m_A[f] - M1b.m_A[f])/rn
+                                   : rescale * w * m_cxbalign.m_A[f] * M1.m_A[f]/rn
+                                     + (dressed ? w*(M1fix.m_A[f] + sj*m_partborn0.m_A[f])
+                                                : Complex(0., 0.)));
+        vb += m_tnppartflip/tnpfj*m1b;
+      }
+      TnpIfiAdd(f, Complex(0., 0.), vb);
+    }
     m_AmpBornReal.m_A[f] += v;
     if (iphot < (int)m_realphot.size()) m_realphot[iphot].m_A[f] += v;
     m_snapReal.m_A[f]    += v;

@@ -149,7 +149,6 @@ void Define_Dipoles::Dipole_FF(ATOOLS::Flavour_Vector const &fl, ATOOLS::Vec4D_V
 
 double Define_Dipoles::CalculateRealSub(const Vec4D &k) {
   double sub(0);
-  // if(FixedOrder()!=fixed_order::full) return sub;
   Vec4D eik{0.,0.,0.,0.}, eikI{0.,0.,0.,0.}, eikF{0.,0.,0.,0.};
   for (auto &D : m_set.ByType(dipoletype::initial)) {
     for(size_t i = 0; i < 2; ++i)
@@ -583,6 +582,21 @@ double Define_Dipoles::FormFactorShiftToRegion(double emin){
 }
 
 
+double Define_Dipoles::FormFactorShiftToRegionFinal(double emin){
+  const SoftRegion gen(SoftRegion::Lab(emin, "P-gen"));
+  auto real = [this](const YFS::Dipole &D, const SoftRegion &reg) {
+    Vec4D p1, p2;
+    D.LegsBeforeRadiation(p1, p2);
+    return p_yfsFormFact->BVR_full(reg, p1, p2, p1.Mass(), p2.Mass(), m_photonMass, 0);
+  };
+  double shift(0.);
+  for (auto &D : m_set.FF())
+    shift += D.ChargeNorm()*(real(D, gen)
+             - real(D, p_yfsFormFact->ExponentRegion(D, sqrt(D.Sprime())/2)));
+  return shift;
+}
+
+
 double Define_Dipoles::FormFactorSumIF(double omega){
   if (!m_ifisub) return 0.;
   double form = 0;
@@ -634,9 +648,6 @@ double Define_Dipoles::FormFactor(){
 }
 
 double Define_Dipoles::FormFactor(double form){
-  if(FixedOrder()==fixed_order::nlo){
-    return 1.+form;
-  }
   return exp(form);
 }
 

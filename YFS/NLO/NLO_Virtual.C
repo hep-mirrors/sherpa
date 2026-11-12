@@ -14,7 +14,9 @@
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include <functional>
 #include <map>
+#include <cstdint>
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include "YFS/NLO/Virtual.H"
 #include "YFS/NLO/VirtualVirtual.H"
@@ -38,8 +40,53 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
+namespace {
+  // YFS: VIRTUAL_FRACTION f: the loop on a hashed fraction f, control variate around v0
+  double VirtualFraction()
+  {
+    static const double f(ATOOLS::Settings::GetMainSettings()["YFS"]
+                          ["VIRTUAL_FRACTION"].SetDefault(1.).Get<double>());
+    if (!(f > 0.) || f > 1.) THROW(fatal_error, "YFS: VIRTUAL_FRACTION must be in (0, 1].");
+    return f;
+  }
+}
+
+double NLO_Base::KinematicsHash(const ATOOLS::Vec4D_Vector &p)
+{
+  uint64_t h(0x9e3779b97f4a7c15ULL);
+  for (const ATOOLS::Vec4D &q : p)
+    for (int i(0); i < 4; ++i) {
+      const double d(q[i]);
+      uint64_t b;
+      std::memcpy(&b, &d, sizeof(b));
+      h ^= b + 0x9e3779b97f4a7c15ULL + (h << 6) + (h >> 2);
+    }
+  h ^= h >> 30; h *= 0xbf58476d1ce4e5b9ULL;
+  h ^= h >> 27; h *= 0x94d049bb133111ebULL;
+  h ^= h >> 31;
+  return (h >> 11)*(1./9007199254740992.);
+}
+
+double NLO_Base::RealVirtualFraction()
+{
+  static const double f(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["RV_FRACTION"]
+                        .SetDefault(1.).Get<double>());
+  if (!(f > 0.) || f > 1.) THROW(fatal_error, "ACRAIC: RV_FRACTION must be in (0, 1].");
+  return f;
+}
+
+double NLO_Base::VirtualFractionV0() const
+{
+  static ATOOLS::Scoped_Settings s(ATOOLS::Settings::GetMainSettings()["YFS"]["VIRTUAL_FRACTION_V0"]);
+  static const bool fixed(s.IsSetExplicitly());
+  static const double v0(s.SetDefault(0.).Get<double>());
+  if (fixed) return v0;
+  return m_vFracEvaluated > 0 ? m_vFracSum/m_vFracEvaluated : 0.;
+}
+
 double NLO_Base::CalculateVirtual() {
   m_lhelok = false;
+  m_vifok = false;
   m_vborn_ok = false;
   m_vewho = 0.;
   m_b02 = YFS::Photonic_Factors();
@@ -84,6 +131,42 @@ double NLO_Base::CalculateVirtual() {
   */
   static const bool vcanon(ATOOLS::Settings::GetMainSettings()["YFS"]
                            ["VIRTUAL_CANONICAL_FRAME"].SetDefault(true).Get<bool>());
+  // ACRAIC: TNP_IFI: the loop at the mirrored Born point first, so that the
+  // provider is left as the call below leaves it (MirroredOneLoop)
+  static const bool tnpifi(m_useacraic &&
+    ATOOLS::Settings::GetMainSettings()["ACRAIC"]["TNP_STREAMS"].SetDefault(false).Get<bool>() &&
+    ATOOLS::Settings::GetMainSettings()["ACRAIC"]["TNP_IFI"].SetDefault(true).Get<bool>());
+  double vifmirror(0.);
+  bool vifmirrorok(false);
+  // YFS: VIRTUAL_FRACTION (see VirtualFraction above): no loop on this event,
+  // v = v0, the subtraction as usual
+  const double vfrac(VirtualFraction());
+  if (vfrac < 1.) {
+    if ((tnpifi && m_flavs.size() == 4) || (m_useacraic && (m_acraicvirtsrc == acraicvirt::helicity ||
+                                                            RealVirtualHelicityRequested())))
+      THROW(fatal_error, "YFS: VIRTUAL_FRACTION < 1 needs the loop on every event with "
+                         "ACRAIC: TNP_IFI (2 -> 2), ACRAIC_Virtual helicity or REAL_VIRTUAL helicity.");
+    if (KinematicsHash(m_plab) >= vfrac) {
+      ++m_vFracSkipped;
+      const double sub((m_virt_sub && p_virt->p_loop_me->Mode() != 1)
+                       ? vsub->CalculateVirtualSub() : 0.);
+      m_virt_subval = sub * m_born / m_rescale_alpha;
+      m_oneloop = VirtualFractionV0() * m_born;
+      m_virt_raw = m_oneloop + m_virt_subval;
+      if (m_born != 0.) {
+        m_vborn = m_oneloop/m_born;
+        m_vborn_ok = true;
+      }
+      AddEWHigherOrder();
+      BuildBeta02();
+      BuildDysonVP();
+      BuildEWHigherOrderHelicity();
+      return m_oneloop;
+    }
+  }
+  if (tnpifi)
+    vifmirrorok = MirroredOneLoop(vcanon && !(m_useacraic && m_acraicvirtsrc == acraicvirt::helicity),
+                                  vsub, vsublegs == virtsublegs::own, vifmirror);
   if (vcanon && !(m_useacraic && m_acraicvirtsrc == acraicvirt::helicity))
     virt = p_virt->CalcInFrame(m_plab, CanonicalBeamFrame(m_plab), m_born);
   else
@@ -181,6 +264,22 @@ double NLO_Base::CalculateVirtual() {
                       << "Sherpa V eps^{-1}  = " << yfspole << std::endl;
     }
   }
+  // YFS: VIRTUAL_FRACTION: the evaluated event carries v0 + (v - v0)/f
+  if (vfrac < 1. && m_born != 0. && !IsBad(m_oneloop)) {
+    const double vl(m_oneloop/m_born), v0(VirtualFractionV0());
+    m_oneloop = (v0 + (vl - v0)/vfrac) * m_born;
+    m_virt_raw = m_oneloop + m_virt_subval;
+    ++m_vFracEvaluated;
+    m_vFracSum += vl;
+  }
+  // ACRAIC: TNP_IFI: the charge-odd (initial-final) part of v
+  if (tnpifi) {
+    if (vifmirrorok && m_born != 0. && !IsBad(m_oneloop)) {
+      m_vifodd = 0.5*(m_oneloop - vifmirror)/m_born;
+      m_vifok = !IsBad(m_vifodd);
+    }
+    if (m_vifok) ++m_vifn; else ++m_viffail;
+  }
   // v of this event for the RV_MODE 1 remainder v_{n+1} - v
   if (m_born != 0. && !IsBad(m_oneloop)) {
     m_vborn = m_oneloop/m_born;
@@ -191,6 +290,45 @@ double NLO_Base::CalculateVirtual() {
   BuildDysonVP();
   BuildEWHigherOrderHelicity();
   return m_oneloop;
+}
+
+// ACRAIC: TNP_IFI: the IF virtual from one more loop call at the mirrored Born point
+bool NLO_Base::MirroredOneLoop(bool vcanon, Define_Dipoles *vsub, bool ownlegs,
+                               double &onem)
+{
+  onem = 0.;
+  if (m_born == 0.) return false;
+  if (!ownlegs || m_plab.size() != 4 || m_flavs.size() != 4
+      || m_flavs[2] != m_flavs[3].Bar() || !m_flavs[2].Charge()) return false;
+  Vec4D_Vector pm(m_plab);
+  std::swap(pm[2], pm[3]);
+  double subm(0.);
+  if (m_virt_sub && p_virt->p_loop_me->Mode() != 1) {
+    vsub->MakeDipolesII(m_flavs, pm, pm);
+    vsub->MakeDipoles(m_flavs, pm, pm);
+    vsub->MakeDipolesIF(m_flavs, pm, pm);
+    subm = vsub->CalculateVirtualSub();
+    vsub->MakeDipolesII(m_flavs, m_plab, m_plab);
+    vsub->MakeDipoles(m_flavs, m_plab, m_plab);
+    vsub->MakeDipolesIF(m_flavs, m_plab, m_plab);
+  }
+  const double virtm(vcanon ? p_virt->CalcInFrame(pm, CanonicalBeamFrame(pm), m_born)
+                            : p_virt->Calc(pm, m_born));
+  onem = virtm - subm*m_born/m_rescale_alpha;
+  if (p_virt->p_loop_me->Mode() == 1) onem /= m_rescale_alpha;
+  return !IsZero(virtm) && !IsBad(onem);
+}
+
+void NLO_Base::ReportVirtualIFOdd() const
+{
+  if (m_vifn + m_viffail == 0) return;
+  double b[2] = {(double)m_vifn, (double)m_viffail};
+#ifdef USING__MPI
+  if (mpi->Size() > 1) mpi->Allreduce(b, 2, MPI_DOUBLE, MPI_SUM);
+#endif
+  msg_Out()<<"ACRAIC: TNP_IFI: initial-final part of the virtual (mirrored Born point) on "
+           <<(long)b[0]<<" events, not available on "<<(long)b[1]
+           <<" (v_IF = 0 there: needs a 2 -> 2 f fbar Born and VIRTUAL_SUB_LEGS own)"<<std::endl;
 }
 
 /*
@@ -210,6 +348,9 @@ double NLO_Base::CalculateVirtual() {
     more than VIRTUAL_CHECK_TOL (default 1e-2) in units of the Born, the
     point is numerically unstable and its virtual is dropped (v = 0; counted
     and reported at the end with the dropped share of sum m_born).
+
+    YFS: VIRTUAL_RMIN r (default 0: off) - drops the virtual the same way when a
+    Born photon is within min(p1.k, p2.k)/p1.p2 < r of a beam.
 */
 void NLO_Base::CheckVirtualStability(double &virt, const double sub, const bool vcanon)
 {
@@ -219,8 +360,19 @@ void NLO_Base::CheckVirtualStability(double &virt, const double sub, const bool 
                              ["VIRTUAL_CHECK_ABOVE"].SetDefault(0.).Get<double>());
   static const double vtol(ATOOLS::Settings::GetMainSettings()["YFS"]
                            ["VIRTUAL_CHECK_TOL"].SetDefault(1e-2).Get<double>());
-  if (vchk && m_born != 0. && p_virt->p_loop_me->Mode() == 0) {
-    m_vLoopBornSum += std::abs(m_born);
+  static const double vrmin(ATOOLS::Settings::GetMainSettings()["YFS"]
+                            ["VIRTUAL_RMIN"].SetDefault(0.).Get<double>());
+  if (m_born == 0. || p_virt->p_loop_me->Mode() != 0) return;
+  if (vchk || vrmin > 0.) m_vLoopBornSum += std::abs(m_born);
+  if (vrmin > 0. && BornPhotonNearBeam(vrmin)) {
+    ++m_vLoopRmin;
+    m_vLoopRminBorn += std::abs(m_born);
+    m_virt_raw = sub * m_born / m_rescale_alpha;
+    m_oneloop = 0.;
+    virt = m_virt_raw;
+    return;
+  }
+  if (vchk) {
     if (std::abs(m_oneloop/m_born) > vabove) {
       ++m_vLoopChecked;
       const double virt2(p_virt->CalcInFrame(m_plab, VirtualCheckFrame(m_plab), m_born));
@@ -239,6 +391,15 @@ void NLO_Base::CheckVirtualStability(double &virt, const double sub, const bool 
         p_virt->Calc(m_plab, m_born);
     }
   }
+}
+
+bool NLO_Base::BornPhotonNearBeam(const double rmin) const
+{
+  const double p1p2(m_plab[0]*m_plab[1]);
+  for (size_t i(2); i < m_flavs.size() && i < m_plab.size(); ++i)
+    if (m_flavs[i].IsPhoton()
+        && std::min(m_plab[0]*m_plab[i], m_plab[1]*m_plab[i]) < rmin*p1p2) return true;
+  return false;
 }
 
 void NLO_Base::AddEWHigherOrder() {

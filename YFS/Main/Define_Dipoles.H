@@ -98,6 +98,8 @@ namespace YFS {
       //! from their exponent regions to the common generation region (photon
       //! energy below emin in the beams' rest frame). ACRAIC: FIXED_ORDER_STREAM
       double FormFactorShiftToRegion(double emin);
+      //! the final-state dipoles' part of FormFactorShiftToRegion (ACRAIC: FIXED_ORDER_EVENT_EXPONENT)
+      double FormFactorShiftToRegionFinal(double emin);
       //! The decay-stage term of the WW pole expansion. Zero in the flat
       //! scheme.
       double FormFactorSumDecay();

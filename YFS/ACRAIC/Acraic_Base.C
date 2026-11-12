@@ -31,10 +31,13 @@ Acraic_Base::Acraic_Base(const Flavour_Vector &flavs)
   m_comixflip = s["COMIX_REAL_FLIP"].Get<int>();
   m_comixnorm = s["COMIX_REAL_NORM"].Get<double>();
   m_tnp          = s["TNP_STREAMS"].Get<bool>();
+  m_tnpifi       = m_tnp && s["TNP_IFI"].Get<bool>();
+  m_tnpifichk    = s["TNP_IFI_CHECK"].Get<int>();
   m_comixborn    = s["COMIX_BORN"].Get<bool>();
   m_wstages      = s["W_STAGES"].Get<tristate::code>();
   m_weikonal     = s["W_EIKONAL"].Get<weikonal::code>();
   m_crudegen     = s["CRUDE_FROM_GENERATOR"].Get<crudegen::code>();
+  m_pfluxmassive = s["PSEUDOFLUX_MASSIVE"].Get<bool>();
   m_order        = s["ORDER"].Get<int>();
   m_resexpmode   = s["RESONANCE_EXPONENTIATION"].Get<acraicresexp::code>();
   if (m_resexpmode == acraicresexp::automatic &&
@@ -199,6 +202,9 @@ void Acraic_Base::RegisterDefaults()
     ACRAIC: TNP_STREAMS (default false): per-event theory-nuisance-parameter
   */
   s["TNP_STREAMS"].SetDefault(false);
+  // ACRAIC: TNP_IFI: IF template T_IFI = Odd[w_k] - Odd[w_0], 2 -> 2 only
+  s["TNP_IFI"].SetDefault(true);
+  s["TNP_IFI_CHECK"].SetDefault(0);
   s["BETA1_XCUT"].SetDefault(1e-3);          // beta_1 soft threshold
   /*
     x_gamma = 2E/sqrt(s) below which a photon is not enumerated in the
@@ -323,6 +329,18 @@ void Acraic_Base::RegisterDefaults()
 
   s["NO_PSEUDOFLUX"].SetDefault(pseudoflux::rho0_only);
   /*
+    PSEUDOFLUX_MASSIVE (default false): the crude's pseudo-flux of a final stage
+    is (q+K)^2/q^2 = s_pre/s_Q, the ratio of the two-body fluxes lambda^1/2 for
+    massless legs. For massive legs (pi+ pi-) the flux is lambda^1/2(s_pre)/
+    lambda^1/2(s_Q) = (s_pre/s_Q) beta(s_pre)/beta(s_Q). Together with
+    FSR_SHELL_JACOBIAN, which puts beta(s_Q)/beta(s_pre) on the generator's
+    weight, the crude then carries the full massive flux. Measured, with only
+    the shell factor, the FSR-only O(alpha) of pi pi gamma is high against the
+    exact scalar-QED tree by beta(s_pre)/beta(s_Q) (1.4% at 650 MeV, 4% at 560
+    MeV, CMD); this switch takes it out of the denominator of rho/rho_crude.
+  */
+  s["PSEUDOFLUX_MASSIVE"].SetDefault(false);
+  /*
     CRUDE_BORN_LEGS (default generator): the Born point of the crude. The FSR
     generator keeps the pair's direction in the PAIR rest frame (the Born
     direction it was sampled with), so that is the direction the crude's Born
@@ -426,8 +444,27 @@ void Acraic_Base::RegisterDefaults()
        NLO_Part with E and YFS: RV_MODE remainder. In |A|^2 this adds sum_j dv_j Re<A_1, M_1j>
        (RealVirtualRemainderRho), at one photon dv |M_1|^2 = YFS.NLO's
        rho dv on the same event.
+    isr_nll (5): factorisable plus, on each initial-state photon's M_1, the
+       non-soft part of the one-loop correction to single initial-state
+       emission at LL + NLL in the small-mass limit, the V_2 of KKMC's MakeVini
+       (Jadach, Ward, Was, Phys. Rev. D65 (2002) 073030, eq. 2.18): dv_j =
+       2 Re V_2(r_1, r_2), r_i = p_i.k/p_1.p_2 with the beams p_1, p_2. V_2 -> 0
+       for a soft photon and carries the collinear logarithms of a hard one.
+       Final-state photons keep the factorisable factor (KKMC's soft-limit pion
+       vertex). No loop call; what a beam-collinear photon needs, where the
+       exact remainder (averaged) is numerically unusable.
+    hybrid (6): isr_nll on the initial-state photons and averaged on the
+       final-state photons: the exact one-loop remainder v_{n+1,j} - v_B of the
+       loop provider (for pions the point-like e+e- -> pi+pi-gamma loop) on
+       each final-state photon's M_1, the analytic V_2 on each initial-state
+       photon's. YFS.NLO calls the (n+1)-point loop only for final-state
+       photons, so the beam-collinear points where it fails never occur.
+       Needs what averaged needs (NLO_Part with E, the RV provider).
+       ACRAIC: HYBRID_ISR_RMIN r_c (default -1): r_c >= 0: V_2 only for
+       initial-state photons with min(p_i.k)/p_1.p_2 < r_c.
   */
   s["REAL_VIRTUAL"].SetDefault(acraicrv::automatic);
+  s["HYBRID_ISR_RMIN"].SetDefault(-1.);
   /*
     ACRAIC: RESONANCE_EXPONENTIATION (none | greco | auto; default auto) - the
     resonant initial-final log of every final stage's resonance taken out
@@ -435,6 +472,7 @@ void Acraic_Base::RegisterDefaults()
     propagator in every amplitude of the partition sum (Acraic_Resonance.C).
   */
   s["RESONANCE_EXPONENTIATION"].SetDefault(acraicresexp::automatic);
+  s["TNP_IFI_VIRTUAL"].SetDefault(tnpifivirtual::automatic);
   s["KKMC_FLUX_EMULATION"].SetDefault(0); // diagnostic, see Acraic_Base.H
 }
 
@@ -601,6 +639,7 @@ void Acraic_Base::ZerAmplit() {
     m_AmpFluxSoft.m_A[f] = Complex(0., 0.);
     m_AmpExpo2.m_A[f]    = Complex(0., 0.);
     for (int c(0); c < tnp_nclass; ++c) m_tnpamp[c].m_A[f] = Complex(0., 0.);
+    m_tnpflip0.m_A[f] = m_tnpflip1.m_A[f] = Complex(0., 0.);
     m_tnpabs[f] = 0.;
   }
 }

@@ -90,15 +90,6 @@ struct wgt {
   };
 };
 
-struct fixed_order {
-  enum code {
-    off       = 0,
-    full      = 1,
-    lo        = 2,
-    nlo       = 3,
-    nnlo      = 4,
-  };
-};
 
 
 
@@ -109,10 +100,8 @@ std::ostream &operator<<(std::ostream &str, const wwscheme::code &sm);
 std::istream &operator>>(std::istream &str, submode::code &sm);
 std::istream &operator>>(std::istream &str, yfsmode::code &sm);
 std::istream &operator>>(std::istream &str, wgt::code &sm);
-std::istream &operator>>(std::istream &str, fixed_order::code &sm);
 std::ostream &operator<<(std::ostream &str, const yfsmode::code &sm);
 std::ostream &operator<<(std::ostream &str, const wgt::code &sm);
-std::ostream &operator<<(std::ostream &str, const fixed_order::code &sm);
 
 class YFS_Base {
 protected:
@@ -160,6 +149,10 @@ public:
   double m_exchange_tmin;
   //! YFS: EXCHANGE_T_MIN_FINAL, GeV^2: the same bound on the physical event
   double m_exchange_tmin_final = 0.;
+  //! YFS: BORN_PHOTON_REDUCED_ANGLE, degrees
+  double m_bornphoton_reduced_angle = 0.;
+  //! YFS: RESOLVED_PHOTON_E [GeV] and RESOLVED_PHOTON_ANGLE [deg]
+  double m_resolved_photon_e = 0., m_resolved_photon_angle = 0.;
   double m_alpha, m_alpi, m_gp, m_g;
   bool m_isr_debug, m_fsr_debug, m_coulomb;
   //! YFS: COULOMB_HIGHER_ORDER (flat four-fermion W pairs, see YFS_Options.H)
@@ -174,6 +167,8 @@ public:
   double m_deltacut, m_betatWW, m_eps, m_fixed_weight, m_resonace_max;
   double m_rv_test_x, m_rv_test_theta, m_rv_test_phi;
   double m_rv_soft_cut; // soft-photon energy fraction below which RV is skipped
+  //! YFS: RV_COLLINEAR_CUT, min_i (p_i.k)/s below which RV is skipped
+  double m_rv_collinear_cut = 0.;
   // Same coarse soft-photon gate for the double-real beta_2^2, applied to each
   // of the two photons: the RR residual vanishes when either photon goes soft,
   // while the ME and its subtraction both diverge like S~(k1)*S~(k2), so the
@@ -314,7 +309,6 @@ public:
   bool m_mode_from_acraic = false;
   submode::code m_submode;
   yfsmode::code m_mode;
-  fixed_order::code m_fixedOrder;
 
 
   void RegisterSettings();
@@ -323,7 +317,6 @@ public:
   double EikonalMassless(const Vec4D &k, const Vec4D &p1, const Vec4D &p2);
   inline bool  HasISR()   const {return (m_mode != yfsmode::off && m_mode != yfsmode::fsr); }
   inline bool  HasFSR()   const {return (m_mode != yfsmode::off && m_mode != yfsmode::isr); }
-  inline fixed_order::code FixedOrder()  const {return m_fixedOrder;}
 
 };
 }

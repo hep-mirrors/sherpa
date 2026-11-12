@@ -1,19 +1,3 @@
-/*!
-  \file Acraic_Beta2.C
-
-  Tree-level residuals beta-hat_m, m >= 2 (ACRAIC: ORDER: 2), from Comix's
-  m-photon amplitudes by one subset recursion (ACRAIC: TREE_BETA_MAX).
-  Per partition and helicity, for a sorted photon set S,
-
-    beta_S = d_S M_|S|(S) - sum_{T proper subset of S} (prod_{i in S\T} s_i) beta_T,
-
-  beta_{} = m_partborn0, beta_{j} = what the beta_1 pass added, s_i = m_sactu,
-  d_S = [all of S on the reducing stage]; the partition sum gets
-  (prod_{i not in S} s_i) beta_S. At |S| = 2 this is hep-ph/0006359 eq. (95).
-  M_|S| is one Comix amplitude with the other photons as per-stage
-  propagator shifts.
-*/
-
 #include "YFS/ACRAIC/Acraic_Base.H"
 #include "YFS/NLO/Real_Correction.H"
 
@@ -157,20 +141,6 @@ bool Acraic_Base::PrepareBeta2()
   static int provcap(2);
   if (state == 0) {
     std::string why(TreeProviderRefusal(RealProvider(2), m_flavs, 2));
-    /*
-      ACRAIC: BETA2_BORN_PHOTONS (default false until validated): beta_m
-      for Borns with final-state photons. The m-photon amplitudes are the
-      full Comix ones (symmetric in all photons, no symmetry factor), and
-      the Born-pair multichannel weight (YFS: REAL_BORN_PHOTON_MULTICHANNEL,
-      rho_crude x G over all Born-pair choices) covers any number of ISR
-      photons, so the open question is only the helicity-slot alignment of
-      the extra photons next to the Born ones.
-    */
-    /*
-      With TCHANNEL_MULTIPHOTON factorised the pairs are not this recursion
-      but AddFactorisedBeta2, at each pair's own scaled point, whose total at
-      two photons is M_2 by construction: allowed without the switch.
-    */
     static const bool bornphotons(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
                                   ["BETA2_BORN_PHOTONS"].SetDefault(false).Get<bool>()
                                   || TchannelMultiphotonMode() == tchmultiphoton::factorised);
@@ -205,12 +175,6 @@ bool Acraic_Base::PrepareBeta2()
                            ["BETA2_XCUT"].Get<double>());
   const double rs(m_s > 0. ? sqrt(m_s) : 0.);
   if (!(rs > 0.)) return false;
-  /*
-    A collapsed (soft) photon has no beta_2. With a single radiating stage
-    every photon is "fixed" only because there is one stage to put it on
-    (PartitionStart), and its total eikonal is that stage's: nu nu, MODE ISR,
-    and MODE FSR with one final stage. Those fixed photons stay eligible.
-  */
   int nradiating(0);
   for (int g(0); g < m_nstages && g < (int)m_stagelegs.size(); ++g)
     for (size_t l(0); l < m_stagelegs[g].size(); ++l)

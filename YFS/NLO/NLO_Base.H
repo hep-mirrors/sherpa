@@ -16,6 +16,7 @@
 #include "YFS/Main/Dyson_VP.H"
 #include "ATOOLS/Math/Histogram_2D.H"
 #include <fstream>
+#include <functional>
 #include <sstream>
 #include <unordered_map>
 #include <memory>
@@ -466,6 +467,10 @@ public:
   double m_vborn = 0.;
   //! EW_HIGHER_ORDER's part of m_oneloop/m_born (0 without it)
   double m_vewho = 0.;
+  // ACRAIC: TNP_IFI: v_IF = (v(p) - v(pbar))/2, pbar = Born point with the final momenta swapped
+  bool m_vifok = false;
+  double m_vifodd = 0.;
+  long m_vifn = 0, m_viffail = 0;
   //! BETA0_2: the event's photonic factors and the two columns' settings
   YFS::Photonic_Factors m_b02;
   YFS::Beta02_Config m_b02acraic, m_b02nlo;
@@ -481,11 +486,33 @@ public:
   long m_rvLoopChecked = 0, m_rvLoopUnstable = 0;
   //! YFS: RV_BEAM_CONE: photons whose real-virtual was skipped for lying
   //! within the cone of a beam (NLO_RealVirtual.C, RVInBeamCone)
-  long m_rvBeamCone = 0;
+  long m_rvBeamCone = 0, m_rvIsrSkipped = 0, m_rvPoleVeto = 0;
   bool RVInBeamCone(const ATOOLS::Vec4D_Vector &p) const;
+  //! ACRAIC: HYBRID_ISR_RMIN: does this initial-state photon get V_2?
+  bool InHybridIsrCone(const ATOOLS::Vec4D &k) const;
   //! YFS: VIRTUAL_CHECK - Born-level loops checked in a second frame / dropped
   long m_vLoopChecked = 0, m_vLoopUnstable = 0;
   double m_vLoopUnstableBorn = 0., m_vLoopBornSum = 0.;
+  //! YFS: VIRTUAL_RMIN counters
+  long m_vLoopRmin = 0;
+  double m_vLoopRminBorn = 0.;
+  //! YFS: VIRTUAL_FRACTION - Born-level loops evaluated / replaced by the
+  //! reference v0, and the sum of the evaluated v (the running v0)
+  long m_vFracEvaluated = 0, m_vFracSkipped = 0;
+  //! ACRAIC: RV_FRACTION - the exact real-virtual loops on a fraction of the
+  //! events (REAL_VIRTUAL averaged); m_rvSkipped marks an event without them
+  long m_rvFracEvaluated = 0, m_rvFracSkipped = 0;
+  bool m_rvSkipped = false;
+  double m_vFracSum = 0.;
+  //! the reference v0 of YFS: VIRTUAL_FRACTION for the next event
+  double VirtualFractionV0() const;
+public:
+  //! a uniform number in [0, 1) from the bits of the momenta (VIRTUAL_FRACTION,
+  //! RV_FRACTION): the selection follows the kinematics, not the random stream
+  static double KinematicsHash(const ATOOLS::Vec4D_Vector &p);
+  //! ACRAIC: RV_FRACTION in (0, 1], default 1
+  static double RealVirtualFraction();
+  inline bool RealVirtualSkipped() const { return m_rvSkipped; }
   //! v with the subtraction on the Born point's own legs (RV_MODE 1), and
   //! that subtraction itself (loop coupling units)
   bool m_vborn_own_ok = false;
@@ -648,11 +675,22 @@ public:
               one Born photon (the channels of that photon's one-photon real);
               < 0 every choice of Born photons among Born and ISR photons.
     nalt, if given, receives the number of other assignments that passed.
+    YFS: BORN_PHOTON_CHANNELS stage (default isr, the above): isr holds every
+    YFS photon of the event, ISR- and FSR-labelled, lab the post-emission
+    legs, and h carries S~_II + sum_FF S~_FF per photon (NLO_Real.C).
+    density, if given, replaces h: the generator's density of the assignment
+    (slot, pick), slot the Born photon legs and pick[a] the candidate on
+    slot[a], candidates being the Born photons in slot order followed by
+    isr (ACRAIC's crude, Acraic_Base::CrudeOfPhotonAssignment).
+    The channel checks (selector, v_max) stay on the generator's point.
   */
+  typedef std::function<double(const std::vector<size_t> &,
+                               const std::vector<size_t> &)> ChannelDensity;
   double BornPhotonChannelSum(const ATOOLS::Vec4D_Vector &lab,
                               const std::vector<ATOOLS::Vec4D> &isr,
                               YFS::Dipole &dII, int jswap,
-                              int *nalt = nullptr);
+                              int *nalt = nullptr,
+                              const ChannelDensity *density = nullptr);
   //! 1/G for the ISR photon k of this event (1 when the switch is off or k
   //! is not an ISR photon of the event); used on the one-photon real.
   double BornPhotonChannelWeight(const ATOOLS::Vec4D &k);
@@ -736,6 +774,8 @@ public:
   void CheckMassReg();
   //! YFS: VIRTUAL_CHECK: the loop in a second frame; unstable -> no virtual
   void CheckVirtualStability(double &virt, const double sub, const bool vcanon);
+  //! is a Born photon within r < rmin of a beam?
+  bool BornPhotonNearBeam(const double rmin) const;
   void ProbeLargeVirtual(const double virt, const double sub);
   //! YFS: VIRTUAL_CHECK: end-of-run counts
   void ReportVirtualCheck();
@@ -793,6 +833,12 @@ public:
   void ReportBeta02();
   //! v of the loop provider alone: m_oneloop/m_born less EW_HIGHER_ORDER
   double VOneLoop() const;
+  //! ACRAIC: TNP_IFI: v_IF of this event (0 when not built), see m_vifodd
+  inline double VirtualIFOdd() const { return m_vifok ? m_vifodd : 0.; }
+  inline bool VirtualIFOddOk() const { return m_vifok; }
+  //! the one-loop V_sub of the Born point with the two final momenta exchanged
+  bool MirroredOneLoop(bool vcanon, YFS::Define_Dipoles *vsub, bool ownlegs, double &onem);
+  void ReportVirtualIFOdd() const;
   inline bool Beta02Ok() const { return m_b02.ok; }
   inline const YFS::Photonic_Factors &Beta02Factors() const { return m_b02; }
   inline const YFS::Beta02_Config &Beta02Acraic() const { return m_b02acraic; }

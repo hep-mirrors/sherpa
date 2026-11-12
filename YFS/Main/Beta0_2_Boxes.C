@@ -8,6 +8,7 @@
 #include "YFS/Main/Beta0_2_Boxes.H"
 #include "YFS/Main/Beta0_2.H"
 #include "YFS/Main/Beta0_2_Boxes_Table.H"
+#include "YFS/Main/Beta0_2_Boxes_Bhabha_Table.H"
 #include "EXTRA_XS/NNLO/ee_aa_QED_TwoLoop.H"
 #include "EXTRA_XS/NNLO/ee_aa_QED_VV.H"
 #include "MODEL/Main/Model_Base.H"
@@ -40,6 +41,77 @@ namespace {
     return (l < 0 ? f.IsoWeak() - f.Charge()*sw2 : -f.Charge()*sw2)/swcw;
   }
 
+  //! Bhabha boxes only at leading power: min(|t|, |u|) above this times m_e^2
+  const double s_bhabha_min_q2m2(100.);
+
+  //! the three Bhabha helicity classes of Beta0_2_Boxes_Bhabha_Table.H
+  enum class BhabhaClass { s_only, s_and_t, t_only };
+
+  //! N(class, x) of Bhabha in (alpha/2pi)^2
+  Complex TwoLoopPhotonicNBhabha(BhabhaClass c, double x)
+  {
+    using namespace B02BhabhaTable;
+    if (!(x > 0. && x < 1.)) return Complex(0., 0.);
+    if (c == BhabhaClass::s_only) return TwoLoopPhotonicN(false, x);
+    const double y(log(x/(1. - x)));
+    return c == BhabhaClass::s_and_t
+      ? Complex(Interpolate(s_st_re, y), Interpolate(s_st_im, y))
+      : Complex(Interpolate(s_t_re, y), Interpolate(s_t_im, y));
+  }
+
+  //! one helicity configuration's photon and full reduced amplitudes, Born weight
+  struct Box_Term {
+    std::vector<int> hel;
+    BhabhaClass cls;
+    Complex Ag, A;
+    double spinor2;
+  };
+
+  std::vector<Box_Term> BhabhaTerms(const Flavour &e, double s, double t,
+                                    double u, const Complex &ps,
+                                    const Complex &pt, const Complex &sw2)
+  {
+    const double Q2(sqr(e.Charge()));
+    std::vector<Box_Term> terms;
+    for (int le : {-1, 1}) {
+      const Complex gg(ZCoupling(e, le, sw2)*ZCoupling(e, le, sw2));
+      const Complex go(ZCoupling(e, le, sw2)*ZCoupling(e, -le, sw2));
+      const Complex As(Q2/s, 0.), Ast(Q2*(1./s + 1./t), 0.), At(Q2/t, 0.);
+      terms.push_back({{le, -le, -le, le}, BhabhaClass::s_only, As, As + go*ps, t*t});
+      terms.push_back({{le, -le, le, -le}, BhabhaClass::s_and_t, Ast,
+                       Ast + gg*(ps + pt), u*u});
+      terms.push_back({{le, le, le, le}, BhabhaClass::t_only, At, At + go*pt, s*s});
+    }
+    return terms;
+  }
+
+  //! the Bhabha boxes of AddPhotonicTwoLoopBoxes
+  void AddBhabhaBoxes(Photonic_Factors &f, const Flavour &e, const Vec4D_Vector &p,
+                      double alpha)
+  {
+    const double s((p[0] + p[1]).Abs2()), t((p[0] - p[2]).Abs2()),
+                 u((p[0] - p[3]).Abs2());
+    if (!(s > 0.)) return;
+    if (Min(-t, -u) < s_bhabha_min_q2m2*sqr(e.Mass())) return;
+    const double x(Max(0., Min(1., -t/s)));
+    const double mz(Flavour(kf_Z).Mass()), gz(Flavour(kf_Z).Width());
+    const Complex sw2(MODEL::s_model->ComplexConstant("csin2_thetaW"));
+    const Complex ps(1./Complex(s - mz*mz, gz*mz)), pt(1./Complex(t - mz*mz, gz*mz));
+    const double a2(sqr(alpha/(2.*M_PI)));
+    double norm(0.);
+    for (const Box_Term &b : BhabhaTerms(e, s, t, u, ps, pt, sw2)) {
+      if (std::abs(b.A) == 0.) continue;
+      const double w(b.spinor2*std::norm(b.A));
+      const Complex d2(a2*TwoLoopPhotonicNBhabha(b.cls, x)*b.Ag/b.A);
+      f.boxhel.push_back(b.hel);
+      f.boxd2.push_back(d2);
+      f.boxavg += w*d2.real();
+      norm += w;
+    }
+    if (norm > 0.) f.boxavg /= norm;
+    else { f.boxhel.clear(); f.boxd2.clear(); f.boxavg = 0.; }
+  }
+
 }
 
 
@@ -60,6 +132,7 @@ void YFS::AddPhotonicTwoLoopBoxes(Photonic_Factors &f, const Flavour_Vector &fl,
   if (fl.size() != 4 || p.size() < 4) return;
   const Flavour &e(fl[0]), &l(fl[2]);
   if (e.Kfcode() != kf_e || e.IsAnti() || fl[1] != e.Bar()) return;
+  if (l == e && fl[3] == e.Bar()) { AddBhabhaBoxes(f, e, p, alpha); return; }
   if ((l.Kfcode() != kf_mu && l.Kfcode() != kf_tau) || l.IsAnti() ||
       fl[3] != l.Bar()) return;
   const double s((p[0] + p[1]).Abs2()), t((p[0] - p[2]).Abs2()),

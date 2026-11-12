@@ -679,6 +679,18 @@ void NLO_Base::ReportVirtualCheck()
              <<" (their share of the sum of m_born: "
              <<(m_vLoopBornSum > 0. ? m_vLoopUnstableBorn/m_vLoopBornSum : 0.)
              <<")"<<std::endl;
+  if (m_vLoopRmin > 0)
+    msg_Out()<<"YFS: VIRTUAL_RMIN (this rank): Born-level loops dropped for a Born photon "
+             <<"near a beam "<<m_vLoopRmin<<" (their share of the sum of m_born: "
+             <<(m_vLoopBornSum > 0. ? m_vLoopRminBorn/m_vLoopBornSum : 0.)<<")"<<std::endl;
+  if (m_vFracEvaluated + m_vFracSkipped > 0)
+    msg_Out()<<"YFS: VIRTUAL_FRACTION (this rank): Born-level loop evaluated on "
+             <<m_vFracEvaluated<<" events, v = v0 on "<<m_vFracSkipped
+             <<"; mean evaluated v "<<(m_vFracEvaluated > 0 ? m_vFracSum/m_vFracEvaluated : 0.)
+             <<", final v0 "<<VirtualFractionV0()<<std::endl;
+  if (m_rvFracEvaluated + m_rvFracSkipped > 0)
+    msg_Out()<<"ACRAIC: RV_FRACTION (this rank): exact real-virtual loops on "
+             <<m_rvFracEvaluated<<" events, skipped on "<<m_rvFracSkipped<<std::endl;
 }
 
 /*

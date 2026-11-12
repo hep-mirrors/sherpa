@@ -17,16 +17,11 @@
 using namespace YFS;
 
 
-// The spinor structures m_Tamp/m_Uamp are cached in slot 0 for the event;
-// only m_TC/m_UC depend on the partition. slot < 0: not cached.
 void Acraic_Base::BornAmplitude(const Vec4D_Vector &k, Amplitude &M,
                              double Mf3, double Mf4, int slot) {
   Complex amp;
   int hel1, hel2, hel3, hel4;
   const double m1(m_flavs[0].Mass());
-  // The outgoing fermion pair: m_if1/m_if2 in the full ACRAIC set (not 2,3:
-  // for H l+ l- leg 2 is the Higgs), but always 2,3 in the reduced 2 -> 2 set
-  // {P1, P2, q3, q4} the real paths pass.
   const size_t i1(k.size() > 4 ? m_if1 : 2), i2(k.size() > 4 ? m_if2 : 3);
   const double m3(Mf3 >= 0. ? Mf3 : m_flavs[i1].Mass());
   const double m4(Mf4 >= 0. ? Mf4 : m_flavs[i2].Mass());
@@ -152,6 +147,19 @@ bool Acraic_Base::ComixBornShifted(const Vec4D_Vector &p, Amplitude &A,
                                  const PropShifts &shifts)
 {
   if (p_bornproc == NULL) return false;
+  // FF_SCALE_PROBE (debug): the shift list handed to Comix
+  static const bool probe(ATOOLS::Settings::GetMainSettings()["FF_SCALE_PROBE"]
+                          .SetDefault(false).Get<bool>());
+  static int nprobe(0);
+  if (probe && nprobe < 30 && p.size() > 3 && (p[2] + p[3]).Abs2() < 0.95*(p[0] + p[1]).Abs2()) {
+    ++nprobe;
+    std::cerr<<"@@@BSHIFT nphot="<<m_allphotons.size()<<" nstage="<<m_stage.size()
+             <<" nshifts="<<shifts.size()<<" (pi pair)^2/s="
+             <<(p.size() > 3 ? (p[2] + p[3]).Abs2()/(p[0] + p[1]).Abs2() : -1.);
+    for (size_t g(0); g < shifts.size(); ++g)
+      std::cerr<<"  [mask "<<shifts[g].first<<" shift "<<shifts[g].second<<"]";
+    std::cerr<<std::endl;
+  }
   std::vector<METOOLS::Spin_Amplitudes> amps;
   if (!p_bornproc->BornSpinAmplitudesShifts(p, amps, NULL, shifts)) return false;
   if (amps.empty()) return false;
@@ -163,13 +171,11 @@ bool Acraic_Base::ComixBornShifted(const Vec4D_Vector &p, Amplitude &A,
 }
 
 void Acraic_Base::InfraredSubtractedME_0_0() {
-  // this partition's Born, squared on its own and added to the incoherent sum
   double rc(0.);
   Amplitude AmpBorn;
   BornAmplitude(m_pacraic, AmpBorn, -1., -1., 0);
-  // Comix's Born at this partition's scale, in ACRAIC's convention: spinors
-  // at the physical momenta, only the propagator pole moves.
   bool realpoint(false);
+  PropShifts bornsh;   // the shifts of the Comix Born, if it took them
   if (m_comixborn && m_cxbalignok) {
     Amplitude C;
     /*
@@ -196,6 +202,7 @@ void Acraic_Base::InfraredSubtractedME_0_0() {
       PropShifts sh(StageShifts(-1));
       AddExchangeLineShifts(-1, sh);     // space-like exchange lines
       ok = ComixBornShifted(m_pacraic, C, sh);
+      if (ok) bornsh = sh;
       if (ok && m_checkxs && m_ffbar && m_nstages == 2) {
         static int nchk(0);
         if (nchk < 12) { ++nchk;
@@ -218,8 +225,17 @@ void Acraic_Base::InfraredSubtractedME_0_0() {
                          /(m_e*m_e);
     }
   }
-  // The real-point Born carries its own scale, so no flux. fac0 feeds rho_1
-  // and beta_1's subtraction, fac00 rho_0 (ACRAIC: NO_PSEUDOFLUX).
+  // ACRAIC: TNP_IFI: the Born of the flipped weight, greco's a_g -> -a_g
+  Amplitude AmpBornFlip(AmpBorn);
+  if (m_tnpifi && !m_resexp.empty()) {
+    Amplitude Cb;
+    if (!bornsh.empty() && ComixBornShifted(m_pacraic, Cb, TnpIfiFlippedResonance(bornsh))) {
+      for (int f = 0; f < Amplitude::NHel(); ++f)
+        AmpBornFlip.m_A[f] = m_cxbalign.m_A[f]*Cb.m_A[FlipLegs(f, ComixLegFlips(Amplitude::s_nlegs))]
+                             /(m_e*m_e);
+    }
+    else if (!(m_comixborn && m_cxbalignok)) ++m_tnpifievenres;
+  }
   static const pseudoflux::code pfmode(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
                           ["NO_PSEUDOFLUX"].Get<pseudoflux::code>());
   const Complex fac0(m_e * m_e * (realpoint ? 1. : (pfmode == pseudoflux::rho0_and_rho1 ? m_pflux : 1.)));
@@ -227,54 +243,33 @@ void Acraic_Base::InfraredSubtractedME_0_0() {
   const Complex fac(fac0 * m_Sprod), facA0(fac00 * m_Sprod);
   // every helicity the container holds, not only the 16 of a 2 -> 2
   const int nhel(Amplitude::NHel());
-  // with a collapsed photon the crude's soft product is the incoherent
-  // m_crudeprod, not |m_Sprod|^2
   const double crudefac(std::norm(fac00) * m_crudeprod);
-  /*
-    ACRAIC: CRUDE_BORN. The crude's Born is the generator's: the Born at the
-    partition's reduced point times s/X_wp^2. The coherent sum and beta_1's
-    subtraction keep the physical-spinor form above, which is what M_1
-    reduces to. The two agree for an s-channel Born, but not with a
-    space-like exchange line nor for hard wide-angle photons.
-  */
+  
   static const bool crudeborn(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
                              ["CRUDE_BORN"].SetDefault(true).Get<bool>());
-  // 2 -> 2: the Born at BornLegsAt(X_wp), which rebuilds the one pair;
-  // beyond: the generator's point GeneratorBornAt(X_wp) from the pre-FSR legs.
-  // also with the hand-coded Born (COMIX_BORN false): the crude is the
-  // GENERATOR's density, whose Born is Comix's, and the alignment now exists
-  // on both paths (2026-10-11); before, the hand-coded path fell back to the
-  // shifted physical-spinor Born, which differs for hard photons
-  // ACRAIC: CRUDE_BORN_LEGS: the generator's own point (the pre-emission
-  // pair's rest-frame direction, GeneratorBornAt) whenever the pre-FSR legs
-  // are known; BornLegsAt (the physical direction in the reduced frame) is
-  // the 2 -> 2 fallback and the `reduced` option. Beyond 2 -> 2 the
-  // generator's point is the only one.
   static const crudebornlegs::code cbl(ATOOLS::Settings::GetMainSettings()["ACRAIC"]
                                        ["CRUDE_BORN_LEGS"].Get<crudebornlegs::code>());
-  const bool genlegs((cbl == crudebornlegs::generator || m_flavs.size() > 4)
+  // ACRAIC: CRUDE_BORN_LEGS stage: the partition's own channel point
+  // (StageBornAt) beyond 2 -> 2; 2 -> 2 keeps BornLegsAt, which is the same point
+  const bool stagelegs(cbl == crudebornlegs::stage && m_flavs.size() > 4);
+  const bool genlegs(!stagelegs && (cbl == crudebornlegs::generator || m_flavs.size() > 4)
                      && m_prefsr.size() == m_flavs.size());
   bool usered(crudeborn && m_flavs.size() >= 4
               && m_cxbalignok && !realpoint
-              && (m_flavs.size() == 4 || genlegs));
+              && (m_flavs.size() == 4 || genlegs || stagelegs));
   Amplitude Cred;
   double fluxred(1.);
   if (usered) {
     Vec4D_Vector pb;
     const double X2(m_PXvec.Abs2());
-    const bool legs(X2 > 0. && (genlegs ? GeneratorBornAt(m_PXvec, pb)
-                                        : BornLegsAt(m_PXvec, pb)));
+    const bool legs(X2 > 0. && (stagelegs ? StageBornAt(m_PXvec, pb)
+                                : genlegs ? GeneratorBornAt(m_PXvec, pb)
+                                          : BornLegsAt(m_PXvec, pb)));
     usered = legs && ComixBornAmplitude(pb, Cred, NULL, -1., -1.);
     if (usered) fluxred = m_s/X2;
   }
-  // One power of each flux: |B_phys|^2 = (q+K)^2/q^2 |B_red|^2 for a final
-  // stage, so KKMC's (svarX/svarQ)^2 on |beta_0|^2 is svarX/svarQ on B_red^2;
-  // s/X_wp^2 is the same for the beams.
-  const double crudered((pfmode == pseudoflux::neither ? 1. : m_pflux) * fluxred
+  const double crudered((pfmode == pseudoflux::neither ? 1. : m_pflux * m_pfluxmass) * fluxred
                         * (m_crudefixed ? m_crudeprod : std::norm(m_Sprod)));
-  // The generator's density carries s/X_wp^2 relative to the reduced-point
-  // Born. The shifted physical-spinor Born has it in its spinors; the
-  // BORN_AT_SPRIME real-point Born does not, so it is put on the crude here.
   double fluxreal(1.);
   if (realpoint) {
     const double X2r(m_PXvec.Abs2());
@@ -297,35 +292,22 @@ void Acraic_Base::InfraredSubtractedME_0_0() {
     m_AmpBornReal.m_A[f] += a;
     m_AmpExpo1.m_A[f] += a;
     TnpAdd(tnp_b0, f, a);
+    // ACRAIC: TNP_IFI: the soft product with the final-stage charges flipped
+    if (m_tnpifi) {
+      m_partborn0flip.m_A[f] = fac0 * AmpBornFlip.m_A[f];
+      TnpIfiAdd(f, m_tnppartflip*facA0*AmpBornFlip.m_A[f], m_tnppartflip*fac*AmpBornFlip.m_A[f]);
+    }
   }
   m_rhocrud += rc / 4.;
   m_snapBorn = m_AmpExpo1;   // Born term only, before any correction
 }
 
 
-/*!
-  The Comix -> ACRAIC Born alignment, once per event: one complex factor per
-  helicity (per-leg little-group phases), modulus COMIX_REAL_NORM =
-  1/sqrt(initial spin states) at 2 -> 2. Built at the physical scale and used
-  at every partition scale. When that constant is not exact (m_normexact) the
-  real uses m_cxrnorm, the same ratio rebuilt from this event's Born.
-*/
 void Acraic_Base::BuildComixBornAlignment()
 {
   m_cxbalignok = false;
   m_cxrnorm = -1.;
   if (p_bornproc == NULL || m_pacraic.size() < 4) return;
-  /*
-    No early return for COMIX_BORN false (2026-10-11): beta_1's M_1 always
-    comes from Comix (the hand-coded beta_1 was removed), so it needs the
-    per-helicity alignment to the hand-coded Born as much as the Comix Born
-    does. Without it the hand-coded path paired an unaligned M_1 with the
-    hand-coded beta_0, beta_1 = M_1 - S beta_0 did not cancel, and rho_1 was
-    off by 1 + O(x): +39% on sigma_fid at 161 GeV (exact only at the Z pole,
-    where the stale alignment happened to fit).
-  */
-  // No hand-coded Born beyond f fbar: Born, M_1 and eikonal (ComixPolarisation)
-  // are all in Comix's convention, so unit alignment and normalisation.
   if (!m_ffbar) {
     for (int f = 0; f < Amplitude::NHel(); ++f) m_cxbalign.m_A[f] = Complex(1., 0.);
     if (!m_comixcalibrated) {
@@ -336,8 +318,6 @@ void Acraic_Base::BuildComixBornAlignment()
     m_cxbalignok = true;
     return;
   }
-  // Calibrate first: the sentinel m_comixflip = -1 would act as a mask
-  // flipping every fermion leg, which keeps the norm and so passes unnoticed.
   if (!m_comixcalibrated) DeriveComixMap();
   if (m_comixflip < 0 || !(m_comixnorm > 0.)) return;
   // one Comix Born per event at the reference scale, for the alignment
@@ -373,9 +353,6 @@ void Acraic_Base::BuildComixBornAlignment()
   for (int f = 0; f < nh; ++f) {
     const Complex Cf(C.m_A[FlipLegs(f, ComixLegFlips(Amplitude::s_nlegs))]);
     const Complex Hf(m_e*m_e*H.m_A[f]);
-    // Modulus N everywhere; the phase only where both Borns are live, since
-    // in mass-suppressed slots Hf/Cf is a mass artefact that collinear
-    // photons amplify.
     const double N(nc > 0. ? nhd/nc : 0.);
     if (std::abs(Cf) > 1e-3*nc && std::abs(Hf) > 1e-3*nhd) {
       const Complex r(Hf/Cf);
