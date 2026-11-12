@@ -81,7 +81,7 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "schedule"
   script:
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile CI/$OS/Dockerfile$FREL --destination $CI_REGISTRY_IMAGE:$OS_$FREL 
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile CI/$OS/Dockerfile$FREL --destination $CI_REGISTRY_IMAGE:${OS}_$FREL 
   variables:
     GIT_DEPTH: "1"
   retry: 2
