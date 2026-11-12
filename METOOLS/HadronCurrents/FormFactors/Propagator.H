@@ -120,38 +120,22 @@ namespace METOOLS {
   // printed for that channel's own equations - see FF_0_PPP.C's
   // comments at the point of use for which is which.
 
-  // FM95 Eq.(34): the NORMALIZED, CONSTANT-width Breit-Wigner that
-  // hep-ph/9503474 specifies for the K1 envelopes,
-  //     BW(s) = (-m^2 + i m G) / (s - m^2 + i m G),
-  // identical to Tools::BreitWignerFix(s,m^2,m*G).  This is deliberately NOT
-  // the running-width BreitWigner above: FM95 says "normalized Breit-Wigner
-  // propagators with constant widths", and a running Gamma(s) grows with s,
-  // which inflates the denominator and suppresses the high-mass tail that the
-  // K1(1400) is supposed to supply.  Mass and width are passed explicitly
-  // rather than taken from a Total_Width_Base, because the paper's Eq.(35)
-  // values are parameters of its own fit, not the flavour's PDG pole.
-  class FM95_Fixed_BW : public Propagator_Base {
-  private:
-    double m_G;
-  public:
-    FM95_Fixed_BW(const double & mass,const double & width);
-    const Complex operator()(const double & s);
-    const Complex Normalised(const double & s);
-    const double  Normalised2(const double & s);
-  };
-
   ///////////////////////////////////////////////////////////////////////////
   //
-  // Constant-width Breit-Wigner:  M^2 / (M^2 - s - i M Gamma).
+  // Constant-width Breit-Wigner, M and Gamma given explicitly:
+  //
+  //   numerator::M2 (default)    M^2               / (M^2 - s - i M Gamma)
+  //   numerator::unit_at_zero    (M^2 - i M Gamma) / (M^2 - s - i M Gamma)
+  //
+  // The imaginary part is M*Gamma, NOT sqrt(s)*Gamma, so the width is a
+  // genuine constant: sqrt(s)*Gamma still grows with s, which is precisely the
+  // defect this class exists to avoid.
   //
   // Deliberately NOT BreitWigner with resonance_type::fixed -- that class
   // always evaluates (*p_width)(s), so "fixed" never reaches the denominator.
-  // Here M and Gamma are given explicitly and no Total_Width_Base is involved.
-  //
-  // The imaginary part is M*Gamma, NOT sqrt(s)*Gamma.  That is the convention
-  // of hep-ph/0512180 Eq. (5), 1/(s/m^2 - 1 + i Gamma/m), and it is a genuine
-  // constant: sqrt(s)*Gamma still grows with s, which is precisely the defect
-  // this class exists to avoid.
+  // No Total_Width_Base is involved.  M and Gamma are parameters of the
+  // source's own fit, not the flavour's PDG pole, which is why they are passed
+  // in rather than read from the registry.
   //
   // WHY IT EXISTS.  A running width built from a decay phase-space integral is
   // the right description of a resonance near its own pole, and the wrong one
@@ -159,19 +143,39 @@ namespace METOOLS {
   // because Gamma(s) keeps growing.  Measured for omega(782): by 1.6 GeV the
   // running-width propagator is a factor 3 smaller than this one and rotated
   // in phase by 72 degrees, which is enough to wreck an amplitude in which the
-  // omega term dominates.  Use this whenever a narrow resonance is evaluated
-  // well off its pole.
+  // omega term dominates.  The K1 envelopes of tau -> K pi pi nu are the same
+  // story: a running Gamma(s) inflates the denominator and suppresses the
+  // high-mass tail the K1(1400) is supposed to supply.  Use this whenever a
+  // resonance is evaluated well off its pole.
+  //
+  // THE TWO NUMERATORS are two published conventions.  A line shape and the
+  // couplings fitted with it are a matched pair, so each source keeps its own:
+  //   M2            the imaginary-part convention of hep-ph/0512180 Eq.(5),
+  //                 1/(s/m^2 - 1 + i Gamma/m), up to sign: the e+e- -> 3 pi
+  //                 isoscalar current.
+  //   unit_at_zero  FM95 (hep-ph/9503474) Eq.(34), "normalized Breit-Wigner
+  //                 propagators with constant widths", exactly 1 at s = 0
+  //                 (= Tools::BreitWignerFix): the K1 envelopes of the
+  //                 tau -> K pi pi nu current.
+  // The two differ only by the constant factor 1 - i Gamma/M, which a fitted
+  // complex coupling absorbs.  PoleNumerator() returns whichever is in use.
   //
   ///////////////////////////////////////////////////////////////////////////
 
   class FixedBreitWigner : public Propagator_Base {
-  private:
-    double m_Gamma;
   public:
-    FixedBreitWigner(const double & M,const double & Gamma);
+    enum class numerator { M2, unit_at_zero };
+  private:
+    double    m_Gamma;
+    numerator m_num;
+  public:
+    FixedBreitWigner(const double & M,const double & Gamma,
+                     const numerator & num=numerator::M2);
     const Complex operator()(const double & s);
     const Complex Normalised(const double & s);
     const double  Normalised2(const double & s);
+    virtual double  OnShellWidth() const { return m_Gamma; }
+    virtual Complex PoleNumerator() const;
   };
 
   ///////////////////////////////////////////////////////////////////////////
@@ -464,37 +468,65 @@ namespace METOOLS {
     inline Complex PolePosition() const { return m_spole; }
   };
 
-  // Flatte, two channels:
+  ///////////////////////////////////////////////////////////////////////////
   //
-  //   D(s) = M^2 / ( M^2 - s - i [ g_1 rho_1(s) + g_2 rho_2(s) ] ),
+  // Two-channel Flatte, for a resonance sitting ON a threshold:
   //
-  // with the two-body phase-space factors
-  //   rho_ab(s) = sqrt( (1-(m_a+m_b)^2/s)(1-(m_a-m_b)^2/s) )
-  // continued ANALYTICALLY below threshold, where rho becomes
-  // i|rho| and the term moves from the imaginary to the real part of
-  // the denominator. The couplings g_i carry GeV^2.
+  //   D(s) = M^2 / ( M^2 - s - i [ g_1 rho_1(s) + g_2 rho_2(s)
+  //                               + sqrt(s) gamma_0 ] ),
+  //   rho_ab(s) = sqrt( (s-(m_a+m_b)^2)(s-(m_a-m_b)^2) ) / s,
   //
-  // The M^2 numerator matches the BreitWigner convention in this file
-  // (D -> 1 at s=0 up to the subthreshold rho's), so PoleNumerator()
-  // returns M^2 and callers deriving a coupling from a width divide it
-  // out exactly as they do for a Breit-Wigner.
+  // continued ANALYTICALLY below threshold, where rho becomes i|rho| and the
+  // channel moves from the imaginary to the real part of the denominator.
+  // That is why a Breit-Wigner - fixed OR running width - cannot do this job:
+  // below its threshold a channel cannot contribute to the width, but it DOES
+  // contribute to the real part of the self-energy, and that subthreshold real
+  // part produces the characteristic cusp.  A complex pole has no threshold at
+  // all.
+  //
+  // The couplings g_i carry GeV^2 and may be complex, for phenomenological
+  // relative phases between the channels.  gamma_0 (GeV, default 0) is a
+  // constant residual width for decay modes outside the two explicit channels.
+  // No Total_Width_Base is involved: the denominator is built entirely from the
+  // channel phase spaces and the residual term.
+  //
+  // The M^2 numerator matches the BreitWigner convention in this file (D -> 1
+  // at s = 0 up to the subthreshold rho's), so PoleNumerator() returns M^2 and
+  // callers deriving a coupling from a width divide it out exactly as they do
+  // for a Breit-Wigner.  OnShellWidth() counts only the channels open at
+  // s = M^2, plus gamma_0, so that such a caller gets something meaningful.
+  //
+  // Uses: f_0(980) (pi pi, K Kbar) and a_0(980) (eta pi, K Kbar) in the
+  // D -> P P l nu S waves; K1(1270) (K* pi, K rho) in tau -> K pi pi nu.
+  //
+  // M IS THE BARE POLE, NOT THE PDG MASS.  The parameters are correlated and
+  // only meaningful as a set, so M must never be replaced by the registry's
+  // Breit-Wigner mass.  Near the peak, a channel whose threshold lies above M
+  // shifts the real part of the denominator while one whose threshold lies
+  // below M adds width, so moving M across a threshold changes what the
+  // couplings mean.  For K1(1270) the BaBar 2007 working point has M = 1.254,
+  // below the K rho threshold (~1.264), against PDG's 1.272; the 2026-11
+  // tau -> K pi pi nu tune puts it at 1.294, above it, with its own couplings.
+  //
+  ///////////////////////////////////////////////////////////////////////////
+
   class Flatte : public Propagator_Base {
   private:
-    double m_g1, m_g2;
-    double m_ma1, m_mb1, m_ma2, m_mb2;
+    Complex m_g1, m_g2;
+    double  m_ma1, m_mb1, m_ma2, m_mb2;
+    double  m_gamma0;
     ATOOLS::Flavour m_flav;
     Complex Rho(const double & s,const double & ma,
                 const double & mb) const;
   public:
-    Flatte(const double & M,const double & g1,const double & g2,
-           const double & ma1,const double & mb1,
-           const double & ma2,const double & mb2,
+    Flatte(const double & M,
+           const Complex & g1,const double & ma1,const double & mb1,
+           const Complex & g2,const double & ma2,const double & mb2,
+           const double & gamma0=0.,
            const ATOOLS::Flavour & flav=ATOOLS::Flavour(kf_none));
     const Complex operator()(const double & s);
     const Complex Normalised(const double & s);
     const double  Normalised2(const double & s);
-    // Width at the pole from the OPEN channel only, so that a caller
-    // deriving a decay coupling gets something meaningful.
     virtual double OnShellWidth() const;
     virtual Complex PoleNumerator() const { return Complex(m_M2,0.); }
     ATOOLS::Flavour Flav() const { return m_flav; }
@@ -585,37 +617,6 @@ namespace METOOLS {
                     // isolate which of the three differences between
                     // his propagator and a plain registry one matters.
                     const bool & keepshape=false);
-    const Complex operator()(const double & s);
-    const Complex Normalised(const double & s);
-    const double  Normalised2(const double & s);
-  };
-
-  // Two-channel Flatte, for a resonance sitting ON a threshold, where a
-  // Breit-Wigner - fixed OR running width - cannot work: the channel phase
-  // space must go IMAGINARY below threshold, which is the whole point.  The
-  // motivating case is K1(1270), whose pole is essentially on the K rho
-  // threshold (1.269 vs a 1.27 pole).
-  //
-  // TRAP, and it is a real one: the Flatte's BARE pole is NOT the PDG
-  // Breit-Wigner mass.  For K1(1270) the bare pole is 1.254 while PDG quotes
-  // 1.272, and 1.272 sits ABOVE the K rho threshold (~1.264), which INVERTS
-  // the sign of the dispersive term that makes the Flatte work.  They are
-  // different quantities; never substitute the registry mass here.
-  class Two_Channel_Flatte : public Propagator_Base {
-  private:
-    Complex m_g1, m_g2;
-    double m_m11, m_m12, m_m21, m_m22;
-    double m_gamma0;
-
-    Complex PhaseSpace(const double & s,const double & m1,
-                       const double & m2) const;
-
-  public:
-    Two_Channel_Flatte(Total_Width_Base * width,const double & mass,
-                       const Complex & g1,const double & m11,
-                       const double & m12,
-                       const Complex & g2,const double & m21,
-                       const double & m22,const double & gamma0=0.);
     const Complex operator()(const double & s);
     const Complex Normalised(const double & s);
     const double  Normalised2(const double & s);

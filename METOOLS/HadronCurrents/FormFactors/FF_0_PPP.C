@@ -1878,18 +1878,21 @@ static double FM95Get(const GeneralModel * md, const std::string & key) {
 //! T_K1^(a) = BW_K1(1400) + xi BW_K1(1270), both constant-width (Eq.(34)).
 static Summed_Propagator * FM95_TK1a(const GeneralModel * md) {
   Summed_Propagator * t = new Summed_Propagator();
-  t->Add(new FM95_Fixed_BW(FM95Get(md,"FM95_mK1_1400"),
-			   FM95Get(md,"FM95_GK1_1400")), Complex(1.,0.));
-  t->Add(new FM95_Fixed_BW(FM95Get(md,"FM95_mK1_1270"),
-			   FM95Get(md,"FM95_GK1_1270")),
+  t->Add(new FixedBreitWigner(FM95Get(md,"FM95_mK1_1400"),
+			      FM95Get(md,"FM95_GK1_1400"),
+			      FixedBreitWigner::numerator::unit_at_zero), Complex(1.,0.));
+  t->Add(new FixedBreitWigner(FM95Get(md,"FM95_mK1_1270"),
+			      FM95Get(md,"FM95_GK1_1270"),
+			      FixedBreitWigner::numerator::unit_at_zero),
 	 Complex(FM95Get(md,"FM95_xi"),0.));
   return t;
 }
 
 //! T_K1^(b) = BW_K1(1270) alone.
 static Propagator_Base * FM95_TK1b(const GeneralModel * md) {
-  return new FM95_Fixed_BW(FM95Get(md,"FM95_mK1_1270"),
-			   FM95Get(md,"FM95_GK1_1270"));
+  return new FixedBreitWigner(FM95Get(md,"FM95_mK1_1270"),
+			      FM95Get(md,"FM95_GK1_1270"),
+			      FixedBreitWigner::numerator::unit_at_zero);
 }
 
 //! T_rho^(1) = [BW_rho + beta_rho BW_rho'] / (1+beta_rho); pi pi daughters.
@@ -2000,7 +2003,8 @@ void F1_0_KPiPi::Construct(const FF_Parameters & params) {
     const double mK1400 = (*params.p_model)("MK1_1400_106", 1.463);
     const double GK1400 = (*params.p_model)("GK1_1400_106", 0.300);
     p_TK1a = new Summed_Propagator();
-    p_TK1a->Add(flatte ? (Propagator_Base*)new FM95_Fixed_BW(mK1400,GK1400)
+    p_TK1a->Add(flatte ? (Propagator_Base*)new FixedBreitWigner(mK1400,GK1400,
+                           FixedBreitWigner::numerator::unit_at_zero)
                        : (Propagator_Base*)new BreitWigner(wK11400),
                 Complex(1.,0.));
     p_TK1a->Add(flatte ? K1_1270_Flatte(params.p_model)

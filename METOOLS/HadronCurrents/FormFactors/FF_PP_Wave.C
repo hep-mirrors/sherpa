@@ -58,7 +58,7 @@ Propagator_Base * FF_PP_Wave::BuildOne(const std::string & tag) {
     const double mb2 = md(m_name+"_MB2"+tag,0.493677);
     Flavour fl(kf_none);
     if (kf!=0) { fl = Flavour((kf_code)abs(kf)); if (kf<0) fl = fl.Bar(); }
-    return new Flatte(M,g1,g2,ma1,mb1,ma2,mb2,fl);
+    return new Flatte(M,Complex(g1,0.),ma1,mb1,Complex(g2,0.),ma2,mb2,0.,fl);
   }
 
   if (resonance_type(type)==resonance_type::complex_pole) {

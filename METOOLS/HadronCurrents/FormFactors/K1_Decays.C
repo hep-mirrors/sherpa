@@ -127,22 +127,23 @@ Propagator_Base * METOOLS::MakeK1_1270_Flatte(const double mass,
   // (fixed-width FM95) to 4.7.  g_i have dimensions of GeV^2;
   // gamma_residual covers the modes outside the two explicit channels.
   //
-  // The BARE POLE 1.254 is NOT PDG's Breit-Wigner mass 1.272, and must not be
-  // replaced by the registry value: 1.272 sits ABOVE the K rho threshold
-  // (~1.264), which inverts the sign of the dispersive term that makes the
-  // Flatte work.  Different quantities - see RESONANCE_LIBRARY_PLAN section 4.6.
+  // The mass is the Flatte's BARE POLE, not PDG's Breit-Wigner mass 1.272, and
+  // must never be replaced by the registry value: it is a parameter of this
+  // line shape, correlated with the couplings.  The default 1.254 lies below
+  // the K rho threshold (~1.264); a tune may move it above (see Flatte in
+  // Propagator.H for what that changes).  See also RESONANCE_LIBRARY_PLAN
+  // section 4.6.
   //
   // Charged and neutral K1(1270) share these two channels; the isospin
   // partners differ only by Clebsch factors, which belong to the current, not
-  // to the line shape.  The width argument is NULL because a Flatte has no
-  // total-width object - its denominator is built entirely from the channel
-  // phase spaces and the residual term.
-  return new Two_Channel_Flatte(NULL,mass,
-                                Complex(g_KstarPi,0.),
-                                Flavour(kf_K_star_892_plus).HadMass(),
-                                Flavour(kf_pi_plus).HadMass(),
-                                Complex(g_Krho,0.),
-                                Flavour(kf_K_plus).HadMass(),
-                                Flavour(kf_rho_770).HadMass(),
-                                gamma_residual);
+  // to the line shape.  A Flatte has no total-width object: its denominator is
+  // built entirely from the channel phase spaces and the residual term.
+  return new Flatte(mass,
+                    Complex(g_KstarPi,0.),
+                    Flavour(kf_K_star_892_plus).HadMass(),
+                    Flavour(kf_pi_plus).HadMass(),
+                    Complex(g_Krho,0.),
+                    Flavour(kf_K_plus).HadMass(),
+                    Flavour(kf_rho_770).HadMass(),
+                    gamma_residual);
 }

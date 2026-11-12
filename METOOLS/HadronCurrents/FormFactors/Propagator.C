@@ -83,21 +83,21 @@ const double Complex_Pole::Normalised2(const double & s) {
 //
 ///////////////////////////////////////////////////////////////////////////
 
-Flatte::Flatte(const double & M,const double & g1,const double & g2,
-               const double & ma1,const double & mb1,
-               const double & ma2,const double & mb2,
-               const ATOOLS::Flavour & flav) :
+Flatte::Flatte(const double & M,
+               const Complex & g1,const double & ma1,const double & mb1,
+               const Complex & g2,const double & ma2,const double & mb2,
+               const double & gamma0,const ATOOLS::Flavour & flav) :
   Propagator_Base(NULL,resonance_type::flatte),
   m_g1(g1), m_g2(g2),
-  m_ma1(ma1), m_mb1(mb1), m_ma2(ma2), m_mb2(mb2), m_flav(flav) {
+  m_ma1(ma1), m_mb1(mb1), m_ma2(ma2), m_mb2(mb2),
+  m_gamma0(gamma0), m_flav(flav) {
   m_M = M; m_M2 = M*M;
 }
 
 Complex Flatte::Rho(const double & s,const double & ma,
                     const double & mb) const {
   if (s<=0.) return Complex(0.,0.);
-  const double a = 1.-sqr(ma+mb)/s, b = 1.-sqr(ma-mb)/s;
-  const double r2 = a*b;
+  const double r2 = (s-sqr(ma+mb))*(s-sqr(ma-mb))/(s*s);
   // Above threshold rho is real; below it the square root is imaginary
   // and the channel feeds the REAL part of the denominator instead.
   if (r2>=0.) return Complex(sqrt(r2),0.);
@@ -105,8 +105,9 @@ Complex Flatte::Rho(const double & s,const double & ma,
 }
 
 const Complex Flatte::operator()(const double & s) {
-  const Complex den = Complex(m_M2-s,0.)
-    - Complex(0.,1.)*(m_g1*Rho(s,m_ma1,m_mb1)+m_g2*Rho(s,m_ma2,m_mb2));
+  const Complex sigma = m_g1*Rho(s,m_ma1,m_mb1) + m_g2*Rho(s,m_ma2,m_mb2);
+  const double  resid = (s>0. ? sqrt(s)*m_gamma0 : 0.);
+  const Complex den   = Complex(m_M2-s,0.) - Complex(0.,1.)*(resid+sigma);
   if (std::abs(den)<1.e-30) return Complex(0.,0.);
   return m_M2/den;
 }
@@ -114,15 +115,14 @@ const Complex Flatte::operator()(const double & s) {
 const Complex Flatte::Normalised(const double & s) { return (*this)(s); }
 
 const double Flatte::Normalised2(const double & s) {
-  const Complex v = (*this)(s);
-  return (v*conj(v)).real();
+  return norm((*this)(s));
 }
 
 double Flatte::OnShellWidth() const {
-  // Gamma = (g_1 rho_1 + g_2 rho_2)/M at s=M^2, counting only the
-  // channels that are actually open there.
+  // Gamma = Re[g_1 rho_1 + g_2 rho_2]/M + gamma_0 at s = M^2, counting only
+  // the channels that are actually open there.
   const Complex r1 = Rho(m_M2,m_ma1,m_mb1), r2 = Rho(m_M2,m_ma2,m_mb2);
-  return (m_g1*r1.real()+m_g2*r2.real())/m_M;
+  return (m_g1.real()*r1.real()+m_g2.real()*r2.real())/m_M + m_gamma0;
 }
 
 
@@ -328,32 +328,22 @@ const double Fitted_VPP_Propagator::Normalised2(const double & s) {
 //
 ///////////////////////////////////////////////////////////////////////////
 
-FM95_Fixed_BW::FM95_Fixed_BW(const double & mass,const double & width) :
-  Propagator_Base(NULL,resonance_type::fixed), m_G(width) {
-  m_M  = mass;
-  m_M2 = mass*mass;
-}
-
-const Complex FM95_Fixed_BW::operator()(const double & s) {
-  return Tools::BreitWignerFix(s,m_M2,m_M*m_G);
-}
-
-const Complex FM95_Fixed_BW::Normalised(const double & s) {
-  return (*this)(s);
-}
-
-const double FM95_Fixed_BW::Normalised2(const double & s) {
-  return norm((*this)(s));
-}
-
-FixedBreitWigner::FixedBreitWigner(const double & M,const double & Gamma) :
-  Propagator_Base(NULL,resonance_type::fixed), m_Gamma(Gamma) {
+FixedBreitWigner::FixedBreitWigner(const double & M,const double & Gamma,
+                                   const numerator & num) :
+  Propagator_Base(NULL,resonance_type::fixed), m_Gamma(Gamma), m_num(num) {
   m_M  = M;
   m_M2 = M*M;
 }
 
 const Complex FixedBreitWigner::operator()(const double & s) {
+  if (m_num==numerator::unit_at_zero)
+    return Tools::BreitWignerFix(s,m_M2,m_M*m_Gamma);
   return m_M2/Complex(m_M2-s,-m_M*m_Gamma);
+}
+
+Complex FixedBreitWigner::PoleNumerator() const {
+  if (m_num==numerator::unit_at_zero) return Complex(m_M2,-m_M*m_Gamma);
+  return Complex(m_M2,0.);
 }
 
 const Complex FixedBreitWigner::Normalised(const double & s) {
@@ -420,7 +410,7 @@ GounarisSakuraiM::GounarisSakuraiM(const Flavour & flav,const double & mpi) :
       + m_M/(2.*M_PI*m_k0)
       - (m_mpi2*m_M)/(M_PI*pow(m_k0,3.));
   // The published GS normalisation, which makes the amplitude 1 at s=0 given
-  // the exact f(s), matching BreitWigner and Two_Channel_Flatte here so the
+  // the exact f(s), matching BreitWigner and Flatte here so the
   // mixing coefficients of a coherent sum keep their meaning.  F() below is
   // the above-threshold form, so evaluating this literally at s=0 comes out
   // about 1% high; that region is never probed, since every call site passes a
@@ -800,48 +790,3 @@ const double Novo4Pi_Propagator::Normalised2(const double & s) {
   return norm((*this)(s));
 }
 
-Two_Channel_Flatte::Two_Channel_Flatte(Total_Width_Base * width,
-                                       const double & mass,
-                                       const Complex & g1,const double & m11,
-                                       const double & m12,
-                                       const Complex & g2,const double & m21,
-                                       const double & m22,
-                                       const double & gamma0) :
-  Propagator_Base(width,resonance_type::bespoke),
-  m_g1(g1), m_m11(m11), m_m12(m12),
-  m_g2(g2), m_m21(m21), m_m22(m22),
-  m_gamma0(gamma0)
-{
-  m_M  = mass;
-  m_M2 = sqr(m_M);
-}
-
-Complex Two_Channel_Flatte::PhaseSpace(const double & s,const double & m1,
-                                       const double & m2) const {
-  if (s==0.) return Complex(0.,0.);
-  const double splus  = sqr(m1+m2);
-  const double sminus = sqr(m1-m2);
-  // Complex sqrt on purpose: below threshold this is imaginary, which is
-  // exactly what a Flatte needs and what a running width cannot express.
-  return sqrt(Complex((s-splus)*(s-sminus)/(s*s),0.));
-}
-
-const Complex Two_Channel_Flatte::operator()(const double & s) {
-  const Complex sigma =
-    m_g1*PhaseSpace(s,m_m11,m_m12) +
-    m_g2*PhaseSpace(s,m_m21,m_m22);
-  // gamma0 carries residual modes not represented by the two explicit
-  // threshold channels.  The complex g_i have dimensions of GeV^2 and allow
-  // phenomenological relative phases between the coupled channels.
-  const Complex denom =
-    Complex(m_M2-s,0.)-Complex(0.,1.)*(sqrt(s)*m_gamma0+sigma);
-  return m_M2/denom;
-}
-
-const Complex Two_Channel_Flatte::Normalised(const double & s) {
-  return (*this)(s);
-}
-
-const double Two_Channel_Flatte::Normalised2(const double & s) {
-  return norm((*this)(s));
-}
