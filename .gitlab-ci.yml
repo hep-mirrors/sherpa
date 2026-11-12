@@ -155,6 +155,7 @@ build_image_Archlinux0:
     - export CTEST=ctest3
     - if [ "${FREL}" == "7" ]; then export CMAKE=cmake3; CTEST=ctest3; fi
     - if [ "${FREL}" == "0" ]; then export CMAKE=cmake; CTEST=ctest; fi
+    - if [ "${FREL}" == "44" ]; then export CMAKE=cmake; CTEST=ctest; fi
     - export COMPILATIONSTART=$(date +%s)
     - $CMAKE --version
     - $CMAKE -S . -B BUILD -DCMAKE_INSTALL_PREFIX=$(pwd)/CM  $EXTRACMAKEFLAGS $CACHINGFLAGS
