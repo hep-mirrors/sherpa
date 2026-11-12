@@ -5,6 +5,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Settings.H"
+#include "BEAM/Main/Woods_Saxon.H"
 
 #include <cmath>
 
@@ -15,15 +16,30 @@ namespace {
   Transverse_Profile MakeTransverseProfile(beamspectrum type,
                                           const ATOOLS::Flavour& beam, int dir)
   {
+    const size_t index = dir > 0 ? 0 : 1;
+    const double hbarc = ATOOLS::rpa->hBar_c();
+    msg_Info() << "  Beam " << index + 1 << " transverse profile: ";
     // EPA supplies an x-dependent photon-emission profile of its own. Do not
     // apply the generic parton profile or its settings to that spectrum.
-    if (type == beamspectrum::EPA)
+    if (type == beamspectrum::EPA) {
+      msg_Info() << "EPA photon emission, no separate profile.\n";
       return Transverse_Profile(Transverse_Profile_Type::Gaussian, 0.);
+    }
 
     auto s = ATOOLS::Settings::GetMainSettings()["BEAM_TRANSVERSE_PROFILE"];
-    const size_t index = dir > 0 ? 0 : 1;
-    const auto models = s["TYPE"].SetDefault(Transverse_Profile_Type::Gaussian)
-                            .GetTwoVector<Transverse_Profile_Type>();
+    const auto model = s["TYPE"].SetDefault(Transverse_Profile_Type::Gaussian)
+                           .GetTwoVector<Transverse_Profile_Type>()[index];
+    if (model == Transverse_Profile_Type::WoodsSaxon) {
+      // the density of the nucleus, as in its photon flux and Glauber overlap
+      const Woods_Saxon density = Woods_Saxon::FromSettings(beam, index);
+      const Transverse_Profile profile(density);
+      msg_Info() << model << ", R = " << density.R() * hbarc
+                 << " fm, d = " << density.d() * hbarc
+                 << " fm, transverse RMS radius = " << profile.RMSRadius() * hbarc
+                 << " fm; used only by overlap geometry.\n";
+      return profile;
+    }
+
     s.DeclareVectorSettingsWithEmptyDefault({"RMS_RADIUS"});
     // Allow override of radius
     const bool has_rms = s["RMS_RADIUS"].IsSetExplicitly() ||
@@ -33,10 +49,10 @@ namespace {
         // the radius of an ion is that of a uniform sphere, <s^2> = 2 R^2 / 5,
         // that of other beams an RMS radius, <s^2> = 2 R^2 / 3
         : std::sqrt(beam.IsIon() ? 2. / 5. : 2. / 3.) * beam.Radius();
-    const double skin_fm = models[index] == Transverse_Profile_Type::WoodsSaxon
-        ? s["SKIN_DEPTH"].SetDefault(0.54).GetTwoVector<double>()[index] : 0.;
-    return Transverse_Profile(models[index], rms_fm / ATOOLS::rpa->hBar_c(),
-                              skin_fm / ATOOLS::rpa->hBar_c());
+    msg_Info() << model << ", transverse RMS radius = " << rms_fm << " fm"
+               << (rms_fm == 0. ? " (pointlike)" : "")
+               << "; used only by overlap geometry.\n";
+    return Transverse_Profile(model, rms_fm / hbarc);
   }
 
 } // namespace
@@ -71,21 +87,4 @@ Beam_Base::Beam_Base(beamspectrum _type, const ATOOLS::Flavour& _beam,
   }
   m_bunches.resize(m_Nbunches, m_beam);
   m_vecouts.resize(m_Nbunches, m_lab);
-
-  msg_Info() << "  Beam " << (m_dir > 0 ? 1 : 2)
-             << " transverse profile: ";
-  if (m_type == beamspectrum::EPA) {
-    msg_Info() << "EPA photon emission, no separate profile.\n";
-  } else {
-    msg_Info() << m_transverse_profile.Type()
-               << ", transverse RMS radius = "
-               << m_transverse_profile.RMSRadius() * ATOOLS::rpa->hBar_c()
-               << " fm"
-               << (m_transverse_profile.RMSRadius() == 0. ? " (pointlike)" : "");
-    if (m_transverse_profile.Type() == Transverse_Profile_Type::WoodsSaxon)
-      msg_Info() << ", skin depth = "
-                 << m_transverse_profile.SkinDepth() * ATOOLS::rpa->hBar_c()
-                 << " fm";
-    msg_Info() << "; used only by overlap geometry.\n";
-  }
 }

@@ -83,14 +83,10 @@ Collider_Weight::Collider_Weight(Kinematics_Base* kinematics)
     if (!(b0 == b1))
       THROW(not_implemented,
             "Overlap rejection between different nuclei is not implemented.");
-    // the density of the Woods-Saxon photon flux
-    const auto& epa = ATOOLS::Settings::GetMainSettings()["EPA"];
+    // the density of the nucleus, as in its Woods-Saxon photon flux
     const size_t i = p_beams[0]->Type() == beamspectrum::EPA ? 0 : 1;
     p_rejector = new Nucleus_Nucleus_Rejection(
-        b0, b1,
-        epa["WoodsSaxon_R"].GetTwoVector<double>()[i] / ATOOLS::rpa->hBar_c(),
-        epa["WoodsSaxon_d"].GetTwoVector<double>()[i] / ATOOLS::rpa->hBar_c(),
-        sNN);
+        b0, b1, Woods_Saxon::FromSettings(p_beams[i]->Beam(), i), sNN);
   }
 
   if (p_rejector == nullptr)

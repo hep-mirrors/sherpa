@@ -1,11 +1,14 @@
 #ifndef BEAM_Main_Transverse_Profile_H
 #define BEAM_Main_Transverse_Profile_H
 
+#include "ATOOLS/Math/Lookup_Tables.H"
+
 #include <iosfwd>
-#include <utility>
-#include <vector>
+#include <memory>
 
 namespace BEAM {
+
+  class Woods_Saxon;
 
   enum class Transverse_Profile_Type { Gaussian, UniformSphere, WoodsSaxon };
   std::ostream& operator<<(std::ostream&, Transverse_Profile_Type);
@@ -22,21 +25,21 @@ namespace BEAM {
    */
   class Transverse_Profile {
   private:
-    Transverse_Profile_Type m_type;
-    double m_rms_radius, m_scale, m_skin_depth;
-    // (CDF, s^2 / RMS^2) nodes; empty for analytic or pointlike profiles.
-    std::vector<std::pair<double, double>> m_inverse_cdf;
 
-    void BuildWoodsSaxon();
+    Transverse_Profile_Type m_type;
+    double m_rms_radius, m_scale;
+    // Woods-Saxon only: the radial CDF as a function of s^2
+    std::shared_ptr<const ATOOLS::OneDim_Table> p_cdf;
 
   public:
-    // skin_depth is used only by WoodsSaxon; zero is its hard-sphere limit.
-    Transverse_Profile(Transverse_Profile_Type type, double rms_radius,
-                       double skin_depth = 0.);
+
+    /// Gaussian or projected uniform sphere of the given transverse RMS radius
+    Transverse_Profile(Transverse_Profile_Type type, double rms_radius);
+    /// Transverse projection of a Woods-Saxon density
+    explicit Transverse_Profile(const Woods_Saxon& density);
 
     Transverse_Profile_Type Type() const { return m_type; }
     double RMSRadius() const { return m_rms_radius; }
-    double SkinDepth() const { return m_skin_depth; }
 
     /// Inverse radial CDF; requires a finite coordinate in [0,1).
     double SampleRadius(double u) const;

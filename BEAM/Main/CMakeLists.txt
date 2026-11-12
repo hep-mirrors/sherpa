@@ -1,6 +1,7 @@
 set(BeamMain_SOURCES Beam_Base.C
                  Beam_Rejection.C
                  Transverse_Profile.C
+                 Woods_Saxon.C
                  Beam_Parameters.C
                  Kinematics_Base.C
                  Collider_Kinematics.C
@@ -14,6 +15,7 @@ set(BeamMain_SOURCES Beam_Base.C
 
 set(BeamMain_HEADERS Beam_Base.H
                  Transverse_Profile.H
+                 Woods_Saxon.H
                  Beam_Rejection.H
                  Kinematics_Base.H
                  Collider_Kinematics.H

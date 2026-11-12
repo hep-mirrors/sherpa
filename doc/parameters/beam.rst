@@ -99,7 +99,6 @@ Transverse parton profiles
 .. index:: BEAM_TRANSVERSE_PROFILE
 .. index:: BEAM_TRANSVERSE_PROFILE:TYPE
 .. index:: BEAM_TRANSVERSE_PROFILE:RMS_RADIUS
-.. index:: BEAM_TRANSVERSE_PROFILE:SKIN_DEPTH
 
 ``BEAM_TRANSVERSE_PROFILE`` controls the transverse distribution of partons in
 non-EPA beams when :option:`BEAM_OVERLAP_REJECTION` is enabled. EPA beams retain
@@ -117,18 +116,21 @@ photonuclear calculation:
 
 :option:`TYPE`
   Profile shape: ``Gaussian`` (default), ``UniformSphere`` (the transverse
-  projection of a uniform three-dimensional sphere), or ``WoodsSaxon``.
+  projection of a uniform three-dimensional sphere), or ``WoodsSaxon`` (the
+  transverse projection of the Woods-Saxon density of the nucleus). The
+  Woods-Saxon density is the one of the photon flux and of the optical Glauber
+  overlap, with radius and skin depth set by :option:`WoodsSaxon_R` and
+  :option:`WoodsSaxon_d` in the ``EPA`` block, see :ref:`EPA Parameters`.
+  These take one value or one per beam, and the radius defaults to
+  :math:`1.118\,A^{1/3}` fm of the respective nucleus.
 
 :option:`RMS_RADIUS`
-  Transverse RMS radius in fm. If omitted, it is derived from the beam radius,
-  as :math:`\sqrt{2/5}\,R_{\rm beam}` for ions, whose radius is that of the
-  equivalent uniform sphere, and as :math:`\sqrt{2/3}\,R_{\rm beam}` for other
-  beams, whose radius is an RMS radius. Set it to zero for a pointlike profile.
-
-:option:`SKIN_DEPTH`
-  Woods-Saxon diffuseness in fm (default: ``0.54``). The half-density radius is
-  determined automatically to match ``RMS_RADIUS``. Set the diffuseness to zero
-  for the uniform-sphere limit. Incompatible size and diffuseness are rejected.
+  Transverse RMS radius in fm of the ``Gaussian`` and ``UniformSphere``
+  profiles; it is not used for ``WoodsSaxon``. If omitted, it is derived from
+  the beam radius, as :math:`\sqrt{2/5}\,R_{\rm beam}` for ions, whose radius is
+  that of the equivalent uniform sphere, and as :math:`\sqrt{2/3}\,R_{\rm beam}`
+  for other beams, whose radius is an RMS radius. Set it to zero for a
+  pointlike profile.
 
 Currently, the options are only used in photonuclear jets, i.e. setups including one EPA photon flux with impact parameter and a nuclear PDF.
 
@@ -580,8 +582,10 @@ EPA Parameters
 
 :option:`WoodsSaxon_R`
   Woods-Saxon nuclear radius :math:`R` in fm. Defaults to
-  :math:`1.118\,A^{1/3}` fm, with :math:`A` the nuclear mass number
-  (about ``6.6`` fm for lead).
+  :math:`1.118\,A^{1/3}` fm, with :math:`A` the mass number of the nucleus
+  in the respective beam (about ``6.6`` fm for lead). The same density is used
+  for the ``WoodsSaxon`` parton profile (see :ref:`Beam Transverse Profiles`)
+  and the optical Glauber overlap of :option:`BEAM_OVERLAP_REJECTION`.
 
 :option:`WoodsSaxon_d`
   Woods-Saxon skin depth :math:`d` in fm. Defaults to ``0.54``.

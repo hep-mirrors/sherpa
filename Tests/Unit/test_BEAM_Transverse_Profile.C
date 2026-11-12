@@ -7,6 +7,7 @@
 #include "ATOOLS/Org/Settings.H"
 #include "BEAM/Main/Collider_Weight.H"
 #include "BEAM/Main/Transverse_Profile.H"
+#include "BEAM/Main/Woods_Saxon.H"
 #include "BEAM/Spectra/Monochromatic.H"
 
 #include <algorithm>
@@ -302,7 +303,8 @@ TEST_CASE("Active overlap geometry with unit survival has unit weight",
   for (const std::string& type : {"Gaussian", "UniformSphere", "WoodsSaxon"}) {
     BeamSettings settings(
         "BEAM_OVERLAP_REJECTION: 1\nBEAM_TRANSVERSE_PROFILE:\n"
-        "  TYPE: " + type + "\n  RMS_RADIUS: 2.\n");
+        "  TYPE: " + type + "\n  RMS_RADIUS: 2.\n"
+        "EPA: {WoodsSaxon_R: 2.5}\n");
     // Electron beam radii are zero: the real radius rejector is identically
     // one, even though both transverse sampling distributions are extended.
     GaussianEmitter emitter(Flavour(kf_e), 1.1, 1);
@@ -359,50 +361,64 @@ TEST_CASE("Gaussian sampling and actual overlap weight reproduce the analytic bl
   CHECK(swap_difference == 0.);
 }
 
+TEST_CASE("Woods-Saxon density is normalised and its thickness agrees with quadrature",
+          "[BEAM::Transverse_Profile]")
+{
+  // SciPy quad references, normalised by numerical integration rather than
+  // the closed form, for R = 6.624 fm and d = 0.54 fm (lengths in fm here).
+  const Woods_Saxon density(6.624, .54);
+  const std::pair<double, double> references[] = {
+      {0., .0102119859781409},     {3., .00906512269036842},
+      {6.624, .00229367310099015}, {9., 5.29975814480256e-05},
+      {12., 2.37328464509297e-07}};
+  for (const auto& [s, T] : references) {
+    INFO("s = " << s);
+    CHECK(density.Thickness(s) == Catch::Approx(T).epsilon(1.e-7));
+  }
+  // \int d^2s T(s) = 1
+  const double ds = 1.e-3;
+  double integral = 0.;
+  for (double s = .5 * ds; s < 30.; s += ds)
+    integral += 2. * M_PI * s * ds * density.Thickness(s);
+  CHECK(integral == Catch::Approx(1.).epsilon(1.e-7));
+  // the transverse RMS radius with which the quantiles below were made
+  CHECK(density.TransverseRMSRadius() ==
+        Catch::Approx(4.49856217882625).epsilon(1.e-8));
+}
+
 TEST_CASE("Woods-Saxon projected CDF agrees with independent quadrature",
           "[BEAM::Transverse_Profile]")
 {
-  // SciPy quad/brentq references for rho(r)=1/(1+exp((r-R0)/a)), without
-  // the production core/tail split, radius solve or interpolation table.
-  struct Reference {
-    double rms, skin;
-    std::vector<std::pair<double, double>> quantiles;
-  };
-  const Reference references[] = {
-      {4.49856217882625, .54,
-       {{1.e-6, .00558303047239511}, {.01, .558813293415187},
-        {.1, 1.78235435333479}, {.5, 4.19052915471790},
-        {.9, 6.38138380776849}, {.99, 7.96185754963272},
-        {.9999, 10.6849746183198}, {.999999, 13.3420095719641}}},
-      {1., .3,
-       {{1.e-6, .000929077310520787}, {.01, .0932176610673695},
-        {.1, .302764152311552}, {.5, .787082418393334},
-        {.9, 1.52823364991961}, {.99, 2.39102466382323},
-        {.9999, 3.97626791173109}, {.999999, 5.49218044643381}}}};
-  for (const auto& ref : references) {
-    Transverse_Profile profile(Type::WoodsSaxon, ref.rms, ref.skin);
-    CHECK(profile.Type() == Type::WoodsSaxon);
-    CHECK(profile.SkinDepth() == ref.skin);
-    CHECK(profile.SampleRadius(0.) == 0.);
-    for (const auto& point : ref.quantiles) {
-      const double u = point.first, radius = point.second;
-      INFO("RMS=" << ref.rms << ", skin=" << ref.skin << ", u=" << u);
-      // Bound the CDF error, not the radius error: the inverse is steep in
-      // the dilute tail, so a uniform radius tolerance would be misleading.
-      CHECK(profile.SampleRadius(u - 3.e-8) <= radius);
-      CHECK(profile.SampleRadius(u + 3.e-8) >= radius);
-    }
-    const double edge = profile.SampleRadius(std::nextafter(1., 0.));
-    CHECK(std::isfinite(edge));
-    CHECK(edge > ref.quantiles.back().second);
+  // SciPy quad/brentq quantiles of the projection of the Woods-Saxon density
+  // with R = 6.624 fm and d = 0.54 fm, as {u, s(u)} with s in fm.
+  const std::pair<double, double> quantiles[] = {
+      {1.e-6, .00558303047239511}, {.01, .558813293415187},
+      {.1, 1.78235435333479},      {.5, 4.19052915471790},
+      {.9, 6.38138380776849},      {.99, 7.96185754963272},
+      {.9999, 10.6849746183198},   {.999999, 13.3420095719641}};
+  const Transverse_Profile profile(Woods_Saxon(6.624, .54));
+  CHECK(profile.Type() == Type::WoodsSaxon);
+  CHECK(profile.SampleRadius(0.) == 0.);
+  for (const auto& [u, radius] : quantiles) {
+    INFO("u = " << u);
+    // Bound the CDF error, not the radius error: the inverse is steep in
+    // the dilute tail, so a uniform radius tolerance would be misleading.
+    // The table is accurate to 1e-6, and to a relative 1e-3 in the tails.
+    const double tolerance = std::min(2.e-6, 2.e-3 * std::min(u, 1. - u));
+    CHECK(profile.SampleRadius(u - tolerance) <= radius);
+    CHECK(profile.SampleRadius(u + tolerance) >= radius);
   }
+  const double edge = profile.SampleRadius(std::nextafter(1., 0.));
+  CHECK(std::isfinite(edge));
+  CHECK(edge > quantiles[7].second);
 }
 
-TEST_CASE("Woods-Saxon sampling reproduces the requested RMS and fourth moment",
+TEST_CASE("Woods-Saxon sampling reproduces the RMS radius and fourth moment",
           "[BEAM::Transverse_Profile]")
 {
+  const Transverse_Profile profile(Woods_Saxon(6.624, .54));
   const double rms = 4.49856217882625;
-  Transverse_Profile profile(Type::WoodsSaxon, rms, .54);
+  CHECK(profile.RMSRadius() == Catch::Approx(rms).epsilon(1.e-8));
   const unsigned int n = 200000;
   double second = 0., fourth = 0., previous = 0.;
   bool monotonic = true;
@@ -417,83 +433,93 @@ TEST_CASE("Woods-Saxon sampling reproduces the requested RMS and fourth moment",
   CHECK(second / n == Catch::Approx(rms * rms).epsilon(1.e-5));
   CHECK(fourth / n == Catch::Approx(632.795629221091).epsilon(1.e-4));
 
-  // An ordinary value copy owns an equivalent table, with no shared state.
+  // copies share the immutable table
   const auto copy = profile;
   CHECK(copy.SampleRadius(.73) == profile.SampleRadius(.73));
 }
 
-TEST_CASE("Woods-Saxon has the pointlike and uniform-sphere limits",
+TEST_CASE("Woods-Saxon with a thin skin projects to the uniform sphere",
           "[BEAM::Transverse_Profile]")
 {
-  Transverse_Profile point(Type::WoodsSaxon, 0., .54);
-  Transverse_Profile sharp(Type::WoodsSaxon, 1., 0.);
-  Transverse_Profile thin(Type::WoodsSaxon, 1., 1.e-4);
-  Transverse_Profile sphere(Type::UniformSphere, 1.);
-  for (double u : {0., .1, .5, .9, std::nextafter(1., 0.)}) {
-    CHECK(point.SampleRadius(u) == 0.);
-    CHECK(sharp.SampleRadius(u) == sphere.SampleRadius(u));
-  }
+  // For d = R/100, the quantiles differ from those of the sphere of the same
+  // RMS radius by less than 1e-3.
+  const Transverse_Profile thin(Woods_Saxon(1., .01));
+  const Transverse_Profile sphere(Type::UniformSphere, thin.RMSRadius());
   for (double u : {.1, .5, .9})
-    CHECK(thin.SampleRadius(u) == Catch::Approx(sphere.SampleRadius(u)).epsilon(3.e-6));
+    CHECK(thin.SampleRadius(u) ==
+          Catch::Approx(sphere.SampleRadius(u)).epsilon(1.e-3));
 }
 
-TEST_CASE("Woods-Saxon rejects invalid or incompatible diffuseness",
+TEST_CASE("Woods-Saxon rejects invalid parameters",
           "[BEAM::Transverse_Profile]")
 {
   Test_Setup::InitGlobals();
-  for (double bad : {-1., std::numeric_limits<double>::infinity(),
-                     std::numeric_limits<double>::quiet_NaN()})
-    CHECK_THROWS(Transverse_Profile(Type::WoodsSaxon, 4.5, bad));
-  CHECK_THROWS(Transverse_Profile(Type::WoodsSaxon, 1., .35));
-  CHECK_THROWS(Transverse_Profile(Type::WoodsSaxon, 1., 1.));
-  CHECK_THROWS(Transverse_Profile(Type::WoodsSaxon, 1.e-300, 1.e300));
-  // R0=0 is a valid limiting profile: a/RMS=sqrt(zeta(3)/(10*zeta(5))).
-  CHECK_NOTHROW(Transverse_Profile(Type::WoodsSaxon, 1., .34047737955445977478));
-}
-
-TEST_CASE("Woods-Saxon beam settings keep the common RMS convention and units",
-          "[BEAM::Transverse_Profile]")
-{
-  BeamSettings settings(
-      "BEAM_TRANSVERSE_PROFILE:\n"
-      "  TYPE: [Gaussian, WoodsSaxon]\n"
-      "  RMS_RADIUS: [0, 4.5]\n");
-  Monochromatic target(Flavour(kf_p_plus), 100., 0., -1);
-  CHECK(target.TransverseProfile().Type() == Type::WoodsSaxon);
-  CHECK(target.TransverseProfile().RMSRadius() == Catch::Approx(4.5 / rpa->hBar_c()));
-  CHECK(target.TransverseProfile().SkinDepth() == Catch::Approx(.54 / rpa->hBar_c()));
-  Transverse_Profile reference(Type::WoodsSaxon, 4.5, .54);
-  target.SetERan(.8);
-  CHECK(target.ImpactParameter() * rpa->hBar_c() ==
-        Catch::Approx(reference.SampleRadius(.8)).epsilon(1.e-7));
-  std::unique_ptr<Beam_Base> copy(target.Copy());
-  copy->SetERan(.8);
-  CHECK(copy->ImpactParameter() == target.ImpactParameter());
-}
-
-TEST_CASE("Woods-Saxon skin depth broadcasts and accepts per-beam overrides",
-          "[BEAM::Transverse_Profile]")
-{
-  BeamSettings settings(
-      "BEAM_TRANSVERSE_PROFILE: {TYPE: WoodsSaxon, RMS_RADIUS: 4.5}\n");
-  SECTION("per-beam overrides") {
-    Settings::GetMainSettings()["BEAM_TRANSVERSE_PROFILE"]["SKIN_DEPTH"]
-        .OverrideVector(std::vector<double>{.4, .6});
-    Monochromatic first(Flavour(kf_p_plus), 100., 0., 1);
-    Monochromatic second(Flavour(kf_p_plus), 100., 0., -1);
-    CHECK(first.TransverseProfile().SkinDepth() == Catch::Approx(.4 / rpa->hBar_c()));
-    CHECK(second.TransverseProfile().SkinDepth() == Catch::Approx(.6 / rpa->hBar_c()));
+  for (double bad : {0., -1., std::numeric_limits<double>::infinity(),
+                     std::numeric_limits<double>::quiet_NaN()}) {
+    CHECK_THROWS(Woods_Saxon(bad, .54));
+    CHECK_THROWS(Woods_Saxon(6.6, bad));
   }
-  SECTION("scalar zero gives the analytic sphere limit on both beams") {
-    Settings::GetMainSettings()["BEAM_TRANSVERSE_PROFILE"]["SKIN_DEPTH"]
-        .OverrideVector(std::vector<double>{0.});
-    const Transverse_Profile sphere(Type::UniformSphere, 4.5 / rpa->hBar_c());
+  // its profile is made from the density, not from an RMS radius
+  CHECK_THROWS(Transverse_Profile(Type::WoodsSaxon, 4.5));
+}
+
+TEST_CASE("Woods-Saxon profiles use the EPA density of their nucleus",
+          "[BEAM::Transverse_Profile]")
+{
+  const auto Pb208 = [] {
+    if (s_kftable.find(kf_lead208) == s_kftable.end())
+      AddParticle(kf_lead208, 193.75, 5.5012, 0., 246, 0, true, 1, "Pb208", "Pb208");
+    return Flavour(kf_lead208);
+  };
+  SECTION("per-beam values in fm") {
+    BeamSettings settings(
+        "BEAM_TRANSVERSE_PROFILE: {TYPE: [Gaussian, WoodsSaxon]}\n"
+        "EPA: {WoodsSaxon_R: [6.0, 6.624], WoodsSaxon_d: 0.54}\n");
+    Monochromatic target(Pb208(), 100., 0., -1);
+    const Transverse_Profile reference(
+        Woods_Saxon(6.624 / rpa->hBar_c(), .54 / rpa->hBar_c()));
+    CHECK(target.TransverseProfile().Type() == Type::WoodsSaxon);
+    CHECK(target.TransverseProfile().RMSRadius() * rpa->hBar_c() ==
+          Catch::Approx(4.49856217882625).epsilon(1.e-8));
+    target.SetERan(.8);
+    CHECK(target.ImpactParameter() == reference.SampleRadius(.8));
+    std::unique_ptr<Beam_Base> copy(target.Copy());
+    copy->SetERan(.8);
+    CHECK(copy->ImpactParameter() == target.ImpactParameter());
+  }
+  SECTION("programmatic overrides") {
+    BeamSettings settings("BEAM_TRANSVERSE_PROFILE: {TYPE: WoodsSaxon}\n");
+    Settings::GetMainSettings()["EPA"]["WoodsSaxon_R"].OverrideVector(
+        std::vector<double>{6., 7.});
+    Settings::GetMainSettings()["EPA"]["WoodsSaxon_d"].OverrideVector(
+        std::vector<double>{.4, .6});
     for (int dir : {1, -1}) {
-      Monochromatic beam(Flavour(kf_p_plus), 100., 0., dir);
-      beam.SetERan(.6);
-      CHECK(beam.TransverseProfile().SkinDepth() == 0.);
-      CHECK(beam.ImpactParameter() == sphere.SampleRadius(.6));
+      Monochromatic beam(Pb208(), 100., 0., dir);
+      const Woods_Saxon expected((dir > 0 ? 6. : 7.) / rpa->hBar_c(),
+                                 (dir > 0 ? .4 : .6) / rpa->hBar_c());
+      CHECK(beam.TransverseProfile().RMSRadius() ==
+            Catch::Approx(expected.TransverseRMSRadius()));
     }
+  }
+  SECTION("the default radius follows the nucleus, not the other beam") {
+    // The proton EPA beam must not fix the radius of the lead target.
+    BeamSettings settings(
+        "EPA: {Form_Factor: Point-like, xBins: 4, bBins: 5, CacheTables: false}\n"
+        "BEAM_TRANSVERSE_PROFILE: {TYPE: WoodsSaxon}\n");
+    Settings::GetMainSettings()["GENERATE_RESULT_DIRECTORY"].SetDefault(false);
+    Settings::GetMainSettings()["RESULT_DIRECTORY"].SetDefault("");
+    EPA emitter(Flavour(kf_p_plus), 100., 0., 1);
+    Monochromatic target(Pb208(), 100., 0., -1);
+    const Woods_Saxon expected(1.118 * std::cbrt(208.) / rpa->hBar_c(),
+                               .54 / rpa->hBar_c());
+    CHECK(target.TransverseProfile().RMSRadius() ==
+          Catch::Approx(expected.TransverseRMSRadius()));
+    CHECK(expected.TransverseRMSRadius() * rpa->hBar_c() ==
+          Catch::Approx(4.5).epsilon(1.e-2));
+  }
+  SECTION("beams other than ions need an explicit radius") {
+    BeamSettings settings("BEAM_TRANSVERSE_PROFILE: {TYPE: WoodsSaxon}\n");
+    CHECK_THROWS(Monochromatic(Flavour(kf_p_plus), 100., 0., 1));
   }
 }
 
@@ -502,7 +528,8 @@ TEST_CASE("Woods-Saxon overlap agrees with independent spatial integration",
 {
   BeamSettings settings(
       "BEAM_OVERLAP_REJECTION: 1\n"
-      "BEAM_TRANSVERSE_PROFILE: {TYPE: WoodsSaxon, RMS_RADIUS: 4.491711}\n");
+      "BEAM_TRANSVERSE_PROFILE: {TYPE: WoodsSaxon}\n"
+      "EPA: {WoodsSaxon_R: 6.61236651205933, WoodsSaxon_d: 0.54}\n");
   if (s_kftable.find(kf_lead208) == s_kftable.end())
     AddParticle(kf_lead208, 193.75, 5.5012, 0., 246, 0, true, 1, "Pb208", "Pb208");
   GaussianEmitter emitter(Flavour(kf_lead208), 8., 1);
@@ -542,7 +569,8 @@ TEST_CASE("Optical Glauber overlap agrees with independent integration",
     AddParticle(kf_lead208, 193.75, 5.5012, 0., 246, 0, true, 1, "Pb208", "Pb208");
   const Flavour pb(kf_lead208);
   const double hbarc = rpa->hBar_c(), sNN = sqr(5020.);
-  Nucleus_Nucleus_Rejection rejector(pb, pb, 6.62 / hbarc, .546 / hbarc, sNN);
+  Nucleus_Nucleus_Rejection rejector(pb, pb, Woods_Saxon(6.62 / hbarc, .546 / hbarc),
+                                     sNN);
 
   // T_AA in 1/fm^2 from brute-force polar integration of the same density
   const std::vector<std::pair<double, double>> reference = {
@@ -589,7 +617,7 @@ TEST_CASE("Identical nuclei use the optical Glauber overlap as event weight",
   // the default density of the Woods-Saxon flux, whichever form factor is used
   const double hbarc = rpa->hBar_c();
   Nucleus_Nucleus_Rejection rejector(
-      pb, pb, 1.118 * std::cbrt(208.) / hbarc, .54 / hbarc,
+      pb, pb, Woods_Saxon(1.118 * std::cbrt(208.) / hbarc, .54 / hbarc),
       (emitter.InMomentum() + target.InMomentum()).Abs2());
   bool transition = false;
   for (int i = 1; i < 100; ++i) {

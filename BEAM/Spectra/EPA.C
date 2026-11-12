@@ -196,9 +196,8 @@ void EPA::RegisterDefaults() const
   s["MagneticMu"].SetDefault(m_beam.IsNucleon() ? 2.79 : 0.);
   s["Q02"].SetDefault(
       m_beam.IsNucleon() ? 0.71 : sqr(2. / m_beam.Radius() * rpa->hBar_c()));
-  s["WoodsSaxon_R"].SetDefault(1.118 *
-                               std::pow(m_beam.GetMassNumber(), 1. / 3.));
-  s["WoodsSaxon_d"].SetDefault(0.54);
+  // WoodsSaxon_R and WoodsSaxon_d: see Woods_Saxon::FromSettings, which also
+  // serves the parton profile and the Glauber overlap of the nucleus.
   // r-grid for the Filon form-factor transform: r_max = R_WS + rMaxFactor*d,
   // with rNodes integration intervals (only needs to resolve the density).
   s["WoodsSaxon_rNodes"].SetDefault(1024);

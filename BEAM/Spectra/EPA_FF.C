@@ -11,6 +11,7 @@
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Org/Settings.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+#include "BEAM/Main/Woods_Saxon.H"
 
 #include <cmath>
 #include <fstream>
@@ -549,8 +550,11 @@ EPA_WoodsSaxon::EPA_WoodsSaxon(const ATOOLS::Flavour& beam, const int dir,
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t b = dir > 0 ? 0 : 1;
-  m_R_WS = s["WoodsSaxon_R"].GetTwoVector<double>()[b] / rpa->hBar_c();
-  m_d = s["WoodsSaxon_d"].GetTwoVector<double>()[b] / rpa->hBar_c();
+  if (!m_beam.IsIon())
+    THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
+  const Woods_Saxon density = Woods_Saxon::FromSettings(m_beam, b);
+  m_R_WS = density.R();
+  m_d = density.d();
   // Validate before the int->size_t assignment: a negative rNodes would wrap to
   // a huge size_t and make InitFFTable attempt a runaway allocation.
   const int rnodes = s["WoodsSaxon_rNodes"].GetTwoVector<int>()[b];
@@ -560,8 +564,6 @@ EPA_WoodsSaxon::EPA_WoodsSaxon(const ATOOLS::Flavour& beam, const int dir,
   m_rmaxfactor = s["WoodsSaxon_rMaxFactor"].GetTwoVector<double>()[b];
   if (m_rmaxfactor <= 0.)
     THROW(invalid_input, "EPA WoodsSaxon_rMaxFactor must be > 0.");
-  if (!m_beam.IsIon())
-    THROW(fatal_error, "Wrong form factor for " + m_beam.IDName());
 
   // Try the N(x,b) cache first: on a hit the (expensive) form-factor table and
   // the density are never needed at run time and are skipped entirely. On a
@@ -645,7 +647,7 @@ EPA_WoodsSaxonApprox::EPA_WoodsSaxonApprox(const ATOOLS::Flavour& beam,
 {
   const auto& s = Settings::GetMainSettings()["EPA"];
   size_t b = dir > 0 ? 0 : 1;
-  m_R_WS = s["WoodsSaxon_R"].GetTwoVector<double>()[b] / rpa->hBar_c();
+  m_R_WS = Woods_Saxon::FromSettings(m_beam, b).R();
   m_a = s["WoodsSaxonApprox_a"].GetTwoVector<double>()[b] / rpa->hBar_c();
 
   BuildNxbTable();

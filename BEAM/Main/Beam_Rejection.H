@@ -6,6 +6,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "BEAM/Main/Woods_Saxon.H"
 #include <cmath>
 
 namespace BEAM {
@@ -80,8 +81,8 @@ namespace BEAM {
   //   P(b) = exp[-sigma_NN T_AA(b)],
   //   T_AA(b) = \int d^2s T_A(s) T_A(|b - s|),
   //   T_A(s) = \int dz rho(sqrt(s^2 + z^2)),
-  // with rho the Woods-Saxon density of radius R and skin depth d (in 1/GeV),
-  // normalised to A, and sigma_NN following from sNN (in GeV^2).
+  // with rho the Woods-Saxon density normalised to A, and sigma_NN following
+  // from sNN (in GeV^2).
   class Nucleus_Nucleus_Rejection: public Beam_Rejection_Base {
   private:
 
@@ -92,8 +93,8 @@ namespace BEAM {
   public:
 
     Nucleus_Nucleus_Rejection(const ATOOLS::Flavour& flav1,
-                              const ATOOLS::Flavour& flav2, double R, double d,
-                              double sNN);
+                              const ATOOLS::Flavour& flav2,
+                              const Woods_Saxon& density, double sNN);
     double TAA(double b) const
     {
       return b < m_bmax ? std::exp(m_lnTAA(b)) : 0.;
