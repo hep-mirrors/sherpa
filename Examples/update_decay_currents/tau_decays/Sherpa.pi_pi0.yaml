@@ -16,15 +16,24 @@
 #
 # Currents:     J1 = VA_F_F (tau- -> nu_tau), J2 = VA_0_PiPi
 # Form factor:  FF_0_PP, mode pipi_plus
-# Selected:     FORM_FACTOR: 20 (RChiPT), the model the decay table uses:
-#               genuine: RChiPT (Guerrero-Pich).
+# Selected:     FORM_FACTOR: 11 (GS) with Belle's own fit, the model the
+#               decay table uses: Fujikawa et al. [Belle], PRD 78 (2008)
+#               072006, Table VII (|F_pi(0)|^2 fixed to 1).  The PS_* keys in
+#               the J2 block are that fit: rho, rho', rho'' with their fitted
+#               masses, widths and complex weights, each a Gounaris-Sakurai
+#               line shape.  They are identical to this channel's
+#               Decaydata.yaml entry and to METOOLS/HadronCurrents/
+#               ParameterSets/Belle2008_Fujikawa.yaml.  A card that restates
+#               Currents replaces the table's, so keep them as a set: without
+#               them, 11 is a placeholder (KS weights) that describes no data.
 #
 # Other FORM_FACTOR models for this channel:
 #   0  None        identically zero (also what an omitted FORM_FACTOR gives)
 #   1  Point       F = 1: no dynamics and no CKM/isospin normalisation
 #   10 KS          genuine: KS rho tower (FM95)
-#   11 GS          genuine: Gounaris-Sakurai tower (its weights are still the KS values)
 #   12 KS_CLEO     no own implementation: falls back to 10
+#   20 RChiPT      genuine: RChiPT (Guerrero-Pich), the previous default;
+#                  overshoots the data above m(pi pi0) = 1.2 GeV
 #   21 RChL2012    genuine: RChL2012
 #   22 combRChL    not implemented: error message every call, then a constant
 #
@@ -59,7 +68,30 @@ HADRON_DECAYS:
         Currents:
           Exchange:
           - J1: {Type: VA_F_F, Indices: [3, 0], v: 1.0, a: -1.0}
-            J2: {Type: VA_0_PiPi, Indices: [2, 1], FORM_FACTOR: 20}
+            J2:
+              Type: VA_0_PiPi
+              Indices: [2, 1]
+              FORM_FACTOR: 11
+              PS_npoles: 3
+              PS_lineshape: 1
+              PS_M_0: 0.7746
+              PS_G_0: 0.1481
+              PS_wre_0: 1.0
+              PS_wim_0: 0.0
+              PS_knum_0: 0
+              PS_knorm_0: 0
+              PS_M_1: 1.446
+              PS_G_1: 0.434
+              PS_wre_1: -0.1390775782
+              PS_wim_1: -0.056190989
+              PS_knum_1: 0
+              PS_knorm_1: 0
+              PS_M_2: 1.728
+              PS_G_2: 0.164
+              PS_wre_2: 0.0338011819
+              PS_wim_2: 0.0150492558
+              PS_knum_2: 0
+              PS_knorm_2: 0
 
 # Rivet comparison. --ignore-beams: the analyses look for tau decays and
 # do not care that there is no collider event around them.

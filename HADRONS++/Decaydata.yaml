@@ -269,14 +269,28 @@ HADRON_DECAYS:
     #         (rho(1700) weight). Also used, by design, by the pi eta/
     #         pi eta' entries further below (EGSR16: literally the same
     #         normalized rho tower, not just a similar one).
-    #   11 = GS: Gounaris-Sakurai propagator variant of the same tower
-    #         (no separate named parameters - shares the KS ones above).
+    #   11 = GS: Gounaris-Sakurai rho tower.  With the PS_* keys below it
+    #         is Belle's own fit to its tau -> pi- pi0 nu spectrum
+    #         (Fujikawa et al., PRD 78 (2008) 072006, arXiv:0805.3773,
+    #         Table VII, the column with |F_pi(0)|^2 fixed to 1): rho,
+    #         rho', rho'' with their fitted masses, widths and complex
+    #         weights, each a Gounaris-Sakurai line shape with its own
+    #         width (Fitted_VPP_Propagator).  The same numbers are in
+    #         METOOLS/HadronCurrents/ParameterSets/Belle2008_Fujikawa.yaml;
+    #         apply them as a set or not at all.  WITHOUT the PS_* keys,
+    #         11 is a placeholder (registry poles with the KS weights) and
+    #         describes no data.
     #   20 = RChiPT: Guerrero-Pich-style 3-resonance chiral-loop-
     #         unitarized form. gammaMag_pipi2_200/gammaPhase_pipi2_200,
-    #         deltaMag_pipi2_200/deltaPhase_pipi2_200.
+    #         deltaMag_pipi2_200/deltaPhase_pipi2_200 (defaults -0.15,
+    #         -0.36, 0.12, -0.02).
     #   21 = RChL2012: full Resonance Chiral Lagrangian current.
+    # The entry below runs 11 with Belle's fit: shape chi2/bin 1.2 against
+    # Belle 2008, 1.1 against CLEO 1999 and 1.9 against ALEPH 2014
+    # (diagonal errors), against 29, 16 and 5 for 20, which overshoots
+    # above m(pi pi0) = 1.2 GeV by 35% to a factor 3.
     # Reference: FM95 (hep-ph/9503474) for KS/GS; Guerrero-Pich for
-    # RChiPT; RChL2012 as cited in FF_0_PP.C.
+    # RChiPT; RChL2012 as cited in FF_0_PP.C; Belle 2008 for the fit.
     ######################################################
       -211,111,16:
         BR: [0.0, 0.0] # [0.255, 0.255]
@@ -291,15 +305,34 @@ HADRON_DECAYS:
               Type: VA_0_PiPi
               Indices: [2, 1]
               RUNNING_WIDTH: 1
-              FORM_FACTOR: 20
-              gammaMag_pipi2_200: -0.15
-              gammaPhase_pipi2_200: -0.36
-              deltaMag_pipi2_200: 0.12
-              deltaPhase_pipi2_200: -0.02
+              FORM_FACTOR: 11
+              # Belle 2008 fit: pole i = 0, 1, 2 is rho, rho', rho''.
+              # M, G in GeV; w = complex weight; PS_lineshape 1 = GS;
+              # PS_knum/PS_knorm 0 = pi+- pi0 pair in k(s) and k(M^2).
+              PS_npoles: 3
+              PS_lineshape: 1
+              PS_M_0: 0.7746
+              PS_G_0: 0.1481
+              PS_wre_0: 1.0
+              PS_wim_0: 0.0
+              PS_knum_0: 0
+              PS_knorm_0: 0
+              PS_M_1: 1.446
+              PS_G_1: 0.434
+              PS_wre_1: -0.1390775782
+              PS_wim_1: -0.056190989
+              PS_knum_1: 0
+              PS_knorm_1: 0
+              PS_M_2: 1.728
+              PS_G_2: 0.164
+              PS_wre_2: 0.0338011819
+              PS_wim_2: 0.0150492558
+              PS_knum_2: 0
+              PS_knorm_2: 0
         PhaseSpace:
           - Dalitz_rho(770)+_12:
               Weight: 1.0
-        IntResults: [5.7692e-13, 5.7494e-16, 5.8128e-12]
+        IntResults: [5.58247e-13, 5.56549e-16, 5.8128e-12]
 
     ##### K pi (three physical final states: K^-pi^0, K0bar pi^- via
     #####       K_S and K_L) #####
@@ -914,7 +947,7 @@ HADRON_DECAYS:
     #         K-pi+pi- entry above) - active choice here.
     # Reference: FM95 (hep-ph/9503474), row 8.
     #
-        IntResults: [9.9123e-15, 9.9089e-18, 2.388e-12]
+        IntResults: [6.90732e-15, 6.90665e-18, 2.388e-12]
       310,-211,111,16:
         BR: [0.0, 0.0] # [0.00185, 0.00185]
         Currents:
