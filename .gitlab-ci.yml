@@ -30,19 +30,19 @@ variables:
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
-      
+
     # Draft OR Ready MR:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
     # not needed bc feature branch pipelines are not allowed
     # # If this branch already has an MR, suppress the ordinary push pipeline.
-    # - if:  $CI_COMMIT_BRANCH &&  $CI_OPEN_MERGE_REQUESTS 
+    # - if:  $CI_COMMIT_BRANCH &&  $CI_OPEN_MERGE_REQUESTS
     #   when: never
 
     # only run branch pipelines on master
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
-    # Everything else is disabled 
+    # Everything else is disabled
     - when: never
 
 ############################################################################
@@ -81,19 +81,19 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "schedule"
   script:
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile CI/$OS/Dockerfile$FREL --destination $CI_REGISTRY_IMAGE:${OS}_$FREL 
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile CI/$OS/Dockerfile$FREL --destination $CI_REGISTRY_IMAGE:${OS}_$FREL
   variables:
     GIT_DEPTH: "1"
   retry: 2
 
-  
+
 # jobs for different OS:
 # PROBLEM: fedora always builds version 42 in current setup
 # FIX: 1 Dockerfile for each version to unify the procedure across different OS
 
 build_image_Fedora44:
-  rules: 
-    - if: $CI_COMMIT_MESSAGE =~ /fedora43/i
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /fedora44/i
     - !reference [.build_docker_image, rules]
   variables:
     OS: Fedora
@@ -101,8 +101,8 @@ build_image_Fedora44:
   extends: .build_docker_image
 
 build_image_Fedora43:
-  rules: 
-    - if: $CI_COMMIT_MESSAGE =~ /fedora44/i
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /fedora43/i
     - !reference [.build_docker_image, rules]
   variables:
     OS: Fedora
@@ -110,7 +110,7 @@ build_image_Fedora43:
   extends: .build_docker_image
 
 build_image_CentOS9:
-  rules: 
+  rules:
     - if: $CI_COMMIT_MESSAGE =~ /centos/i
     - !reference [.build_docker_image, rules]
   variables:
@@ -119,7 +119,7 @@ build_image_CentOS9:
   extends: .build_docker_image
 
 build_image_Archlinux0:
-  rules: 
+  rules:
     - if: $CI_COMMIT_MESSAGE =~ /archlinux/i
     - !reference [.build_docker_image, rules]
   variables:
@@ -229,7 +229,7 @@ build_image_Archlinux0:
         - cmake-$TOOLSET-cache-$FREL/
       policy: pull-push
       when: on_success
-    
+
 # Main branch jobs use pull-push policy
 Fedora43-make-ccache-GNU:
   variables:
@@ -238,7 +238,7 @@ Fedora43-make-ccache-GNU:
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
-  extends: 
+  extends:
     - .any-cmake-ccache-main
     - .master-build-rules
 
@@ -250,7 +250,7 @@ Fedora43-make-ccache-GNU-feature:
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
-  extends: 
+  extends:
     - .any-cmake-ccache
     - .feature-build-rules
 
@@ -261,7 +261,7 @@ Fedora44-make-ccache-GNU:
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
-  extends: 
+  extends:
     - .any-cmake-ccache-main
     - .master-build-rules
 
@@ -272,7 +272,7 @@ Fedora44-make-ccache-GNU-feature:
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
-  extends: 
+  extends:
     - .any-cmake-ccache
     - .feature-build-rules
 
@@ -282,7 +282,7 @@ Fedora44-ninja-ccache-GNU:
     FREL: 44
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS -GNinja
-  extends: 
+  extends:
     - .any-cmake-ccache-main
     - .master-build-rules
 
@@ -292,7 +292,7 @@ Fedora44-ninja-ccache-GNU-feature:
     FREL: 44
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS -GNinja
-  extends: 
+  extends:
     - .any-cmake-ccache
     - .feature-build-rules
 
@@ -303,7 +303,7 @@ Fedora44-make-ccache-LLVM:
     TOOLSET: LLVM
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
-  extends: 
+  extends:
     - .any-cmake-ccache-main
     - .master-build-rules
 
@@ -314,7 +314,7 @@ Fedora44-make-ccache-LLVM-feature:
     TOOLSET: LLVM
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS
     BUILDDOCS: 1
-  extends: 
+  extends:
     - .any-cmake-ccache
     - .feature-build-rules
 
@@ -324,7 +324,7 @@ Fedora44-make-ccache-GNU-mpi:
     FREL: 44
     TOOLSET: GNUMPI
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS -DSHERPA_ENABLE_MPI:BOOL=ON
-  extends: 
+  extends:
     - .any-cmake-ccache
     - .feature-build-rules
 
@@ -335,7 +335,7 @@ CentOS9-make-ccache-GNU:
     FREL: 9
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS
-  extends: 
+  extends:
     - .any-cmake-ccache-main
     - .master-build-rules
 
@@ -346,7 +346,7 @@ CentOS9-make-ccache-GNU-feature:
     FREL: 9
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS
-  extends: 
+  extends:
     - .any-cmake-ccache
     - .feature-build-rules
 
@@ -357,7 +357,7 @@ Archlinux0-make-ccache-GNU:
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $CATCH2_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS -DSHERPA_ENABLE_INSTALL_LHAPDF=ON
     BUILDDOCS: 1
-  extends: 
+  extends:
     - .any-cmake-ccache-main
     - .master-build-rules
 
@@ -368,7 +368,7 @@ Archlinux0-make-ccache-GNU-feature:
     TOOLSET: GNU
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $CATCH2_CMAKE_FLAGS $DOXYGEN_CMAKE_FLAGS -DSHERPA_ENABLE_INSTALL_LHAPDF=ON
     BUILDDOCS: 1
-  extends: 
+  extends:
     - .any-cmake-ccache
     - .feature-build-rules
 
