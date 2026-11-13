@@ -164,6 +164,8 @@ void Exchange_ME::AddExchange(const Diagram & d)
   x.p_j2   = MakeCurrent(j2,i2,exboson);
   PassVA(x.p_j1,j1,bos,contact,m_line1);
   PassVA(x.p_j2,j2,bos,contact,m_line2);
+  // Short-distance electroweak correction, on the rate: see ShortDistanceEW.
+  g *= sqrt(ShortDistanceEW(e,contact,bos,x.p_j1,x.p_j2));
   x.m_g  = g;
   x.m_M2 = contact ? 0. : sqr(bos.Mass());
   x.m_i1 = i1;
@@ -220,6 +222,59 @@ void Exchange_ME::PassVA(Current_Base * c,Scoped_Settings J,
   GeneralModel m;
   m["v"] = v; m["a"] = a;
   c->SetModelParameters(m);
+}
+
+bool Exchange_ME::IsLeptonLine(const Current_Base * c,
+                               const vector<int> & line) const
+{
+  if (!c->UsesVA()) return false;
+  for (size_t j(0);j<line.size();++j)
+    if (!m_flavs[line[j]].IsLepton()) return false;
+  return true;
+}
+
+// S_EW, the short-distance electroweak correction to semileptonic weak
+// decays (Sirlin, Nucl.Phys.B196 (1982) 83; Marciano and Sirlin, PRL 61
+// (1988) 1815).  G_F is defined by muon decay, which absorbs the electroweak
+// loops it shares with every other charged-current process.  A process with
+// QUARKS on one side keeps an extra piece -- photon and Z exchange between
+// the quark and the lepton currents at virtualities between the hadronic
+// scale and M_Z -- which leaves the uncancelled large logarithm
+//     S_EW ~ 1 + (2 alpha/pi) ln(M_Z/mu) + ...
+// It multiplies the whole rate, independently of the hadronic invariant
+// masses, so it moves widths and never shapes.  Long-distance QED
+// corrections (G_EM(s) for tau -> pi pi nu) are a separate, channel-
+// dependent effect and are NOT included here.
+//
+// Applied to an exchange that is
+//   - charged-current: a contact term (a W in disguise) or a W, and
+//   - between exactly ONE pointlike lepton line and a hadronic current.
+// So tau -> e nu nu (two lepton lines), e+e- -> hadrons (photon) and
+// nonleptonic decays (no lepton line) never get it.
+//
+// The value:
+//   - an S_EW key in the exchange's own block wins, for any process;
+//   - otherwise, for the decay of a LEPTON (the tau), HADRON_DECAYS:S_EW,
+//     default 1.0201: Marciano-Sirlin with the leading logarithms resummed,
+//     as updated by Erler (Rev.Mex.Fis. 50 (2004) 200) for mu = m_tau.  Set
+//     it to 1 to switch the correction off;
+//   - otherwise 1.  S_EW depends on the decaying particle's mass through
+//     ln(M_Z/mu) (about 1.023 for K and pi, 1.013 for B), and the form
+//     factors and decay constants of semileptonic HADRON decays are often
+//     extracted with their own convention for it already folded in, so it is
+//     a per-channel choice there, made with the S_EW key.
+double Exchange_ME::ShortDistanceEW(Scoped_Settings & e,const bool contact,
+                                    const Flavour & bos,
+                                    const Current_Base * c1,
+                                    const Current_Base * c2) const
+{
+  if (HasKey(e,"S_EW")) return e["S_EW"].GetScalarWithOtherDefault<double>(1.);
+  const bool charged = contact || bos.Kfcode()==kf_Wplus;
+  const bool l1 = IsLeptonLine(c1,m_line1), l2 = IsLeptonLine(c2,m_line2);
+  if (!charged || l1==l2) return 1.;
+  if (m_nin!=1 || !m_flavs[0].IsLepton()) return 1.;
+  return Settings::GetMainSettings()["HADRON_DECAYS"]["S_EW"]
+    .SetDefault(1.0201).Get<double>();
 }
 
 bool Exchange_ME::IsPhotonLeg(const int i) const

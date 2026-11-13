@@ -116,6 +116,16 @@ namespace METOOLS {
     void PassVA(Current_Base * c,ATOOLS::Scoped_Settings J,
                 const ATOOLS::Flavour & bos,const bool contact,
                 const std::vector<int> & line);
+    /// Whether this current is a pointlike LEPTON line: a fermion-line
+    /// current (UsesVA) all of whose legs are leptons.
+    bool IsLeptonLine(const Current_Base * c,
+                      const std::vector<int> & line) const;
+    /// The short-distance electroweak factor S_EW on the RATE of one
+    /// exchange (the amplitude takes its square root). See the definition.
+    double ShortDistanceEW(ATOOLS::Scoped_Settings & e,const bool contact,
+                           const ATOOLS::Flavour & bos,
+                           const Current_Base * c1,
+                           const Current_Base * c2) const;
 
     bool IsPhotonLeg(const int i) const;
     std::vector<int> StripPhotons(const std::vector<int> & idx) const;

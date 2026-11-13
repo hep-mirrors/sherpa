@@ -98,6 +98,15 @@ HADRON_DECAYS:
 
     15:
     ######################################################
+    # tau-: every hadronic width below includes the short-distance
+    # electroweak correction S_EW = 1.0201 (Marciano-Sirlin, resummed;
+    # Erler 2004), applied by METOOLS Exchange_ME to a charged-current
+    # exchange between the tau's lepton line and a hadronic current.  Set
+    # HADRON_DECAYS: {S_EW: 1} to switch it off.  The leptonic modes do not
+    # take it.  The IntResults widths are these integrated widths; the
+    # generated branching ratios are the BR entries, not the widths.
+    ######################################################
+    ######################################################
     # Leptonic decays
     ######################################################
     #
@@ -120,7 +129,7 @@ HADRON_DECAYS:
         PhaseSpace:
           - Dalitz_W_23:
               Weight: 1.0
-        IntResults: [4.0482e-13, 4.0439e-16, 4.3169e-12]
+        IntResults: [4.04821e-13, 4.04387e-16, 4.3169e-12]
 
     ######################################################
     # tau- -> nu_tau mu- nubar_mu
@@ -142,7 +151,7 @@ HADRON_DECAYS:
         PhaseSpace:
           - Dalitz_W_23:
               Weight: 1.0
-        IntResults: [3.9395e-13, 3.9328e-16, 3.7839e-12]
+        IntResults: [3.93948e-13, 3.93275e-16, 3.78391e-12]
 
     ######################################################
     # One pseudoscalar
@@ -167,6 +176,7 @@ HADRON_DECAYS:
             J2:
               Type: VA_0_P
               Indices: [1]
+        IntResults: [2.46727e-13, 0, 8.76866e-13]
 
       -321,16:
         BR: [0.0, 0.0] # [0.00696, 0.00696]
@@ -180,6 +190,7 @@ HADRON_DECAYS:
             J2:
               Type: VA_0_P
               Indices: [1]
+        IntResults: [1.63766e-14, 0, 5.82026e-14]
 
     ######################################################
     # Two pseudoscalars
@@ -332,7 +343,7 @@ HADRON_DECAYS:
         PhaseSpace:
           - Dalitz_rho(770)+_12:
               Weight: 1.0
-        IntResults: [5.58247e-13, 5.56549e-16, 5.8128e-12]
+        IntResults: [5.69042e-13, 5.68304e-16, 5.8128e-12]
 
     ##### K pi (three physical final states: K^-pi^0, K0bar pi^- via
     #####       K_S and K_L) #####
@@ -380,7 +391,7 @@ HADRON_DECAYS:
               FORM_FACTOR: 10
               gammaMag_Kpi_100: -0.135
               gammaPhase_Kpi_100: 0.
-        IntResults: [1.0953e-14, 1.0953e-17, 9.2621e-13]
+        IntResults: [1.11598e-14, 1.11591e-17, 9.44826e-13]
 
     #
     # tau- -> nu_tau K_S pi- (Kpi_plus via K_S) - see the K pi note above.
@@ -421,7 +432,7 @@ HADRON_DECAYS:
               FORM_FACTOR: 10
               gammaMag_Kpi_100: -0.135
               gammaPhase_Kpi_100: 0.
-        IntResults: [1.03186e-14, 1.03182e-17, 8.54277e-13]
+        IntResults: [1.05173e-14, 1.05158e-17, 8.7147e-13]
 
     #
     # tau- -> nu_tau pi- K_L (Kpi_plus via K_L) - FORM_FACTOR 10
@@ -446,7 +457,7 @@ HADRON_DECAYS:
               FORM_FACTOR: 10
               gammaMag_Kpi_100: -0.135
               gammaPhase_Kpi_100: 0.
-        IntResults: [1.032e-14, 1.0318e-17, 8.5431e-13]
+        IntResults: [1.05261e-14, 1.05247e-17, 8.71481e-13]
 
     ##### K Kbar (two physical final states: K^- K_S, K^- K_L) #####
     #
@@ -485,7 +496,7 @@ HADRON_DECAYS:
               gammaPhase_KK_200: -1.88
               deltaMag_KK_200: 0.
               deltaPhase_KK_200: 0.
-        IntResults: [1.2657e-15, 1.2628e-18, 1.2172e-14]
+        IntResults: [1.29479e-15, 1.29188e-18, 1.24204e-14]
 
       -321,130,16:
         BR: [0.0, 0.0]
@@ -530,7 +541,7 @@ HADRON_DECAYS:
     # Reference: cross-check note's Keta section (joint Kpi-Keta
     # "Combined 2014" fit for RChiPT).
     ######################################################
-        IntResults: [1.2678e-15, 1.2657e-18, 1.2176e-14]
+        IntResults: [1.29484e-15, 1.29245e-18, 1.24213e-14]
       -321,221,16:
         BR: [0.0, 0.0]
         Currents:
@@ -571,7 +582,7 @@ HADRON_DECAYS:
     # Reference: cross-check note's Keta'/Ketap-vector-relation
     # section.
     ######################################################
-        IntResults: [5.3026e-16, 5.2983e-19, 5.464e-15]
+        IntResults: [5.40291e-16, 5.39777e-19, 5.57385e-15]
       -321,331,16:
         BR: [0.0, 0.0]
         Currents:
@@ -607,7 +618,7 @@ HADRON_DECAYS:
     #         shared with anything else.
     # Reference: EGSR16, arXiv:1601.03989.
     ######################################################
-        IntResults: [2.7917e-17, 2.7832e-20, 2.0969e-16]
+        IntResults: [2.84831e-17, 2.84488e-20, 2.13901e-16]
       -211,221,16:
         BR: [0.0, 0.0]
         Currents:
@@ -633,7 +644,7 @@ HADRON_DECAYS:
     #   10 = KS only, same caveat as pi eta above.
     # Reference: EGSR16, arXiv:1601.03989.
     ######################################################
-        IntResults: [6.914e-16, 6.9126e-19, 2.4363e-14]
+        IntResults: [7.06445e-16, 7.06288e-19, 2.4853e-14]
       -211,331,16:
         BR: [0.0, 0.0]
         Currents:
@@ -691,7 +702,7 @@ HADRON_DECAYS:
     # Reference: KS90 for the base model; CLEO/Novosibirsk collab. for
     # 12; 1310.1053 for the RChL2012 sigma extension.
     ######################################################
-        IntResults: [4.0324e-18, 4.032e-21, 9.7297e-17]
+        IntResults: [4.12555e-18, 4.12287e-21, 9.92475e-17]
       -211,111,111,16:
         BR: [0.0, 0.0] # [0.0917, 0.0917]
         Currents:
@@ -718,7 +729,7 @@ HADRON_DECAYS:
           - TwoResonances_a(1)(1260)+_3_rho(1450)+_12:
               Weight: 0.25
         AlwaysIntegrate: 0
-        IntResults: [2.0396e-13, 2.028e-16, 8.6285e-12]
+        IntResults: [2.07803e-13, 2.06782e-16, 9.10449e-12]
 
     #
     # tau- -> nu_tau pi- pi- pi+ (a1 -> rho pi cascade, same model as
@@ -758,7 +769,7 @@ HADRON_DECAYS:
           - TwoResonances_a(1)(1260)+_3_rho(1450)+_12:
               Weight: 0.25
         AlwaysIntegrate: 0
-        IntResults: [2.0155e-13, 2.012e-16, 1.0484e-11]
+        IntResults: [2.05699e-13, 2.04262e-16, 1.0484e-11]
 
     #
     # tau- -> nu_tau K- pi0 pi0 (pi0_pi0_KM mode, FM95 Tab.I/II row 6,
@@ -873,7 +884,7 @@ HADRON_DECAYS:
     # is absent.
     # Reference: FM95 (hep-ph/9503474) for 10; CLEO/TAUOLA for 12/14.
     ######################################################
-        IntResults: [3.6442e-15, 2.9146e-18, 1.2738e-13]
+        IntResults: [3.71672e-15, 2.96559e-18, 1.2738e-13]
       -321,211,-211,16:
         BR: [0.0, 0.0] # [0.00342, 0.00342]
         Currents:
@@ -947,7 +958,7 @@ HADRON_DECAYS:
     #         K-pi+pi- entry above) - active choice here.
     # Reference: FM95 (hep-ph/9503474), row 8.
     #
-        IntResults: [6.90732e-15, 6.90665e-18, 2.388e-12]
+        IntResults: [7.03174e-15, 7.02666e-18, 2.388e-12]
       310,-211,111,16:
         BR: [0.0, 0.0] # [0.00185, 0.00185]
         Currents:
@@ -995,7 +1006,7 @@ HADRON_DECAYS:
     #   K* region A: pi-(idx1)+K_L(idx2), spectator=pi0(idx3)
     #   K* region B: K_L(idx2)+pi0(idx3), spectator=pi-(idx1)
     #
-        IntResults: [1.1153e-14, 1.0141e-17, 7.9669e-13]
+        IntResults: [1.13689e-14, 1.03135e-17, 7.9669e-13]
       -211,130,111,16:
         BR: [0.0, 0.0] # [0.00185, 0.00185]
         Currents:
@@ -1056,7 +1067,7 @@ HADRON_DECAYS:
     # Reference: Finkemeier & Mirkes hep-ph/9503474 Tabs.I/II row 1;
     # RChL2012 as cited in FF_0_PPP.C's F1_0_KKPi/F5_0_KKPi.
     ######################################################
-        IntResults: [1.1133e-14, 9.9309e-18, 7.247e-13]
+        IntResults: [1.13565e-14, 1.0491e-17, 8.77407e-13]
       321,-321,-211,16:
         BR: [0.0, 0.0] # [0.0932, 0.0932]
         Currents:
@@ -1112,7 +1123,7 @@ HADRON_DECAYS:
     #   10 = KS (FM95): only model implemented for this mode.
     # Reference: FM95 (hep-ph/9503474), row 5.
     ######################################################
-        IntResults: [3.7554e-15, 3.4152e-18, 2.6323e-13]
+        IntResults: [3.83082e-15, 3.46263e-18, 2.75561e-13]
       -321,310,111,16:
         BR: [0.0, 0.0]
         Currents:
@@ -1151,7 +1162,7 @@ HADRON_DECAYS:
     # K_S entry above (just K_L instead of K_S) - same PhaseSpace block
     # applies verbatim.
     #
-        IntResults: [1.5111e-15, 1.5048e-18, 6.741e-14]
+        IntResults: [1.54132e-15, 1.53666e-18, 6.741e-14]
       -321,130,111,16:
         BR: [0.0, 0.0]
         Currents:
@@ -1191,7 +1202,7 @@ HADRON_DECAYS:
     #   10 = KS (FM95): only model implemented.
     # Reference: FM95 (hep-ph/9503474), Eq.50-52 family.
     #
-        IntResults: [1.5137e-15, 1.5075e-18, 6.3976e-14]
+        IntResults: [1.54301e-15, 1.53853e-18, 6.90386e-14]
       310,-211,130,16:
         BR: [0.0, 0.0] # [0.00055, 0.00055]
         Currents:
@@ -1237,7 +1248,7 @@ HADRON_DECAYS:
     #   10 = KS (FM95): only model implemented.
     # Reference: FM95 (hep-ph/9503474), Eq.52.
     #
-        IntResults: [1.6922e-15, 1.6443e-18, 8.6607e-14]
+        IntResults: [1.72397e-15, 1.72387e-18, 8.6607e-14]
       310,310,-211,16:
         BR: [0.0, 0.0] # [0.00024, 0.00024]
         Currents:
@@ -1276,7 +1287,7 @@ HADRON_DECAYS:
     # Available FORM_FACTOR options:
     #   10 = KS (FM95): only model implemented.
     #
-        IntResults: [8.87e-16, 8.7966e-19, 2.5547e-14]
+        IntResults: [9.05248e-16, 8.98448e-19, 2.6095e-14]
       -211,130,130,16:
         BR: [0.0, 0.0] # [0.00024, 0.00024]
         Currents:
@@ -1318,7 +1329,7 @@ HADRON_DECAYS:
     #
     # Available FORM_FACTOR options: none - no dedicated current exists.
     ######################################################
-        IntResults: [8.8602e-16, 8.8123e-19, 2.6146e-14]
+        IntResults: [9.04423e-16, 9.02662e-19, 2.6146e-14]
     # 321,-321,-321,16:
     #   BR: [0.0, 0.0] # [3.7e-05, 3.7e-05]
     #   Currents:
@@ -1396,7 +1407,7 @@ HADRON_DECAYS:
     #
     # Available FORM_FACTOR options: none - no dedicated current exists.
     ######################################################
-        IntResults: [3.4161e-15, 3.0723e-18, 1.7635e-13]
+        IntResults: [3.4809e-15, 3.13744e-18, 1.87156e-13]
       221,221,-211,16:
         BR: [0.0, 0.0] # [0.0001, 0.0001]
         Currents:
@@ -1470,7 +1481,7 @@ HADRON_DECAYS:
               Type: VA_0_KOmega3Pi
               Indices: [1, 2, 3, 4]
         AlwaysIntegrate: 0
-        IntResults: [8.4715e-16, 8.4713e-19, 1.7015e-12]
+        IntResults: [8.63698e-16, 8.63681e-19, 1.7015e-12]
 
     #
     # tau- -> nu_tau pi- pi0 pi0 pi0 and tau- -> nu_tau pi- pi- pi+ pi0
@@ -1519,7 +1530,7 @@ HADRON_DECAYS:
               Type: VA_0_Novosibirsk4Pi
               Indices: [1, 2, 3, 4]
         AlwaysIntegrate: 0
-        IntResults: [2.6063e-14, 2.6052e-17, 3.2238e-12]
+        IntResults: [2.65512e-14, 2.65482e-17, 3.33274e-12]
 
       -211,-211,211,111,16:
         BR: [0.33333333, 0.33333333]
@@ -1534,7 +1545,7 @@ HADRON_DECAYS:
               Type: VA_0_Novosibirsk4Pi
               Indices: [1, 2, 3, 4]
         AlwaysIntegrate: 0
-        IntResults: [1.0138e-13, 1.0137e-16, 7.9814e-11]
+        IntResults: [1.03186e-13, 1.03179e-16, 7.9814e-11]
 
 
     221:
