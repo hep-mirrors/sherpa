@@ -46,7 +46,7 @@ Running_AlphaQED::Running_AlphaQED(const double _alpha0) :
   m_mode     = s["VPMODE"].SetDefault("Default").Get<vpmode::code>();
 #ifndef USING__HADALPHAQED
   if (m_mode==vpmode::full || m_mode==vpmode::hp || m_mode==vpmode::lp)
-    THROW(fatal_error, "Alpha_QED: VPMODE: Full, HP and LP need Jegerlehner's "
+    THROW(fatal_error, "Alpha_QED: VPMODE: Full and Hadronic need Jegerlehner's "
                        "hadr5x, i.e. Sherpa configured with "
                        "-DSHERPA_ENABLE_ALPHAQEDHAD=ON.");
 #endif
@@ -127,7 +127,9 @@ void Running_AlphaQED::PrintSummary()
 {
   msg_Info()<<"Set \\alpha according to EW scheme"
             <<"\n  1/\\alpha(0)   = "<<1./m_alpha0
-            <<"\n  1/\\alpha(def) = "<<1./m_defval<<"\n";
+            <<"\n  1/\\alpha(def) = "<<1./m_defval
+            <<"\n  Running vacuum polarization: "<<m_mode
+            <<" ("<<VPModeDescription(m_mode)<<")\n";
 }
 
 std::istream &MODEL::operator>>(std::istream &str,vpmode::code &vp)
@@ -136,11 +138,40 @@ std::istream &MODEL::operator>>(std::istream &str,vpmode::code &vp)
   str>>tag;
   if      (tag=="None"    || tag=="0") vp=vpmode::off;
   else if (tag=="Full"    || tag=="1") vp=vpmode::full;
-  else if (tag=="HP"      || tag=="2") vp=vpmode::hp;
-  else if (tag=="LP"      || tag=="3") vp=vpmode::lp;
+  else if (tag=="Hadronic" || tag=="HP" || tag=="2") vp=vpmode::hp;
+  else if (tag=="Leptonic" || tag=="LP" || tag=="3") vp=vpmode::lp;
   else if (tag=="Default" || tag=="4") vp=vpmode::builtin;
   else
     THROW(fatal_error, "Unknown Alpha_QED: VPMODE '"+tag+
-                       "'. Use None (0), Full (1), HP (2), LP (3) or Default (4).");
+                       "'. Use None (0), Full (1), Hadronic (2), Leptonic (3) or Default (4).");
   return str;
+}
+
+std::ostream &MODEL::operator<<(std::ostream &str,const vpmode::code &vp)
+{
+  switch (vp) {
+    case vpmode::off:     return str<<"None";
+    case vpmode::full:    return str<<"Full";
+    case vpmode::hp:      return str<<"Hadronic";
+    case vpmode::lp:      return str<<"Leptonic";
+    case vpmode::builtin: return str<<"Default";
+  }
+  return str<<"Unknown("<<int(vp)<<")";
+}
+
+std::string MODEL::VPModeDescription(const vpmode::code &vp)
+{
+  switch (vp) {
+    case vpmode::off:
+      return "no running, alpha(0) at all scales";
+    case vpmode::full:
+      return "leptons + top + hadronic from Jegerlehner hadr5x";
+    case vpmode::hp:
+      return "hadronic only, from Jegerlehner hadr5x";
+    case vpmode::lp:
+      return "leptons only";
+    case vpmode::builtin:
+      return "leptons + top + Burkhardt et al. hadronic parametrisation";
+  }
+  return "unknown";
 }

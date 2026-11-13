@@ -19,6 +19,10 @@ namespace MODEL {
     };
 
     std::istream &operator>>(std::istream &str,vpmode::code &ym);
+    std::ostream &operator<<(std::ostream &str,const vpmode::code &ym);
+
+    // which vacuum-polarisation pieces a VPMODE includes, for the summary
+    std::string VPModeDescription(const vpmode::code &ym);
 
 
 

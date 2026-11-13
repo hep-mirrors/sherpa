@@ -78,6 +78,8 @@ TEST_CASE("VPMODE tags are parsed, and unknown ones are rejected",
   CHECK(Parse("Full") == vpmode::full);
   CHECK(Parse("HP") == vpmode::hp);
   CHECK(Parse("LP") == vpmode::lp);
+  CHECK(Parse("Hadronic") == vpmode::hp);
+  CHECK(Parse("Leptonic") == vpmode::lp);
   // the same modes by number
   CHECK(Parse("0") == vpmode::off);
   CHECK(Parse("1") == vpmode::full);
@@ -89,6 +91,17 @@ TEST_CASE("VPMODE tags are parsed, and unknown ones are rejected",
   CHECK_THROWS(Parse("full"));
   CHECK_THROWS(Parse("hp"));
   CHECK_THROWS(Parse("NotAMode"));
+}
+
+TEST_CASE("VPMODE prints as the tag it is parsed from",
+          "[MODEL::Running_AlphaQED]")
+{
+  Boot();
+  for (const std::string tag : {"None", "Full", "Hadronic", "Leptonic", "Default"}) {
+    std::ostringstream out;
+    out << Parse(tag);
+    CHECK(out.str() == tag);
+  }
 }
 
 TEST_CASE("Default VPMODE keeps the built-in running of alpha_QED",
