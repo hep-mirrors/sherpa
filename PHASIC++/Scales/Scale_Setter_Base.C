@@ -168,11 +168,21 @@ Vec4D Scale_Setter_Base::PSum() const
 
 double Scale_Setter_Base::hHT() const
 {
-  // hadronic H_T
+  // hadronic H_T: scalar sum of the coloured final-state transverse momenta
   double htj(0.0);
   for (size_t i(m_nin);i<m_p.size();++i)
     if (p_proc->Flavours()[i].Strong())
       htj+=m_p[i].PPerp();
+  return htj;
+}
+
+double Scale_Setter_Base::hHTM() const
+{
+  // hadronic H_T: scalar sum of the coloured final-state transverse masses
+  double htj(0.0);
+  for (size_t i(m_nin);i<m_p.size();++i)
+    if (p_proc->Flavours()[i].Strong())
+      htj+=m_p[i].MPerp();
   return htj;
 }
 

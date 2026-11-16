@@ -56,6 +56,42 @@ TEST_CASE("Scale tags distinguish the massive transverse product from indexed sc
   }
 }
 
+TEST_CASE("Hadronic H_T tags sum p_T or m_T of coloured final-state legs",
+          "[PHASIC::Tag_Setter]")
+{
+  PHASIC_Test::SeedGlobals();
+  PHASIC_Test::ScopedParticle electron(kf_e), gluon(kf_gluon), charm(kf_c);
+  electron.Info().m_icharge = -3;
+  gluon.Info().m_strong = 8;
+  charm.SetMass(1.5);
+  charm.Info().m_strong = 3;
+  // e- g -> e- c cbar; the tags only read transverse quantities, so momentum
+  // balance is irrelevant here
+  PHASIC_Test::Process process({ATOOLS::Flavour(kf_e), ATOOLS::Flavour(kf_gluon),
+                                ATOOLS::Flavour(kf_e), ATOOLS::Flavour(kf_c),
+                                ATOOLS::Flavour(kf_c, true)}, 2);
+  PHASIC::Scale_Setter_Arguments args(nullptr);
+  args.p_proc = &process;
+  Scale setter(args);
+  const ATOOLS::Vec4D_Vector momenta = {ATOOLS::Vec4D(10., 0., 0., 10.),
+                                       ATOOLS::Vec4D(10., 0., 0., -10.),
+                                       ATOOLS::Vec4D(10., -1., 0., std::sqrt(99.)),
+                                       ATOOLS::Vec4D(std::sqrt(7.25), 2., 0., 1.),
+                                       ATOOLS::Vec4D(3.5, -1., 0., -3.)};
+  setter.CalculateScale(momenta);
+  PHASIC::Tag_Setter tags(&setter);
+  ATOOLS::Algebra_Interpreter calculator;
+  calculator.SetTagReplacer(&tags);
+  tags.SetCalculator(&calculator);
+  tags.SetTags(&calculator);
+  const double htm = momenta[3].MPerp() + momenta[4].MPerp();
+  calculator.Interprete("hH_T2");
+  CHECK_THAT(calculator.Calculate()->Get<double>(), Catch::Matchers::WithinRel(9., 1.e-12));
+  calculator.Interprete("hH_TM2");
+  CHECK_THAT(calculator.Calculate()->Get<double>(),
+             Catch::Matchers::WithinRel(htm * htm, 1.e-12));
+}
+
 TEST_CASE("Dressed scale tags reject arguments they cannot apply",
           "[PHASIC::Tag_Setter]")
 {

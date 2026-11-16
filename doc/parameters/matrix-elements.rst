@@ -506,6 +506,13 @@ choices or easily implement a user defined scale.
   Square of the scalar sum of the transverse momenta of
   all QCD final state particles.
 
+:option:`hH_TM2`
+  Square of the scalar sum of the transverse masses
+  :math:`\sqrt{m^2+p_\perp^2}` of all QCD final state particles, i.e. the
+  analogue of ``H_TM2`` for ``hH_T2``. For massive coloured particles, e.g.
+  heavy quarks, it stays above the sum of their masses at low transverse
+  momentum.
+
 :option:`H_TY2(<factor>,<exponent>)`
   Square of the scalar sum of the transverse momenta of all final state particles
   weighted by their rapidity distance from the final state boost vector. Thus,

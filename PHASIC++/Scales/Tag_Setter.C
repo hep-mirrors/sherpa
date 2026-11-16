@@ -17,12 +17,12 @@ std::string Tag_Setter::ReplaceTags(std::string &expr) const
 
 Term *Tag_Setter::ReplaceTags(Term *term) const
 {
-  if (term->Id()>=11) {
+  if (term->Id()>=12) {
     if (term->Id()>=100) {
       term->Set(p_setter->Momenta()[term->Id()-100]);
       return term;
     }
-    term->Set(p_setter->Scales()[term->Id()-11]);
+    term->Set(p_setter->Scales()[term->Id()-12]);
     return term;
   }
   switch (term->Id()) {
@@ -56,6 +56,9 @@ Term *Tag_Setter::ReplaceTags(Term *term) const
   case 10:
     term->Set(sqr(p_setter->PTM()));
     return term;
+  case 11:
+    term->Set(sqr(p_setter->hHTM()));
+    return term;
   case 0:
     term->Set(sqr(p_setter->hHT()));
     return term;
@@ -76,8 +79,9 @@ void Tag_Setter::AssignId(Term *term)
   else if (term->Tag()=="TAUB") term->SetId(9);
   else if (term->Tag()=="P_TM2") term->SetId(10);
   else if (term->Tag()=="hH_T2") term->SetId(0);
+  else if (term->Tag()=="hH_TM2") term->SetId(11);
   else if (term->Tag().find("MU_")==0) {
-    term->SetId(11+ToType<int>
+    term->SetId(12+ToType<int>
 		(term->Tag().substr
 		 (3,term->Tag().length()-4)));
   }
@@ -518,6 +522,7 @@ void Tag_Setter::SetTags(Algebra_Interpreter *const calc)
   calc->AddTag("P_SUM","(1.0,0.0,0.0,0.0)");
   calc->AddTag("TAUB","1.0");
   calc->AddTag("hH_T2", "1.0");
+  calc->AddTag("hH_TM2", "1.0");
   calc->AddFunction(new H_TY2(p_setter));
   calc->AddFunction(new Dressed_H_Tp2(p_setter));
   calc->AddFunction(new Dressed_H_Tln2(p_setter));
