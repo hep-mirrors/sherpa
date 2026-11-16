@@ -79,6 +79,17 @@ namespace {
     return f.deltaf;
   }
 
+  //! the two_loop delta^(2) before the w terms
+  Complex TwoLoopDelta(const Photonic_Factors &f, const Beta02_Config &cfg)
+  {
+    Complex d2(LeadingLog(f, cfg.cross) + f.nll + f.cst);
+    // BETA0_2_HIGHER exponentiated: the factorisable exponent beyond
+    // O(alpha^2), exp(delta_f)(1 + NLL) - 1 - delta_f - [delta_f^2/2 + NLL]
+    if (cfg.higher == beta02higher::exponentiated)
+      d2 += Exponentiated(f, cfg.cross) - LeadingLog(f, cfg.cross) - f.nll;
+    return d2;
+  }
+
   //! delta^(2) for a delta_f and a w of the same kind (both complex or both real)
   Complex Assemble(const Photonic_Factors &f, const Complex &w,
                    const Beta02_Config &cfg)
@@ -88,10 +99,14 @@ namespace {
     case beta02::none:  return d2;
     case beta02::ll:    d2 = LeadingLog(f, cfg.cross); break;
     case beta02::llnll: d2 = LeadingLog(f, cfg.cross) + f.nll; break;
-    case beta02::two_loop: d2 = LeadingLog(f, cfg.cross) + f.nll + f.cst; break;
+    case beta02::two_loop:
+      d2 = TwoLoopDelta(f, cfg);
+      break;
     case beta02::exp:   d2 = Exponentiated(f, cfg.cross); break;
     }
     if (cfg.weak) d2 += w*WeakProductFactor(f, cfg);
+    // the O(alpha^2) term of exp(w): with it delta^(2) = delta^2/2 + log terms
+    if (cfg.weak && cfg.wsquare) d2 += 0.5*w*w;
     return d2;
   }
 
@@ -232,6 +247,8 @@ std::string YFS::Beta02Describe(const Beta02_Config &cfg)
   o<<"mode "<<cfg.mode<<", pairs "<<cfg.pairs
    <<", cross products "<<(cfg.cross ? "on" : "off")
    <<", delta_f w "<<(cfg.weak ? "on" : "off")
+   <<", w^2/2 "<<(cfg.weak && cfg.wsquare ? "on" : "off")
+   <<", beyond O(alpha^2) "<<cfg.higher
    <<", 1/alpha "<<1./cfg.alpha<<", c "<<cfg.imc
    <<", c_NLL "<<Beta02NLLCoefficient();
   return o.str();

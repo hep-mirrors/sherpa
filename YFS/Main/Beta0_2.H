@@ -52,6 +52,12 @@ namespace YFS {
     bool   cross = true;
     //! the delta_f w product
     bool   weak  = true;
+    //! (1/2) w^2: w exponentiated together with delta_f, so that
+    //! delta^(2) = delta^2/2 + the logarithmic two-loop terms (BETA0_2_W_SQUARE)
+    bool   wsquare = true;
+    //! two_loop beyond O(alpha^2): the higher orders of exp(delta_f)(1 + NLL)
+    //! (BETA0_2_HIGHER)
+    beta02higher::code higher = beta02higher::none;
     //! the coupling of f_ij and the NLL
     double alpha = 0.;
     //! ACRAIC: VIRT_HEL_IM_C

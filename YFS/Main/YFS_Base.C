@@ -151,14 +151,21 @@ void YFS_Base::RegisterDefaults(){
     (delta_f w), BETA0_2_ALPHA (alpha0|loop), BETA0_2_BOXES (two_loop boxes,
     Beta0_2_Boxes.H), BETA0_2_DIPHOTON (two_loop gamma gamma hard function,
     hep-ph/0201274) and BETA0_2_DIPHOTON_POWER_CUT (m_e^2/min(|t|,|u|) above
-    which it is skipped). BETA0_2 on retires the VV_EEX estimate.
+    which it is skipped). BETA0_2_W_SQUARE (true): add (1/2) w^2, w = delta -
+    delta_f, so that w is exponentiated with delta_f and delta^(2) = delta^2/2
+    + the logarithmic two-loop terms (the exact vertex structure); needs
+    BETA0_2_WEAK_PRODUCT. BETA0_2 on retires the VV_EEX estimate.
   */
   s["BETA0_2"].SetDefault(beta02::none);
   s["BETA0_2_PAIRS"].SetDefault(beta02pairs::all);
   s["BETA0_2_CROSS"].SetDefault(true);
   s["BETA0_2_WEAK_PRODUCT"].SetDefault(true);
+  s["BETA0_2_W_SQUARE"].SetDefault(true);
   s["BETA0_2_ALPHA"].SetDefault(beta02alpha::alpha0);
   s["BETA0_2_BOXES"].SetDefault(true);
+  //! YFS: BETA0_2_HIGHER none|exponentiated (none): two_loop plus the higher orders
+  //! of exp(delta_f)(1 + NLL), the LL delta_f^3/6 and beyond
+  s["BETA0_2_HIGHER"].SetDefault(beta02higher::none);
   s["BETA0_2_DIPHOTON"].SetDefault(true);
   Settings::GetMainSettings()["ACRAIC"]["BETA0_2"].SetDefault(beta02::none);
   /*

@@ -124,6 +124,13 @@ namespace YFS {
   struct ifvirtual {
     enum code { exact = 0, tbvirt = 1, s_channel = 2, tbvirt_exact_ir = 3 };
   };
+  //! YFS: BETA0_2_HIGHER - BETA0_2 two_loop beyond O(alpha^2). none: delta^(2)
+  //! stops at O(alpha^2). exponentiated: adds the higher orders of the
+  //! factorisable exponent, exp(delta_f)(1 + NLL) - 1 - delta_f minus its
+  //! O(alpha^2) part, i.e. the LL delta_f^3/6 and beyond (Beta0_2.H).
+  struct beta02higher {
+    enum code { none = 0, exponentiated = 1 };
+  };
   //! YFS: BETA0_2_ALPHA - coupling of delta_f: alpha0 = alpha(0), loop = the provider's alpha.
   struct beta02alpha {
     enum code { alpha0 = 0, loop = 1 };
@@ -280,6 +287,8 @@ namespace YFS {
   std::ostream &operator<<(std::ostream &str, const beta02pairs::code &c);
   std::istream &operator>>(std::istream &str, ifvirtual::code &c);
   std::ostream &operator<<(std::ostream &str, const ifvirtual::code &c);
+  std::istream &operator>>(std::istream &str, beta02higher::code &c);
+  std::ostream &operator<<(std::ostream &str, const beta02higher::code &c);
   std::istream &operator>>(std::istream &str, beta02alpha::code &c);
   std::ostream &operator<<(std::ostream &str, const beta02alpha::code &c);
   std::istream &operator>>(std::istream &str, dysonvp::code &c);
