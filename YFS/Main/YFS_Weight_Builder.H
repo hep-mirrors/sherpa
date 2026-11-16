@@ -87,6 +87,8 @@ namespace YFS {
     //! ACRAIC: TNP_IFI: v_IF less greco's resonant log, which sits in the propagators
     double TnpVirtualIF() const;
     double AcraicBeta02Rho(double d2, double v, double r0x, double r0v) const;
+    //! ACRAIC: BETA0_2_ON beta1: delta^(2) on A_1 (Born-level and beta_1 terms)
+    double AcraicBeta02RhoOnBeta1(double d2, double v) const;
     void BuildNamedWeights(double w_lo, double w_full);
     void RefuseStreamsWithoutBreakdown() const;
     //! the YFS.* column names this configuration emits, and wyfs/m_wnames defaults

@@ -698,6 +698,25 @@ double YFS_Weight_Builder::CalculateNLO(){
   delta^(2) (ACRAIC: BETA0_2) of the external virtual v' = v - dIB; the resonant
   log under RESONANCE_EXPONENTIATION greco is in the propagators.
 */
+/*
+  ACRAIC: BETA0_2_ON born|beta1 (default born): where delta^(2) sits, on A_0 or on
+  A_1 (YFS_Options.H). Only the Born-weighted path places it on A_1; the
+  per-helicity path keeps A_0 and says so once.
+*/
+static beta02on::code Beta02OnCode()
+{
+  static const beta02on::code c(ATOOLS::Settings::GetMainSettings()["ACRAIC"]["BETA0_2_ON"]
+                                .SetDefault(beta02on::born).Get<beta02on::code>());
+  static bool said(false);
+  if (!said) {
+    said = true;
+    if (c == beta02on::beta1)
+      msg_Info()<<"ACRAIC: BETA0_2_ON beta1: delta^(2) on A_1 (Born-level and beta_1"
+                <<" terms) in the Born-weighted path."<<std::endl;
+  }
+  return c;
+}
+
 static double AcraicBeta02External(const YFS::NLO_Base &nlo, double dIB)
 {
   return Beta02DeltaReal(nlo.Beta02Factors(), 0.5*(nlo.VOneLoop() - dIB),
@@ -707,6 +726,22 @@ static double AcraicBeta02External(const YFS::NLO_Base &nlo, double dIB)
 double YFS_Weight_Builder::AcraicBeta02Rho(double d2, double v, double r0x, double r0v) const
 {
   return 2.*d2*(r0x + 0.5*v*r0v) + d2*d2*m_h.p_acraic->GetResult0();
+}
+
+/*
+  ACRAIC: BETA0_2_ON beta1. The weight is 1/4 sum_h |A_X + (v/2) A_v + d2 A_1|^2
+  instead of d2 A_0: A_1 = A_0 + the beta_1 terms, so a hard photon's beta_1 also
+  carries delta^(2) of the reduced Born (the factorised one-photon two-loop,
+  O(alpha^3), exact where the photon is soft or collinear). The overlaps are
+  Re<A_1, A_X> (A_X = A_2 at ORDER 2, else A_1), Re<A_1, A_v> (A_v = A_1 or A_0)
+  and |A_1|^2, all over 4 as the GetResult* are.
+*/
+double YFS_Weight_Builder::AcraicBeta02RhoOnBeta1(double d2, double v) const
+{
+  const Acraic_Base &a(*m_h.p_acraic);
+  const double r1x(a.Order() == 2 ? a.GetResult12() : a.GetResult1());
+  const double r1v(a.VirtualOnBeta1() ? a.GetResult1() : a.GetResult01Order1());
+  return 2.*d2*(r1x + 0.5*v*r1v) + d2*d2*a.GetResult1();
 }
 
 // ACRAIC: FIXED_ORDER_STREAM at ORDER 2: the column truncated to O(alpha^2)
@@ -945,7 +980,10 @@ void YFS_Weight_Builder::ApplyExternalVirtual(AcraicColumns &c)
     // delta^(2) of v' (its delta_f w must not see the resonant log either)
     const double d2(AcraicBeta02External(*m_h.p_nlo, m_h.p_acraic->ResonanceBornDeltaV()));
     c.d2_fo = d2;
-    c.b02_acraic = AcraicBeta02Rho(d2, v, m_h.p_acraic->GetResult0X(), m_h.p_acraic->GetResult0V())/rcr;
+    c.b02_acraic = (Beta02OnCode() == beta02on::beta1
+                    ? AcraicBeta02RhoOnBeta1(d2, v)
+                    : AcraicBeta02Rho(d2, v, m_h.p_acraic->GetResult0X(),
+                                      m_h.p_acraic->GetResult0V()))/rcr;
     if (c.acraico2) {
       c.b02_v0 = AcraicBeta02Rho(d2, v, m_h.p_acraic->GetResult02(), m_h.p_acraic->GetResult0())/rcr;
       c.b02_v1 = AcraicBeta02Rho(d2, v, m_h.p_acraic->GetResult02(), m_h.p_acraic->GetResult01Order1())/rcr;
@@ -1065,6 +1103,12 @@ void YFS_Weight_Builder::ApplyHelicityVirtual(AcraicColumns &c)
   */
   std::vector<Complex> db(d), dhb(dh);
   const bool hb02(c.acraicb02 && m_h.p_nlo->Beta02Ok() && rcr > 0.);
+  static bool hb02on(false);
+  if (hb02 && ok && !hb02on && Beta02OnCode() == beta02on::beta1) {
+    hb02on = true;
+    msg_Error()<<"ACRAIC: BETA0_2_ON beta1 is not implemented in the per-helicity"
+               <<" path: there delta^(2) stays on A_0."<<std::endl;
+  }
   if (hb02) {
     const double d2ext(AcraicBeta02External(*m_h.p_nlo, m_h.p_acraic->ResonanceBornDeltaV()));
     for (size_t f(0); f < db.size(); ++f)

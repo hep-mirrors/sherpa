@@ -131,6 +131,13 @@ namespace YFS {
   struct beta02higher {
     enum code { none = 0, exponentiated = 1 };
   };
+  //! ACRAIC: BETA0_2_ON - which ACRAIC amplitude delta^(2) multiplies. born:
+  //! A_0, the Born-level terms only. beta1: A_1, also the one-hard-photon beta_1
+  //! terms, i.e. the factorised one-photon two-loop delta^(2) beta_1 (O(alpha^3),
+  //! exact in the soft and collinear limits). Born-weighted path only.
+  struct beta02on {
+    enum code { born = 0, beta1 = 1 };
+  };
   //! YFS: BETA0_2_ALPHA - coupling of delta_f: alpha0 = alpha(0), loop = the provider's alpha.
   struct beta02alpha {
     enum code { alpha0 = 0, loop = 1 };
@@ -287,6 +294,8 @@ namespace YFS {
   std::ostream &operator<<(std::ostream &str, const beta02pairs::code &c);
   std::istream &operator>>(std::istream &str, ifvirtual::code &c);
   std::ostream &operator<<(std::ostream &str, const ifvirtual::code &c);
+  std::istream &operator>>(std::istream &str, beta02on::code &c);
+  std::ostream &operator<<(std::ostream &str, const beta02on::code &c);
   std::istream &operator>>(std::istream &str, beta02higher::code &c);
   std::ostream &operator<<(std::ostream &str, const beta02higher::code &c);
   std::istream &operator>>(std::istream &str, beta02alpha::code &c);

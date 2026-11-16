@@ -137,6 +137,9 @@ namespace {
     {"tbvirt_exact_ir", ifvirtual::tbvirt_exact_ir}, {"exact", ifvirtual::exact},
     {"tbvirt", ifvirtual::tbvirt}, {"s_channel", ifvirtual::s_channel}};
 
+  const std::vector<Option_Name> s_beta02on{
+    {"born", beta02on::born}, {"beta1", beta02on::beta1}};
+
   const std::vector<Option_Name> s_beta02higher{
     {"none", beta02higher::none}, {"exponentiated", beta02higher::exponentiated}};
 
@@ -353,6 +356,11 @@ std::istream &YFS::operator>>(std::istream &s, ifvirtual::code &c)
 { return ReadOption(s, c, s_ifvirtual, "YFS: IF_VIRTUAL"); }
 std::ostream &YFS::operator<<(std::ostream &s, const ifvirtual::code &c)
 { return WriteOption(s, c, s_ifvirtual); }
+
+std::istream &YFS::operator>>(std::istream &s, beta02on::code &c)
+{ return ReadOption(s, c, s_beta02on, "ACRAIC: BETA0_2_ON"); }
+std::ostream &YFS::operator<<(std::ostream &s, const beta02on::code &c)
+{ return WriteOption(s, c, s_beta02on); }
 
 std::istream &YFS::operator>>(std::istream &s, beta02higher::code &c)
 { return ReadOption(s, c, s_beta02higher, "YFS: BETA0_2_HIGHER"); }
