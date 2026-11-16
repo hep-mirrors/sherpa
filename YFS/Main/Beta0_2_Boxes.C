@@ -89,6 +89,19 @@ namespace {
     return terms;
   }
 
+  /*
+    The NLL terms of the pairs with one leg in and one out. N holds them for the
+    photon exchange (it is everything beyond the two s-channel form factors), so
+    each helicity's box term is (a2 N - this) A_gamma/A, and they stay on the Z share.
+  */
+  Complex OppositeSideNLL(const Photonic_Factors &f)
+  {
+    Complex sum(0., 0.);
+    for (size_t d(0); d < f.n.size() && d < f.opposite.size(); ++d)
+      if (f.opposite[d]) sum += f.n[d];
+    return sum;
+  }
+
   //! the Bhabha boxes of AddPhotonicTwoLoopBoxes
   void AddBhabhaBoxes(Photonic_Factors &f, const Flavour &e, const Vec4D_Vector &p,
                       double alpha)
@@ -102,11 +115,12 @@ namespace {
     const Complex sw2(MODEL::s_model->ComplexConstant("csin2_thetaW"));
     const Complex ps(1./Complex(s - mz*mz, gz*mz)), pt(1./Complex(t - mz*mz, gz*mz));
     const double a2(sqr(alpha/(2.*M_PI)));
+    const Complex nllx(OppositeSideNLL(f));
     double norm(0.);
     for (const Box_Term &b : BhabhaTerms(e, s, t, u, ps, pt, sw2)) {
       if (std::abs(b.A) == 0.) continue;
       const double w(b.spinor2*std::norm(b.A));
-      const Complex d2(a2*TwoLoopPhotonicNBhabha(b.cls, x)*b.Ag/b.A);
+      const Complex d2((a2*TwoLoopPhotonicNBhabha(b.cls, x) - nllx)*b.Ag/b.A);
       f.boxhel.push_back(b.hel);
       f.boxd2.push_back(d2);
       f.boxavg += w*d2.real();
@@ -149,6 +163,7 @@ void YFS::AddPhotonicTwoLoopBoxes(Photonic_Factors &f, const Flavour_Vector &fl,
   const Complex pz(1./Complex(s - mz*mz, gz*mz));
   const double Qe(e.Charge()), Ql(l.Charge());
   const double a2(sqr(alpha/(2.*M_PI)));
+  const Complex nllx(OppositeSideNLL(f));
   double norm(0.);
   for (int le : {-1, 1}) for (int ll : {-1, 1}) {
     const Complex Ag(Qe*Ql/s, 0.);
@@ -156,7 +171,7 @@ void YFS::AddPhotonicTwoLoopBoxes(Photonic_Factors &f, const Flavour_Vector &fl,
     if (std::abs(A) == 0.) continue;
     const bool same(ll == le);
     const double w(sqr(same ? u : t)*std::norm(A));
-    const Complex d2(a2*(same ? nsame : nopp)*Ag/A);
+    const Complex d2((a2*(same ? nsame : nopp) - nllx)*Ag/A);
     f.boxhel.push_back({le, -le, ll, -ll});
     f.boxd2.push_back(d2);
     f.boxavg += w*d2.real();

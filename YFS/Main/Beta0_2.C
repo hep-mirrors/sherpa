@@ -276,6 +276,7 @@ Photonic_Factors YFS::PhotonicFactors(const Flavour_Vector &fl,
       out.n.push_back(nll);
       out.c.push_back(cij);
       out.twolines.push_back(fl[i].Kfcode() != fl[j].Kfcode());
+      out.opposite.push_back(!same);
       out.deltaf += fij;
       out.nll    += nll;
       out.cst    += cij;

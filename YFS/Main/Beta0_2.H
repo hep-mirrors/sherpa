@@ -78,6 +78,8 @@ namespace YFS {
     std::vector<Complex> f, n, c;        //!< f_ij, NLL_ij and the constant per selected pair
     //! per selected pair: its legs are on two different charged lines (different flavours)
     std::vector<bool> twolines;
+    //! per selected pair: one leg incoming, one outgoing
+    std::vector<bool> opposite;
     //! two-loop boxes per physical helicity and Born-weighted (Beta0_2_Boxes.H)
     std::vector<std::vector<int> > boxhel;
     std::vector<Complex> boxd2;

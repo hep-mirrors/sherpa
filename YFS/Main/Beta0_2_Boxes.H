@@ -17,10 +17,12 @@
   [ln R^F]^(2) the massless form factor in the same scheme (hep-ph/0508127).
   N is tabulated in x = -t/s (Beta0_2_Boxes_Table.H) and enters delta^(2)(h) as
 
-    (alpha/2pi)^2 N(h, x) A_gamma(h)/A_0(h) ,
+    [(alpha/2pi)^2 N(h, x) - NLL_x] A_gamma(h)/A_0(h) ,
 
   the photon-exchange share of the helicity amplitude (massless chiral
-  couplings). Not included: boxes with a Z exchanged, other final states.
+  couplings). NLL_x, the NLL terms PhotonicFactors gives the four pairs with one
+  leg in and one out, is inside N, so it is taken out of the photon share and
+  stays on the Z share. Not included: boxes with a Z exchanged, other final states.
 
   Bhabha uses the same N per helicity class (Beta0_2_Boxes_Bhabha_Table.H):
   s-channel only, s + t, and t-channel only. A_gamma is the s + t photon
