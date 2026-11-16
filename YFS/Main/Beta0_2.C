@@ -6,7 +6,9 @@
 */
 
 #include "YFS/Main/Beta0_2.H"
+#include "YFS/Main/Beta0_2_Vertex.H"
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 #include <cmath>
 #include <sstream>
@@ -23,6 +25,16 @@ namespace {
   double SignedCharge(const Flavour &fl, size_t i, size_t nin)
   { return (i < nin ? 1. : -1.)*fl.Charge(); }
 
+  bool s_cite_vertex(false);
+
+  //! adds a citation the first time a source is used (done is that source's flag)
+  void CiteOnce(bool &done, const char *text)
+  {
+    if (done) return;
+    done = true;
+    rpa->gen.AddCitation(1, text);
+  }
+
   //! a crossed vertex gets C L + K only above this -t/m^2: the constant is
   //! the leading power in m^2/Q^2 (the MUonE electron line, not its muon line)
   const double s_crossed_min_q2m2(100.);
@@ -30,6 +42,36 @@ namespace {
   //! one current producing or annihilating f fbar on one side
   bool SameSideVertex(const Flavour &a, const Flavour &b, double ma, double mb)
   { return a == b.Bar() && ma == mb; }
+
+  /*!
+    The other line of a 2 -> 2 whose line i (incoming) -> j (outgoing) passes
+    through: its incoming leg k and outgoing leg l. False unless n = 4, nin = 2.
+  */
+  bool OtherLine(size_t n, size_t nin, size_t i, size_t j, size_t &k, size_t &l)
+  {
+    if (n != 4 || nin != 2 || i >= nin || j < nin) return false;
+    k = 1 - i;
+    l = (j == 2 ? 3 : 2);
+    return true;
+  }
+
+  /*!
+    The two-loop constant of the line i -> j through a space-like 2 -> 2
+    (BETA0_2_CROSSED_VERTEX exact), in (alpha/pi)^2 Q^4, net of the NLL term
+    C (nu A - 1) that the line already carries: with it the line has exactly
+    the massive vertex X of Beta0_2_Vertex.H.
+  */
+  double ExactCrossedLineConstant(const Flavour_Vector &fl, const Vec4D_Vector &p,
+                                  size_t n, size_t nin, size_t i, size_t j,
+                                  double cnuA)
+  {
+    size_t k(0), l(0);
+    const bool other(OtherLine(n, nin, i, j, k, l));
+    const double x(CrossedLineTwoLoop(p[i], p[j], fl[i].Mass(), other,
+                                      other ? p[k] : p[i], other ? p[l] : p[j],
+                                      other ? fl[k].Mass() : 0.));
+    return x - Beta02NLLCoefficient()*(cnuA - 1.);
+  }
 
   /*
     Whether a flavour that is both incoming and outgoing is one fermion line
@@ -180,17 +222,29 @@ Photonic_Factors YFS::PhotonicFactors(const Flavour_Vector &fl,
       if (cfg.pairs == beta02pairs::same_side && !same) continue;
       const double eta(-SignedCharge(fl[i], i, nin)*SignedCharge(fl[j], j, nin));
       const double sij(same ? (p[i]+p[j]).Abs2() : (p[i]-p[j]).Abs2());
-      const Complex K(a2pi*eta*(Beta02CnuA(sij, mi, mj) - 1.));
+      const Complex cnuA(Beta02CnuA(sij, mi, mj));
+      const Complex K(a2pi*eta*(cnuA - 1.));
       // the phase convention of B_V: Im delta shifts by -Im K (c - 1/2)
       const Complex fij(K - Complex(0., K.imag()*(cfg.imc - 0.5)));
       const Complex nll(api*cnll*((Qi*Qi + Qj*Qj)*K
                                   + a2pi*eta*(Qi*Qi - Qj*Qj)*log(mj/mi)));
       // a vertex: one current, a same-side f fbar pair or, across, one line
       // in and out with Q^2 = -s_ij (Euclidean case, no continuation)
+      const bool crossedline(!same && crossedlines && fl[i] == fl[j]);
+      const bool exactline(crossedline && cfg.crossedvertex == beta02vertex::exact
+                           && sij < 0.);
       const bool vertex(same ? SameSideVertex(fl[i], fl[j], mi, mj)
-                        : crossedlines && fl[i] == fl[j]
-                          && -sij > s_crossed_min_q2m2*mi*mi);
-      const Complex cij(vertex ? api*api*Qi*Qi*Qj*Qj*c2 : 0.);
+                        : exactline || (crossedline && -sij > s_crossed_min_q2m2*mi*mi));
+      Complex cij(0., 0.);
+      if (exactline) {
+        cij = api*api*Qi*Qi*Qj*Qj
+              *ExactCrossedLineConstant(fl, p, n, nin, i, j, cnuA.real());
+        CiteOnce(s_cite_vertex, "The two-loop vertex of a space-like massive line (YFS:"
+                 " BETA0_2_CROSSED_VERTEX exact) uses the heavy-quark form factors of"
+                 " \\cite{Ablinger:2017hst}.");
+      }
+      else if (vertex)
+        cij = api*api*Qi*Qi*Qj*Qj*c2;
       out.f.push_back(fij);
       out.n.push_back(nll);
       out.c.push_back(cij);
@@ -245,6 +299,7 @@ std::string YFS::Beta02Describe(const Beta02_Config &cfg)
 {
   std::ostringstream o;
   o<<"mode "<<cfg.mode<<", pairs "<<cfg.pairs
+   <<", crossed-line vertex "<<cfg.crossedvertex
    <<", cross products "<<(cfg.cross ? "on" : "off")
    <<", delta_f w "<<(cfg.weak ? "on" : "off")
    <<", w^2/2 "<<(cfg.weak && cfg.wsquare ? "on" : "off")

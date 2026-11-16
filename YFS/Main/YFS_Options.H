@@ -112,6 +112,13 @@ namespace YFS {
   struct beta02pairs {
     enum code { all = 0, same_side = 1 };
   };
+  //! YFS: BETA0_2_CROSSED_VERTEX - the two-loop vertex constant of a line that
+  //! passes through a space-like 2 -> 2 (mu e -> mu e). high_energy: C L + K of
+  //! hep-ph/0508127, only above -t > 100 m^2; exact: the massive photonic vertex
+  //! at any -t, Dirac and Pauli parts (Beta0_2_Vertex.H).
+  struct beta02vertex {
+    enum code { high_energy = 0, exact = 1 };
+  };
   //! YFS: IF_VIRTUAL - the virtual B of an initial-final (one in, one out) dipole, in
   //! the exponent (IFForFac) and in the virtual subtraction alike.
   //! tbvirt_exact_ir (default): KKMC's TBvirt with the exact massive IR coefficient,
@@ -294,6 +301,8 @@ namespace YFS {
   std::ostream &operator<<(std::ostream &str, const beta02pairs::code &c);
   std::istream &operator>>(std::istream &str, ifvirtual::code &c);
   std::ostream &operator<<(std::ostream &str, const ifvirtual::code &c);
+  std::istream &operator>>(std::istream &str, beta02vertex::code &c);
+  std::ostream &operator<<(std::ostream &str, const beta02vertex::code &c);
   std::istream &operator>>(std::istream &str, beta02on::code &c);
   std::ostream &operator<<(std::ostream &str, const beta02on::code &c);
   std::istream &operator>>(std::istream &str, beta02higher::code &c);

@@ -43,6 +43,7 @@ void NLO_Base::InitBeta02()
 {
   Beta02_Config shared;
   shared.pairs = Main()["YFS"]["BETA0_2_PAIRS"].Get<beta02pairs::code>();
+  shared.crossedvertex = Main()["YFS"]["BETA0_2_CROSSED_VERTEX"].Get<beta02vertex::code>();
   shared.cross = Main()["YFS"]["BETA0_2_CROSS"].Get<bool>();
   shared.weak  = Main()["YFS"]["BETA0_2_WEAK_PRODUCT"].Get<bool>();
   shared.wsquare = Main()["YFS"]["BETA0_2_W_SQUARE"].Get<bool>();

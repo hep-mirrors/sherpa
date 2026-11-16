@@ -48,6 +48,8 @@ namespace YFS {
   struct Beta02_Config {
     beta02::code      mode  = beta02::none;
     beta02pairs::code pairs = beta02pairs::all;
+    //! the two-loop vertex constant of a line through a space-like 2 -> 2
+    beta02vertex::code crossedvertex = beta02vertex::exact;
     //! (1/2)(sum_d f_d)^2 (true) or sum_d (1/2) f_d^2 (false, as KKMC's CEEX2)
     bool   cross = true;
     //! the delta_f w product
