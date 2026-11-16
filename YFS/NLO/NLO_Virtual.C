@@ -104,14 +104,17 @@ double NLO_Base::CalculateVirtual() {
   double virt;
   double sub;
   /*
-    YFS: VIRTUAL_SUB_LEGS (default own). The Born virtual's IR subtraction
-    has to cancel the loop's poles, so it is built on the loop's own point
-    m_plab, the post-ISR Born.
+    YFS: VIRTUAL_SUB_LEGS (default own_if_exponent). The Born virtual's IR
+    subtraction has to cancel the loop's poles, so it is built on the loop's
+    own point m_plab, the post-ISR Born; own_if_exponent adds
+    IFExponentLegShift(), own leaves it out.
   */
   static const virtsublegs::code vsublegs(ATOOLS::Settings::GetMainSettings()["YFS"]
-      ["VIRTUAL_SUB_LEGS"].SetDefault(virtsublegs::own).Get<virtsublegs::code>());
+      ["VIRTUAL_SUB_LEGS"].SetDefault(virtsublegs::own_if_exponent).Get<virtsublegs::code>());
+  const bool ownlegs(vsublegs != virtsublegs::event);
+  const bool iflegshift(vsublegs == virtsublegs::own_if_exponent);
   Define_Dipoles *vsub(p_dipoles);
-  if (vsublegs == virtsublegs::own) {
+  if (ownlegs) {
     p_nlodipoles->MakeDipolesII(m_flavs, m_plab, m_plab);
     p_nlodipoles->MakeDipoles(m_flavs, m_plab, m_plab);
     p_nlodipoles->MakeDipolesIF(m_flavs, m_plab, m_plab);
@@ -145,8 +148,10 @@ double NLO_Base::CalculateVirtual() {
                          "ACRAIC: TNP_IFI (2 -> 2), ACRAIC_Virtual helicity or REAL_VIRTUAL helicity.");
     if (KinematicsHash(m_plab) >= vfrac) {
       ++m_vFracSkipped;
-      const double sub((m_virt_sub && p_virt->p_loop_me->Mode() != 1)
-                       ? vsub->CalculateVirtualSub() : 0.);
+      double sub((m_virt_sub && p_virt->p_loop_me->Mode() != 1)
+                 ? vsub->CalculateVirtualSub() : 0.);
+      if (iflegshift && m_virt_sub && p_virt->p_loop_me->Mode() != 1)
+        sub -= IFExponentLegShift()*m_rescale_alpha;
       m_virt_subval = sub * m_born / m_rescale_alpha;
       m_oneloop = VirtualFractionV0() * m_born;
       m_virt_raw = m_oneloop + m_virt_subval;
@@ -163,7 +168,7 @@ double NLO_Base::CalculateVirtual() {
   }
   if (tnpifi)
     vifmirrorok = MirroredOneLoop(vcanon && !(m_useacraic && m_acraicvirtsrc == acraicvirt::helicity),
-                                  vsub, vsublegs == virtsublegs::own, vifmirror);
+                                  vsub, ownlegs, vifmirror);
   if (vcanon && !(m_useacraic && m_acraicvirtsrc == acraicvirt::helicity))
     virt = p_virt->CalcInFrame(m_plab, CanonicalBeamFrame(m_plab), m_born);
   else
@@ -191,6 +196,10 @@ double NLO_Base::CalculateVirtual() {
     sub = vsub->CalculateVirtualSub();
   else
     sub = 0;
+  // own_if_exponent: v = V/B - B(own legs) + Y_IF(own legs) - Y_IF(event legs);
+  // the poles are those of B(own legs), vb_ev = v + m_virt_subval/B stays V/B
+  if (iflegshift && m_virt_sub && p_virt->p_loop_me->Mode() != 1)
+    sub -= IFExponentLegShift()*m_rescale_alpha;
   m_virt_raw = virt; m_virt_subval = sub * m_born / m_rescale_alpha;
   if (m_acraic_compare && m_virt_sub && p_virt->p_loop_me->Mode() != 1) {
     double ii, ff, ifi;
@@ -321,7 +330,7 @@ void NLO_Base::ReportVirtualIFOdd() const
 #endif
   msg_Out()<<"ACRAIC: TNP_IFI: initial-final part of the virtual (mirrored Born point) on "
            <<(long)b[0]<<" events, not available on "<<(long)b[1]
-           <<" (v_IF = 0 there: needs a 2 -> 2 f fbar Born and VIRTUAL_SUB_LEGS own)"<<std::endl;
+           <<" (v_IF = 0 there: needs a 2 -> 2 f fbar Born and VIRTUAL_SUB_LEGS own or own_if_exponent)"<<std::endl;
 }
 
 /*
@@ -419,6 +428,22 @@ bool NLO_Base::BornVirtualOnOwnLegs(double &vb) {
   vb = m_virt_raw/m_born - sub/m_rescale_alpha;
   m_vborn_own_sub = sub/m_rescale_alpha;
   return !IsBad(vb);
+}
+
+/*
+  YFS: VIRTUAL_SUB_LEGS own_if_exponent. The exponent's initial-final dipoles
+  take the beams before initial-state radiation (YFS_Handler::CalculateFSR),
+  the loop and its subtraction the post-ISR beams (p_nlodipoles, built on
+  m_plab). Y_IF(own legs) - Y_IF(event legs), virtual plus real B at one soft
+  cutoff so the photon mass cancels, moves v onto the exponent's legs without
+  touching its poles. Zero without initial-state photons.
+*/
+double NLO_Base::IFExponentLegShift()
+{
+  const double omega(p_dipoles->IFIOmega());
+  const double shift(p_nlodipoles->FormFactorSumIF(omega)
+                     - p_dipoles->FormFactorSumIF(omega));
+  return IsBad(shift) ? 0. : shift;
 }
 
 void NLO_Base::CheckVVPoles()

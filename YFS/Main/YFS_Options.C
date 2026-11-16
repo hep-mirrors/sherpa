@@ -165,7 +165,8 @@ namespace {
     {"tilted", rvloopframe::tilted}, {"beam_axis", rvloopframe::beam_axis}};
 
   const std::vector<Option_Name> s_virtsublegs{
-    {"event", virtsublegs::event}, {"own", virtsublegs::own}};
+    {"event", virtsublegs::event}, {"own", virtsublegs::own},
+    {"own_if_exponent", virtsublegs::own_if_exponent}};
 
   const std::vector<Option_Name> s_virtmassif{
     {"off", virtmassif::off}, {"electrons", virtmassif::electrons},

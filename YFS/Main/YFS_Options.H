@@ -156,9 +156,14 @@ namespace YFS {
     enum code { lab = 0, canonical = 1, tilted = 2, beam_axis = 3 };
   };
   //! YFS: VIRTUAL_SUB_LEGS - the dipoles of the Born virtual's IR subtraction:
-  //! own = the loop's own point (post-ISR beams), event = the event's dipoles.
+  //! own = the loop's own point (post-ISR beams), event = the event's dipoles
+  //! (poles no longer cancel after initial-state radiation, diagnostic only),
+  //! own_if_exponent (default) = own, plus the initial-final exponent's leg difference
+  //! Y_IF(own legs) - Y_IF(event legs) in v. The exponent's IF dipoles take the
+  //! beams before ISR, the loop the post-ISR beams; with the difference in v an
+  //! IF_VIRTUAL change cancels between exponent and v in every event.
   struct virtsublegs {
-    enum code { event = 0, own = 1 };
+    enum code { event = 0, own = 1, own_if_exponent = 2 };
   };
   //! YFS: VIRTUAL_MASSIFICATION - the external fermions the loop provider sees massless.
   struct virtmassif {

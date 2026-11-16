@@ -404,6 +404,8 @@ public:
   bool m_vborn_own_ok = false;
   double m_vborn_own = 0., m_vborn_own_sub = 0.;
   bool BornVirtualOnOwnLegs(double &vb);
+  //! VIRTUAL_SUB_LEGS own_if_exponent: Y_IF(own legs) - Y_IF(event legs)
+  double IFExponentLegShift();
   //! RV_PHOTON_CT: the external photon's alpha(0) counterterm on v_{n+1}
   bool m_rvct_done = false;
   double m_rvct = 0.;
