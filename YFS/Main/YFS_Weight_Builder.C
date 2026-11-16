@@ -1264,6 +1264,7 @@ void YFS_Weight_Builder::ComputeFixedOrderColumn(AcraicColumns &c)
     c.corr_acraic_fo = exp(c.dyif_fo - yfo)*rhofo/m_h.p_acraic->GetRhoCrude();
     if (IsBad(c.corr_acraic_fo)) c.corr_acraic_fo = 0.;
     ProbeN1(c, nphot, yfo);
+    ProbeN0(c, nphot, yfo);
     if (c.acraico2) {
       const double norm(exp(c.dyif_fo - yfo_born)/m_h.p_acraic->GetRhoCrude());
       c.corr_acraic_fo2 = AcraicFixedOrder2(nphot, yfo_born, c.vext_fo, c.d2_fo, c.rvrem_fo)*norm;
@@ -1272,6 +1273,29 @@ void YFS_Weight_Builder::ComputeFixedOrderColumn(AcraicColumns &c)
     if (IsBad(c.corr_acraic_fo2)) c.corr_acraic_fo2 = 0.;
     if (IsBad(c.corr_acraic_fo3)) c.corr_acraic_fo3 = 0.;
   }
+}
+
+/*
+  YFS: N0_PROBE (number of events, 0 = off): per zero-photon event of the
+  ACRAIC fixed-order stream, the soft + virtual factor 1 + vext + yfo it carries
+  and its parts, with the momenta (beam rest frame). A slicing referee at the
+  photon energy cut emin compares to it point by point.
+*/
+void YFS_Weight_Builder::ProbeN0(const AcraicColumns &c, size_t nphot, double yfo)
+{
+  static const int n0probe(ATOOLS::Settings::GetMainSettings()["YFS"]["N0_PROBE"].SetDefault(0).Get<int>());
+  static int nprobe(0);
+  if (!(n0probe > 0 && nphot == 0 && nprobe < n0probe)) return;
+  ++nprobe;
+  const double emin(0.5*sqrt(m_h.m_s)*m_h.m_isrcut);
+  std::cerr << std::setprecision(17) << "@@@ N0PROBE";
+  for (const Vec4D &p : m_h.m_ev.m_plab)
+    std::cerr << " p=" << p[0] << "," << p[1] << "," << p[2] << "," << p[3];
+  std::cerr << " emin=" << emin << " yfo=" << yfo << " vext=" << c.vext_fo
+            << " dyif=" << c.dyif_fo << " ffsum=" << m_h.m_ev.m_formfactor_sum
+            << " shift=" << m_h.p_dipoles->FormFactorShiftToRegion(emin)
+            << " corrfo=" << c.corr_acraic_fo << std::endl;
+  m_h.p_dipoles->ProbeDipoles(std::cerr, emin);
 }
 
 // YFS: N1_PROBE: per-event dump of the one-photon weight pieces

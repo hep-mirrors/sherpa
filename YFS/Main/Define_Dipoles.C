@@ -517,6 +517,42 @@ void Define_Dipoles::DumpDipoles(){
 }
 
 
+void Define_Dipoles::ProbeDipoles(std::ostream &out, double emin){
+  const SoftRegion gen(SoftRegion::Lab(emin, "P-gen"));
+  auto realOver = [this](YFS::Dipole &D, const SoftRegion &reg) {
+    Vec4D p1, p2;
+    D.LegsBeforeRadiation(p1, p2);
+    return p_yfsFormFact->BVR_full(reg, p1, p2, p1.Mass(), p2.Mass(), m_photonMass, 0);
+  };
+  auto print = [&](YFS::Dipole &D, const std::string &type, double expo, double realexp,
+                   DivArrD vsub) {
+    Vec4D p1, p2;
+    D.LegsBeforeRadiation(p1, p2);
+    out << "@@@ N0DIPOLE type=" << type << " cn=" << D.ChargeNorm() << " qq=" << D.m_QiQj
+        << " p1=" << p1[0] << "," << p1[1] << "," << p1[2] << "," << p1[3]
+        << " p2=" << p2[0] << "," << p2[1] << "," << p2[2] << "," << p2[3]
+        << " expo=" << expo << " realexp=" << realexp << " realgen=" << realOver(D, gen)
+        << " vsubfin=" << vsub.Finite() << " vsubir=" << vsub.GetIR()
+        << " lambda=" << m_photonMass << std::endl;
+  };
+  for (auto &D : m_set.ByType(dipoletype::initial)) {
+    const SoftRegion reg(p_yfsFormFact->ExponentRegion(D, sqrt(m_s)/2.));
+    print(D, "II", D.ChargeNorm()*p_yfsFormFact->BVR_full(D, sqrt(m_s)/2.),
+          D.ChargeNorm()*realOver(D, reg),
+          D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s)/2., 3));
+  }
+  for (auto &D : m_set.FF()) {
+    const SoftRegion reg(p_yfsFormFact->ExponentRegion(D, sqrt(D.Sprime())/2.));
+    print(D, "FF", D.ChargeNorm()*p_yfsFormFact->BVR_full(D, sqrt(D.Sprime())/2.),
+          D.ChargeNorm()*realOver(D, reg),
+          D.ChargeNorm()*p_yfsFormFact->BVV_full_eps(D, sqrt(m_s)/2., 3));
+  }
+  for (auto &D : m_set.IF())
+    print(D, "IF", m_ifisub ? D.ChargeNorm()*p_yfsFormFact->IFForFac(D, IFIOmega()) : 0.,
+          0., D.ChargeNorm()*IFVirtualBEps(D));
+}
+
+
 double Define_Dipoles::FormFactorSumIF(){
   if (!m_ifisub) return 0.;
   double form = 0;

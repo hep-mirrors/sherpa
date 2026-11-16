@@ -121,6 +121,13 @@ namespace YFS {
       //! One-shot dump (first call only) of the constructed dipole set:
       //! flavours, charges, radiating pairs, soft cutoffs. YFS: Dump_Dipoles.
       void DumpDipoles();
+      /*!
+        YFS: N0_PROBE: per dipole of the current event, its type and legs, the
+        exponent term, its real part over the exponent region, the real B-tilde
+        over the generation region (beam rest frame, emin), the dim.-reg. virtual
+        subtraction (finite, IR pole) and the photon mass. One line per dipole.
+      */
+      void ProbeDipoles(std::ostream &out, double emin);
       double IFIOmega() const;
       double RealIFWeight(const ATOOLS::Vec4D_Vector &photons);
       // YFS_Base is inherited privately, so expose what the handler reports.

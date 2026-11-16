@@ -57,6 +57,8 @@ namespace YFS {
     void ComputeFixedOrderColumn(AcraicColumns &c);
     //! YFS: N1_PROBE - the weight pieces of a one-photon event (@@@ N1PROBE)
     void ProbeN1(const AcraicColumns &c, size_t nphot, double yfo);
+    //! YFS: N0_PROBE: the zero-photon fixed-order soft + virtual pieces per event
+    void ProbeN0(const AcraicColumns &c, size_t nphot, double yfo);
     //! ACRAIC: FIXED_ORDER_STREAM at ORDER 2: the O(alpha^2) truncation of
     //! exp(Y(emin)) rho on an event with nphot photons
     double AcraicFixedOrder2(size_t nphot, double y, double v, double d2,
