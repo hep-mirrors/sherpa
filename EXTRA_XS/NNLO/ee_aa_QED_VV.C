@@ -8,6 +8,7 @@
 #include "EXTRA_XS/NNLO/ee_aa_QED_Poles.H"
 #include "PHASIC++/Process/Process_Info.H"
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace EXTRAXS;
 using namespace PHASIC;
@@ -29,6 +30,8 @@ ee_aa_QED_VV::ee_aa_QED_VV(const Process_Info &pi, const Flavour_Vector &flavs):
 {
   // Catani-subtracted: finite by construction
   m_providespoles = false;
+  ATOOLS::rpa->gen.AddCitation(1, "The two-loop QED e+e- -> gamma gamma amplitudes are from"
+                               " \\cite{Anastasiou:2002zn}.");
 }
 
 void ee_aa_QED_VV::Calc(const Vec4D_Vector &p)

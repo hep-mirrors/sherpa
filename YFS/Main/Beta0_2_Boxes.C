@@ -143,6 +143,21 @@ Complex YFS::TwoLoopPhotonicN(bool same, double x)
 }
 
 
+namespace {
+
+  //! the e+e- -> l+l- boxes cite their source once, when first applied
+  void CiteLeptonPairBoxes(const Photonic_Factors &f)
+  {
+    static bool done(false);
+    if (done || f.boxd2.empty()) return;
+    done = true;
+    rpa->gen.AddCitation(1, "The photonic two-loop boxes of e+e- -> l+l- (YFS: BETA0_2_BOXES) use the"
+                         " massless QED helicity amplitudes of \\cite{Dave:2024ewl}.");
+  }
+
+}
+
+
 void YFS::AddPhotonicTwoLoopBoxes(Photonic_Factors &f, const Flavour_Vector &fl,
                                   const Vec4D_Vector &p, double alpha)
 {
@@ -150,7 +165,11 @@ void YFS::AddPhotonicTwoLoopBoxes(Photonic_Factors &f, const Flavour_Vector &fl,
   if (fl.size() != 4 || p.size() < 4) return;
   const Flavour &e(fl[0]), &l(fl[2]);
   if (e.Kfcode() != kf_e || e.IsAnti() || fl[1] != e.Bar()) return;
-  if (l == e && fl[3] == e.Bar()) { AddBhabhaBoxes(f, e, p, alpha); return; }
+  if (l == e && fl[3] == e.Bar()) {
+    AddBhabhaBoxes(f, e, p, alpha);
+    CiteLeptonPairBoxes(f);
+    return;
+  }
   if ((l.Kfcode() != kf_mu && l.Kfcode() != kf_tau) || l.IsAnti() ||
       fl[3] != l.Bar()) return;
   const double s((p[0] + p[1]).Abs2()), t((p[0] - p[2]).Abs2()),
@@ -179,6 +198,7 @@ void YFS::AddPhotonicTwoLoopBoxes(Photonic_Factors &f, const Flavour_Vector &fl,
   }
   if (norm > 0.) f.boxavg /= norm;
   else { f.boxhel.clear(); f.boxd2.clear(); f.boxavg = 0.; }
+  CiteLeptonPairBoxes(f);
 }
 
 

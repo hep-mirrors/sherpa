@@ -29,7 +29,12 @@ Acraic_Base::Acraic_Base(const Flavour_Vector &flavs)
   m_checkxs = s["CHECK_XS"].Get<int>();
   m_comixflip = s["COMIX_REAL_FLIP"].Get<int>();
   m_comixnorm = s["COMIX_REAL_NORM"].Get<double>();
+  rpa->gen.AddCitation(1, "ACRAIC builds on the coherent exclusive exponentiation of"
+                       " \\cite{Jadach:2000ir} as implemented in KKMC \\cite{Jadach:1999vf}.");
   m_tnp          = s["TNP_STREAMS"].Get<bool>();
+  if (m_tnp)
+    rpa->gen.AddCitation(1, "The theory-nuisance streams of ACRAIC: TNP_STREAMS follow"
+                         " \\cite{Tackmann:2024kci}.");
   m_tnpifi       = m_tnp && s["TNP_IFI"].Get<bool>();
   m_tnpifichk    = s["TNP_IFI_CHECK"].Get<int>();
   m_comixborn    = s["COMIX_BORN"].Get<bool>();

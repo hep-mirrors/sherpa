@@ -3,6 +3,7 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 #include <algorithm>
 #include <limits>
@@ -313,6 +314,12 @@ namespace YFS {
     m_idxRad.clear();
     if (emission) m_idxRad = m_idxFF;
 
+    static bool cited(false);
+    if (!cited) {
+      cited = true;
+      rpa->gen.AddCitation(1, "The W pole-scheme decay stage of YFS follows"
+                           " \\cite{Jadach:1995sp,Placzek:2003zg}.");
+    }
     // decay stage: one (W, charged lepton) dipole per W, built as ifi so the parent W
     // carries the opposite theta to its daughter (charge conserving, eq (12) of
     // hep-ph/0302065). The W label is offset by the event size so the dump

@@ -15,6 +15,7 @@
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "MODEL/Main/Model_Base.H"
 
 #include <iomanip>
@@ -75,6 +76,9 @@ void NLO_Base::InitBeta02()
     THROW(fatal_error, "YFS/ACRAIC: BETA0_2 needs YFS: Dim_Reg: true. The"
           " photon-mass subtraction (BVirtGeneral) of an s-channel dipole is"
           " not KKMC's B, see NLO_Beta02.C.");
+  rpa->gen.AddCitation(1, "The second-order virtual corrections of YFS/ACRAIC BETA0_2 follow the"
+                       " coherent exclusive exponentiation of \\cite{Jadach:2000ir}, with the"
+                       " two-loop massive form factor of \\cite{Penin:2005eh}.");
   msg_Info()<<"YFS: BETA0_2 (YFS.NLO): "<<Beta02Describe(m_b02nlo)<<"\n"
             <<"ACRAIC: BETA0_2 (ACRAIC): "<<Beta02Describe(m_b02acraic)<<std::endl;
   if (Main()["YFS"]["BETA0_2_MUE_BOXES"].Get<beta02mueboxes::code>() == beta02mueboxes::photonic)

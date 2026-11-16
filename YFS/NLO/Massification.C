@@ -26,7 +26,14 @@ namespace {
 
 bool Massification::Enabled()
 {
-  return Mode() != virtmassif::off;
+  const bool on(Mode() != virtmassif::off);
+  static bool cited(false);
+  if (on && !cited) {
+    cited = true;
+    rpa->gen.AddCitation(1, "The massification of the virtual corrections (YFS: VIRTUAL_MASSIFICATION)"
+                         " follows \\cite{Engel:2018fsb}.");
+  }
+  return on;
 }
 
 virtmassif::code Massification::Mode()
