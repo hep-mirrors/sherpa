@@ -42,10 +42,10 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     Vec4D ewsum;
     for (size_t i(0);i<campl->Legs().size();++i)
       if (!campl->Leg(i)->Flav().Strong()) ewsum+=campl->Leg(i)->Mom();
-      else q+=sqrt(dabs(campl->Leg(i)->Mom().MPerp2()));
-    q+=sqrt(dabs(ewsum.MPerp2()));
+      else q+=campl->Leg(i)->Mom().MPerp2();
+    q=ewsum.Abs2()+(ewsum.PPerp2()+q)/2.0;
     campl->Delete();
-    return PDF::Cluster_Param(NULL,q*q/4.0,q*q/4.0,q*q/4.0,-1);
+    return PDF::Cluster_Param(NULL,q,q,q,-1);
   }
   Flavour_Vector fl; fl.resize(4);
   fl[0]=campl->Leg(0)->Flav();
@@ -55,12 +55,8 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   if (fl[0].Strong() && fl[1].Strong()) {// hh collision
     if (fl[2].Strong() && fl[3].Strong()) {
       msg_Debugging()<<"pure QCD like\n";
-      double s(2.0*campl->Leg(0)->Mom()*campl->Leg(1)->Mom());
-      double t1(2.0*campl->Leg(0)->Mom()*campl->Leg(2)->Mom());
-      double u1(2.0*campl->Leg(0)->Mom()*campl->Leg(3)->Mom());
-      double t2(2.0*campl->Leg(1)->Mom()*campl->Leg(3)->Mom());
-      double u2(2.0*campl->Leg(1)->Mom()*campl->Leg(2)->Mom());
-      muq2=muf2=mur2=-1.0/(1.0/s+2.0/(t1+t2)+2.0/(u1+u2))/sqrt(2.0);
+      muq2=muf2=mur2=(campl->Leg(2)->Mom().PPerp2()+
+		      campl->Leg(3)->Mom().PPerp2())/2.0;
     }
     else if (!fl[2].Strong() && !fl[3].Strong()) {
       msg_Debugging()<<"DY like\n";
@@ -68,8 +64,9 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     }
     else if (fl[2].Strong() && !fl[3].Strong()) {
       msg_Debugging()<<"jV like\n";
-      muq2=muf2=mur2=Max(campl->Leg(3)->Mom().Abs2(),
-			 campl->Leg(2)->Mom().PPerp2());
+      muq2=muf2=mur2=campl->Leg(3)->Mom().Abs2()+
+	(campl->Leg(3)->Mom().PPerp2()+
+	 campl->Leg(2)->Mom().PPerp2())/2.0;
       if (fl[3].Kfcode()==25) {
 	msg_Debugging()<<"H special\n";
 	mur2=pow(mur2*pow(fl[3].Mass(),4.),1./3.); 
@@ -77,8 +74,9 @@ PDF::Cluster_Param Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     }
     else if (!fl[2].Strong() && fl[3].Strong()) {
       msg_Debugging()<<"Vj like\n";
-      muq2=muf2=mur2=Max(campl->Leg(2)->Mom().Abs2(),
-			 campl->Leg(3)->Mom().PPerp2());
+      muq2=muf2=mur2=campl->Leg(2)->Mom().Abs2()+
+	(campl->Leg(2)->Mom().PPerp2()+
+	 campl->Leg(3)->Mom().PPerp2())/2.0;
       if (fl[2].Kfcode()==25) {
 	msg_Debugging()<<"H special\n";
 	mur2=pow(mur2*pow(fl[2].Mass(),4.),1./3.); 

@@ -89,10 +89,23 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   m_qcd = ( (p_lf->FlA().Strong()!=0 || p_lf->FlA().IsDiQuark()) &&
 	    (p_lf->FlB().Strong()!=0 || p_lf->FlB().IsDiQuark()) &&
 	    (p_lf->FlC().Strong()!=0 || p_lf->FlC().IsDiQuark()) );
-  m_on=PureQCD()&&(ckey.m_qcdmode&1);// so far only qcd evolution
-  if (!m_on && (ckey.m_ewmode&1) &&
-      (p_lf->FlA().IsPhoton() || p_lf->FlB().IsPhoton() ||
-       p_lf->FlC().IsPhoton())) m_on=(ckey.m_ewmode&2)?0:1;
+  if (PureQCD()) m_on=(ckey.m_qcdmode&1);
+  else {
+    if (!(ckey.m_ewmode&1)) m_on=-1;
+    else {
+      if (p_lf->FlA().IsPhoton() || p_lf->FlB().IsPhoton() ||
+	  p_lf->FlC().IsPhoton()) {
+	if (ckey.m_ewmode&2) m_on=0;
+	else {
+	  m_on=1;
+	  if (ckey.m_ewmode&4 &&
+	      !(p_lf->FlA().Strong() || p_lf->FlB().Strong() ||
+		p_lf->FlC().Strong())) m_on=0;
+	}
+      }
+      else m_on=(ckey.m_ewmode&4)?1:0;
+    }
+  }
   if (key.p_v->in[1].Mass()>10.0 &&
       key.p_v->in[2].Mass()>10.0) m_on=0;
   if (key.p_v->in[1]==key.p_v->in[2] &&

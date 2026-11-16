@@ -94,7 +94,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
   cs.m_wk=0.0;
   cs.m_col=col;
   Splitting_Function_Base *cdip(GetSF(i,j,k,mo,cs));
-  if (cdip==NULL || !cdip->On()) return cs;
+  if (cdip==NULL) return cs;
   if ((i->Id()&3)==0) {
     if ((j->Id()&3)==0) {
       if ((k->Id()&3)==0) {
@@ -176,7 +176,7 @@ void CS_Cluster_Definitions::KernelWeight
  const ATOOLS::Cluster_Leg *k,const ATOOLS::Flavour &mo,
  CS_Parameters &cs,const int kmode) const
 {
-  if (cdip==NULL || !cdip->On()) {
+  if (cdip==NULL) {
     cs.m_wk=0.0;
     return;
   }
@@ -206,6 +206,7 @@ void CS_Cluster_Definitions::KernelWeight
   }
   cs.p_sf=cdip;
   p_shower->SetMS(p_ms);
+  cdip->SetMS(p_ms);
   cdip->SetFlavourSpec(fls);
   cs.m_mu2=cdip->Lorentz()->Scale(cs.m_z,cs.m_y,cs.m_kt2,Q2);
   cs.m_mu2=Max(cs.m_mu2,cs.m_mode&1?

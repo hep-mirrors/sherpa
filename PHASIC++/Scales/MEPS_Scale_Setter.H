@@ -27,10 +27,11 @@ namespace PHASIC {
     std::shared_ptr<Color_Integrator> p_ci;
 
     double m_rsf, m_fsf;
+    mutable int m_ntrials;
     int    m_cmode, m_nmin, m_allowuo;
     int    m_rproc, m_sproc, m_rsproc, m_vproc, m_nproc;
 
-    static int s_nfgsplit, s_allowuo, s_nlocpl;
+    static int s_nfgsplit, s_allowuo, s_nlocpl, s_maxtrials;
 
     int Select(const PDF::ClusterInfo_Vector &ccs,
 	       const Int_Vector &on,const int mode=0) const;

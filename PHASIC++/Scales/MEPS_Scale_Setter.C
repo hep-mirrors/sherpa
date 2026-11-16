@@ -42,6 +42,7 @@ PrintInfo(std::ostream &str,const size_t width) const
 int MEPS_Scale_Setter::s_nfgsplit(-1);
 int MEPS_Scale_Setter::s_allowuo(0);
 int MEPS_Scale_Setter::s_nlocpl(-1);
+int MEPS_Scale_Setter::s_maxtrials(-1);
 
 MEPS_Scale_Setter::MEPS_Scale_Setter
 (const Scale_Setter_Arguments &args,const int mode):
@@ -51,6 +52,7 @@ MEPS_Scale_Setter::MEPS_Scale_Setter
   static int s_cmode(-1), s_csmode, s_nmaxall, s_nmaxnloall, s_kfac;
   if (s_cmode<0) {
     Scoped_Settings s(Settings::GetMainSettings()["MEPS"]);
+    s_maxtrials=s["MAX_TRIALS"].GetScalarWithOtherDefault<int>(1000);
     s_nmaxall=s["NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
     s_nmaxnloall=s["NLO_NMAX_ALLCONFIGS"].GetScalarWithOtherDefault<int>(-1);
     s_cmode=s["CLUSTER_MODE"].GetScalarWithOtherDefault<int>(8|32|64);
@@ -290,6 +292,7 @@ void MEPS_Scale_Setter::Combine
 double MEPS_Scale_Setter::Calculate
 (const Vec4D_Vector &momenta,const size_t &mode)
 {
+  m_ntrials=0;
   m_p=momenta;
   if (m_nproc || (m_cmode&8)) p_ci=NULL;
   else p_ci=p_proc->Caller()->Integrator()->ColorIntegrator();
@@ -376,6 +379,10 @@ double MEPS_Scale_Setter::Calculate
     return sqrt(-1);
   }
   Cluster(ampl,ampls,m_allowuo?0:1);
+  if (m_ntrials>s_maxtrials) {
+    msg_Error()<<METHOD<<"(): No clustering history after "
+	       <<s_maxtrials<<" trials."<<std::endl;
+  }
   p_proc->Caller()->Generator()->SetMassMode(mm);
   if (ampls.empty()) {
     SetCoreScale(ampl);
@@ -526,8 +533,10 @@ void MEPS_Scale_Setter::Cluster
       if (ccs[i].second.m_op) ClusterStep(ampl,ampls,ccs[i],ord);
   }
   else {
-    for (int i(Select(ccs,on));i>=0;on[i]=0,i=Select(ccs,on))
+    for (int i(Select(ccs,on));i>=0;on[i]=0,i=Select(ccs,on)) {
       if (ClusterStep(ampl,ampls,ccs[i],ord)) return;
+      if (m_ntrials>s_maxtrials) return;
+    }
   }
   if ((m_cmode&16) && !CoreCandidate(ampl)) return;
   if (ampls.size()>oldsize) return;
@@ -597,6 +606,7 @@ double MEPS_Scale_Setter::Differential
 
 void MEPS_Scale_Setter::SetCoreScale(Cluster_Amplitude *const ampl) const
 {
+  ++m_ntrials;
   PDF::Cluster_Param kt2(p_core->Calculate(ampl));
   ampl->SetKT2(kt2.m_kt2);
   ampl->SetMu2(kt2.m_mu2);

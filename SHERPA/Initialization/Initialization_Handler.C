@@ -259,7 +259,7 @@ void Initialization_Handler::RegisterDefaults()
   pss["CKFMODE"].SetDefault(1);
   pss["PDFCHECK"].SetDefault(1);
   pss["QCD_MODE"].SetDefault(1);
-  pss["EW_MODE"].SetDefault(false);
+  pss["EW_MODE"].SetDefault(5);
   pss["RECO_DECAYS"].SetDefault(0);
   pss["MAXPART"].SetDefault(std::numeric_limits<int>::max());
   pss["PDF_MIN"].SetDefault(1.0e-4);
