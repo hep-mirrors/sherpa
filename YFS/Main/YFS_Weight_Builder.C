@@ -2,6 +2,7 @@
 #include "YFS/Main/YFS_Handler.H"
 #include "YFS/Main/ISR.H"
 #include "YFS/Main/Beta0_2.H"
+#include "YFS/Main/Beta0_2_Boxes.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
@@ -1120,6 +1121,13 @@ void YFS_Weight_Builder::ApplyHelicityVirtual(AcraicColumns &c)
       const std::vector<Complex> bx(m_h.p_acraic->PhysicalLabelsToAcraic
         (m_h.p_nlo->Beta02Factors().boxhel, m_h.p_nlo->Beta02Factors().boxd2, Complex(0., 0.)));
       for (size_t f(0); f < db.size() && f < bx.size(); ++f) db[f] += bx[f];
+    }
+    // l e -> l e (BETA0_2_MUE_BOXES): D less the helicity spread of delta^h
+    if (ok && m_h.p_nlo->Beta02Acraic().mode == beta02::two_loop &&
+        m_h.p_nlo->Beta02Factors().muebox != 0.) {
+      const double mue(MuEBoxHelicityShare(m_h.p_nlo->Beta02Factors(),
+                                           m_h.p_nlo->m_la0, m_h.p_nlo->m_ldelta));
+      for (Complex &x : db) x += Complex(mue, 0.);
     }
     for (Complex &x : dhb) x += Complex(d2ext, 0.);
     c.b02_acraic = (m_h.p_acraic->HelicityVirtualRho(db) - m_h.p_acraic->HelicityVirtualRho(d))/rcr;

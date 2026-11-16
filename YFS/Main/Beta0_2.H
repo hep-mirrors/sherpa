@@ -74,10 +74,17 @@ namespace YFS {
     Complex nll    = Complex(0., 0.);    //!< sum_pairs NLL_ij
     Complex cst    = Complex(0., 0.);    //!< sum over vertex pairs of (alpha/pi)^2 Q^4 (C + K)
     std::vector<Complex> f, n, c;        //!< f_ij, NLL_ij and the constant per selected pair
+    //! per selected pair: its legs are on two different charged lines (different flavours)
+    std::vector<bool> twolines;
     //! two-loop boxes per physical helicity and Born-weighted (Beta0_2_Boxes.H)
     std::vector<std::vector<int> > boxhel;
     std::vector<Complex> boxd2;
     double boxavg = 0.;
+    //! l e -> l e photonic two-loop remainder D (BETA0_2_MUE_BOXES), also in boxavg
+    double muebox = 0.;
+    //! D was applied: it holds the whole mixed-class two loop, so two_loop leaves
+    //! out the NLL terms of the pairs across the two lines
+    bool mueboxapplied = false;
   };
 
   //! f_ij and NLL_ij of every selected charged pair of p (legs 0 .. nin-1

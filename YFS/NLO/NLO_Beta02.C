@@ -76,6 +76,9 @@ void NLO_Base::InitBeta02()
           " not KKMC's B, see NLO_Beta02.C.");
   msg_Info()<<"YFS: BETA0_2 (YFS.NLO): "<<Beta02Describe(m_b02nlo)<<"\n"
             <<"ACRAIC: BETA0_2 (ACRAIC): "<<Beta02Describe(m_b02acraic)<<std::endl;
+  if (Main()["YFS"]["BETA0_2_MUE_BOXES"].Get<beta02mueboxes::code>() == beta02mueboxes::photonic)
+    msg_Info()<<"YFS: BETA0_2_MUE_BOXES photonic: l e -> l e two-loop remainder D(s, t),"
+              <<" tabulated from the matrix element of arXiv:2212.06481 (two_loop only)"<<std::endl;
 }
 
 
@@ -89,6 +92,24 @@ void NLO_Base::BuildBeta02()
   if (boxes && m_b02.ok && (m_b02acraic.mode == beta02::two_loop ||
                             m_b02nlo.mode == beta02::two_loop))
     AddPhotonicTwoLoopBoxes(m_b02, m_flavs, m_plab, m_b02acraic.alpha);
+  // l e -> l e: the photonic two-loop remainder beyond the vertices (into boxavg)
+  static const beta02mueboxes::code mue(Main()["YFS"]["BETA0_2_MUE_BOXES"]
+                                        .Get<beta02mueboxes::code>());
+  if (mue == beta02mueboxes::photonic && m_b02.ok &&
+      (m_b02acraic.mode == beta02::two_loop || m_b02nlo.mode == beta02::two_loop)) {
+    switch (AddMuEPhotonicTwoLoop(m_b02, m_flavs, m_plab, m_b02acraic.alpha)) {
+    case MuEBox::not_mue: break;
+    case MuEBox::applied: ++m_mue_applied; break;
+    case MuEBox::below_power: ++m_mue_power; break;
+    case MuEBox::outside_s:
+      if (m_mue_outside_s++ == 0)
+        msg_Error()<<"YFS: BETA0_2_MUE_BOXES: s = "<<(m_plab[0] + m_plab[1]).Abs2()
+                   <<" GeV^2 for "<<m_flavs[0]<<" "<<m_flavs[1]<<" is outside the"
+                   <<" table's s/M^2 range (Beta0_2_Boxes_MuE_Table.H): not applied"
+                   <<" there, counted in the end-of-run report."<<std::endl;
+      break;
+    }
+  }
   // e+e- -> gamma gamma: the AGT two-loop hard function on top of two_loop
   static const bool diphoton(Main()["YFS"]["BETA0_2_DIPHOTON"].Get<bool>());
   double daa(0.);
@@ -167,11 +188,14 @@ double NLO_Base::Beta02SquaredLevel() const
   */
   if (m_m1sq == m1square::helicity && m_lhelok && m_la0.size() == m_ldelta.size()) {
     double s0(0.), s2(0.);
+    // l e -> l e: D less the helicity spread that |1 + delta_h + d2_h|^2 adds
+    const double mue(m_b02nlo.mode == beta02::two_loop
+                     ? MuEBoxHelicityShare(m_b02, m_la0, m_ldelta) : 0.);
     for (size_t c(0); c < m_la0.size(); ++c) {
       const double w(std::norm(m_la0[c]));
       Complex d2(Beta02Delta(m_b02, m_ldelta[c], m_b02nlo));
       if (m_b02nlo.mode == beta02::two_loop && c < m_lhel.size())
-        d2 += Beta02BoxFor(m_b02, m_lhel[c]);
+        d2 += Beta02BoxFor(m_b02, m_lhel[c]) + mue;
       s0 += w;
       s2 += w*std::norm(1. + m_ldelta[c] + d2);
     }
@@ -241,4 +265,12 @@ void NLO_Base::ReportBeta02()
 #endif
   msg_Out()<<"BETA0_2: photonic factors built on "<<(long)buf[0]
            <<" events, "<<(long)buf[1]<<" without (massless charged leg).\n";
+  double mb[3] = {(double)m_mue_applied, (double)m_mue_outside_s, (double)m_mue_power};
+#ifdef USING__MPI
+  if (mpi->Size() > 1) mpi->Allreduce(mb, 3, MPI_DOUBLE, MPI_SUM);
+#endif
+  if (mb[0] + mb[1] + mb[2] > 0.)
+    msg_Out()<<"BETA0_2_MUE_BOXES: l e -> l e remainder applied on "<<(long)mb[0]
+             <<" events; not applied on "<<(long)mb[1]<<" outside the table's s range and "
+             <<(long)mb[2]<<" below -t = 100 m_e^2.\n";
 }

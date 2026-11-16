@@ -131,6 +131,14 @@ namespace YFS {
   struct ifvirtual {
     enum code { exact = 0, tbvirt = 1, s_channel = 2, tbvirt_exact_ir = 3 };
   };
+  //! YFS: BETA0_2_MUE_BOXES - the photonic two-loop remainder of l e -> l e
+  //! (l = mu, tau; e massless) beyond the vertex form factors, BETA0_2 two_loop
+  //! only. photonic (default): D(s, t) tabulated from the two-loop matrix element
+  //! of arXiv:2212.06481 (Beta0_2_Boxes.H), applied only to an l e -> l e Born
+  //! inside the table's range. none: off.
+  struct beta02mueboxes {
+    enum code { none = 0, photonic = 1 };
+  };
   //! YFS: BETA0_2_HIGHER - BETA0_2 two_loop beyond O(alpha^2). none: delta^(2)
   //! stops at O(alpha^2). exponentiated: adds the higher orders of the
   //! factorisable exponent, exp(delta_f)(1 + NLL) - 1 - delta_f minus its
@@ -307,6 +315,8 @@ namespace YFS {
   std::ostream &operator<<(std::ostream &str, const beta02on::code &c);
   std::istream &operator>>(std::istream &str, beta02higher::code &c);
   std::ostream &operator<<(std::ostream &str, const beta02higher::code &c);
+  std::istream &operator>>(std::istream &str, beta02mueboxes::code &c);
+  std::ostream &operator<<(std::ostream &str, const beta02mueboxes::code &c);
   std::istream &operator>>(std::istream &str, beta02alpha::code &c);
   std::ostream &operator<<(std::ostream &str, const beta02alpha::code &c);
   std::istream &operator>>(std::istream &str, dysonvp::code &c);

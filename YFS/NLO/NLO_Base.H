@@ -361,6 +361,9 @@ public:
   YFS::Photonic_Factors m_b02;
   YFS::Beta02_Config m_b02acraic, m_b02nlo;
   long m_b02_n = 0, m_b02_fail = 0;
+  //! BETA0_2_MUE_BOXES: l e -> l e events with D applied, outside the table's s
+  //! range, below its leading-power |t|
+  long m_mue_applied = 0, m_mue_outside_s = 0, m_mue_power = 0;
   std::unique_ptr<YFS::Dyson_VP> p_dysonvp;
   YFS::VP_Factors m_vp;
   long m_vp_n = 0, m_vp_fail = 0;

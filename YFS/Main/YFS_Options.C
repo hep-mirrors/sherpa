@@ -146,6 +146,9 @@ namespace {
   const std::vector<Option_Name> s_beta02higher{
     {"none", beta02higher::none}, {"exponentiated", beta02higher::exponentiated}};
 
+  const std::vector<Option_Name> s_beta02mueboxes{
+    {"none", beta02mueboxes::none}, {"photonic", beta02mueboxes::photonic}};
+
   const std::vector<Option_Name> s_beta02alpha{
     {"alpha0", beta02alpha::alpha0}, {"loop", beta02alpha::loop}};
 
@@ -374,6 +377,11 @@ std::istream &YFS::operator>>(std::istream &s, beta02higher::code &c)
 { return ReadOption(s, c, s_beta02higher, "YFS: BETA0_2_HIGHER"); }
 std::ostream &YFS::operator<<(std::ostream &s, const beta02higher::code &c)
 { return WriteOption(s, c, s_beta02higher); }
+
+std::istream &YFS::operator>>(std::istream &s, beta02mueboxes::code &c)
+{ return ReadOption(s, c, s_beta02mueboxes, "YFS: BETA0_2_MUE_BOXES"); }
+std::ostream &YFS::operator<<(std::ostream &s, const beta02mueboxes::code &c)
+{ return WriteOption(s, c, s_beta02mueboxes); }
 
 std::istream &YFS::operator>>(std::istream &s, beta02alpha::code &c)
 { return ReadOption(s, c, s_beta02alpha, "YFS: BETA0_2_ALPHA"); }

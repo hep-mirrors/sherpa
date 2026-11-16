@@ -132,6 +132,22 @@ namespace {
     return d2;
   }
 
+  /*
+    The factors without the NLL terms of the pairs across two lines (the mu-e
+    pairs of l e -> l e). Those terms are mixed-class O(alpha^2), which the
+    BETA0_2_MUE_BOXES remainder D already holds in full.
+  */
+  Photonic_Factors WithoutTwoLineNLL(const Photonic_Factors &f)
+  {
+    Photonic_Factors r(f);
+    for (size_t d(0); d < r.n.size() && d < r.twolines.size(); ++d) {
+      if (!r.twolines[d]) continue;
+      r.nll -= r.n[d];
+      r.n[d] = Complex(0., 0.);
+    }
+    return r;
+  }
+
   //! delta^(2) for a delta_f and a w of the same kind (both complex or both real)
   Complex Assemble(const Photonic_Factors &f, const Complex &w,
                    const Beta02_Config &cfg)
@@ -142,7 +158,7 @@ namespace {
     case beta02::ll:    d2 = LeadingLog(f, cfg.cross); break;
     case beta02::llnll: d2 = LeadingLog(f, cfg.cross) + f.nll; break;
     case beta02::two_loop:
-      d2 = TwoLoopDelta(f, cfg);
+      d2 = TwoLoopDelta(f.mueboxapplied ? WithoutTwoLineNLL(f) : f, cfg);
       break;
     case beta02::exp:   d2 = Exponentiated(f, cfg.cross); break;
     }
@@ -248,6 +264,7 @@ Photonic_Factors YFS::PhotonicFactors(const Flavour_Vector &fl,
       out.f.push_back(fij);
       out.n.push_back(nll);
       out.c.push_back(cij);
+      out.twolines.push_back(fl[i].Kfcode() != fl[j].Kfcode());
       out.deltaf += fij;
       out.nll    += nll;
       out.cst    += cij;

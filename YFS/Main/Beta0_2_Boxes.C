@@ -9,10 +9,12 @@
 #include "YFS/Main/Beta0_2.H"
 #include "YFS/Main/Beta0_2_Boxes_Table.H"
 #include "YFS/Main/Beta0_2_Boxes_Bhabha_Table.H"
+#include "YFS/Main/Beta0_2_Boxes_MuE_Table.H"
 #include "EXTRA_XS/NNLO/ee_aa_QED_TwoLoop.H"
 #include "EXTRA_XS/NNLO/ee_aa_QED_VV.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 #include <cmath>
 
@@ -43,6 +45,8 @@ namespace {
 
   //! Bhabha boxes only at leading power: min(|t|, |u|) above this times m_e^2
   const double s_bhabha_min_q2m2(100.);
+  //! l e -> l e remainder only at leading power: |t| above this times m_e^2
+  const double s_mue_min_q2m2(100.);
 
   //! the three Bhabha helicity classes of Beta0_2_Boxes_Bhabha_Table.H
   enum class BhabhaClass { s_only, s_and_t, t_only };
@@ -160,6 +164,105 @@ void YFS::AddPhotonicTwoLoopBoxes(Photonic_Factors &f, const Flavour_Vector &fl,
   }
   if (norm > 0.) f.boxavg /= norm;
   else { f.boxhel.clear(); f.boxd2.clear(); f.boxavg = 0.; }
+}
+
+
+namespace {
+
+  //! Catmull-Rom interpolation of v[0 .. n-1] on the uniform grid y0 + i dy
+  double CatmullRom(const double *v, int n, double y0, double dy, double y)
+  {
+    const double u(Max(0., Min(double(n - 1), (y - y0)/dy)));
+    const int i(Min(n - 2, int(u)));
+    const double t(u - i);
+    const double p0(v[Max(0, i - 1)]), p1(v[i]), p2(v[i + 1]), p3(v[Min(n - 1, i + 2)]);
+    return p1 + 0.5*t*(p2 - p0 + t*(2.*p0 - 5.*p1 + 4.*p2 - p3
+                                    + t*(3.*(p1 - p2) + p3 - p0)));
+  }
+
+  //! one column of Beta0_2_Boxes_MuE_Table.H at (s, nu), s = s/M^2: Catmull-Rom
+  //! in nu, linear between the s nodes, both clamped to the grid
+  double MuETable(const double (*col)[B02MuETable::s_nnu], double s, double nu)
+  {
+    using namespace B02MuETable;
+    const double sc(Max(s_s[0], Min(s_s[s_ns - 1], s)));
+    int j(0);
+    while (j < s_ns - 2 && sc > s_s[j + 1]) ++j;
+    const double w((sc - s_s[j])/(s_s[j + 1] - s_s[j]));
+    return (1. - w)*CatmullRom(col[j], s_nnu, s_nu0, s_dnu, nu)
+      + w*CatmullRom(col[j + 1], s_nnu, s_nu0, s_dnu, nu);
+  }
+
+  //! the leg indices of l e -> l e: {e in, l in, e out, l out}, or empty
+  std::vector<size_t> MuELegs(const Flavour_Vector &fl)
+  {
+    if (fl.size() != 4) return {};
+    auto light = [](const Flavour &f) { return f.Kfcode() == kf_e; };
+    auto heavy = [](const Flavour &f) { return f.Kfcode() == kf_mu || f.Kfcode() == kf_tau; };
+    for (size_t ei : {0, 1}) for (size_t eo : {2, 3}) {
+      const size_t li(1 - ei), lo(5 - eo);
+      if (light(fl[ei]) && fl[eo] == fl[ei] && heavy(fl[li]) && fl[lo] == fl[li])
+        return {ei, li, eo, lo};
+    }
+    return {};
+  }
+
+}
+
+
+double YFS::MuEPhotonicTwoLoopD(double s, double t, double qQ)
+{
+  if (!(s > 1.) || !(t < 0.)) return 0.;
+  const double tmin(-sqr(s - 1.)/s);
+  const double xi(Max(1.e-12, Min(1. - 1.e-12, t/tmin)));
+  const double nu(log(xi/(1. - xi)));
+  return MuETable(B02MuETable::s_even, s, nu) + qQ*MuETable(B02MuETable::s_odd, s, nu);
+}
+
+
+YFS::MuEBox YFS::AddMuEPhotonicTwoLoop(Photonic_Factors &f, const Flavour_Vector &fl,
+                                      const Vec4D_Vector &p, double alpha)
+{
+  using namespace B02MuETable;
+  f.muebox = 0.;
+  f.mueboxapplied = false;
+  const std::vector<size_t> leg(MuELegs(fl));
+  if (leg.empty() || p.size() != 4) return MuEBox::not_mue;
+  const double M2(sqr(fl[leg[1]].Mass()));
+  if (!(M2 > 0.)) return MuEBox::not_mue;
+  // s, t in units of the heavy mass, at m_e = 0
+  const double s((p[leg[0]] + p[leg[1]]).Abs2()/M2), t((p[leg[0]] - p[leg[2]]).Abs2()/M2);
+  if (!(s >= s_s[0] && s <= s_s[s_ns - 1])) return MuEBox::outside_s;
+  if (!(-t*M2 > s_mue_min_q2m2*sqr(fl[leg[0]].Mass()))) return MuEBox::below_power;
+  const double xi(t/(-sqr(s - 1.)/s));
+  if (!(xi > 0.) || log(xi/Max(1.e-300, 1. - xi)) < s_nu0) return MuEBox::below_power;
+  // physical charges: Q_e Q_l = -1 for mu+ e-, +1 for mu- e-
+  const double qQ(fl[leg[0]].Charge()*fl[leg[1]].Charge());
+  f.muebox = sqr(alpha/M_PI)*MuEPhotonicTwoLoopD(s, t, qQ);
+  f.boxavg += f.muebox;
+  f.mueboxapplied = true;
+  static bool cited(false);
+  if (!cited) {
+    cited = true;
+    rpa->gen.AddCitation(1, "The photonic two-loop l e -> l e amplitude (YFS: BETA0_2_MUE_BOXES) is"
+                         " tabulated from \\cite{Broggio:2022htr}, based on"
+                         " \\cite{Bonciani:2021okt,Mastrolia:2017pfy,DiVita:2018nnh}.");
+  }
+  return MuEBox::applied;
+}
+
+
+double YFS::MuEBoxHelicityShare(const Photonic_Factors &f, const std::vector<Complex> &a0,
+                                const std::vector<Complex> &delta)
+{
+  if (f.muebox == 0. || a0.empty() || a0.size() != delta.size()) return 0.;
+  double s0(0.), s1(0.), s2(0.);
+  for (size_t c(0); c < a0.size(); ++c) {
+    const double w(std::norm(a0[c])), r(delta[c].real());
+    s0 += w; s1 += w*r; s2 += w*r*r;
+  }
+  if (!(s0 > 0.)) return 0.;
+  return f.muebox - (s2/s0 - sqr(s1/s0));
 }
 
 

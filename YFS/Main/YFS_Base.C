@@ -156,7 +156,11 @@ void YFS_Base::RegisterDefaults(){
     Beta0_2_Vertex.H. BETA0_2_W_SQUARE (true): add (1/2) w^2, w = delta -
     delta_f, so that w is exponentiated with delta_f and delta^(2) = delta^2/2
     + the logarithmic two-loop terms (the exact vertex structure); needs
-    BETA0_2_WEAK_PRODUCT. BETA0_2 on retires the VV_EEX estimate.
+    BETA0_2_WEAK_PRODUCT. BETA0_2_MUE_BOXES (photonic|none, default photonic):
+    the photonic two-loop remainder of l e -> l e (l = mu, tau) beyond the
+    vertices (Beta0_2_Boxes.H), tabulated from the matrix element of
+    arXiv:2212.06481; it checks the process and the table's range per event and
+    does nothing elsewhere. BETA0_2 on retires the VV_EEX estimate.
   */
   s["BETA0_2"].SetDefault(beta02::none);
   s["BETA0_2_PAIRS"].SetDefault(beta02pairs::all);
@@ -166,6 +170,7 @@ void YFS_Base::RegisterDefaults(){
   s["BETA0_2_W_SQUARE"].SetDefault(true);
   s["BETA0_2_ALPHA"].SetDefault(beta02alpha::alpha0);
   s["BETA0_2_BOXES"].SetDefault(true);
+  s["BETA0_2_MUE_BOXES"].SetDefault(beta02mueboxes::photonic);
   //! YFS: BETA0_2_HIGHER none|exponentiated (none): two_loop plus the higher orders
   //! of exp(delta_f)(1 + NLL), the LL delta_f^3/6 and beyond
   s["BETA0_2_HIGHER"].SetDefault(beta02higher::none);
