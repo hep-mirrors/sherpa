@@ -90,6 +90,23 @@ void Tag_Setter::AssignId(Term *term)
 
 namespace PHASIC {
 
+  // The dressing functions take (<method>,<dR>) followed by optional
+  // (<kf>,<dR>) pairs. Only cone dressing is implemented. Validate on every
+  // call, not only when the process has photons to dress, so that a bad
+  // argument fails on the first evaluation instead of being ignored.
+  static void CheckDressingArguments(const std::string &function,
+                                     const std::vector<Term*> &args)
+  {
+    if (args.empty()) return;
+    if (args.size()%2)
+      THROW(fatal_error,function+": expected (<method>,<dR>) followed by "
+            +"(<kf>,<dR>) pairs.");
+    const std::string method(args[0]->Get<std::string>());
+    if (method!="Cone")
+      THROW(not_implemented,function+": dressing method '"+method
+            +"' is not implemented; only 'Cone' is available.");
+  }
+
   class H_TY2: public Function {
   private:
 
@@ -194,14 +211,6 @@ namespace PHASIC {
       return pp;
     }
 
-    Vec4D_Vector RecombinationDress(const Vec4D_Vector& p,
-                                    const double& exp,
-                                    std::vector<double>& dR2s) const
-    {
-      THROW(not_implemented,"Not implemented.");
-      return p;
-    }
-
     Term *Evaluate(Algebra_Interpreter *const interpreter,
 		   const std::vector<Term*> &args) const
     {
@@ -209,10 +218,10 @@ namespace PHASIC {
       if (m_l1<p_setter->Process()->NIn() || m_l2<p_setter->Process()->NIn())
         msg_Error()<<METHOD<<"(): Error: Lepton indices not set for "
                    <<p_setter->Process()->Name()<<std::endl;
+      CheckDressingArguments(Tag(),args);
       Vec4D_Vector p(p_setter->Momenta());
       if (m_photons.size() && m_charges.size() && args.size()) {
         msg_Debugging()<<"Reading arguments."<<std::endl;
-        std::string method(args[0]->Get<std::string>());
         double dRglobal(args[1]->Get<double>());
         std::vector<double> dR2s(m_charges.size(),sqr(dRglobal));
         for (size_t i(2);i<args.size();i+=2) {
@@ -235,11 +244,7 @@ namespace PHASIC {
             msg_Out()<<p_setter->Process()->Flavours()[i]<<" "
                      <<p[i]<<std::endl;
         }
-        if      (method=="Cone")   p=ConeDress(p,dR2s);
-        else if (method=="kt")     p=RecombinationDress(p, 1.,dR2s);
-        else if (method=="CA")     p=RecombinationDress(p, 0.,dR2s);
-        else if (method=="antikt") p=RecombinationDress(p,-1.,dR2s);
-        else THROW(fatal_error,"Dressing method not implemented.");
+        p=ConeDress(p,dR2s);
         if (msg_LevelIsDebugging())
           for (size_t i(0);i<p_setter->Momenta().size();++i)
             msg_Out()<<p_setter->Process()->Flavours()[i]<<" "
@@ -328,14 +333,6 @@ namespace PHASIC {
       return pp;
     }
 
-    Vec4D_Vector RecombinationDress(const Vec4D_Vector& p,
-                                    const double& exp,
-                                    std::vector<double>& dR2s) const
-    {
-      THROW(not_implemented,"Not implemented.");
-      return p;
-    }
-
     Term *Evaluate(Algebra_Interpreter *const interpreter,
 		   const std::vector<Term*> &args) const
     {
@@ -343,10 +340,10 @@ namespace PHASIC {
       if (m_leptons.size()==0)
         msg_Error()<<METHOD<<"(): Error: No leptons found in "
                    <<p_setter->Process()->Name()<<std::endl;
+      CheckDressingArguments(Tag(),args);
       Vec4D_Vector p(p_setter->Momenta());
       if (m_photons.size() && m_charges.size() && args.size()) {
         msg_Debugging()<<"Reading arguments."<<std::endl;
-        std::string method(args[0]->Get<std::string>());
         double dRglobal(args[1]->Get<double>());
         std::vector<double> dR2s(m_charges.size(),sqr(dRglobal));
         for (size_t i(2);i<args.size();i+=2) {
@@ -369,11 +366,7 @@ namespace PHASIC {
             msg_Out()<<p_setter->Process()->Flavours()[i]<<" "
                      <<p[i]<<std::endl;
         }
-        if      (method=="Cone")   p=ConeDress(p,dR2s);
-        else if (method=="kt")     p=RecombinationDress(p, 1.,dR2s);
-        else if (method=="CA")     p=RecombinationDress(p, 0.,dR2s);
-        else if (method=="antikt") p=RecombinationDress(p,-1.,dR2s);
-        else THROW(fatal_error,"Dressing method not implemented.");
+        p=ConeDress(p,dR2s);
         if (msg_LevelIsDebugging())
           for (size_t i(0);i<p_setter->Momenta().size();++i)
             msg_Out()<<p_setter->Process()->Flavours()[i]<<" "
@@ -465,14 +458,6 @@ namespace PHASIC {
       return pp;
     }
 
-    Vec4D_Vector RecombinationDress(const Vec4D_Vector& p,
-                                    const double& exp,
-                                    std::vector<double>& dR2s) const
-    {
-      THROW(not_implemented,"Not implemented.");
-      return p;
-    }
-
     Term *Evaluate(Algebra_Interpreter *const interpreter,
 		   const std::vector<Term*> &args) const
     {
@@ -480,10 +465,10 @@ namespace PHASIC {
       if (m_l1<p_setter->Process()->NIn() || m_l2<p_setter->Process()->NIn())
         msg_Error()<<METHOD<<"(): Error: Lepton indices not set for "
                    <<p_setter->Process()->Name()<<std::endl;
+      CheckDressingArguments(Tag(),args);
       Vec4D_Vector p(p_setter->Momenta());
       if (m_photons.size() && m_charges.size() && args.size()) {
         msg_Debugging()<<"Reading arguments."<<std::endl;
-        std::string method(args[0]->Get<std::string>());
         double dRglobal(args[1]->Get<double>());
         std::vector<double> dR2s(m_charges.size(),sqr(dRglobal));
         for (size_t i(2);i<args.size();i+=2) {
@@ -506,11 +491,7 @@ namespace PHASIC {
             msg_Out()<<p_setter->Process()->Flavours()[i]<<" "
                      <<p[i]<<std::endl;
         }
-        if      (method=="Cone")   p=ConeDress(p,dR2s);
-        else if (method=="kt")     p=RecombinationDress(p, 1.,dR2s);
-        else if (method=="CA")     p=RecombinationDress(p, 0.,dR2s);
-        else if (method=="antikt") p=RecombinationDress(p,-1.,dR2s);
-        else THROW(fatal_error,"Dressing method not implemented.");
+        p=ConeDress(p,dR2s);
         if (msg_LevelIsDebugging())
           for (size_t i(0);i<p_setter->Momenta().size();++i)
             msg_Out()<<p_setter->Process()->Flavours()[i]<<" "

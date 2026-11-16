@@ -55,3 +55,38 @@ TEST_CASE("Scale tags distinguish the massive transverse product from indexed sc
                Catch::Matchers::WithinRel(momenta[4].PPerp2(), 1.e-12));
   }
 }
+
+TEST_CASE("Dressed scale tags reject arguments they cannot apply",
+          "[PHASIC::Tag_Setter]")
+{
+  PHASIC_Test::SeedGlobals();
+  PHASIC_Test::ScopedParticle electron(kf_e);
+  electron.Info().m_icharge = -3;
+  // e+e- -> e+e- has no photon to dress, so the dressing arguments used to be
+  // ignored instead of validated
+  PHASIC_Test::Process process({ATOOLS::Flavour(kf_e), ATOOLS::Flavour(kf_e, true),
+                                ATOOLS::Flavour(kf_e), ATOOLS::Flavour(kf_e, true)}, 2);
+  PHASIC::Scale_Setter_Arguments args(nullptr);
+  args.p_proc = &process;
+  Scale setter(args);
+  const ATOOLS::Vec4D_Vector momenta = {ATOOLS::Vec4D(50., 0., 0., 50.),
+                                       ATOOLS::Vec4D(50., 0., 0., -50.),
+                                       ATOOLS::Vec4D(50., 30., 0., 40.),
+                                       ATOOLS::Vec4D(50., -30., 0., -40.)};
+  setter.CalculateScale(momenta);
+  PHASIC::Tag_Setter tags(&setter);
+  ATOOLS::Algebra_Interpreter calculator;
+  calculator.SetTagReplacer(&tags);
+  tags.SetCalculator(&calculator);
+  tags.SetTags(&calculator);
+  for (const std::string function : {"DH_Tp2", "DH_Tln2"}) {
+    // kt is advertised but not implemented; a missing dR is malformed
+    for (const std::string arguments : {"(kt,0.1)", "(Cone)"}) {
+      INFO(function + arguments);
+      CHECK_THROWS([&] {
+        calculator.Interprete(function + arguments);
+        calculator.Calculate();
+      }());
+    }
+  }
+}

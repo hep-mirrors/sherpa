@@ -527,9 +527,11 @@ choices or easily implement a user defined scale.
 
 :option:`DH_Tp2(<recombination-method>,<dR>)`
   Implements a version of ``H_Tp2`` which dresses charged particles first.
-  The parameter ``<recombination-method>`` can take the following values:
-  ``Cone``, ``kt``, ``CA`` or ``antikt``, while ``<dR>`` is
-  the respective algorithm's angular distance parameter.
+  The only implemented ``<recombination-method>`` is ``Cone``, which
+  recombines each photon with the nearest charged particle within ``<dR>``.
+  Any other method, or a missing ``<dR>``, is rejected at the first
+  evaluation. The cone size can be set per charged-particle flavour by appending
+  ``<kf>,<dR>`` pairs, e.g. ``DH_Tp2(Cone,0.1,13,0.2)``.
 
 :option:`TAUB`
   Square of the beam thrust.
