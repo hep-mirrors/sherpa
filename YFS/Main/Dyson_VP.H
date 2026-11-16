@@ -43,6 +43,9 @@ namespace YFS {
     //! complete: the provider has no photon self-energy, so the whole
     //! (1 - Delta r)/(1 - Pi) - 1 is added rather than its part beyond O(alpha)
     explicit Dyson_VP(bool complete = false);
+    //! Delta alpha of one lepton at two loops, (alpha0/pi)^2 [ln(|x|/m^2)/4 + zeta3
+    //! - 5/24 + 3 (m^2/x) ln(|x|/m^2)] for |x| > 100 m^2, else 0 (YFS: DYSON_VP_LEPTONS)
+    double TwoLoopLepton(double x, double m) const;
     //! complex Delta alpha(x) = Pi(x), on shell, alpha(0); x the signed invariant
     Complex DeltaAlpha(double x) const;
     //! D(x) = (1 - Delta r)/(1 - Pi(x)) - 1 - (Pi(x) - Delta r)
@@ -55,6 +58,8 @@ namespace YFS {
   private:
     double m_alpha0, m_deltar, m_mz, m_gz, m_alphas;
     bool m_complete;
+    //! YFS: DYSON_VP_LEPTONS two_loop
+    bool m_twoloop = false;
     Complex m_sw2;
     //! Delta alpha of one fermion loop, exact one-loop in its mass
     Complex FermionLoop(double x, double m, double nc, double q) const;

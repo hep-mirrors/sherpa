@@ -183,6 +183,8 @@ void YFS_Base::RegisterDefaults(){
     order, complete for a provider without the photon self-energy.
   */
   s["DYSON_VP"].SetDefault(dysonvp::none);
+  //! YFS: DYSON_VP_LEPTONS one_loop|two_loop (one_loop): the lepton loops in its Pi
+  s["DYSON_VP_LEPTONS"].SetDefault(dysonvpleptons::one_loop);
   /*
     YFS: M1_SQUARE averaged|helicity - the |m_1|^2 of YFS.NLO's beta_0^(2);
     ACRAIC: EW_HIGHER_ORDER_HELICITY none|averaged|helicity - EW_HIGHER_ORDER

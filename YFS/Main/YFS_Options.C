@@ -156,6 +156,8 @@ namespace {
     {"none", dysonvp::none}, {"false", dysonvp::none},
     {"resummed", dysonvp::resummed}, {"true", dysonvp::resummed},
     {"complete", dysonvp::complete}};
+  const std::vector<Option_Name> s_dysonvpleptons{
+    {"one_loop", dysonvpleptons::one_loop}, {"two_loop", dysonvpleptons::two_loop}};
 
   const std::vector<Option_Name> s_m1square{
     {"averaged", m1square::averaged}, {"helicity", m1square::helicity}};
@@ -392,6 +394,10 @@ std::istream &YFS::operator>>(std::istream &s, dysonvp::code &c)
 { return ReadOption(s, c, s_dysonvp, "YFS: DYSON_VP"); }
 std::ostream &YFS::operator<<(std::ostream &s, const dysonvp::code &c)
 { return WriteOption(s, c, s_dysonvp); }
+std::istream &YFS::operator>>(std::istream &s, dysonvpleptons::code &c)
+{ return ReadOption(s, c, s_dysonvpleptons, "YFS: DYSON_VP_LEPTONS"); }
+std::ostream &YFS::operator<<(std::ostream &s, const dysonvpleptons::code &c)
+{ return WriteOption(s, c, s_dysonvpleptons); }
 
 std::istream &YFS::operator>>(std::istream &s, m1square::code &c)
 { return ReadOption(s, c, s_m1square, "YFS: M1_SQUARE"); }

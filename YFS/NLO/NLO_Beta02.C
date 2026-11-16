@@ -154,8 +154,9 @@ void NLO_Base::BuildDysonVP()
   m_vp = p_dysonvp->Factors(m_flavs, m_plab);
   if (!m_vp.ok) {
     if (m_vp_fail++ == 0)
-      msg_Error()<<METHOD<<"(): YFS: DYSON_VP dresses one neutral-current"
-                 <<" e+e- -> f fbar Born only; this event is left undressed.\n";
+      msg_Error()<<METHOD<<"(): YFS: DYSON_VP dresses a neutral-current"
+                 <<" e+e- -> f fbar Born or t-channel scattering of two different"
+                 <<" charged leptons only; this event is left undressed.\n";
     return;
   }
   ++m_vp_n;

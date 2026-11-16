@@ -5,10 +5,12 @@
 */
 
 #include "YFS/Main/Dyson_VP.H"
+#include "YFS/Main/YFS_Options.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Scoped_Settings.H"
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "MODEL/Main/Model_Base.H"
 
 #include <cmath>
@@ -46,10 +48,17 @@ Dyson_VP::Dyson_VP(bool complete) : m_complete(complete)
   m_gz = Flavour(kf_Z).Width();
   m_sw2 = MODEL::s_model->ComplexConstant("csin2_thetaW");
   m_alphas = 0.118;
+  m_twoloop = (Main()["YFS"]["DYSON_VP_LEPTONS"].Get<dysonvpleptons::code>()
+               == dysonvpleptons::two_loop);
 #ifndef USING__HADALPHAQED
   THROW(fatal_error, "YFS: DYSON_VP needs the hadronic Delta alpha of hadr5x"
         " (SHERPA_ENABLE_ALPHAQEDHAD).");
 #endif
+  rpa->gen.AddCitation(1, "The Dyson-resummed vacuum polarisation of YFS: DYSON_VP takes the hadronic"
+                       " Delta alpha from hadr5x \\cite{Jegerlehner:2017zsb}.");
+  if (m_twoloop)
+    rpa->gen.AddCitation(1, "The two-loop leptonic Delta alpha of YFS: DYSON_VP_LEPTONS two_loop is"
+                         " from \\cite{Steinhauser:1998rq}.");
 }
 
 
@@ -81,6 +90,21 @@ Complex Dyson_VP::FermionLoop(double x, double m, double nc, double q) const
 }
 
 
+double Dyson_VP::TwoLoopLepton(double x, double m) const
+{
+  /*
+    The two-loop lepton loop at |x| >> m^2: Delta alpha^(2) = -(alpha/4pi)(alpha/pi)
+    Re Pi^(1), Pi^(1) = 5/6 - 4 zeta3 - L - 12 (m^2/q^2) L, L = ln(-q^2/m^2) (eqs. 1, 6
+    of hep-ph/9803313; its Table 1 is reproduced). The real part for either sign of x.
+    Left out for |x| < 100 m^2, where this expansion fails; there the term is below
+    (alpha/pi)^2 (the muon loop at MUonE |t|).
+  */
+  if (std::abs(x) < 100.*m*m) return 0.;
+  const double L(log(std::abs(x)/(m*m))), a(m_alpha0/M_PI);
+  return a*a*(0.25*L + 1.2020569031595942 - 5./24. + 3.*(m*m/x)*L);
+}
+
+
 Complex Dyson_VP::Hadronic(double x) const
 {
   double re(0.);
@@ -106,8 +130,10 @@ Complex Dyson_VP::Hadronic(double x) const
 Complex Dyson_VP::DeltaAlpha(double x) const
 {
   Complex pi(Hadronic(x));
-  for (kf_code kf : {kf_e, kf_mu, kf_tau})
+  for (kf_code kf : {kf_e, kf_mu, kf_tau}) {
     pi += FermionLoop(x, Flavour(kf).Mass(true), 1., 1.);
+    if (m_twoloop) pi += TwoLoopLepton(x, Flavour(kf).Mass(true));
+  }
   pi += FermionLoop(x, Flavour(kf_t).Mass(true), 3., 2./3.);
   return pi;
 }
@@ -144,6 +170,23 @@ VP_Factors Dyson_VP::Factors(const Flavour_Vector &fl, const Vec4D_Vector &p) co
 {
   VP_Factors out;
   if (fl.size() != 4 || p.size() < 4) return out;
+  /*
+    Two different charged leptons in t-channel scattering, a b -> a b (mu e, tau e,
+    either charge): one photon in the t channel, so every helicity gets r = D(t)
+    at the Born's t = (p_a - p_a')^2. The Z exchange is left undressed only to
+    O(Pi |t|/M_Z^2): the whole Born is treated as photon exchange.
+  */
+  if (fl[2] == fl[0] && fl[3] == fl[1] && fl[0].IsLepton() && fl[1].IsLepton()
+      && fl[0].Charge() != 0. && fl[1].Charge() != 0.
+      && fl[0].Kfcode() != fl[1].Kfcode()) {
+    out.t = (p[0] - p[2]).Abs2();
+    out.s = (p[0] + p[1]).Abs2();
+    out.Dt = DysonFactor(out.t);
+    out.rbar = out.Dt;
+    out.v2 = std::norm(1. + out.Dt) - 1.;
+    out.ok = true;
+    return out;
+  }
   const Flavour &e(fl[0]), &f(fl[2]);
   // one neutral-current pair: e- e+ -> f fbar (particle first in each pair)
   if (!e.IsLepton() || e.Charge() == 0. || e.IsAnti() || fl[1] != e.Bar() ||
@@ -207,6 +250,8 @@ std::string Dyson_VP::Describe() const
                 pt(DeltaAlpha(-10.));
   o<<(m_complete ? "complete (provider without the photon self-energy)"
                   : "resummed beyond the provider's first order")
+   <<"; lepton loops "<<(m_twoloop ? "one + two loop" : "one loop")
+   <<"; Pi(-0.001 GeV^2) = "<<DeltaAlpha(-0.001)<<", Pi(-0.1 GeV^2) = "<<DeltaAlpha(-0.1)
    <<"; Delta r = 1 - alpha(0)/alpha_model = "<<m_deltar
    <<"; Pi(M_Z^2) = "<<pz<<", Pi(250^2) = "<<p250<<", Pi(-10 GeV^2) = "<<pt
    <<"; D(M_Z^2) = "<<DysonFactor(m_mz*m_mz)<<", D(250^2) = "

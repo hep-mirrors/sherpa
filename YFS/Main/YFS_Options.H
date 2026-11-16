@@ -164,6 +164,11 @@ namespace YFS {
   struct dysonvp {
     enum code { none = 0, resummed = 1, complete = 2 };
   };
+  //! YFS: DYSON_VP_LEPTONS - the lepton loops in DYSON_VP's Pi: one_loop (exact in
+  //! the mass) or two_loop (plus the two-loop term for |q^2| > 100 m^2, see Dyson_VP.C).
+  struct dysonvpleptons {
+    enum code { one_loop = 0, two_loop = 1 };
+  };
   //! YFS: M1_SQUARE - |m_1|^2 of YFS.NLO's beta_0^(2). averaged: (v/2)^2 from
   //! the helicity-summed v; helicity: Born-weighted sum_h |delta(h)|^2 (averaged
   //! where helicity factors are missing).
@@ -321,6 +326,8 @@ namespace YFS {
   std::ostream &operator<<(std::ostream &str, const beta02alpha::code &c);
   std::istream &operator>>(std::istream &str, dysonvp::code &c);
   std::ostream &operator<<(std::ostream &str, const dysonvp::code &c);
+  std::istream &operator>>(std::istream &str, dysonvpleptons::code &c);
+  std::ostream &operator<<(std::ostream &str, const dysonvpleptons::code &c);
   std::istream &operator>>(std::istream &str, m1square::code &c);
   std::ostream &operator<<(std::ostream &str, const m1square::code &c);
   std::istream &operator>>(std::istream &str, ewhohel::code &c);
