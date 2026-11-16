@@ -47,6 +47,7 @@ void NLO_Base::InitBeta02()
   shared.cross = Main()["YFS"]["BETA0_2_CROSS"].Get<bool>();
   shared.weak  = Main()["YFS"]["BETA0_2_WEAK_PRODUCT"].Get<bool>();
   shared.wsquare = Main()["YFS"]["BETA0_2_W_SQUARE"].Get<bool>();
+  shared.vpinsertions = Main()["YFS"]["BETA0_2_VP_INSERTIONS"].Get<beta02vp::code>();
   shared.higher = Main()["YFS"]["BETA0_2_HIGHER"].Get<beta02higher::code>();
   shared.alpha = Beta02Alpha(Main()["YFS"]["BETA0_2_ALPHA"].Get<beta02alpha::code>());
   shared.imc   = Main()["ACRAIC"]["VIRT_HEL_IM_C"].SetDefault(0.5).Get<double>();

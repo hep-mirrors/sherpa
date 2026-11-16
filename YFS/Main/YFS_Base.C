@@ -185,6 +185,8 @@ void YFS_Base::RegisterDefaults(){
   s["DYSON_VP"].SetDefault(dysonvp::none);
   //! YFS: DYSON_VP_LEPTONS one_loop|two_loop (one_loop): the lepton loops in its Pi
   s["DYSON_VP_LEPTONS"].SetDefault(dysonvpleptons::one_loop);
+  //! YFS: BETA0_2_VP_INSERTIONS none|vertex|vertex_box (none): lepton loops in the one-loop vertices, boxes
+  s["BETA0_2_VP_INSERTIONS"].SetDefault(beta02vp::none);
   /*
     YFS: M1_SQUARE averaged|helicity - the |m_1|^2 of YFS.NLO's beta_0^(2);
     ACRAIC: EW_HIGHER_ORDER_HELICITY none|averaged|helicity - EW_HIGHER_ORDER

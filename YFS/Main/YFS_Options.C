@@ -158,6 +158,8 @@ namespace {
     {"complete", dysonvp::complete}};
   const std::vector<Option_Name> s_dysonvpleptons{
     {"one_loop", dysonvpleptons::one_loop}, {"two_loop", dysonvpleptons::two_loop}};
+  const std::vector<Option_Name> s_beta02vp{
+    {"none", beta02vp::none}, {"vertex", beta02vp::vertex}, {"vertex_box", beta02vp::vertex_box}};
 
   const std::vector<Option_Name> s_m1square{
     {"averaged", m1square::averaged}, {"helicity", m1square::helicity}};
@@ -398,6 +400,10 @@ std::istream &YFS::operator>>(std::istream &s, dysonvpleptons::code &c)
 { return ReadOption(s, c, s_dysonvpleptons, "YFS: DYSON_VP_LEPTONS"); }
 std::ostream &YFS::operator<<(std::ostream &s, const dysonvpleptons::code &c)
 { return WriteOption(s, c, s_dysonvpleptons); }
+std::istream &YFS::operator>>(std::istream &s, beta02vp::code &c)
+{ return ReadOption(s, c, s_beta02vp, "YFS: BETA0_2_VP_INSERTIONS"); }
+std::ostream &YFS::operator<<(std::ostream &s, const beta02vp::code &c)
+{ return WriteOption(s, c, s_beta02vp); }
 
 std::istream &YFS::operator>>(std::istream &s, m1square::code &c)
 { return ReadOption(s, c, s_m1square, "YFS: M1_SQUARE"); }

@@ -169,6 +169,13 @@ namespace YFS {
   struct dysonvpleptons {
     enum code { one_loop = 0, two_loop = 1 };
   };
+  //! YFS: BETA0_2_VP_INSERTIONS - lepton-loop insertions in the internal photons of the
+  //! one-loop corrections (dispersive, Beta0_2_VPInsertion.H): none; vertex (the vertices
+  //! of space-like lines); vertex_box (and the mu e boxes, net of the Dyson factor's
+  //! Delta alpha_lep(t) times the photonic boxes).
+  struct beta02vp {
+    enum code { none = 0, vertex = 1, vertex_box = 2 };
+  };
   //! YFS: M1_SQUARE - |m_1|^2 of YFS.NLO's beta_0^(2). averaged: (v/2)^2 from
   //! the helicity-summed v; helicity: Born-weighted sum_h |delta(h)|^2 (averaged
   //! where helicity factors are missing).
@@ -327,6 +334,8 @@ namespace YFS {
   std::istream &operator>>(std::istream &str, dysonvp::code &c);
   std::ostream &operator<<(std::ostream &str, const dysonvp::code &c);
   std::istream &operator>>(std::istream &str, dysonvpleptons::code &c);
+  std::istream &operator>>(std::istream &str, beta02vp::code &c);
+  std::ostream &operator<<(std::ostream &str, const beta02vp::code &c);
   std::ostream &operator<<(std::ostream &str, const dysonvpleptons::code &c);
   std::istream &operator>>(std::istream &str, m1square::code &c);
   std::ostream &operator<<(std::ostream &str, const m1square::code &c);

@@ -57,6 +57,8 @@ namespace YFS {
     //! (1/2) w^2: w exponentiated together with delta_f, so that
     //! delta^(2) = delta^2/2 + the logarithmic two-loop terms (BETA0_2_W_SQUARE)
     bool   wsquare = true;
+    //! lepton-loop insertions in the internal photons (BETA0_2_VP_INSERTIONS)
+    beta02vp::code vpinsertions = beta02vp::none;
     //! two_loop beyond O(alpha^2): the higher orders of exp(delta_f)(1 + NLL)
     //! (BETA0_2_HIGHER)
     beta02higher::code higher = beta02higher::none;

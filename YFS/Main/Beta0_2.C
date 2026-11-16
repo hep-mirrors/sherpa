@@ -7,6 +7,7 @@
 
 #include "YFS/Main/Beta0_2.H"
 #include "YFS/Main/Beta0_2_Vertex.H"
+#include "YFS/Main/Beta0_2_VPInsertion.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
@@ -25,7 +26,7 @@ namespace {
   double SignedCharge(const Flavour &fl, size_t i, size_t nin)
   { return (i < nin ? 1. : -1.)*fl.Charge(); }
 
-  bool s_cite_vertex(false);
+  bool s_cite_vertex(false), s_cite_vpinsertion(false);
 
   //! adds a citation the first time a source is used (done is that source's flag)
   void CiteOnce(bool &done, const char *text)
@@ -261,6 +262,16 @@ Photonic_Factors YFS::PhotonicFactors(const Flavour_Vector &fl,
       }
       else if (vertex)
         cij = api*api*Qi*Qi*Qj*Qj*c2;
+      // lepton loops inside the line's vertex photon (dispersive): Q_line^2 per unit loop charge
+      if (crossedline && sij < 0. && cfg.vpinsertions != beta02vp::none) {
+        size_t k(0), l(0);
+        if (OtherLine(n, nin, i, j, k, l)) {
+          cij += api*api*Qi*Qi*VPInsertionVertex(p[i], p[j], mi, p[k], p[l], fl[k].Mass());
+          CiteOnce(s_cite_vpinsertion, "The lepton-loop insertions in the one-loop vertices and"
+                   " boxes (YFS: BETA0_2_VP_INSERTIONS) use the dispersive method of"
+                   " \\cite{Barbieri:1974nc,Fael:2019nsf}.");
+        }
+      }
       out.f.push_back(fij);
       out.n.push_back(nll);
       out.c.push_back(cij);
@@ -271,6 +282,10 @@ Photonic_Factors YFS::PhotonicFactors(const Flavour_Vector &fl,
       any = true;
     }
   }
+  // lepton loops inside the mu e box photons (dispersive), |M|^2-level N -> N/2 in the amplitude factor
+  if (any && cfg.vpinsertions == beta02vp::vertex_box && n == 4 && nin == 2 && fl[2] == fl[0] && fl[3] == fl[1]
+      && fl[0].Kfcode() != fl[1].Kfcode())
+    out.cst += 0.5*api*api*VPInsertionBox(fl, (p[0] + p[1]).Abs2(), (p[0] - p[2]).Abs2());
   out.ok = any;
   return out;
 }
@@ -317,6 +332,7 @@ std::string YFS::Beta02Describe(const Beta02_Config &cfg)
   std::ostringstream o;
   o<<"mode "<<cfg.mode<<", pairs "<<cfg.pairs
    <<", crossed-line vertex "<<cfg.crossedvertex
+   <<", VP insertions "<<cfg.vpinsertions
    <<", cross products "<<(cfg.cross ? "on" : "off")
    <<", delta_f w "<<(cfg.weak ? "on" : "off")
    <<", w^2/2 "<<(cfg.weak && cfg.wsquare ? "on" : "off")
