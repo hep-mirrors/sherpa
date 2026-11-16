@@ -133,6 +133,10 @@ namespace {
   const std::vector<Option_Name> s_beta02pairs{
     {"all", beta02pairs::all}, {"same_side", beta02pairs::same_side}};
 
+  const std::vector<Option_Name> s_ifvirtual{
+    {"tbvirt_exact_ir", ifvirtual::tbvirt_exact_ir}, {"exact", ifvirtual::exact},
+    {"tbvirt", ifvirtual::tbvirt}, {"s_channel", ifvirtual::s_channel}};
+
   const std::vector<Option_Name> s_beta02alpha{
     {"alpha0", beta02alpha::alpha0}, {"loop", beta02alpha::loop}};
 
@@ -340,6 +344,11 @@ std::istream &YFS::operator>>(std::istream &s, beta02pairs::code &c)
 { return ReadOption(s, c, s_beta02pairs, "YFS: BETA0_2_PAIRS"); }
 std::ostream &YFS::operator<<(std::ostream &s, const beta02pairs::code &c)
 { return WriteOption(s, c, s_beta02pairs); }
+
+std::istream &YFS::operator>>(std::istream &s, ifvirtual::code &c)
+{ return ReadOption(s, c, s_ifvirtual, "YFS: IF_VIRTUAL"); }
+std::ostream &YFS::operator<<(std::ostream &s, const ifvirtual::code &c)
+{ return WriteOption(s, c, s_ifvirtual); }
 
 std::istream &YFS::operator>>(std::istream &s, beta02alpha::code &c)
 { return ReadOption(s, c, s_beta02alpha, "YFS: BETA0_2_ALPHA"); }

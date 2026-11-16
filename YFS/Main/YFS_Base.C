@@ -222,6 +222,14 @@ void YFS_Base::RegisterDefaults(){
   s["IFI_Sub"].SetDefault(true);
   s["IFI_Real"].SetDefault(true);
   s["IFI_Omega"].SetDefault(0.);
+  /*
+    YFS: IF_VIRTUAL tbvirt_exact_ir|exact|tbvirt|s_channel (tbvirt_exact_ir): the
+    virtual B of an initial-final dipole, the same in the exponent and the
+    subtraction (YFS_Options.H). The old switch IF_VIRTUAL_TCHANNEL, if set
+    explicitly, still selects tbvirt (true) or s_channel (false).
+  */
+  s["IF_VIRTUAL"].SetDefault(ifvirtual::tbvirt_exact_ir);
+  s["IF_VIRTUAL_TCHANNEL"].SetDefault(true);
 
   s["IFI_RClip"].SetDefault(0.);
   s["Massless_Sub"].SetDefault(false);
@@ -348,6 +356,9 @@ void YFS_Base::RegisterSettings(){
   m_ifisub = m_ifi && s["IFI_Sub"].Get<bool>();
   m_ifireal = m_ifi && s["IFI_Real"].Get<bool>();
   m_ifiomega = s["IFI_Omega"].Get<double>();
+  m_ifvirtual = s["IF_VIRTUAL"].Get<ifvirtual::code>();
+  if (s["IF_VIRTUAL_TCHANNEL"].IsSetExplicitly())
+    m_ifvirtual = s["IF_VIRTUAL_TCHANNEL"].Get<bool>() ? ifvirtual::tbvirt : ifvirtual::s_channel;
   // Defaults to FSR::Initialize()'s m_Emin (same expression) when IFI_Real is
   // on; an explicit IFI_Omega is honoured either way.
   m_ifiomega_is_emin = (m_ifireal && m_ifiomega <= 0.);

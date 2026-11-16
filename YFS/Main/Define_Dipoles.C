@@ -215,15 +215,24 @@ double Define_Dipoles::CalculateVirtualSub() {
 }
 
 /*
-  YFS: IF_VIRTUAL_TCHANNEL (default true): the dim.-reg. virtual subtraction of an
-  initial-final dipole uses its t-channel B (YFS_Form_Factor::BVirtT_eps), the B the
-  exponent carries (IFForFac). false restores BVV_full_eps, the s-channel form, whose
-  finite part differs by a C-odd amount (see BVirtT_eps).
+  YFS: IF_VIRTUAL: the dim.-reg. virtual subtraction of an initial-final dipole, the
+  same B the exponent carries (YFS_Form_Factor::IFForFac).
+    tbvirt_exact_ir: BVirtT_eps with the exact massive IR coefficient: exact poles for
+                     any masses, TBvirt's finite part (a small remainder v').
+    exact:           BVirtGeneralEps, the massive one-in-one-out B (any masses); its
+                     finite part leaves a large remainder for a light leg.
+    tbvirt:          BVirtT_eps (KKMC's TBvirt): its IR coefficient needs one leg with
+                     m^2 << |t|, so it is wrong for a heavy line (the muon of mu e -> mu e).
+    s_channel:       BVV_full_eps, whose finite part differs from the exponent's TBvirt.
 */
 DivArrD Define_Dipoles::IFVirtualBEps(YFS::Dipole &D) {
-  static const bool tch(ATOOLS::Settings::GetMainSettings()["YFS"]["IF_VIRTUAL_TCHANNEL"]
-                        .SetDefault(true).Get<bool>());
-  return tch ? p_yfsFormFact->BVirtT_eps(D) : p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
+  switch (m_ifvirtual) {
+  case ifvirtual::tbvirt_exact_ir: return p_yfsFormFact->BVirtT_eps(D, true);
+  case ifvirtual::exact:           return p_yfsFormFact->BVirtGeneralEps(D, sqrt(m_s) / 2.);
+  case ifvirtual::tbvirt:          return p_yfsFormFact->BVirtT_eps(D, false);
+  case ifvirtual::s_channel:       return p_yfsFormFact->BVV_full_eps(D, sqrt(m_s) / 2., 3);
+  }
+  return p_yfsFormFact->BVirtT_eps(D, true);
 }
 
 void Define_Dipoles::VirtualSubParts(double &ii, double &ff, double &ifi) {

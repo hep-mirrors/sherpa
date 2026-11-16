@@ -145,6 +145,8 @@ public:
   // the IF form factor's cutoff to m_ifiomega. Both or neither.
   bool   m_ifireal;
   double m_ifiomega;
+  //! YFS: IF_VIRTUAL - the initial-final dipoles' virtual B
+  ifvirtual::code m_ifvirtual = ifvirtual::tbvirt_exact_ir;
   //! IFI_Omega at its default, FSR's m_Emin = sqrt(s)/2 * m_isrcut (follows s via SetS)
   bool   m_ifiomega_is_emin = false;
   // Per-photon IF reweight factors outside [m_ifi_rclip, 1/m_ifi_rclip] are

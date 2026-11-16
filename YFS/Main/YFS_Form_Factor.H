@@ -55,10 +55,16 @@ public:
     double BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Vec4D_Vector k, const ATOOLS::Vec4D p1, const ATOOLS::Vec4D p2, double MasPhot, double Kmax);
     double WW_t(double t, double m, double M, double k);
     double WW_s(ATOOLS::Vec4D p1, ATOOLS::Vec4D p2);
-    double BVirtT(Vec4D p1, Vec4D p2,  double kmax=0);
+    //! KKMC's TBvirt; exactir: its IR coefficient replaced by the exact massive one
+    //! (YFS: IF_VIRTUAL tbvirt_exact_ir), finite part unchanged
+    double BVirtT(Vec4D p1, Vec4D p2,  double kmax=0, bool exactir=false);
+    //! the IR coefficient of TBvirt: ln(|t|/(m M)) + ln(1 + M^2/|t|) - 1 (one leg with
+    //! m^2 << |t|), or exactly p1.p2 A(p1.p2) - 1 for any masses
+    double TBvirtIRCoefficient(const Vec4D &p1, const Vec4D &p2, double m1, double m2,
+                               bool exactir);
     //! BVirtT in dim. reg., with BVV_full_eps's map of ln(lambda^2): the virtual B of an
     //! initial-final (t-channel) dipole, the one the exponent's IFForFac carries
-    DivArrD BVirtT_eps(YFS::Dipole &d);
+    DivArrD BVirtT_eps(YFS::Dipole &d, bool exactir=false);
     // YFS exponent for an initial-final dipole: Btilda plus the t-channel
     // virtual (KKMC's TForFac).
     double IFForFac(YFS::Dipole &d, double omega);

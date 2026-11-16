@@ -112,6 +112,18 @@ namespace YFS {
   struct beta02pairs {
     enum code { all = 0, same_side = 1 };
   };
+  //! YFS: IF_VIRTUAL - the virtual B of an initial-final (one in, one out) dipole, in
+  //! the exponent (IFForFac) and in the virtual subtraction alike.
+  //! tbvirt_exact_ir (default): KKMC's TBvirt with the exact massive IR coefficient,
+  //! exact poles for any masses and TBvirt's finite part (small remainder).
+  //! exact: the massive one-in-one-out B (BVirtGeneral / BVirtGeneralEps), any masses;
+  //! its finite part leaves a large remainder when a leg is light.
+  //! tbvirt: KKMC's TBvirt, whose IR coefficient assumes one leg with m^2 << |t|.
+  //! s_channel: the s-channel form in the subtraction, TBvirt in the exponent
+  //! (the old, inconsistent IF_VIRTUAL_TCHANNEL false).
+  struct ifvirtual {
+    enum code { exact = 0, tbvirt = 1, s_channel = 2, tbvirt_exact_ir = 3 };
+  };
   //! YFS: BETA0_2_ALPHA - coupling of delta_f: alpha0 = alpha(0), loop = the provider's alpha.
   struct beta02alpha {
     enum code { alpha0 = 0, loop = 1 };
@@ -261,6 +273,8 @@ namespace YFS {
   std::ostream &operator<<(std::ostream &str, const beta02::code &c);
   std::istream &operator>>(std::istream &str, beta02pairs::code &c);
   std::ostream &operator<<(std::ostream &str, const beta02pairs::code &c);
+  std::istream &operator>>(std::istream &str, ifvirtual::code &c);
+  std::ostream &operator<<(std::ostream &str, const ifvirtual::code &c);
   std::istream &operator>>(std::istream &str, beta02alpha::code &c);
   std::ostream &operator<<(std::ostream &str, const beta02alpha::code &c);
   std::istream &operator>>(std::istream &str, dysonvp::code &c);

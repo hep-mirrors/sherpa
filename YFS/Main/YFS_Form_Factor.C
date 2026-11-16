@@ -662,7 +662,16 @@ double YFS_Form_Factor::BVV_WW(const ATOOLS::Vec4D_Vector born, const ATOOLS::Ve
 }
 
 
-double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax){
+double YFS_Form_Factor::TBvirtIRCoefficient(const Vec4D &p1, const Vec4D &p2,
+                                            double m1, double m2, bool exactir){
+  if (exactir) return p1*p2*A(p1*p2, m1, m2) - 1.;
+  const double M(m1 >= m2 ? m1 : m2), m(m1 >= m2 ? m2 : m1);
+  const double ta(fabs((p1 - p2).Abs2()));
+  return log(ta/m/M) + log(1. + M*M/ta) - 1.;
+}
+
+
+double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax, bool exactir){
   // kmax is unused: the cutoff enters only through the real Btilda added in IFForFac().
   const double m1 = p1.Mass();
   const double m2 = p2.Mass();
@@ -671,7 +680,7 @@ double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax){
   const double ta = fabs((p1-p2).Abs2());
   const double zeta = 1 + M*M/ta;
   const double TBvirt = m_alpi*(
-       (log(ta/m/M) +log(zeta) - 1) *log(sqr(m_photonMass)/(m*M))
+       TBvirtIRCoefficient(p1, p2, m1, m2, exactir)*log(sqr(m_photonMass)/(m*M))
       +0.5*zeta*log(ta*zeta/(m1*m2))
       -0.5*log(ta/m1/m1)*log(ta/m2/m2)
       // log(m/M) is antisymmetric in the legs: KKMC's TBvirt takes the light leg
@@ -684,7 +693,7 @@ double YFS_Form_Factor::BVirtT(Vec4D p1, Vec4D p2,  double kmax){
 }
 
 
-DivArrD YFS_Form_Factor::BVirtT_eps(YFS::Dipole &d){
+DivArrD YFS_Form_Factor::BVirtT_eps(YFS::Dipole &d, bool exactir){
   /*
     The virtual B of an initial-final dipole in dim. reg.: BVirtT (KKMC's TBvirt, the
     t-channel form the exponent's IFForFac uses) with its ln(lambda^2) mapped as in
@@ -703,7 +712,7 @@ DivArrD YFS_Form_Factor::BVirtT_eps(YFS::Dipole &d){
   const double irloop(p_virt->IRscale());
   const double epsloop(p_virt->Eps_Scheme_Factor({p1, p2}));
   DivArrD massph(0,-1,0,0,0,0);
-  const DivArrD t1((log(ta/m/M) + log(zeta) - 1.)
+  const DivArrD t1(TBvirtIRCoefficient(p1, p2, m1, m2, exactir)
                    *(massph + log(4.*M_PI*sqr(irloop)/(m*M)/epsloop)));
   const double rest(0.5*zeta*log(ta*zeta/(m1*m2))
                     - 0.5*log(ta/m1/m1)*log(ta/m2/m2)
@@ -727,7 +736,16 @@ double YFS_Form_Factor::IFForFac(YFS::Dipole &d, const SoftRegion &reg){
   ATOOLS::Vec4D p2 = d.GetBornMomenta(0);
   d.SetExpRegion(reg);
   double Breal = BVR_full(reg, p1, p2, p1.Mass(), p2.Mass(), m_photonMass, 0);
-  double Bvirt = BVirtT(p1, p2, reg.Emin());
+  // YFS: IF_VIRTUAL: exact, the massive one-in-one-out B; tbvirt_exact_ir, TBvirt
+  // with the exact IR coefficient (both cancel Breal's for any masses); tbvirt and
+  // s_channel, KKMC's TBvirt
+  double Bvirt(0.);
+  switch (m_ifvirtual) {
+  case ifvirtual::exact:           Bvirt = BVirtGeneral(d, reg.Emin()); break;
+  case ifvirtual::tbvirt_exact_ir: Bvirt = BVirtT(p1, p2, reg.Emin(), true); break;
+  case ifvirtual::tbvirt:
+  case ifvirtual::s_channel:       Bvirt = BVirtT(p1, p2, reg.Emin(), false); break;
+  }
   return Breal + Bvirt;
 }
 
