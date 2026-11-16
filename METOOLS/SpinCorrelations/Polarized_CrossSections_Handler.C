@@ -309,7 +309,8 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
       if (spin == 0.5) {
         
         if (default_spinors.find(tmp_amps->CurrentParticle().Number()) == default_spinors.end()) {
-          default_spinors.emplace(tmp_amps->CurrentParticle().Number(), METOOLS::Polarization_Spinor_Basis(mom, mom.Abs2()));
+          //default_spinors.emplace(tmp_amps->CurrentParticle().Number(), METOOLS::Polarization_Spinor_Basis(mom, mom.Abs2()));
+          default_spinors.emplace(tmp_amps->CurrentParticle().Number(), METOOLS::Polarization_Spinor_Basis(mom, m_old_refmom));
         }
       }
 
@@ -323,10 +324,10 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
       if (beta != ATOOLS::Vec4D(0.0, 0.0, 0.0, 0.0)) {
         momboost.Boost(mom);
         //Debug print
-        static int nprint3 = 0;
-        if (m_pol_checks && nprint3++ < 20)
-        std::cout << "COMCHECK nr=" << tmp_amps->CurrentParticle().Number()
-            << " beta=" << beta << " mom_ref=" << mom << std::endl;
+        //static int nprint3 = 0;
+        //if (m_pol_checks && nprint3++ < 20)
+        //std::cout << "COMCHECK nr=" << tmp_amps->CurrentParticle().Number()
+            //<< " beta=" << beta << " mom_ref=" << mom << std::endl;
 
       }
 
@@ -363,11 +364,11 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
         METOOLS::Polarization_Spinor_Basis new_spinor_pair(mom,M2,new_ref_mom, anti, out);
 
         // debugging print
-        METOOLS::Polarization_Spinor_Basis twin(mom, M2, new_ref_mom, anti, out);
+        /*METOOLS::Polarization_Spinor_Basis twin(mom, M2, new_ref_mom, anti, out);
         const auto ci = new_spinor_pair.BasisTrafo(twin, false);
         std::cout << std::setprecision(17) << "TWIN nr=" << tmp_amps->CurrentParticle().Number()
             << " |c00|^2=" << std::norm(ci[0][0])
-            << " mom=" << mom << " ref=" << new_ref_mom << std::endl;
+            << " mom=" << mom << " ref=" << new_ref_mom << std::endl;*/
 
 
         // ---- Test 3 (temporär): gleiche feste Achse +x für t und tb, im COM ----
@@ -388,7 +389,7 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
         auto it = default_spinors.find(tmp_amps->CurrentParticle().Number());
         if (it == default_spinors.end()) THROW(fatal_error, "no default spinors for this particle")
         // ---- Debug 1: Labeltest (Identität im Lab, danach löschen) ----
-        static int nprint = 0;
+        /*static int nprint = 0;
         bool m_pol_checks = true;
         if (m_pol_checks && nprint++ < 40) {
           const double pabs = std::sqrt(mom[1]*mom[1] + mom[2]*mom[2] + mom[3]*mom[3]);
@@ -399,7 +400,7 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
             << " anti=" << anti << " out=" << out
             << " |c00|^2=" << std::norm(c[0][0])
             << " |c01|^2=" << std::norm(c[0][1]) << std::endl;
-          }
+          }*/
           // Residuum von (pslash - sgn*m) u, chirale Darstellung (L,R), u[0..3]
 
 
@@ -408,7 +409,7 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
         
 // ---- Ende Debug 1 ----
 // ---- Debug 2: Kovarianztest der Boost-Kette ---
-          static int nprint2 = 0;
+          /*static int nprint2 = 0;
           if (m_pol_checks && nprint2++ < 40) {
           ATOOLS::Vec4D k_lab = new_ref_mom;                 // new_ref_mom: noch COM, wie beim Bau der Basis
           if (beta != ATOOLS::Vec4D(0.0, 0.0, 0.0, 0.0)) momboost.BoostBack(k_lab);
@@ -427,7 +428,7 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
           std::cout << "COMCHECK nr=" << tmp_amps->CurrentParticle().Number()
             << " beta=" << beta << " mom_ref=" << mom << std::endl;
 
-        //--- end of debug 
+        //--- end of debug */
 
         coeff_in = new_spinor_pair.BasisTrafo(it->second, m_pol_checks);
         //std::cout << "coeff_in = " << coeff_in << "  refsystem = " << refsystem << std::endl;
