@@ -98,8 +98,8 @@ void Polarization_Spinor::FillComponents()
 
   for (size_t a(0); a<4; ++a) m_u[a] = (t[a] + m*uk[a]) / N;
   //std::cout << "FC 4: fertig" << std::endl;
-}
 
+}
 
 Polarization_Spinor::Polarization_Spinor(Vec4D p, double M2, int h, Vec4D ref_mom, bool anti, bool out)
   : m_hel(h), m_p(p), m_ref(ref_mom), m_M2(M2), m_anti(anti), m_out(out)
@@ -113,7 +113,7 @@ Polarization_Spinor::Polarization_Spinor(Vec4D p, double M2, int h, Vec4D ref_mo
   FillComponents();     // schreibt m_u[0..3]
   //std::cout << "P3: FillComponents ok" << std::endl;
   //std::cout << "u = " << (*this)[0] << " " << (*this)[1] << " " << (*this)[2] << " " << (*this)[3] << "\n";
-  double nrm(0.0); for (size_t a(0); a<4; ++a) nrm += std::norm((*this)[a]);
+ //double nrm(0.0); for (size_t a(0); a<4; ++a) nrm += std::norm((*this)[a]);
   //std::cout << "|u|^2 = " << nrm << "  (erwartet 2E = " << 2.0*p[0] << ")\n";
 }
 
@@ -138,6 +138,8 @@ Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, dou
 void METOOLS::Polarization_Spinor_Basis::BoostBack(const ATOOLS::Vec4D& beta) {
   //std::cout << "B1: Basis::BoostBack, size=" << m_s.size() << std::endl;
   //ATOOLS::Poincare_Spinor spinboost(beta);       // wie Poincare momboost(beta)
+
+  //QUESTION: is it smart to give beta to this method instead of the spinor?
   if (beta== ATOOLS::Vec4D(0.,0.,0.,0.)) return;
   ATOOLS::Spinor_Boost boost(beta);
   //std::cout << "B3: Spinor " << i << " geboostet" << std::endl;
@@ -145,8 +147,6 @@ void METOOLS::Polarization_Spinor_Basis::BoostBack(const ATOOLS::Vec4D& beta) {
   for (size_t i(0); i<m_s.size(); ++i) boost.BoostBack(m_s[i]);
   
 }
-
-
 
 void Polarization_Vector::Init(Vec4D p, Vec4D ref_mom)
 {
@@ -336,37 +336,6 @@ void Polarization_Vector::Test(Vec4D p)
   }
   std::cout<<METHOD<<"... "<<(success?"passed":"failed")<<std::endl<<std::endl;
 }
-
-/*void Polarization_Spinor::BoostBack(const ATOOLS::Vec4D& beta) {
-  if (beta == ATOOLS::Vec4D(0.,0.,0.,0.)) return;
-  METOOLS::BoostBack_Spinor(*this, beta);   // boostet m_u von *this
-  m_beta = beta;                            // m_p und m_ref bleiben CM-Werte
-}
-
-void METOOLS::BoostBack_Spinor(METOOLS::CSpinor<double> &s, const ATOOLS::Vec4D &l) 
-{
-  //TODO: Spinor boost back (spinor is not a 4vector - another representation of Lorentz group)
-  // need rapidity
-  double m(sqrt(l.Abs2()));
-  //if (s.B()<0) {
-    //METOOLS::CSpinor<double> k(s.Bar());
-    //BoostBack(k);
-    //s=k.Bar();
-    //return;
-  //}
-  double n(1.0/sqrt(2.0*m*(l[0]+m)));
-  // cosh(eta)
-  double c(n*(l[0]+m));
-  // sinh * vec(n)
-  double sx(n*l[1]), sy(n*l[2]), sz(n*l[3]);
-  double sgn(-1.0);
-  for (int i(0);i<4;i+=2,sgn=-sgn) {
-    Complex a(s[i]), b(s[i+1]);
-    s[i] = c*a+sgn*(sz*a+Complex(sx,-sy)*b);
-    s[i+1] = c*b+sgn*(Complex(sx,sy)*a-sz*b);
-  }
-
-}*/
 
 std::vector<std::vector<Complex>>
 Polarization_Spinor_Basis::BasisTrafo(const Polarization_Spinor_Basis& old_basis, bool pol_checks) const {
