@@ -99,20 +99,20 @@ Term *Variable_Enhance_Observable::ReplaceTags(Term *term) const
   }
   if (term->Id()==4) {
     double htm(0.0);
-    for (size_t i(0);i<m_n;++i) htm+=p_p[i].MPerp();
+    for (size_t i(p_proc->NIn());i<m_n;++i) htm+=p_p[i].MPerp();
     term->Set(sqr(htm));
     return term;
   }
   if (term->Id()==5) {
     double ht(0.0);
-    for (size_t i(0);i<m_n;++i) ht+=p_p[i].PPerp();
+    for (size_t i(p_proc->NIn());i<m_n;++i) ht+=p_p[i].PPerp();
     term->Set(sqr(ht));
     return term;
   }
   if (term->Id()==6) {
     double htm(0.0);
     Vec4D ewsum(0.0,0.0,0.0,0.0);
-    for (size_t i(0);i<m_n;++i)
+    for (size_t i(p_proc->NIn());i<m_n;++i)
       if (!p_proc->Flavours()[i].Strong()) ewsum+=p_p[i];
       else htm+=p_p[i].MPerp();
     term->Set(sqr(htm+ewsum.MPerp()));
@@ -121,7 +121,7 @@ Term *Variable_Enhance_Observable::ReplaceTags(Term *term) const
   if (term->Id()==7) {
     double htm(0.0);
     Vec4D ewsum(0.0,0.0,0.0,0.0);
-    for (size_t i(0);i<m_n;++i)
+    for (size_t i(p_proc->NIn());i<m_n;++i)
       if (!p_proc->Flavours()[i].Strong()) ewsum+=p_p[i];
       else htm+=p_p[i].PPerp();
     term->Set(sqr(htm+ewsum.PPerp()));
