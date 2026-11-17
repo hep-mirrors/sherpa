@@ -353,11 +353,10 @@ bool Sudakov::Generate(Parton* split, double kt2win)
               if (!m_allowFI) continue;
             }
             if (find(used.begin(),used.end(),*pitk)==used.end()) {
-              if (*pitk==split->GetLeft() && *pitk==split->GetRight()) {
-                split->SetConnectedQEDSpec(true);
-                continue;
+              if (*pitk!=split->GetLeft() && *pitk!=split->GetRight()) {
+                slist.push_back(*pitk);
               }
-              slist.push_back(*pitk);
+              else split->SetConnectedQEDSpec(true);
             }
           }
         }
@@ -731,7 +730,7 @@ double Sudakov::OverIntegrated(const double zmin,const double zmax,
     if ((*m_splitter)->GetType()==m_type && (*m_splitter)->Coupling()->AllowSpec(p_spect->GetFlavour())) {
       if ((*m_splitter)->PureQCD() && 
 	  !(p_split->GetLeft()==p_spect || p_split->GetRight()==p_spect)) continue;
-    // for quark splitter, if it has two spectators, only use colour-disconnected one to avoid excess QED radiation
+    // for quark splitter, check if colour partner is also allowed as a QED spectator
     if (!(*m_splitter)->PureQCD() && p_split->GetFlavour().IsQuark() && m_oneQEDspec && 
         (p_split->GetLeft()==p_spect || p_split->GetRight()==p_spect) && 
         !p_split->ConnectedQEDSpec()) continue;

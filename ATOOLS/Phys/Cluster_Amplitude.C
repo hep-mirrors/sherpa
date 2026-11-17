@@ -288,7 +288,6 @@ bool Cluster_Amplitude::CheckColors
 (const ATOOLS::Cluster_Leg *li,const ATOOLS::Cluster_Leg *lj,
  const ATOOLS::Cluster_Leg *lk,const ATOOLS::Flavour &mo)
 {
-  if (li->Flav().IsPhoton() || lj->Flav().IsPhoton() || mo.IsPhoton())
   // no colour relations between i,j,k for photon emissions
   if (li->Flav().IsPhoton() || lj->Flav().IsPhoton()) return true;
   // photon splitting products must be colour connected/colourless

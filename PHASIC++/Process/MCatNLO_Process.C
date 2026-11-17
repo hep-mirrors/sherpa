@@ -243,6 +243,8 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   m_rsscale  = s["RS_SCALE"].Get<std::string>();
   if (m_fomode!=2) {
     p_bviproc->SetMCMode(1);
+    // MCMode flag used to distinguish p_bviproc from p_bproc
+    p_bviproc->FillProcessMap(p_apmap);
     if (m_qcd) {
       if (p_read){
         p_bviproc->SetSProc(p_ddprocqcd);
@@ -390,14 +392,16 @@ Process_Base *MCatNLO_Process::FindProcess
     if (type==nlo_type::lo) {
       for (size_t i(0);i<p_bproc->Size();++i)
 	      if ((*p_bproc)[i]==pit->second) return pit->second;
-      for (size_t i(0);i<p_bviproc->Size();++i)
-	      if ((*p_bviproc)[i]==pit->second) return pit->second;
       for (size_t i(0);i<p_rprocqcd->Size();++i)
 	      if ((*p_rprocqcd)[i]==pit->second) return pit->second;
     }
     if (type==(nlo_type::lo|nlo_type::qed)) {
       for (size_t i(0);i<p_rprocqed->Size();++i)
 	      if ((*p_rprocqed)[i]==pit->second) return pit->second;
+    }
+    if (type==nlo_type::born) {
+      for (size_t i(0);i<p_bviproc->Size();++i)
+        if ((*p_bviproc)[i]==pit->second) return pit->second;
     }
     if (type&nlo_type::vsub) {
       if (p_read) for (size_t i(0);i<p_bviproc->Size();++i)
@@ -485,9 +489,14 @@ Weights_Map MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
   // evaluate BVI process
   msg_Debugging()<<ampl<<"\n";
   Process_Base *bviproc(FindProcess(&ampl,nlo_type::vsub,false));
-  if (bviproc==NULL) return 0.0;
+  Process_Base *bbproc(NULL);
+  if (!p_read) bbproc = FindProcess(&ampl,nlo_type::born,false);
+  // in principle, Born and VI might have different allowed flavours, so one may exist without the other
+  if (bviproc==NULL && bbproc==NULL) return 0.0;
   bviproc->SetEventReader(NULL);
-  msg_Debugging()<<"Found '"<<bviproc->Name()<<"'\n";
+  bbproc->SetEventReader(NULL);
+  if (bviproc) msg_Debugging()<<"Found '"<<bviproc->Name()<<"'\n";
+  if (bbproc)  msg_Debugging()<<"Found '"<<bbproc->Name()<<"'\n";
   Process_Base *bproc(FindProcess(&ampl));
   Cluster_Amplitude *campl(ampl.Copy());
   p_bproc->Generator()->SetMassMode(0);
@@ -508,6 +517,7 @@ Weights_Map MCatNLO_Process::LocalKFactor(Cluster_Amplitude& ampl)
   }
   bviproc->BBarMC()->GenerateEmissionPoint(*campl);
   Weights_Map bvi = bviproc->Differential(*campl, Variations_Mode::all, bmode);
+  bvi += bbproc->Differential(*campl, Variations_Mode::all, bmode);
   campl->Delete();
 
   // eventually calculate local K factor

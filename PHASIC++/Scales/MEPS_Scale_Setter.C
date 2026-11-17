@@ -162,7 +162,7 @@ MEPS_Scale_Setter::~MEPS_Scale_Setter()
 int MEPS_Scale_Setter::Select
 (const ClusterInfo_Vector &ccs,const Int_Vector &on,const int mode) const
 {
-  if (mode==1 || (m_cmode&4) || ((m_cmode&32) && m_nproc)) {
+  if (mode==1 || (m_cmode&4) || ((m_cmode&32) && (m_nproc || p_proc->MCMode()))) {
     int imax(-1);
     double max(0.0);
     for (size_t i(0);i<ccs.size();++i)
@@ -288,7 +288,7 @@ double MEPS_Scale_Setter::Calculate
 (const Vec4D_Vector &momenta,const size_t &mode)
 {
   m_p=momenta;
-  if (m_nproc || (m_cmode&8)) p_ci=NULL;
+  if (m_nproc || p_proc->MCMode() || (m_cmode&8)) p_ci=NULL;
   else p_ci=p_proc->Caller()->Integrator()->ColorIntegrator();
   for (size_t i(0);i<p_proc->Caller()->NIn();++i) m_p[i]=-m_p[i];
   while (m_ampls.size()) {
@@ -397,7 +397,7 @@ double MEPS_Scale_Setter::Calculate
     }
   }
   msg_Debugging()<<"}\n";
-  bool usemax((m_cmode&4) || ((m_cmode&32) && m_nproc));
+  bool usemax((m_cmode&4) || ((m_cmode&32) && (m_nproc || p_proc->MCMode())));
   double disc(sum*ran->Get());
   sum=0.0;
   for (size_t i(0);i<ampls.size();++i) {
@@ -465,7 +465,7 @@ void MEPS_Scale_Setter::Cluster
 	  for (size_t k(0);k<ampl->Legs().size();++k) {
 	    Cluster_Leg *lk(ampl->Leg(k));
 	    if (k!=i && k!=j) {
-	      Cluster_Config cc(ampl,i,j,k,cf[f],p_ms,NULL,-1,m_nproc?16:0);
+	      Cluster_Config cc(ampl,i,j,k,cf[f],p_ms,NULL,-1,(m_nproc || p_proc->MCMode())?16:0);
 	      if (frs && !CheckSubEvents(cc)) continue;
 	      DEBUG_FUNC("Combine "<<ID(li->Id())<<" & "<<ID(lj->Id())
 			 <<" <-> "<<ID(lk->Id())<<" ["<<cc.m_mo<<"], f = "<<f);

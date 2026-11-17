@@ -890,8 +890,9 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
         msg_Debugging()<<"eta0 > 1-eps0"<<std::endl;
       }
       else {
-          m_x0 = m_etar0+p_fsmc->ERan("z_1")*(1.-m_etar0);
-          msg_Debugging()<<"eta0 < 1-eps0"<<std::endl;
+        m_etar0=m_eta0/(1.-m_eps0);
+        m_x0 = m_etar0+p_fsmc->ERan("z_1")*(1.-m_etar0);
+        msg_Debugging()<<"eta0 < 1-eps0"<<std::endl;
       }
     }
     weight*=(1.-m_eta0);
@@ -927,8 +928,9 @@ void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D_Vector &mom)
         msg_Debugging()<<"eta1 > 1-eps1"<<std::endl;
       }
       else {
-          m_x1 = m_etar1+p_fsmc->ERan("z_2")*(1.-m_etar1);
-          msg_Debugging()<<"eta1 < 1-eps1"<<std::endl;
+        m_etar1=m_eta1/(1.-m_eps1);
+        m_x1 = m_etar1+p_fsmc->ERan("z_2")*(1.-m_etar1);
+        msg_Debugging()<<"eta1 < 1-eps1"<<std::endl;
       }
     }
     msg_Debugging()<<"x1="<<m_x1<<std::endl;
