@@ -307,11 +307,35 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
       }
       //hier werden default_spinors befüllt
       if (spin == 0.5) {
+        /*const auto number = tmp_amps->CurrentParticle().Number();
+
+    auto [it, inserted] = default_spinors.emplace(
+        number,
+        METOOLS::Polarization_Spinor_Basis(mom, m_old_refmom)
+    );
+
+    std::cerr << "Number=" << number
+              << ", inserted=" << inserted
+              << ", mom=" << mom
+              << ", refmom=" << m_old_refmom << '\n';*/
         
-        if (default_spinors.find(tmp_amps->CurrentParticle().Number()) == default_spinors.end()) {
+        //if (default_spinors.find(tmp_amps->CurrentParticle().Number()) == default_spinors.end()) {
           //default_spinors.emplace(tmp_amps->CurrentParticle().Number(), METOOLS::Polarization_Spinor_Basis(mom, mom.Abs2()));
-          default_spinors.emplace(tmp_amps->CurrentParticle().Number(), METOOLS::Polarization_Spinor_Basis(mom, m_old_refmom));
-        }
+          //default_spinors.emplace(tmp_amps->CurrentParticle().Number(), METOOLS::Polarization_Spinor_Basis(mom, m_old_refmom));
+        //}
+
+        auto basis = METOOLS::Polarization_Spinor_Basis(mom, m_old_refmom);
+
+for (size_t i = 0; i < basis.size(); ++i) {
+    std::cerr << "basis[" << i << "] = ("
+              << basis[i][0] << ", " << basis[i][1] << ", "
+              << basis[i][2] << ", " << basis[i][3] << ")\n";
+}
+
+auto [it, inserted] = default_spinors.emplace(
+    tmp_amps->CurrentParticle().Number(), std::move(basis)
+);
+
       }
 
       // for refsystem=RestFrames polarization of a particle is defined in its own rest frame, therefore beta is
@@ -357,10 +381,10 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
       }
       else if (spin==0.5){
         
-        const double M2 = mom.Abs2();            
+        //const double M2 = mom.Abs2();            
         // new basis
-        METOOLS::Polarization_Spinor_Basis new_spinor_pair(mom, M2, new_ref_mom, anti, out);   // anti=false, out=false
-        //METOOLS::Polarization_Spinor_Basis new_spinor_pair(mom,M2,new_ref_mom, anti, out);
+        //METOOLS::Polarization_Spinor_Basis new_spinor_pair(mom, M2, new_ref_mom, anti, out);   // anti=false, out=false
+        METOOLS::Polarization_Spinor_Basis new_spinor_pair(mom,new_ref_mom);
         
         // boost back in LabFrame
         if (beta != ATOOLS::Vec4D(0.0, 0.0, 0.0, 0.0)) {
@@ -368,14 +392,36 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
           //std::cout << "B0: beta=" << beta << " beta^2=" << beta.Abs2() << std::endl;
           for (size_t i(0); i < new_spinor_pair.size(); ++i){
             spinboost.BoostBack(new_spinor_pair[i]);
+            //momboost.BoostBack(new_spinor_pair[i]);
           }
           //new_spinor_pair.BoostBack(beta);
           momboost.BoostBack(mom);
         }
-        auto it = default_spinors.find(tmp_amps->CurrentParticle().Number());
-        if (it == default_spinors.end()) THROW(fatal_error, "no default spinors for this particle")
+        //auto it = default_spinors.find(tmp_amps->CurrentParticle().Number());
+        //if (it == default_spinors.end()) THROW(fatal_error, "no default spinors for this particle")
+        const auto number = tmp_amps->CurrentParticle().Number();
+const auto it = default_spinors.find(number);
 
-        coeff_in = new_spinor_pair.BasisTrafo(it->second, m_pol_checks);
+if (it == default_spinors.end()) {
+    std::cerr << "Kein Eintrag in default_spinors für Number="
+              << number << '\n';
+    // Hier passend zum Projekt abbrechen oder Fehler werfen.
+} else {
+    const auto& old = it->second;
+
+    for (size_t i = 0; i < old.size(); ++i) {
+        std::cerr << "old[" << i << "] = ("
+                  << old[i][0] << ", " << old[i][1] << ", "
+                  << old[i][2] << ", " << old[i][3] << ")\n";
+    }
+
+    coeff_in = new_spinor_pair.BasisTrafo(old, m_pol_checks);
+}
+
+        //coeff_in = new_spinor_pair.BasisTrafo(it->second, m_pol_checks);
+        //coeff_in = new_spinor_pair.BasisTrafo(
+          //  default_spinors.find(tmp_amps->CurrentParticle().Number())->second, m_pol_checks);
+
         //std::cout << "coeff_in = " << coeff_in << "  refsystem = " << refsystem << std::endl;
 
         coeff_out = std::vector<std::vector<Complex>>(coeff_in);

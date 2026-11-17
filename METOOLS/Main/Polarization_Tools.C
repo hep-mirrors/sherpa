@@ -50,6 +50,85 @@ Polarization_Vector::Polarization_Vector(Vec4D p, Vec4D ref_mom) : std::vector<V
   // delete auxiliary polarization vector
   pop_back();
 }*/
+
+void Polarization_Spinor::FillComponents()
+{
+  typedef std::complex<double> C;
+  using C = std::complex<double>;
+  //std::cout << "FC 1: start, m_k=" << m_k << " m_p=" << m_p << " hel=" << m_hel << std::endl;
+  const double m = sqrt(std::max(m_M2, 0.0));
+
+  // masseloser Spinor zur Referenz k mit entgegengesetzter Helizität
+  //METOOLS::CSpinor<double> uk(1, 1, -m_hel, m_k);
+  //std::cout << "FC 2: uk gebaut " << uk[0] << " " << uk[1] << " " << uk[2] << " " << uk[3] << std::endl;
+
+  const double pk = m_p * m_k;            // Minkowski-Produkt
+  //std::cout << "FC 3: p.k=" << pk << std::endl;
+
+  if (pk < 1e-12 * m_p[0] * m_k[0]) {
+    THROW(fatal_error, "p and ref_mom are (anti)parallel: p.k = 0")
+  }
+
+  const double N = sqrt(2.0 * pk);
+
+  const int r=m_anti ? -1:1;
+  const int h_ref = m_anti ? m_hel : -m_hel;
+
+  METOOLS::CSpinor<double> ref(r, 1, h_ref, m_k);
+
+
+  const double p0 = m_p[0], p1 = m_p[1], p2 = m_p[2], p3 = m_p[3];
+  const C i(0.0, 1.0);
+
+  // p·sigma = ((p3, p1 - i p2), (p1 + i p2, -p3))
+  const C s00 = p3,          s01 = p1 - i*p2;
+  const C s10 = p1 + i*p2,   s11 = -p3;
+  const double sign = m_anti ? -1.0 : 1.0;
+
+
+  // (pslash uk): oben = (p0 - p·sigma) * uk[2..3], unten = (p0 + p·sigma) * uk[0..1]
+  C t[4];
+  t[0] = (p0 - s00)*ref[2] - s01*ref[3];
+  t[1] = -s10*ref[2] + (p0 - s11)*ref[3];
+  t[2] = (p0 + s00)*ref[0] + s01*ref[1];
+  t[3] = s10*ref[0] + (p0 + s11)*ref[1];
+
+  for (size_t a(0); a<4; ++a) m_u[a] = (t[a] + sign * m * m*ref[a]) / N;
+  //std::cout << "FC 4: fertig" << std::endl;
+
+}
+
+Polarization_Spinor::Polarization_Spinor(Vec4D p, double M2, int h, Vec4D ref_mom, bool anti, bool out)
+  : m_hel(h), m_p(p), m_ref(ref_mom), m_M2(M2), m_anti(anti), m_out(out)
+{
+  if (h != 1 && h != -1) {
+    THROW(fatal_error, "helicity must be +1 or -1")
+  }
+  //std::cout << "P1: ctor hel=" << h << std::endl;
+  Init(p, ref_mom);     // setzt m_k, m_kp, m_km (die Zeilen davor sind doppelt, kannst du löschen)
+  //std::cout << "P2: Init ok" << std::endl;
+  FillComponents();     // schreibt m_u[0..3]
+  //std::cout << "P3: FillComponents ok" << std::endl;
+  //std::cout << "u = " << (*this)[0] << " " << (*this)[1] << " " << (*this)[2] << " " << (*this)[3] << "\n";
+ //double nrm(0.0); for (size_t a(0); a<4; ++a) nrm += std::norm((*this)[a]);
+  //std::cout << "|u|^2 = " << nrm << "  (erwartet 2E = " << 2.0*p[0] << ")\n";
+}
+
+Polarization_Spinor::Polarization_Spinor(Vec4D p, int h, Vec4D ref_mom, bool anti, bool out)
+  : m_hel(h), m_p(p), m_ref(ref_mom), m_M2(0.0), m_anti(anti), m_out(out)
+{ 
+  if (h != 1 && h != -1) {
+    THROW(fatal_error, "helicity must be +1 or -1")
+  }
+  Init(p, ref_mom);
+  FillComponents();
+}
+Polarization_Spinor::Polarization_Spinor(const METOOLS::CSpinor<double>& s, int h)
+  : METOOLS::CSpinor<double>(s), m_hel(h), m_M2(0.0), m_anti(false), m_out(false) {
+
+  
+  }
+
 void Polarization_Spinor::Init(Vec4D p, Vec4D ref_mom)
 {
   if (std::fabs(ref_mom.Abs2()) > 1e-10 *ref_mom[0]*ref_mom[0]) {      // vorher: ref_mom.Abs2() > 1e-8
@@ -59,9 +138,6 @@ void Polarization_Spinor::Init(Vec4D p, Vec4D ref_mom)
   m_kp = SpinorType(1,  m_k);
   m_km = SpinorType(-1, m_k);
 }
-
-Polarization_Spinor::Polarization_Spinor(const METOOLS::CSpinor<double>& s, int h)
-  : METOOLS::CSpinor<double>(s), m_hel(h), m_M2(0.0), m_anti(false), m_out(false) {}
 
 Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, double M2) {
   m_s.reserve(2);
@@ -113,68 +189,7 @@ void Polarization_Spinor_Basis::Init(const ATOOLS::Vec4D& p, double M2,
 }
 
 
-void Polarization_Spinor::FillComponents()
-{
-  typedef std::complex<double> C;
-  //std::cout << "FC 1: start, m_k=" << m_k << " m_p=" << m_p << " hel=" << m_hel << std::endl;
-  const double m = sqrt(std::max(m_M2, 0.0));
 
-  // masseloser Spinor zur Referenz k mit entgegengesetzter Helizität
-  METOOLS::CSpinor<double> uk(1, 1, -m_hel, m_k);
-  //std::cout << "FC 2: uk gebaut " << uk[0] << " " << uk[1] << " " << uk[2] << " " << uk[3] << std::endl;
-
-  const double pk = m_p * m_k;            // Minkowski-Produkt
-  //std::cout << "FC 3: p.k=" << pk << std::endl;
-
-  if (pk < 1e-12 * m_p[0] * m_k[0]) {
-    THROW(fatal_error, "p and ref_mom are (anti)parallel: p.k = 0")
-  }
-  const double N = sqrt(2.0 * pk);
-
-  const double p0 = m_p[0], p1 = m_p[1], p2 = m_p[2], p3 = m_p[3];
-  const C i(0.0, 1.0);
-
-  // p·sigma = ((p3, p1 - i p2), (p1 + i p2, -p3))
-  const C s00 = p3,          s01 = p1 - i*p2;
-  const C s10 = p1 + i*p2,   s11 = -p3;
-
-  // (pslash uk): oben = (p0 - p·sigma) * uk[2..3], unten = (p0 + p·sigma) * uk[0..1]
-  C t[4];
-  t[0] = (p0 - s00)*uk[2] - s01*uk[3];
-  t[1] = -s10*uk[2] + (p0 - s11)*uk[3];
-  t[2] = (p0 + s00)*uk[0] + s01*uk[1];
-  t[3] = s10*uk[0] + (p0 + s11)*uk[1];
-
-  for (size_t a(0); a<4; ++a) m_u[a] = (t[a] + m*uk[a]) / N;
-  //std::cout << "FC 4: fertig" << std::endl;
-
-}
-
-Polarization_Spinor::Polarization_Spinor(Vec4D p, double M2, int h, Vec4D ref_mom, bool anti, bool out)
-  : m_hel(h), m_p(p), m_ref(ref_mom), m_M2(M2), m_anti(anti), m_out(out)
-{
-  if (h != 1 && h != -1) {
-    THROW(fatal_error, "helicity must be +1 or -1")
-  }
-  //std::cout << "P1: ctor hel=" << h << std::endl;
-  Init(p, ref_mom);     // setzt m_k, m_kp, m_km (die Zeilen davor sind doppelt, kannst du löschen)
-  //std::cout << "P2: Init ok" << std::endl;
-  FillComponents();     // schreibt m_u[0..3]
-  //std::cout << "P3: FillComponents ok" << std::endl;
-  //std::cout << "u = " << (*this)[0] << " " << (*this)[1] << " " << (*this)[2] << " " << (*this)[3] << "\n";
- //double nrm(0.0); for (size_t a(0); a<4; ++a) nrm += std::norm((*this)[a]);
-  //std::cout << "|u|^2 = " << nrm << "  (erwartet 2E = " << 2.0*p[0] << ")\n";
-}
-
-Polarization_Spinor::Polarization_Spinor(Vec4D p, int h, Vec4D ref_mom, bool anti, bool out)
-  : m_hel(h), m_p(p), m_ref(ref_mom), m_M2(0.0), m_anti(anti), m_out(out)
-{ 
-  if (h != 1 && h != -1) {
-    THROW(fatal_error, "helicity must be +1 or -1")
-  }
-  Init(p, ref_mom);
-  FillComponents();
-}
 
 /*Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, double M2,
     const ATOOLS::Vec4D& ref_mom, bool anti, bool out)
@@ -411,14 +426,30 @@ Polarization_Spinor_Basis::BasisTrafo(const Polarization_Spinor_Basis& old_basis
   std::array<std::array<Complex,2>, 2> array_old_basis;
   std::array<std::array<Complex,2>, 2> array_old_basis_inv;
   std::array<std::array<Complex,2>, 2> array_new_basis;
+  //determinante
+  for (size_t i = 0; i < old_basis.size(); ++i) {
+    std::cout << "old_basis[" << i << "] = ("
+              << old_basis[i][0] << ", "
+              << old_basis[i][1] << ", "
+              << old_basis[i][2] << ", "
+              << old_basis[i][3] << ")\n";
+}
 
+
+  Complex det = old_basis[0][0] * old_basis[1][1] - old_basis[1][0] * old_basis[0][1];
   // for debugging
+  std::cout << "a = " << old_basis[0][0]
+          << ", b = " << old_basis[0][1]
+          << ", c = " << old_basis[1][0]
+          << ", d = " << old_basis[1][1]
+          << ", det = " << det << '\n';
+
  // for (size_t i(0); i<2; i++)
   //std::cout << "old[" << i << "] = ( "
     //        << old_basis[i][0] << ", " << old_basis[i][1] << ", "
      //       << old_basis[i][2] << ", " << old_basis[i][3] << " )\n";
   //determinante
-  Complex det = old_basis[0][0] * old_basis[1][1] - old_basis[1][0] * old_basis[0][1];
+  //Complex det = old_basis[0][0] * old_basis[1][1] - old_basis[1][0] * old_basis[0][1];
   //if (abs(det.real()) < 1e-8 && abs(det.imag()) < 1e-8){
   if (std::abs(det) < 1e-8){
     std::cout << "determinante is" << det << std::endl;
