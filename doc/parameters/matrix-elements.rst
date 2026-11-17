@@ -210,6 +210,12 @@ The scale setter options which are currently available are
 
      SCALES: VAR{Abs2(p[2]+p[3])}{MPerp2(p[2]+p[3])}
 
+  For lepton-hadron collisions with the lepton as the first beam and a
+  lepton as the first incoming parton, the momenta are boosted to the Breit
+  frame before the expressions are evaluated, using ``p[0]-p[2]`` as the
+  photon momentum, i.e. the scattered lepton has to be ``p[2]``. With the
+  hadron as the first beam, no boost is applied.
+
 :option:`FASTJET`
   This scale setter can be used to set a scale based on jet-, rather
   than parton-momenta, using `FastJet <http://www.fastjet.fr>`_.
@@ -476,7 +482,86 @@ Predefined scale tags
 
 
 There exist a few predefined tags to facilitate commonly used scale
-choices or easily implement a user defined scale.
+choices or easily implement a user defined scale. The same tag names are
+evaluated in three places, and not every tag is available, or defined the
+same way, in each of them:
+
+* scale setters (``SCALES``, e.g. ``VAR{...}`` or ``METS{...}``), evaluated on
+  the momenta of the full matrix-element configuration;
+* the ``VAR`` core scale (``MEPS: {CORE_SCALE: VAR{...}}`` and
+  ``MEPS: {UNORDERED_SCALE: VAR{...}}``), evaluated on the momenta of the
+  clustered core process, see
+  :ref:`METS scale setting with multiparton core processes`;
+* ``VAR{...}`` in :ref:`Enhance_Function` and :ref:`Enhance_Observable`.
+
+In the following table, :math:`m_\perp=\sqrt{m^2+p_\perp^2}` is the transverse
+mass, sums run over final-state particles, "coloured" means strongly
+interacting and "colourless" means not strongly interacting. A dash means that
+the tag is not available.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 14 30 30 26
+
+   * - Tag
+     - Scale setters
+     - ``VAR`` core scale
+     - Enhance function/observable
+   * - ``H_T2``
+     - :math:`(\sum p_\perp)^2`
+     - same
+     - same
+   * - ``H_TM2``
+     - :math:`(\sum m_\perp)^2`
+     - same
+     - same
+   * - ``hH_T2``
+     - :math:`(\sum_\text{coloured} p_\perp)^2`
+     - same
+     - --
+   * - ``hH_TM2``
+     - :math:`(\sum_\text{coloured} m_\perp)^2`
+     - same
+     - --
+   * - ``H_Tp2``
+     - :math:`(m_{\perp,\ell\ell}+\sum_\text{others} p_\perp)^2`, exactly two
+       final-state leptons required
+     - :math:`(m_{\perp,\text{colourless}}+\sum_\text{coloured} p_\perp)^2`
+     - as core scale
+   * - ``H_TMp2``
+     - :math:`(m_{\perp,\ell\ell}+\sum_\text{others} m_\perp)^2`, exactly two
+       final-state leptons required
+     - :math:`(m_{\perp,\text{colourless}}+\sum_\text{coloured} m_\perp)^2`
+     - as core scale
+   * - ``P_SUM``
+     - :math:`\sum p` (four-vector)
+     - --
+     - same
+   * - ``P_TM2``
+     - :math:`(\prod_\text{massive} m_\perp)^{2/n}`
+     - --
+     - --
+   * - ``N_FS``
+     - --
+     - number of final-state particles
+     - --
+   * - ``MU_F2``, ``MU_R2``, ``MU_Q2``, ``MU_n2``
+     - ``METS``, ``FASTJET``
+     - --
+     - --
+   * - ``H_TY2``, ``DH_Tp2``, ``DH_Tln2``
+     - yes
+     - --
+     - --
+   * - ``p[n]``
+     - yes
+     - yes
+     - yes
+
+Here :math:`m_{\perp,\ell\ell}` is the transverse mass of the lepton pair and
+:math:`m_{\perp,\text{colourless}}` that of the sum of all colourless
+final-state particles; for a lepton pair produced with partons both
+definitions agree. The individual tags are:
 
 :option:`p[n]`
   Access to the four momentum of the nth particle. The initial state
@@ -493,14 +578,24 @@ choices or easily implement a user defined scale.
   ``p[3]`` while the harder jet will be at ``p[4]`` and the softer one
   at ``p[5]``.
 
+  The sign of the incoming momenta ``p[0]`` and ``p[1]`` depends on where the
+  expression is evaluated. The ``METS``, ``VBF``, ``E_Gamma``, ``MINLO`` and
+  ``FASTJET`` scale setters, the ``VAR`` core scale and the ``FASTJET`` enhance
+  observable use negative incoming momenta (all momenta outgoing), while the
+  ``VAR`` scale setter and ``VAR{...}`` in enhance functions and observables
+  use positive ones. For example, with the
+  incoming lepton at ``p[0]`` and the scattered lepton at ``p[2]``,
+  ``Abs2(p[2]-p[0])`` is :math:`+Q^2` in ``METS{...}`` but :math:`-Q^2` in
+  ``VAR{...}``.
+
 :option:`H_T2`
   Square of the scalar sum of the transverse momenta of
   all final state particles.
 
 :option:`H_TM2`
-  Square of the scalar sum of the transverse energies of
-  all final state particles, i.e. contrary to ``H_T2`` ``H_TM2`` takes
-  particle masses into account.
+  Square of the scalar sum of the transverse masses
+  :math:`\sqrt{m^2+p_\perp^2}` of all final state particles, i.e. contrary to
+  ``H_T2`` ``H_TM2`` takes particle masses into account.
 
 :option:`hH_T2`
   Square of the scalar sum of the transverse momenta of
@@ -525,12 +620,33 @@ choices or easily implement a user defined scale.
   Typical values to use would by ``0.3`` and ``1``.
 
 :option:`H_Tp2`
-  Scale setter for lepton-pair production in association with jets only,
-  implements
+  Intended for lepton-pair production in association with jets, implements
 
   .. code-block:: latex
 
      H_T' = sqrt(m_ll^2 + pT(ll)^2) + sum_i pT_i (i not l)
+
+  i.e. the transverse mass of the lepton pair plus the scalar sum of the
+  transverse momenta of all other final-state particles, as used for W/Z+jets
+  calculations. In scale setters, the lepton pair consists of the two
+  final-state leptons (charged leptons or neutrinos), and the run stops if
+  the process does not have exactly two. In the ``VAR`` core scale and in
+  enhance functions and observables, the transverse mass of the sum of all
+  colourless final-state particles is used, and the sum runs over the
+  coloured ones; for a lepton pair produced with partons this is the same.
+
+:option:`H_TMp2`
+  As ``H_Tp2``, but with the transverse masses
+  :math:`\sqrt{m^2+p_\perp^2}` instead of the transverse momenta of the other
+  final-state particles.
+
+:option:`P_SUM`
+  Sum of the four-momenta of all final-state particles, a four-vector; for
+  example ``Abs2(P_SUM)`` is the squared partonic centre-of-mass energy.
+
+:option:`N_FS`
+  Number of final-state particles of the core process. Only available in the
+  ``VAR`` core scale, e.g. ``UNORDERED_SCALE: VAR{H_Tp2/sqr(N_FS-2)}``.
 
 :option:`DH_Tp2(<recombination-method>,<dR>)`
   Implements a version of ``H_Tp2`` which dresses charged particles first.
@@ -539,6 +655,12 @@ choices or easily implement a user defined scale.
   Any other method, or a missing ``<dR>``, is rejected at the first
   evaluation. The cone size can be set per charged-particle flavour by appending
   ``<kf>,<dR>`` pairs, e.g. ``DH_Tp2(Cone,0.1,13,0.2)``.
+
+:option:`DH_Tln2(<recombination-method>,<dR>)`
+  Square of the scalar sum of the transverse momenta of the charged leptons
+  plus the transverse momentum of the sum of all neutrinos (the missing
+  transverse momentum), with charged particles dressed first. The arguments
+  are as for ``DH_Tp2``.
 
 :option:`TAUB`
   Not available: evaluating it stops the run with an error. Earlier versions
