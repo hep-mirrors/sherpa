@@ -124,7 +124,7 @@ Term *Variable_Enhance_Observable::ReplaceTags(Term *term) const
     for (size_t i(p_proc->NIn());i<m_n;++i)
       if (!p_proc->Flavours()[i].Strong()) ewsum+=p_p[i];
       else htm+=p_p[i].PPerp();
-    term->Set(sqr(htm+ewsum.PPerp()));
+    term->Set(sqr(htm+ewsum.MPerp()));
     return term;
   }
   if (term->Id()==8) {

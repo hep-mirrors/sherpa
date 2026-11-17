@@ -38,3 +38,33 @@ TEST_CASE("Enhance-observable H_T tags sum over final-state particles only",
   CHECK_THAT((*observable)(&momenta.front(), &flavours.front(), momenta.size()),
              Catch::Matchers::WithinRel(htmp * htmp, 1.e-12));
 }
+
+TEST_CASE("Enhance-observable H_Tp2 uses the transverse mass of the colourless system",
+          "[PHASIC::Variable_Enhance_Observable]")
+{
+  PHASIC_Test::SeedGlobals();
+  PHASIC_Test::ScopedParticle electron(kf_e), muon(kf_mu), gluon(kf_gluon);
+  electron.Info().m_icharge = -3;
+  muon.Info().m_icharge = -3;
+  gluon.Info().m_strong = 8;
+  const ATOOLS::Flavour_Vector flavours = {
+      ATOOLS::Flavour(kf_e), ATOOLS::Flavour(kf_e, true),
+      ATOOLS::Flavour(kf_mu), ATOOLS::Flavour(kf_mu, true),
+      ATOOLS::Flavour(kf_gluon)};
+  PHASIC_Test::Process process(flavours, 2);
+  // e+e- -> mu+mu- g at sqrt(s) = 100 GeV: H_T' = m_T(mumu) + p_T(g) = 90 + 10
+  const double pz = std::sqrt(45. * 45. - 25.);
+  const ATOOLS::Vec4D_Vector momenta = {
+      ATOOLS::Vec4D(50., 0., 0., 50.), ATOOLS::Vec4D(50., 0., 0., -50.),
+      ATOOLS::Vec4D(45., -3., -4., pz), ATOOLS::Vec4D(45., -3., -4., -pz),
+      ATOOLS::Vec4D(10., 6., 8., 0.)};
+  process.Integrator()->SetMomenta(momenta);
+  const std::string tag = "VAR{H_Tp2}";
+  std::unique_ptr<PHASIC::Enhance_Observable_Base> observable(
+      PHASIC::Enhance_Observable_Base::Getter_Function::GetObject(
+          tag, PHASIC::Enhance_Arguments(&process, tag)));
+  REQUIRE(observable);
+  const double htp = (momenta[2] + momenta[3]).MPerp() + momenta[4].PPerp();
+  CHECK_THAT((*observable)(&momenta.front(), &flavours.front(), momenta.size()),
+             Catch::Matchers::WithinRel(htp * htp, 1.e-12));
+}

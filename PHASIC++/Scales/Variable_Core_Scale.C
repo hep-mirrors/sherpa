@@ -155,7 +155,7 @@ Term *Variable_Core_Scale::ReplaceTags(Term *term) const
       if (!p_ampl->Leg(i)->Flav().Strong())
 	ewsum+=p_ampl->Leg(i)->Mom();
       else htm+=p_ampl->Leg(i)->Mom().PPerp();
-    term->Set(sqr(htm+ewsum.PPerp()));
+    term->Set(sqr(htm+ewsum.MPerp()));
     return term;
   }
   case 8: {
