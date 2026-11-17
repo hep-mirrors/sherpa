@@ -10,6 +10,7 @@
 #include "METOOLS/HadronCurrents/Exchange_ME.H"
 
 #include <algorithm>
+#include <iomanip>
 
 using namespace EXTRAXS;
 using namespace MODEL;
@@ -285,11 +286,59 @@ double XS_Currents::operator()(const ATOOLS::Vec4D_Vector& mom)
   for (size_t i(0);i<m_flavs.size();++i) {
     if (!m_flavs[i].IsNeutrino() || m_flavs[i].Mass()>0.) continue;
     double h[2] = {0.,0.};
-    for (size_t n(0);n<p_me->size();++n)
+    for (size_t n(0);n<p_me->size();++n) {
       h[p_me->GetSpinCombination(n)[i]] += std::norm((*p_me)[n]);
-    if (std::min(h[0],h[1])>1.e-12*sum)
-      THROW(fatal_error,"XS_Currents: "+ToString(m_flavs[i])
-            +" has amplitudes in both LH and RH neutrino helicities, so our helicity spin average does not hold. Implement a new helicity averaging scheme for your current.");
+    }
+   if (std::min(h[0], h[1]) > 1.e-12 * sum) {
+      // std::cout << " " << std::endl;
+      // msg_Tracking() << "XS_Currents: checking helicity structure for neutrino gone wrong: "
+      //                << "mflavs=" << m_flavs[i] << "\n";
+      // msg_Tracking() << "Mass: " << m_flavs[i].Mass() << "\n";
+      // msg_Tracking() << "p^2/E^2 = " << mom[i].Abs2() / sqr(mom[i][0]) << "\n";
+      // msg_Tracking() << "ratio = " << h[0] / h[1] << ", E = " << mom[i][0]
+      //             << ", cos = " << mom[i][3] / mom[i].PSpat()
+      //             << ", ratio*E^2 = " << h[0] / h[1] * sqr(mom[i][0]) << "\n";
+      // msg_Tracking() << "\n KINEMATICS \n";
+      // msg_Tracking() << std::setprecision(17);
+      // Vec4D cons(mom[0] + mom[1]);
+      // for (size_t j(0); j < m_flavs.size(); ++j)
+      // {
+      //   if (j > 1)
+      //     cons -= mom[j];
+      //   msg_Tracking() << j << " " << m_flavs[j] << " p=" << mom[j]
+      //               << " p^2-m^2=" << mom[j].Abs2() - sqr(m_flavs[j].Mass()) << "\n";
+      // }
+      // msg_Tracking() << "p_in - p_out = " << cons << std::setprecision(6) << "\n";
+      // msg_Tracking() << "\n FLIP TO PHYSICAL RATIO FOR EACH HELICITY CONFIG OF THE OTHER LEGS \n";
+      // for (size_t n(0); n < p_me->size(); ++n)
+      // {
+      //   if (p_me->GetSpinCombination(n)[i] != 0)
+      //     continue;
+      //   for (size_t m(0); m < p_me->size(); ++m)
+      //   {
+      //     bool partner(p_me->GetSpinCombination(m)[i] == 1);
+      //     for (size_t j(0); j < m_flavs.size(); ++j)
+      //       if (j != i && p_me->GetSpinCombination(m)[j] != p_me->GetSpinCombination(n)[j])
+      //         partner = false;
+      //     if (partner && std::abs((*p_me)[m]) > 0.)
+      //       msg_Tracking() << "n" << n << "/n" << m << ": A_flip/A_phys = " << (*p_me)[n] / (*p_me)[m]
+      //                   << ", |.| = " << std::abs((*p_me)[n] / (*p_me)[m]) << "\n";
+      //   }
+      // }
+      // msg_Tracking() << "\n DIRECTION AND ENERGIES \n";
+      // msg_Tracking() << "ratio = " << h[0] / h[1] << ", E = " << mom[i][0]
+      //             << ", cos = " << mom[i][3] / mom[i].PSpat()
+      //             << ", ratio*E^2 = " << h[0] / h[1] * sqr(mom[i][0]) << "\n";
+      // msg_Tracking() << "\n SPIN COMBOS \n";
+      // for (size_t n(0);n<p_me->size();++n) {
+      //   msg_Tracking() << "n" << n << ": get spin combination=" << p_me->GetSpinCombination(n) << ", Amplitude= " << std::norm((*p_me)[n]) << "\n";
+      // }
+      // std::cout << " " << std::endl;
+      // std::cout << "h[0] = " << h[0] << ", h[1] = " << h[1] << "h[0]/h[1] = " << h[0]/h[1] << std::endl;
+      // msg_Tracking() << "p^2/(py^2+pz^2) = " << mom[i].Abs2() / (sqr(mom[i][2]) + sqr(mom[i][3])) << "\n";
+      // std::cout << "std::min(h[0], h[1]) = " << std::min(h[0], h[1]) << ", 1.e-12 *sum = " << 1.e-12 * sum << std::endl;
+      THROW(fatal_error, "XS_Currents: " + ToString(m_flavs[i]) + " has amplitudes in both LH and RH neutrino helicities, so our helicity spin average does not hold. Implement a new helicity averaging scheme for your current.");
+    }
   }
 
   // m_symfac is ISSymmetryFactor(in) * FSSymmetryFactor(out). Despite the

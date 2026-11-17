@@ -8,11 +8,11 @@
 #   PPFF (VA_N_NPi pion-pole part of the contact term, Z and W only):
 #                        0 off, 1 point, 11 rho dominance (default), 12 F1V (VFF model)
 
-TAGS: {VFF: 11, AFF: 21, PIFF: 10, PPFF: 11, nucleon: 2212}
+TAGS: {VFF: 11, AFF: 21, PIFF: 10, PPFF: 11, lepton: 12, nucleon: 2212, pion: 111}
 
 EVENTS: 10k
 
-BEAMS: [11, $(nucleon)]
+BEAMS: [$(lepton), $(nucleon)]
 BEAM_ENERGIES: [3.6, 0.0] # sherpa will set any energy below rest mass to the rest mass.
 PDF_SET: [None, Intact] 
 
@@ -26,24 +26,25 @@ PARTICLE_DATA:
 ME_GENERATORS: [Internal]
 
 SELECTORS:
-# - [PT, 11, 10.0, E_CMS]
-# - [PT, 13, 10.0, E_CMS]
 - [Q2, 11, 11, 0.001, 1e12] #[observable, flavor1, flavor2, min, max]
+- [Mass, $(nucleon), 111, 1.077, 1.4]  # W = m(p pi0) between threshold and 1.4 GeV
 # note that for proton  expected XS should not be linear in min Q2 due to FF
 # minQ2=0.001 => XS ~ 2.5e8 pb
 # minQ2=0.01 => XS ~ 2.5e7 pb
 # minQ2=1 => XS ~ 5e3 pb
 
+RESULT_DIRECTORY: Results_$(lepton)_$(nucleon)_to_$(lepton)_$(nucleon)_$(pion)
+
 PROCESSES:
-- 11 $(nucleon) -> 11 $(nucleon) 111:        
+- $(lepton) $(nucleon) -> $(lepton) $(nucleon) $(pion):        
     Sort_Flavors: 0
     Order: {QCD: 0, EW: 2}
     Currents:
       Exchange:
-      - Boson: 22
-        J1: {Type: VA_F_F, Indices: [2, 0]}    # electron [out in]
-        J2: {Type: VA_N_NPi, Indices: [3, 1, 4],    # nucleon [out in], pion last
-              BOSON: 22, VECTOR_FF: $(VFF), AXIAL_FF: $(AFF), PION_NN_FF: $(PIFF)}
+      # - Boson: 22
+      #   J1: {Type: VA_F_F, Indices: [2, 0]}    # electron [out in]
+      #   J2: {Type: VA_N_NPi, Indices: [3, 1, 4],    # nucleon [out in], pion last
+      #         BOSON: 22, VECTOR_FF: $(VFF), AXIAL_FF: $(AFF), PION_NN_FF: $(PIFF)}
       - Boson: 23
         J1: {Type: VA_F_F, Indices: [2, 0]}
         J2: {Type: VA_N_NPi, Indices: [3, 1, 4], 
@@ -63,7 +64,7 @@ HADRON_DECAYS:
 YFS: {MODE: None}
 
 ANALYSIS: Rivet
-ANALYSIS_OUTPUT: Analysis_PIFF10
+ANALYSIS_OUTPUT: Analysis_test_$(lepton)_$(nucleon)_to_$(lepton)_$(nucleon)_$(pion).yoda
 
 RIVET:
   --analyses: [MC_FSPARTICLES, my_MC_FSPARTICLES, MC_XS]

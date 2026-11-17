@@ -113,8 +113,14 @@ void XYZFunc::CalcEtaMu()
         THROW(not_implemented, "");
     }
     m_eta.push_back( _m_eta );
-    Complex help = Complex( ((pi*pi>0.)?sqrt(pi*pi):0.0), 0. );
-    m_mu.push_back( help/m_eta[i] );
+    // A physically massless flavour, with rounding-error zero momentum squared, stays massless
+    const bool massless = p_flav[i].Mass(true) == 0. && dabs(pi * pi) < 1.e-12 * sqr(pi[0]);
+    Complex spinor_mass = Complex( ((pi*pi>0. && !massless)?sqrt(pi*pi):0.0), 0. );
+    if (p_flav[i].Mass(true) == 0. && !massless && pi * pi != 0.)
+      msg_Tracking() << METHOD << ": massless " << p_flav[i] << " has p^2/E^2 = " << pi * pi / sqr(pi[0])
+                     << " above the 1e-12 rounding tolerance, so it gets spinor mass sqrt(p^2) = " << sqrt(dabs(pi * pi)) 
+                     << ". Expected only for an off-shell pseudo-leg (e.g. PHOTONS++ propagators); otherwise its helicities can leak. p = " << pi << "\n";
+    m_mu.push_back( spinor_mass/m_eta[i] );
     if((p_flav[i].IsAnti() && m_anti==false) ||
        (!p_flav[i].IsAnti() && m_anti==true)) m_mu[i] *= -1.;
   }
