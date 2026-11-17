@@ -6,6 +6,8 @@
 
 #include "MODEL/Main/Single_Vertex.H"
 #include "MODEL/SM/FormFactorParameters.H"   // new parameter system
+#include "MODEL/SM/LowEnergy_Model.H"
+#include "MODEL/SM/ThreePion_FittedCurrent.H"
 
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
@@ -98,6 +100,9 @@ namespace METOOLS {
     METOOLS::Propagator_Base * BuildEE3PiRhoTower();
     void ConstructVectorPionFormFactorRhoE();
     void ConstructVectorPionFormFactorRhoF();
+    //! THREE_PION_FORM_FACTOR: {Current: Fitted}, V_pi modes: the tower's
+    //! isoscalar factor over the chain's anomaly normalisation
+    void ConstructFittedProduction(const Fitted_ThreePion_Current::Tower & tower);
   public:
     FFVMD(const Vertex_Key &key);
     ~FFVMD();
@@ -801,8 +806,29 @@ Complex FFVMD::EE3PiFF() {
   return F;
 }
 
+// THREE_PION_FORM_FACTOR: {Current: Fitted} in the rho pi chain. The chain of
+// rho_k is 2 g_gammarhopi N_k g_k G_k(q^2) x (rho propagator) and the
+// ThreePionFittedRho form factor on its rho -> pi pi vertex turns the propagator
+// into LS_k(s)/M_k^2 (ThreePion_FittedCurrent.C), so with N_k g_k = (M_k/m_rho)^2
+// g_rhopipi the chain is (2 g_gammarhopi g_rhopipi/m_rho^2) G_k(q^2) LS_k(s).
+// G_k is therefore the tower's isoscalar factor divided by that anomaly
+// normalisation, and the chains add up to the fitted current.
+void FFVMD::ConstructFittedProduction(const Fitted_ThreePion_Current::Tower & tower) {
+  const Flavour rho0(kf_rho_770);
+  const double chain_norm(2.*MODEL::LowEnergy_Model::GammaRhoPiCoupling()*
+                          MODEL::LowEnergy_Model::RhoPiPiCoupling(rho0,"g_rhopipi")/
+                          sqr(rho0.Mass()));
+  p_raw_prop = Fitted_ThreePion_Current::Instance().NewIsoscalar(tower,
+                                                                 Complex(1./chain_norm,0.));
+  m_raw_weight = Complex(1.,0.);
+}
+
 void FFVMD::ConstructVectorPionFormFactor() {
   msg_Debugging()<<METHOD<<": three-pion isoscalar parameters\n";
+  if (Fitted_ThreePion_Current::Selected()) {
+    ConstructFittedProduction(Fitted_ThreePion_Current::Tower::rho770);
+    return;
+  }
   ThreePionFF::ReadAll();   // omega(782), phi(1020), J/psi
 
   Scoped_Settings s{ Settings::GetMainSettings()["THREE_PION_FORM_FACTOR"] };
@@ -889,6 +915,10 @@ void FFVMD::ConstructVectorPionFormFactor() {
 // Without it E/B is -0.94 instead of the paper's +0.83.
 void FFVMD::ConstructVectorPionFormFactorRhoE() {
   msg_Debugging()<<METHOD<<": hep-ph/0512180 Eq.10 term E parameters\n";
+  if (Fitted_ThreePion_Current::Selected()) {
+    ConstructFittedProduction(Fitted_ThreePion_Current::Tower::rho1450);
+    return;
+  }
   ThreePionFF::ReadAll();
   p_raw_prop = new METOOLS::HepPh0512180_BreitWigner(
               ThreePionFF::Phi1020RhoE().Mass(),
@@ -901,6 +931,10 @@ void FFVMD::ConstructVectorPionFormFactorRhoE() {
 // isoscalar, omega(1631), and the same minus sign.
 void FFVMD::ConstructVectorPionFormFactorRhoF() {
   msg_Debugging()<<METHOD<<": hep-ph/0512180 Eq.10 term F parameters\n";
+  if (Fitted_ThreePion_Current::Selected()) {
+    ConstructFittedProduction(Fitted_ThreePion_Current::Tower::rho1700);
+    return;
+  }
   ThreePionFF::ReadAll();
   p_raw_prop = new METOOLS::HepPh0512180_BreitWigner(
               ThreePionFF::Omega1631RhoF().Mass(),
@@ -999,8 +1033,108 @@ Complex FFTFF::FF() {
 }
 
 // ----------------------------------------------------------------------
+// FFRhoPWave: P-wave running width on a rho -> pi pi vertex
+// ----------------------------------------------------------------------
+// Comix propagates every vector with a fixed width, -i/(s - m^2 + i m Gamma).
+// This form factor, put on the rho -> pi pi (SSV) vertex next to such a
+// propagator, multiplies it by
+//   R(s) = (s - m^2 + i m Gamma) / (s - m^2 + i sqrt(s) Gamma(s)),
+// Gamma(s) the P-wave running width of hep-ph/0512180 eq. (5)
+// (PWaveBreitWigner::Width), with m and Gamma the particle-table values and
+// the pion masses setting the threshold. THREE_PION_FORM_FACTOR: {RhoWidth: PWave}.
+namespace METOOLS {
+  class FFRhoPWave: public Form_Factor {
+  private:
+    kf_code m_rho;
+    double  m_m, m_gamma, m_sth;
+  public:
+    FFRhoPWave(const Vertex_Key &key);
+    Complex FF();
+  };
+}
+
+FFRhoPWave::FFRhoPWave(const Vertex_Key &key):
+  Form_Factor("RhoPWave",key), m_rho(0), m_m(0.), m_gamma(0.), m_sth(0.)
+{
+  double mpi(0.);
+  for (size_t i(0); i<key.p_mv->in.size(); ++i) {
+    const Flavour &fl(key.p_mv->in[i]);
+    if (fl.IntSpin()==2) {
+      m_rho   = fl.Kfcode();
+      m_m     = fl.Mass();
+      m_gamma = fl.Width();
+    }
+    else mpi += fl.Mass();
+  }
+  if (m_rho==0)
+    THROW(fatal_error,"RhoPWave form factor on a vertex without a vector meson.");
+  m_sth = sqr(mpi);
+}
+
+Complex FFRhoPWave::FF() {
+  const Current *rho(NULL);
+  for (size_t i(0); i<p_v->J().size() && rho==NULL; ++i)
+    if (p_v->J(i)->Flav().Kfcode()==m_rho) rho = p_v->J(i);
+  if (rho==NULL) rho = p_v->JC();
+  const double s(rho->P().Abs2()), m2(sqr(m_m));
+  const double gamma_run(PWaveBreitWigner::Width(s,m_m,m_gamma,m_sth));
+  return Complex(s-m2,m_m*m_gamma)/Complex(s-m2,std::sqrt(std::max(s,0.))*gamma_run);
+}
+
+// ----------------------------------------------------------------------
+// FFRhoOmegaMix: the isovector production of the rho-omega mixing term
+// ----------------------------------------------------------------------
+// gamma* -> omega pi0, omega -> pi+ pi- by rho-omega mixing. The gamma* omega
+// pi0 form factor of Czyz, Kuhn, hep-ph/0008262, at the photon virtuality S:
+//   B(S) = BW(S; rho) - 0.1 (m_rho/1.7)^2 BW(S; 1.7, 0.26),
+//   BW(S; m, Gamma) = m^2/(S - m^2 + i sqrt(S) Gamma(S)), P-wave width,
+// i.e. minus the PWaveBreitWigner of each. Strength and phase are in the
+// vertex coupling (LowEnergy_Model::InitRhoOmegaMixingVertices).
+namespace METOOLS {
+  class FFRhoOmegaMix: public Form_Factor {
+  private:
+    PWaveBreitWigner m_rho, m_rho1700;
+    double m_w1700;
+  public:
+    FFRhoOmegaMix(const Vertex_Key &key);
+    Complex FF();
+  };
+}
+
+FFRhoOmegaMix::FFRhoOmegaMix(const Vertex_Key &key):
+  Form_Factor("RhoOmegaMix",key),
+  m_rho(Flavour(kf_rho_770).Mass(),Flavour(kf_rho_770).Width(),
+	sqr(2.*Flavour(kf_pi_plus).Mass())),
+  m_rho1700(1.7,0.26,sqr(2.*Flavour(kf_pi_plus).Mass())),
+  m_w1700(-0.1*sqr(Flavour(kf_rho_770).Mass()/1.7)) {}
+
+Complex FFRhoOmegaMix::FF() {
+  // the photon virtuality: the one leg that is not a hadron
+  const Current *photon(NULL);
+  for (size_t i(0); i<p_v->J().size() && photon==NULL; ++i)
+    if (!p_v->J(i)->Flav().IsHadron()) photon = p_v->J(i);
+  if (photon==NULL) photon = p_v->JC();
+  const double q2(photon->P().Abs2());
+  return -(m_rho(q2)+m_w1700*m_rho1700(q2));
+}
+
+// ----------------------------------------------------------------------
 // Getter declarations
 // ----------------------------------------------------------------------
+
+DECLARE_GETTER(FFRhoPWave,"RhoPWave",Form_Factor,Vertex_Key);
+Form_Factor *Getter<Form_Factor,Vertex_Key,FFRhoPWave>::
+operator()(const Vertex_Key &args) const { return new FFRhoPWave(args); }
+void ATOOLS::Getter<Form_Factor,Vertex_Key,FFRhoPWave>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"rho -> pi pi: fixed-width propagator to P-wave running width"; }
+
+DECLARE_GETTER(FFRhoOmegaMix,"RhoOmegaMix",Form_Factor,Vertex_Key);
+Form_Factor *Getter<Form_Factor,Vertex_Key,FFRhoOmegaMix>::
+operator()(const Vertex_Key &args) const { return new FFRhoOmegaMix(args); }
+void ATOOLS::Getter<Form_Factor,Vertex_Key,FFRhoOmegaMix>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"gamma* -> omega pi0: isovector rho line shape of the rho-omega mixing term"; }
 
 DECLARE_GETTER(FFTFF,"TFF",Form_Factor,Vertex_Key);
 Form_Factor *Getter<Form_Factor,Vertex_Key,FFTFF>::

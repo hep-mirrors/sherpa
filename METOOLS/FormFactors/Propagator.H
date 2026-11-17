@@ -4,6 +4,8 @@
 
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/MyComplex.H"
+#include <algorithm>
+#include <cmath>
 #include <map>
 #include <vector>
 
@@ -87,6 +89,29 @@ namespace METOOLS {
       return m_M2/Complex(m_M2-s,-m_M*m_Gamma); }
     const Complex Normalised(const double & s)  { return (*this)(s); }
     const double  Normalised2(const double & s) { return norm((*this)(s)); }
+  };
+
+  // m^2/(m^2 - s - i sqrt(s) Gamma(s)) with the P-wave running width of
+  // hep-ph/0512180 eq. (5),
+  //   Gamma(s) = Gamma (m^2/s) [(s - s_th)/(m^2 - s_th)]^{3/2},
+  // zero below the two-body threshold s_th, so the value at s = 0 is 1.
+  class PWaveBreitWigner : public Propagator_Base {
+  private:
+    double m_sth;
+  public:
+    PWaveBreitWigner(const double & M,const double & Gamma,const double & sth) :
+      Propagator_Base(NULL,resonance_type::running,M,Gamma), m_sth(sth) {}
+    const Complex operator()(const double & s) {
+      return m_M2/Complex(m_M2-s,-std::sqrt(std::max(s,0.))*Width(s,m_M,m_Gamma,m_sth));
+    }
+    const Complex Normalised(const double & s)  { return (*this)(s); }
+    const double  Normalised2(const double & s) { return norm((*this)(s)); }
+    //! Gamma(s) above, for mass M, on-shell width Gamma and threshold sth
+    static double Width(const double & s,const double & M,
+			const double & Gamma,const double & sth) {
+      if (s<=sth) return 0.;
+      return Gamma*M*M/s*std::pow((s-sth)/(M*M-sth),1.5);
+    }
   };
 
   // arXiv:hep-ph/0512180 Eq. (5): 1/(s/m^2 - 1 + i Gamma/m) = -m^2/(m^2-s-i

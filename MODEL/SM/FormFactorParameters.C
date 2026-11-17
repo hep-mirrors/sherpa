@@ -93,6 +93,8 @@ ParameterRegistry::Get(const std::string& sector) const
 #define DEFINE_PARAM(name, block, sub, tag, m, G, c, phi, type, flav) \
     static ResonanceParameters s_##name(block, sub, tag, m, G, c, phi, type, flav)
   // ---------- Pion form factor ----------
+// our own Gounaris-Sakurai tune to e+e- -> pi+ pi- data
+// (doc/examples/Soft_QCD/LowEnergy/tune_pion)
 DEFINE_PARAM(rho,        "PION_FORM_FACTOR", "",               "rho(770)",   0.77456, 0.14832, 1.0,     0.0,     ResonanceType::GounarisSakurai, kf_rho_770);
 DEFINE_PARAM(rho1450,    "PION_FORM_FACTOR", "",               "rho(1450)",  1.4859,  0.37360, 0.14104, 3.7797,  ResonanceType::GounarisSakurai, kf_rho_1450);
 DEFINE_PARAM(rho1700,    "PION_FORM_FACTOR", "",               "rho(1700)",  1.8668,  0.30334, 0.0614,  1.429,   ResonanceType::GounarisSakurai, kf_rho_1700);
@@ -101,9 +103,10 @@ DEFINE_PARAM(omega782,   "PION_FORM_FACTOR", "",               "omega(782)", 0.7
 DEFINE_PARAM(phi1020,    "PION_FORM_FACTOR", "",               "phi(1020)",  1.01947, 0.00425, 0.00045, 2.888,   ResonanceType::FixedBreitWigner, kf_phi_1020);
 
 // ---------- Kaon form factor ----------
-// arXiv:hep-ph/0409080. Negative couplings are negative amplitudes with phase
-// 0: each family sums to 1, so F_K+(0) = 1/2 + 1/6 + 1/3 = 1 (a phase pi on
-// top of the minus sign flipped them back and gave F(0) = 1.272).
+// Couplings of arXiv:hep-ph/0409080. Negative couplings are negative amplitudes
+// with phase 0: each family sums to 1, so F_K+(0) = 1/2 + 1/6 + 1/3 = 1 (a
+// phase pi on top of the minus sign flipped them back and gave F(0) = 1.272).
+// The rho masses and widths are those of our pion form factor tune above.
 DEFINE_PARAM(K_rho,       "KAON_FORM_FACTOR", "rho(770)",      "rho(770)",   0.77456, 0.14832,  1.195,     0.0,     ResonanceType::GounarisSakurai, kf_rho_770);
 DEFINE_PARAM(K_rho1450,   "KAON_FORM_FACTOR", "rho(1450)",     "rho(1450)",  1.4859,  0.37360, -0.112,    0.0,     ResonanceType::GounarisSakurai, kf_rho_1450);
 DEFINE_PARAM(K_rho1700,   "KAON_FORM_FACTOR", "rho(1700)",     "rho(1700)",  1.8668,  0.30334, -0.083,    0.0,     ResonanceType::GounarisSakurai, kf_rho_1700);
@@ -118,9 +121,7 @@ DEFINE_PARAM(K_phi1680,   "KAON_FORM_FACTOR", "phi(1680)",     "phi(1680)",  1.6
 // sub="" (not the resonance name) - a non-empty sub requires a doubly-nested
 // YAML block (THREE_PION_FORM_FACTOR: <sub>: <tag>: {...}), which none of
 // this project's example cards write, so a non-empty sub here silently
-// discards every card-level override. Same bug, same fix, as the
-// KAON_FORM_FACTOR sector earlier this session - see
-// lowenergy-kaonff-nesting-and-sign-bugs memory note.
+// discards every card-level override (the same holds for KAON_FORM_FACTOR).
 DEFINE_PARAM(v_omega782,  "THREE_PION_FORM_FACTOR", "", "omega(782)", 0.78266,  0.00868, 1.0,    0.0,   ResonanceType::FixedBreitWigner, kf_omega_782);
 DEFINE_PARAM(v_phi1020,   "THREE_PION_FORM_FACTOR", "", "phi(1020)",  1.019461, 0.004249,0.042,  M_PI,  ResonanceType::FixedBreitWigner, kf_phi_1020);
 DEFINE_PARAM(v_jpsi,      "THREE_PION_FORM_FACTOR", "", "J/psi",      3.0969,   0.0000926,0.001, 0.0,   ResonanceType::FixedBreitWigner, kf_J_psi_1S);
@@ -162,7 +163,8 @@ DEFINE_PARAM(v_phi1020_rhoE,   "THREE_PION_FORM_FACTOR", "", "phi(1020)-rho(1450
 DEFINE_PARAM(v_omega1631_rhoF, "THREE_PION_FORM_FACTOR", "", "omega(1631)-rho(1700)",1.6310,   0.2450,   0.032418, M_PI, ResonanceType::FixedBreitWigner, kf_omega_1600);
 
 // ---------- Two-photon transition ----------
-// pi0
+// pi0: rho, omega, phi masses and widths PDG, the omega and phi weights our own
+// tune to e+e- -> pi0 gamma data (doc/examples/Soft_QCD/LowEnergy/tune_pigamma)
 DEFINE_PARAM(T_pi0_rho,   "TWO_PHOTON_FORM_FACTOR", "pi0",        "rho(770)",   0.77526,  0.1474,  1.0,     0.0,     ResonanceType::FixedBreitWigner, kf_rho_770);
 DEFINE_PARAM(T_pi0_omega, "TWO_PHOTON_FORM_FACTOR", "pi0",        "omega(782)", 0.78266,  0.00868, 1.0109,  0.3972,  ResonanceType::FixedBreitWigner, kf_omega_782);
 DEFINE_PARAM(T_pi0_phi,   "TWO_PHOTON_FORM_FACTOR", "pi0",        "phi(1020)",  1.019461, 0.004249,0.0676, -2.9058, ResonanceType::FixedBreitWigner, kf_phi_1020);

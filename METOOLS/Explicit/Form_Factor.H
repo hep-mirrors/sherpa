@@ -29,9 +29,24 @@ namespace METOOLS {
     */
     static std::string HadronFirstTag(const Vertex_Key &key);
 
-    inline const std::string &ID() const { return m_id; }    
+    inline const std::string &ID() const { return m_id; }
   };// end of class FormFactor
-  
+
+  /*!
+    A hadronic current linear in the momenta of its vertex's hadron legs,
+      J^mu = sum_l c_l p_l^mu,
+    with the coefficients c_l computed per event by the form factor and the
+    Lorentz structure applied by the calculator (VPPPP_LC.C), so FF() is 1.
+    Indexed by the declared leg of the model vertex (photon legs carry 0).
+  */
+  class Linear_Current_FF: public Form_Factor {
+  public:
+    Linear_Current_FF(const std::string &id,const Vertex_Key &key):
+      Form_Factor(id,key) {}
+    virtual const std::vector<Complex> &Coefficients() = 0;
+    Complex FF() { return Complex(1.,0.); }
+  };
+
   typedef ATOOLS::Getter_Function<Form_Factor,Vertex_Key,
 				  std::less<std::string> > FF_Getter;
 

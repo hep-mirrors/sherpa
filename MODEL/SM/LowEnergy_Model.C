@@ -1,4 +1,5 @@
 #include "MODEL/SM/LowEnergy_Model.H"
+#include "MODEL/SM/ThreePion_FittedCurrent.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "MODEL/Main/Single_Vertex.H"
 #include "METOOLS/Explicit/Form_Factor.H"
@@ -259,6 +260,7 @@ void LowEnergy_Model::InitQEDVertices() {
     InitThreePionVertices(cpl);
   }
   InitTwoPhotonVertices();
+  InitFourPionVertices(cpl);
   // add the ISR photon vertex, which is a special case of the photon vertex
   m_v.push_back(Single_Vertex());
   m_v.back().AddParticle(Flavour(kf_e));
@@ -298,12 +300,11 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
   //
   // SSV_LC evaluates cpl*(p1-p2)^mu, exactly the structure above, so the
   // coupling goes in as-is - the same convention under which cpl = i e on
-  // the photon vertices reproduces scalar QED.
+  // the photon vertices reproduces scalar QED. (RhoPiPiCoupling, shared with
+  // the fitted current's production form factors.)
   ////////////////////////////////////////////////////////////////////
-  const double mrho(rho0.Mass()), wrho(rho0.Width(true)), mpi(pip.Mass());
-  const double prho(sqrt(Max(0.25*sqr(mrho)-sqr(mpi),1.e-12)));
-  const double grpp_def(sqrt(6.*M_PI*sqr(mrho)*wrho/pow(prho,3)));
-  const double grpp(s["g_rhopipi"].SetDefault(grpp_def).Get<double>());
+  const double mrho(rho0.Mass());
+  const double grpp(RhoPiPiCoupling(rho0,"g_rhopipi"));
 
  
   ////////////////////////////////////////////////////////////////////
@@ -332,13 +333,10 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
   //
   // const double ee(sqrt(4.*M_PI*m_alpha));
   // const double ggrp_vmd(ee*14.0/17.0);   // 0.25 /GeV, for reference
-  const double fpi_wzw(s["F_pi"].SetDefault(0.1307).Get<double>()/sqrt(2.));
-  const double F3pi(1./(4.*sqr(M_PI)*pow(fpi_wzw,3.)));
-  const double alphaA(F3pi/3.*1.066);
-  const double ggrp_def(alphaA*sqr(mrho)/(2.*grpp));
-  const double ggrp(s["g_gammarhopi"].SetDefault(ggrp_def).Get<double>());
-  msg_Out()<<METHOD<<": alpha_A = "<<alphaA<<" GeV^-3 (WZW anomaly, F_pi = "
-	   <<fpi_wzw<<"), predicting g_gammarhopi = "<<ggrp_def<<" /GeV\n";
+  //
+  // (GammaRhoPiCoupling, shared with the fitted current's production form
+  // factors.)
+  const double ggrp(GammaRhoPiCoupling());
 
   msg_Out()<<METHOD<<": g_rhopipi = "<<grpp
 	   <<", g_gammarhopi = "<<ggrp<<" /GeV\n";
@@ -361,6 +359,25 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
   // removes the double route to pi+ pi- pi0.
   ////////////////////////////////////////////////////////////////////
   const bool contact3pi(s["Contact"].SetDefault(false).Get<bool>());
+  // Current: Fitted - the fitted current's isoscalars on the production
+  // vertices (FFVMD) and its rho line shapes on the rho -> pi pi vertices
+  // (ThreePionFittedRho); the rho pi chain only
+  const bool fitted3pi(METOOLS::Fitted_ThreePion_Current::Selected());
+  if (fitted3pi && contact3pi)
+    THROW(fatal_error,"THREE_PION_FORM_FACTOR: Current: Fitted is built on the "
+	  "rho pi chain; Contact: true is not supported with it.");
+  if (fitted3pi)
+    msg_Out()<<METHOD<<": THREE_PION_FORM_FACTOR: Current: Fitted, "
+	     <<METOOLS::Fitted_ThreePion_Current::Instance().Describe()<<"\n";
+  // RhoWidth: Fixed (Comix's fixed-width propagator) or PWave (the RhoPWave
+  // form factor on the rho -> pi pi vertices turns it into the P-wave running
+  // width of hep-ph/0512180 eq. (5))
+  const std::string rhowidth(s["RhoWidth"].SetDefault("Fixed").Get<std::string>());
+  if (rhowidth!="Fixed" && rhowidth!="PWave")
+    THROW(fatal_error,"THREE_PION_FORM_FACTOR: RhoWidth must be Fixed or PWave, not '"
+	  +rhowidth+"'.");
+  const std::string rhopipiff(fitted3pi ? "ThreePionFittedRho" :
+			      rhowidth=="PWave" ? "RhoPWave" : "");
   if (contact3pi) {
     msg_Out()<<METHOD<<": three-pion contact current (VPPP) active; "
 	     <<"gamma-rho-pi production vertices disabled.\n";
@@ -428,6 +445,7 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
     m_v.back().AddParticle(pb[i]);
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("SSV");
+    if (!rhopipiff.empty()) m_v.back().FormFactor.push_back(rhopipiff);
     m_v.back().cpl.push_back(cpl_rpp);
     m_v.back().order[1]=1;
   }
@@ -466,16 +484,12 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
   const Flavour rho1700_p(Flavour(kf_rho_1700_plus));
   const Flavour rho1700_m(Flavour(kf_rho_1700_plus).Bar());
 
-  const double mrho1450(rho1450_0.Mass()), wrho1450(rho1450_0.Width(true));
-  const double prho1450(sqrt(Max(0.25*sqr(mrho1450)-sqr(mpi),1.e-12)));
-  const double grpp1450_def(sqrt(6.*M_PI*sqr(mrho1450)*wrho1450/pow(prho1450,3)));
-  const double grpp1450(s["g_rho1450pipi"].SetDefault(grpp1450_def).Get<double>());
+  const double mrho1450(rho1450_0.Mass());
+  const double grpp1450(RhoPiPiCoupling(rho1450_0,"g_rho1450pipi"));
   const Kabbala cpl_rpp1450("g_{\\rho(1450)\\pi\\pi}",grpp1450*Complex(0.,1.));
 
-  const double mrho1700(rho1700_0.Mass()), wrho1700(rho1700_0.Width(true));
-  const double prho1700(sqrt(Max(0.25*sqr(mrho1700)-sqr(mpi),1.e-12)));
-  const double grpp1700_def(sqrt(6.*M_PI*sqr(mrho1700)*wrho1700/pow(prho1700,3)));
-  const double grpp1700(s["g_rho1700pipi"].SetDefault(grpp1700_def).Get<double>());
+  const double mrho1700(rho1700_0.Mass());
+  const double grpp1700(RhoPiPiCoupling(rho1700_0,"g_rho1700pipi"));
   const Kabbala cpl_rpp1700("g_{\\rho(1700)\\pi\\pi}",grpp1700*Complex(0.,1.));
 
   msg_Out()<<METHOD<<": g_rho1450pipi = "<<grpp1450
@@ -523,6 +537,7 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
     m_v.back().AddParticle(pb[i]);
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("SSV");
+    if (!rhopipiff.empty()) m_v.back().FormFactor.push_back(rhopipiff);
     m_v.back().cpl.push_back(cpl_rpp1450);
     m_v.back().order[1]=1;
 
@@ -532,8 +547,124 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
     m_v.back().AddParticle(pb[i]);
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("SSV");
+    if (!rhopipiff.empty()) m_v.back().FormFactor.push_back(rhopipiff);
     m_v.back().cpl.push_back(cpl_rpp1700);
     m_v.back().order[1]=1;
+  }
+
+  if (!contact3pi) InitRhoOmegaMixingVertices(cpl_grp);
+}
+
+//////////////////////////////////////////////////////////////////////
+// g_{rho pi pi} of a rho (770, 1450, 1700) from its width,
+//   Gamma = g^2 p^3/(6 pi M^2),  p = sqrt(M^2/4 - m_pi^2),
+// THREE_PION_FORM_FACTOR: key overrides it.
+//////////////////////////////////////////////////////////////////////
+double LowEnergy_Model::RhoPiPiCoupling(const Flavour & rho,const std::string & key) {
+  const double M(rho.Mass()), G(rho.Width(true)), mpi(Flavour(kf_pi_plus).Mass());
+  const double p(sqrt(Max(0.25*sqr(M)-sqr(mpi),1.e-12)));
+  const double def(sqrt(6.*M_PI*sqr(M)*G/pow(p,3)));
+  Scoped_Settings s{ Settings::GetMainSettings()["THREE_PION_FORM_FACTOR"] };
+  return s[key].SetDefault(def).Get<double>();
+}
+
+//////////////////////////////////////////////////////////////////////
+// g_{gamma rho pi} from the WZW anomaly, 2 g_{gamma rho pi} g_{rho pi pi}/m_rho^2
+// = alpha_A, alpha_A = F_3pi/3 x 1.066, F_3pi = 1/(4 pi^2 F_pi^3)
+// (arXiv:1907.01556 eq. (2.13)); THREE_PION_FORM_FACTOR: g_gammarhopi overrides it.
+//////////////////////////////////////////////////////////////////////
+double LowEnergy_Model::GammaRhoPiCoupling() {
+  Scoped_Settings s{ Settings::GetMainSettings()["THREE_PION_FORM_FACTOR"] };
+  const Flavour rho0(kf_rho_770);
+  const double grpp(RhoPiPiCoupling(rho0,"g_rhopipi"));
+  // F_pi = 130.7 MeV (PDG 2004 f_pi+), F = F_pi/sqrt(2) in the WZW normalisation
+  const double fpi_wzw(s["F_pi"].SetDefault(0.1307).Get<double>()/sqrt(2.));
+  const double F3pi(1./(4.*sqr(M_PI)*pow(fpi_wzw,3.)));
+  const double alphaA(F3pi/3.*1.066);
+  return s["g_gammarhopi"].SetDefault(alphaA*sqr(rho0.Mass())/(2.*grpp)).Get<double>();
+}
+
+//////////////////////////////////////////////////////////////////////
+// THREE_PION_FORM_FACTOR: RhoOmegaMixing: {Active: false, Amplitude, Phase,
+// Br_pipi}. gamma* -> omega pi0 (AVVP, form factor RhoOmegaMix), omega ->
+// pi+ pi- (SSV), built like the rho0 pi0 chain, with which it interferes.
+// Amplitude and Phase are relative to the rho0 pi0 chain; g_omegapipi follows
+// from Gamma(omega -> pi+ pi-) = Br_pipi Gamma_omega = g^2 p^3/(6 pi m^2).
+//////////////////////////////////////////////////////////////////////
+void LowEnergy_Model::InitRhoOmegaMixingVertices(const Kabbala & cpl_grp) {
+  Scoped_Settings s{ Settings::GetMainSettings()["THREE_PION_FORM_FACTOR"]
+		     ["RhoOmegaMixing"] };
+  if (!s["Active"].SetDefault(false).Get<bool>()) return;
+  // Amplitude, Phase: PHOKHARA 10's rho-omega mixing term of its pion=8 current
+  // (hep-ph/0512180) in the normalisation of this chain, matched at the phi by
+  // yfs-helpers/three-pion-current/rhoomega-mix.py. Br_pipi: PDG Br(omega -> pi+ pi-).
+  const double amplitude(s["Amplitude"].SetDefault(3.40726).Get<double>());
+  const double phase(s["Phase"].SetDefault(3.02625).Get<double>());
+  const double br_pipi(s["Br_pipi"].SetDefault(0.0153).Get<double>());
+  const Flavour photon(kf_photon), omega(kf_omega_782), pi0(kf_pi);
+  const Flavour pip(kf_pi_plus), pim(Flavour(kf_pi_plus).Bar());
+  const double p(sqrt(sqr(omega.Mass())/4.-sqr(pip.Mass())));
+  const double g_ompp(sqrt(br_pipi*omega.Width()*6.*M_PI*sqr(omega.Mass())/pow(p,3)));
+  const Complex mix(std::polar(amplitude,phase));
+  msg_Out()<<METHOD<<": rho-omega mixing on, A e^{i phi} = "<<mix
+	   <<", g_omegapipi = "<<g_ompp<<"\n";
+
+  m_v.push_back(Single_Vertex());
+  m_v.back().AddParticle(photon);
+  m_v.back().AddParticle(omega);
+  m_v.back().AddParticle(pi0);
+  m_v.back().Color.push_back(Color_Function(cf::None));
+  m_v.back().Lorentz.push_back("AVVP");
+  m_v.back().FormFactor.push_back("RhoOmegaMix");
+  m_v.back().cpl.push_back(cpl_grp*Kabbala("A_{\\rho\\omega}",mix));
+  m_v.back().order[1]=1;
+
+  m_v.push_back(Single_Vertex());
+  m_v.back().AddParticle(omega);
+  m_v.back().AddParticle(pip);
+  m_v.back().AddParticle(pim);
+  m_v.back().Color.push_back(Color_Function(cf::None));
+  m_v.back().Lorentz.push_back("SSV");
+  m_v.back().cpl.push_back(Kabbala("g_{\\omega\\pi\\pi}",g_ompp*Complex(0.,1.)));
+  m_v.back().order[1]=1;
+}
+
+//////////////////////////////////////////////////////////////////////
+// gamma* -> 4 pi (arXiv:hep-ph/0008262, arXiv:0804.0359), FourPion_Current.H:
+// one contact vertex gamma* 4 pi per charge mode with the current linear in
+// the pion momenta, J^mu = sum_i G_i p_i^mu (VPPPP, form factor FourPion), the
+// omega pi0 term of pi+ pi- 2pi0 included in contact form. Born and initial-
+// state radiation only: photon emission off the pions needs the photon
+// contacts of the current, which are not built here.
+//
+// Every 4 pi vertex counts one order more than its photon, so that the Born
+// e+e- -> 4 pi is QED order 3 (as with the omega pi0 chain of the full model).
+//
+// FOUR_PION_FORM_FACTOR: {Active: false, parameters in FourPion_Parameters::Read}.
+//////////////////////////////////////////////////////////////////////
+void LowEnergy_Model::InitFourPionVertices(const Kabbala & cpl) {
+  Scoped_Settings s{ Settings::GetMainSettings()["FOUR_PION_FORM_FACTOR"] };
+  if (!s["Active"].SetDefault(false).Get<bool>()) return;
+  // contact vertices: Comix's own phase space (binary vertices) cannot map them
+  Scoped_Settings integ{ Settings::GetMainSettings()["INTEGRATOR"] };
+  bool rambo(false);
+  for (const std::string &i : integ.SetDefault("Default").GetVector<std::string>())
+    rambo = rambo || i=="Rambo";
+  if (!rambo)
+    THROW(fatal_error,"FOUR_PION_FORM_FACTOR builds five-leg contact vertices, "
+	  "which Comix's phase space cannot map; set INTEGRATOR: Rambo.");
+  const Flavour photon(kf_photon), pi0(kf_pi);
+  const Flavour pip(kf_pi_plus), pim(Flavour(kf_pi_plus).Bar());
+  const std::vector<Flavour> modes[2] = { { pip, pim, pi0, pi0 }, { pip, pip, pim, pim } };
+  for (const std::vector<Flavour> &pis : modes) {
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle(photon);
+    for (const Flavour &f : pis) m_v.back().AddParticle(f);
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("VPPPP");
+    m_v.back().FormFactor.push_back("FourPion");
+    m_v.back().cpl.push_back(cpl);
+    m_v.back().order[1]=2;
   }
 }
 

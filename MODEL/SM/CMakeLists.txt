@@ -3,11 +3,15 @@ set(SM_SOURCES Model.C
                Baryon_FormFactors.C 
                Meson_FormFactors.C
                FormFactorParameters.C
+               FourPion_Current.C
+               ThreePion_FittedCurrent.C
 	     )
 
 set(SM_HEADERS Model.H
                LowEnergy_Model.H
                FormFactorParameters.H
+               FourPion_Current.H
+               ThreePion_FittedCurrent.H
 	     )
 
 sherpa_create_git_info(SM ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
