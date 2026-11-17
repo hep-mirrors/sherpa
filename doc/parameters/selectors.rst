@@ -78,7 +78,10 @@ respective keywords are
   transverse momentum cut
 
 :option:`ET`
-  transverse energy cut
+  transverse energy cut, using :math:`E_\perp=\sqrt{m^2+p_\perp^2}=\sqrt{E^2-p_z^2}`
+  (the transverse mass). For massless particles this equals :math:`p_\perp`
+  and :math:`E\sin\theta`; for :math:`E\sin\theta` of massive particles use the
+  ``ET`` variable of the :ref:`Universal selector`.
 
 :option:`Y`
   rapidity cut
@@ -91,7 +94,10 @@ respective keywords are
   (commonly used in DIS analyses)
 
 :option:`HT`
-  Visible transverse energy cut
+  cut on the scalar sum of the transverse momenta of all final-state
+  particles of the given flavour; unlike the other selectors in this list it
+  applies a single cut to the sum, e.g. ``[HT, 93, 200, E_CMS]`` for the
+  partons' :math:`H_T`
 
 :option:`E`
     energy cut
@@ -136,7 +142,14 @@ respective keywords are
   pair transverse momentum
 
 :option:`MT2`
-  pair transverse mass
+  pair transverse mass :math:`\sqrt{m_{ij}^2+p_{\perp,ij}^2}` of the sum of the
+  two momenta; for the transverse mass used for :math:`W\to\ell\nu`, see
+  ``MT2_v2``
+
+:option:`MT2_v2`
+  transverse mass
+  :math:`\sqrt{2p_{\perp,i}p_{\perp,j}(1-\cos\Delta\phi_{ij})}`, e.g. of a
+  charged lepton and a neutrino
 
 :option:`DY`
   rapidity separation
@@ -152,6 +165,22 @@ respective keywords are
 
 :option:`DR(y)`
   angular separation (build from y and phi)
+
+:option:`Acoplanarity`
+  acoplanarity :math:`\pi-\Delta\phi_{ij}` in radians. An optional sixth entry
+  ``1`` boosts the momenta back to the laboratory frame before applying the
+  cut: ``[Acoplanarity, <flavour1 code>, <flavour2 code>, <min value>, <max value>, 1]``
+
+:option:`PhiStar`
+  :math:`\phi^*=\tan\left(\frac{\pi-\Delta\phi_{ij}}{2}\right)\sin\theta^*`
+  with :math:`\cos\theta^*=\tanh(\Delta\eta_{ij}/2)`, commonly used for
+  Drell-Yan lepton pairs
+
+:option:`T_Channel`
+  cut on :math:`t=(p_0-p_2)^2`, intended for :math:`2\to2` processes. It is
+  applied when the first two final-state particles have exactly the given
+  flavours (particle containers such as ``93`` are not resolved); :math:`t` is
+  negative, so the range has to be given in negative values
 
 :option:`INEL`
   inelasticity, one of the flavours must be in the initial-state (commonly used
@@ -499,8 +528,77 @@ the matrix element level. Its syntax is
        Ordering: [<order1>, ..., <orderm>]
 
 The ``Variable`` parameter defines the name of the variable to cut
-on. The keywords for available predefined can be figured by running
-:option:`Sherpa "SHOW_VARIABLE_SYNTAX: true"`.  Or alternatively, an
+on. The variable is evaluated on one momentum per entry of ``Flavs``, for
+every combination of matching particles. The predefined variables are listed
+below, and can also be printed by running
+:option:`Sherpa "SHOW_VARIABLE_SYNTAX: true"`. Variables of one or more
+particles are evaluated on the sum of their momenta, unless stated otherwise;
+:math:`p_1` and :math:`p_2` denote the momenta of the first and second
+``Flavs`` entry.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 14 16 70
+
+   * - Variable
+     - Particles
+     - Definition
+   * - ``PT``
+     - 1 or more
+     - transverse momentum :math:`p_\perp`
+   * - ``ET``
+     - 1 or more
+     - transverse energy :math:`E\sin\theta`
+   * - ``mT``
+     - 1 or more
+     - transverse mass :math:`\sqrt{E^2-p_z^2}=\sqrt{m^2+p_\perp^2}`
+   * - ``m``
+     - 1 or more
+     - invariant mass
+   * - ``E``
+     - 1 or more
+     - energy
+   * - ``y``
+     - 1 or more
+     - rapidity
+   * - ``Eta``
+     - 1 or more
+     - pseudorapidity
+   * - ``Theta``
+     - 1 or more
+     - polar angle
+   * - ``Phi``
+     - 1 or more
+     - azimuthal angle
+   * - ``HT``
+     - 1 or more
+     - scalar sum of the transverse momenta (not of their sum)
+   * - ``mTWW``
+     - 3
+     - transverse mass of a lepton pair (first two entries) and the missing
+       momentum (third entry), using :math:`m_{\ell\ell}` for both
+   * - ``DEta``
+     - 2
+     - :math:`|\eta_2-\eta_1|`
+   * - ``DY``
+     - 2
+     - :math:`y_2-y_1` (signed)
+   * - ``DPhi``
+     - 2
+     - azimuthal separation in :math:`[0,\pi]`
+   * - ``DR``
+     - 2
+     - :math:`\sqrt{\Delta\phi^2+\Delta\eta^2}`
+   * - ``Theta2``
+     - 2
+     - opening angle between the two momenta
+   * - ``N``
+     - any
+     - number of momenta, i.e. the number of ``Flavs`` entries
+
+Note that ``ET`` here is :math:`E\sin\theta`, while the ``ET`` selector of the
+:ref:`One particle selectors` uses :math:`\sqrt{m^2+p_\perp^2}`; both agree
+for massless particles. Alternatively, an
 arbitrary cut variable can be constructed using the internal
 interpreter, see :ref:`Interpreter`. This is invoked with the command
 ``Calc(...)``. In the formula specified there you have to use place
