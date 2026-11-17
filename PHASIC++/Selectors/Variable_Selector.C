@@ -192,6 +192,8 @@ bool Variable_Selector::Trigger(ATOOLS::Selector_List &sl,const int id)
     for (size_t k(m_imode?0:m_nin);k<sl.size();++k)
       if (m_cfl[id][j].Includes(sl[k].Flavour()))
 	m_moms[id][j][i++]=sl[k].Momentum();
+    if (m_orders.size()>j)
+      std::sort(m_moms[id][j].begin(),m_moms[id][j].begin()+i,*m_orders[j]);
     while (i<m_moms[id][j].size()) m_moms[id][j][i++]=Vec4D();
   }
   size_t l(0), u(0);

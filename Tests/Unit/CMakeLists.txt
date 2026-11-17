@@ -10,6 +10,9 @@ target_include_directories(sherpa_tests PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
 )
 
+target_compile_definitions(sherpa_tests PRIVATE
+  SHERPA_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
+
 if(NOT (CMAKE_SYSTEM_NAME MATCHES Darwin))
   target_link_options(sherpa_tests PRIVATE "LINKER:-no-as-needed")
 endif()
