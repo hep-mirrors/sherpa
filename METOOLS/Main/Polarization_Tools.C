@@ -44,10 +44,15 @@ Polarization_Vector::Polarization_Vector(Vec4D p, Vec4D ref_mom) : std::vector<V
   // delete auxiliary polarization vector
   pop_back();
 }
-
+/*Polarization_Spinor_Basis::Polarization_Spinor_Basis(const Vec4D p, const Vec4D ref_mom) : std::vector<Vec4C>()
+{
+  Init(p, ref_mom);
+  // delete auxiliary polarization vector
+  pop_back();
+}*/
 void Polarization_Spinor::Init(Vec4D p, Vec4D ref_mom)
 {
-  if (std::fabs(ref_mom.Abs2()) > 1e-8) {      // vorher: ref_mom.Abs2() > 1e-8
+  if (std::fabs(ref_mom.Abs2()) > 1e-10 *ref_mom[0]*ref_mom[0]) {      // vorher: ref_mom.Abs2() > 1e-8
     THROW(fatal_error, "new reference vector has to be light-like")
   }
   m_k  = ref_mom;
@@ -63,6 +68,50 @@ Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, dou
   m_s.emplace_back(METOOLS::CSpinor<double>(1, 1, +1, p, 0, 0, 0, 0, M2), +1);
   m_s.emplace_back(METOOLS::CSpinor<double>(1, 1, -1, p, 0, 0, 0, 0, M2), -1);
 }
+Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, double M2,
+    const ATOOLS::Vec4D& ref_mom, bool anti, bool out)
+{
+  Init(p, M2, ref_mom, anti, out);
+}
+
+Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p,
+    const ATOOLS::Vec4D& ref_mom)
+{
+  Init(p, std::max(p.Abs2(), 0.0), ref_mom, false, false);
+}
+void Polarization_Spinor_Basis::Init(const ATOOLS::Vec4D& p, double M2,
+                                     const ATOOLS::Vec4D& ref_mom, bool anti, bool out)
+{
+  // Impuls: positive Energie, auf der Massenschale (relative Toleranz, damit auch TeV-Impulse passen)
+  if (!(p[0] > 0.0)) {
+    THROW(fatal_error, "Polarization_Spinor_Basis: momentum needs positive energy");
+  }
+  if (M2 < 0.0) {
+    THROW(fatal_error, "Polarization_Spinor_Basis: M2 must not be negative");
+  }
+  if (std::fabs(p.Abs2() - M2) > 1e-9 * p[0] * p[0]) {
+    THROW(fatal_error, "Polarization_Spinor_Basis: M2 does not match p^2");
+  }
+
+  // Referenzvektor: lichtartig, positive Energie
+  if (!(ref_mom[0] > 0.0)) {
+    THROW(fatal_error, "Polarization_Spinor_Basis: reference vector needs positive energy");
+  }
+  if (std::fabs(ref_mom.Abs2()) > 1e-10 * ref_mom[0] * ref_mom[0]) {
+    THROW(fatal_error, "Polarization_Spinor_Basis: reference vector has to be light-like");
+  }
+
+  // p.k darf nicht (fast) verschwinden, sonst ist die Spinachse undefiniert
+  if (!(p * ref_mom > 1e-12 * p[0] * ref_mom[0])) {
+    THROW(fatal_error, "Polarization_Spinor_Basis: p and reference vector are (anti)parallel");
+  }
+
+  m_s.clear();
+  m_s.reserve(2);
+  m_s.emplace_back(p, M2, +1, ref_mom, anti, out);   // Index 0: "+"
+  m_s.emplace_back(p, M2, -1, ref_mom, anti, out);   // Index 1: "-"
+}
+
 
 void Polarization_Spinor::FillComponents()
 {
@@ -77,7 +126,7 @@ void Polarization_Spinor::FillComponents()
   const double pk = m_p * m_k;            // Minkowski-Produkt
   //std::cout << "FC 3: p.k=" << pk << std::endl;
 
-  if (pk < 1e-12) {
+  if (pk < 1e-12 * m_p[0] * m_k[0]) {
     THROW(fatal_error, "p and ref_mom are (anti)parallel: p.k = 0")
   }
   const double N = sqrt(2.0 * pk);
@@ -127,13 +176,13 @@ Polarization_Spinor::Polarization_Spinor(Vec4D p, int h, Vec4D ref_mom, bool ant
   FillComponents();
 }
 
-Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, double M2,
+/*Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, double M2,
     const ATOOLS::Vec4D& ref_mom, bool anti, bool out)
 {
   m_s.reserve(2);                                        // keine Reallokation, kein Umkopieren
   m_s.emplace_back(p, M2, +1, ref_mom, anti, out);       // baut direkt im Vektor
   m_s.emplace_back(p, M2, -1, ref_mom, anti, out);
-}
+}*/
 
 void METOOLS::Polarization_Spinor_Basis::BoostBack(const ATOOLS::Vec4D& beta) {
   //std::cout << "B1: Basis::BoostBack, size=" << m_s.size() << std::endl;

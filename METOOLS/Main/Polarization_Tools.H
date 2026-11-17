@@ -71,8 +71,11 @@ namespace METOOLS
   class Polarization_Spinor_Basis {
     // member
     std::vector<Polarization_Spinor> m_s;   // [0]: hel +1, [1]: hel -1
+    void Init(const ATOOLS::Vec4D& p, double M2, const ATOOLS::Vec4D& ref_mom,
+              bool anti, bool out);
   public:
     Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, double M2);   // Helizitätsbasis wie in der Amplitude
+    Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, const ATOOLS::Vec4D& ref_mom);
     Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, double M2,
                             const ATOOLS::Vec4D& ref_mom,
                             bool anti=false, bool out=false);

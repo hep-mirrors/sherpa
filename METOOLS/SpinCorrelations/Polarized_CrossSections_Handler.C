@@ -358,77 +358,22 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
       else if (spin==0.5){
         
         const double M2 = mom.Abs2();            
-        //std::cout << "A: vor Basis-Bau" << std::endl;
         // new basis
-        //METOOLS::Polarization_Spinor new_spinor(mom,M2,+1,new_ref_mom);
-        METOOLS::Polarization_Spinor_Basis new_spinor_pair(mom,M2,new_ref_mom, anti, out);
-
-        // debugging print
-        /*METOOLS::Polarization_Spinor_Basis twin(mom, M2, new_ref_mom, anti, out);
-        const auto ci = new_spinor_pair.BasisTrafo(twin, false);
-        std::cout << std::setprecision(17) << "TWIN nr=" << tmp_amps->CurrentParticle().Number()
-            << " |c00|^2=" << std::norm(ci[0][0])
-            << " mom=" << mom << " ref=" << new_ref_mom << std::endl;*/
-
-
-        // ---- Test 3 (temporär): gleiche feste Achse +x für t und tb, im COM ----
-        //const ATOOLS::Vec4D ref_test(1.0, 1.0, 0.0, 0.0);   // lichtartig
-        //METOOLS::Polarization_Spinor_Basis new_spinor_pair(mom, M2, ref_test, anti, out);
-       
-       
-        // std::cout << "E: nach BasisTrafo" << std::endl;
-        //std::cout << "beta = " << beta << "  refsystem = " << refsystem << std::endl;
+        METOOLS::Polarization_Spinor_Basis new_spinor_pair(mom, M2, new_ref_mom, anti, out);   // anti=false, out=false
+        //METOOLS::Polarization_Spinor_Basis new_spinor_pair(mom,M2,new_ref_mom, anti, out);
+        
         // boost back in LabFrame
         if (beta != ATOOLS::Vec4D(0.0, 0.0, 0.0, 0.0)) {
+          ATOOLS::Spinor_Boost spinboost(beta);
           //std::cout << "B0: beta=" << beta << " beta^2=" << beta.Abs2() << std::endl;
-          new_spinor_pair.BoostBack(beta);
-          //std::cout << "erster Boost ging" << std::endl;
+          for (size_t i(0); i < new_spinor_pair.size(); ++i){
+            spinboost.BoostBack(new_spinor_pair[i]);
+          }
+          //new_spinor_pair.BoostBack(beta);
           momboost.BoostBack(mom);
         }
-        //std::cout << "Boost ging" << std::endl;
         auto it = default_spinors.find(tmp_amps->CurrentParticle().Number());
         if (it == default_spinors.end()) THROW(fatal_error, "no default spinors for this particle")
-        // ---- Debug 1: Labeltest (Identität im Lab, danach löschen) ----
-        /*static int nprint = 0;
-        bool m_pol_checks = true;
-        if (m_pol_checks && nprint++ < 40) {
-          const double pabs = std::sqrt(mom[1]*mom[1] + mom[2]*mom[2] + mom[3]*mom[3]);
-          const ATOOLS::Vec4D k_hel(pabs, mom[1], mom[2], mom[3]);   // lichtartig, Richtung p̂ im Lab
-          METOOLS::Polarization_Spinor_Basis test(mom, M2, k_hel, anti, out);
-          const auto c = test.BasisTrafo(it->second, false);
-          std::cout << "LABELTEST nr=" << tmp_amps->CurrentParticle().Number()
-            << " anti=" << anti << " out=" << out
-            << " |c00|^2=" << std::norm(c[0][0])
-            << " |c01|^2=" << std::norm(c[0][1]) << std::endl;
-          }*/
-          // Residuum von (pslash - sgn*m) u, chirale Darstellung (L,R), u[0..3]
-
-
-          // mom: Lab-Impuls, it->second: Default-Basis, new_spinor_pair: neue Basis (schon zurückgeboostet)
-          
-        
-// ---- Ende Debug 1 ----
-// ---- Debug 2: Kovarianztest der Boost-Kette ---
-          /*static int nprint2 = 0;
-          if (m_pol_checks && nprint2++ < 40) {
-          ATOOLS::Vec4D k_lab = new_ref_mom;                 // new_ref_mom: noch COM, wie beim Bau der Basis
-          if (beta != ATOOLS::Vec4D(0.0, 0.0, 0.0, 0.0)) momboost.BoostBack(k_lab);
-          METOOLS::Polarization_Spinor_Basis direct(mom, M2, k_lab, anti, out);   // mom: jetzt Lab
-          const auto c2 = new_spinor_pair.BasisTrafo(direct, false);
-          std::cout << "KOVTEST nr=" << tmp_amps->CurrentParticle().Number()
-            << " anti=" << anti << " k_lab^2=" << k_lab.Abs2()
-            << " |c00|^2=" << std::norm(c2[0][0])
-            << " |c11|^2=" << std::norm(c2[1][1])
-            << " |c01|^2=" << std::norm(c2[0][1]) 
-             << std::endl;
-          }
-
-          static int nprint3 = 0;
-          if (m_pol_checks && nprint3++ < 20)
-          std::cout << "COMCHECK nr=" << tmp_amps->CurrentParticle().Number()
-            << " beta=" << beta << " mom_ref=" << mom << std::endl;
-
-        //--- end of debug */
 
         coeff_in = new_spinor_pair.BasisTrafo(it->second, m_pol_checks);
         //std::cout << "coeff_in = " << coeff_in << "  refsystem = " << refsystem << std::endl;
