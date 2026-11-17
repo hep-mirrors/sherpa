@@ -309,8 +309,8 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
       if (spin == 0.5) {
         
         if (default_spinors.find(tmp_amps->CurrentParticle().Number()) == default_spinors.end()) {
-          default_spinors.emplace(tmp_amps->CurrentParticle().Number(), METOOLS::Polarization_Spinor_Basis(mom, mom.Abs2()));
-          //default_spinors.emplace(tmp_amps->CurrentParticle().Number(), METOOLS::Polarization_Spinor_Basis(mom, m_old_refmom));
+          //default_spinors.emplace(tmp_amps->CurrentParticle().Number(), METOOLS::Polarization_Spinor_Basis(mom, mom.Abs2()));
+          default_spinors.emplace(tmp_amps->CurrentParticle().Number(), METOOLS::Polarization_Spinor_Basis(mom, m_old_refmom));
         }
       }
 
