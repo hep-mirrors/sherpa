@@ -44,9 +44,7 @@ namespace METOOLS {
 
     LEG ORDER is fixed by the vertex declaration in
     LowEnergy_Model::InitThreePionVertices: { gamma, pi+, pi-, pi0 }, i.e.
-    leg 0 = photon, 1 = pi+, 2 = pi-, 3 = pi0.  Momenta are always taken from
-    p_v->J(i)->P(), which is in ASCENDING leg order; jj[] arrives in cyclic
-    order after the outgoing leg and is used only for the current values.
+    leg 0 = photon, 1 = pi+, 2 = pi-, 3 = pi0.
   */
   template <typename SType>
   class VPPP_Calculator: public Lorentz_Calculator {
@@ -103,64 +101,33 @@ namespace METOOLS {
 
     CObject *Evaluate(const CObject_Vector &jj)
     {
-      // Momenta of the three pions, identified by FLAVOUR rather than by leg
-      // index.  p_v->J() holds the INCOMING currents - one fewer than the
-      // number of legs - so on this four-leg vertex it has three entries and
-      // the outgoing leg is reached through p_v->JC() instead.  Indexing
-      // J(0..3) directly reads past the end and segfaults.
-      Vec4D pp(0.,0.,0.,0.), pm(0.,0.,0.,0.), p0(0.,0.,0.,0.);
-      bool hp(false), hm(false), h0(false);
-      for (size_t i(0);i<p_v->J().size();++i) {
-	const Flavour & fl(p_v->J(i)->Flav());
-	if (!fl.IsHadron()) continue;
-	const Vec4D p(p_v->J(i)->P());
-	if      (fl.Kfcode()==kf_pi)                          { p0=p; h0=true; }
-	else if (fl.Kfcode()==kf_pi_plus && fl.IntCharge()>0) { pp=p; hp=true; }
-	else if (fl.Kfcode()==kf_pi_plus && fl.IntCharge()<0) { pm=p; hm=true; }
+      // jj[i] and p_v->J(i) belong to declared leg id[i]; momenta outgoing
+      // from the vertex. The output current's flavour is the conjugate of
+      // its leg, so legs are identified by id, not by flavour.
+      const std::vector<size_t> &id(p_v->V()->id);
+      const size_t nl(4), out(id.back());
+      if (out>=nl || jj.size()!=nl-1) return NULL;
+      size_t slot[4];
+      Vec4D p[4];
+      for (size_t i(0);i<nl-1;++i) {
+	slot[id[i]]=i;
+	p[id[i]]=p_v->J(i)->P();
       }
-      if (!(hp&&hm&&h0)) {
-	const Flavour & fc(p_v->JC()->Flav());
-	const Vec4D pc(p_v->JC()->P());
-	if      (!h0 && fc.Kfcode()==kf_pi) { p0=pc; h0=true; }
-	else if (!hp && fc.IntCharge()>0)   { pp=pc; hp=true; }
-	else if (!hm && fc.IntCharge()<0)   { pm=pc; hm=true; }
-      }
-      if (!(hp&&hm&&h0)) return NULL;
-
-      // Leg 0 outgoing: solve for the photon.  This is the branch e+e- -> 3pi
-      // actually uses.  The three pion currents are scalars, so they multiply
-      // in as plain numbers and the vector index is carried by the epsilon.
-      if (p_v->V()->id.back()==0) {
-	const CScalarType &a(*jj[0]->Get<CScalarType>());
-	const CScalarType &b(*jj[1]->Get<CScalarType>());
-	const CScalarType &c(*jj[2]->Get<CScalarType>());
-	CVec4Type *j(CVec4Type::New(EpsVec(pp,pm,p0)*(a[0]*b[0]*c[0])));
-	j->SetS(a.S()|b.S()|c.S());
-	return j;
-      }
-      // A pion is outgoing: contract the photon current into the epsilon and
-      // return a scalar.  Which pion is being solved for does not change the
-      // structure - the epsilon already carries all three pion momenta from
-      // p_v->J(i)->P(), including the outgoing leg's own (supplied there by
-      // momentum conservation).
-      //
-      // jj[] is CYCLIC after the outgoing leg, so for legs 1, 2 and 3 the
-      // photon - leg 0 - sits at cyclic position 3-id, and the two remaining
-      // pions fill the others.  Spelling the three cases out rather than
-      // searching by type: CObject carries no type tag, and guessing the slot
-      // is how leg-ordering bugs get in.
-      const size_t out(p_v->V()->id.back());
-      if (out==1 || out==2 || out==3) {
-	const size_t ig(3-out);          // cyclic slot holding the photon
-	const CVec4Type &v(*jj[ig]->Get<CVec4Type>());
+      p[out]=-p_v->JC()->P();
+      if (out==0) {
 	SComplex sc(1.,0.);
-	for (size_t i(0);i<jj.size();++i)
-	  if (i!=ig) sc*=(*jj[i]->Get<CScalarType>())[0];
-	CScalarType *j(CScalarType::New(Eps4(v,pp,pm,p0)*sc));
+	for (size_t l(1);l<nl;++l) sc*=(*jj[slot[l]]->Get<CScalarType>())[0];
+	CVec4Type *j(CVec4Type::New(EpsVec(p[1],p[2],p[3])*sc));
 	j->SetS(jj[0]->S()|jj[1]->S()|jj[2]->S());
 	return j;
       }
-      return NULL;
+      const CVec4Type &v(*jj[slot[0]]->Get<CVec4Type>());
+      SComplex sc(1.,0.);
+      for (size_t l(1);l<nl;++l)
+	if (l!=out) sc*=(*jj[slot[l]]->Get<CScalarType>())[0];
+      CScalarType *j(CScalarType::New(Eps4(v,p[1],p[2],p[3])*sc));
+      j->SetS(jj[0]->S()|jj[1]->S()|jj[2]->S());
+      return j;
     }
 
   };// end of class VPPP_Calculator
