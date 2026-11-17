@@ -429,6 +429,61 @@ Possible choices for the core scale setter are:
   added, i.e. :math:`\mu^2 = (Q^2 + H_{T,\mathrm{had}}^2)/4`.
   To be used with the corresponding scale setter, see above.
 
+:option:`HTPrime`
+  Core scale setter for W/Z+jets production with leptonic decays. Sets
+  :math:`\mu_f=\mu_r=\hat{H}_T'/2` with
+  :math:`\hat{H}_T'=m_{\perp,\ell\ell'}+\sum_\text{partons}p_\perp`, the
+  transverse mass of the lepton pair plus the scalar sum of the parton
+  transverse momenta, and :math:`\mu_q=m_{\ell\ell'}`. The core must contain
+  exactly one lepton and one antilepton, and all other final-state particles
+  must be quarks or gluons; otherwise the run stops.
+
+:option:`HIGGS`
+  Core scale setter for Higgs-boson and other colour-singlet production in
+  hadron collisions. Colourless final-state particles that can stem from a
+  common colourless particle, and particles from a decay specified for the
+  process, are first combined, e.g. :math:`\gamma\gamma\to H`. If the result
+  is a :math:`2\to2` core, the scales are
+
+    - four coloured partons: as the :option:`QCD` core scale (harmonic mean of
+      s, t and u);
+    - two colourless final-state particles: :math:`\mu^2=\hat{s}`;
+    - one coloured and one colourless final-state particle: the transverse
+      mass of the colourless particle.
+
+  Otherwise :math:`\mu_f=\mu_r=m_X+(p_{\perp,X}+\sum_\text{coloured}p_\perp)/2`
+  and :math:`\mu_q=m_X`, where X is the sum of the colourless final-state
+  particles, e.g. :math:`\mu=m_H` for :math:`gg\to H`. In lepton-lepton
+  collisions, :math:`\mu_f^2=\mu_r^2=\hat{s}` for a :math:`2\to2` core into two
+  coloured partons and for larger cores; other :math:`2\to2` cores are not
+  handled. Lepton-hadron collisions are not supported.
+
+:option:`QQSinglet`
+  Core scale setter for a heavy-quark pair produced with colour-singlet
+  particles, e.g. :math:`t\bar{t}H` or :math:`t\bar{t}Z`. The core must contain
+  exactly two massive coloured particles and at least three final-state
+  particles. Sets :math:`\mu_f=\mu_r=p_{\perp,Q}+p_{\perp,\bar{Q}}`, the sum of
+  the heavy-quark transverse momenta, and
+  :math:`\mu_q=\max(p_{\perp,Q},p_{\perp,\bar{Q}})`. For other cores an error
+  is printed and the scales are invalid.
+
+:option:`TZj`
+  Core scale setter for single-top production in association with a vector
+  boson and a jet, e.g. :math:`tZj`. For :math:`2\to2` cores
+  (:math:`\mu_f=\mu_r=\mu_q` unless stated otherwise):
+
+    - :math:`tW`: :math:`\mu^2=m_t^2+p_{\perp,t}^2`;
+    - s-channel :math:`tb`: :math:`\mu^2=\hat{s}`;
+    - W plus a light jet (s-channel top clustered into :math:`W^*`+jet):
+      :math:`\mu_f^2=\mu_q^2=m_{\perp,W}^2`, :math:`\mu_r^2=p_{\perp,j}^2`;
+    - t-channel top with a light quark: :math:`\mu^2=|\hat{t}|`;
+    - top in the initial state: :math:`\mu^2=\hat{s}` if the other incoming
+      parton is a b quark, :math:`|\hat{t}|` otherwise;
+    - W in the initial state: :math:`\mu^2=\hat{t}\hat{u}/\hat{s}`.
+
+  Cores with more than two final-state particles use :math:`\mu^2=\hat{s}`.
+  Any other :math:`2\to2` core stops the run.
+
 
 Unordered cluster histories are allowed by default in ``METS``
 (``MEPS: {ALLOW_SCALE_UNORDERING: 1}``). This automatically requests the
