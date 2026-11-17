@@ -249,16 +249,19 @@ Summed_Propagator::~Summed_Propagator() {
 }
    
 void Summed_Propagator::Add(Propagator_Base * prop,const Complex & weight) {
-  if (prop!=NULL && m_props.find(prop)==m_props.end()) {
-    m_props[prop] = weight;
-    m_norm       += weight;
+  if (prop==NULL) return;
+  for (Prop_List::iterator pit=m_props.begin();
+       pit!=m_props.end();pit++) {
+    if (pit->first==prop) return;
   }
+  m_props.push_back(std::make_pair(prop,weight));
+  m_norm       += weight;
 }
 
 const Complex Summed_Propagator::operator()(const double & s) {
   if (m_props.size()==0) return 1.0;
   Complex result(0.,0.);
-  for (map<Propagator_Base *,Complex>::iterator pit=m_props.begin();
+  for (Prop_List::iterator pit=m_props.begin();
        pit!=m_props.end();pit++) {
     result += pit->second*(*pit->first)(s);
   }
@@ -268,7 +271,7 @@ const Complex Summed_Propagator::operator()(const double & s) {
 
 const Complex Summed_Propagator::Normalised(const double & s) {
   Complex ampl(0.,0.);
-  for (map<Propagator_Base *,Complex>::iterator pit=m_props.begin();
+  for (Prop_List::iterator pit=m_props.begin();
        pit!=m_props.end();pit++) {
     ampl += pit->second*pit->first->Normalised(s);
   }
@@ -288,7 +291,7 @@ const double Summed_Propagator::Normalised2(const double & s) {
 Multiplied_Propagator::Multiplied_Propagator(Propagator_Base * prop) :
   Propagator_Base(NULL),
   m_norm(Complex(1.,0.)) {
-  if (prop!=NULL) m_props[prop] = m_norm;
+  if (prop!=NULL) m_props.push_back(std::make_pair(prop,m_norm));
 }
 
 Multiplied_Propagator::~Multiplied_Propagator() {
@@ -299,15 +302,18 @@ Multiplied_Propagator::~Multiplied_Propagator() {
 }
    
 void Multiplied_Propagator::Add(Propagator_Base * prop,const Complex & weight) {
-  if (prop!=NULL && m_props.find(prop)==m_props.end()) {
-    m_props[prop] = weight;
-    m_norm       *= weight;
+  if (prop==NULL) return;
+  for (Prop_List::iterator pit=m_props.begin();
+       pit!=m_props.end();pit++) {
+    if (pit->first==prop) return;
   }
+  m_props.push_back(std::make_pair(prop,weight));
+  m_norm       *= weight;
 }
 
 const Complex Multiplied_Propagator::operator()(const double & s) {
   Complex result(1.,0.);
-  for (map<Propagator_Base *,Complex>::iterator pit=m_props.begin();
+  for (Prop_List::iterator pit=m_props.begin();
        pit!=m_props.end();pit++) {
     result *= pit->second*(*pit->first)(s);
   }
@@ -316,7 +322,7 @@ const Complex Multiplied_Propagator::operator()(const double & s) {
 
 const Complex Multiplied_Propagator::Normalised(const double & s) {
   Complex ampl(1.,0.);
-  for (map<Propagator_Base *,Complex>::iterator pit=m_props.begin();
+  for (Prop_List::iterator pit=m_props.begin();
        pit!=m_props.end();pit++) {
     ampl *= pit->second*pit->first->Normalised(s);
   }

@@ -18,6 +18,16 @@ namespace METOOLS {
     virtual ~Form_Factor();
 
     virtual Complex FF() = 0;
+    /*!
+      The tag under which the model stores a hadron-photon vertex's form
+      factor parameters, e.g. "_2212_2212_22" for Lambda2_2212_2212_22: the
+      kf codes of the model vertex's legs with the hadrons first (in their
+      vertex order) and the other legs after them. Comix builds the same
+      vertex with its legs in other orders when the photon is not the
+      current it computes (e+e- -> p pbar gamma), so the raw leg order does
+      not name the parameters.
+    */
+    static std::string HadronFirstTag(const Vertex_Key &key);
 
     inline const std::string &ID() const { return m_id; }    
   };// end of class FormFactor

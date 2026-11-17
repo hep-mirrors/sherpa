@@ -460,7 +460,10 @@ namespace METOOLS {
       }
       const CSpinorType &a(*jj[p_v->V()->id.back()]->Get<CSpinorType>());
       const CVec4Type &b(*jj[1-p_v->V()->id.back()]->Get<CVec4Type>());
-      Vec4D pb(p_v->J(1)->P());
+      // sigma^{mu nu} q_nu takes the vector's own momentum: the inputs come in
+      // cyclic leg order (Model_Base::RotateVertices), so the vector is input
+      // 1 when the first fermion leg is solved for and input 0 for the second
+      Vec4D pb(p_v->J(1-p_v->V()->id.back())->P());
       return this->LorentzMagnetic(a,b,pb);
     }
 

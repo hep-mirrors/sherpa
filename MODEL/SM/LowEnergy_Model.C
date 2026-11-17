@@ -225,6 +225,18 @@ void LowEnergy_Model::InitQEDVertices() {
     m_v.back().FormFactor.push_back("VMD");
     m_v.back().cpl.push_back(cpl);
     m_v.back().order[1]=1;
+
+    // seagull with one FSR photon
+    m_v.push_back(Single_Vertex());
+    m_v.back().AddParticle(Flavour(kf_photon));
+    m_v.back().AddParticle(Flavour(kf_FSR_photon));
+    m_v.back().AddParticle(flav.Bar());
+    m_v.back().AddParticle(flav);
+    m_v.back().Color.push_back(Color_Function(cf::None));
+    m_v.back().Lorentz.push_back("VVSS");
+    m_v.back().FormFactor.push_back("VMD");
+    m_v.back().cpl.push_back(2.0*cpl*g1);
+    m_v.back().order[1] = 2;
   }
 
   //////////////////////////////////////////////////////////////////////
@@ -330,8 +342,8 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
 
   msg_Out()<<METHOD<<": g_rhopipi = "<<grpp
 	   <<", g_gammarhopi = "<<ggrp<<" /GeV\n";
-  const Kabbala cpl_grp("g_{\\gamma\\rho\\pi}",
-			ggrp*Complex(0.,1.));
+  // e g_gammarhopi: the photon couples to the beams with i e
+  const Kabbala cpl_grp(cpl*Kabbala("g_{\\gamma\\rho\\pi}",ggrp));
   const Kabbala cpl_rpp("g_{\\rho\\pi\\pi}",
 			grpp*Complex(0.,1.));
 
@@ -378,18 +390,9 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
   // gamma rho pi, anomalous.  Charges have to add up to zero: all legs are
   // read as incoming.
   //
-  // ISOSPIN FACTORS.  The three charge channels do NOT enter with equal
-  // weight, and getting this wrong is a coherent error, not a normalisation
-  // one.  Contracting the AVVP epsilon structure with the SSV momentum
-  // difference of the paired decay below gives, per channel and relative to
-  // eps(e,p_+,p_-,p_0):
-  //     rho0 pi0  ->  +2      rho+ pi-  ->  -1      rho- pi+  ->  +1
-  // measured directly and constant to machine precision over independent
-  // phase-space points.  An I = 0 three-pion state is totally antisymmetric
-  // in isospin and the momentum epsilon is totally antisymmetric, so |A|^2
-  // must come out totally symmetric under permuting the pions - i.e. the
-  // three channels have to sum ALL-PLUS with equal weight.  The factors
-  // below restore that: (1/2, -1, +1) against the measured (+2, -1, +1).
+  // ISOSPIN FACTORS.  I = 0: the three channels add all-plus with equal
+  // weight; the charged ones come out of the epsilon with opposite signs,
+  // hence (+1, -1, +1).  rho0_isospin: weight of rho0 pi0 (formerly 0.5).
   //
   // The same statement, and the same measurement, appear in
   // tau-decays-in-sherpa (METOOLS-hadron-currents),
@@ -401,7 +404,8 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
   // coupling can absorb.
   const Flavour rhos[3] = { rho0, rhop, rhom };
   const Flavour pis [3] = { pi0 , pim , pip  };
-  const double  iso [3] = { 0.5 , -1.  , 1.   };
+  const double  iso [3] = { s["rho0_isospin"].SetDefault(1.).Get<double>(),
+			    -1. , 1. };
   for (size_t i(0);i<3 && !contact3pi;++i) {
     m_v.push_back(Single_Vertex());
     m_v.back().AddParticle(photon);
@@ -441,7 +445,15 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
   // A is already the anchor for v_omega782's Amplitude = 1.0, so the E/F
   // magnitude (relative to A) lives entirely in Phi1020RhoE()/
   // Omega1631RhoF()'s Amplitude/Phase, exactly as C and D do for the
-  // existing omega(1375)/omega(1631) terms in V_pi.
+  // existing omega(1375)/omega(1631) terms in V_pi - up to the chain
+  // normalisation below.
+  //
+  // Eq. (10)'s H_rho sums R = m^2/(s-m^2+...) for each rho, so every chain is
+  // -1 at s = 0 whatever its mass, while a Comix chain is
+  // g_{rho pi pi}/(s-m^2+...). The rho(1450)/rho(1700) production couplings
+  // therefore carry (m_n/m_rho)^2 g_rhopipi/g_{rho_n pi pi}, which puts their
+  // chains on eq. (10)'s footing relative to the rho(770) one. Without it the
+  // E/F chains are a factor ~3.7 too small.
   //
   // rho(1450)/rho(1700) -> pi pi couplings are read back from their
   // particle-table widths with the SAME formula as g_rhopipi above -
@@ -469,11 +481,15 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
   msg_Out()<<METHOD<<": g_rho1450pipi = "<<grpp1450
 	   <<", g_rho1700pipi = "<<grpp1700<<"\n";
 
+  const Kabbala norm1450("N_{\\rho(1450)}",sqr(mrho1450/mrho)*grpp/grpp1450);
+  const Kabbala norm1700("N_{\\rho(1700)}",sqr(mrho1700/mrho)*grpp/grpp1700);
+
   // Skipped in contact mode: these are gamma -> rho(1450)/rho(1700) pi
   // PRODUCTION vertices, so leaving them on would open a second route to
   // pi+ pi- pi0 alongside the contact current and double count.  The
   // rho(1450)/rho(1700) -> pi pi decay vertices below stay, like the
   // rho(770) ones, because those resonances are still needed elsewhere.
+  // same isospin factors iso[] as the rho(770) production vertices
   const Flavour rhosE[3] = { rho1450_0, rho1450_p, rho1450_m };
   const Flavour rhosF[3] = { rho1700_0, rho1700_p, rho1700_m };
   for (size_t i(0);i<3 && !contact3pi;++i) {
@@ -484,7 +500,7 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("AVVP");
     m_v.back().FormFactor.push_back("VMD");
-    m_v.back().cpl.push_back(cpl_grp);
+    m_v.back().cpl.push_back(cpl_grp*norm1450*iso[i]);
     m_v.back().order[1]=1;
 
     m_v.push_back(Single_Vertex());
@@ -494,7 +510,7 @@ void LowEnergy_Model::InitThreePionVertices(const Kabbala & cpl) {
     m_v.back().Color.push_back(Color_Function(cf::None));
     m_v.back().Lorentz.push_back("AVVP");
     m_v.back().FormFactor.push_back("VMD");
-    m_v.back().cpl.push_back(cpl_grp);
+    m_v.back().cpl.push_back(cpl_grp*norm1700*iso[i]);
     m_v.back().order[1]=1;
   }
 

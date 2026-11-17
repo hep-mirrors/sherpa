@@ -3,6 +3,8 @@
 
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
+#include "MODEL/Main/Single_Vertex.H"
+#include <algorithm>
 
 #define COMPILE__Getter_Function
 #define PARAMETER_TYPE METOOLS::Vertex_Key
@@ -19,6 +21,16 @@ Form_Factor::Form_Factor(const std::string &id,const Vertex_Key &key):
 
 Form_Factor::~Form_Factor()
 {}
+
+std::string Form_Factor::HadronFirstTag(const Vertex_Key &key)
+{
+  std::vector<ATOOLS::Flavour> legs(key.p_mv->in);
+  std::stable_partition(legs.begin(), legs.end(),
+                        [](const ATOOLS::Flavour &f) { return f.IsHadron(); });
+  std::string tag;
+  for (const ATOOLS::Flavour &f : legs) tag += "_" + ATOOLS::ToString(f.Kfcode());
+  return tag;
+}
 
 std::ostream &METOOLS::operator<<(std::ostream &str,const Form_Factor &c)
 {
@@ -94,9 +106,7 @@ FFDipole::FFDipole(const Vertex_Key &key):
     if (!key.m_j[i]->Flav().IsHadron()) m_pos=i;
     kfs.insert(key.m_j[i]->Flav().Kfcode());
   }
-  std::string tag = "";
-  for (size_t i(0);i<key.p_mv->in.size();++i) 
-    tag += std::string("_")+ToString(key.p_mv->in[i].Kfcode());
+  const std::string tag(HadronFirstTag(key));
   msg_Out()<<METHOD<<": tag = {"<<tag<<"}\n";
   m_Lambda2 = key.p_model->ScalarConstant("Lambda2"+tag);
   m_norm    = key.p_model->ScalarConstant("Q"+tag);

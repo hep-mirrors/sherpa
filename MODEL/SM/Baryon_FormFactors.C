@@ -50,19 +50,18 @@ FFDirac_F1::FFDirac_F1(const Vertex_Key &key):
   // Normally this would be the photon, but I'll assume it is anything
   // that is not a hadron.
   // Also: extract the flavours in the vertex to look up parameters
-  // in the model look-up table.
+  // in the model look-up table, and the baryon mass from the first hadron.
   std::set<kf_code> kfs;
   for (size_t i(0);i<key.m_j.size();++i) {
     if (!key.m_j[i]->Flav().IsHadron()) m_pos=i;
+    else if (m_mass2==0.) m_mass2=sqr(key.m_j[i]->Flav().HadMass());
     kfs.insert(key.m_j[i]->Flav().Kfcode());
   }
-  std::string tag = "";
-  for (size_t i(0);i<key.p_mv->in.size();++i) 
-    tag += std::string("_")+ToString(key.p_mv->in[i].Kfcode());
+  if (m_mass2==0.) THROW(fatal_error,"no hadron among the vertex's currents");
+  const std::string tag(HadronFirstTag(key));
   m_Lambda2 = key.p_model->ScalarConstant("Lambda2"+tag);
   m_q       = key.p_model->ScalarConstant("Q"+tag);
   m_mu      = key.p_model->ScalarConstant("Mu"+tag);
-  m_mass2   = sqr(key.m_j[0]->Flav().HadMass());
   msg_Out()<<METHOD<<"("<<key.m_j.size()<<"): tag = {"<<tag<<"}: "
 	   <<"q = "<<m_q<<", mu = "<<m_mu<<", "
 	   <<"Lambda2 = "<<m_Lambda2<<", mass = "<<sqrt(m_mass2)<<".\n";
@@ -85,19 +84,18 @@ FFDirac_F2::FFDirac_F2(const Vertex_Key &key):
   // Normally this would be the photon, but I'll assume it is anything
   // that is not a hadron.
   // Also: extract the flavours in the vertex to look up parameters
-  // in the model look-up table.
+  // in the model look-up table, and the baryon mass from the first hadron.
   std::set<kf_code> kfs;
   for (size_t i(0);i<key.m_j.size();++i) {
     if (!key.m_j[i]->Flav().IsHadron()) m_pos=i;
+    else if (m_mass2==0.) m_mass2=sqr(key.m_j[i]->Flav().HadMass());
     kfs.insert(key.m_j[i]->Flav().Kfcode());
   }
-  std::string tag = "";
-  for (size_t i(0);i<key.p_mv->in.size();++i) 
-    tag += std::string("_")+ToString(key.p_mv->in[i].Kfcode());
+  if (m_mass2==0.) THROW(fatal_error,"no hadron among the vertex's currents");
+  const std::string tag(HadronFirstTag(key));
   m_Lambda2 = key.p_model->ScalarConstant("Lambda2"+tag);
   m_q       = key.p_model->ScalarConstant("Q"+tag);
   m_mu      = key.p_model->ScalarConstant("Mu"+tag);
-  m_mass2   = sqr(key.m_j[0]->Flav().HadMass());
   msg_Out()<<METHOD<<"("<<key.m_j.size()<<"): tag = {"<<tag<<"}: "
 	   <<"q = "<<m_q<<", mu = "<<m_mu<<", "
 	   <<"Lambda2 = "<<m_Lambda2<<", mass = "<<sqrt(m_mass2)<<".\n";

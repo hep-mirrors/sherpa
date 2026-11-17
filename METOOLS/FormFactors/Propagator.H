@@ -198,9 +198,17 @@ namespace METOOLS {
     inline const Complex & Subtraction() const { return m_c0; }
   };
 
+  /*
+    The terms of a summed or multiplied propagator, in the order they were
+    added. (A std::map keyed by the pointers summed them in heap-address
+    order, which changes from run to run, so F differed in the last bits
+    between identical runs.)
+  */
+  typedef std::vector<std::pair<Propagator_Base *, Complex> > Prop_List;
+
   class Summed_Propagator : public Propagator_Base {
   private:
-    std::map<Propagator_Base *, Complex> m_props;
+    Prop_List m_props;
     Complex m_norm;
     bool    m_normalise;
   public:
@@ -217,12 +225,12 @@ namespace METOOLS {
     const Complex operator()(const double & s);
     const Complex Normalised(const double & s);
     const double  Normalised2(const double & s);
-    inline std::map<Propagator_Base *, Complex> & GetAll() { return m_props; }
+    inline Prop_List & GetAll() { return m_props; }
   };
 
   class Multiplied_Propagator : public Propagator_Base {
   private:
-    std::map<Propagator_Base *, Complex> m_props;
+    Prop_List m_props;
     Complex m_norm;
   public:
     Multiplied_Propagator(Propagator_Base * prop=NULL);
@@ -235,7 +243,7 @@ namespace METOOLS {
     const Complex operator()(const double & s);
     const Complex Normalised(const double & s);
     const double  Normalised2(const double & s);
-    inline std::map<Propagator_Base *, Complex> & GetAll() { return m_props; }
+    inline Prop_List & GetAll() { return m_props; }
   };
 }
 

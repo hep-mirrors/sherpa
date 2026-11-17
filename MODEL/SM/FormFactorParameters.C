@@ -101,15 +101,18 @@ DEFINE_PARAM(omega782,   "PION_FORM_FACTOR", "",               "omega(782)", 0.7
 DEFINE_PARAM(phi1020,    "PION_FORM_FACTOR", "",               "phi(1020)",  1.01947, 0.00425, 0.00045, 2.888,   ResonanceType::FixedBreitWigner, kf_phi_1020);
 
 // ---------- Kaon form factor ----------
+// arXiv:hep-ph/0409080. Negative couplings are negative amplitudes with phase
+// 0: each family sums to 1, so F_K+(0) = 1/2 + 1/6 + 1/3 = 1 (a phase pi on
+// top of the minus sign flipped them back and gave F(0) = 1.272).
 DEFINE_PARAM(K_rho,       "KAON_FORM_FACTOR", "rho(770)",      "rho(770)",   0.77456, 0.14832,  1.195,     0.0,     ResonanceType::GounarisSakurai, kf_rho_770);
-DEFINE_PARAM(K_rho1450,   "KAON_FORM_FACTOR", "rho(1450)",     "rho(1450)",  1.4859,  0.37360, -0.112,    M_PI,    ResonanceType::GounarisSakurai, kf_rho_1450);
-DEFINE_PARAM(K_rho1700,   "KAON_FORM_FACTOR", "rho(1700)",     "rho(1700)",  1.8668,  0.30334, -0.083,    M_PI,    ResonanceType::GounarisSakurai, kf_rho_1700);
+DEFINE_PARAM(K_rho1450,   "KAON_FORM_FACTOR", "rho(1450)",     "rho(1450)",  1.4859,  0.37360, -0.112,    0.0,     ResonanceType::GounarisSakurai, kf_rho_1450);
+DEFINE_PARAM(K_rho1700,   "KAON_FORM_FACTOR", "rho(1700)",     "rho(1700)",  1.8668,  0.30334, -0.083,    0.0,     ResonanceType::GounarisSakurai, kf_rho_1700);
 DEFINE_PARAM(K_rho2150,   "KAON_FORM_FACTOR", "rho(2150)",     "rho(2150)",  2.2645,  0.11327, -4.22045e-3,0.0,     ResonanceType::GounarisSakurai, kf_rho_2150);
 DEFINE_PARAM(K_omega,     "KAON_FORM_FACTOR", "omega(782)",    "omega(782)", 0.78248, 0.00855,  1.195,     0.0,     ResonanceType::FixedBreitWigner, kf_omega_782);
-DEFINE_PARAM(K_omega1420, "KAON_FORM_FACTOR", "omega(1420)",   "omega(1420)",1.410,   0.290,   -0.112,    M_PI,    ResonanceType::FixedBreitWigner, kf_omega_1420);
-DEFINE_PARAM(K_omega1650, "KAON_FORM_FACTOR", "omega(1650)",   "omega(1650)",1.67,    0.315,    1-1.195+0.112, M_PI, ResonanceType::FixedBreitWigner, kf_omega_1600);
+DEFINE_PARAM(K_omega1420, "KAON_FORM_FACTOR", "omega(1420)",   "omega(1420)",1.410,   0.290,   -0.112,    0.0,     ResonanceType::FixedBreitWigner, kf_omega_1420);
+DEFINE_PARAM(K_omega1650, "KAON_FORM_FACTOR", "omega(1650)",   "omega(1650)",1.67,    0.315,    1-1.195+0.112, 0.0, ResonanceType::FixedBreitWigner, kf_omega_1600);
 DEFINE_PARAM(K_phi,       "KAON_FORM_FACTOR", "phi(1020)",     "phi(1020)",  1.01947, 0.00434,  1.018,     0.0,     ResonanceType::FixedBreitWigner, kf_phi_1020);
-DEFINE_PARAM(K_phi1680,   "KAON_FORM_FACTOR", "phi(1680)",     "phi(1680)",  1.680,   0.150,    1 - 1.018, M_PI,    ResonanceType::FixedBreitWigner, kf_phi_1680);
+DEFINE_PARAM(K_phi1680,   "KAON_FORM_FACTOR", "phi(1680)",     "phi(1680)",  1.680,   0.150,    1 - 1.018, 0.0,     ResonanceType::FixedBreitWigner, kf_phi_1680);
 
 // ---------- Three-pion form factor ----------
 // sub="" (not the resonance name) - a non-empty sub requires a doubly-nested
@@ -163,10 +166,16 @@ DEFINE_PARAM(v_omega1631_rhoF, "THREE_PION_FORM_FACTOR", "", "omega(1631)-rho(17
 DEFINE_PARAM(T_pi0_rho,   "TWO_PHOTON_FORM_FACTOR", "pi0",        "rho(770)",   0.77526,  0.1474,  1.0,     0.0,     ResonanceType::FixedBreitWigner, kf_rho_770);
 DEFINE_PARAM(T_pi0_omega, "TWO_PHOTON_FORM_FACTOR", "pi0",        "omega(782)", 0.78266,  0.00868, 1.0109,  0.3972,  ResonanceType::FixedBreitWigner, kf_omega_782);
 DEFINE_PARAM(T_pi0_phi,   "TWO_PHOTON_FORM_FACTOR", "pi0",        "phi(1020)",  1.019461, 0.004249,0.0676, -2.9058, ResonanceType::FixedBreitWigner, kf_phi_1020);
-// eta
+// eta: F(s,0) = F(0,0) sum_V w_V BW_V(s), sum_V w_V = 1. The omega and phi
+// weights are fixed by their pole residues, the PDG 2024 B(V -> e+e-) B(V -> eta
+// gamma): 12 pi B_ee B_etag / m_V^2 = (2 pi^2 alpha^3/3) (1 - m_eta^2/m_V^2)^3
+// (F(0,0) |w_V| m_V/Gamma_V)^2 gives |w_omega| = 0.0994, |w_phi| = 0.1883, with
+// the quark-model signs (rho, omega, phi) = (+, +, -) of arXiv:1711.00820, and
+// w_rho = 1.0889 from the normalisation (its narrow-width B(rho -> eta gamma) is
+// 13 % below PDG). Below: relative to rho.
 DEFINE_PARAM(T_eta_rho,   "TWO_PHOTON_FORM_FACTOR", "eta",        "rho(770)",   0.77526,  0.1474,  1.0,     0.0,     ResonanceType::FixedBreitWigner, kf_rho_770);
-DEFINE_PARAM(T_eta_omega, "TWO_PHOTON_FORM_FACTOR", "eta",        "omega(782)", 0.78266,  0.00868, 0.0350,  0.5872,  ResonanceType::FixedBreitWigner, kf_omega_782);
-DEFINE_PARAM(T_eta_phi,   "TWO_PHOTON_FORM_FACTOR", "eta",        "phi(1020)",  1.019461, 0.004249,0.1135,  2.3182,  ResonanceType::FixedBreitWigner, kf_phi_1020);
+DEFINE_PARAM(T_eta_omega, "TWO_PHOTON_FORM_FACTOR", "eta",        "omega(782)", 0.78266,  0.00868, 0.09130, 0.0,     ResonanceType::FixedBreitWigner, kf_omega_782);
+DEFINE_PARAM(T_eta_phi,   "TWO_PHOTON_FORM_FACTOR", "eta",        "phi(1020)",  1.019461, 0.004249,0.17294, M_PI,    ResonanceType::FixedBreitWigner, kf_phi_1020);
 // eta'
 DEFINE_PARAM(T_etap_rho,  "TWO_PHOTON_FORM_FACTOR", "eta'",       "rho(770)",   0.77526,  0.1474,  1.0,     0.0,     ResonanceType::FixedBreitWigner, kf_rho_770);
 DEFINE_PARAM(T_etap_omega,"TWO_PHOTON_FORM_FACTOR", "eta'",       "omega(782)", 0.78266,  0.00868, 1.0,     0.0,     ResonanceType::FixedBreitWigner, kf_omega_782);
@@ -236,11 +245,11 @@ DEFINE_PARAM(Delta1600,"BARYON_FORM_FACTOR", "Δ(1600)",      "Δ(1600)",   1.60
       Rho1450().Read();
       Rho1700().Read();
       Rho2150().Read();
-      // Omega().Read();
-      // Omega1420().Read();
-      // Omega1650().Read();
-      // Phi().Read();
-      // Phi1680().Read();
+      Omega().Read();
+      Omega1420().Read();
+      Omega1650().Read();
+      Phi().Read();
+      Phi1680().Read();
     }
   } // namespace KaonFF
 

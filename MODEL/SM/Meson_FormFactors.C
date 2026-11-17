@@ -880,25 +880,32 @@ void FFVMD::ConstructVectorPionFormFactor() {
 // 3 GeV against BELLE data, while the fork's raw formula tracks BELLE's
 // 2-3.5 GeV tail well. p_raw_prop is evaluated directly in FF(), bypassing
 // m_props entirely for this mode.
+//
+// The weight enters with a MINUS sign. The rho(770) production vertex (V_pi)
+// builds its isoscalars from FixedBreitWigner, m^2/(m^2-s-i m Gamma), which is
+// MINUS eq. (5)'s R = 1/(s/m^2-1+i Gamma/m), so with the paper's phases its
+// sum is -(A R_omega + B R_phi + ...)/A. Eq. (10) has E R_phi on the same
+// footing as B R_phi, so the E term has to carry the same overall minus.
+// Without it E/B is -0.94 instead of the paper's +0.83.
 void FFVMD::ConstructVectorPionFormFactorRhoE() {
   msg_Debugging()<<METHOD<<": hep-ph/0512180 Eq.10 term E parameters\n";
   ThreePionFF::ReadAll();
   p_raw_prop = new METOOLS::HepPh0512180_BreitWigner(
               ThreePionFF::Phi1020RhoE().Mass(),
               ThreePionFF::Phi1020RhoE().Width());
-  m_raw_weight = ThreePionFF::Phi1020RhoE().Weight();
+  m_raw_weight = -ThreePionFF::Phi1020RhoE().Weight();
 }
 
 // hep-ph/0512180 Eq. (10) term F: omega(1631) x H_rho(1700). Same structure
 // as term E above, but for the rho(1700) sub-current with its own partner
-// isoscalar, omega(1631).
+// isoscalar, omega(1631), and the same minus sign.
 void FFVMD::ConstructVectorPionFormFactorRhoF() {
   msg_Debugging()<<METHOD<<": hep-ph/0512180 Eq.10 term F parameters\n";
   ThreePionFF::ReadAll();
   p_raw_prop = new METOOLS::HepPh0512180_BreitWigner(
               ThreePionFF::Omega1631RhoF().Mass(),
               ThreePionFF::Omega1631RhoF().Width());
-  m_raw_weight = ThreePionFF::Omega1631RhoF().Weight();
+  m_raw_weight = -ThreePionFF::Omega1631RhoF().Weight();
 }
 
 Complex FFVMD::FF() {
