@@ -533,7 +533,7 @@ Complex Product_Term::operator()(const Invariants & k) const {
 }
 
 const Complex RChL_BW::operator()(const double & s) {
-  return 1./Complex(s-m_M2,-m_M*(*p_width)(s));
+  return 1./Complex(s-m_M2,m_M*(*p_width)(s));   // causal sign, see Propagator.H
 }
 
 const Complex RChL_BW::Normalised(const double & s) {

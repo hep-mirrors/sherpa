@@ -106,19 +106,27 @@ namespace METOOLS {
     const double  Normalised2(const double & s);
   };
 
-  // Breit-Wigner variant matching the literal denominator convention
-  // printed in the RChL 3pi current, e.g. Eq.(6) of arXiv:1203.3955:
-  // "s - M^2 - i*M*Gamma(s)" (no M^2 numerator - the papers' formulas
-  // supply their own numerator factors externally, e.g. the "3*s1" in
-  // front of the propagator in Eq.6). This is deliberately a DIFFERENT
-  // sign/scaling convention from BreitWigner above (which returns
-  // M^2/(M^2-s-i*sqrt(s)*Gamma(s))): the KKpi current (Eq.13-15 of the
-  // same paper) instead literally prints "M^2-s-iM*Gamma(s))", i.e. the
-  // opposite overall sign from the 3pi current's Eq.6. Rather than
-  // "fixing" what may or may not be an inconsistency in the source
-  // paper, each channel's code uses whichever convention is literally
-  // printed for that channel's own equations - see FF_0_PPP.C's
-  // comments at the point of use for which is which.
+  // Breit-Wigner of the RChL three-pion current (arXiv:1203.3955,
+  // 1310.1053):  1 / (s - M^2 + i M Gamma(s)).
+  // No M^2 numerator: the papers' formulas supply their own numerators
+  // (e.g. the 3 s1 in front of the rho propagator in F1^R).
+  //
+  // THE SIGN.  This is the causal (Feynman) propagator,
+  // i/(s - M^2 + i M Gamma), equivalently -1/(M^2 - s - i M Gamma).
+  // 1203.3955's three-pion formulas (Eq. t1r and after) print the opposite,
+  // s - M^2 - i M Gamma, which is the complex CONJUGATE, not merely the
+  // opposite sign.  That is a misprint, for three reasons:
+  //  - it contradicts the same paper's Eq.(rhoprime), the rule that replaces
+  //    exactly these rho propagators, which is written 1/(M^2 - q^2 - i M
+  //    Gamma), and all of its K K pi formulas; 1310.1053 writes its sigma
+  //    Breit-Wigner as M^2/(M^2 - x - i M Gamma) too;
+  //  - unitarity (Watson's theorem) needs the form-factor phase to follow
+  //    the pi pi P-wave phase shift, which rises through +90 degrees at the
+  //    rho; the printed form makes it fall;
+  //  - only the causal sign reproduces the paper's own published width,
+  //    Gamma(tau -> pi- pi- pi+ nu) = 1.9974e-13 GeV with its Table I.
+  // The sign matters because the sigma terms enter with the causal sign: a
+  // conjugated rho/a1 would flip their relative phase and the interference.
 
   ///////////////////////////////////////////////////////////////////////////
   //

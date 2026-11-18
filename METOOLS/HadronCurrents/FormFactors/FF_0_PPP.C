@@ -469,10 +469,9 @@ void F1_0_PiPlusPiZeroPiZero::Construct_3Pi(const FF_Parameters & params) {
     // operator() computes [Add(rho,w1)*rho(s) + Add(rhop,w2)*rhop(s)]
     // / (w1+w2) - with w1=1, w2=betarhop this IS Eq.(11)'s combined
     // rho+rho' propagator, no extra plumbing needed. RChL_BW (see
-    // Propagator.[C,H]) matches the literal denominator sign/scaling
-    // printed in Eq.(6) of 1203.3955, which differs from BreitWigner's
-    // own convention (used by the KS branch above) - that's why this
-    // branch can't just reuse plain BreitWigner objects.
+    // Propagator.[C,H]) has no M^2 numerator, as the paper's formulas supply
+    // their own numerators, and the causal sign: that is why this branch
+    // cannot reuse plain BreitWigner objects.
     //
     // Charged/neutral rho choice matches the KS branch above: for
     // pi0 pi0 pi-, the rho in each pi0-pi- sub-system is CHARGED
@@ -838,7 +837,13 @@ Complex F1_0_PiPlusPiZeroPiZero::
 FF_RChL2012(const double & s123,const double & s1_arg,const double & s2_arg) {
   double q2 = s123, s3 = s1_arg, s2 = s2_arg;
   double s1 = q2 - s2 - s3 + 3.*m_mpi2_iso; // m1^2=m2^2=m3^2=mpi2 here
-  if (m_isF2) std::swap(s1,s2); // Bose symmetry
+  // Slot assignment.  1310.1053 Eq.(fiveF) writes the current as
+  //   J = T[(p2-p3) F1 - (p3-p1) F2],  F2(q2,s1,s2) = F1(q2,s2,s1),
+  // with s1 = (p2+p3)^2, s2 = (p1+p3)^2.  VA_0_PiPiPi builds
+  //   J = F1slot (p1-p3)_T + F2slot (p2-p3)_T,
+  // so the (p1-p3) slot holds the paper's F1 with s1 and s2 exchanged and the
+  // (p2-p3) slot holds the paper's F1 as written.
+  if (!m_isF2) std::swap(s1,s2);
   double R3pi = (m_mode==FF_0_PPP_mode::piM_piP_piP ? 1. : -1.);
 
   if (p_rhos==NULL) return Complex(0.,0.);
@@ -856,8 +861,11 @@ FF_RChL2012(const double & s123,const double & s1_arg,const double & s2_arg) {
   // FRR_1, Eq.(6)
   double Ha = RChL::H(s1/q2,m_mpi2_iso/q2,m_lambda_p,m_lambda_pp);
   double Hb = RChL::H(s2/q2,m_mpi2_iso/q2,m_lambda_p,m_lambda_pp);
+  // a1 propagator with the causal +iM Gamma, like the rho and rho' (RChL_BW):
+  // see the RChL_BW comment in Propagator.H for why the sign printed in
+  // 1203.3955's three-pion formulas is not the one to use.
   Complex a1prop = q2/Complex(q2-sqr(m_Ma1_rchl),
-			      -m_Ma1_rchl*RChL::Gamma_a1_PionFit(q2,m_Mrho_rchl,m_mpi2_iso));
+			      m_Ma1_rchl*RChL::Gamma_a1_PionFit(q2,m_Mrho_rchl,m_mpi2_iso));
   Complex FRR1 = (4.*m_FA_rchl*m_GV_rchl)/(3.*sqr(m_F_rchl)) * a1prop *
     ( ( -(m_lambda_p+m_lambda_pp)*3.*s1 + Ha*(2.*q2+s1-s3) ) * propS1 +
       Hb*(s3-s1)*propS2 );
