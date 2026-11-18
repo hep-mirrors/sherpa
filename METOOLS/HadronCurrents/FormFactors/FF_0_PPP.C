@@ -246,63 +246,35 @@ protected:
   // hierarchy without a larger refactor - so it stays inline in
   // FF_RChL2012 below.
 
-  // --- CLEO / default-TAUOLA 3pi current (KS_CLEO=102) ---
-  // tau_two_meson_currents_KS_RChiT.tex Sec."CLEO / default-TAUOLA 3pi
-  // current". A genuinely different, data-driven parametrization from
-  // KS90/RChL2012 above - own resonance masses/widths (ALL different
-  // from the KS90 ones above, even for "the same" rho/a1), its own
-  // running-width convention (BW_L, Eq.(eq:CLEO-BW)), and 7 complex
-  // fitted amplitudes (beta1..beta7). Implemented as self-contained
-  // functions using the literal CLEO masses/widths as plain numbers -
-  // NOT tied to Sherpa's LineShapes/Total_Width_Base machinery, since
-  // reproducing this specific parametrization exactly requires its
-  // own closed-form running-width prescription (Eq.(eq:CLEO-running-
-  // width)), not Sherpa's generic decay-channel-based running widths.
-  //
-  // BASIS REDUCTION (previously flagged as a caveat, now resolved by
-  // the note): the note gives F1^CLEO, F2^CLEO, F3^CLEO as three
-  // analytic functions, but the general PPPcurrent basis states "only
-  // two transverse axial structures are independent" - F1,F2,F3
-  // multiplying (p2-p3),(p3-p1),(p1-p2) with coefficients c1,c2,c3 are
-  // NOT all independent (those three vectors sum to zero identically).
-  // The note's "Active transverse basis in the default TAUOLA-CLEO
-  // current" now states the active coefficients explicitly:
-  //   c1=+2sqrt2/3,  c2=-2sqrt2/3,  c3=0,  c4=c5=0,
-  // so the reduction is just F1_eff=F1^CLEO, F2_eff=F2^CLEO with NO F3
-  // term (Eq.(eq:CLEO-two-slot-map)); the generic fold
-  // F_i-(c3/c_i)F3 (Eq.(eq:CLEO-generic-fold)) vanishes. An earlier
-  // version of this class assumed c1=c2=c3=1 and subtracted F3 - the
-  // note's "Implementation warning" says explicitly that this is not
-  // the default TAUOLA-CLEO convention. See FF_KS below for the slot
-  // assignment that goes with it. CLEO_F3term is kept (correct as
-  // written, coefficient zero in this current, useful for comparing
-  // against a redundant three-vector basis).
+  // --- CLEO 3pi form factors (KS_CLEO=102) ---
+  // D.M. Asner et al. (CLEO), Phys.Rev.D61 (2000) 012002, hep-ex/9902022:
+  // the isobar model of App. A (rho pi and rho' pi in s and d wave, f2 pi,
+  // sigma pi, f0(1370) pi, couplings beta1..beta7 of Table "result_r00")
+  // and the a1 line shape of Eqs.(breit) and (runwidth), with the nominal
+  // choices of the a1 fit: constant a1 mass, K*K threshold on, f0(980)pi
+  // off, point-like a1 (R_i=0).  See the comment above Construct_3Pi_CLEO.
   double  m_MCLEOrho, m_GCLEOrho, m_MCLEOrhop, m_GCLEOrhop;
   double  m_MCLEOsigma, m_GCLEOsigma, m_MCLEOf0, m_GCLEOf0, m_MCLEOf2, m_GCLEOf2;
   double  m_MCLEOa1, m_GCLEOa1, m_MCLEOa1p, m_GCLEOa1p;
-  Complex m_betaCLEOa1p; // dormant a1' term, 0 in the nominal current
-  double  m_MCLEOKstar, m_mCLEOK, m_mCLEOpi;
+  Complex m_betaCLEOa1p; // kappa of Eq.(breit), 0 in the nominal fit
+  double  m_MCLEOKstar, m_mCLEOK, m_gammaCLEOKstarK, m_g2CLEO;
   Complex m_beta1,m_beta2,m_beta3,m_beta4,m_beta5,m_beta6,m_beta7;
+  // g^-2 * Gamma_3pi(s) = reduced widths of both charge modes, Eq.(a13pi),
+  // tabulated on a uniform grid in s starting at the pi-pi0pi0 threshold.
+  std::vector<double> m_CLEOGamma3pi;
+  double  m_CLEOs0, m_CLEOds;
 
-  static double  CLEO_P(const double & S,const double & m1,const double & m2);
-  static double  CLEO_GammaL(const double & S,const double & M,const double & Gamma,
-			     const double & m1,const double & m2,int L);
-  static Complex CLEO_BWL(const double & S,const double & M,const double & Gamma,
-			  const double & m1,const double & m2,int L);
-  double  CLEO_w1(const double & x) const;
-  double  CLEO_w2(const double & x) const;
-  double  CLEO_wK(const double & x) const;
-  double  CLEO_WGA(const double & Q2) const;
-  Complex CLEO_Aa1(const double & Q2) const;
-  // F1^CLEO(Q2;s1,s2,s3,m1_2,m2_2,m3_2) - F2^CLEO is obtained by
-  // calling this with (s2,s1,s3,m2_2,m1_2,m3_2), per the note's own
-  // "F2=F1(1<->2)" statement.
-  Complex CLEO_F1term(const double & Q2,const double & s1,const double & s2,
-		      const double & s3,const double & m1_2,const double & m2_2,
-		      const double & m3_2) const;
-  Complex CLEO_F3term(const double & Q2,const double & s1,const double & s2,
-		      const double & s3,const double & m1_2,const double & m2_2,
-		      const double & m3_2) const;
+  static double  CLEO_k(const double & s,const double & ma,const double & mb);
+  static Complex CLEO_BW(const double & s,const double & M,const double & Gamma,
+			 const double & ma,const double & mb,int L);
+  void    CLEO_Isobars(const double & s,const double & s12,const double & s13,
+		       const double & s23,const double m[3],const bool charged,
+		       Complex x[3]) const;
+  double  CLEO_ReducedWidth(const double & s,const bool charged) const;
+  double  CLEO_Gamma3pi(const double & s) const;
+  double  CLEO_GammaKstarK(const double & s) const;
+  double  CLEO_a1Width(const double & s) const;
+  Complex CLEO_Aa1(const double & s) const;
   void    Construct_3Pi_CLEO(const FF_Parameters & params);
 
   // Master dispatcher (called once from the constructor) + one
@@ -392,16 +364,10 @@ void F1_0_PiPlusPiZeroPiZero::Construct_3Pi(const FF_Parameters & params) {
     m_alpha = ReadComplexParam(params.p_model,"alphaMag_3pi", 0.00185,"alphaPhase_3pi");
   }
   else if (GetModel()==FF_0_PPP_Base::Model::KS_CLEO) {
-    // CLEO/default-TAUOLA 3pi current - see the class-level comment
-    // above for the F1/F2/F3 architecture caveat. m_norm above (the
-    // KS90 value, i*2sqrt2*Vud/(3 fpi)) is REUSED here rather than
-    // overridden: the note writes the CLEO F1/F2/F3 as instances of
-    // the SAME master PPPcurrent equation (which carries the overall
-    // N), and gives no separate explicit normalization for this
-    // variant - if the CLEO beta-fit was actually performed against a
-    // different absolute normalization convention, the lineshape
-    // SHAPE here is still correct but the absolute rate may not be;
-    // flagged rather than silently assumed exactly right.
+    // CLEO 3pi form factors, see the comment above Construct_3Pi_CLEO.  The
+    // paper normalises its fit per bin of the 3pi mass, so it fixes no
+    // absolute normalisation; m_norm above is kept, and the rate is set by
+    // the branching ratio as for every channel.
     Construct_3Pi_CLEO(params);
   }
   else if (GetModel()==FF_0_PPP_Base::Model::RChL2012) {
@@ -586,172 +552,294 @@ void F1_0_PiPlusPiZeroPiZero::Construct_Pi0Pi0K(const FF_Parameters & params) {
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// CLEO/default-TAUOLA 3pi current, tau_two_meson_currents_KS_RChiT.tex
-// Sec."CLEO/default-TAUOLA 3pi current". See the class-level comment
-// for the F1/F2/F3 architecture caveat this implementation relies on.
+// CLEO 3pi form factors (model 12): D.M. Asner et al. (CLEO), Phys.Rev.D61
+// (2000) 012002, hep-ex/9902022.  They fill the F1 and F2 slots of the
+// general three-meson current VA_0_PPP (VA_0_PiPiPi); there is no CLEO current.
+//
+// The paper's current (App. A).  J = B_a1(s) T[sum_i beta_i j_i], with the seven
+// isobar amplitudes j_1..j_7 of Eq.(2pi0pi) for pi0(p1) pi0(p2) pi-(p3) and
+// the Breit-Wigners of Eq.(bwdef),
+//   B^L_Y(s) = m^2/(m^2 - s - i m Gamma^{Y,L}(s)),
+//   Gamma^{Y,L}(s) = Gamma_Y (k'/k'_0)^{2L+1} m/sqrt(s).
+// Each isobar is summed as written, as a combination of p1,p2,p3, and then
+// projected onto the two vectors VA_0_PiPiPi uses, (p1-p3)_T and (p2-p3)_T.
+// This contains all of App. A's reduced form factors: F1 and F2 (= F1 with
+// 1<->2, c2 = -c1) and also F3 (c3 = c1, which the q3(a.q3) piece of the
+// f2 amplitude j_5 fixes), so nothing is dropped.
+//
+// Charged mode.  CLEO fit pi- pi0 pi0 only and obtain pi- pi- pi+ "by
+// isospin symmetry" (text after Eq.(a13pi)).  Writing the a1 -> 3pi
+// amplitude in the isospin basis, M = A(1,2;3) for pi0 pi0 pi- and
+// M = A(2,3;1) + A(1,3;2) for pi- pi- pi+, where in A(i,j;k) pions i,j form
+// the isospin-0 pair:  the rho-type terms (j_1..j_4) keep their pairs and
+// change sign, and the isoscalar terms (j_5..j_7) move from the pi0 pi0
+// pair to the two pi+ pi- pairs.  Nothing lands on the pi- pi- pair.
+//
+// a1 line shape, Eq.(breit) with kappa = 0 and a constant mass, and the
+// running width of Eq.(runwidth),
+//   Gamma_tot(s) = g^2 [ Gamma_hat(pi-pi0pi0) + Gamma_hat(pi-pi-pi+)
+//                        + gamma_K*K^2 Gamma_hat(K*K) ],
+// where the 3pi reduced widths are Eq.(a13pi), the model's own
+// -|sum beta_i j_i|^2 integrated over three-body phase space (tabulated in
+// s at construction), and g^2 is fixed by Gamma_tot(m_a1^2) = Gamma_a1.
+// The paper does not print Gamma_hat(K*K), only that it is the s-wave
+// threshold in the narrow-width approximation; it is taken as
+// N p_K*K(s)/sqrt(s), and N is fixed so that the published gamma_K*K = 3.32
+// reproduces the K*K curve of the paper's Fig. 9(b) (that shape matches the
+// figure to 1%).  With the paper's own resonance and a1 parameters this
+// implementation reproduces both 3pi curves of Fig. 9(b) to the figure's
+// precision.
+//
+// Defaults.  Masses and widths come from the particle database; the
+// paper's values (Table "res_par" and the a1 fit) are
+//   MCLEOrho 0.774 GCLEOrho 0.149  MCLEOrhop 1.370 GCLEOrhop 0.386
+//   MCLEOf2 1.275 GCLEOf2 0.185  MCLEOsigma 0.860 GCLEOsigma 0.880
+//   MCLEOf0 1.186 GCLEOf0 0.350  MCLEOa1 1.331 GCLEOa1 0.814
+// and have to be set explicitly.  The couplings default to the paper's.
 //
 ///////////////////////////////////////////////////////////////////////////
 
+// Gauss-Legendre nodes and weights on [-1,1].
+static void GaussLegendre(const size_t n,std::vector<double> & x,
+			  std::vector<double> & w) {
+  x.resize(n); w.resize(n);
+  for (size_t i=0;i<(n+1)/2;i++) {
+    double z = cos(M_PI*(i+0.75)/(n+0.5)), z1, pp;
+    do {
+      double p1 = 1., p2 = 0.;
+      for (size_t j=0;j<n;j++) {
+	double p3 = p2; p2 = p1;
+	p1 = ((2.*j+1.)*z*p2-j*p3)/(j+1.);
+      }
+      pp = n*(z*p1-p2)/(z*z-1.);
+      z1 = z; z = z1-p1/pp;
+    } while (fabs(z-z1)>1.e-14);
+    x[i] = -z; x[n-1-i] = z;
+    w[i] = w[n-1-i] = 2./((1.-z*z)*pp*pp);
+  }
+}
+
+// -J_T.J_T^* (>= 0) for J^mu = T^mu_nu sum_i x_i p_i^nu, T = g - q q/q^2,
+// q = p1+p2+p3, from the invariants s1 = (p2+p3)^2, s2 = (p1+p3)^2,
+// s3 = (p1+p2)^2:  p_i.p_j = (s_ij-m_i^2-m_j^2)/2, q.p_i = (q^2+m_i^2-s_jk)/2.
+// This is the integrand of CLEO's a1 width, Eq.(a13pi) (-J_T.J_T^* =
+// -(J.J^* - |q.J|^2/q^2)).
+static double MinusJTJT(const double & q2,const double m[3],const double & s1,
+			const double & s2,const double & s3,const Complex x[3]) {
+  const double sp[3][3] = { {0.,s3,s2}, {s3,0.,s1}, {s2,s1,0.} };
+  const double qp[3]    = { 0.5*(q2+sqr(m[0])-s1), 0.5*(q2+sqr(m[1])-s2),
+			    0.5*(q2+sqr(m[2])-s3) };
+  double JJ = 0.;
+  Complex qJ(0.,0.);
+  for (int i=0;i<3;i++) {
+    qJ += x[i]*qp[i];
+    for (int j=0;j<3;j++) {
+      const double pp = (i==j ? sqr(m[i]) : 0.5*(sp[i][j]-sqr(m[i])-sqr(m[j])));
+      JJ += (x[i]*std::conj(x[j])).real()*pp;
+    }
+  }
+  return std::norm(qJ)/q2-JJ;
+}
+
+// int ds1 ds3 f(s1,s2,s3) over the Dalitz plot of q -> p1 p2 p3 (q^2 = q2),
+// s1 = (p2+p3)^2 outside, s3 = (p1+p2)^2 inside, s2 by momentum conservation,
+// Gauss-Legendre nodes gx, weights gw in each.  The Jacobian is 1, so this is
+// the "int ds dt" of the width formulas.  s3's limits come from the energies
+// of p1 and p2 in the (p2 p3) rest frame.
+template <class Fn>
+static double DalitzIntegral(const double & q2,const double m[3],
+			     const std::vector<double> & gx,
+			     const std::vector<double> & gw,Fn f) {
+  const double rs = sqrt(q2), msum2 = sqr(m[0])+sqr(m[1])+sqr(m[2]);
+  const double lo = sqr(m[1]+m[2]), hi = sqr(rs-m[0]);
+  if (hi<=lo) return 0.;
+  double sum = 0.;
+  for (size_t a=0;a<gx.size();a++) {
+    const double s1 = lo+0.5*(hi-lo)*(gx[a]+1.), r1 = sqrt(s1);
+    const double E2 = (s1-sqr(m[2])+sqr(m[1]))/(2.*r1);
+    const double E1 = (q2-s1-sqr(m[0]))/(2.*r1);
+    const double P2 = sqrt(Max(0.,sqr(E2)-sqr(m[1])));
+    const double P1 = sqrt(Max(0.,sqr(E1)-sqr(m[0])));
+    const double s3lo = sqr(E1+E2)-sqr(P1+P2), s3hi = sqr(E1+E2)-sqr(P1-P2);
+    for (size_t b=0;b<gx.size();b++) {
+      const double s3 = s3lo+0.5*(s3hi-s3lo)*(gx[b]+1.);
+      const double s2 = q2+msum2-s1-s3;
+      sum += gw[a]*gw[b]*0.25*(hi-lo)*(s3hi-s3lo)*f(s1,s2,s3);
+    }
+  }
+  return sum;
+}
+
 void F1_0_PiPlusPiZeroPiZero::Construct_3Pi_CLEO(const FF_Parameters & params) {
-  // Nominal TAUOLA-CLEO masses/widths (Table "Complete coding inputs
-  // for the default TAUOLA-CLEO 3pi current"). All overridable, all
-  // DISTINCT from the KS90 rho/a1 numbers above (same physical
-  // resonances, genuinely different fitted values in this current).
-  m_MCLEOrho    = (*params.p_model)("MCLEOrho",   0.7743);
-  m_GCLEOrho    = (*params.p_model)("GCLEOrho",   0.1491);
-  m_MCLEOrhop   = (*params.p_model)("MCLEOrhop",  1.370);
-  m_GCLEOrhop   = (*params.p_model)("GCLEOrhop",  0.386);
-  m_MCLEOsigma  = (*params.p_model)("MCLEOsigma", 0.860);
-  m_GCLEOsigma  = (*params.p_model)("GCLEOsigma", 0.880);
-  m_MCLEOf0     = (*params.p_model)("MCLEOf0",    1.186);
-  m_GCLEOf0     = (*params.p_model)("GCLEOf0",    0.350);
-  m_MCLEOf2     = (*params.p_model)("MCLEOf2",    1.275);
-  m_GCLEOf2     = (*params.p_model)("GCLEOf2",    0.185);
-  m_MCLEOa1     = (*params.p_model)("MCLEOa1",    1.275);
-  m_GCLEOa1     = (*params.p_model)("GCLEOa1",    0.700);
-  // Dormant a1' term - beta=0 in the nominal current, so its own
-  // mass/width are irrelevant unless overridden together with beta.
+  const bool charged = (m_mode==FF_0_PPP_mode::piM_piP_piP);
+  const Flavour rho(charged ? kf_rho_770 : kf_rho_770_plus);
+  const Flavour rhop(charged ? kf_rho_1450 : kf_rho_1450_plus);
+  const Flavour a1(kf_a_1_1260_plus), a1p(9020213);
+  m_MCLEOrho    = (*params.p_model)("MCLEOrho",    rho.HadMass());
+  m_GCLEOrho    = (*params.p_model)("GCLEOrho",    rho.Width());
+  m_MCLEOrhop   = (*params.p_model)("MCLEOrhop",   rhop.HadMass());
+  m_GCLEOrhop   = (*params.p_model)("GCLEOrhop",   rhop.Width());
+  m_MCLEOsigma  = (*params.p_model)("MCLEOsigma",  Flavour(kf_f_0_600).HadMass());
+  m_GCLEOsigma  = (*params.p_model)("GCLEOsigma",  Flavour(kf_f_0_600).Width());
+  m_MCLEOf0     = (*params.p_model)("MCLEOf0",     Flavour(kf_f_0_1370).HadMass());
+  m_GCLEOf0     = (*params.p_model)("GCLEOf0",     Flavour(kf_f_0_1370).Width());
+  m_MCLEOf2     = (*params.p_model)("MCLEOf2",     Flavour(kf_f_2_1270).HadMass());
+  m_GCLEOf2     = (*params.p_model)("GCLEOf2",     Flavour(kf_f_2_1270).Width());
+  m_MCLEOa1     = (*params.p_model)("MCLEOa1",     a1.HadMass());
+  m_GCLEOa1     = (*params.p_model)("GCLEOa1",     a1.Width());
+  // a1' of Eq.(breit): kappa = 0 in the nominal fit.  The paper does not give
+  // its running width, so it is a constant-width Breit-Wigner.
   m_betaCLEOa1p = ReadComplexParam(params.p_model,
 				   "betaMag_3pi_CLEOa1prime",0.,"betaPhase_3pi_CLEOa1prime");
-  m_MCLEOa1p    = (*params.p_model)("MCLEOa1prime", 1.275);
-  m_GCLEOa1p    = (*params.p_model)("GCLEOa1prime", 0.700);
-  m_MCLEOKstar  = (*params.p_model)("MCLEOKstar",   0.894);
-  m_mCLEOK      = (*params.p_model)("mCLEOK",       0.496);
-  // pi0/pi+- mass average as used in the note's own GEV inputs - using
-  // the physical per-index mass in the actual formula evaluation
-  // (m_masses2[...]) instead; this m_mCLEOpi is only used inside the
-  // K*K threshold/momentum piece of WGA, which needs a single generic
-  // pion mass scale, not per-index masses.
-  m_mCLEOpi     = 0.137;
-  // Complex fitted amplitudes, Eq.(eq:CLEO-betas) (nominal TAUOLA-CLEO
-  // values - the note also quotes a slightly different "CLEO
-  // published" mass/width set, not implemented here as a separate
-  // option; flag if you want that added too).
-  m_beta1 = Complex(1.,0.); // real, fixed
+  m_MCLEOa1p    = (*params.p_model)("MCLEOa1prime", a1p.HadMass());
+  m_GCLEOa1p    = (*params.p_model)("GCLEOa1prime", a1p.Width());
+  // K*K threshold of the a1 width, isospin-averaged masses.
+  m_MCLEOKstar  = (*params.p_model)("MCLEOKstar",
+				    0.5*(Flavour(kf_K_star_892_plus).HadMass()+
+					 Flavour(kf_K_star_892).HadMass()));
+  m_mCLEOK      = (*params.p_model)("mCLEOK",
+				    0.5*(Flavour(kf_K_plus).HadMass()+Flavour(kf_K).HadMass()));
+  m_gammaCLEOKstarK = (*params.p_model)("gammaKstarK_3pi_CLEO", 3.32);
+  // Couplings beta_i = |beta_i| exp(i phi_i), Table "result_r00".
+  m_beta1 = Complex(1.,0.);
   m_beta2 = ReadComplexParam(params.p_model,"beta2Mag_3pi_CLEO",0.12,"beta2Phase_3pi_CLEO",0.99*M_PI);
   m_beta3 = ReadComplexParam(params.p_model,"beta3Mag_3pi_CLEO",0.37,"beta3Phase_3pi_CLEO",-0.15*M_PI);
   m_beta4 = ReadComplexParam(params.p_model,"beta4Mag_3pi_CLEO",0.87,"beta4Phase_3pi_CLEO",0.53*M_PI);
   m_beta5 = ReadComplexParam(params.p_model,"beta5Mag_3pi_CLEO",0.71,"beta5Phase_3pi_CLEO",0.56*M_PI);
   m_beta6 = ReadComplexParam(params.p_model,"beta6Mag_3pi_CLEO",2.10,"beta6Phase_3pi_CLEO",0.23*M_PI);
   m_beta7 = ReadComplexParam(params.p_model,"beta7Mag_3pi_CLEO",0.77,"beta7Phase_3pi_CLEO",-0.54*M_PI);
-  msg_Out()<<"### Propagator structure for \"F1_0_PiPlusPiZeroPiZero (CLEO), "
-	   <<"mode="<<int(m_mode)<<"\" (FORM_FACTOR = "<<int(GetModel())<<"):\n"
-	   <<"###   rho(CLEO): M = "<<m_MCLEOrho<<" GeV, Gamma = "<<m_GCLEOrho<<" GeV\n"
-	   <<"###   rho'(CLEO): M = "<<m_MCLEOrhop<<" GeV, Gamma = "<<m_GCLEOrhop<<" GeV\n"
-	   <<"###   sigma: M = "<<m_MCLEOsigma<<" GeV, Gamma = "<<m_GCLEOsigma<<" GeV\n"
-	   <<"###   f0: M = "<<m_MCLEOf0<<" GeV, Gamma = "<<m_GCLEOf0<<" GeV\n"
-	   <<"###   f2: M = "<<m_MCLEOf2<<" GeV, Gamma = "<<m_GCLEOf2<<" GeV\n"
-	   <<"###   a1(CLEO): M = "<<m_MCLEOa1<<" GeV, Gamma = "<<m_GCLEOa1<<" GeV\n";
-}
-
-double F1_0_PiPlusPiZeroPiZero::
-CLEO_P(const double & S,const double & m1,const double & m2) {
-  double arg = (S-sqr(m1+m2))*(S-sqr(m1-m2));
-  return (arg>0. && S>0. ? sqrt(arg)/sqrt(S) : 0.);
-}
-
-double F1_0_PiPlusPiZeroPiZero::
-CLEO_GammaL(const double & S,const double & M,const double & Gamma,
-	    const double & m1,const double & m2,int L) {
-  double PS = CLEO_P(S,m1,m2), PM = CLEO_P(sqr(M),m1,m2);
-  if (PM<=0. || S<=0.) return 0.;
-  return Gamma*(M/sqrt(S))*pow(PS/PM, 2*L+1);
-}
-
-Complex F1_0_PiPlusPiZeroPiZero::
-CLEO_BWL(const double & S,const double & M,const double & Gamma,
-	 const double & m1,const double & m2,int L) {
-  double G = CLEO_GammaL(S,M,Gamma,m1,m2,L);
-  return sqr(M)/Complex(S-sqr(M), -M*G);
-}
-
-double F1_0_PiPlusPiZeroPiZero::CLEO_w1(const double & x) const {
-  if (x<0.1753) return 0.;
-  double dx = x-0.1753;
-  if (x<0.823) return 5.809*pow(dx,3)*(1.-3.0098*dx+4.5792*pow(dx,3));
-  return -13.914+27.679*x-13.393*sqr(x)+3.1924*pow(x,3)-0.10487*pow(x,4);
-}
-
-double F1_0_PiPlusPiZeroPiZero::CLEO_w2(const double & x) const {
-  if (x<0.1676) return 0.;
-  double dx = x-0.1676;
-  if (x<0.823) return 6.2845*pow(dx,3)*(1.-2.9595*dx+4.3355*pow(dx,3));
-  return -15.411+32.088*x-17.666*sqr(x)+4.9355*pow(x,3)-0.37498*pow(x,4);
-}
-
-double F1_0_PiPlusPiZeroPiZero::CLEO_wK(const double & x) const {
-  if (x<=sqr(m_MCLEOKstar+m_mCLEOK)) return 0.;
-  // p_{K*K}(x) = lambda^{1/2}(x,MK*^2,mK^2)/(2x), Eq.(eq:CLEO-pK).
-  double MKst2 = sqr(m_MCLEOKstar), mK2 = sqr(m_mCLEOK);
-  double lambda = sqr(x-MKst2-mK2)-4.*MKst2*mK2;
-  return (lambda>0. ? sqrt(lambda)/(2.*x) : 0.);
-}
-
-double F1_0_PiPlusPiZeroPiZero::CLEO_WGA(const double & Q2) const {
-  double C3pi = sqr(0.2384), CKst = sqr(4.7621)*C3pi;
-  return C3pi*(CLEO_w1(Q2)+CLEO_w2(Q2)) + CKst*CLEO_wK(Q2);
-}
-
-Complex F1_0_PiPlusPiZeroPiZero::CLEO_Aa1(const double & Q2) const {
-  // Eq.(eq:CLEO-Aa1). The 1.3281*0.806 normalization constant in the
-  // denominator is transcribed literally from the note - it is an
-  // internal TAUOLA normalization of WGA relative to the pole width,
-  // not independently re-derived here.
-  Complex D1 = Complex(Q2-sqr(m_MCLEOa1),
-		       -m_MCLEOa1*m_GCLEOa1/(1.3281*0.806)*CLEO_WGA(Q2));
-  Complex term1 = sqr(m_MCLEOa1)/D1;
-  Complex term2(0.,0.);
-  if (m_betaCLEOa1p!=Complex(0.,0.)) {
-    Complex D2 = Complex(Q2-sqr(m_MCLEOa1p),
-			 -m_MCLEOa1p*m_GCLEOa1p/(1.3281*0.806)*CLEO_WGA(Q2));
-    term2 = m_betaCLEOa1p*sqr(m_MCLEOa1p)/D2;
+  // Reduced 3pi widths of both charge modes on a grid in s.
+  const double mpi0 = Flavour(kf_pi).HadMass(), mpi = Flavour(kf_pi_plus).HadMass();
+  const size_t nS = 400;
+  const double smax = 3.5;
+  m_CLEOs0 = sqr(2.*mpi0+mpi);
+  m_CLEOds = (smax-m_CLEOs0)/(nS-1);
+  m_CLEOGamma3pi.resize(nS);
+  for (size_t i=0;i<nS;i++) {
+    const double s = m_CLEOs0+i*m_CLEOds;
+    m_CLEOGamma3pi[i] = CLEO_ReducedWidth(s,false)+CLEO_ReducedWidth(s,true);
   }
-  return term1+term2;
+  // g^2 from Gamma_tot(m_a1^2) = Gamma_a1.
+  const double M2 = sqr(m_MCLEOa1);
+  m_g2CLEO = m_GCLEOa1/(CLEO_Gamma3pi(M2)+sqr(m_gammaCLEOKstarK)*CLEO_GammaKstarK(M2));
+  msg_Out()<<"### CLEO 3pi form factors (hep-ex/9902022), mode="<<int(m_mode)
+	   <<(m_isF2 ? " (F2)" : " (F1)")<<":\n"
+	   <<"###   rho:   M = "<<m_MCLEOrho<<", Gamma = "<<m_GCLEOrho<<"\n"
+	   <<"###   rho':  M = "<<m_MCLEOrhop<<", Gamma = "<<m_GCLEOrhop<<"\n"
+	   <<"###   f2:    M = "<<m_MCLEOf2<<", Gamma = "<<m_GCLEOf2<<"\n"
+	   <<"###   sigma: M = "<<m_MCLEOsigma<<", Gamma = "<<m_GCLEOsigma<<"\n"
+	   <<"###   f0:    M = "<<m_MCLEOf0<<", Gamma = "<<m_GCLEOf0<<"\n"
+	   <<"###   a1:    M = "<<m_MCLEOa1<<", Gamma = "<<m_GCLEOa1
+	   <<", gamma_K*K = "<<m_gammaCLEOKstarK<<", g^2 = "<<m_g2CLEO<<"\n";
+  for (double s : {1.0, 1.5, 2.0, 2.5, 3.0})
+    msg_Out()<<"###   Gamma_a1("<<s<<") = "<<CLEO_a1Width(s)
+	     <<" (3pi "<<m_g2CLEO*CLEO_Gamma3pi(s)<<", K*K "
+	     <<m_g2CLEO*sqr(m_gammaCLEOKstarK)*CLEO_GammaKstarK(s)<<")\n";
+}
+
+double F1_0_PiPlusPiZeroPiZero::
+CLEO_k(const double & s,const double & ma,const double & mb) {
+  const double lam = (s-sqr(ma+mb))*(s-sqr(ma-mb));
+  return (lam>0. && s>0. ? sqrt(lam)/(2.*sqrt(s)) : 0.);
 }
 
 Complex F1_0_PiPlusPiZeroPiZero::
-CLEO_F1term(const double & Q2,const double & s1,const double & s2,
-	    const double & s3,const double & m1_2,const double & m2_2,
-	    const double & m3_2) const {
-  // Eq.(eq:CLEO-F1). FIX: the BW_L "daughter masses appropriate to the
-  // subchannel" (per the note's own BW_L(s;R) shorthand) are NOT the
-  // same pion mass for every term - s1=(p2+p3)^2 is formed by pions
-  // 2,3 (so its BW_L needs masses m2,m3), s2=(p1+p3)^2 by pions 1,3,
-  // s3=(p1+p2)^2 by pions 1,2. An earlier version used sqrt(m1_2)
-  // uniformly everywhere - harmless for pi-pi-pi+ (all three masses
-  // equal) but WRONG for pi0pi0pi- (m1=m2=mpi0 differs from m3=mpi+-),
-  // silently mixing up which daughter-mass pair enters each BW_L call.
-  double m1 = sqrt(m1_2), m2 = sqrt(m2_2), m3 = sqrt(m3_2);
-  Complex Aa1 = CLEO_Aa1(Q2);
-  Complex bracket =
-    m_beta1*CLEO_BWL(s1,m_MCLEOrho, m_GCLEOrho, m2,m3,1) +
-    m_beta2*CLEO_BWL(s1,m_MCLEOrhop,m_GCLEOrhop,m2,m3,1)
-    - m_beta3*((s3-m3_2)-(s1-m1_2))/3. * CLEO_BWL(s2,m_MCLEOrho, m_GCLEOrho, m1,m3,1)
-    - m_beta4*((s3-m3_2)-(s1-m1_2))/3. * CLEO_BWL(s2,m_MCLEOrhop,m_GCLEOrhop,m1,m3,1)
-    + m_beta5*(Q2+s3-m2_2)*(2.*m3_2+2.*m1_2-s3)/(18.*s3) *
-      CLEO_BWL(s3,m_MCLEOf2,m_GCLEOf2,m1,m2,2)
-    + (2./3.)*m_beta6*CLEO_BWL(s3,m_MCLEOsigma,m_GCLEOsigma,m1,m2,0)
-    + (2./3.)*m_beta7*CLEO_BWL(s3,m_MCLEOf0,m_GCLEOf0,m1,m2,0);
-  return Aa1*bracket;
+CLEO_BW(const double & s,const double & M,const double & Gamma,
+	const double & ma,const double & mb,int L) {
+  const double k0 = CLEO_k(sqr(M),ma,mb);
+  const double G  = (k0>0. && s>0. ?
+		     Gamma*pow(CLEO_k(s,ma,mb)/k0,2*L+1)*M/sqrt(s) : 0.);
+  return sqr(M)/Complex(sqr(M)-s,-M*G);
 }
 
-Complex F1_0_PiPlusPiZeroPiZero::
-CLEO_F3term(const double & Q2,const double & s1,const double & s2,
-	    const double & s3,const double & m1_2,const double & m2_2,
-	    const double & m3_2) const {
-  // Eq.(eq:CLEO-F3) - CLEO's own "F3" (third transverse axial basis
-  // coefficient), NOT the anomalous vector form factor. See the
-  // class-level comment for how this combines with F1/F2 here. Same
-  // per-subchannel daughter-mass fix as CLEO_F1term above.
-  double m1 = sqrt(m1_2), m2 = sqrt(m2_2), m3 = sqrt(m3_2);
-  Complex Aa1 = CLEO_Aa1(Q2);
-  Complex bracket =
-    (m_beta3/3.)*((s2-m2_2)-(s3-m3_2))*CLEO_BWL(s1,m_MCLEOrho, m_GCLEOrho, m2,m3,1)
-    + (m_beta3/3.)*((s3-m3_2)-(s1-m1_2))*CLEO_BWL(s2,m_MCLEOrho, m_GCLEOrho, m1,m3,1)
-    + (m_beta4/3.)*((s2-m2_2)-(s3-m3_2))*CLEO_BWL(s1,m_MCLEOrhop,m_GCLEOrhop,m2,m3,1)
-    + (m_beta4/3.)*((s3-m3_2)-(s1-m1_2))*CLEO_BWL(s2,m_MCLEOrhop,m_GCLEOrhop,m1,m3,1)
-    - (m_beta5/2.)*((s1-m1_2)-(s2-m2_2))*CLEO_BWL(s3,m_MCLEOf2,m_GCLEOf2,m1,m2,2);
-  return Aa1*bracket;
+void F1_0_PiPlusPiZeroPiZero::
+CLEO_Isobars(const double & s,const double & s12,const double & s13,
+	     const double & s23,const double m[3],const bool charged,
+	     Complex x[3]) const {
+  // x[i]: J = T[sum_i x_i p_i]; pions 0,1 are the identical pair.
+  const double sp[3][3] = { {0.,s12,s13}, {s12,0.,s23}, {s13,s23,0.} };
+  double ap[3];   // a.p_i, with a = p1+p2+p3
+  ap[0] = 0.5*(s+sqr(m[0])-s23);
+  ap[1] = 0.5*(s+sqr(m[1])-s13);
+  ap[2] = 0.5*(s+sqr(m[2])-s12);
+  x[0] = x[1] = x[2] = Complex(0.,0.);
+  // rho-type isobar in pair (i,j), odd pion k: j_1, j_2 (s wave) and
+  // j_3, j_4 (d wave), Q_k = p_i+p_j-p_k.
+  auto rhoPair = [&](int i,int j,int k,double sign) {
+    const double sij = sp[i][j];
+    const Complex Brho  = sign*CLEO_BW(sij,m_MCLEOrho, m_GCLEOrho, m[i],m[j],1);
+    const Complex Brhop = sign*CLEO_BW(sij,m_MCLEOrhop,m_GCLEOrhop,m[i],m[j],1);
+    const Complex S = m_beta1*Brho+m_beta2*Brhop;
+    x[i] += S; x[j] -= S;
+    const Complex D = (m_beta3*Brho+m_beta4*Brhop)*(ap[i]-ap[j]);
+    x[i] += D; x[j] += D; x[k] -= D;
+  };
+  // isoscalar isobar in pair (i,j), odd pion k: j_5 (f2; its a^mu piece
+  // drops under T) and j_6, j_7 (sigma, f0(1370)), Q_k = p_i+p_j-p_k.
+  auto isoscalarPair = [&](int i,int j,int k) {
+    const double sij = sp[i][j];
+    const Complex Bf2 = m_beta5*CLEO_BW(sij,m_MCLEOf2,m_GCLEOf2,m[i],m[j],2);
+    const double aq = ap[i]-ap[j];
+    const double ha = 0.5*(s-sqr(m[k])+sij);
+    const double q2 = 2.*sqr(m[i])+2.*sqr(m[j])-sij;
+    const double d  = ha*q2/(3.*sij);
+    x[i] += Bf2*(aq+d); x[j] += Bf2*(d-aq);
+    const Complex S = (m_beta6*CLEO_BW(sij,m_MCLEOsigma,m_GCLEOsigma,m[i],m[j],0)+
+		       m_beta7*CLEO_BW(sij,m_MCLEOf0,   m_GCLEOf0,   m[i],m[j],0));
+    x[i] += S; x[j] += S; x[k] -= S;
+  };
+  if (!charged) {
+    rhoPair(1,2,0,1.); rhoPair(0,2,1,1.);
+    isoscalarPair(0,1,2);
+  }
+  else {
+    rhoPair(1,2,0,-1.); rhoPair(0,2,1,-1.);
+    isoscalarPair(1,2,0); isoscalarPair(0,2,1);
+  }
+}
+
+double F1_0_PiPlusPiZeroPiZero::
+CLEO_ReducedWidth(const double & s,const bool charged) const {
+  // Eq.(a13pi): int dPhi_3 sum_ij [-beta_i beta_j^* j_i.j_j^*], with
+  // dPhi_3 = ds23 ds12/(128 pi^3 s) and 1/2 for the identical pions.
+  static std::vector<double> gx, gw;
+  if (gx.empty()) GaussLegendre(40,gx,gw);
+  const double mpi0 = Flavour(kf_pi).HadMass(), mpi = Flavour(kf_pi_plus).HadMass();
+  const double m[3] = { charged ? mpi : mpi0, charged ? mpi : mpi0, mpi };
+  // In DalitzIntegral's labels s23 = s1, s13 = s2, s12 = s3.
+  const double sum =
+    DalitzIntegral(s,m,gx,gw,[&](const double & s1,const double & s2,const double & s3) {
+	Complex x[3];
+	CLEO_Isobars(s,s3,s2,s1,m,charged,x);
+	return MinusJTJT(s,m,s1,s2,s3,x); });
+  return 0.5*sum/(128.*pow(M_PI,3)*s);
+}
+
+double F1_0_PiPlusPiZeroPiZero::CLEO_Gamma3pi(const double & s) const {
+  if (s<=m_CLEOs0) return 0.;
+  const size_t n = m_CLEOGamma3pi.size();
+  size_t i = Min(size_t((s-m_CLEOs0)/m_CLEOds),n-2);
+  const double t = (s-m_CLEOs0)/m_CLEOds-i;
+  return (1.-t)*m_CLEOGamma3pi[i]+t*m_CLEOGamma3pi[i+1];
+}
+
+double F1_0_PiPlusPiZeroPiZero::CLEO_GammaKstarK(const double & s) const {
+  // N p_K*K(s)/sqrt(s); N fixed by Fig. 9(b), see the comment above.
+  static const double N = 2.56e-4;
+  return (s>0. ? N*CLEO_k(s,m_MCLEOKstar,m_mCLEOK)/sqrt(s) : 0.);
+}
+
+double F1_0_PiPlusPiZeroPiZero::CLEO_a1Width(const double & s) const {
+  return m_g2CLEO*(CLEO_Gamma3pi(s)+sqr(m_gammaCLEOKstarK)*CLEO_GammaKstarK(s));
+}
+
+Complex F1_0_PiPlusPiZeroPiZero::CLEO_Aa1(const double & s) const {
+  // Eq.(breit) times the constant -m_a1^2.
+  const double M2 = sqr(m_MCLEOa1);
+  Complex Ba1 = M2/Complex(M2-s,-m_MCLEOa1*CLEO_a1Width(s));
+  if (m_betaCLEOa1p!=Complex(0.,0.))
+    Ba1 += m_betaCLEOa1p*M2/Complex(sqr(m_MCLEOa1p)-s,-m_MCLEOa1p*m_GCLEOa1p);
+  return Ba1;
 }
 
 Complex F1_0_PiPlusPiZeroPiZero::
@@ -768,46 +856,16 @@ FF_KS(const double & s123,const double & s12,const double & s13) {
   // explicit numerical check against Eq.(3.3)-(3.5).
   if (GetModel()==FF_0_PPP_Base::Model::KS_CLEO &&
       (m_mode==FF_0_PPP_mode::piP_pi0_pi0 || m_mode==FF_0_PPP_mode::piM_piP_piP)) {
-    double m1_2 = m_masses2[m_pi[0]], m2_2 = m_masses2[m_pi[1]], m3_2 = m_masses2[m_pi[2]];
-    double paper_s2 = s13, paper_s3 = s12;
-    double paper_s1 = s123 - s12 - s13 + m1_2 + m2_2 + m3_2;
-    // R_3pi (+1 charged/-1 neutral per the note) is an overall sign
-    // common to every form factor of a given channel - physically
-    // immaterial for a standalone channel (cancels in every rate
-    // bilinear; the note itself says so explicitly for an analogous
-    // overall-sign choice) and omitted here, consistent with the
-    // existing KS90 branch above, which also does not apply it.
-    // The earlier CAVEAT above is now RESOLVED by the note, in two ways.
-    //
-    // (1) No F3 folding. The note's "Active transverse basis in the
-    // default TAUOLA-CLEO current" gives the active coefficients
-    // explicitly as c1=+2sqrt2/3, c2=-2sqrt2/3, c3=0 (Eq.(eq:CLEO-
-    // active-coefficients)), so the two-slot map is simply
-    // F1_eff=F1^CLEO, F2_eff=F2^CLEO (Eq.(eq:CLEO-two-slot-map)). The
-    // generic reduction F_i - (c3/c_i)F3 (Eq.(eq:CLEO-generic-fold))
-    // has a vanishing fold term here. The note's "Implementation
-    // warning" states outright that c1=c2=c3=1 is NOT the default
-    // TAUOLA-CLEO convention, which is what the previous version
-    // assumed. CLEO_F3term is deliberately kept below: it is correct
-    // as written and is needed to compare against a redundant
-    // three-vector basis, it just has coefficient zero here.
-    //
-    // (2) Slot assignment. The note's F1^CLEO leads with BW(s1;rho),
-    // s1=(p2+p3)^2, and multiplies (p2-p3) - which is v2 in
-    // VA_0_PiPiPi::Calc, not v1. Since this class's F1 slot multiplies
-    // v1=T(p1-p3), that slot must carry the (1,3) subsystem, i.e. the
-    // note's F2=F1(1<->2). This is exactly the pairing the KS90 branch
-    // below already uses (F1 -> rhos(s13), F2 -> rhos(paper_s1)); the
-    // previous version had the two orderings the other way round, so
-    // the CLEO and KS branches of the same class disagreed and only KS
-    // matched the basis vectors. No extra sign is needed: c2=-c1 is
-    // already absorbed by building v1 as (p1-p3) rather than (p3-p1).
-    if (!m_isF2) {
-      return CLEO_F1term(s123, paper_s2, paper_s1, paper_s3, m2_2, m1_2, m3_2);
-    }
-    else {
-      return CLEO_F1term(s123, paper_s1, paper_s2, paper_s3, m1_2, m2_2, m3_2);
-    }
+    // CLEO form factors, see Construct_3Pi_CLEO.  J = T[x0 p1 + x1 p2 + x2 p3]
+    // = [(2x0-x1-x2)/3] (p1-p3)_T + [(2x1-x0-x2)/3] (p2-p3)_T, the F1 and F2
+    // slots of VA_0_PiPiPi.
+    const double m[3] = { sqrt(m_masses2[m_pi[0]]), sqrt(m_masses2[m_pi[1]]),
+			  sqrt(m_masses2[m_pi[2]]) };
+    const double s23  = s123-s12-s13+sqr(m[0])+sqr(m[1])+sqr(m[2]);
+    Complex x[3];
+    CLEO_Isobars(s123,s12,s13,s23,m,m_mode==FF_0_PPP_mode::piM_piP_piP,x);
+    const Complex slot = (m_isF2 ? (2.*x[1]-x[0]-x[2])/3. : (2.*x[0]-x[1]-x[2])/3.);
+    return CLEO_Aa1(s123)*slot;
   }
   if (m_mode==FF_0_PPP_mode::pi0_pi0_KM) {
     // FM95 Tab.I row 6: G1(Q^2,s2,s3)=T_K1a(Q^2)T_K*^(1)(s2),

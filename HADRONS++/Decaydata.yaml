@@ -692,14 +692,18 @@ HADRON_DECAYS:
     #         KKpi's RChL2012 rho region, EtaPiPi's rho towers) - one
     #         override here changes all of them by design (same
     #         physical resonance mix, per the note).
-    #   12 = KS_CLEO: full CLEO/Novosibirsk 3pi parametrization
-    #         (rho, rho', f2, sigma, f0(1370) resonances) - NOT
-    #         currently used by any channel below (all use 10); see
-    #         beta2..7Mag/Phase_3pi_CLEO parameters in FF_0_PPP.C if
-    #         you want to switch a channel to it.
+    #   12 = KS_CLEO: CLEO isobar model, hep-ex/9902022 App. A
+    #         (rho pi, rho' pi in s and d wave, f2 pi, sigma pi,
+    #         f0(1370) pi; couplings beta2..7Mag/Phase_3pi_CLEO) with
+    #         its a1 running width, Eq.(runwidth) (gammaKstarK_3pi_CLEO).
+    #         Masses and widths default to the particle database; the
+    #         paper's are MCLEOrho 0.774 GCLEOrho 0.149 MCLEOrhop 1.370
+    #         GCLEOrhop 0.386 MCLEOf2 1.275 GCLEOf2 0.185 MCLEOsigma
+    #         0.860 GCLEOsigma 0.880 MCLEOf0 1.186 GCLEOf0 0.350
+    #         MCLEOa1 1.331 GCLEOa1 0.814.  Not used by any channel below.
     #   21 = RChL2012: includes a genuine f0(500)/sigma contribution
     #         (Msigma_rchl3pi etc.) - NOT currently used below either.
-    # Reference: KS90 for the base model; CLEO/Novosibirsk collab. for
+    # Reference: KS90 for the base model; CLEO, hep-ex/9902022, for
     # 12; 1310.1053 for the RChL2012 sigma extension.
     ######################################################
         IntResults: [4.12555e-18, 4.12287e-21, 9.92475e-17]
