@@ -102,6 +102,20 @@ double RChL::GammaSigma(const double & x,const double & Msigma2,
   return GammaSigma0 * SigmaPhaseSpace(x,mpi2)/sigPoleP;
 }
 
+double RChL::GammaRho(const double & q2,const double & Mrho,const double & F,
+		      const double & mpi2,const double & mK2) {
+  // SigmaPhaseSpace is 0 below its threshold, which supplies the thetas.
+  return Mrho*q2/(96.*M_PI*sqr(F)) *
+    (pow(SigmaPhaseSpace(q2,mpi2),3.) + 0.5*pow(SigmaPhaseSpace(q2,mK2),3.));
+}
+
+double RChL::GammaRhoPrime(const double & q2,const double & Mrhop,
+			   const double & Grhop,const double & mpi2) {
+  const double pole = SigmaPhaseSpace(sqr(Mrhop),mpi2);
+  if (pole<=0.) return 0.;
+  return Grhop*q2/sqr(Mrhop)*pow(SigmaPhaseSpace(q2,mpi2)/pole,3.);
+}
+
 double RChL::Fsigma(const double & q2,const double & x,const double & mpi2,
 		   const double & Rsigma2) {
   double lam = Tools::Lambda(q2,x,mpi2);

@@ -231,6 +231,7 @@ protected:
   double  m_Mrho_rchl, m_Mrhop_rchl, m_Grhop_rchl, m_betarhop, m_Ma1_rchl;
   double  m_Msigma, m_Gsigma0, m_Rsigma2;
   double  m_alphasigma, m_betasigma, m_gammasigma, m_deltasigma;
+  bool    m_sigmaRRq2;  // q2 in the sigma double-resonance term, see FF_RChL2012
   double  m_mpi2_iso; // isospin-averaged pion mass^2 used throughout RChL
   double  m_lambda_p, m_lambda_pp;
   // p_rhos (declared above, shared with the KS branch) is reused here:
@@ -328,6 +329,7 @@ F1_0_PiPlusPiZeroPiZero::F1_0_PiPlusPiZeroPiZero(const FF_Parameters & params)  
   m_isF2(false), 
   m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.))
 {
+  m_sigmaRRq2 = true;   // set from the card in Construct_3Pi for RChL2012
   if (params.m_name=="F2_0_PPP") m_isF2 = true;
   Construct(params);
 }
@@ -337,6 +339,26 @@ F1_0_PiPlusPiZeroPiZero::~F1_0_PiPlusPiZeroPiZero() {
   if (p_rhos) { delete p_rhos; p_rhos = NULL; }
   if (p_TK1a)         { delete p_TK1a;         p_TK1a         = NULL; }
   if (p_TKstar1_pi0K) { delete p_TKstar1_pi0K; p_TKstar1_pi0K = NULL; }
+}
+
+//! The RChL rho + rho' tower of the three-pion modes, 1203.3955 Eq.(rhoprime):
+//! [BW_rho + beta BW_rho'] / (1 + beta), with the paper's own widths,
+//! Eqs.(rhowidth_su2) and (rho1width).  Shared by the F1 and F4 form factors so
+//! the two cannot drift apart.  mpi2 is the isospin-averaged pion mass squared.
+static Summed_Propagator * RChLRhoTower(const Flavour & rhoFlav,
+					const double Mrho,const double F,
+					const double Mrhop,const double Grhop,
+					const double betarhop,const double mpi2) {
+  const double mK2 = sqr(0.5*(Flavour(kf_K_plus).HadMass()+Flavour(kf_K).HadMass()));
+  Summed_Propagator * tower = new Summed_Propagator();
+  tower->Add(new RChL_BW(Mrho,[=](const double & s) {
+			   return RChL::GammaRho(s,Mrho,F,mpi2,mK2); },rhoFlav),
+	     Complex(1.,0.));
+  tower->Add(new RChL_BW(Mrhop,[=](const double & s) {
+			   return RChL::GammaRhoPrime(s,Mrhop,Grhop,mpi2); },
+			 Flavour(kf_rho_1450_plus)),
+	     Complex(betarhop,0.));
+  return tower;
 }
 
 void F1_0_PiPlusPiZeroPiZero::Construct(const FF_Parameters & params) {
@@ -392,14 +414,24 @@ void F1_0_PiPlusPiZeroPiZero::Construct_3Pi(const FF_Parameters & params) {
     m_FV_rchl    = (*params.p_model)("FV_rchl3pi",0.168652);
     m_FA_rchl    = (*params.p_model)("FA_rchl3pi",0.131425);
     m_GV_rchl    = sqr(m_F_rchl)/m_FV_rchl; // GV=F^2/FV constraint
-    m_Mrho_rchl  = (*params.p_model)("Mrho_rchl3pi",0.771849);
-    m_Mrhop_rchl = (*params.p_model)("Mrhop_rchl3pi",1.350000);
-    m_Grhop_rchl = (*params.p_model)("Grhop_rchl3pi",0.448379);
+    // Resonance masses and widths: the rho, rho' and sigma default to the
+    // particle database (Sherpa's PDG values) and can be set per channel in
+    // Decaydata.yaml or on the run card.  They are NOT 1310.1053's fitted
+    // values (Table I: Mrho 0.771849, Mrho' 1.35, Gamma_rho' 0.448379,
+    // Msigma 0.487512, Gamma_sigma 0.7), which belong to its fit and have to
+    // be stated explicitly to be used.  The rho width is not a parameter in
+    // this model: it follows from Mrho and F, 1203.3955 Eq.(rhowidth_su2).
+    const Flavour rhoFlav(m_mode==FF_0_PPP_mode::piP_pi0_pi0 ?
+			  kf_rho_770_plus : kf_rho_770);
+    const Flavour rhopFlav(kf_rho_1450_plus), sigmaFlav(kf_f_0_600);
+    m_Mrho_rchl  = (*params.p_model)("Mrho_rchl3pi", rhoFlav.HadMass());
+    m_Mrhop_rchl = (*params.p_model)("Mrhop_rchl3pi",rhopFlav.HadMass());
+    m_Grhop_rchl = (*params.p_model)("Grhop_rchl3pi",rhopFlav.Width());
     m_betarhop   = (*params.p_model)("betarhop_rchl3pi",-0.318551);
     m_Ma1_rchl   = (*params.p_model)("Ma1_rchl3pi",1.091865);
-    m_Msigma     = (*params.p_model)("Msigma_rchl3pi",0.487512);
-    m_Gsigma0    = (*params.p_model)("Gsigma_rchl3pi",0.700000);
-    m_Rsigma2    = sqr((*params.p_model)("Rsigma_rchl3pi",1.866913));
+    m_Msigma     = (*params.p_model)("Msigma_rchl3pi",sigmaFlav.HadMass());
+    m_Gsigma0    = (*params.p_model)("Gsigma_rchl3pi",sigmaFlav.Width());
+    m_sigmaRRq2  = ((*params.p_model)("sigmaRRq2_rchl3pi",1.)!=0.);
     m_mpi2_iso   = sqr((Flavour(kf_pi).HadMass()*1.+
 			2.*Flavour(kf_pi_plus).HadMass())/3.);
     m_lambda_p   = RChL::Lambda_p(m_F_rchl,m_FA_rchl,m_GV_rchl);
@@ -410,16 +442,18 @@ void F1_0_PiPlusPiZeroPiZero::Construct_3Pi(const FF_Parameters & params) {
       m_betasigma  = (*params.p_model)("betasigma_rchl3pi", 9.763701);
       m_gammasigma = (*params.p_model)("gammasigma_rchl3pi",1.264263);
       m_deltasigma = (*params.p_model)("deltasigma_rchl3pi",0.656762);
+      m_Rsigma2    = sqr((*params.p_model)("Rsigma_rchl3pi",1.866913));
     }
     else {
-      // pi0 pi0 pi-: Eq.(16) of 1310.1053 - only alpha0_sigma,
+      // pi0 pi0 pi-: Eq.(ff_sig_pi0) of 1310.1053 - only alpha0_sigma,
       // gamma0_sigma are used (single sigma term in s3, see FF_RChL2012),
-      // with the 0.63 scaling factor already folded into these defaults.
+      // with the 0.63 scaling factor of the paper folded into these
+      // defaults, and R_sigma from its Eq.(fit1).  The sigma mass and width
+      // are the same settable keys as for pi- pi- pi+ above.
       m_alphasigma = (*params.p_model)("alpha0sigma_rchl3pi",0.63*1.139486);
       m_gammasigma = (*params.p_model)("gamma0sigma_rchl3pi",0.63*0.889769);
       m_betasigma  = 0.; m_deltasigma = 0.;
-      m_Msigma     = 0.550; m_Gsigma0 = 0.700;
-      m_Rsigma2    = sqr(0.000013);
+      m_Rsigma2    = sqr((*params.p_model)("Rsigma0_rchl3pi",0.000013));
     }
   }
 
@@ -478,13 +512,10 @@ void F1_0_PiPlusPiZeroPiZero::Construct_3Pi(const FF_Parameters & params) {
     // (rho- -> pi0 pi-); for pi- pi- pi+, the rho in the pi-pi+
     // sub-system is NEUTRAL (rho0 -> pi+ pi-, hence also mixing with
     // omega there in the KS branch).
-    Flavour rhoFlav = (m_mode==FF_0_PPP_mode::piP_pi0_pi0 ?
-		      Flavour(kf_rho_770_plus) : Flavour(kf_rho_770));
-    Propagator_Base * rho  = new RChL_BW(LineShapes->Get(rhoFlav));
-    Propagator_Base * rhop = new RChL_BW(LineShapes->Get(Flavour(kf_rho_1450_plus)));
-    p_rhos = new Summed_Propagator();
-    p_rhos->Add(rho,  Complex(1.,0.));
-    p_rhos->Add(rhop, Complex(m_betarhop,0.));
+    const Flavour rhoFlav(m_mode==FF_0_PPP_mode::piP_pi0_pi0 ?
+			  kf_rho_770_plus : kf_rho_770);
+    p_rhos = RChLRhoTower(rhoFlav,m_Mrho_rchl,m_F_rchl,m_Mrhop_rchl,
+			  m_Grhop_rchl,m_betarhop,m_mpi2_iso);
   }
 }
 
@@ -892,7 +923,15 @@ FF_RChL2012(const double & s123,const double & s1_arg,const double & s2_arg) {
                           RChL::Fsigma(q2,s3,m_mpi2_iso,m_Rsigma2);
   }
   FR1  += (sqrt(2.)*m_FV_rchl*m_GV_rchl)/(3.*sqr(m_F_rchl)) * sigmaR;
-  FRR1 += (4.*m_FA_rchl*m_GV_rchl)/(3.*sqr(m_F_rchl)) * a1prop * sigmaRR;
+  // The sigma double-resonance term carries q2/(q2-M_a1^2+...), as printed in
+  // 1310.1053 Eqs.(ff_sig),(ff_sig_pi0): the same a1 factor as the rho term,
+  // and the q2 is what makes every a1-exchange term vanish at q2 -> 0, as the
+  // chiral limit requires.  The paper's own numbers are not consistent with
+  // it: with Table I and the printed q2 the pi- pi- pi+ width comes out about
+  // 2% above the published 1.9974e-13 GeV, without it in agreement.
+  // sigmaRRq2_rchl3pi: 0 drops the q2, to reproduce the published fit.
+  FRR1 += (4.*m_FA_rchl*m_GV_rchl)/(3.*sqr(m_F_rchl)) *
+          (m_sigmaRRq2 ? a1prop : a1prop/q2) * sigmaRR;
 
   return (Fchi1+FR1+FRR1) * R3pi;
 }
@@ -957,21 +996,19 @@ void F3_0_PiPlusPiZeroPiZero::Construct(const FF_Parameters & params) {
     m_F_rchl     = (*params.p_model)("F_rchl3pi",0.091337);
     m_FV_rchl    = (*params.p_model)("FV_rchl3pi",0.168652);
     m_GV_rchl    = sqr(m_F_rchl)/m_FV_rchl;
-    m_Mrho_rchl  = (*params.p_model)("Mrho_rchl3pi",0.771849);
-    m_Mrhop_rchl = (*params.p_model)("Mrhop_rchl3pi",1.350000);
+    // Same resonance keys and defaults as F1_0_PiPlusPiZeroPiZero::Construct
+    // above (particle database unless set per channel), and the same tower.
+    const Flavour rhoFlav(m_mode==FF_0_PPP_mode::piP_pi0_pi0 ?
+			  kf_rho_770_plus : kf_rho_770);
+    const Flavour rhopFlav(kf_rho_1450_plus);
+    m_Mrho_rchl  = (*params.p_model)("Mrho_rchl3pi", rhoFlav.HadMass());
+    m_Mrhop_rchl = (*params.p_model)("Mrhop_rchl3pi",rhopFlav.HadMass());
+    const double Grhop = (*params.p_model)("Grhop_rchl3pi",rhopFlav.Width());
     m_betarhop   = (*params.p_model)("betarhop_rchl3pi",-0.318551);
     m_mpi2_iso   = sqr((Flavour(kf_pi).HadMass()+
 			2.*Flavour(kf_pi_plus).HadMass())/3.);
-    // Same charged/neutral rho fix as F1_0_PiPlusPiZeroPiZero::Construct()
-    // above - see that comment for the physics reasoning.
-    Flavour rhoFlav = (m_mode==FF_0_PPP_mode::piP_pi0_pi0 ?
-		      Flavour(kf_rho_770_plus) : Flavour(kf_rho_770));
-    Propagator_Base * rho  = new RChL_BW(LineShapes->Get(rhoFlav));
-    Propagator_Base * rhop = new RChL_BW(LineShapes->Get(Flavour(kf_rho_1450_plus)));
-    Summed_Propagator * combo = new Summed_Propagator();
-    combo->Add(rho,  Complex(1.,0.));
-    combo->Add(rhop, Complex(m_betarhop,0.));
-    p_rho_combo = combo;
+    p_rho_combo  = RChLRhoTower(rhoFlav,m_Mrho_rchl,m_F_rchl,m_Mrhop_rchl,
+				Grhop,m_betarhop,m_mpi2_iso);
   }
   DumpPropagatorStructure(std::string("F3_0_PiPlusPiZeroPiZero, mode=")+
 			   std::to_string(int(m_mode)), int(GetModel()), p_rho_combo);

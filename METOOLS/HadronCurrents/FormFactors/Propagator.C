@@ -532,8 +532,20 @@ Complex Product_Term::operator()(const Invariants & k) const {
   return result;
 }
 
+double RChL_BW::Width(const double & s) const {
+  return m_gamma ? m_gamma(s) : (*p_width)(s);
+}
+
+double RChL_BW::OnShellWidth() const {
+  return m_gamma ? m_gamma(m_M2) : Propagator_Base::OnShellWidth();
+}
+
+ATOOLS::Flavour RChL_BW::Flav() const {
+  return m_gamma ? m_flav : Propagator_Base::Flav();
+}
+
 const Complex RChL_BW::operator()(const double & s) {
-  return 1./Complex(s-m_M2,m_M*(*p_width)(s));   // causal sign, see Propagator.H
+  return 1./Complex(s-m_M2,m_M*Width(s));   // causal sign, see Propagator.H
 }
 
 const Complex RChL_BW::Normalised(const double & s) {

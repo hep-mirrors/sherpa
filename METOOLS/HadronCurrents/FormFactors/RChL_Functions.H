@@ -127,6 +127,22 @@ namespace METOOLS {
     double  SigmaPhaseSpace(const double & q2,const double & mP2);
 
     /////////////////////////////////////////////////////////////////////
+    // Energy-dependent widths of the rho and rho' in the three-meson modes,
+    // [1203.3955]:
+    //   Eq.(rhowidth_su2), "used in modes of three pseudoscalars":
+    //     Gamma_rho(q2) = Mrho q2/(96 pi F^2) [sigma_pi^3 + sigma_K^3/2],
+    //     so Gamma_rho is NOT a parameter: it follows from Mrho and F;
+    //   Eq.(rho1width), a two-pion P wave fixed at the pole:
+    //     Gamma_rho'(q2) = Gamma_rho' (q2/Mrho'^2)
+    //                      sigma_pi^3(q2)/sigma_pi^3(Mrho'^2).
+    // mpi2, mK2 are the isospin-averaged masses squared (SU(2) limit).
+    /////////////////////////////////////////////////////////////////////
+    double  GammaRho(const double & q2,const double & Mrho,const double & F,
+		     const double & mpi2,const double & mK2);
+    double  GammaRhoPrime(const double & q2,const double & Mrhop,
+			  const double & Grhop,const double & mpi2);
+
+    /////////////////////////////////////////////////////////////////////
     // Two-meson loop function A_PQ(s), Eq.(45)-(49) of [1203.3955].
     // See the KNOWN LIMITATION note above the file's header comment:
     // the -s*Jbar'_PQ(0) term is dropped (set to 0). Returns the full

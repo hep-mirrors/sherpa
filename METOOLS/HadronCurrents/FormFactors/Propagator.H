@@ -4,6 +4,7 @@
 
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/MyComplex.H"
+#include <functional>
 #include <map>
 #include <vector>
 #include <string>
@@ -441,13 +442,28 @@ namespace METOOLS {
     ATOOLS::Flavour Flav() const { return m_flav; }
   };
 
+  //
+  // Two ways to build it: from a registered line shape (its mass and running
+  // width), or with an explicit mass and the model's own width function, for
+  // a current whose source paper defines Gamma(s) itself (the RChL rho and
+  // rho', 1203.3955 Eqs.(rhowidth_su2) and (rho1width)).
   class RChL_BW : public Propagator_Base {
+  private:
+    std::function<double(const double &)> m_gamma;   // empty: use p_width
+    ATOOLS::Flavour m_flav;
+    double Width(const double & s) const;
   public:
     RChL_BW(Total_Width_Base * width) :
       Propagator_Base(width,resonance_type::running) {}
+    RChL_BW(const double & M,std::function<double(const double &)> gamma,
+            const ATOOLS::Flavour & flav=ATOOLS::Flavour(kf_none)) :
+      Propagator_Base(NULL,resonance_type::running), m_gamma(gamma),
+      m_flav(flav) { m_M = M; m_M2 = M*M; }
     const Complex operator()(const double & s);
     const Complex Normalised(const double & s);
     const double  Normalised2(const double & s);
+    double OnShellWidth() const;
+    ATOOLS::Flavour Flav() const;
   };
 
   // Complex-pole propagator,
