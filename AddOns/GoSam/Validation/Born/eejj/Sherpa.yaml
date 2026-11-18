@@ -1,0 +1,33 @@
+EVENTS: 100
+BEAMS: [11,-11]
+BEAM_ENERGIES: 45.6
+
+GOSAM:
+  IRregularisation: CDR
+  ErrorOnFailedCheck: true
+  PrintAllChecks: true
+  Settings:
+    filter.particles: H:0
+
+WIDTH_SCHEME: Fixed
+  
+MEPS:
+  ALLOW_SCALE_UNORDERING: 0
+  
+TAGS:
+  LGEN: GoSam
+
+ME_GENERATORS:
+  - Amegic
+  - GoSam
+  - Internal
+  
+EW_SCHEME: alphamZ
+
+PROCESSES:
+- 11 -11 -> 93 93:
+    Order: {QCD: 0, EW: 2}
+    ME_Generator: Amegic
+    Enable_MHV: 12
+    Loop_Generator: GoSam
+    Integrator: fsrchannels2

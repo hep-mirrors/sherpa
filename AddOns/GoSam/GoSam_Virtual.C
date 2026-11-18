@@ -1,115 +1,166 @@
-#include "GoSam_Virtual.H"
+#include "AddOns/GoSam/GoSam_Virtual.H"
 
 #include "AddOns/GoSam/GoSam_Interface.H"
-#include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Math/Poincare.H"
 
-
-using namespace GoSam;
 using namespace PHASIC;
 using namespace ATOOLS;
+using namespace GoSam;
 using namespace std;
 
+
 GoSam_Virtual::GoSam_Virtual(const Process_Info& pi,
-                             const Flavour_Vector& flavs,
-                             int gs_id) :
-  Virtual_ME2_Base(pi, flavs), m_gs_id(gs_id), m_ismapped(false),
-  m_modebackup(m_mode)
+                             const Flavour_Vector& flavs,bool active,
+                             int proc_id) :
+  Virtual_ME2_Base(pi, flavs), m_pn(flavs.size()), m_active(active),
+  m_proc_id(proc_id)
 {
-  DEBUG_FUNC("");
-  msg_Debugging()<<PHASIC::Process_Base::GenerateName(pi.m_ii,pi.m_fi)
-                 <<" -> "<<GoSam_Interface::s_procmap[m_gs_id]
-                 <<" ("<<m_gs_id<<")"<<std::endl;
-  m_modebackup=m_mode=GoSam_Interface::s_vmode;
+  m_Norm = pi.m_ii.ISSymmetryFactor()*pi.m_fi.FSSymmetryFactor();
+  m_oqcd = pi.m_maxcpl[0];
+  m_oqed = pi.m_maxcpl[1];
+  if (!m_active) return;
+  m_mode = 0;
+
+
+  m_g2qed = 4.0*M_PI*MODEL::s_model->ScalarConstant("alpha_QED");
+  m_g2qcd = 4.0*M_PI*MODEL::s_model->ScalarConstant("alpha_S");
+
+  m_momenta = vector<double>(m_pn*5);
+  for (size_t i=0;i<m_pn;i++) m_momenta[4+i*5]=flavs[i].Mass();
+  m_result = {0.,0.,0.,1.};
+
+  auto s = Settings::GetMainSettings()["GOSAM"];
+  string irr = s["IRregularisation"].Get<string>();
+  if(irr == "CDR") m_drmode = 0;
+  else if(irr == "DRED") m_drmode = 1;
+
+#ifdef VALIDATE_GOSAM_INTERFACE
+  m_errorOnFailedCheck = s["ErrorOnFailedCheck"].SetDefault(false).Get<bool>();
+  m_printAllChecks = s["PrintAllChecks"].SetDefault(false).Get<bool>();
+#endif
+
 }
 
-void GoSam_Virtual::Calc(const Vec4D_Vector& momenta)
-{
-  DEBUG_FUNC(m_stype);
-  m_mode=m_modebackup;
+void GoSam_Virtual::Calc(const Vec4D_Vector& pp) {
+  DEBUG_FUNC(m_proc_id);
+  if (!m_active) return;
+  if (m_proc_id<0) return;
 
-  GoSam_Interface::SetParameter("alpha", AlphaQED());
-  GoSam_Interface::SetParameter("alphas", AlphaQCD());
-
-  MyTiming* timing;
-  if (msg_LevelIsDebugging()) {
-    timing = new MyTiming();
-    timing->Start();
+  // TODO: Do we need CMS boost?
+  Vec4D_Vector momenta(pp);
+  Poincare cms(momenta[0]+momenta[1]);
+  for (size_t i(0);i<momenta.size();++i) {
+    msg_Debugging()<<momenta[i]<<"\n";
+    cms.Boost(momenta[i]);
   }
 
-  GoSam_Interface::EvaluateLoop(m_gs_id, momenta, m_mur2, m_born, m_res, m_accu);
-  if (msg_LevelIsDebugging()) {
-    timing->Stop();
-    PRINT_INFO(momenta[2][0]<<" "<<m_flavs<<" user="<<timing->UserTime()
-               <<" real="<<timing->RealTime()<<" sys="<<timing->SystemTime());
-    msg_Out()<<"B     = "<<m_born<<std::endl;
-    msg_Out()<<"V_fin = "<<m_res.Finite()<<std::endl;
-    msg_Out()<<"V_e1  = "<<m_res.IR()<<std::endl;
-    msg_Out()<<"V_e2  = "<<m_res.IR2()<<std::endl;
+  for (size_t i=0;i<m_pn;i++) {
+    m_momenta[0+i*5]=momenta[i][0];
+    m_momenta[1+i*5]=momenta[i][1];
+    m_momenta[2+i*5]=momenta[i][2];
+    m_momenta[3+i*5]=momenta[i][3];
   }
+  m_result = {0.,0.,0.,0.};
+  double scale = sqrt(m_mur2);
+  double acc = 0;
+  double ierr = 1;
 
-  // factor which by Sherpa convention has to be divided out at this stage
-  // if both types of subtraction, still take alphas out
-  double coupling(1.);
-  if      (m_stype&sbt::qcd) coupling=AlphaQCD();
-  else if (m_stype&sbt::qed) coupling=AlphaQED();
-  else THROW(fatal_error,"Unknown coupling.");
+  GoSam::GoSam_Interface::SetParameter("alphaS", AlphaQCD(), ierr);
+  GoSam::GoSam_Interface::SetParameter("alpha", AlphaQED(), ierr);
+  GoSam::OLP_EvalSubProcess2(&m_proc_id, m_momenta.data(), &scale, m_result.data(), &acc);
+  m_born         = m_result[3]/(2.*M_PI)*AlphaQCD();
+  m_res.Finite() = m_result[2]/m_born;
+  m_res.IR()     = m_result[1]/m_born;
+  m_res.IR2()    = m_result[0]/m_born;
+  m_born         *= 2.*M_PI/AlphaQCD();
 
-  // if Born vanishes, do not divide by it, reset mode for this event
-  if (!(m_mode&1) && m_born==0.) {
-    m_mode|=1;
-    msg_Tracking()<<METHOD<<"(): switch to mode 1, Born vanishes."<<std::endl;
+#ifdef VALIDATE_GOSAM_INTERFACE
+  if(p_check) {
+    MODEL::Coupling_Map cpls;
+    cpls.insert({"Alpha_QCD",p_aqcd});
+    cpls.insert({"Alpha_QED",p_aqed});
+    p_check->SetCouplings(cpls);
+    p_check->SetRenScale(m_mur2);
+    p_check->Calc(momenta);
+    bool checkfailed=false;
+    if(!IsEqual(m_res.IR2(),p_check->ME_E2(),1e-2)) {
+      msg_Out()<<"Check double pole GoSam ("<<m_res.IR2()
+               <<") vs. Internal ("<<p_check->ME_E2()<<") failed.\n";
+      checkfailed=true;
+    }
+    else if(m_printAllChecks) {
+      msg_Out()<<"Check double pole GoSam ("<<m_res.IR2()<<") vs. Internal ("
+               <<p_check->ME_E2()<<") succesful.\n";
+    }
+
+    if(!IsEqual(m_res.IR(),p_check->ME_E1(),1e-2)) {
+      msg_Out()<<"Check single pole GoSam ("<<m_res.IR()
+               <<") vs. Internal ("<<p_check->ME_E1()<<") failed.\n";
+      checkfailed=true;
+    }
+    else if(m_printAllChecks) {
+      msg_Out()<<"Check single pole GoSam ("<<m_res.IR()<<") vs. Internal ("
+               <<p_check->ME_E1()<<") succesful.\n";
+    }
+
+    if(!IsEqual(m_res.Finite(),p_check->ME_Finite(),1e-2)) {
+      msg_Out()<<"Check finite loop GoSam ("<<m_res.Finite()
+               <<") vs. Internal ("<<p_check->ME_Finite()<<") failed.\n";
+      checkfailed=true;
+    }
+    else if(m_printAllChecks) {
+      msg_Out()<<"Check finite loop GoSam ("<<m_res.Finite()<<") vs. Internal ("
+               <<p_check->ME_Finite()<<") succesful.\n";
+    }
+
+
+    if(!IsEqual(m_born,p_check->ME_Born(),1e-2)) {
+      msg_Out()<<"Check born GoSam ("<<m_born<<") vs. Internal ("
+               <<p_check->ME_Born()<<") failed.\n";
+      // No Born in (some) internal MEs.
+      // checkfailed=true;
+    }
+    else if(m_printAllChecks) {
+      msg_Out()<<"Check born GoSam ("<<m_born<<") vs. Internal ("
+               <<p_check->ME_Born()<<") succesful.\n";
+    }
+
+    if(m_errorOnFailedCheck && checkfailed)
+      THROW(fatal_error,"Failed check is not acceptable.");
   }
-  double factor=((m_mode&1)?1.:m_born)*coupling/2.0/M_PI;
-  msg_Debugging()<<"cpl="<<coupling/2.0/M_PI<<std::endl;
-  m_res.Finite()/=factor;
-  m_res.IR()/=factor;
-  m_res.IR2()/=factor;
+#endif
+
 }
 
-bool GoSam_Virtual::IsMappableTo(const PHASIC::Process_Info& pi)
-{
-  Process_Info looppi(pi);
-  if (looppi.m_fi.m_nlotype!=nlo_type::lo) looppi.m_fi.m_nlotype=nlo_type::loop;
-  std::string name(PHASIC::Process_Base::GenerateName(looppi.m_ii,looppi.m_fi));
-  DEBUG_FUNC(name);
-  if (GoSam_Interface::s_procmap[m_gs_id]==name) m_ismapped=true;
-  else                                           m_ismapped=false;
-  msg_Debugging()<<(m_ismapped?"yes":"no")<<std::endl;
-  return m_ismapped;
+bool GoSam_Virtual::SetColours(const ATOOLS::Vec4D_Vector& momenta) {
+  return true;
 }
 
-DECLARE_VIRTUALME2_GETTER(GoSam::GoSam_Virtual,"GoSam_Virtual")
-Virtual_ME2_Base *ATOOLS::Getter<PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,GoSam::GoSam_Virtual>::
+double GoSam_Virtual::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom) {
+  return 4.*M_PI;
+}
+
+DECLARE_VIRTUALME2_GETTER(GoSam_Virtual,"GoSam")
+Virtual_ME2_Base *ATOOLS::Getter<PHASIC::Virtual_ME2_Base,PHASIC::Process_Info,
+				 GoSam_Virtual>::
 operator()(const PHASIC::Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
-  if (pi.m_loopgenerator!="GoSam") return NULL;
-  if (!(pi.m_fi.m_nlotype==nlo_type::loop)) return NULL;
-
-  DEBUG_VAR(pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0]);
-  DEBUG_VAR(pi.m_fi.m_nlocpl[0]);
-  DEBUG_VAR(pi.m_maxcpl[1]-pi.m_fi.m_nlocpl[1]);
-  DEBUG_VAR(pi.m_fi.m_nlocpl[1]);
-//  GoSam_Interface::SetParameter
-//    ("CouplingPower QCD Born", (int) pi.m_maxcpl[0]-pi.m_fi.m_nlocpl[0]);
-//  GoSam_Interface::SetParameter
-//    ("CouplingPower QCD Loop", (int) pi.m_fi.m_nlocpl[0]);
-//  GoSam_Interface::SetParameter
-//    ("CouplingPower QED Born", (int) pi.m_maxcpl[1]-pi.m_fi.m_nlocpl[1]);
-//  GoSam_Interface::SetParameter
-//    ("CouplingPower QED Loop", (int) pi.m_fi.m_nlocpl[1]);
-
-  int id = GoSam_Interface::RegisterProcess(pi.m_ii, pi.m_fi);
-  if (id>=0) {
-    Flavour_Vector flavs = pi.ExtractFlavours();
-    return new GoSam_Virtual(pi, flavs, id);
+  if (pi.m_loopgenerator!="GoSam") return nullptr;
+  if (!(pi.m_fi.m_nlotype&nlo_type::loop)) return nullptr;
+  Flavour_Vector fl=pi.ExtractFlavours();
+  GoSam_Virtual * ret = new GoSam_Virtual(pi, fl, true, GoSam_Interface::RegisterProcess(pi,fl,true));
+#ifdef VALIDATE_GOSAM_INTERFACE
+  PHASIC::Process_Info picheck(pi);
+  picheck.m_loopgenerator="Internal";
+  ret->p_check = Virtual_ME2_Base::GetME2(picheck);
+  if(ret->p_check)
+    msg_Out()<<"Initialized Internal ME to validate GoSam interface.\n";
+  else
+    msg_Out()<<"Failed to initialize Internal ME to validate GoSam interface.\n";
+#endif
+  if(ret) {
+    msg_Debugging()<<"Return GoSam Virtual.\n";
   }
-  else {
-    return NULL;
-  }
+  return ret;
 }
-

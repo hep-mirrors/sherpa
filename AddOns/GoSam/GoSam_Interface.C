@@ -1,334 +1,225 @@
-#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
-#include "MODEL/Main/Model_Base.H"
-#include "MODEL/Main/Running_AlphaQED.H"
-#include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Library_Loader.H"
-#include "ATOOLS/Org/Run_Parameter.H"
-#include <algorithm>
-#include <sys/stat.h>
-
 #include "AddOns/GoSam/GoSam_Interface.H"
+#include "AddOns/GoSam/GoSam_Communicator.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Library_Loader.H"
+#include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Phys/KF_Table.H"
+
+#include <fstream>
 
 using namespace GoSam;
 using namespace PHASIC;
-using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
 
-extern "C" {
+string GoSam_Interface::s_contractName = "";
+string GoSam_Interface::s_type = "";
+bool GoSam_Interface::s_newLibraries = false;
+bool GoSam_Interface::s_contract = false;
 
-  // initialisation
-  void OLP_Start(const char * filename, int* success);
-  void gosam_start()
-  {
-    int success(0);
-    OLP_Start("none",&success);
-  }
-
-  // finalisation
-  void gosam_finish() {}
-
-  // information
-  void OLP_Info(char * olp_name,char * olp_version,char * message);
-  void gosam_info(char* str)
-  { OLP_Info(str,str,str); }
-
-  // parameter setting
-  void OLP_SetParameter(const char* name, const double* re, const double* im,
-                        int* ierr);
-  void gosam_setparameter_complex(const char* key, const double* reval,
-                                  const double* imval, int* ierr)
-  { OLP_SetParameter(key,reval,imval,ierr); }
-  void gosam_setparameter_double(const char* key, const double* val, int* ierr)
-  { const double im(0.); OLP_SetParameter(key,val,&im,ierr); }
-  void gosam_setparameter_int(const char* key, const int* val, int* ierr)
-  { const double re(*val), im(0.); OLP_SetParameter(key,&re,&im,ierr); }
-  void gosam_setparameter_string(const char* key, const char* val, int* ierr)
-  { msg_Out()<<METHOD<<"(): Nothing done. "<<key<<" "<<val<<std::endl; *ierr=2; }
-
-  // process handling
-  void OLP_GetProcessnumber(const char* process, int * nr);
-  int  gosam_register_process(const char* process, int * newlibs)
-  {
-    int nr(-1);
-    OLP_GetProcessnumber(process,&nr);
-    if (nr<0) THROW(fatal_error,"Process not found.");
-    return nr;
-  }
-
-  // calculation
-  void OLP_EvalSubProcess(int* id, double* pp, double* mu, double* as, double* rval);
-  void OLP_EvalSubProcess2(int* id, double* pp, double* mu, double* rval, double* acc);
-  void OLP_EvalSubProcess_EW(int* id, double* pp, double* mu, double* rval, double* acc);
-  void gosam_evaluate_loop(int* id, double* pp, double* mu, double* rval, double* acc)
-  {
-    OLP_EvalSubProcess_EW(id,pp,mu,rval,acc);
-  }
-}
-
-
-std::map<int,std::string> GoSam_Interface::s_procmap;
-
-std::string GoSam_Interface::s_gosamprefix     = std::string("");
-bool        GoSam_Interface::s_ignore_model    = false;
-bool        GoSam_Interface::s_exit_on_error   = true;
-size_t      GoSam_Interface::s_vmode           = 0;
-bool        GoSam_Interface::s_newlibs         = false;
-
-GoSam_Interface::GoSam_Interface() :
-  ME_Generator_Base("GoSam")
-{
+GoSam_Interface::GoSam_Interface() : PHASIC::ME_Generator_Base("GoSam"),
+  m_drmode(-1), m_widthscheme(""),
+  m_contractBaseName("") {
   RegisterDefaults();
 }
 
-GoSam_Interface::~GoSam_Interface()
-{
-  gosam_finish();
-}
-
-void GoSam_Interface::RegisterDefaults() const
-{
-  Settings& s = Settings::GetMainSettings();
-  s["GOSAM_VERBOSITY"].SetDefault("0");
-  s["GOSAM_VMODE"].SetDefault(0);
-  s["GOSAM_EXIT_ON_ERROR"].SetDefault(1);
-  s["GOSAM_IGNORE_MODEL"].SetDefault(0);
-
-  // find GS installation prefix with several overwrite options
-  s_gosamprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/GoSam";
-  struct stat file_info;
-  if (stat(s_gosamprefix.c_str(), &file_info) != 0)
-    s_gosamprefix = GOSAM_PREFIX;
-  s["GOSAM_PREFIX"].SetDefault(s_gosamprefix);
-  s_gosamprefix = s["GOSAM_PREFIX"].Get<std::string>();
+void GoSam_Interface::RegisterDefaults() {
+    auto s = Settings::GetMainSettings()["GOSAM"];
+    s["IRregularisation"].SetDefault("CDR");
+    s["ContractFileName"].SetDefault("SherpaGoSam");
+    auto pdata = s["ParticleCodeMap"];
 }
 
 bool GoSam_Interface::Initialize(MODEL::Model_Base *const model,
                                  BEAM::Beam_Spectra_Handler *const beam,
                                  PDF::ISR_Handler *const isr,
-                                 YFS::YFS_Handler *const yfs)
-{
-  msg_Info()<<"Initialising GoSam generator from "<<s_gosamprefix<<endl;
-  Settings& s = Settings::GetMainSettings();
-  s_ignore_model = s["GOSAM_IGNORE_MODEL"].Get<size_t>();
-  if (s_ignore_model) msg_Info()<<METHOD<<"(): GoSam will use the "
-                                <<"Standard Model, even if you set a "
-                                <<"different model, without warning."
-                                <<std::endl;
-  s_exit_on_error = s["GOSAM_EXIT_ON_ERROR"].Get<size_t>();
-  s_vmode = s["GOSAM_VMODE"].Get<size_t>();
-  msg_Tracking()<<METHOD<<"(): Set V-mode to "<<s_vmode<<endl;
+                                 YFS::YFS_Handler *const yfs) {
+  auto s = Settings::GetMainSettings()["GOSAM"];
+  m_contractBaseName = s["ContractFileName"].Get<string>();
+  string irr = s["IRregularisation"].Get<string>();
+  if(irr == "CDR") m_drmode = 0;
+  else if(irr == "DRED") m_drmode = 1;
 
-  // load library dynamically
-  s_loader->AddPath(s_gosamprefix+"/lib");
-  if (!s_loader->LoadLibrary("gosam")) THROW(fatal_error, "Failed to load libgosam.");
+  if(m_drmode <  0) THROW(fatal_error,"Unknown or unset IRregularisation.");
+  /* if(m_drmode == 1) THROW(fatal_error,"Currently only CDR supported as IRregularisation."); */
 
-  // set OL verbosity
-  std::string gosam_verbosity = s["GOSAM_VERBOSITY"].Get<std::string>();
-  SetParameter("Verbosity",gosam_verbosity);
+  if (model->ScalarNumber(std::string("WidthScheme")))
+    m_widthscheme = "ComplexMass";
+  else
+    m_widthscheme = "FixedWidth";
+  if(m_widthscheme == "") THROW(fatal_error,"Unknown or unset WidthScheme.");
 
-  // tell OL about the current model and check whether accepted
-  if (!s_ignore_model) SetParameter("Model", MODEL::s_model->Name());
-
-  // we give parameters to GoSam as alpha(MZ) and masses
-  SetParameter("EWScheme","alphaMZ");
-  // ew-renorm-scheme to Gmu by default
-  switch (ToType<int>(rpa->gen.Variable("EW_REN_SCHEME"))) {
-  case 1:
-    SetParameter("EWRenormalisationScheme","alpha0");
-    break;
-  case 2:
-    SetParameter("EWRenormalisationScheme","alphaMZ");
-    break;
-  case 3:
-    SetParameter("EWRenormalisationScheme","alphaGF");
-    break;
-  default:
-    THROW(fatal_error,"Unknown electroweak renormalisation scheme.");
-    break;
+  s_contract = false;
+  s_contractName = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/GoSam/" + m_contractBaseName;
+  string cname = s_contractName + ".olc";
+  if (access( cname.c_str(), F_OK ) != -1)  {
+    s_contract = true;
+    s_contractName = cname;
   }
-
-  // set couplings to unity (corrected in interface)
-  GoSam_Interface::SetParameter("alpha", MODEL::aqed->Default());
-//  GoSam_Interface::SetParameter("alpha_s", AlphaQCD());
-
-
-  // set particle masses/widths
-//  Flavour_Vector flavs(MODEL::s_model->IncludedFlavours());
-//  for (size_t i(0); i<flavs.size(); ++i) {
-//    SetParameter("mass("+ToString(flavs[i].Kfcode())+")", flavs[i].Mass());
-//    SetParameter("width("+ToString(flavs[i].Kfcode())+")", flavs[i].Width());
-//    if (flavs[i].IsFermion() && flavs[i].Mass()!=flavs[i].Yuk()) {
-//      SetParameter("yukawa("+ToString(flavs[i].Kfcode())+")", flavs[i].Yuk());
-//      if (flavs[i].IsQuark()) {
-//        if (MODEL::s_model->ScalarNumber(std::string("YukawaScheme"))==1)
-//          SetParameter("muy("+ToString(flavs[i].Kfcode())+")", Flavour(kf_h0).Mass(true));
-//        else
-//          SetParameter("muy("+ToString(flavs[i].Kfcode())+")", flavs[i].Yuk());
-//      }
-//    }
-//  }
-
-//  if (s_model->ComplexConstant("CKM_0_2")!=Complex(0.0,0.0) ||
-//      s_model->ComplexConstant("CKM_2_0")!=Complex(0.0,0.0)) {
-//    SetParameter("CKMorder", 3);
-//  }
-//  else if (s_model->ComplexConstant("CKM_1_2")!=Complex(0.0,0.0) ||
-//	   s_model->ComplexConstant("CKM_2_1")!=Complex(0.0,0.0)) {
-//    SetParameter("CKMorder", 2);
-//  }
-//  else if (s_model->ComplexConstant("CKM_0_1")!=Complex(0.0,0.0) ||
-//	   s_model->ComplexConstant("CKM_1_0")!=Complex(0.0,0.0)) {
-//    SetParameter("CKMorder", 1);
-//  }
-//  else {
-//    SetParameter("CKMorder", 0);
-//  }
-
-  // set remaining GoSam parameters specified by user
-  for (const auto& key : s["GOSAM_PARAMETERS"].GetKeys()) {
-    const auto val = s["GOSAM_PARAMETERS"][key].SetDefault("").Get<std::string>();
-    SetParameter(key, val);
+  else {
+    s_contractName += ".olp";
   }
+  s_type = s["BornType"].SetDefault("Tree").Get<string>();
+  if(s_type != "Tree" && s_type != "LoopInduced") THROW(fatal_error,"Unknown Born type.");
+  if (!s_contract) {
+    MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/GoSam");
+    GoSam_Communicator lhfile(s_contractName);
+    if (lhfile.FileStatus()==0) {
+      lhfile.AddParameter("InterfaceVersion    BLHA2");
+      lhfile.AddParameter("CorrectionType      QCD");
+      if (m_drmode==1) lhfile.AddParameter("IRregularisation    DRED");
+      else             lhfile.AddParameter("IRregularisation    CDR");
+      lhfile.AddParameter("WidthScheme         "+m_widthscheme);
+      if ( s["SetEWScheme"].SetDefault(true).Get<bool>() ) {
+        string ewscheme = Settings::GetMainSettings()["EW_SCHEME"].Get<string>();
+        lhfile.AddParameter("EWScheme            "+ewscheme);
+      }
+      /* Should be quarks only here?*/
+      int tmparr[] = { kf_c, kf_b, kf_t, kf_Wplus, kf_Z, kf_h0};
+      vector<int> pdgids (tmparr, tmparr + sizeof(tmparr) / sizeof(tmparr[0]) );
+      std::string massive_string="";
+      for (size_t i=0; i<pdgids.size(); ++i)  if (Flavour(pdgids[i]).Mass()>0.0)   massive_string+=(" "+ToString(pdgids[i]));
+      if (massive_string.length()) lhfile.AddParameter("MassiveParticles "+massive_string);
 
-  // instruct GoSam to return I instead of V
-  if (s_vmode&2) SetParameter("VMode","I");
+      lhfile.AddParameter("");
+      lhfile.AddParameter("# process list");
+    }
+    string gosamSettings = "";
+    for(auto& key: s["Settings"].GetKeys()) {
+      string value = s["Settings"][key].SetDefault("").Get<string>();
+      if(value != "") {
+        gosamSettings += key+"="+value+"\n";
+      }
+    }
+    ofstream ofile;
+    string gosamSettingsName = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/GoSam/"+"gosam.in";
+    ofile.open(gosamSettingsName.c_str(),ios::trunc);
+    ofile<<gosamSettings;
+    ofile.close();
+    msg_Out()<<"Wrote parameters from runcard to "<<gosamSettingsName<<":\n"<<gosamSettings;
+  }
+  else {
+    s_loader->LoadLibrary(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/GoSam/build","golem_olp");
+    int check = 0;
+    int errmode = 1;
 
-  char infostr[700];
-  gosam_info(infostr);
-  msg_Info()<<std::string(infostr)<<std::endl;
 
-  MyStrStream cite;
-  cite<<"The GoSam one-loop generator~\\cite{xxx:2010yy} "<<endl
-      <<"has been used. "<<endl;
-  rpa->gen.AddCitation(1,cite.str());
-
+    bool autosettings = s["AutoSetParameters"].SetDefault(true).Get<bool>();
+    if(autosettings) {
+      auto pdata = s["ParticleCodeMap"];
+      for(kf_code kf: {kf_Z,kf_Wplus,kf_h0,kf_e,kf_mu,kf_tau,kf_s,kf_c,kf_b,kf_t}) {
+        SetMass(kf,pdata[ToString(kf)].SetDefault("").Get<string>());
+      }
+      for(kf_code kf: {kf_Z,kf_Wplus}) {
+        SetWidth(kf,pdata[ToString(kf)].SetDefault("").Get<string>());
+      }
+      SetParameter("alpha",MODEL::s_model->ScalarConstant("alpha_QED"),errmode);
+    }
+    for(auto& key: s["Parameters"].GetKeys()) {
+      double value = s["Parameters"][key].SetDefault(0).Get<double>();
+      SetParameter(key,value);
+    }
+    
+    /// Start
+    GoSam::OLP_Start(s_contractName.c_str(),&check);
+    string reportname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/GoSam/settingsreport.txt";
+    Remove(reportname);
+    OLP_PrintParameter(reportname.c_str());
+  }
   return true;
 }
 
-int GoSam_Interface::RegisterProcess(const Subprocess_Info& is,
-                                     const Subprocess_Info& fs)
-{
-  DEBUG_FUNC("");
-  string shprocname(PHASIC::Process_Base::GenerateName(is,fs)),gsprocname("");
-  Flavour_Vector isflavs(is.GetExternal());
+int GoSam_Interface::RegisterProcess(const Process_Info& pi,const Flavour_Vector& flavs,
+                                     bool active) {
+  if (!active) return -1;
+  size_t pn = flavs.size();
+  int proc_id = -1;
 
-  for (size_t i=0; i<isflavs.size(); ++i)
-    gsprocname += ToString((long int)isflavs[i]) + " ";
-  gsprocname += "-> ";
-  Flavour_Vector fsflavs(fs.GetExternal());
-  for (size_t i=0; i<fsflavs.size(); ++i)
-    gsprocname += ToString((long int)fsflavs[i]) + " ";
-  msg_Debugging()<<"looking for "<<shprocname<<" ("<<gsprocname<<")\n";
+  GoSam_Communicator lhfile(s_contractName);
+  if (!s_contract) {
+    if(lhfile.CheckProcess(2,pn-2,flavs)==-1) {
+      lhfile.AddParameter("AmplitudeType            Loop");
+      lhfile.AddParameter("CouplingPower QCD        "+ToString(pi.m_maxcpl[0]-1));
+      lhfile.AddParameter("CouplingPower QED        "+ToString(pi.m_maxcpl[1]));
+      lhfile.AddProcess(2,pn-2,flavs);
+    }
+    s_newLibraries = true;
+    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+         rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs");
+    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs-gosam",
+         rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/GoSam/makelibs");
 
-  int newlibs(0);
-  int id(gosam_register_process(gsprocname.c_str(),&newlibs));
-
-  if (newlibs) s_newlibs=true;
-
-  if (s_procmap.find(id)==s_procmap.end())
-    s_procmap[id]=shprocname;
-  msg_Tracking()<<"GoSam_Interface process list:"<<std::endl;
-  for (std::map<int,std::string>::const_iterator it=s_procmap.begin();
-       it!=s_procmap.end();++it)
-    msg_Tracking()<<it->first<<": "<<it->second<<std::endl;
-  return id;
-}
-
-void GoSam_Interface::EvaluateLoop(int id, const Vec4D_Vector& moms,
-                                   double& mu2,
-                                   double& born, METOOLS::DivArrD& virt,
-                                   double& accu)
-{
-  DEBUG_FUNC(id);
-  double acc;
-  Vec4D_Vector momenta(moms);
-  Poincare cms(momenta[0]+momenta[1]);
-  for (size_t i(0);i<momenta.size();++i) cms.Boost(momenta[i]);
-  std::vector<double> pp(5*momenta.size());
-  for (size_t i=0; i<momenta.size(); ++i) {
-    pp[0+i*5]=momenta[i][0];
-    pp[1+i*5]=momenta[i][1];
-    pp[2+i*5]=momenta[i][2];
-    pp[3+i*5]=momenta[i][3];
+    return proc_id;
   }
-
-  double mu(sqrt(mu2));
-  std::vector<double> loop(4);
-  gosam_evaluate_loop(&id, &pp[0], &mu, &loop[0], &accu);
-  virt.Finite()=loop[2];
-  virt.IR()=loop[1];
-  virt.IR2()=loop[0];
-  born=loop[3];
-  msg_Debugging()<<"Born       = "<<born<<std::endl;
-  msg_Debugging()<<"V_finite   = "<<virt.Finite()<<std::endl;
-  msg_Debugging()<<"V_epsilon  = "<<virt.IR()<<std::endl;
-  msg_Debugging()<<"V_epsilon2 = "<<virt.IR2()<<std::endl;
-  msg_Debugging()<<"Accuracy   = "<<accu<<std::endl;
-}
-
-namespace GoSam {
-  template <class ValueType>
-  void HandleParameterStatus(int err, const std::string & key, ValueType value) {
-    if (err==1) {
-      msg_Debugging()<<"Setting GoSam parameter: "<<key<<" = "<<value<<endl;
+  else {
+    if (lhfile.CheckParameterStatus()!=1) {
+      THROW(fatal_error,"Bad parameter.");
     }
-    else if (err==2) {
-      msg_Info()<<"Unknown GoSam parameter: "<<key<<" = "<<ToString(value)
-                <<std::endl;
+    int pstatus=lhfile.CheckProcess(2,pn-2,flavs);
+    std::string pstr("");
+    switch (pstatus) {
+    case -2:
+    case 0:
+      for (size_t i(0);i<flavs.size();++i) pstr+=ToString((long int)flavs[i])+" ";
+      THROW(fatal_error,"Process "+pstr+"not found in contract file.");
+    case -1:
+      THROW(fatal_error,"Process not found in contract file.");
+    default:
+      if (pstatus!=1) msg_Info()<<"Found "<<pstatus<<" subprocesses. Cannot "
+                                <<"handle this yet, only first ID will be used!"<<endl;
+      proc_id=lhfile.GetID(2,pn-2,flavs,0);
     }
-    else if (err==0) {
-      std::string errorstring("Error setting GoSam parameter: "+key+" = "
-                              +ToString(value));
-      if (GoSam_Interface::ExitOnError()) THROW(fatal_error, errorstring)
-      else                                msg_Error()<<errorstring<<std::endl;
-    }
+    return proc_id;
   }
 }
 
-void GoSam_Interface::SetParameter(const std::string & key, Complex value)
-{
-  int err(0);
-  double re(value.real()), im(value.imag());
-  gosam_setparameter_complex(key.c_str(), &re, &im, &err);
-  GoSam::HandleParameterStatus(err,key,value);
+int GoSam_Interface::RegisterProcess(const PHASIC::External_ME_Args& args,bool active) {
+  if (!active) return -1;
+  size_t pn = args.m_inflavs.size()+args.m_outflavs.size();
+  Flavour_Vector flavs = args.m_inflavs;
+  for(Flavour fl: args.m_outflavs) flavs.push_back(fl);
+  int proc_id = -1;
+  GoSam_Communicator lhfile(s_contractName);
+  if (!s_contract) {
+    if(lhfile.CheckProcess(args.m_inflavs.size(),args.m_outflavs.size(),flavs)==-1) {
+
+      lhfile.AddParameter("AmplitudeType         "+s_type);
+      lhfile.AddParameter("CouplingPower QCD        "+ToString(args.m_orders[0]));
+      lhfile.AddParameter("CouplingPower QED        "+ToString(args.m_orders[1]));
+      lhfile.AddProcess(args.m_inflavs.size(),args.m_outflavs.size(),flavs);
+    }
+    s_newLibraries = true;
+    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+         rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs");
+    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs-gosam",
+         rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/GoSam/makelibs");
+    return proc_id;
+  }
+  else {
+    if (lhfile.CheckParameterStatus()!=1) {
+      THROW(fatal_error,"Bad parameter.");
+    }
+    int pstatus=lhfile.CheckProcess(args.m_inflavs.size(),args.m_outflavs.size(),flavs);
+    std::string pstr("");
+    switch (pstatus) {
+    case -2:
+    case 0:
+      for (size_t i(0);i<flavs.size();++i) pstr+=ToString((long int)flavs[i])+" ";
+      THROW(fatal_error,"Process "+pstr+"not found in contract file.");
+    case -1:
+      THROW(fatal_error,"Process not found in contract file.");
+    default:
+      if (pstatus!=1) msg_Info()<<"Found "<<pstatus<<" subprocesses. Cannot "
+                                <<"handle this yet, only first ID will be used!"<<endl;
+      proc_id=lhfile.GetID(args.m_inflavs.size(),args.m_outflavs.size(),flavs,0);
+    }
+    return proc_id;
+  }
 }
 
-void GoSam_Interface::SetParameter(const std::string & key, double value)
-{
-  int err(0);
-  gosam_setparameter_double(key.c_str(), &value, &err);
-  GoSam::HandleParameterStatus(err,key,value);
-}
-
-void GoSam_Interface::SetParameter(const std::string & key, int value)
-{
-  int err(0);
-  gosam_setparameter_int(key.c_str(), &value, &err);
-  GoSam::HandleParameterStatus(err,key,value);
-}
-
-void GoSam_Interface::SetParameter(const std::string & key, std::string value)
-{
-  int err(0);
-  gosam_setparameter_string(key.c_str(), value.c_str(), &err);
-  GoSam::HandleParameterStatus(err,key,value);
-}
-
-int GoSam_Interface::PerformTests()
-{
-  gosam_start();
-  exh->AddTerminatorObject(this);
-  return 1;
-}
-
-void GoSam_Interface::PrepareTerminate()
-{
-  gosam_finish();
-}
+int  GoSam_Interface::PerformTests() { return 1; }
+void GoSam_Interface::PrepareTerminate() {}
 
 
 DECLARE_GETTER(GoSam_Interface,"GoSam",ME_Generator_Base,ME_Generator_Key);
@@ -337,12 +228,11 @@ ME_Generator_Base *ATOOLS::Getter<ME_Generator_Base,ME_Generator_Key,
                                   GoSam_Interface>::
 operator()(const ME_Generator_Key &key) const
 {
-  return new GoSam::GoSam_Interface();
+  return new GoSam_Interface();
 }
 
 void ATOOLS::Getter<ME_Generator_Base,ME_Generator_Key,GoSam_Interface>::
 PrintInfo(ostream &str,const size_t width) const
-{ 
-  str<<"Interface to the GoSam loop ME generator"; 
+{
+  str<<"Interface to the GoSam loop ME generator";
 }
-

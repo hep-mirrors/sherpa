@@ -1,0 +1,12 @@
+(
+set -e
+GPATH=@GOSAM_PREFIX@/bin
+GOSAM=gosam.py
+$GPATH/$GOSAM --olp --ignore-unknown --force --ignore-empty-subprocess --destination=. SherpaGoSam.olp
+if [ -d build ]; then
+  meson setup --reconfigure build
+else
+  meson setup build
+fi
+meson compile -C build
+)

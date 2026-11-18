@@ -5,6 +5,7 @@
 #
 
 DIRS=`find Process/Amegic/ -name P?_?`" "`find Process/Amegic/ -name P?_??`
+RECDIRS=`find $PWD/Process/*/ -name makelibs`
 
 print_help(){
   echo "makelibs version 1.1" && echo && \
@@ -126,4 +127,13 @@ install(TARGETS ${libname} DESTINATION \${CMAKE_INSTALL_PREFIX}/\${CMAKE_INSTALL
   #if `! test "$POSTCLEAN" = "FALSE"` ; then rm -rf CMakeFiles CMakeCache ; fi
   fi
   cd -
+done
+
+for RD in $RECDIRS; do
+    RDD=$(dirname $RD);
+    read -p "Compile code in $RDD? [y/n] " yn
+    case $yn in
+        [Yy]* ) (cd $RDD && ./makelibs);;
+        * ) echo "Skipping $RDD.";;
+    esac
 done

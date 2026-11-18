@@ -1,8 +1,14 @@
-set(GoSam_SOURCES GoSam_Virtual.C
-                  GoSam_Interface.C)
+set(GoSam_SOURCES GoSam_Communicator.C
+                  GoSam_Interface.C
+                  GoSam_Virtual.C
+                  GoSam_Born.C
+                  GoSam_Variation_Generator.C)
 
-set(GoSam_HEADERS GoSam_Virtual.H
-                  GoSam_Interface.H)
+set(GoSam_HEADERS GoSam_Communicator.H
+                  GoSam_Interface.H
+                  GoSam_Virtual.H
+                  GoSam_Born.H
+                  GoSam_Variation_Generator.H)
 
 sherpa_create_git_info(GoSam ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
  

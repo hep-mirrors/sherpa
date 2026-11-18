@@ -1,0 +1,26 @@
+EVENTS: 100
+BEAMS: [-11,2212]
+BEAM_ENERGIES: [27.6,820]
+
+
+GOSAM:
+  IRregularisation: CDR
+  ErrorOnFailedCheck: true
+  PrintAllChecks: true
+
+TAGS:
+  LGEN: GoSam
+
+PROCESSES:
+- -11 93 -> -11 93:
+    Order: {QCD: 0, EW: 2}
+    NLO_Mode: Fixed_Order
+    NLO_Order: {QCD: 1, EW: 0}
+    ME_Generator: Comix
+    RS_ME_Generator: Comix
+    NLO_Part: V
+    Loop_Generator: $(LGEN)
+    
+
+SELECTORS:
+  - [Q2, -11, -11, 2, 20000]
