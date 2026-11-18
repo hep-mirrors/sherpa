@@ -153,19 +153,58 @@ namespace METOOLS {
 		const double & F,const double & mu2);
 
     /////////////////////////////////////////////////////////////////////
-    // Polynomial fit to the (dominant, pion-channel) q^2-dependent a1
-    // width, Eq.(17) of [1310.1053], with the numerical coefficients
-    // quoted there (a..p). This is used INSTEAD OF the full double
-    // phase-space integral of Eq.(35)-(36) of [1203.3955] (computing
-    // that integral live, self-consistently with the very F1/F2/F3
-    // being evaluated, is impractical here). The sub-dominant KKpi
-    // absorptive-cut contribution to Gamma_a1 (the last two terms of
-    // Eq.13 of [1310.1053]) is NOT included - the papers themselves
-    // treat it as a pre-tabulated, not-refit correction, and we don't
-    // have that table. Below the 3pi threshold (9mpi^2) this returns 0.
+    // Polynomial fit to the three-pion part of the q^2-dependent a1 width,
+    // Eq.(17) of [1310.1053], with the coefficients quoted there (a..p).
+    // Those coefficients are that paper's polynomial at its own best fit
+    // (its Sec.4 refitted them at every fit step), so they describe the a1
+    // of THAT parameter set only, and they leave out the KKpi cuts.  The
+    // three-pion model (FF_0_PPP.C, RChL2012) now computes Gamma_a1(q^2)
+    // of [1203.3955] Eq.(a1width) from its own amplitudes and keeps this
+    // only as the a1Width_rchl3pi: 0 option; F1_0_KKPi still uses it.
+    // Below the 3pi threshold (9mpi^2) this returns 0.
     /////////////////////////////////////////////////////////////////////
     double Gamma_a1_PionFit(const double & q2,const double & Mrho,
 			   const double & mpi2);
+
+    /////////////////////////////////////////////////////////////////////
+    // Energy-dependent K*(892) width of the KKpi modes, [1203.3955]
+    // Eq.(kstarwidth), SU(2) limit, K pi and K eta loops:
+    //   Gamma_K*(q2) = M_K* q2/(128 pi F^2)
+    //                  [ lambda^3/2(1,mK2/q2,mpi2/q2) + lambda^3/2(1,mK2/q2,meta2/q2) ].
+    /////////////////////////////////////////////////////////////////////
+    double  GammaKstar(const double & q2,const double & MKst,const double & F,
+		       const double & mK2,const double & mpi2,const double & meta2);
+
+    /////////////////////////////////////////////////////////////////////
+    // Axial-vector form factors of the KKpi channels, [1203.3955] Sec.2.2
+    // and 2.3, in that paper's momentum labels (Table 1), with
+    // s1=(p2+p3)^2, s2=(p1+p3)^2, s3=(p1+p2)^2, and its sign convention for
+    // these sections: propagators 1/(M^2-s-i M Gamma(s)) and the a1 factor
+    // q2/(M_A^2-q2-i M_A Gamma_A(q2)).  Isospin limit (one kaon mass, one
+    // pion mass); rho width Eq.(rhowidth_su2), K* width Eq.(kstarwidth).
+    // Each form factor is returned split as
+    //   F_i = rest_i + q2/(M_A^2-q2-i M_A Gamma_A(q2)) vertex_i,
+    // rest = F^chi + F^R and vertex = F^RR without the a1 factor, so that a
+    // caller can supply any a1 width - or none, as the a1 width itself
+    // needs (see the RChL2012 a1 width in FF_0_PPP.C, whose KKpi cuts these
+    // are).
+    //   KPiK_Axial:   K-(p1) pi-(p2) K+(p3), also K0 pi- K0bar:
+    //                 [0] = F1, [1] = F2, Eqs.(f21),(f11)
+    //   KPi0K0_Axial: K-(p1) pi0(p2) K0(p3): [0] = F2, [1] = F3,
+    //                 Eqs.(f12),(f22)
+    // lambda_p, lambda_pp are the Eq.(8) couplings of the three-pion
+    // current (H(x,y) and A^RR/B^RR need them; they are not zero here).
+    /////////////////////////////////////////////////////////////////////
+    struct KKPi_Couplings {
+      double F, FV, FA, GV, lambda_p, lambda_pp;
+      double Mrho, MKst, mK2, mpi2, meta2;
+    };
+    void KPiK_Axial(const KKPi_Couplings & c,const double & q2,
+		    const double & s1,const double & s2,const double & s3,
+		    Complex rest[2],Complex vertex[2]);
+    void KPi0K0_Axial(const KKPi_Couplings & c,const double & q2,
+		      const double & s1,const double & s2,const double & s3,
+		      Complex rest[2],Complex vertex[2]);
   }
 }
 

@@ -5,6 +5,9 @@
 #include "METOOLS/HadronCurrents/FormFactors/KpiSWave_Tables.H"
 #include "METOOLS/HadronCurrents/Tools.H"
 #include <algorithm>
+#include <iomanip>
+#include <map>
+#include <memory>
 
 using namespace METOOLS;
 using namespace ATOOLS;
@@ -227,24 +230,48 @@ protected:
   // NOT switched to Flavour(kf_xxx)-based defaults; only the KS-style
   // rho'/rho''/omega mixing weights get that (and the unified
   // gamma/delta/alpha nomenclature) treatment here.
-  double  m_F_rchl, m_FV_rchl, m_FA_rchl, m_GV_rchl;
-  double  m_Mrho_rchl, m_Mrhop_rchl, m_Grhop_rchl, m_betarhop, m_Ma1_rchl;
-  double  m_Msigma, m_Gsigma0, m_Rsigma2;
-  double  m_alphasigma, m_betasigma, m_gammasigma, m_deltasigma;
-  bool    m_sigmaRRq2;  // q2 in the sigma double-resonance term, see FF_RChL2012
+  //
+  // The parameters of ONE charge mode.  Each form factor holds its own
+  // mode's set (m_rchl) and the other mode's (m_rchlOther): the a1 width is
+  // one function of q2, built from both three-pion cuts (RChL_BuildA1Width),
+  // so either mode needs both.  The other mode's set is read from the same
+  // settings, so the model's keys have to be given identically in both
+  // channels - the decay table's defaults and the tune cards do that.
+  struct RChL3PiPars {
+    bool    charged;          // pi- pi- pi+ (true) or pi0 pi0 pi- (false)
+    double  F, FV, FA, GV, Mrho, Mrhop, Grhop, betarhop, Ma1;
+    double  Msigma, Gsigma0, Rsigma2;
+    double  alphasigma, betasigma, gammasigma, deltasigma;
+    bool    sigmaRRq2;        // q2 in the sigma double-resonance term, see RChL3Pi_Parts
+    double  lambda_p, lambda_pp;
+    Summed_Propagator * rhos; // Eq.(11) rho + rho' tower
+  };
+  RChL3PiPars m_rchl, m_rchlOther;
   double  m_mpi2_iso; // isospin-averaged pion mass^2 used throughout RChL
-  double  m_lambda_p, m_lambda_pp;
-  // p_rhos (declared above, shared with the KS branch) is reused here:
-  // built via RChL_BW propagators + Summed_Propagator's weighted-sum-
-  // then-normalise behaviour, which reproduces Eq.(11)'s combined
-  // rho+rho' propagator exactly (Add(rho,1)+Add(rhop,betarhop), then
-  // Summed_Propagator divides by (1+betarhop) automatically). p_a1s
-  // is NOT reused for RChL2012: the a1 term needs a q^2 numerator (not
-  // a plain BreitWigner's M^2) and uses the Eq.(17)-of-1310.1053
-  // polynomial width fit rather than a Total_Width_Base/Line_Shapes
-  // lineshape, neither of which fits the existing Propagator_Base
-  // hierarchy without a larger refactor - so it stays inline in
-  // FF_RChL2012 below.
+  // m_rchl.rhos is also p_rhos (declared above, shared with the KS branch):
+  // RChL_BW propagators in a Summed_Propagator, whose weighted-sum-then-
+  // normalise behaviour reproduces Eq.(11)'s combined rho+rho' propagator
+  // exactly (Add(rho,1)+Add(rhop,betarhop), divided by (1+betarhop)).
+  // p_a1s is NOT reused for RChL2012: the a1 term has a q^2 numerator and
+  // its own width, below, so it stays inline in FF_RChL2012.
+  //
+  // a1 width.  a1Width_rchl3pi: 1 (default) is Gamma_a1(q2) of 1203.3955
+  // Eq.(a1width) - the a1 off-shell width of Dumm et al., 0911.4436 - from
+  // this model's own amplitudes, tabulated at construction; 0 is the
+  // polynomial of 1310.1053 Eq.(17), which belongs to that paper's own
+  // best fit only (see RChL_BuildA1Width).
+  int     m_a1WidthRChL;
+  std::shared_ptr<const std::vector<double> > p_RChLGa1;
+  double  m_RChLq0, m_RChLdq;
+
+  void    Read_RChL3Pi(const FF_Parameters & params,const bool charged,
+		       RChL3PiPars & P) const;
+  static void RChL3Pi_Parts(const RChL3PiPars & P,const double & mpi2,
+			    const double & q2,const double & s1,
+			    const double & s2,const double & s3,
+			    Complex & rest,Complex & vertex);
+  void    RChL_BuildA1Width();
+  double  RChL_a1Width(const double & q2) const;
 
   // --- CLEO 3pi form factors (KS_CLEO=102) ---
   // D.M. Asner et al. (CLEO), Phys.Rev.D61 (2000) 012002, hep-ex/9902022:
@@ -299,16 +326,19 @@ F1_0_PiPlusPiZeroPiZero::F1_0_PiPlusPiZeroPiZero(const FF_Parameters & params)  
   p_a1s(NULL), p_rhos(NULL),
   p_TK1a(NULL), p_TKstar1_pi0K(NULL), m_xiK1(0.33,0.),
   m_isF2(false), 
-  m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.))
+  m_fpi((*params.p_model)("fpi",0.1307)/sqrt(2.)),
+  m_mpi2_iso(0.), m_a1WidthRChL(1), m_RChLq0(0.), m_RChLdq(0.)
 {
-  m_sigmaRRq2 = true;   // set from the card in Construct_3Pi for RChL2012
+  m_rchl.rhos = m_rchlOther.rhos = NULL;  // set in Construct_3Pi for RChL2012
   if (params.m_name=="F2_0_PPP") m_isF2 = true;
   Construct(params);
 }
 
 F1_0_PiPlusPiZeroPiZero::~F1_0_PiPlusPiZeroPiZero() {
   if (p_a1s)  { delete p_a1s;  p_a1s  = NULL; }
+  // p_rhos is m_rchl.rhos for RChL2012: deleted once, here.
   if (p_rhos) { delete p_rhos; p_rhos = NULL; }
+  if (m_rchlOther.rhos) { delete m_rchlOther.rhos; m_rchlOther.rhos = NULL; }
   if (p_TK1a)         { delete p_TK1a;         p_TK1a         = NULL; }
   if (p_TKstar1_pi0K) { delete p_TKstar1_pi0K; p_TKstar1_pi0K = NULL; }
 }
@@ -374,53 +404,17 @@ void F1_0_PiPlusPiZeroPiZero::Construct_3Pi(const FF_Parameters & params) {
     // m_norm above is the KS normalisation (i*2sqrt2*Vud/(3 fpi));
     // RChL2012 uses its own normalisation N=cos(theta_C)/F, Eq.(3.1)
     // of 1509.09140 / just below Eq.(1) of 1203.3955 - overwrite it.
-    m_norm       = (*params.p_model)("Vud",Tools::Vud) /
-                   (*params.p_model)("F_rchl3pi",0.091337);
-    m_F_rchl     = (*params.p_model)("F_rchl3pi",0.091337);
-    m_FV_rchl    = (*params.p_model)("FV_rchl3pi",0.168652);
-    m_FA_rchl    = (*params.p_model)("FA_rchl3pi",0.131425);
-    m_GV_rchl    = sqr(m_F_rchl)/m_FV_rchl; // GV=F^2/FV constraint
-    // Resonance masses and widths: the rho, rho' and sigma default to the
-    // particle database (Sherpa's PDG values) and can be set per channel in
-    // Decaydata.yaml or on the run card.  They are NOT 1310.1053's fitted
-    // values (Table I: Mrho 0.771849, Mrho' 1.35, Gamma_rho' 0.448379,
-    // Msigma 0.487512, Gamma_sigma 0.7), which belong to its fit and have to
-    // be stated explicitly to be used.  The rho width is not a parameter in
-    // this model: it follows from Mrho and F, 1203.3955 Eq.(rhowidth_su2).
-    const Flavour rhoFlav(m_mode==FF_0_PPP_mode::piP_pi0_pi0 ?
-			  kf_rho_770_plus : kf_rho_770);
-    const Flavour rhopFlav(kf_rho_1450_plus), sigmaFlav(kf_f_0_600);
-    m_Mrho_rchl  = (*params.p_model)("Mrho_rchl3pi", rhoFlav.HadMass());
-    m_Mrhop_rchl = (*params.p_model)("Mrhop_rchl3pi",rhopFlav.HadMass());
-    m_Grhop_rchl = (*params.p_model)("Grhop_rchl3pi",rhopFlav.Width());
-    m_betarhop   = (*params.p_model)("betarhop_rchl3pi",-0.318551);
-    m_Ma1_rchl   = (*params.p_model)("Ma1_rchl3pi",1.091865);
-    m_Msigma     = (*params.p_model)("Msigma_rchl3pi",sigmaFlav.HadMass());
-    m_Gsigma0    = (*params.p_model)("Gsigma_rchl3pi",sigmaFlav.Width());
-    m_sigmaRRq2  = ((*params.p_model)("sigmaRRq2_rchl3pi",1.)!=0.);
-    m_mpi2_iso   = sqr((Flavour(kf_pi).HadMass()*1.+
-			2.*Flavour(kf_pi_plus).HadMass())/3.);
-    m_lambda_p   = RChL::Lambda_p(m_F_rchl,m_FA_rchl,m_GV_rchl);
-    m_lambda_pp  = RChL::Lambda_pp(m_F_rchl,m_GV_rchl,m_lambda_p);
-    if (m_mode==FF_0_PPP_mode::piM_piP_piP) {
-      // Table I of 1310.1053: default (unscaled) sigma couplings.
-      m_alphasigma = (*params.p_model)("alphasigma_rchl3pi",-8.795938);
-      m_betasigma  = (*params.p_model)("betasigma_rchl3pi", 9.763701);
-      m_gammasigma = (*params.p_model)("gammasigma_rchl3pi",1.264263);
-      m_deltasigma = (*params.p_model)("deltasigma_rchl3pi",0.656762);
-      m_Rsigma2    = sqr((*params.p_model)("Rsigma_rchl3pi",1.866913));
-    }
-    else {
-      // pi0 pi0 pi-: Eq.(ff_sig_pi0) of 1310.1053 - only alpha0_sigma,
-      // gamma0_sigma are used (single sigma term in s3, see FF_RChL2012),
-      // with the 0.63 scaling factor of the paper folded into these
-      // defaults, and R_sigma from its Eq.(fit1).  The sigma mass and width
-      // are the same settable keys as for pi- pi- pi+ above.
-      m_alphasigma = (*params.p_model)("alpha0sigma_rchl3pi",0.63*1.139486);
-      m_gammasigma = (*params.p_model)("gamma0sigma_rchl3pi",0.63*0.889769);
-      m_betasigma  = 0.; m_deltasigma = 0.;
-      m_Rsigma2    = sqr((*params.p_model)("Rsigma0_rchl3pi",0.000013));
-    }
+    m_mpi2_iso = sqr((Flavour(kf_pi).HadMass()*1.+
+		      2.*Flavour(kf_pi_plus).HadMass())/3.);
+    const bool charged = (m_mode==FF_0_PPP_mode::piM_piP_piP);
+    Read_RChL3Pi(params, charged,m_rchl);
+    Read_RChL3Pi(params,!charged,m_rchlOther);
+    m_norm = (*params.p_model)("Vud",Tools::Vud)/m_rchl.F;
+    m_a1WidthRChL = int((*params.p_model)("a1Width_rchl3pi",1.));
+    if (m_a1WidthRChL==1) RChL_BuildA1Width();
+    else if (m_a1WidthRChL!=0)
+      THROW(fatal_error,"a1Width_rchl3pi must be 1 (computed a1 width) "
+	    "or 0 (1310.1053 Eq.(17) polynomial).");
   }
 
   if (GetModel()==FF_0_PPP_Base::Model::KS) {
@@ -462,7 +456,7 @@ void F1_0_PiPlusPiZeroPiZero::Construct_3Pi(const FF_Parameters & params) {
     }
   }
   else if (GetModel()==FF_0_PPP_Base::Model::RChL2012) {
-    // Reuses the SAME p_rhos member the KS branch above populates,
+    // p_rhos is the SAME member the KS branch above populates,
     // built the same way (RChL_BW propagators inside a
     // Summed_Propagator), so FF_RChL2012 below can just call
     // (*p_rhos)(s) exactly like FF_KS does. Summed_Propagator's
@@ -477,11 +471,8 @@ void F1_0_PiPlusPiZeroPiZero::Construct_3Pi(const FF_Parameters & params) {
     // pi0 pi0 pi-, the rho in each pi0-pi- sub-system is CHARGED
     // (rho- -> pi0 pi-); for pi- pi- pi+, the rho in the pi-pi+
     // sub-system is NEUTRAL (rho0 -> pi+ pi-, hence also mixing with
-    // omega there in the KS branch).
-    const Flavour rhoFlav(m_mode==FF_0_PPP_mode::piP_pi0_pi0 ?
-			  kf_rho_770_plus : kf_rho_770);
-    p_rhos = RChLRhoTower(rhoFlav,m_Mrho_rchl,m_F_rchl,m_Mrhop_rchl,
-			  m_Grhop_rchl,m_betarhop,m_mpi2_iso);
+    // omega there in the KS branch).  The tower is built in Read_RChL3Pi.
+    p_rhos = m_rchl.rhos;
   }
 }
 
@@ -622,8 +613,8 @@ static void GaussLegendre(const size_t n,std::vector<double> & x,
 // -J_T.J_T^* (>= 0) for J^mu = T^mu_nu sum_i x_i p_i^nu, T = g - q q/q^2,
 // q = p1+p2+p3, from the invariants s1 = (p2+p3)^2, s2 = (p1+p3)^2,
 // s3 = (p1+p2)^2:  p_i.p_j = (s_ij-m_i^2-m_j^2)/2, q.p_i = (q^2+m_i^2-s_jk)/2.
-// This is the integrand of CLEO's a1 width, Eq.(a13pi) (-J_T.J_T^* =
-// -(J.J^* - |q.J|^2/q^2)).
+// This is the integrand of every a1 width here (-J_T.J_T^* = -(J.J^* -
+// |q.J|^2/q^2)): CLEO's Eq.(a13pi) and the RChL Eq.(a1width).
 static double MinusJTJT(const double & q2,const double m[3],const double & s1,
 			const double & s2,const double & s3,const Complex x[3]) {
   const double sp[3][3] = { {0.,s3,s2}, {s3,0.,s1}, {s2,s1,0.} };
@@ -922,6 +913,115 @@ FF_RChiPT(const double & s123,const double & s1,const double & s2) {
 //
 ///////////////////////////////////////////////////////////////////////////
 
+void F1_0_PiPlusPiZeroPiZero::
+Read_RChL3Pi(const FF_Parameters & params,const bool charged,
+	     RChL3PiPars & P) const {
+  P.charged = charged;
+  P.F       = (*params.p_model)("F_rchl3pi",0.091337);
+  P.FV      = (*params.p_model)("FV_rchl3pi",0.168652);
+  P.FA      = (*params.p_model)("FA_rchl3pi",0.131425);
+  P.GV      = sqr(P.F)/P.FV; // GV=F^2/FV constraint
+  // Resonance masses and widths: the rho, rho' and sigma default to the
+  // particle database (Sherpa's PDG values) and can be set per channel in
+  // Decaydata.yaml or on the run card.  They are NOT 1310.1053's fitted
+  // values (Table I: Mrho 0.771849, Mrho' 1.35, Gamma_rho' 0.448379,
+  // Msigma 0.487512, Gamma_sigma 0.7), which belong to its fit and have to
+  // be stated explicitly to be used.  The rho width is not a parameter in
+  // this model: it follows from Mrho and F, 1203.3955 Eq.(rhowidth_su2).
+  // The rho in pi- pi- pi+ is the neutral one (pi- pi+ pairs), in pi0 pi0 pi-
+  // the charged one (pi0 pi- pairs).
+  const Flavour rhoFlav(charged ? kf_rho_770 : kf_rho_770_plus);
+  const Flavour rhopFlav(kf_rho_1450_plus), sigmaFlav(kf_f_0_600);
+  P.Mrho      = (*params.p_model)("Mrho_rchl3pi", rhoFlav.HadMass());
+  P.Mrhop     = (*params.p_model)("Mrhop_rchl3pi",rhopFlav.HadMass());
+  P.Grhop     = (*params.p_model)("Grhop_rchl3pi",rhopFlav.Width());
+  P.betarhop  = (*params.p_model)("betarhop_rchl3pi",-0.318551);
+  P.Ma1       = (*params.p_model)("Ma1_rchl3pi",1.091865);
+  P.Msigma    = (*params.p_model)("Msigma_rchl3pi",sigmaFlav.HadMass());
+  P.Gsigma0   = (*params.p_model)("Gsigma_rchl3pi",sigmaFlav.Width());
+  P.sigmaRRq2 = ((*params.p_model)("sigmaRRq2_rchl3pi",1.)!=0.);
+  P.lambda_p  = RChL::Lambda_p(P.F,P.FA,P.GV);
+  P.lambda_pp = RChL::Lambda_pp(P.F,P.GV,P.lambda_p);
+  if (charged) {
+    // Table I of 1310.1053: default (unscaled) sigma couplings.
+    P.alphasigma = (*params.p_model)("alphasigma_rchl3pi",-8.795938);
+    P.betasigma  = (*params.p_model)("betasigma_rchl3pi", 9.763701);
+    P.gammasigma = (*params.p_model)("gammasigma_rchl3pi",1.264263);
+    P.deltasigma = (*params.p_model)("deltasigma_rchl3pi",0.656762);
+    P.Rsigma2    = sqr((*params.p_model)("Rsigma_rchl3pi",1.866913));
+  }
+  else {
+    // pi0 pi0 pi-: Eq.(ff_sig_pi0) of 1310.1053 - only alpha0_sigma,
+    // gamma0_sigma are used (single sigma term in s3, see RChL3Pi_Parts),
+    // with the 0.63 scaling factor of the paper folded into these
+    // defaults, and R_sigma from its Eq.(fit1).  The sigma mass and width
+    // are the same settable keys as for pi- pi- pi+ above.
+    P.alphasigma = (*params.p_model)("alpha0sigma_rchl3pi",0.63*1.139486);
+    P.gammasigma = (*params.p_model)("gamma0sigma_rchl3pi",0.63*0.889769);
+    P.betasigma  = 0.; P.deltasigma = 0.;
+    P.Rsigma2    = sqr((*params.p_model)("Rsigma0_rchl3pi",0.000013));
+  }
+  P.rhos = RChLRhoTower(rhoFlav,P.Mrho,P.F,P.Mrhop,P.Grhop,P.betarhop,m_mpi2_iso);
+}
+
+// The paper's F1(q2,s1,s2) of one charge mode, split as
+//   F1 = rest + q2/(q2-M_A^2+i M_A Gamma_A(q2)) vertex,
+// rest = F1^chi + F1^R + sigma^R and vertex = F1^RR + sigma^RR without the
+// a1 factor, so that the a1 width can be supplied separately - or left out,
+// as Gamma_a1 itself needs (RChL_BuildA1Width).  (s1,s2,s3) in the paper's
+// labels; the mode's overall sign (R3pi) is applied by the caller.
+void F1_0_PiPlusPiZeroPiZero::
+RChL3Pi_Parts(const RChL3PiPars & P,const double & mpi2,const double & q2,
+	      const double & s1,const double & s2,const double & s3,
+	      Complex & rest,Complex & vertex) {
+  const Complex propS1 = (*P.rhos)(s1), propS2 = (*P.rhos)(s2);
+
+  // Fchi_1
+  const Complex Fchi1(-2.*sqrt(2.)/3.,0.);
+
+  // FR_1, Eq.(6)
+  const double cR = (sqrt(2.)*P.FV*P.GV)/(3.*sqr(P.F));
+  const Complex FR1 = cR *
+    ( 3.*s1*propS1 -
+      (2.*P.GV/P.FV-1.) *
+      ( (2.*q2-2.*s1-s3)*propS1 + (s3-s1)*propS2 ) );
+
+  // FRR_1, Eq.(6), without the a1 factor
+  const double Ha  = RChL::H(s1/q2,mpi2/q2,P.lambda_p,P.lambda_pp);
+  const double Hb  = RChL::H(s2/q2,mpi2/q2,P.lambda_p,P.lambda_pp);
+  const double cRR = (4.*P.FA*P.GV)/(3.*sqr(P.F));
+  vertex = cRR *
+    ( ( -(P.lambda_p+P.lambda_pp)*3.*s1 + Ha*(2.*q2+s1-s3) ) * propS1 +
+      Hb*(s3-s1)*propS2 );
+
+  // sigma extension, Eqs.(3)-(4) [pi-pi-pi+] or Eq.(15) [pi0pi0pi-].
+  const double Ms2 = sqr(P.Msigma);
+  Complex sigmaR, sigmaRR;
+  if (P.charged) {
+    const Complex S1 = RChL::BWsigma(s1,Ms2,P.Msigma,RChL::GammaSigma(s1,Ms2,P.Gsigma0,mpi2))*
+                       RChL::Fsigma(q2,s1,mpi2,P.Rsigma2);
+    const Complex S2 = RChL::BWsigma(s2,Ms2,P.Msigma,RChL::GammaSigma(s2,Ms2,P.Gsigma0,mpi2))*
+                       RChL::Fsigma(q2,s2,mpi2,P.Rsigma2);
+    sigmaR  = P.alphasigma*S1 + P.betasigma*S2;
+    sigmaRR = P.gammasigma*S1 + P.deltasigma*S2;
+  }
+  else {
+    const Complex S3 = RChL::BWsigma(s3,Ms2,P.Msigma,RChL::GammaSigma(s3,Ms2,P.Gsigma0,mpi2))*
+                       RChL::Fsigma(q2,s3,mpi2,P.Rsigma2);
+    sigmaR  = P.alphasigma*S3;
+    sigmaRR = P.gammasigma*S3;
+  }
+  rest = Fchi1 + FR1 + cR*sigmaR;
+  // The sigma double-resonance term carries q2/(q2-M_a1^2+...), as printed in
+  // 1310.1053 Eqs.(ff_sig),(ff_sig_pi0): the same a1 factor as the rho term,
+  // and the q2 is what makes every a1-exchange term vanish at q2 -> 0, as the
+  // chiral limit requires.  The paper's own numbers are not consistent with
+  // it: with Table I and the printed q2 the pi- pi- pi+ width comes out about
+  // 2% above the published 1.9974e-13 GeV, without it in agreement.
+  // sigmaRRq2_rchl3pi: 0 drops the q2, to reproduce the published fit.
+  vertex += cRR*(P.sigmaRRq2 ? 1. : 1./q2)*sigmaRR;
+}
+
 Complex F1_0_PiPlusPiZeroPiZero::
 FF_RChL2012(const double & s123,const double & s1_arg,const double & s2_arg) {
   double q2 = s123, s3 = s1_arg, s2 = s2_arg;
@@ -933,65 +1033,174 @@ FF_RChL2012(const double & s123,const double & s1_arg,const double & s2_arg) {
   // so the (p1-p3) slot holds the paper's F1 with s1 and s2 exchanged and the
   // (p2-p3) slot holds the paper's F1 as written.
   if (!m_isF2) std::swap(s1,s2);
-  double R3pi = (m_mode==FF_0_PPP_mode::piM_piP_piP ? 1. : -1.);
-
-  if (p_rhos==NULL) return Complex(0.,0.);
-  Complex propS1 = (*p_rhos)(s1), propS2 = (*p_rhos)(s2);
-
-  // Fchi_1
-  Complex Fchi1(-2.*sqrt(2.)/3.,0.);
-
-  // FR_1, Eq.(6)
-  Complex FR1 = (sqrt(2.)*m_FV_rchl*m_GV_rchl)/(3.*sqr(m_F_rchl)) *
-    ( 3.*s1*propS1 -
-      (2.*m_GV_rchl/m_FV_rchl-1.) *
-      ( (2.*q2-2.*s1-s3)*propS1 + (s3-s1)*propS2 ) );
-
-  // FRR_1, Eq.(6)
-  double Ha = RChL::H(s1/q2,m_mpi2_iso/q2,m_lambda_p,m_lambda_pp);
-  double Hb = RChL::H(s2/q2,m_mpi2_iso/q2,m_lambda_p,m_lambda_pp);
+  if (m_rchl.rhos==NULL) return Complex(0.,0.);
+  Complex rest, vertex;
+  RChL3Pi_Parts(m_rchl,m_mpi2_iso,q2,s1,s2,s3,rest,vertex);
   // a1 propagator with the causal +iM Gamma, like the rho and rho' (RChL_BW):
   // see the RChL_BW comment in Propagator.H for why the sign printed in
   // 1203.3955's three-pion formulas is not the one to use.
-  Complex a1prop = q2/Complex(q2-sqr(m_Ma1_rchl),
-			      m_Ma1_rchl*RChL::Gamma_a1_PionFit(q2,m_Mrho_rchl,m_mpi2_iso));
-  Complex FRR1 = (4.*m_FA_rchl*m_GV_rchl)/(3.*sqr(m_F_rchl)) * a1prop *
-    ( ( -(m_lambda_p+m_lambda_pp)*3.*s1 + Ha*(2.*q2+s1-s3) ) * propS1 +
-      Hb*(s3-s1)*propS2 );
+  const double  Ma1    = m_rchl.Ma1;
+  const Complex a1prop = q2/Complex(q2-sqr(Ma1),Ma1*RChL_a1Width(q2));
+  const double  R3pi   = (m_rchl.charged ? 1. : -1.);
+  return (rest+a1prop*vertex) * R3pi;
+}
 
-  // sigma extension, Eqs.(3)-(4) [pi-pi-pi+] or Eq.(15) [pi0pi0pi-].
-  double GsigS1 = RChL::GammaSigma(s1,sqr(m_Msigma),m_Gsigma0,m_mpi2_iso);
-  double GsigS2 = RChL::GammaSigma(s2,sqr(m_Msigma),m_Gsigma0,m_mpi2_iso);
-  double GsigS3 = RChL::GammaSigma(s3,sqr(m_Msigma),m_Gsigma0,m_mpi2_iso);
-  Complex sigmaR, sigmaRR;
-  if (m_mode==FF_0_PPP_mode::piM_piP_piP) {
-    sigmaR  = m_alphasigma*RChL::BWsigma(s1,sqr(m_Msigma),m_Msigma,GsigS1)*
-                          RChL::Fsigma(q2,s1,m_mpi2_iso,m_Rsigma2)
-            + m_betasigma*RChL::BWsigma(s2,sqr(m_Msigma),m_Msigma,GsigS2)*
-                          RChL::Fsigma(q2,s2,m_mpi2_iso,m_Rsigma2);
-    sigmaRR = m_gammasigma*RChL::BWsigma(s1,sqr(m_Msigma),m_Msigma,GsigS1)*
-                          RChL::Fsigma(q2,s1,m_mpi2_iso,m_Rsigma2)
-            + m_deltasigma*RChL::BWsigma(s2,sqr(m_Msigma),m_Msigma,GsigS2)*
-                          RChL::Fsigma(q2,s2,m_mpi2_iso,m_Rsigma2);
-  }
-  else {
-    sigmaR  = m_alphasigma*RChL::BWsigma(s3,sqr(m_Msigma),m_Msigma,GsigS3)*
-                          RChL::Fsigma(q2,s3,m_mpi2_iso,m_Rsigma2);
-    sigmaRR = m_gammasigma*RChL::BWsigma(s3,sqr(m_Msigma),m_Msigma,GsigS3)*
-                          RChL::Fsigma(q2,s3,m_mpi2_iso,m_Rsigma2);
-  }
-  FR1  += (sqrt(2.)*m_FV_rchl*m_GV_rchl)/(3.*sqr(m_F_rchl)) * sigmaR;
-  // The sigma double-resonance term carries q2/(q2-M_a1^2+...), as printed in
-  // 1310.1053 Eqs.(ff_sig),(ff_sig_pi0): the same a1 factor as the rho term,
-  // and the q2 is what makes every a1-exchange term vanish at q2 -> 0, as the
-  // chiral limit requires.  The paper's own numbers are not consistent with
-  // it: with Table I and the printed q2 the pi- pi- pi+ width comes out about
-  // 2% above the published 1.9974e-13 GeV, without it in agreement.
-  // sigmaRRq2_rchl3pi: 0 drops the q2, to reproduce the published fit.
-  FRR1 += (4.*m_FA_rchl*m_GV_rchl)/(3.*sqr(m_F_rchl)) *
-          (m_sigmaRRq2 ? a1prop : a1prop/q2) * sigmaRR;
+double F1_0_PiPlusPiZeroPiZero::RChL_a1Width(const double & q2) const {
+  if (m_a1WidthRChL==0)
+    return RChL::Gamma_a1_PionFit(q2,m_rchl.Mrho,m_mpi2_iso);
+  if (q2<=m_RChLq0) return 0.;
+  // linear interpolation, extrapolated from the last interval beyond the grid
+  const std::vector<double> & G = *p_RChLGa1;
+  const size_t i = Min(size_t((q2-m_RChLq0)/m_RChLdq),G.size()-2);
+  const double t = (q2-m_RChLq0)/m_RChLdq-i;
+  return (1.-t)*G[i]+t*G[i+1];
+}
 
-  return (Fchi1+FR1+FRR1) * R3pi;
+///////////////////////////////////////////////////////////////////////////
+//
+// The a1 off-shell width of the RChL current, 1203.3955 Eq.(a1width), from
+// Dumm, Pich, Portoles, Roig, Phys.Lett.B685 (2010) 158, 0911.4436:
+//
+//   Gamma_a1(q2) = 2 Gamma^pi + 2 Gamma^K(+-) + Gamma^K0,
+//   Gamma^cut(q2) = S/(192 (2pi)^3 F_A^2 F^2 M_a1) (M_a1^2/q2 - 1)^2
+//                   int ds dt [-T.T^*],   T^mu = sum_i V_i^mu F_i,
+//
+// the imaginary part of the axial-vector two-point function at two loops,
+// through the three-meson cuts (Cutkosky), matched to a resummed a1
+// propagator.  Three points that decide what goes in:
+//  - T is the WHOLE 1+ axial current of each cut, F^chi + F^R + F^RR and
+//    both sigma terms: the diagrams of 0911.4436 Fig.1.  Nothing is switched
+//    off.  Only the pseudoscalar F4 (0-) and the vector F5 stay out, by
+//    their quantum numbers.
+//  - It is a fixed-order (two-loop) term, so the a1 propagator inside T is
+//    the bare one, and (M_a1^2/q2-1)^2 cancels it exactly: with
+//    F = rest + bare*vertex, (M_a1^2/q2-1)*bare = -1 in the three-pion
+//    sections' sign convention (bare = q2/(q2-M_a1^2)) and +1 in the KKpi
+//    sections' (bare = q2/(M_a1^2-q2)), so the integrand is
+//    |(M_a1^2/q2-1) rest -+ vertex|^2, finite at q2 = M_a1^2.  No circularity.
+//  - The cuts: pi- pi- pi+ and pi0 pi0 pi- (S = 1/2 each; equal in the
+//    isospin limit, which is the paper's "2 Gamma^pi") are computed
+//    separately, each with its own mode's form factors, because the sigma
+//    couplings of the two modes are set independently; K- pi- K+ (S = 1, twice:
+//    K0 pi- K0bar is equal in the isospin limit) and K- pi0 K0 (S = 1), with
+//    the KKpi form factors of 1203.3955 Sec.2.2-2.3 (RChL::KPiK_Axial,
+//    RChL::KPi0K0_Axial) and this model's F, F_V, F_A, lambda', lambda''.
+// The real part of the loop is dropped, as in the paper.
+//
+// 1310.1053 Sec.4 is why this is computed here and not taken from a table:
+// a width tabulated once was "largely insufficient", and its fit
+// re-tabulated Gamma_a1 whenever the parameters changed.  The Eq.(17)
+// polynomial (a1Width_rchl3pi: 0) is that paper's width at its own best fit.
+// Isospin-limit masses throughout (one pion, one kaon mass), as in the paper;
+// the K* mass is the database average of K*(892)+ and K*(892)0.
+//
+// One table per parameter set: the F1 and F2 slots of both modes share it.
+//
+///////////////////////////////////////////////////////////////////////////
+
+void F1_0_PiPlusPiZeroPiZero::RChL_BuildA1Width() {
+  const RChL3PiPars & Pc = (m_rchl.charged ? m_rchl : m_rchlOther);
+  const RChL3PiPars & Pn = (m_rchl.charged ? m_rchlOther : m_rchl);
+  const size_t nQ = 400, nGL = 40;
+  const double qmax = 3.5;
+  m_RChLq0 = 9.*m_mpi2_iso;
+  m_RChLdq = (qmax-m_RChLq0)/(nQ-1);
+  RChL::KKPi_Couplings kk;
+  kk.F = Pc.F; kk.FV = Pc.FV; kk.FA = Pc.FA; kk.GV = Pc.GV;
+  kk.lambda_p = Pc.lambda_p; kk.lambda_pp = Pc.lambda_pp;
+  kk.Mrho  = Pc.Mrho;
+  kk.MKst  = 0.5*(Flavour(kf_K_star_892_plus).HadMass()+Flavour(kf_K_star_892).HadMass());
+  kk.mK2   = sqr(0.5*(Flavour(kf_K_plus).HadMass()+Flavour(kf_K).HadMass()));
+  kk.mpi2  = m_mpi2_iso;
+  kk.meta2 = sqr(Flavour(kf_eta).HadMass());
+
+  // Every number the table depends on.
+  std::vector<double> key = { double(nQ), double(nGL), qmax, m_mpi2_iso,
+			      kk.MKst, kk.mK2, kk.meta2 };
+  for (const RChL3PiPars * P : { &Pc, &Pn })
+    for (double v : { P->F, P->FV, P->FA, P->Mrho, P->Mrhop, P->Grhop, P->betarhop,
+		      P->Ma1, P->Msigma, P->Gsigma0, P->Rsigma2, P->alphasigma,
+		      P->betasigma, P->gammasigma, P->deltasigma, double(P->sigmaRRq2) })
+      key.push_back(v);
+  static std::map<std::vector<double>,std::shared_ptr<const std::vector<double> > > cache;
+  const auto hit = cache.find(key);
+  if (hit!=cache.end()) { p_RChLGa1 = hit->second; return; }
+
+  // The four cuts at q2 with Gauss-Legendre order gx.size():
+  // [0] pi- pi- pi+, [1] pi0 pi0 pi-, [2] K- pi- K+ and K0 pi- K0bar, [3] K- pi0 K0.
+  const double mpi = sqrt(m_mpi2_iso), mK = sqrt(kk.mK2);
+  const double m3pi[3] = { mpi, mpi, mpi }, mKpiK[3] = { mK, mpi, mK };
+  auto cuts = [&](const double & q2,const std::vector<double> & gx,
+		  const std::vector<double> & gw,double G[4]) {
+    const double M2 = sqr(Pc.Ma1), r = M2/q2-1.;
+    for (int k=0;k<2;k++) {
+      const RChL3PiPars & P = (k==0 ? Pc : Pn);
+      const double pre = 0.5/(192.*pow(2.*M_PI,3)*sqr(P.FA*P.F)*P.Ma1);
+      G[k] = pre*DalitzIntegral(q2,m3pi,gx,gw,[&](const double & s1,const double & s2,
+						   const double & s3) {
+	  Complex r1, v1, r2, v2;
+	  RChL3Pi_Parts(P,m_mpi2_iso,q2,s1,s2,s3,r1,v1);   // F1(q2,s1,s2)
+	  RChL3Pi_Parts(P,m_mpi2_iso,q2,s2,s1,s3,r2,v2);   // F2 = F1(q2,s2,s1)
+	  const Complex F1 = r*r1-v1, F2 = r*r2-v2;         // (M^2/q2-1)*bare = -1
+	  const Complex x[3] = { F2, F1, -F1-F2 };          // c1 = 1, c2 = -1
+	  return MinusJTJT(q2,m3pi,s1,s2,s3,x); });
+    }
+    const double pre = 1./(192.*pow(2.*M_PI,3)*sqr(Pc.FA*Pc.F)*Pc.Ma1);
+    G[2] = 2.*pre*DalitzIntegral(q2,mKpiK,gx,gw,[&](const double & s1,const double & s2,
+						     const double & s3) {
+	Complex rr[2], vv[2];
+	RChL::KPiK_Axial(kk,q2,s1,s2,s3,rr,vv);
+	const Complex F1 = r*rr[0]+vv[0], F2 = r*rr[1]+vv[1]; // (M^2/q2-1)*bare = +1
+	const Complex x[3] = { F2, F1, -F1-F2 };              // c1 = 1, c2 = -1
+	return MinusJTJT(q2,mKpiK,s1,s2,s3,x); });
+    G[3] = pre*DalitzIntegral(q2,mKpiK,gx,gw,[&](const double & s1,const double & s2,
+						  const double & s3) {
+	Complex rr[2], vv[2];
+	RChL::KPi0K0_Axial(kk,q2,s1,s2,s3,rr,vv);
+	const Complex F2 = r*rr[0]+vv[0], F3 = r*rr[1]+vv[1];
+	const Complex x[3] = { -F2-F3, F3, F2 };              // c2 = 1, c3 = -1
+	return MinusJTJT(q2,mKpiK,s1,s2,s3,x); });
+  };
+
+  std::vector<double> gx, gw;
+  GaussLegendre(nGL,gx,gw);
+  auto table = std::make_shared<std::vector<double> >(nQ);
+  for (size_t i=0;i<nQ;i++) {
+    double G[4];
+    cuts(m_RChLq0+i*m_RChLdq,gx,gw,G);
+    (*table)[i] = G[0]+G[1]+G[2]+G[3];
+  }
+  p_RChLGa1 = table;
+  cache[key] = table;
+
+  // Report: the cuts on a few points, the polynomial it replaces, the
+  // on-shell width (a prediction here, not a parameter), and a check of the
+  // integration against twice the Gauss-Legendre order.
+  msg_Out()<<"### RChL 3pi a1 width, 1203.3955 Eq.(a1width) / 0911.4436, from this "
+	   <<"model's amplitudes (M_a1 = "<<Pc.Ma1<<"):\n"
+	   <<"###   q2      Gamma_a1   pi-pi-pi+  pi0pi0pi-  KKpi(+-)   K-pi0K0"
+	   <<"    [1310.1053 Eq.(17)]\n";
+  for (double q2 : {0.5, 0.8, 1.0, 1.2, 1.5, 2.0, 2.5, 3.0}) {
+    double G[4];
+    cuts(q2,gx,gw,G);
+    msg_Out()<<"###   "<<std::setw(5)<<q2;
+    for (double g : {RChL_a1Width(q2),G[0],G[1],G[2],G[3],
+		     RChL::Gamma_a1_PionFit(q2,Pc.Mrho,m_mpi2_iso)})
+      msg_Out()<<"  "<<std::setw(9)<<g;
+    msg_Out()<<"\n";
+  }
+  msg_Out()<<"###   Gamma_a1(M_a1^2) = "<<RChL_a1Width(sqr(Pc.Ma1))<<" GeV\n";
+  std::vector<double> gx2, gw2;
+  GaussLegendre(2*nGL,gx2,gw2);
+  double dmax = 0.;
+  for (double q2 : {0.6, 1.2, 2.0, 3.0}) {
+    double G1[4], G2[4];
+    cuts(q2,gx,gw,G1); cuts(q2,gx2,gw2,G2);
+    const double a = G1[0]+G1[1]+G1[2]+G1[3], b = G2[0]+G2[1]+G2[2]+G2[3];
+    dmax = Max(dmax,std::abs(a/b-1.));
+  }
+  msg_Out()<<"###   Gauss-Legendre "<<nGL<<" vs "<<2*nGL<<" points: largest relative "
+	   <<"difference "<<dmax<<" (q2 = 0.6, 1.2, 2, 3)\n";
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -1054,7 +1263,7 @@ void F3_0_PiPlusPiZeroPiZero::Construct(const FF_Parameters & params) {
     m_F_rchl     = (*params.p_model)("F_rchl3pi",0.091337);
     m_FV_rchl    = (*params.p_model)("FV_rchl3pi",0.168652);
     m_GV_rchl    = sqr(m_F_rchl)/m_FV_rchl;
-    // Same resonance keys and defaults as F1_0_PiPlusPiZeroPiZero::Construct
+    // Same resonance keys and defaults as F1_0_PiPlusPiZeroPiZero::Read_RChL3Pi
     // above (particle database unless set per channel), and the same tower.
     const Flavour rhoFlav(m_mode==FF_0_PPP_mode::piP_pi0_pi0 ?
 			  kf_rho_770_plus : kf_rho_770);

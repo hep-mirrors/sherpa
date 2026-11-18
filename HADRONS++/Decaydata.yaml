@@ -703,6 +703,11 @@ HADRON_DECAYS:
     #         MCLEOa1 1.331 GCLEOa1 0.814.  Not used by any channel below.
     #   21 = RChL2012: includes a genuine f0(500)/sigma contribution
     #         (Msigma_rchl3pi etc.) - NOT currently used below either.
+    #         Its a1 width is computed at start-up from the model's
+    #         own amplitudes (1203.3955 Eq.(a1width), 0911.4436: both
+    #         3pi cuts and the KKpi cuts), so the model's keys must be
+    #         the same in both 3pi channels; a1Width_rchl3pi: 0 uses
+    #         the 1310.1053 Eq.(17) polynomial instead.
     # Reference: KS90 for the base model; CLEO, hep-ex/9902022, for
     # 12; 1310.1053 for the RChL2012 sigma extension.
     ######################################################

@@ -171,3 +171,70 @@ double RChL::Gamma_a1_PionFit(const double & q2,const double & Mrho,
   }
   return h + 2.*p*(q2-3.*MpiSum2)/MpiSum2;
 }
+
+double RChL::GammaKstar(const double & q2,const double & MKst,const double & F,
+			const double & mK2,const double & mpi2,const double & meta2) {
+  if (q2<=0.) return 0.;
+  // lambda^3/2(1,mK2/q2,m2/q2) above the K m threshold, 0 below
+  auto lam32 = [&](const double & m2) {
+    if (q2<=sqr(sqrt(mK2)+sqrt(m2))) return 0.;
+    const double y = mK2/q2, z = m2/q2, lam = sqr(1.-y-z)-4.*y*z;
+    return (lam>0. ? pow(lam,1.5) : 0.);
+  };
+  return MKst*q2/(128.*M_PI*sqr(F))*(lam32(mpi2)+lam32(meta2));
+}
+
+// The propagator of the KKpi sections of [1203.3955], 1/(M^2-s-i M Gamma(s)).
+static Complex KKPiProp(const double & s,const double & M,const double & Gamma) {
+  return 1./Complex(sqr(M)-s,-M*Gamma);
+}
+
+void RChL::KPiK_Axial(const KKPi_Couplings & c,const double & q2,
+		      const double & s1,const double & s2,const double & s3,
+		      Complex rest[2],Complex vertex[2]) {
+  // K-(p1) pi-(p2) K+(p3): the rho sits in s2 (K-K+), the K* in s1 (pi-K+).
+  const Complex Prho = KKPiProp(s2,c.Mrho,GammaRho(s2,c.Mrho,c.F,c.mpi2,c.mK2));
+  const Complex PKst = KKPiProp(s1,c.MKst,GammaKstar(s1,c.MKst,c.F,c.mK2,c.mpi2,c.meta2));
+  const double  cR   = -(sqrt(2.)/6.)*c.FV*c.GV/sqr(c.F);
+  const double  cRR  = (2./3.)*c.FA*c.GV/sqr(c.F);
+  const double  mK2  = c.mK2, mpi2 = c.mpi2, lp = c.lambda_p, lpp = c.lambda_pp;
+  // F1, Eq.(f21)
+  rest[0]   = -sqrt(2.)/3. +
+    cR*( BR(s1,s3,mK2,mK2,c.GV,c.FV)*Prho + AR(q2,s1,s3,mK2,mK2,mpi2,c.GV,c.FV)*PKst );
+  vertex[0] = cRR*( BRR(q2,s1,s3,s2,mK2,mK2,mpi2,lp,lpp)*Prho +
+		    ARR(q2,s1,s3,mK2,mK2,mpi2,lp,lpp)*PKst );
+  // F2, Eq.(f11)
+  rest[1]   = -sqrt(2.)/3. +
+    cR*( AR(q2,s2,s3,mK2,mpi2,mK2,c.GV,c.FV)*Prho + BR(s2,s3,mK2,mpi2,c.GV,c.FV)*PKst );
+  vertex[1] = cRR*( ARR(q2,s2,s3,mK2,mpi2,mK2,lp,lpp)*Prho +
+		    BRR(q2,s2,s3,s1,mK2,mpi2,mK2,lp,lpp)*PKst );
+}
+
+void RChL::KPi0K0_Axial(const KKPi_Couplings & c,const double & q2,
+			const double & s1,const double & s2,const double & s3,
+			Complex rest[2],Complex vertex[2]) {
+  // K-(p1) pi0(p2) K0(p3): the rho sits in s2 (K-K0), K*'s in s1 (pi0 K0)
+  // and s3 (K- pi0).
+  const Complex Prho  = KKPiProp(s2,c.Mrho,GammaRho(s2,c.Mrho,c.F,c.mpi2,c.mK2));
+  const Complex PKst1 = KKPiProp(s1,c.MKst,GammaKstar(s1,c.MKst,c.F,c.mK2,c.mpi2,c.meta2));
+  const Complex PKst3 = KKPiProp(s3,c.MKst,GammaKstar(s3,c.MKst,c.F,c.mK2,c.mpi2,c.meta2));
+  const double  cR    = -(1./6.)*c.FV*c.GV/sqr(c.F);
+  const double  cRR   = (sqrt(2.)/3.)*c.FA*c.GV/sqr(c.F);
+  const double  mK2   = c.mK2, mpi2 = c.mpi2, lp = c.lambda_p, lpp = c.lambda_pp;
+  // F2, Eq.(f12)
+  rest[0]   = -1. +
+    cR*( BR(s2,s1,mK2,mpi2,c.GV,c.FV)*PKst3 +
+	 2.*AR(q2,s2,s1,mK2,mpi2,mK2,c.GV,c.FV)*Prho +
+	 AR(q2,s1,s2,mpi2,mK2,mK2,c.GV,c.FV)*PKst1 );
+  vertex[0] = cRR*( BRR(q2,s2,s1,s3,mK2,mpi2,mK2,lp,lpp)*PKst3 +
+		    2.*ARR(q2,s2,s1,mK2,mpi2,mK2,lp,lpp)*Prho +
+		    ARR(q2,s1,s2,mpi2,mK2,mK2,lp,lpp)*PKst1 );
+  // F3, Eq.(f22): F3^chi = 0
+  rest[1]   =
+    cR*( AR(q2,s3,s1,mK2,mK2,mpi2,c.GV,c.FV)*PKst3 +
+	 2.*BR(s3,s1,mK2,mK2,c.GV,c.FV)*Prho -
+	 AR(q2,s1,s3,mK2,mK2,mpi2,c.GV,c.FV)*PKst1 );
+  vertex[1] = cRR*( ARR(q2,s3,s1,mK2,mK2,mpi2,lp,lpp)*PKst3 +
+		    2.*BRR(q2,s3,s1,s2,mK2,mK2,mpi2,lp,lpp)*Prho -
+		    ARR(q2,s1,s3,mK2,mK2,mpi2,lp,lpp)*PKst1 );
+}
