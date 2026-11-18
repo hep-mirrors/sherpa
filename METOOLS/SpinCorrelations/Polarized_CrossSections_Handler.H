@@ -22,7 +22,7 @@ namespace METOOLS {
   class Polarization_Vector;
   class Polarization_Spinor;
   typedef ATOOLS::Spinor<double> SpinorType;
-  typedef std::map<int, METOOLS::Polarization_Spinor_Basis> SpinorMap;
+  typedef std::map<std::pair<int,bool>, METOOLS::Polarization_Spinor_Basis> SpinorMap;
 
   class Polarized_CrossSections_Handler {
     std::vector<std::string> m_refsystem;
@@ -41,7 +41,7 @@ namespace METOOLS {
     METOOLS::PolWeights_Map* Calculation(ATOOLS::Blob* signalblob, const METOOLS::Amplitude2_Tensor* prod_amps,
                                          const std::vector<METOOLS::Decay_Matrix>& decay_matrices,
                                          std::map<int, METOOLS::Polarization_Vector>& default_polarization_vectors,
-                                         std::map<int, METOOLS::Polarization_Spinor_Basis>& default_spinors, ATOOLS::Vec4D beta,
+                                         std::map<std::pair<int,bool>, METOOLS::Polarization_Spinor_Basis>& default_spinors, ATOOLS::Vec4D beta,
                                          std::string refsystem) const;
     void Tests(const METOOLS::Amplitude2_Tensor* amps, const METOOLS::Amplitude2_Tensor* trafo_pol_amps) const;
 

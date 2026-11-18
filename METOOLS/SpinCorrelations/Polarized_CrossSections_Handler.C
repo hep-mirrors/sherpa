@@ -122,7 +122,8 @@ const{
     std::map<int,METOOLS::Polarization_Vector>();
   //std::map<int, SpinorType> default_spinors = std::map<int, SpinorType>();
   // Calculate polarization fractions for each desired reference system
-  std::map<int, METOOLS::Polarization_Spinor_Basis> default_spinors = std::map<int,METOOLS::Polarization_Spinor_Basis>();
+  //std::map<int, METOOLS::Polarization_Spinor_Basis> default_spinors = std::map<int,METOOLS::Polarization_Spinor_Basis>();
+  std::map<std::pair<int, bool>,METOOLS::Polarization_Spinor_Basis> default_spinors;
   //std::map<int, METOOLS::Polarization_Spinor> default_spinors = std::map<int,METOOLS::Polarization_Spinor>();
   std::vector<METOOLS::PolWeights_Map*> polweights;
   for (const auto & current_refsystem : m_refsystem){
@@ -244,7 +245,7 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
                                                              const METOOLS::Amplitude2_Tensor* prod_amps,
                                                              const std::vector<METOOLS::Decay_Matrix>& decay_matrices,
                                                              std::map<int, METOOLS::Polarization_Vector>& default_polarization_vectors,
-                                                             std::map<int, METOOLS::Polarization_Spinor_Basis>& default_spinors,
+                                                             std::map<std::pair<int,bool>, METOOLS::Polarization_Spinor_Basis>& default_spinors,
                                                              ATOOLS::Vec4D beta, std::string refsystem) const {
 
   METOOLS::Amplitude2_Tensor* pol_amps = new METOOLS::Amplitude2_Tensor(*prod_amps);
@@ -308,9 +309,34 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
       //hier werden default_spinors befüllt
       if (spin == 0.5) {
         
-        if (default_spinors.find(tmp_amps->CurrentParticle().Number()) == default_spinors.end()) {
-          default_spinors.emplace(tmp_amps->CurrentParticle().Number(), METOOLS::Polarization_Spinor_Basis(mom, mom.Abs2()));
-        }
+        //if (default_spinors.find(tmp_amps->CurrentParticle().Number()) == default_spinors.end()) {
+        //  default_spinors.emplace(tmp_amps->CurrentParticle().Number(), METOOLS::Polarization_Spinor_Basis(mom, mom.Abs2()));
+        //}
+        /*std::cerr << "erste 0.5 schleife" << std::endl;
+        const int number = tmp_amps->CurrentParticle().Number();
+
+        // Key: particle number + particle/antiparticle
+        const auto key = std::make_pair(number, anti);
+
+        if (default_spinors.find(key) == default_spinors.end()) {
+
+          default_spinors.emplace(
+          key,
+          METOOLS::Polarization_Spinor_Basis(
+            mom, mom.Abs2(), m_old_refmom, anti, false
+        )
+        );
+        std::cerr << "nach erster 0.5 schleife" << std::endl;
+        }*/
+        const int number = tmp_amps->CurrentParticle().Number();
+        const auto key = std::make_pair(number, anti);
+
+        METOOLS::Polarization_Spinor_Basis tmp_basis(mom, mom.Abs2(), m_old_refmom, anti, false);
+
+        auto result = default_spinors.emplace(
+          key, std::move(tmp_basis)
+        );
+
       }
 
       // for refsystem=RestFrames polarization of a particle is defined in its own rest frame, therefore beta is
@@ -360,14 +386,26 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
         //std::cout << "A: vor Basis-Bau" << std::endl;
         // new basis
         //METOOLS::Polarization_Spinor new_spinor(mom,M2,+1,new_ref_mom);
+
         METOOLS::Polarization_Spinor_Basis new_spinor_pair(mom,M2,new_ref_mom, anti, out);
+       
+
+          /*std::cerr << "[3] beta=" << beta
+          << " beta2=" << beta.Abs2()
+          << std::endl;
+          std::cout << "\nBASIS CONFIGURATION"
+          << " particle_nr="
+          << tmp_amps->CurrentParticle().Number()
+          << " anti=" << anti
+          << " out=" << out
+          << std::endl;*/
 
         // debugging print
-        METOOLS::Polarization_Spinor_Basis twin(mom, M2, new_ref_mom, anti, out);
+        /*METOOLS::Polarization_Spinor_Basis twin(mom, M2, new_ref_mom, anti, out);
         const auto ci = new_spinor_pair.BasisTrafo(twin, false);
         std::cout << std::setprecision(17) << "TWIN nr=" << tmp_amps->CurrentParticle().Number()
             << " |c00|^2=" << std::norm(ci[0][0])
-            << " mom=" << mom << " ref=" << new_ref_mom << std::endl;
+            << " mom=" << mom << " ref=" << new_ref_mom << std::endl;*/
 
 
         // ---- Test 3 (temporär): gleiche feste Achse +x für t und tb, im COM ----
@@ -380,15 +418,92 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
         // boost back in LabFrame
         if (beta != ATOOLS::Vec4D(0.0, 0.0, 0.0, 0.0)) {
           //std::cout << "B0: beta=" << beta << " beta^2=" << beta.Abs2() << std::endl;
-          new_spinor_pair.BoostBack(beta);
+          //new_spinor_pair.BoostBack(beta);
           //std::cout << "erster Boost ging" << std::endl;
-          momboost.BoostBack(mom);
+     
+          new_spinor_pair.BoostBack(beta);
+
+          momboost.BoostBack(mom);       
+        }
+
+        const double mass = std::sqrt(std::max(0.0, M2));
+
+        /*std::cerr << "\n========== POST BOOST CHECK =========="
+          << "\nmom after boost = " << mom
+          << "\nmass after boost = " << std::sqrt(mom.Abs2())
+          << std::endl;
+
+        for (size_t i = 0; i < new_spinor_pair.size(); ++i) {
+
+          const auto& s = new_spinor_pair[i];
+
+          const double sign = anti ? -1.0 : +1.0;
+
+          const double pp = mom[0] + mom[3];
+          const double pm = mom[0] - mom[3];
+
+          const Complex pt(mom[1], mom[2]);
+
+          // Dirac residual
+
+          Complex R[4];
+
+          R[0] = -sign*mass*s[0] + pm*s[2] - std::conj(pt)*s[3];
+
+          R[1] = -sign*mass*s[1] - pt*s[2]+ pp*s[3];
+
+          R[2] = pp*s[0] + std::conj(pt)*s[1] - sign*mass*s[2];
+
+          R[3] = pt*s[0] + pm*s[1] - sign*mass*s[3];
+
+          double residual2 = 0.0;
+          double norm2 = 0.0;
+
+          for (size_t a = 0; a < 4; ++a) {
+            residual2 += std::norm(R[a]);
+            norm2 += std::norm(s[a]);
+          }
+
+        const double pabs = std::sqrt(mom[1]*mom[1] +mom[2]*mom[2] +mom[3]*mom[3]);
+
+        const double residual =std::sqrt(residual2) /((std::abs(mom[0]) + pabs + mass) *std::sqrt(norm2));
+
+    // Dirac norm
+
+        const double ubaru = 2.0 * (std::conj(s[0])*s[2] +std::conj(s[1])*s[3]).real();
+
+        const double ratio = ubaru / norm2;
+
+        const double expected =
+        sign * mass / std::abs(mom[0]);
+
+        std::cerr << std::setprecision(12)
+              << "POST BOOST SPINOR " << i
+              << " anti=" << anti
+              << " Dirac residual=" << residual
+              << " ratio=" << ratio
+              << " expected=" << expected
+              << " norm_diff=" << std::abs(ratio-expected)
+              << std::endl;
+          }
+
+        std::cerr << "========================================\n";*/
+
+        const int number = tmp_amps->CurrentParticle().Number();
+        const auto key_anti = std::make_pair(number, anti);
+        auto it = default_spinors.find(key_anti);
+
+        if (it == default_spinors.end()) {
+
+          METOOLS::Polarization_Spinor_Basis default_basis(mom, mom.Abs2(), anti, false);
+
+          it = default_spinors.emplace(key_anti, std::move(default_basis)).first;
         }
         //std::cout << "Boost ging" << std::endl;
-        auto it = default_spinors.find(tmp_amps->CurrentParticle().Number());
-        if (it == default_spinors.end()) THROW(fatal_error, "no default spinors for this particle")
+        //auto it = default_spinors.find(tmp_amps->CurrentParticle().Number());
+        //if (it == default_spinors.end()) THROW(fatal_error, "no default spinors for this particle")
         // ---- Debug 1: Labeltest (Identität im Lab, danach löschen) ----
-        static int nprint = 0;
+        /*static int nprint = 0;
         bool m_pol_checks = true;
         if (m_pol_checks && nprint++ < 40) {
           const double pabs = std::sqrt(mom[1]*mom[1] + mom[2]*mom[2] + mom[3]*mom[3]);
@@ -399,7 +514,7 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
             << " anti=" << anti << " out=" << out
             << " |c00|^2=" << std::norm(c[0][0])
             << " |c01|^2=" << std::norm(c[0][1]) << std::endl;
-          }
+          }*/
           // Residuum von (pslash - sgn*m) u, chirale Darstellung (L,R), u[0..3]
 
 
@@ -408,7 +523,7 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
         
 // ---- Ende Debug 1 ----
 // ---- Debug 2: Kovarianztest der Boost-Kette ---
-          static int nprint2 = 0;
+          /*static int nprint2 = 0;
           if (m_pol_checks && nprint2++ < 40) {
           ATOOLS::Vec4D k_lab = new_ref_mom;                 // new_ref_mom: noch COM, wie beim Bau der Basis
           if (beta != ATOOLS::Vec4D(0.0, 0.0, 0.0, 0.0)) momboost.BoostBack(k_lab);
@@ -427,7 +542,7 @@ PolWeights_Map* Polarized_CrossSections_Handler::Calculation(ATOOLS::Blob* signa
           std::cout << "COMCHECK nr=" << tmp_amps->CurrentParticle().Number()
             << " beta=" << beta << " mom_ref=" << mom << std::endl;
 
-        //--- end of debug 
+        //--- end of debug --------------------------------------*/
 
         coeff_in = new_spinor_pair.BasisTrafo(it->second, m_pol_checks);
         //std::cout << "coeff_in = " << coeff_in << "  refsystem = " << refsystem << std::endl;

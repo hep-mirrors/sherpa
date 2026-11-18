@@ -26,14 +26,41 @@ namespace ATOOLS {
 
   public:
     Spinor_Boost(const Vec4D &l) {
+       /*std::cerr << "[SB 1] Constructor"
+              << " l=" << l
+              << std::endl;*/
       const double m2(l.Abs2());
+      //std::cerr << "[SB 2] m2=" << m2 << std::endl;
       //if (!(m2 > 1.0e-12) || !(l[0] > 0.0)) {
         //THROW(fatal_error, "Spinor_Boost needs a time-like four-momentum with E>0")
       //}
+      if (!std::isfinite(m2) ||
+        m2 <= 1.0e-12 ||
+        l[0] <= 0.0) {
+
+        /*std::cerr << "INVALID SPINOR BOOST"
+                  << " l=" << l
+                  << " l2=" << m2
+                  << std::endl;*/
+
+        //THROW(fatal_error,
+          //    "Spinor_Boost requires a future-directed timelike vector");
+    }
+
       const double m(std::sqrt(m2));
+      //std::cerr << "[SB 3] m=" << m << std::endl;
       const double n(1.0/std::sqrt(2.0*m*(l[0]+m)));
+      const double denominator = 2.0 * m * (l[0] + m);
+      //std::cerr << "[SB 4] denominator="
+             // << denominator << std::endl;
       m_c  = n*(l[0]+m);
       m_sx = n*l[1]; m_sy = n*l[2]; m_sz = n*l[3];
+       /*std::cerr << "[SB 5] Boost parameters"
+              << " c=" << m_c
+              << " sx=" << m_sx
+              << " sy=" << m_sy
+              << " sz=" << m_sz
+              << std::endl;*/
     }
 
     // Ruhesystem von l -> Lab (wie Poincare::BoostBack)

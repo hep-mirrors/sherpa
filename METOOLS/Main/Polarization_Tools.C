@@ -45,7 +45,7 @@ Polarization_Vector::Polarization_Vector(Vec4D p, Vec4D ref_mom) : std::vector<V
   pop_back();
 }
 
-void Polarization_Spinor::Init(Vec4D p, Vec4D ref_mom)
+/*void Polarization_Spinor::Init(Vec4D p, Vec4D ref_mom)
 {
   if (std::fabs(ref_mom.Abs2()) > 1e-8) {      // vorher: ref_mom.Abs2() > 1e-8
     THROW(fatal_error, "new reference vector has to be light-like")
@@ -54,24 +54,101 @@ void Polarization_Spinor::Init(Vec4D p, Vec4D ref_mom)
   m_kp = SpinorType(1,  m_k);
   m_km = SpinorType(-1, m_k);
 }
+*/
+void Polarization_Spinor::Init(
+    Vec4D p,
+    Vec4D ref_mom)
+{
+    /*std::cerr << "[INIT 1] Enter"
+              << " p=" << p
+              << " ref=" << ref_mom
+              << " ref2=" << ref_mom.Abs2()
+              << std::endl;*/
 
-Polarization_Spinor::Polarization_Spinor(const METOOLS::CSpinor<double>& s, int h)
-  : METOOLS::CSpinor<double>(s), m_hel(h), m_M2(0.0), m_anti(false), m_out(false) {}
+    if (std::fabs(ref_mom.Abs2()) > 1e-8) {
+        THROW(fatal_error,
+              "new reference vector has to be light-like")
+    }
 
-Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, double M2) {
-  m_s.reserve(2);
-  m_s.emplace_back(METOOLS::CSpinor<double>(1, 1, +1, p, 0, 0, 0, 0, M2), +1);
-  m_s.emplace_back(METOOLS::CSpinor<double>(1, 1, -1, p, 0, 0, 0, 0, M2), -1);
+  
+    m_k = ref_mom;
+
+    m_kp = SpinorType(1, m_k);
+
+
+    m_km = SpinorType(-1, m_k);
+
 }
+Polarization_Spinor_Basis::Polarization_Spinor_Basis(
+    const ATOOLS::Vec4D& p,
+    double M2,
+    const ATOOLS::Vec4D& ref_mom,
+    bool anti,
+    bool out)
+{
+    m_s.reserve(2);
+
+    // Helicity +1
+
+
+    m_s.emplace_back(
+        p, M2, +1, ref_mom, anti, out
+    );
+
+    // Helicity -1
+    m_s.emplace_back(
+        p, M2, -1, ref_mom, anti, out
+    );
+
+}
+/*Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, double M2,const ATOOLS::Vec4D& ref_mom, bool anti, bool out) {
+  std::cerr << "[CTOR 1] Start"
+              << " anti=" << anti
+              << " out=" << out
+              << " p=" << p
+              << " M2=" << M2
+              << " ref=" << ref_mom
+              << std::endl;
+  m_s.reserve(2);
+  std::cerr << "[CTOR 2] Reserve done" << std::endl;
+
+  m_s.emplace_back(METOOLS::CSpinor<double>(1, 1, +1, p, 0, 0, 0, 0, M2), +1);
+  std::cerr << "[CTOR 3] First spinor done" << std::endl;
+
+  m_s.emplace_back(METOOLS::CSpinor<double>(1, 1, -1, p, 0, 0, 0, 0, M2), -1);
+  std::cerr << "[CTOR 4] Second spinor done"
+              << " size=" << m_s.size()
+              << std::endl;
+  std::cerr << "BASIS CONSTRUCTED"
+              << " size=" << m_s.size()
+              << " anti=" << anti
+              << " out=" << out
+              << std::endl;
+
+}*/
 
 void Polarization_Spinor::FillComponents()
-{
+{  
+  /*std::cout << "FILL COMPONENTS"
+          << " this=" << static_cast<const void*>(this)
+          << " anti=" << m_anti
+          << " out=" << m_out
+          << " hel=" << m_hel
+          << " p=" << m_p
+          << " k=" << m_k
+          << std::endl;*/
   typedef std::complex<double> C;
   //std::cout << "FC 1: start, m_k=" << m_k << " m_p=" << m_p << " hel=" << m_hel << std::endl;
   const double m = sqrt(std::max(m_M2, 0.0));
 
+  //particles: h=-1 antiparticles: h=+1
+  const int hel = m_anti ? m_hel : -m_hel;
+  /*std::cout << "FILL COMPONENTS"
+          << " anti=" << m_anti
+          << " hel=" << m_hel
+          << std::endl;*/
   // masseloser Spinor zur Referenz k mit entgegengesetzter Helizität
-  METOOLS::CSpinor<double> uk(1, 1, -m_hel, m_k);
+  METOOLS::CSpinor<double> spinor(1, 1, hel, m_k);
   //std::cout << "FC 2: uk gebaut " << uk[0] << " " << uk[1] << " " << uk[2] << " " << uk[3] << std::endl;
 
   const double pk = m_p * m_k;            // Minkowski-Produkt
@@ -91,17 +168,99 @@ void Polarization_Spinor::FillComponents()
 
   // (pslash uk): oben = (p0 - p·sigma) * uk[2..3], unten = (p0 + p·sigma) * uk[0..1]
   C t[4];
-  t[0] = (p0 - s00)*uk[2] - s01*uk[3];
-  t[1] = -s10*uk[2] + (p0 - s11)*uk[3];
-  t[2] = (p0 + s00)*uk[0] + s01*uk[1];
-  t[3] = s10*uk[0] + (p0 + s11)*uk[1];
+  t[0] = (p0 - s00)*spinor[2] - s01*spinor[3];
+  t[1] = -s10*spinor[2] + (p0 - s11)*spinor[3];
+  t[2] = (p0 + s00)*spinor[0] + s01*spinor[1];
+  t[3] = s10*spinor[0] + (p0 + s11)*spinor[1];
 
-  for (size_t a(0); a<4; ++a) m_u[a] = (t[a] + m*uk[a]) / N;
+  const double sign = m_anti ? -1.0 : +1.0;
+
+  for (size_t a(0); a<4; ++a) m_u[a] = (t[a] + sign*m*spinor[a]) / N;
   //std::cout << "FC 4: fertig" << std::endl;
+  // --------------------------------------------------------
+// Dirac equation test
+//
+// particle:     (pslash - m) u = 0
+// antiparticle: (pslash + m) v = 0
+// --------------------------------------------------------
+
+const double dirac_sign = m_anti ? -1.0 : +1.0;
+
+const double pp = m_p[0] + m_p[3];
+const double pm = m_p[0] - m_p[3];
+
+const C pt(m_p[1], m_p[2]);
+
+C R[4];
+
+R[0] = -dirac_sign*m*m_u[0]
+       + pm*m_u[2] - std::conj(pt)*m_u[3];
+
+R[1] = -dirac_sign*m*m_u[1]
+       - pt*m_u[2] + pp*m_u[3];
+
+R[2] = pp*m_u[0] + std::conj(pt)*m_u[1]
+       - dirac_sign*m*m_u[2];
+
+R[3] = pt*m_u[0] + pm*m_u[1]
+       - dirac_sign*m*m_u[3];
+
+double residual2 = 0.0;
+double norm2 = 0.0;
+
+for (size_t a = 0; a < 4; ++a) {
+    residual2 += std::norm(R[a]);
+    norm2 += std::norm(m_u[a]);
+}
+
+const double pabs = sqrt(
+    m_p[1]*m_p[1] +
+    m_p[2]*m_p[2] +
+    m_p[3]*m_p[3]
+);
+
+const double residual =
+    sqrt(residual2) /
+    ((std::abs(m_p[0]) + pabs + m) * sqrt(norm2));
+
+/*std::cout << std::setprecision(12)
+          << "DIRAC TEST"
+          << " anti=" << m_anti
+          << " hel=" << m_hel
+          << " residual=" << residual
+          << std::endl;*/
+
+  // Dirac scalar: ubar*u or vbar*v
+
+const double ubaru =
+    2.0 * (
+        std::conj(m_u[0])*m_u[2] +
+        std::conj(m_u[1])*m_u[3]
+    ).real();
+
+const double udu =
+    std::norm(m_u[0]) +
+    std::norm(m_u[1]) +
+    std::norm(m_u[2]) +
+    std::norm(m_u[3]);
+
+const double ratio = ubaru / udu;
+
+const double expected =
+    (m_anti ? -1.0 : +1.0) * m / m_p[0];
+
+/*std::cout << std::setprecision(12)
+          << "NORM TEST"
+          << " anti=" << m_anti
+          << " hel=" << m_hel
+          << " ratio=" << ratio
+          << " expected=" << expected
+          << " diff=" << std::abs(ratio-expected)
+          << std::endl;*/
 
 }
 
-Polarization_Spinor::Polarization_Spinor(Vec4D p, double M2, int h, Vec4D ref_mom, bool anti, bool out)
+/*Polarization_Spinor::Polarization_Spinor(Vec4D p, double M2, int h, Vec4D ref_mom, bool anti, bool out)
   : m_hel(h), m_p(p), m_ref(ref_mom), m_M2(M2), m_anti(anti), m_out(out)
 {
   if (h != 1 && h != -1) {
@@ -111,13 +270,33 @@ Polarization_Spinor::Polarization_Spinor(Vec4D p, double M2, int h, Vec4D ref_mo
   Init(p, ref_mom);     // setzt m_k, m_kp, m_km (die Zeilen davor sind doppelt, kannst du löschen)
   //std::cout << "P2: Init ok" << std::endl;
   FillComponents();     // schreibt m_u[0..3]
-  //std::cout << "P3: FillComponents ok" << std::endl;
-  //std::cout << "u = " << (*this)[0] << " " << (*this)[1] << " " << (*this)[2] << " " << (*this)[3] << "\n";
- //double nrm(0.0); for (size_t a(0); a<4; ++a) nrm += std::norm((*this)[a]);
-  //std::cout << "|u|^2 = " << nrm << "  (erwartet 2E = " << 2.0*p[0] << ")\n";
+}*/
+Polarization_Spinor::Polarization_Spinor(
+    Vec4D p,
+    double M2,
+    int h,
+    Vec4D ref_mom,
+    bool anti,
+    bool out)
+    : m_hel(h),
+      m_p(p),
+      m_ref(ref_mom),
+      m_M2(M2),
+      m_anti(anti),
+      m_out(out)
+{
+    
+
+    if (h != 1 && h != -1) {
+        THROW(fatal_error, "helicity must be +1 or -1")
+    }
+
+    Init(p, ref_mom);
+
+    FillComponents();
 }
 
-Polarization_Spinor::Polarization_Spinor(Vec4D p, int h, Vec4D ref_mom, bool anti, bool out)
+/*Polarization_Spinor::Polarization_Spinor(Vec4D p, int h, Vec4D ref_mom, bool anti, bool out)
   : m_hel(h), m_p(p), m_ref(ref_mom), m_M2(0.0), m_anti(anti), m_out(out)
 { 
   if (h != 1 && h != -1) {
@@ -125,27 +304,54 @@ Polarization_Spinor::Polarization_Spinor(Vec4D p, int h, Vec4D ref_mom, bool ant
   }
   Init(p, ref_mom);
   FillComponents();
-}
-
-Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, double M2,
-    const ATOOLS::Vec4D& ref_mom, bool anti, bool out)
-{
-  m_s.reserve(2);                                        // keine Reallokation, kein Umkopieren
-  m_s.emplace_back(p, M2, +1, ref_mom, anti, out);       // baut direkt im Vektor
-  m_s.emplace_back(p, M2, -1, ref_mom, anti, out);
-}
+}*/
 
 void METOOLS::Polarization_Spinor_Basis::BoostBack(const ATOOLS::Vec4D& beta) {
   //std::cout << "B1: Basis::BoostBack, size=" << m_s.size() << std::endl;
   //ATOOLS::Poincare_Spinor spinboost(beta);       // wie Poincare momboost(beta)
 
   //QUESTION: is it smart to give beta to this method instead of the spinor?
-  if (beta== ATOOLS::Vec4D(0.,0.,0.,0.)) return;
+  /*std::cerr << "[BB 1] Enter"
+              << " size=" << m_s.size()
+              << " beta=" << beta
+              << " beta2=" << beta.Abs2()
+              << std::endl;*/
+  if (beta== ATOOLS::Vec4D(0.,0.,0.,0.)) {
+     //std::cerr << "[BB] Zero boost, return" << std::endl;
+    return;
+}
+  if (m_s.size() != 2) {
+        std::cerr << "ERROR: unexpected basis size="
+                  << m_s.size() << std::endl;
+
+        THROW(fatal_error, "Invalid spinor basis size");
+    }
+    //std::cerr << "[BB 2] Before Spinor_Boost constructor" << std::endl;
+
   ATOOLS::Spinor_Boost boost(beta);
+  //std::cerr << "[BB 3] Spinor_Boost constructed"<< std::endl;
+
   //std::cout << "B3: Spinor " << i << " geboostet" << std::endl;
   // each component of spinor vector gets a boost
-  for (size_t i(0); i<m_s.size(); ++i) boost.BoostBack(m_s[i]);
-  
+  for (size_t i(0); i<m_s.size(); ++i) {
+    /*std::cerr << "[BB 4] Before boost spinor " << i
+                  << " address=" << &m_s.at(i)
+                  << std::endl;
+
+        std::cerr << "  spinor = "
+                  << m_s[i][0] << " "
+                  << m_s[i][1] << " "
+                  << m_s[i][2] << " "
+                  << m_s[i][3]
+                  << std::endl;*/
+
+   
+    boost.BoostBack(m_s[i]);
+    //std::cerr << "[BB 5] After boost spinor " << i<< std::endl;
+ 
+  }
+
+   //std::cerr << "[BB 6] BoostBack finished" << std::endl;
 }
 
 void Polarization_Vector::Init(Vec4D p, Vec4D ref_mom)
@@ -339,10 +545,52 @@ void Polarization_Vector::Test(Vec4D p)
 
 std::vector<std::vector<Complex>>
 Polarization_Spinor_Basis::BasisTrafo(const Polarization_Spinor_Basis& old_basis, bool pol_checks) const {
+  /*std::cout << "\n========== BASIS TRAFO DEBUG ==========\n";
+
+std::cout << "NEW BASIS:"
+          << " anti=" << (*this)[0].IsAnti()
+          << " out=" << (*this)[0].IsOut()
+          << " hel0=" << (*this)[0].Hel()
+          << " hel1=" << (*this)[1].Hel()
+          << "\n";
+
+std::cout << "OLD BASIS:"
+          << " anti=" << old_basis[0].IsAnti()
+          << " out=" << old_basis[0].IsOut()
+          << " hel0=" << old_basis[0].Hel()
+          << " hel1=" << old_basis[1].Hel()
+          << "\n";
+
+std::cout << "=======================================\n";*/
   if (old_basis.size() != 2) {
     THROW(fatal_error, "BasisTrafo_Spinor expects two spinors in old basis")
   }
-  
+  // ------------------------------------------------------------
+// Check whether old and new basis belong to the same
+// particle / antiparticle sector.
+// ------------------------------------------------------------
+
+const bool new_anti = (*this)[0].IsAnti();
+const bool old_anti = old_basis[0].IsAnti();
+
+if (new_anti != old_anti) {
+
+    std::cerr
+        << "BASIS TRAFO ERROR: particle/antiparticle mismatch"
+        << "\nNEW anti=" << new_anti
+        << "\nOLD anti=" << old_anti
+        << std::endl;
+
+    THROW(fatal_error,
+          "BasisTrafo cannot mix particle and antiparticle spinors");
+
+}
+if ((*this)[0].IsAnti() != (*this)[1].IsAnti() ||
+    old_basis[0].IsAnti() != old_basis[1].IsAnti()) {
+
+    THROW(fatal_error,
+          "Inconsistent particle/antiparticle states inside basis");
+}
   const size_t m_nhel = old_basis.size();
   //Polarization_Spinor partner(m_p,m_M2,-m_hel,m_ref,m_anti,m_out);
   //if (m_beta != ATOOLS::Vec4D(0.,0.,0.,0.)){
@@ -419,7 +667,68 @@ Polarization_Spinor_Basis::BasisTrafo(const Polarization_Spinor_Basis& old_basis
       //std::cout << "i=" << i << " j=" << j << " test=" << test << " det=" << det << std::endl;
       
     }
-    pol_checks=true;
+    pol_checks = true;
+
+if (pol_checks) {
+
+    double err_direct2 = 0.0;
+    double err_gamma52 = 0.0;
+    double norm2 = 0.0;
+
+    for (size_t k = 0; k < 4; ++k) {
+
+        Complex rec(0.0, 0.0);
+
+        for (size_t j = 0; j < m_nhel; ++j) {
+            rec += coeff[i][j] * old_basis[j][k];
+        }
+
+        const Complex ref = (*this)[i][k];
+
+        // Direct reconstruction:
+        // reconstructed = actual
+
+        const double e_direct = std::abs(rec - ref);
+
+        // Gamma5 hypothesis:
+        // reconstructed = -gamma5 * actual
+        //
+        // -gamma5 = diag(+1,+1,-1,-1)
+
+        const double sign = (k < 2 ? +1.0 : -1.0);
+
+        const Complex gamma5_ref = sign * ref;
+
+        const double e_gamma5 =
+            std::abs(rec - gamma5_ref);
+
+        err_direct2 += e_direct * e_direct;
+        err_gamma52 += e_gamma5 * e_gamma5;
+
+        norm2 += std::norm(ref);
+
+        if (e_direct >
+            1e-8 * std::max(1.0, std::abs(ref))) {
+
+            std::cout << "Polarization_Warning:"
+                      << " spinor=" << i
+                      << " component=" << k
+                      << " reconstructed=" << rec
+                      << " actual=" << ref
+                      << std::endl;
+        }
+    }
+
+    const double norm = std::max(1e-30, std::sqrt(norm2));
+
+    /*std::cout << std::setprecision(12)
+              << "RECONSTRUCTION TEST spinor=" << i
+              << " direct_error=" << std::sqrt(err_direct2)/norm
+              << " gamma5_error=" << std::sqrt(err_gamma52)/norm
+              << std::endl;*/
+}
+
+   /* pol_checks=true;
     if (pol_checks) {
   for (size_t k(0); k<4; k++) {
     Complex rec(0,0);
@@ -430,7 +739,7 @@ Polarization_Spinor_Basis::BasisTrafo(const Polarization_Spinor_Basis& old_basis
                 << ": rekonstruiert " << rec << " vs. tatsaechlich " << ref << std::endl;
     }
   }
-}
+}*/
     /*if (pol_checks) {
       if (((fabs(zero_comp.real()) > 1e-8 || fabs(array_new_basis[i][0].real()) > 1e-8) &&
            ((array_new_basis[i][0] - zero_comp).real() > fabs(zero_comp.real()) * 1e-8)) ||
