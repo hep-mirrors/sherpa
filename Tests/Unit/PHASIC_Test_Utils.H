@@ -11,6 +11,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/KF_Table.H"
 
+#include <cmath>
 #include <cstdlib>
 #include <memory>
 
@@ -89,6 +90,12 @@ public:
   Bunches(const Bunches&) = delete;
   Bunches& operator=(const Bunches&) = delete;
 };
+
+inline ATOOLS::Vec4D Massless(double pt, double y, double phi)
+{
+  return ATOOLS::Vec4D(pt * std::cosh(y), pt * std::cos(phi),
+                       pt * std::sin(phi), pt * std::sinh(y));
+}
 
 // File and directory helpers consult mpi->Rank(), even in a serial run.
 class ScopedMPI {

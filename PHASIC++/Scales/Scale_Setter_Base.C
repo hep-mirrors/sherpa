@@ -46,6 +46,7 @@ Scale_Setter_Base::Scale_Setter_Base
     }
   }
   m_p.resize(m_nin+m_nout);
+  if (p_proc) m_flavs=p_proc->Flavours();
 }
 
 bool Scale_Setter_Base::Initialize()
@@ -120,17 +121,15 @@ double Scale_Setter_Base::PTM() const
   //product of transverse masses of all massive particles
   double ptm(1.0);
   size_t n(0);
-  for (size_t i(m_nin);i<m_p.size();++i){
-      ATOOLS::Flavour flav =p_proc->Flavours()[i];
-      if (flav.IsMassive()){
-        ptm*=m_p[i].MPerp();
-        n++;
-     }
+  for (size_t i(m_nin);i<m_p.size() && i<m_flavs.size();++i)
+    if (m_flavs[i].IsMassive()) {
+      ptm*=m_p[i].MPerp();
+      n++;
     }
   // the empty product would give pow(1,1/0) = 1, i.e. a silent 1 GeV scale
   if (n==0)
-    THROW(fatal_error,"P_TM2 needs at least one massive final-state particle;"
-          " process '"+p_proc->Name()+"' has none.");
+    THROW(fatal_error,"P_TM2 found no massive final-state particle in"
+          " process '"+p_proc->Name()+"'.");
   return pow(ptm,1./n);
 }
 
@@ -170,8 +169,8 @@ double Scale_Setter_Base::hHT() const
 {
   // hadronic H_T: scalar sum of the coloured final-state transverse momenta
   double htj(0.0);
-  for (size_t i(m_nin);i<m_p.size();++i)
-    if (p_proc->Flavours()[i].Strong())
+  for (size_t i(m_nin);i<m_p.size() && i<m_flavs.size();++i)
+    if (m_flavs[i].Strong())
       htj+=m_p[i].PPerp();
   return htj;
 }
@@ -180,8 +179,8 @@ double Scale_Setter_Base::hHTM() const
 {
   // hadronic H_T: scalar sum of the coloured final-state transverse masses
   double htj(0.0);
-  for (size_t i(m_nin);i<m_p.size();++i)
-    if (p_proc->Flavours()[i].Strong())
+  for (size_t i(m_nin);i<m_p.size() && i<m_flavs.size();++i)
+    if (m_flavs[i].Strong())
       htj+=m_p[i].MPerp();
   return htj;
 }
@@ -213,6 +212,7 @@ double Scale_Setter_Base::CalculateScale
   if (p_subs==NULL) {
     m_p.resize(p.size());
     for (size_t j(0);j<m_p.size();++j) m_p[j]=p[j];
+    if (p_proc) m_flavs=p_proc->Flavours();
     Calculate(p,mode);
   }
   else {
@@ -230,6 +230,9 @@ double Scale_Setter_Base::CalculateScale
       m_p.resize(sub->m_n);
       for (size_t j(0);j<m_p.size();++j)
 	m_p[j]=sub->p_mom[j][0] < 0.0 ?-sub->p_mom[j]:sub->p_mom[j];
+      // a born subevent lacks the emitted leg, so its flavours differ from
+      // the process flavours
+      m_flavs.assign(sub->p_fl,sub->p_fl+sub->m_n);
 
       /* For EXTAMP::Dipole_Wrapper_Processes, the flavour config does
 	 not match the flavour config of the corresponding subevent
@@ -237,7 +240,7 @@ double Scale_Setter_Base::CalculateScale
 	 flavours). Need to locally fix that here. */
       p_proc->SetCaller(static_cast<Process_Base*>(sub->p_proc));
       Flavour_Vector tmp = p_proc->Caller()->Flavours();
-      p_proc->Caller()->SetFlavours(Flavour_Vector(sub->p_fl,&sub->p_fl[sub->m_n]));
+      p_proc->Caller()->SetFlavours(m_flavs);
       Calculate(Vec4D_Vector(m_p),mode);
       p_proc->Caller()->SetFlavours(tmp);
 

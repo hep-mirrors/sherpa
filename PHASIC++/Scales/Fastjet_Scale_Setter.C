@@ -28,8 +28,6 @@ namespace PHASIC {
 
     double m_ptmin, m_etmin, m_eta, m_y;
 
-    ATOOLS::Flavour_Vector m_f;
-
     int m_mode, m_bmode;
 
     double ASMeanScale(const std::vector<double> &mu,
@@ -114,7 +112,6 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
   if (reco=="BIpt") recom=fjcore::BIpt_scheme;
   if (reco=="BIpt2") recom=fjcore::BIpt2_scheme;
   p_jdef=new fjcore::JetDefinition(ja,R,recom);
-  m_f=p_proc->Flavours();
   m_p.resize(p_proc->NIn()+p_proc->NOut());
   std::string tag(args.m_scale);
   std::vector<std::string> ctags;
@@ -139,9 +136,10 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
   // m_scale holds the three scales followed by one entry per expression or
   // clustering node. SetCouplings keeps pointers into it, so size it here
   // for every node and never let Calculate reallocate it.
+  const Flavour_Vector &fl(p_proc->Flavours());
   size_t nclus(0);
-  for (size_t i(p_proc->NIn());i<m_f.size();++i)
-    if (ToBeClustered(m_f[i], m_bmode)) ++nclus;
+  for (size_t i(p_proc->NIn());i<fl.size();++i)
+    if (ToBeClustered(fl[i], m_bmode)) ++nclus;
   m_scale.resize(stp::size+Max(m_calcs.size(),nclus));
   for (size_t i(0);i<m_calcs.size();++i)
     SetScale(ctags[i],*m_calcs[i]);
@@ -192,14 +190,23 @@ double Fastjet_Scale_Setter::Calculate
     }
     msg_Debugging()<<"}\n";
   }
+  // the flavours of the momenta, set by CalculateScale; m_p and m_flavs
+  // become the unclustered particles followed by the jets
+  const Flavour_Vector fl(m_flavs);
+  Flavour_Vector jetfl;
   m_p.resize(2);
   m_p[0]=-momenta[0];
   m_p[1]=-momenta[1];
+  m_flavs.resize(2);
   std::vector<fjcore::PseudoJet> input;
   for (size_t i(p_proc->NIn());i<momenta.size();++i)
-    if (!ToBeClustered(m_f[i], m_bmode)) m_p.push_back(momenta[i]);
+    if (!ToBeClustered(fl[i], m_bmode)) {
+      m_p.push_back(momenta[i]);
+      m_flavs.push_back(fl[i]);
+    }
     else {
-      input.push_back(MakePseudoJet(m_f[i], momenta[i]));
+      input.push_back(MakePseudoJet(fl[i], momenta[i]));
+      jetfl.push_back(fl[i]);
     }
   fjcore::ClusterSequence cs(input,*p_jdef);
   std::vector<fjcore::PseudoJet>
@@ -212,6 +219,10 @@ double Fastjet_Scale_Setter::Calculate
           (m_y==100.0 || dabs(pj.Y())<m_y)) m_p.push_back(pj);
     }
   }
+  // the jets take the flavours of the clustered partons in order, as the
+  // flavour-dependent tags did when they read the process flavours
+  m_flavs.insert(m_flavs.end(),jetfl.begin(),
+		 jetfl.begin()+(m_p.size()-m_flavs.size()));
   const size_t nscale(stp::size+Max(m_calcs.size(),input.size()));
   if (nscale>m_scale.capacity())
     THROW(fatal_error,"More clustering nodes than final-state partons in '"

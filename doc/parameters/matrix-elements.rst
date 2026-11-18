@@ -227,10 +227,15 @@ The scale setter options which are currently available are
   that final state partons are replaced with jets, if applicable (a
   parton might not pass the jet criteria and get "lost"). In
   particular, the indices of the initial state partons and all EW
-  particles are unaffected. Jet momenta can then be accessed as
+  particles are unaffected, unless massive b or c quarks are listed
+  before them, e.g. the photon in :math:`gg\to b\bar{b}\gamma` with
+  massive b quarks moves to ``p[2]``. Jet momenta can then be accessed as
   described in :ref:`Predefined scale tags` through the identifiers
   ``p[i]``, and the nodal values of the clustering sequence can be
-  used through ``MU_n2``.  The syntax is
+  used through ``MU_n2``. The flavour-dependent tags ``hH_T2``,
+  ``hH_TM2`` and ``P_TM2`` give the jets the flavours of the clustered
+  partons in their order, e.g. with massive b quarks the jets count as
+  massive in ``P_TM2``. The syntax is
 
 
   .. code-block:: yaml

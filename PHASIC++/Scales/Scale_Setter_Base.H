@@ -42,6 +42,9 @@ namespace PHASIC {
     MODEL::Coupling_Map *p_cpls;
 
     ATOOLS::Vec4D_Vector    m_p;
+    // flavours of m_p: those of the process or of the current NLO subevent,
+    // or the particles and jets of the FASTJET scale setter
+    ATOOLS::Flavour_Vector  m_flavs;
     ATOOLS::NLO_subevtlist *p_subs;
 
     std::vector<double> m_scale, m_escale, m_fac;
