@@ -2,6 +2,7 @@
 #define AHADIC_Decays_Cluster_Splitter_H
 
 #include "AHADIC++/Tools/Splitter_Base.H"
+#include "AHADIC++/Tools/Z_Pair_Selector.H"
 
 namespace AHADIC {
   class Cluster_Splitter : public Splitter_Base {
@@ -11,6 +12,9 @@ namespace AHADIC {
     double m_a[2], m_b[2], m_c[2], m_kt02;
 
     double m_R2[2], m_mean[2], m_sigma[2], m_m2min[2], m_masses;
+
+    // allowed region and pair draw of the z, see MakeLongitudinalMomentaZSimple
+    Z_Pair_Selector m_zpairs;
 
     Cluster *       p_out[2];
     ATOOLS::Vec4D   m_mom[2], m_newmom[2];
@@ -24,7 +28,7 @@ namespace AHADIC {
     bool   MakeLongitudinalMomentaMassSimple();
     double DeltaM(const size_t & cl);
     void   FixCoefficients();
-    void   CalculateLimits();
+    bool   CalculateLimits();
     bool   FillParticlesInLists();
     size_t MakeAndCheckClusters();
     bool   MakeNewMomenta(size_t shuffle);

@@ -10,7 +10,7 @@ using namespace std;
 Splitter_Base::Splitter_Base(list<Cluster *> * cluster_list,
 			     Soft_Cluster_Handler * softclusters) :
   p_cluster_list(cluster_list), p_softclusters(softclusters),
-  m_ktorder(false), m_ktfac(1.),
+  m_ktorder(false), m_giveup(false), m_ktfac(1.),
   m_attempts(100),
   m_analyse(false)
 { }
@@ -48,7 +48,8 @@ operator()(Proto_Particle * part1,Proto_Particle * part2,
   }
   size_t attempts(m_attempts);
   bool success(false);
-  while (attempts>0 && !success) {
+  m_giveup = false;
+  while (attempts>0 && !success && !m_giveup) {
     success = MakeSplitting();
     attempts--;
   }

@@ -22,7 +22,7 @@ namespace AHADIC {
     KT_Selector            m_ktselector;
     Z_Selector             m_zselector;
 
-    bool   m_ktorder;
+    bool   m_ktorder, m_giveup;
     size_t m_attempts;
     
     Proto_Particle * p_part[3];

@@ -47,7 +47,7 @@ void Cluster_Splitter::Init(const bool & isgluon) {
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomenta() {
-  CalculateLimits();
+  if (!CalculateLimits()) return false;
   FixCoefficients();
   switch (m_mode) {
   case 3:
@@ -92,7 +92,7 @@ void Cluster_Splitter::FixCoefficients() {
   m_masses = Max(1.,sum_mass);
 }
 
-void Cluster_Splitter::CalculateLimits() {
+bool Cluster_Splitter::CalculateLimits() {
   // Masses from Splitter_Base:
   // - constitutents:
   //   m_mass[0,1] and m_m2[0,1] = sqr(m_mass[0,1]), m_popped_mass, m_popped_mass2
@@ -100,16 +100,20 @@ void Cluster_Splitter::CalculateLimits() {
   // - hadrons:
   //   m_minQ[0,1] is lightest single or double transition (double for di-di pairs)
   //   m_mdec is lightest decay transition
-  for (size_t i=0;i<2;i++) m_m2min[i] = Min(m_minQ2[i],m_mdec2[i]);
-  double lambda  = sqrt(sqr(m_Q2-m_m2min[0]-m_m2min[1])-
-			4.*(m_m2min[0]+m_kt2)*(m_m2min[1]+m_kt2));
+  for (size_t i=0;i<2;i++)
+    m_m2min[i] = Min(m_minQ2[i],m_mdec2[i]);
+  const double arg = sqr(m_Q2-m_m2min[0]-m_m2min[1])-
+                     4.*(m_m2min[0]+m_kt2)*(m_m2min[1]+m_kt2);
+  if (arg<0.) return false;
+  const double lambda = sqrt(arg);
   for (size_t i=0;i<2;i++) {
-    double centre = m_Q2-m_m2min[1-i]+m_m2min[i];
+    const double centre = m_Q2-m_m2min[1-i]+m_m2min[i];
     m_zmin[i]  = (centre-lambda)/(2.*m_Q2);
     m_zmax[i]  = (centre+lambda)/(2.*m_Q2);
     m_mean[i]  = sqrt(m_kt02);
     m_sigma[i] = sqrt(m_kt02);
   }
+  return true;
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaZ() {
@@ -130,9 +134,35 @@ bool Cluster_Splitter::MakeLongitudinalMomentaZ() {
 }
 
 bool Cluster_Splitter::MakeLongitudinalMomentaZSimple() {
-  for (size_t i=0;i<2;i++) m_z[i]  = m_zselector(m_zmin[i],m_zmax[i],i);
+  // z0 and z1 are drawn inside the allowed region, where both new clusters
+  // lie above their lightest hadron pair (see Z_Pair_Selector), so only an
+  // empty region costs a new flavour and kt.  Clusters with a heavy or a
+  // leading parton draw (z0,z1) ~ f0 f1 on the region, all others draw one z
+  // on its live interval and the other one in the window it leaves, in
+  // random order.
+  static const double heavy_mass = 1.5;
+  m_zpairs.SetRegion(m_Q2,m_kt2,m_mdec2,m_zmin,m_zmax);
+  const bool pair = (Max(m_mass[0],m_mass[1])>heavy_mass ||
+                     p_part[0]->IsLeading() || p_part[1]->IsLeading());
+  const int i = (pair || ran->Get()<0.5) ? 0 : 1, j = 1-i;
+  if (!m_zpairs.Live(i)) return false;
+  if (!pair) {
+    m_z[i] = m_zselector(m_zpairs.Lower(i),m_zpairs.Upper(i),i);
+    m_z[j] = m_zselector(m_zpairs.Lower(j,m_z[i]),m_zpairs.Upper(j,m_z[i]),j);
+  }
+  else {
+    double c[2];
+    for (int k=0;k<2;++k)
+      c[k] = Z_Pair_Selector::Exponent(m_c[k],m_kt02,m_kt2+m_masses*m_masses);
+    if (!m_zpairs(m_a,m_b,c,m_z)) {
+      // no pair found, the cluster decays into two hadrons instead
+      if (m_zpairs.GaveUp()) m_giveup = true;
+      return false;
+    }
+  }
   for (size_t i=0;i<2;i++) m_R2[i] = m_z[i]*(1.-m_z[1-i])*m_Q2-m_kt2;
-  return (m_R2[0]>=m_mdec2[0]+m_kt2) && (m_R2[1]>=m_mdec2[1]+m_kt2);
+  if (m_R2[0]<m_mdec2[0]+m_kt2 || m_R2[1]<m_mdec2[1]+m_kt2) return false;
+  return true;
 }
 
 double Cluster_Splitter::
@@ -150,7 +180,7 @@ WeightFunction(const double & z,const double & zmin,const double & zmax,
   value = wt/norm;
 
   if (m_mode==2) {
-    arg   = dabs(m_c[cnt])>1.e-2 ? m_c[cnt]*(m_kt2+m_masses*m_masses)/m_kt02 : 0.;
+    arg   = Z_Pair_Selector::Exponent(m_c[cnt],m_kt02,m_kt2+m_masses*m_masses);
     value *= exp(-arg*((zmax-z)/(z*zmax)));
     norm *= exp(-arg/zmax);
     wt   *= exp(-arg/z);
