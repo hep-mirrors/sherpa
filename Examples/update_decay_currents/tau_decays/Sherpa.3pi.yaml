@@ -16,19 +16,31 @@
 #
 # Currents:     J1 = VA_F_F (tau- -> nu_tau), J2 = VA_0_PPP
 # Form factor:  FF_0_PPP
-# Selected:     FORM_FACTOR: 10 (KS), the model the decay table uses:
-#               genuine: KS a1 -> rho pi.
+# Selected:     FORM_FACTOR: 12 (KS_CLEO), the model the decay table uses:
+#               genuine: CLEO isobar model, hep-ex/9902022.
+#               The J2 block below carries the 2026-11 tune, identical to
+#               the one in this channel's Decaydata.yaml entry: database
+#               resonances, CLEO's own a1 m0/Gamma0 (1.331/0.814), and the
+#               couplings beta2..7, gamma_K*K and the a1' coupling fitted to
+#               Belle 2010 and BaBar 2007 m(3pi), BaBar 2007 m(pi+pi-) and
+#               ALEPH 2014.  A card that restates Currents replaces the
+#               table's, so keep these keys with it; removing them gives
+#               the code defaults (CLEO's couplings with the database a1).
+#               FORM_FACTOR: 21 (RChL2012) is an equally good alternative,
+#               tuned to the same data; its keys are listed in the 3pi
+#               options of Decaydata.yaml and must be set in both 3pi
+#               channels.
 #
 # Other FORM_FACTOR models for this channel:
 #   0  None        identically zero (also what an omitted FORM_FACTOR gives)
 #   1  Point       F = 1: no dynamics and no CKM/isospin normalisation
-#   12 KS_CLEO     genuine: CLEO tune
+#   10 KS          genuine: KS a1 -> rho pi
 #   13 KS_f0       not implemented, do not use
 #   14 CLEO_f0     not implemented, do not use
 #   15 KS_flatte   not implemented, do not use
 #   16 CLEO_flatte not implemented, do not use
 #   20 RChiPT      constant, no dynamics
-#   21 RChL2012    genuine: RChL2012
+#   21 RChL2012    genuine: RChL2012 + sigma, an equally good alternative
 #
 # Leaving FORM_FACTOR out does not give a default: the current reads a
 # missing key as 0 (None), so the channel would run with zero or nearly
@@ -61,7 +73,27 @@ HADRON_DECAYS:
         Currents:
           Exchange:
           - J1: {Type: VA_F_F, Indices: [4, 0], v: 1.0, a: -1.0}
-            J2: {Type: VA_0_PPP, Indices: [2, 3, 1], FORM_FACTOR: 10}
+            J2:
+              Type: VA_0_PPP
+              Indices: [2, 3, 1]
+              FORM_FACTOR: 12
+              beta2Mag_3pi_CLEO: 0.48284181
+              beta2Phase_3pi_CLEO: -0.80031417
+              beta3Mag_3pi_CLEO: 0.81704555
+              beta3Phase_3pi_CLEO: -2.0880906
+              beta4Mag_3pi_CLEO: 3.1941607
+              beta4Phase_3pi_CLEO: 1.7517693
+              beta5Mag_3pi_CLEO: 1.5253345
+              beta5Phase_3pi_CLEO: 0.86957672
+              beta6Mag_3pi_CLEO: 0.15071942
+              beta6Phase_3pi_CLEO: 0.68727521
+              beta7Mag_3pi_CLEO: 1.2139898
+              beta7Phase_3pi_CLEO: -2.9520108
+              gammaKstarK_3pi_CLEO: 2.1101398
+              MCLEOa1: 1.331
+              GCLEOa1: 0.814
+              betaMag_3pi_CLEOa1prime: 0.027310912
+              betaPhase_3pi_CLEOa1prime: -0.42663494
 
 # Rivet comparison. --ignore-beams: the analyses look for tau decays and
 # do not care that there is no collider event around them.
