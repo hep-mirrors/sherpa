@@ -79,27 +79,20 @@ void Polarization_Spinor::Init(
     m_km = SpinorType(-1, m_k);
 
 }
-Polarization_Spinor_Basis::Polarization_Spinor_Basis(
-    const ATOOLS::Vec4D& p,
-    double M2,
-    const ATOOLS::Vec4D& ref_mom,
-    bool anti,
-    bool out)
+Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p,double M2,const ATOOLS::Vec4D& ref_mom,bool anti, bool out)
 {
     m_s.reserve(2);
 
     // Helicity +1
-
-
-    m_s.emplace_back(
-        p, M2, +1, ref_mom, anti, out
-    );
+     m_s.emplace_back(p, M2, +1, ref_mom, anti, out);
 
     // Helicity -1
-    m_s.emplace_back(
-        p, M2, -1, ref_mom, anti, out
-    );
+    m_s.emplace_back(p, M2, -1, ref_mom, anti, out);
 
+}
+Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p,double M2,bool anti,bool out)
+  : Polarization_Spinor_Basis(p,M2,ATOOLS::Vec4D(1.0, 0.0, 1.0, 0.0),anti,out)
+{
 }
 /*Polarization_Spinor_Basis::Polarization_Spinor_Basis(const ATOOLS::Vec4D& p, double M2,const ATOOLS::Vec4D& ref_mom, bool anti, bool out) {
   std::cerr << "[CTOR 1] Start"
