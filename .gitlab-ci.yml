@@ -9,17 +9,21 @@ stages:
   - deploy
 
 variables:
-  DOCKER_DRIVER: overlay2
   DOXYGEN_CMAKE_FLAGS: -DSHERPA_ENABLE_DOXYGEN=ON -DDOXYGEN_WARN_AS_ERROR=YES
   CATCH2_CMAKE_FLAGS: -DSHERPA_ENABLE_CATCH2:BOOL=ON -DSHERPA_ENABLE_COVERAGE:BOOL=ON
   COMMON_EXTRA_CMAKE_FLAGS: -DSHERPA_ENABLE_EWSUD:BOOL=ON -DSHERPA_ENABLE_TESTING:BOOL=ON
   EXTENDED_EXTRA_CMAKE_FLAGS: -DSHERPA_ENABLE_ANALYSIS:BOOL=ON -DSHERPA_ENABLE_BINRELOC:BOOL=ON -DSHERPA_ENABLE_BLACKHAT:BOOL=ON -DSHERPA_ENABLE_DIHIGGS:BOOL=OFF -DSHERPA_ENABLE_EXAMPLES:BOOL=ON -DSHERPA_ENABLE_GOSAM:BOOL=ON -DSHERPA_ENABLE_GZIP:BOOL=ON -DSHERPA_ENABLE_HEPMC3:BOOL=ON -DSHERPA_ENABLE_HEPMC3_ROOT:BOOL=OFF -DSHERPA_ENABLE_INTERNAL_PDFS:BOOL=ON -DSHERPA_ENABLE_INSTALL_LIBZIP:BOOL=OFF -DSHERPA_ENABLE_INSTALL_LHAPDF:BOOL=OFF -DSHERPA_ENABLE_LHOLE:BOOL=ON -DSHERPA_ENABLE_MADLOOP:BOOL=ON -DSHERPA_ENABLE_MANUAL:BOOL=OFF -DSHERPA_ENABLE_MCFM:BOOL=OFF -DSHERPA_ENABLE_MPI:BOOL=OFF -DSHERPA_ENABLE_OPENLOOPS:BOOL=ON -DSHERPA_ENABLE_PYTHIA8:BOOL=ON -DSHERPA_ENABLE_PYTHON:BOOL=ON -DSHERPA_ENABLE_RECOLA:BOOL=ON -DSHERPA_ENABLE_RIVET:BOOL=ON -DSHERPA_ENABLE_ROOT:BOOL=ON -DSHERPA_ENABLE_THREADING:BOOL=ON -DSHERPA_ENABLE_UFO:BOOL=ON -DSHERPA_ENABLE_HDF5:BOOL=ON
   NCOMPILATION_JOBS: 1
-  MAKE_FLAGS: -j4
   # Cache optimization settings
-  CCACHE_MAXSIZE: 500M
+  CCACHE_MAXSIZE: 2G
   CCACHE_COMPRESS: 1
   CCACHE_COMPILERCHECK: content
+  # Suffix of the CI image tag; set to -mr<IID> in MR pipelines that change a CI Dockerfile
+  IMAGE_SUFFIX: ""
+  # Tells apart compiler caches of jobs sharing OS, FREL and TOOLSET (e.g. make vs. ninja)
+  CACHE_VARIANT: ""
+  # Flag to block Dockerfiles from building in MR pipelines
+  ALLOW_DOCKERBUILDS_IN_MR: true
 
 
 ############################################################################
@@ -42,6 +46,9 @@ workflow:
     # only run branch pipelines on master
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
+    # release tags: rebuild the website and deploy the tagged manual
+    - if: $CI_COMMIT_TAG
+
     # Everything else is disabled
     - when: never
 
@@ -57,9 +64,19 @@ workflow:
       allow_failure: false
     - when: never
 
+# Jobs using this template exist only in merge request pipelines.
 .feature-build-rules:
   rules:
-    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+    # MR changing a CI Dockerfile: build against the images built from it (see .build_docker_image)
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - CI/*/Dockerfile*
+      variables:
+        IMAGE_SUFFIX: -mr$CI_MERGE_REQUEST_IID
+      when: manual
+      allow_failure: false
+
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: manual
       allow_failure: false
 
@@ -72,56 +89,54 @@ workflow:
 # base class
 .build_docker_image:
   stage: build_docker_image
+  # Kaniko is archived upstream, so pin its last release rather than the moving :debug tag
   image:
-    name: gcr.io/kaniko-project/executor:debug
+    name: gcr.io/kaniko-project/executor:v1.24.0-debug
     entrypoint: [""]
 
-  # runs automatically for weekly updates or if the dockerfiles are changed in a branch pipeline
+  # Rebuilds all images for the weekly schedule, or when a CI Dockerfile changes.
+  # Master (and manually run master pipelines, where `changes` is always true) publish
+  # the ${OS}_${FREL} tags used by everyone; an MR publishes ${OS}_${FREL}-mr<IID> tags
+  # that only its own build jobs use (see .feature-build-rules).
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - CI/*/Dockerfile*
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $ALLOW_DOCKERBUILDS_IN_MR
+      changes:
+        - CI/*/Dockerfile*
+      variables:
+        IMAGE_SUFFIX: -mr$CI_MERGE_REQUEST_IID
   script:
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile CI/$OS/Dockerfile$FREL --destination $CI_REGISTRY_IMAGE:${OS}_$FREL
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile CI/$OS/Dockerfile$FREL --destination $CI_REGISTRY_IMAGE:${OS}_${FREL}${IMAGE_SUFFIX}
   variables:
     GIT_DEPTH: "1"
   retry: 2
 
 
-# jobs for different OS:
-# PROBLEM: fedora always builds version 42 in current setup
-# FIX: 1 Dockerfile for each version to unify the procedure across different OS
+# jobs for different OS, one Dockerfile per version: CI/$OS/Dockerfile$FREL
 
 build_image_Fedora44:
-  rules:
-    - if: $CI_COMMIT_MESSAGE =~ /fedora44/i
-    - !reference [.build_docker_image, rules]
   variables:
     OS: Fedora
     FREL: 44
   extends: .build_docker_image
 
 build_image_Fedora43:
-  rules:
-    - if: $CI_COMMIT_MESSAGE =~ /fedora43/i
-    - !reference [.build_docker_image, rules]
   variables:
     OS: Fedora
     FREL: 43
   extends: .build_docker_image
 
 build_image_CentOS9:
-  rules:
-    - if: $CI_COMMIT_MESSAGE =~ /centos/i
-    - !reference [.build_docker_image, rules]
   variables:
     OS: CentOS
     FREL: 9
   extends: .build_docker_image
 
 build_image_Archlinux0:
-  rules:
-    - if: $CI_COMMIT_MESSAGE =~ /archlinux/i
-    - !reference [.build_docker_image, rules]
   variables:
     OS: Archlinux
     FREL: 0
@@ -133,14 +148,10 @@ build_image_Archlinux0:
 ############################################################################
 
 .any:
-  image: $CI_REGISTRY_IMAGE:${OS}_${FREL}
+  image: $CI_REGISTRY_IMAGE:${OS}_${FREL}${IMAGE_SUFFIX}
   stage: build
-  before_script:
-    - set -x
-    - uname -a
-    - cat /etc/issue
-    - export GIT_DEPTH=1
   coverage: '/^\s*lines\.+: (\d+\.\d+)%/'
+  # always: the coverage report only exists when the tests have passed
   artifacts:
     expire_in: 2 days
     paths:
@@ -148,18 +159,19 @@ build_image_Archlinux0:
       - BUILD/Tests/*/rivet-plots
       - BUILD/Tests/coverage.info
       - BUILD/Tests/html
-    when: on_failure
+    when: always
 
 .cmake: &cmake
-    - export CMAKE=cmake3
-    - export CTEST=ctest3
-    - if [ "${FREL}" == "7" ]; then export CMAKE=cmake3; CTEST=ctest3; fi
-    - if [ "${FREL}" == "0" ]; then export CMAKE=cmake; CTEST=ctest; fi
-    - if [ "${FREL}" == "44" ]; then export CMAKE=cmake; CTEST=ctest; fi
+    # All images ship a recent CMake as plain cmake/ctest; the cmake3/ctest3 names were
+    # only needed on CentOS 7, and newer packages (e.g. Fedora 44) no longer provide them.
+    - export CMAKE=cmake
+    - export CTEST=ctest
     - export COMPILATIONSTART=$(date +%s)
     - $CMAKE --version
     - $CMAKE -S . -B BUILD -DCMAKE_INSTALL_PREFIX=$(pwd)/CM  $EXTRACMAKEFLAGS $CACHINGFLAGS
     - $CMAKE --build BUILD -j $NCOMPILATION_JOBS
+    # this job's compiler-cache hit rate (counters reset in .any-cmake-ccache)
+    - if [ -n "$CCACHE_DIR" ]; then ccache -s || true; fi
     - export COMPILATIONEND=$(date +%s)
     - $CMAKE --install BUILD
     - echo $COMPILATIONSTART $COMPILATIONEND $(echo $COMPILATIONEND-$COMPILATIONSTART | bc -l)
@@ -173,60 +185,59 @@ build_image_Archlinux0:
     - if [ "${TOOLSET}" == "GNU" ]; then export CXX=g++; export CC=gcc; export FC=gfortran; fi
     - if [ "${TOOLSET}" == "GNUMPI" ]; then source /etc/profile.d/modules.sh || true; module load openmpi || module load mpi/openmpi-x86_64 || true; export CXX=mpic++; export CC=mpicc; export FC=gfortran; fi
 
-.any-cmake:
-  extends: .any
-  script:
-      - *ex
-      - *cmake
-
 .any-cmake-ccache:
   extends: .any
   timeout: 120m
   before_script:
     - *ex
-    # Cache cleanup logic
-    - if [ "$CI_COMMIT_MESSAGE" = "cleancache" ]; then rm -rf cmake-$TOOLSET-cache-$FREL; fi
-    - if [ "$CI_PIPELINE_SOURCE" = "schedule" ]; then rm -rf cmake-$TOOLSET-cache-$FREL; fi
+    # must match the cache paths below
+    - export CACHE_ROOT=$CI_PROJECT_DIR/cmake-$TOOLSET$CACHE_VARIANT-cache-$OS$FREL
+    # Start the weekly scheduled build from an empty cache (to clear it by hand, use
+    # "Clear runner caches" on the pipelines page)
+    - if [ "$CI_PIPELINE_SOURCE" = "schedule" ]; then rm -rf $CACHE_ROOT; fi
     - df -h ./
     - df -h /tmp
-    # Set ccache limits to prevent unbounded growth
-    - export CCACHE_BASEDIR=`pwd`/cmake-$TOOLSET-cache-$FREL
-    - export CCACHE_DIR=`pwd`/cmake-$TOOLSET-cache-$FREL/ccache
-    - export CCACHE_MAXSIZE=${CCACHE_MAXSIZE:-500M}
-    - export CCACHE_COMPRESS=${CCACHE_COMPRESS:-1}
-    - export CCACHE_COMPILERCHECK=${CCACHE_COMPILERCHECK:-content}
+    # Rewrite absolute paths below the checkout to relative ones (and do not hash the cwd),
+    # so that cache hits survive the checkout landing in a different runner/build directory
+    - export CCACHE_BASEDIR=$CI_PROJECT_DIR
+    - export CCACHE_NOHASHDIR=1
+    # size limit, compression and compiler check come from the global CCACHE_* variables
+    - export CCACHE_DIR=$CACHE_ROOT/ccache
     - mkdir -p ${CCACHE_DIR}
-    - mkdir -p ${CCACHE_BASEDIR}
     # f90cache setup with size limits
-    - export F90CACHE_DIR=`pwd`/cmake-$TOOLSET-cache-$FREL/f90cache
+    - export F90CACHE_DIR=$CACHE_ROOT/f90cache
     - export F90CACHE_TMPDIR=`pwd`/tmpf90cache
     - export F90CACHE_MAXSIZE=300M
     - mkdir -p ${F90CACHE_DIR}
     - mkdir -p ${F90CACHE_TMPDIR}
     - export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_Fortran_COMPILER_LAUNCHER=f90cache"
-    - 'if [ "${FREL}" == "7" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi'
     - 'if [ "${FREL}" == "0" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi'
     - 'if [ "${TOOLSET}" == "GNUMPI" ]; then export CACHINGFLAGS="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache "; fi'
-    # Display cache stats
+    # Show the restored cache, then reset the counters so that the stats printed
+    # after the build (see .cmake) are this job's own
     - ccache -s || true
+    - ccache -z || true
   script:
     - *cmake
+  # MR (unprotected) pipelines only pull the cache that master (protected) pushes. With
+  # GitLab's default "separate caches for protected branches", the two would use different
+  # keys and MR builds would always start cold; `unprotect` makes them share one key.
   cache:
-    - key: cmake-$TOOLSET-cache-$FREL
+    - key: cmake-$TOOLSET$CACHE_VARIANT-cache-$OS$FREL
       paths:
-        - cmake-$TOOLSET-cache-$FREL/
-      # Use variable to control policy based on branch
+        - cmake-$TOOLSET$CACHE_VARIANT-cache-$OS$FREL/
+      unprotect: true
       policy: pull
       when: on_success
 
 # Override for main branch to enable push
 .any-cmake-ccache-main:
-  timeout: 120m
   extends: .any-cmake-ccache
   cache:
-    - key: cmake-$TOOLSET-cache-$FREL
+    - key: cmake-$TOOLSET$CACHE_VARIANT-cache-$OS$FREL
       paths:
-        - cmake-$TOOLSET-cache-$FREL/
+        - cmake-$TOOLSET$CACHE_VARIANT-cache-$OS$FREL/
+      unprotect: true
       policy: pull-push
       when: on_success
 
@@ -241,6 +252,9 @@ Fedora43-make-ccache-GNU:
   extends:
     - .any-cmake-ccache-main
     - .master-build-rules
+  needs:
+    - job: build_image_Fedora43
+      optional: true
 
 # Feature branch variant uses pull-only policy
 Fedora43-make-ccache-GNU-feature:
@@ -253,6 +267,9 @@ Fedora43-make-ccache-GNU-feature:
   extends:
     - .any-cmake-ccache
     - .feature-build-rules
+  needs:
+    - job: build_image_Fedora43
+      optional: true
 
 Fedora44-make-ccache-GNU:
   variables:
@@ -264,6 +281,9 @@ Fedora44-make-ccache-GNU:
   extends:
     - .any-cmake-ccache-main
     - .master-build-rules
+  needs:
+    - job: build_image_Fedora44
+      optional: true
 
 Fedora44-make-ccache-GNU-feature:
   variables:
@@ -275,26 +295,37 @@ Fedora44-make-ccache-GNU-feature:
   extends:
     - .any-cmake-ccache
     - .feature-build-rules
+  needs:
+    - job: build_image_Fedora44
+      optional: true
 
 Fedora44-ninja-ccache-GNU:
   variables:
     OS: Fedora
     FREL: 44
     TOOLSET: GNU
+    CACHE_VARIANT: -ninja
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS -GNinja
   extends:
     - .any-cmake-ccache-main
     - .master-build-rules
+  needs:
+    - job: build_image_Fedora44
+      optional: true
 
 Fedora44-ninja-ccache-GNU-feature:
   variables:
     OS: Fedora
     FREL: 44
     TOOLSET: GNU
+    CACHE_VARIANT: -ninja
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS -GNinja
   extends:
     - .any-cmake-ccache
     - .feature-build-rules
+  needs:
+    - job: build_image_Fedora44
+      optional: true
 
 Fedora44-make-ccache-LLVM:
   variables:
@@ -306,6 +337,9 @@ Fedora44-make-ccache-LLVM:
   extends:
     - .any-cmake-ccache-main
     - .master-build-rules
+  needs:
+    - job: build_image_Fedora44
+      optional: true
 
 Fedora44-make-ccache-LLVM-feature:
   variables:
@@ -317,6 +351,9 @@ Fedora44-make-ccache-LLVM-feature:
   extends:
     - .any-cmake-ccache
     - .feature-build-rules
+  needs:
+    - job: build_image_Fedora44
+      optional: true
 
 Fedora44-make-ccache-GNU-mpi:
   variables:
@@ -325,11 +362,26 @@ Fedora44-make-ccache-GNU-mpi:
     TOOLSET: GNUMPI
     EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS -DSHERPA_ENABLE_MPI:BOOL=ON
   extends:
+    - .any-cmake-ccache-main
+    - .master-build-rules
+  needs:
+    - job: build_image_Fedora44
+      optional: true
+
+Fedora44-make-ccache-GNU-mpi-feature:
+  variables:
+    OS: Fedora
+    FREL: 44
+    TOOLSET: GNUMPI
+    EXTRACMAKEFLAGS: $COMMON_EXTRA_CMAKE_FLAGS $EXTENDED_EXTRA_CMAKE_FLAGS -DSHERPA_ENABLE_MPI:BOOL=ON
+  extends:
     - .any-cmake-ccache
     - .feature-build-rules
+  needs:
+    - job: build_image_Fedora44
+      optional: true
 
 CentOS9-make-ccache-GNU:
-  timeout: 55m
   variables:
     OS: CentOS
     FREL: 9
@@ -338,9 +390,11 @@ CentOS9-make-ccache-GNU:
   extends:
     - .any-cmake-ccache-main
     - .master-build-rules
+  needs:
+    - job: build_image_CentOS9
+      optional: true
 
 CentOS9-make-ccache-GNU-feature:
-  timeout: 59m
   variables:
     OS: CentOS
     FREL: 9
@@ -349,6 +403,9 @@ CentOS9-make-ccache-GNU-feature:
   extends:
     - .any-cmake-ccache
     - .feature-build-rules
+  needs:
+    - job: build_image_CentOS9
+      optional: true
 
 Archlinux0-make-ccache-GNU:
   variables:
@@ -360,6 +417,9 @@ Archlinux0-make-ccache-GNU:
   extends:
     - .any-cmake-ccache-main
     - .master-build-rules
+  needs:
+    - job: build_image_Archlinux0
+      optional: true
 
 Archlinux0-make-ccache-GNU-feature:
   variables:
@@ -371,6 +431,9 @@ Archlinux0-make-ccache-GNU-feature:
   extends:
     - .any-cmake-ccache
     - .feature-build-rules
+  needs:
+    - job: build_image_Archlinux0
+      optional: true
 
 
 ############################################################################
@@ -381,13 +444,13 @@ Archlinux0-make-ccache-GNU-feature:
 trigger_pages:
   stage: deploy
   variables:
-    GIT_STRATEGY: none  # we only need the artifacts from the build
+    GIT_STRATEGY: none  # only calls the API, no checkout needed
   rules:
     - if: '$CI_COMMIT_TAG && $CI_SERVER_HOST=="gitlab.com"'
       when: always
     - when: never
   script:
-    - "curl -X POST -F token=$PAGES_TRIGGER_TOKEN -F ref=master https://gitlab.com/api/v4/projects/8892644/trigger/pipeline"
+    - "curl --fail -X POST -F token=$PAGES_TRIGGER_TOKEN -F ref=master https://gitlab.com/api/v4/projects/8892644/trigger/pipeline"
   needs: []
 
 # base snippet to build manual into its own path_prefix using the gitlab pages "parallel deployment" feature
@@ -407,17 +470,6 @@ trigger_pages:
   pages:
     path_prefix: "$CI_COMMIT_REF_NAME"
 
-# build manual for normal commits
-# PROBLEM: necessary?? wont run in this config since no feature branch CI pipelines run
-manual-dev:
-  extends: .manual-base
-  pages:
-    expire_in: 2 months
-  rules:
-    - if: (!$CI_COMMIT_TAG) && ($CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH) && ($CI_PIPELINE_SOURCE != "merge_request_event")
-      when: manual
-  allow_failure: true
-
 # build manual for release tags or master
 manual-release:
   extends: .manual-base
@@ -427,6 +479,11 @@ manual-release:
     - if: $CI_COMMIT_TAG || ($CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH)
       when: always
     - when: never
+  # start right away instead of after the build stage, but wait for a Fedora44 image
+  # rebuild when the pipeline has one
+  needs:
+    - job: build_image_Fedora44
+      optional: true
 
 # build manual index page for all versions
 # also get older versions manuals from eos if available and add them
@@ -439,9 +496,10 @@ manual-index:
     - cd public
     - if wget https://sherpa.web.cern.ch/doc/old-manuals.tar.gz; then tar xzf old-manuals.tar.gz; rm old-manuals.tar.gz; fi
     - cd ..
-    - git checkout master
-    - git pull
-    - bash doc/make-index.sh > public/index.html;
+    # use the index script from master; a tag pipeline's clone only contains the tag ref
+    - git fetch --depth=1 origin master
+    - git show FETCH_HEAD:doc/make-index.sh > make-index.sh
+    - bash make-index.sh > public/index.html
 
   artifacts:
     paths:
